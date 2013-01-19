@@ -18,14 +18,14 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreateSignInInternalsHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUISignInInternalsHost);
+content::WebUIDataSource* CreateSignInInternalsHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUISignInInternalsHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("signin_internals.js",
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("signin_internals.js",
                             IDR_SIGNIN_INTERNALS_INDEX_JS);
-  source->set_default_resource(IDR_SIGNIN_INTERNALS_INDEX_HTML);
+  source->SetDefaultResource(IDR_SIGNIN_INTERNALS_INDEX_HTML);
   return source;
 }
 
@@ -34,7 +34,7 @@ ChromeWebUIDataSource* CreateSignInInternalsHTMLSource() {
 SignInInternalsUI::SignInInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(
+  ChromeURLDataManager::AddWebUIDataSource(
       profile, CreateSignInInternalsHTMLSource());
   if (profile) {
     AboutSigninInternals* about_signin_internals =

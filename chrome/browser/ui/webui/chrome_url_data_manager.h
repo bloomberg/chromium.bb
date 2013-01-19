@@ -24,6 +24,7 @@ class RefCountedMemory;
 
 namespace content {
 class URLDataSource;
+class WebUIDataSource;
 }
 
 class URLDataSourceImpl;
@@ -61,9 +62,9 @@ class ChromeURLDataManager : public ProfileKeyedService {
   static void AddDataSource(Profile* profile,
                             content::URLDataSource* source);
 
-  // Like above, but takes a URLDataSourceImpl directly.
-  static void AddDataSourceImpl(Profile* profile,
-                                URLDataSourceImpl* source);
+  // Adds a WebUI data source to |profile|'s |ChromeURLDataManager|.
+  static void AddWebUIDataSource(Profile* profile,
+                                 content::WebUIDataSource* source);
 
  private:
   friend class URLDataSourceImpl;

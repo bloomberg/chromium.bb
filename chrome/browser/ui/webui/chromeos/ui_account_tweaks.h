@@ -7,7 +7,10 @@
 
 #include "base/values.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+
+namespace content {
+class WebUIDataSource;
+}
 
 namespace chromeos {
 
@@ -25,7 +28,7 @@ void AddAccountUITweaksLocalizedValues(
  * @param source non-null ui data source which localized values dictionary will
  * be filled.
  */
-void AddAccountUITweaksLocalizedValues(ChromeWebUIDataSource* source);
+void AddAccountUITweaksLocalizedValues(content::WebUIDataSource* source);
 
 }  // namespace chromeos
 

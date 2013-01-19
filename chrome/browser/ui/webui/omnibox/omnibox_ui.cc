@@ -16,14 +16,14 @@
 OmniboxUI::OmniboxUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://omnibox/ source.
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUIOmniboxHost);
-  html_source->add_resource_path("omnibox.css", IDR_OMNIBOX_CSS);
-  html_source->add_resource_path("omnibox.js", IDR_OMNIBOX_JS);
-  html_source->set_default_resource(IDR_OMNIBOX_HTML);
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIOmniboxHost);
+  html_source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
+  html_source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
+  html_source->SetDefaultResource(IDR_OMNIBOX_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 
   // AddMessageHandler takes ownership of OmniboxUIHandler
   web_ui->AddMessageHandler(new OmniboxUIHandler(profile));

@@ -16,14 +16,14 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreateInstantHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIInstantHost);
+content::WebUIDataSource* CreateInstantHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIInstantHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("instant.js", IDR_INSTANT_JS);
-  source->add_resource_path("instant.css", IDR_INSTANT_CSS);
-  source->set_default_resource(IDR_INSTANT_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("instant.js", IDR_INSTANT_JS);
+  source->AddResourcePath("instant.css", IDR_INSTANT_CSS);
+  source->SetDefaultResource(IDR_INSTANT_HTML);
   return source;
 }
 
@@ -98,7 +98,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://instant/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateInstantHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateInstantHTMLSource());
 }
 
 // static

@@ -24,10 +24,10 @@ using content::WebContents;
 
 namespace {
 
-ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUITaskManagerHost);
-  source->set_use_json_js_format_v2();
+content::WebUIDataSource* CreateTaskManagerUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUITaskManagerHost);
+  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("closeWindow", IDS_CLOSE);
   source->AddLocalizedString("title", IDS_TASK_MANAGER_TITLE);
@@ -65,17 +65,16 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
       IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
   source->AddLocalizedString("inspect", IDS_TASK_MANAGER_INSPECT);
   source->AddLocalizedString("activate", IDS_TASK_MANAGER_ACTIVATE);
-  source->set_json_path("strings.js");
-  source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
-  source->add_resource_path("commands.js", IDR_TASK_MANAGER_COMMANDS_JS);
-  source->add_resource_path("defines.js", IDR_TASK_MANAGER_DEFINES_JS);
-  source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
-  source->add_resource_path("preload.js", IDR_TASK_MANAGER_PRELOAD_JS);
-  source->add_resource_path("measure_time.js",
-                            IDR_TASK_MANAGER_MEASURE_TIME_JS);
-  source->add_resource_path("measure_time_end.js",
-                            IDR_TASK_MANAGER_MEASURE_TIME_END_JS);
-  source->set_default_resource(IDR_TASK_MANAGER_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("main.js", IDR_TASK_MANAGER_JS);
+  source->AddResourcePath("commands.js", IDR_TASK_MANAGER_COMMANDS_JS);
+  source->AddResourcePath("defines.js", IDR_TASK_MANAGER_DEFINES_JS);
+  source->AddResourcePath("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
+  source->AddResourcePath("preload.js", IDR_TASK_MANAGER_PRELOAD_JS);
+  source->AddResourcePath("measure_time.js", IDR_TASK_MANAGER_MEASURE_TIME_JS);
+  source->AddResourcePath("measure_time_end.js",
+                          IDR_TASK_MANAGER_MEASURE_TIME_END_JS);
+  source->SetDefaultResource(IDR_TASK_MANAGER_HTML);
 
   return source;
 }
@@ -92,7 +91,7 @@ TaskManagerUI::TaskManagerUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new TaskManagerHandler(TaskManager::GetInstance()));
 
   // Set up the chrome://taskmanager/ source.
-  ChromeWebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();
+  content::WebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 }

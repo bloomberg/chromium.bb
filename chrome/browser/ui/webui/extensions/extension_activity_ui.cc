@@ -24,8 +24,8 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(
       IDS_EXTENSION_ACTIVITY_TITLE));
 
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIExtensionActivityHost);
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIExtensionActivityHost);
 
   // Localized strings.
   source->AddLocalizedString("extensionActivity", IDS_EXTENSION_ACTIVITY_TITLE);
@@ -35,14 +35,14 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
                              IDS_EXTENSION_ACTIVITY_API_BLOCK);
   source->AddLocalizedString("extensionActivityContentScript",
                              IDS_EXTENSION_ACTIVITY_CONTENT_SCRIPT);
-  source->set_use_json_js_format_v2();
-  source->set_json_path("strings.js");
+  source->SetUseJsonJSFormatV2();
+  source->SetJsonPath("strings.js");
 
   // Resources.
-  source->add_resource_path("extension_activity.js", IDR_EXTENSION_ACTIVITY_JS);
-  source->set_default_resource(IDR_EXTENSION_ACTIVITY_HTML);
+  source->AddResourcePath("extension_activity.js", IDR_EXTENSION_ACTIVITY_JS);
+  source->SetDefaultResource(IDR_EXTENSION_ACTIVITY_HTML);
   profile_ = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile_, source);
+  ChromeURLDataManager::AddWebUIDataSource(profile_, source);
   ChromeURLDataManager::AddDataSource(
       profile_, new SharedResourcesDataSource());
 

@@ -62,10 +62,10 @@ void AssertPluginEnabled(bool did_enable) {
   DCHECK(did_enable);
 }
 
-ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIPluginsHost);
-  source->set_use_json_js_format_v2();
+content::WebUIDataSource* CreatePluginsUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIPluginsHost);
+  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
   source->AddLocalizedString("pluginsDetailsModeLink",
@@ -97,9 +97,9 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   source->AddLocalizedString("alwaysAllowed", IDS_PLUGINS_ALWAYS_ALLOWED);
   source->AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("plugins.js", IDR_PLUGINS_JS);
-  source->set_default_resource(IDR_PLUGINS_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("plugins.js", IDR_PLUGINS_JS);
+  source->SetDefaultResource(IDR_PLUGINS_HTML);
 #if defined(OS_CHROMEOS)
   chromeos::AddAccountUITweaksLocalizedValues(source);
 #endif
@@ -480,7 +480,8 @@ PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://plugins/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreatePluginsUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreatePluginsUIHTMLSource());
 }
 
 // static

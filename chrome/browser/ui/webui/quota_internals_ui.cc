@@ -21,16 +21,16 @@ using content::WebContents;
 
 namespace {
 
-ChromeWebUIDataSource* CreateQuotaInternalsHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIQuotaInternalsHost);
+content::WebUIDataSource* CreateQuotaInternalsHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIQuotaInternalsHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path(
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath(
       "event_handler.js", IDR_QUOTA_INTERNALS_EVENT_HANDLER_JS);
-  source->add_resource_path(
+  source->AddResourcePath(
       "message_dispatcher.js", IDR_QUOTA_INTERNALS_MESSAGE_DISPATCHER_JS);
-  source->set_default_resource(IDR_QUOTA_INTERNALS_MAIN_HTML);
+  source->SetDefaultResource(IDR_QUOTA_INTERNALS_MAIN_HTML);
   return source;
 }
 
@@ -40,6 +40,6 @@ QuotaInternalsUI::QuotaInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new quota_internals::QuotaInternalsHandler);
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreateQuotaInternalsHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateQuotaInternalsHTMLSource());
 }

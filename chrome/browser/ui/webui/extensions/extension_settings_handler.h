@@ -35,6 +35,10 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace content {
+class WebUIDataSource;
+}
+
 namespace extensions {
 class Extension;
 class ExtensionHost;
@@ -79,7 +83,7 @@ class ExtensionSettingsHandler
       const std::vector<ExtensionPage>& pages,
       const extensions::ExtensionWarningService* warning_service);
 
-  void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  void GetLocalizedValues(content::WebUIDataSource* source);
 
   // content::WebContentsObserver implementation, which reloads all unpacked
   // extensions whenever chrome://extensions is reloaded.

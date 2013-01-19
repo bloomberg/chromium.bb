@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -28,29 +29,27 @@ PackExtensionHandler::~PackExtensionHandler() {
 }
 
 void PackExtensionHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
-  DCHECK(localized_strings);
-
-  localized_strings->SetString("packExtensionOverlay",
+    content::WebUIDataSource* source) {
+  source->AddString("packExtensionOverlay",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_TITLE));
-  localized_strings->SetString("packExtensionHeading",
+  source->AddString("packExtensionHeading",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_HEADING));
-  localized_strings->SetString("packExtensionCommit",
+  source->AddString("packExtensionCommit",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_BUTTON));
-  localized_strings->SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
-  localized_strings->SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
-  localized_strings->SetString("packExtensionRootDir",
+  source->AddString("ok", l10n_util::GetStringUTF16(IDS_OK));
+  source->AddString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
+  source->AddString("packExtensionRootDir",
       l10n_util::GetStringUTF16(
           IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL));
-  localized_strings->SetString("packExtensionPrivateKey",
+  source->AddString("packExtensionPrivateKey",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
-  localized_strings->SetString("packExtensionBrowseButton",
+  source->AddString("packExtensionBrowseButton",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_BROWSE));
-  localized_strings->SetString("packExtensionProceedAnyway",
+  source->AddString("packExtensionProceedAnyway",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROCEED_ANYWAY));
-  localized_strings->SetString("packExtensionWarningTitle",
+  source->AddString("packExtensionWarningTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_WARNING_TITLE));
-  localized_strings->SetString("packExtensionErrorTitle",
+  source->AddString("packExtensionErrorTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_ERROR_TITLE));
 }
 

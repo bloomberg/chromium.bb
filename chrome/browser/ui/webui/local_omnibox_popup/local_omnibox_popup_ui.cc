@@ -15,32 +15,30 @@
 
 LocalOmniboxPopupUI::LocalOmniboxPopupUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  ChromeWebUIDataSource* source = new ChromeWebUIDataSource(
+  content::WebUIDataSource* source = ChromeWebUIDataSource::Create(
       chrome::kChromeUILocalOmniboxPopupHost);
-  source->add_resource_path("local_omnibox_popup.css",
-                            IDR_LOCAL_OMNIBOX_POPUP_CSS);
-  source->add_resource_path("local_omnibox_popup.js",
-                            IDR_LOCAL_OMNIBOX_POPUP_JS);
-  source->add_resource_path("local_omnibox_popup.js",
-                            IDR_LOCAL_OMNIBOX_POPUP_JS);
+  source->AddResourcePath("local_omnibox_popup.css",
+                          IDR_LOCAL_OMNIBOX_POPUP_CSS);
+  source->AddResourcePath("local_omnibox_popup.js", IDR_LOCAL_OMNIBOX_POPUP_JS);
+  source->AddResourcePath("local_omnibox_popup.js", IDR_LOCAL_OMNIBOX_POPUP_JS);
 
-  source->add_resource_path("images/history_icon.png",
-                            IDR_LOCAL_OMNIBOX_POPUP_IMAGES_HISTORY_ICON_PNG);
-  source->add_resource_path("images/page_icon.png",
-                            IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG);
-  source->add_resource_path("images/search_icon.png",
-                            IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG);
-  source->add_resource_path("images/2x/history_icon.png",
-                            IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_HISTORY_ICON_PNG);
-  source->add_resource_path("images/2x/page_icon.png",
-                            IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_PAGE_ICON_PNG);
-  source->add_resource_path("images/2x/search_icon.png",
-                            IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG);
+  source->AddResourcePath("images/history_icon.png",
+                          IDR_LOCAL_OMNIBOX_POPUP_IMAGES_HISTORY_ICON_PNG);
+  source->AddResourcePath("images/page_icon.png",
+                          IDR_LOCAL_OMNIBOX_POPUP_IMAGES_PAGE_ICON_PNG);
+  source->AddResourcePath("images/search_icon.png",
+                          IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG);
+  source->AddResourcePath("images/2x/history_icon.png",
+                          IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_HISTORY_ICON_PNG);
+  source->AddResourcePath("images/2x/page_icon.png",
+                          IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_PAGE_ICON_PNG);
+  source->AddResourcePath("images/2x/search_icon.png",
+                          IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG);
 
-  source->set_default_resource(IDR_LOCAL_OMNIBOX_POPUP_HTML);
+  source->SetDefaultResource(IDR_LOCAL_OMNIBOX_POPUP_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, source);
 }
 
 LocalOmniboxPopupUI::~LocalOmniboxPopupUI() {

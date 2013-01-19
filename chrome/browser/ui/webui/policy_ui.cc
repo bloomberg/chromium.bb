@@ -61,12 +61,12 @@ const char PolicyUIHandler::kValue[] = "value";
 
 namespace {
 
-ChromeWebUIDataSource* CreatePolicyUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIPolicyHost);
+content::WebUIDataSource* CreatePolicyUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIPolicyHost);
 
   // Localized strings.
-  source->set_use_json_js_format_v2();
+  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("policyTitle", IDS_POLICY_TITLE);
   source->AddLocalizedString("statusPaneTitle", IDS_POLICY_STATUS_TITLE);
   source->AddLocalizedString("fetchPoliciesText", IDS_POLICY_FETCH);
@@ -91,12 +91,12 @@ ChromeWebUIDataSource* CreatePolicyUIHTMLSource() {
                              IDS_POLICY_ENTRY_STATUS);
   source->AddLocalizedString("showMoreText", IDS_POLICY_SHOW_MORE);
   source->AddLocalizedString("hideText", IDS_POLICY_HIDE);
-  source->set_json_path("strings.js");
+  source->SetJsonPath("strings.js");
 
   // Add required resources.
-  source->add_resource_path("policy.css", IDR_POLICY_CSS);
-  source->add_resource_path("policy.js", IDR_POLICY_JS);
-  source->set_default_resource(IDR_POLICY_HTML);
+  source->AddResourcePath("policy.css", IDR_POLICY_CSS);
+  source->AddResourcePath("policy.js", IDR_POLICY_JS);
+  source->SetDefaultResource(IDR_POLICY_HTML);
 
   return source;
 }
@@ -641,7 +641,7 @@ PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://policy/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreatePolicyUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreatePolicyUIHTMLSource());
 }
 
 PolicyUI::~PolicyUI() {

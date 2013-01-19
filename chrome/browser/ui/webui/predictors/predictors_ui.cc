@@ -14,11 +14,11 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreatePredictorsUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIPredictorsHost);
-  source->add_resource_path("predictors.js", IDR_PREDICTORS_JS);
-  source->set_default_resource(IDR_PREDICTORS_HTML);
+content::WebUIDataSource* CreatePredictorsUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIPredictorsHost);
+  source->AddResourcePath("predictors.js", IDR_PREDICTORS_JS);
+  source->SetDefaultResource(IDR_PREDICTORS_HTML);
   return source;
 }
 
@@ -27,6 +27,6 @@ ChromeWebUIDataSource* CreatePredictorsUIHTMLSource() {
 PredictorsUI::PredictorsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(new PredictorsHandler(profile));
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreatePredictorsUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreatePredictorsUIHTMLSource());
 }

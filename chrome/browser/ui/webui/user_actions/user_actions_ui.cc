@@ -16,14 +16,14 @@
 UserActionsUI::UserActionsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://user-actions/ source.
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUIUserActionsHost);
-  html_source->set_default_resource(IDR_USER_ACTIONS_HTML);
-  html_source->add_resource_path("user_actions.css", IDR_USER_ACTIONS_CSS);
-  html_source->add_resource_path("user_actions.js", IDR_USER_ACTIONS_JS);
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIUserActionsHost);
+  html_source->SetDefaultResource(IDR_USER_ACTIONS_HTML);
+  html_source->AddResourcePath("user_actions.css", IDR_USER_ACTIONS_CSS);
+  html_source->AddResourcePath("user_actions.js", IDR_USER_ACTIONS_JS);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 
   // AddMessageHandler takes ownership of UserActionsUIHandler.
   web_ui->AddMessageHandler(new UserActionsUIHandler());

@@ -60,6 +60,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -248,97 +249,97 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
 }
 
 void ExtensionSettingsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
-  localized_strings->SetString("extensionSettings",
+    content::WebUIDataSource* source) {
+  source->AddString("extensionSettings",
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE));
 
-  localized_strings->SetString("extensionSettingsDeveloperMode",
+  source->AddString("extensionSettingsDeveloperMode",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEVELOPER_MODE_LINK));
-  localized_strings->SetString("extensionSettingsNoExtensions",
+  source->AddString("extensionSettingsNoExtensions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_NONE_INSTALLED));
-  localized_strings->SetString("extensionSettingsSuggestGallery",
+  source->AddString("extensionSettingsSuggestGallery",
       l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
               GURL(extension_urls::GetExtensionGalleryURL())).spec())));
-  localized_strings->SetString("extensionSettingsGetMoreExtensions",
+  source->AddString("extensionSettingsGetMoreExtensions",
       l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS));
-  localized_strings->SetString("extensionSettingsGetMoreExtensionsUrl",
+  source->AddString("extensionSettingsGetMoreExtensionsUrl",
       ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
           GURL(extension_urls::GetExtensionGalleryURL())).spec()));
-  localized_strings->SetString("extensionSettingsExtensionId",
+  source->AddString("extensionSettingsExtensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
-  localized_strings->SetString("extensionSettingsExtensionPath",
+  source->AddString("extensionSettingsExtensionPath",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PATH));
-  localized_strings->SetString("extensionSettingsInspectViews",
+  source->AddString("extensionSettingsInspectViews",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSPECT_VIEWS));
-  localized_strings->SetString("extensionSettingsInstallWarnings",
+  source->AddString("extensionSettingsInstallWarnings",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_WARNINGS));
-  localized_strings->SetString("viewIncognito",
+  source->AddString("viewIncognito",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
-  localized_strings->SetString("viewInactive",
+  source->AddString("viewInactive",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INACTIVE));
-  localized_strings->SetString("extensionSettingsEnable",
+  source->AddString("extensionSettingsEnable",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE));
-  localized_strings->SetString("extensionSettingsEnabled",
+  source->AddString("extensionSettingsEnabled",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLED));
-  localized_strings->SetString("extensionSettingsRemove",
+  source->AddString("extensionSettingsRemove",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_REMOVE));
-  localized_strings->SetString("extensionSettingsEnableIncognito",
+  source->AddString("extensionSettingsEnableIncognito",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE_INCOGNITO));
-  localized_strings->SetString("extensionSettingsAllowFileAccess",
+  source->AddString("extensionSettingsAllowFileAccess",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
-  localized_strings->SetString("extensionSettingsIncognitoWarning",
+  source->AddString("extensionSettingsIncognitoWarning",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
-  localized_strings->SetString("extensionSettingsReloadTerminated",
+  source->AddString("extensionSettingsReloadTerminated",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_TERMINATED));
-  localized_strings->SetString("extensionSettingsLaunch",
+  source->AddString("extensionSettingsLaunch",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LAUNCH));
-  localized_strings->SetString("extensionSettingsRestart",
+  source->AddString("extensionSettingsRestart",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RESTART));
-  localized_strings->SetString("extensionSettingsReloadUnpacked",
+  source->AddString("extensionSettingsReloadUnpacked",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
-  localized_strings->SetString("extensionSettingsOptions",
+  source->AddString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
-  localized_strings->SetString("extensionSettingsActivity",
+  source->AddString("extensionSettingsActivity",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ACTIVITY_LINK));
-  localized_strings->SetString("extensionSettingsVisitWebsite",
+  source->AddString("extensionSettingsVisitWebsite",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSITE));
-  localized_strings->SetString("extensionSettingsVisitWebStore",
+  source->AddString("extensionSettingsVisitWebStore",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSTORE));
-  localized_strings->SetString("extensionSettingsPolicyControlled",
+  source->AddString("extensionSettingsPolicyControlled",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
-  localized_strings->SetString("extensionSettingsManagedMode",
+  source->AddString("extensionSettingsManagedMode",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_MODE));
-  localized_strings->SetString("extensionSettingsSideloadWipeout",
+  source->AddString("extensionSettingsSideloadWipeout",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_BANNER));
-  localized_strings->SetString("sideloadWipeoutUrl",
+  source->AddString("sideloadWipeoutUrl",
       chrome::kSideloadWipeoutHelpURL);
-  localized_strings->SetString("sideloadWipoutLearnMore",
+  source->AddString("sideloadWipoutLearnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  localized_strings->SetString("extensionSettingsShowButton",
+  source->AddString("extensionSettingsShowButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
-  localized_strings->SetString("extensionSettingsLoadUnpackedButton",
+  source->AddString("extensionSettingsLoadUnpackedButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
-  localized_strings->SetString("extensionSettingsPackButton",
+  source->AddString("extensionSettingsPackButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PACK_BUTTON));
-  localized_strings->SetString("extensionSettingsCommandsLink",
+  source->AddString("extensionSettingsCommandsLink",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_COMMANDS_CONFIGURE));
-  localized_strings->SetString("extensionSettingsUpdateButton",
+  source->AddString("extensionSettingsUpdateButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UPDATE_BUTTON));
-  localized_strings->SetString("extensionSettingsCrashMessage",
+  source->AddString("extensionSettingsCrashMessage",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_CRASHED_EXTENSION));
-  localized_strings->SetString("extensionSettingsInDevelopment",
+  source->AddString("extensionSettingsInDevelopment",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_IN_DEVELOPMENT));
-  localized_strings->SetString("extensionSettingsWarningsTitle",
+  source->AddString("extensionSettingsWarningsTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WARNINGS_TITLE));
-  localized_strings->SetString("extensionSettingsShowDetails",
+  source->AddString("extensionSettingsShowDetails",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
-  localized_strings->SetString("extensionSettingsHideDetails",
+  source->AddString("extensionSettingsHideDetails",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
 
   // TODO(estade): comb through the above strings to find ones no longer used in
   // uber extensions.
-  localized_strings->SetString("extensionUninstall",
+  source->AddString("extensionUninstall",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
 }
 

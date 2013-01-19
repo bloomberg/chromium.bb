@@ -24,22 +24,23 @@
 
 ExtensionInfoUI::ExtensionInfoUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui),
-      source_(new ChromeWebUIDataSource(chrome::kChromeUIExtensionInfoHost)) {
+      source_(ChromeWebUIDataSource::Create(
+          chrome::kChromeUIExtensionInfoHost)) {
   AddExtensionDataToSource(url.path().substr(1));
 
   source_->AddLocalizedString("isRunning",
                               IDS_EXTENSION_SCRIPT_POPUP_IS_RUNNING);
   source_->AddLocalizedString("lastUpdated",
                               IDS_EXTENSION_SCRIPT_POPUP_LAST_UPDATED);
-  source_->set_use_json_js_format_v2();
-  source_->set_json_path("strings.js");
+  source_->SetUseJsonJSFormatV2();
+  source_->SetJsonPath("strings.js");
 
-  source_->add_resource_path("extension_info.css", IDR_EXTENSION_INFO_CSS);
-  source_->add_resource_path("extension_info.js", IDR_EXTENSION_INFO_JS);
-  source_->set_default_resource(IDR_EXTENSION_INFO_HTML);
+  source_->AddResourcePath("extension_info.css", IDR_EXTENSION_INFO_CSS);
+  source_->AddResourcePath("extension_info.js", IDR_EXTENSION_INFO_JS);
+  source_->SetDefaultResource(IDR_EXTENSION_INFO_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, source_);
+  ChromeURLDataManager::AddWebUIDataSource(profile, source_);
 }
 
 ExtensionInfoUI::~ExtensionInfoUI() {
@@ -60,7 +61,9 @@ void ExtensionInfoUI::AddExtensionDataToSource(
   if (!extension)
     return;
 
-  extension->GetBasicInfo(true, source_->localized_strings());
+  DictionaryValue extension_data;
+  extension->GetBasicInfo(true, &extension_data);
+  source_->AddLocalizedStrings(extension_data);
 
   // Set the icon URL.
   GURL icon =

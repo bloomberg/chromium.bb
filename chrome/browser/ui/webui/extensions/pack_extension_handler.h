@@ -13,6 +13,10 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+namespace content {
+class WebUIDataSource;
+}
+
 // Clear browser data handler page UI handler.
 class PackExtensionHandler : public content::WebUIMessageHandler,
                              public ui::SelectFileDialog::Listener,
@@ -21,7 +25,7 @@ class PackExtensionHandler : public content::WebUIMessageHandler,
   PackExtensionHandler();
   virtual ~PackExtensionHandler();
 
-  void GetLocalizedValues(DictionaryValue* localized_strings);
+  void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;

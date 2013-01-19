@@ -148,9 +148,9 @@ bool HandleRequestCallback(
   return true;
 }
 
-ChromeWebUIDataSource* CreatePrintPreviewUISource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIPrintHost);
+content::WebUIDataSource* CreatePrintPreviewUISource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIPrintHost);
 #if defined(OS_CHROMEOS)
   source->AddLocalizedString("title",
                              IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE);
@@ -314,24 +314,23 @@ ChromeWebUIDataSource* CreatePrintPreviewUISource() {
       "noDestsPromoNotNowButtonLabel",
       IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
-  source->add_resource_path("images/printer.png",
-                            IDR_PRINT_PREVIEW_IMAGES_PRINTER);
-  source->add_resource_path("images/printer_shared.png",
-                            IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED);
-  source->add_resource_path("images/third_party.png",
-                            IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
-  source->add_resource_path("images/third_party_fedex.png",
-                            IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY_FEDEX);
-  source->add_resource_path("images/google_doc.png",
-                            IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
-  source->add_resource_path("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);
-  source->add_resource_path("images/mobile.png",
-                            IDR_PRINT_PREVIEW_IMAGES_MOBILE);
-  source->add_resource_path("images/mobile_shared.png",
-                            IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
-  source->set_default_resource(IDR_PRINT_PREVIEW_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);
+  source->AddResourcePath("images/printer.png",
+                          IDR_PRINT_PREVIEW_IMAGES_PRINTER);
+  source->AddResourcePath("images/printer_shared.png",
+                          IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED);
+  source->AddResourcePath("images/third_party.png",
+                          IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
+  source->AddResourcePath("images/third_party_fedex.png",
+                          IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY_FEDEX);
+  source->AddResourcePath("images/google_doc.png",
+                          IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
+  source->AddResourcePath("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);
+  source->AddResourcePath("images/mobile.png", IDR_PRINT_PREVIEW_IMAGES_MOBILE);
+  source->AddResourcePath("images/mobile_shared.png",
+                          IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   source->SetRequestFilter(base::Bind(&HandleRequestCallback));
   return source;
 }
@@ -347,8 +346,8 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreatePrintPreviewUISource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreatePrintPreviewUISource());
 
   // Set up the chrome://theme/ source.
   ChromeURLDataManager::AddDataSource(profile, new ThemeSource(profile));

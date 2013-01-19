@@ -55,13 +55,13 @@ struct GpuFeatureInfo {
   bool fallback_to_software;
 };
 
-ChromeWebUIDataSource* CreateGpuHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIGpuInternalsHost);
+content::WebUIDataSource* CreateGpuHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIGpuInternalsHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("gpu_internals.js", IDR_GPU_INTERNALS_JS);
-  source->set_default_resource(IDR_GPU_INTERNALS_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
+  source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
   return source;
 }
 
@@ -684,5 +684,5 @@ GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://gpu-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateGpuHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateGpuHTMLSource());
 }

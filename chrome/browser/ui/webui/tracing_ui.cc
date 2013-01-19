@@ -50,13 +50,13 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-ChromeWebUIDataSource* CreateTracingHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUITracingHost);
+content::WebUIDataSource* CreateTracingHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUITracingHost);
 
-  source->set_json_path("strings.js");
-  source->set_default_resource(IDR_TRACING_HTML);
-  source->add_resource_path("tracing.js", IDR_TRACING_JS);
+  source->SetJsonPath("strings.js");
+  source->SetDefaultResource(IDR_TRACING_HTML);
+  source->AddResourcePath("tracing.js", IDR_TRACING_JS);
   source->AddLocalizedString("tracingTitle", IDS_TRACING_TITLE);
   return source;
 }
@@ -510,5 +510,5 @@ TracingUI::TracingUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://tracing/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateTracingHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateTracingHTMLSource());
 }

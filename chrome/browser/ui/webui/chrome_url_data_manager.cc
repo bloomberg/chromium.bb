@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -104,9 +105,10 @@ void ChromeURLDataManager::AddDataSource(
 }
 
 // static
-void ChromeURLDataManager::AddDataSourceImpl(Profile* profile,
-                                             URLDataSourceImpl* source) {
-  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(source);
+void ChromeURLDataManager::AddWebUIDataSource(Profile* profile,
+                                             content::WebUIDataSource* source) {
+  ChromeWebUIDataSource* impl = static_cast<ChromeWebUIDataSource*>(source);
+  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(impl);
 }
 
 // static

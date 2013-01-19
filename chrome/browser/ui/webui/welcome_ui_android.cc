@@ -15,9 +15,9 @@
 WelcomeUI::WelcomeUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://welcome source.
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUIWelcomeHost);
-  html_source->set_use_json_js_format_v2();
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIWelcomeHost);
+  html_source->SetUseJsonJSFormatV2();
 
   // Localized strings.
   html_source->AddLocalizedString("title",
@@ -27,15 +27,15 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("settings", IDS_FIRSTRUN_SETTINGS_LINK);
 
   // Add required resources.
-  html_source->set_json_path("strings.js");
-  html_source->add_resource_path("about_welcome_android.css",
+  html_source->SetJsonPath("strings.js");
+  html_source->AddResourcePath("about_welcome_android.css",
       IDR_ABOUT_WELCOME_CSS);
-  html_source->add_resource_path("about_welcome_android.js",
+  html_source->AddResourcePath("about_welcome_android.js",
       IDR_ABOUT_WELCOME_JS);
-  html_source->set_default_resource(IDR_ABOUT_WELCOME_HTML);
+  html_source->SetDefaultResource(IDR_ABOUT_WELCOME_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 }
 
 WelcomeUI::~WelcomeUI() {

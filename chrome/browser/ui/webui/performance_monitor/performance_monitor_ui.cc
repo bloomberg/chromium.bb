@@ -18,16 +18,16 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreateWebUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIPerformanceMonitorHost);
+content::WebUIDataSource* CreateWebUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIPerformanceMonitorHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("chart.css", IDR_PERFORMANCE_MONITOR_CHART_CSS);
-  source->add_resource_path("chart.js", IDR_PERFORMANCE_MONITOR_CHART_JS);
-  source->add_resource_path("jquery.js", IDR_PERFORMANCE_MONITOR_JQUERY_JS);
-  source->add_resource_path("flot.js", IDR_PERFORMANCE_MONITOR_JQUERY_FLOT_JS);
-  source->set_default_resource(IDR_PERFORMANCE_MONITOR_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("chart.css", IDR_PERFORMANCE_MONITOR_CHART_CSS);
+  source->AddResourcePath("chart.js", IDR_PERFORMANCE_MONITOR_CHART_JS);
+  source->AddResourcePath("jquery.js", IDR_PERFORMANCE_MONITOR_JQUERY_JS);
+  source->AddResourcePath("flot.js", IDR_PERFORMANCE_MONITOR_JQUERY_FLOT_JS);
+  source->SetDefaultResource(IDR_PERFORMANCE_MONITOR_HTML);
 
   source->AddString("enableFlagsURL", ASCIIToUTF16(chrome::kChromeUIFlagsURL));
 
@@ -75,11 +75,11 @@ PerformanceMonitorUI::PerformanceMonitorUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new PerformanceMonitorHandler());
 
-  ChromeWebUIDataSource* html_source = CreateWebUIHTMLSource();
-  html_source->set_use_json_js_format_v2();
+  content::WebUIDataSource* html_source = CreateWebUIHTMLSource();
+  html_source->SetUseJsonJSFormatV2();
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 }
 
 }  // namespace performance_monitor

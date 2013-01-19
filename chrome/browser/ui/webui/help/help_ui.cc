@@ -16,14 +16,14 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreateAboutPageHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIHelpFrameHost);
+content::WebUIDataSource* CreateAboutPageHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIHelpFrameHost);
 
-  source->set_json_path("strings.js");
-  source->set_use_json_js_format_v2();
-  source->add_resource_path("help.js", IDR_HELP_JS);
-  source->set_default_resource(IDR_HELP_HTML);
+  source->SetJsonPath("strings.js");
+  source->SetUseJsonJSFormatV2();
+  source->AddResourcePath("help.js", IDR_HELP_JS);
+  source->SetDefaultResource(IDR_HELP_HTML);
   return source;
 }
 
@@ -32,12 +32,12 @@ ChromeWebUIDataSource* CreateAboutPageHTMLSource() {
 HelpUI::HelpUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeWebUIDataSource* source = CreateAboutPageHTMLSource();
-  ChromeURLDataManager::AddDataSourceImpl(profile, source);
+  content::WebUIDataSource* source = CreateAboutPageHTMLSource();
   ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   HelpHandler* handler = new HelpHandler();
-  handler->GetLocalizedValues(source->localized_strings());
+  handler->GetLocalizedValues(source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, source);
   web_ui->AddMessageHandler(handler);
 }
 

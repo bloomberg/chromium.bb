@@ -169,6 +169,7 @@
     'public/browser/web_ui_controller.cc',
     'public/browser/web_ui_controller.h',
     'public/browser/web_ui_controller_factory.h',
+    'public/browser/web_ui_data_source.h',
     'public/browser/url_data_source.cc',
     'public/browser/url_data_source.h',
     'public/browser/web_ui_message_handler.h',

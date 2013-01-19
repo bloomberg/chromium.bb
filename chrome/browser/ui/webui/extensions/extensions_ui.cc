@@ -19,17 +19,17 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreateExtensionsHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIExtensionsFrameHost);
+content::WebUIDataSource* CreateExtensionsHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIExtensionsFrameHost);
 
-  source->set_use_json_js_format_v2();
-  source->set_json_path("strings.js");
-  source->add_resource_path("extensions.js", IDR_EXTENSIONS_JS);
-  source->add_resource_path("extension_command_list.js",
-                            IDR_EXTENSION_COMMAND_LIST_JS);
-  source->add_resource_path("extension_list.js", IDR_EXTENSION_LIST_JS);
-  source->set_default_resource(IDR_EXTENSIONS_HTML);
+  source->SetUseJsonJSFormatV2();
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("extensions.js", IDR_EXTENSIONS_JS);
+  source->AddResourcePath("extension_command_list.js",
+                          IDR_EXTENSION_COMMAND_LIST_JS);
+  source->AddResourcePath("extension_list.js", IDR_EXTENSION_LIST_JS);
+  source->SetDefaultResource(IDR_EXTENSIONS_HTML);
   return source;
 }
 
@@ -37,29 +37,29 @@ ChromeWebUIDataSource* CreateExtensionsHTMLSource() {
 
 ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeWebUIDataSource* source = CreateExtensionsHTMLSource();
-  ChromeURLDataManager::AddDataSourceImpl(profile, source);
+  content::WebUIDataSource* source = CreateExtensionsHTMLSource();
   ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
-  handler->GetLocalizedValues(source->localized_strings());
+  handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(handler);
 
   PackExtensionHandler* pack_handler = new PackExtensionHandler();
-  pack_handler->GetLocalizedValues(source->localized_strings());
+  pack_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(pack_handler);
 
   extensions::CommandHandler* commands_handler =
       new extensions::CommandHandler(profile);
-  commands_handler->GetLocalizedValues(source->localized_strings());
+  commands_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(commands_handler);
 
   InstallExtensionHandler* install_extension_handler =
       new InstallExtensionHandler();
-  install_extension_handler->GetLocalizedValues(source->localized_strings());
+  install_extension_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(install_extension_handler);
 
   web_ui->AddMessageHandler(new GenericHandler());
+  ChromeURLDataManager::AddWebUIDataSource(profile, source);
 }
 
 ExtensionsUI::~ExtensionsUI() {

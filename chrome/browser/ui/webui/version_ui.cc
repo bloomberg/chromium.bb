@@ -37,9 +37,9 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUIVersionHost);
+content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIVersionHost);
 
   // Localized and data strings.
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
@@ -116,11 +116,11 @@ ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddLocalizedString("variations_name",
                                   IDS_ABOUT_VERSION_VARIATIONS);
 
-  html_source->set_use_json_js_format_v2();
-  html_source->set_json_path("strings.js");
-  html_source->add_resource_path("version.js", IDR_ABOUT_VERSION_JS);
-  html_source->add_resource_path("about_version.css", IDR_ABOUT_VERSION_CSS);
-  html_source->set_default_resource(IDR_ABOUT_VERSION_HTML);
+  html_source->SetUseJsonJSFormatV2();
+  html_source->SetJsonPath("strings.js");
+  html_source->AddResourcePath("version.js", IDR_ABOUT_VERSION_JS);
+  html_source->AddResourcePath("about_version.css", IDR_ABOUT_VERSION_CSS);
+  html_source->SetDefaultResource(IDR_ABOUT_VERSION_HTML);
   return html_source;
 }
 
@@ -142,8 +142,8 @@ VersionUI::VersionUI(content::WebUI* web_ui)
   ChromeURLDataManager::AddDataSource(profile, theme);
 #endif
 
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreateVersionUIDataSource(profile));
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateVersionUIDataSource(profile));
 }
 
 VersionUI::~VersionUI() {

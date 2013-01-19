@@ -57,7 +57,7 @@ class ChromeWebUIDataSourceTest : public testing::Test {
 };
 
 TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {
-  source()->set_json_path("strings.js");
+  source()->SetJsonPath("strings.js");
   source()->StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
       source()->result_data_->front()), source()->result_data_->size());
@@ -66,7 +66,7 @@ TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {
 }
 
 TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
-  source()->set_json_path("strings.js");
+  source()->SetJsonPath("strings.js");
   source()->AddString("planet", ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", IDS_OK);
   source()->StartDataRequest("strings.js");
@@ -77,7 +77,7 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
 }
 
 TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
-  source()->set_default_resource(IDR_WEBUI_I18N_PROCESS_JS);
+  source()->SetDefaultResource(IDR_WEBUI_I18N_PROCESS_JS);
   source()->StartDataRequest("foobar" );
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),
@@ -91,8 +91,8 @@ TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
 }
 
 TEST_F(ChromeWebUIDataSourceTest, NamedResource) {
-  source()->set_default_resource(IDR_WEBUI_I18N_PROCESS_JS);
-  source()->add_resource_path("foobar", IDR_WEBUI_I18N_TEMPLATE_JS);
+  source()->SetDefaultResource(IDR_WEBUI_I18N_PROCESS_JS);
+  source()->AddResourcePath("foobar", IDR_WEBUI_I18N_TEMPLATE_JS);
   source()->StartDataRequest("foobar");
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),

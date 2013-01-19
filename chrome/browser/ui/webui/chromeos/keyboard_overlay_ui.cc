@@ -235,9 +235,9 @@ std::string ModifierKeyToLabel(ModifierKey modifier) {
   return "";
 }
 
-ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIKeyboardOverlayHost);
+content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIKeyboardOverlayHost);
 
   for (size_t i = 0; i < arraysize(kI18nContentToMessage); ++i) {
     source->AddLocalizedString(kI18nContentToMessage[i].i18n_content,
@@ -250,10 +250,10 @@ ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
           switches::kHasChromeOSDiamondKey) ? "true" : "false";
   source->AddString("keyboardOverlayHasChromeOSDiamondKey",
                     has_diamond_key_value);
-  source->set_json_path("strings.js");
-  source->set_use_json_js_format_v2();
-  source->add_resource_path("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);
-  source->set_default_resource(IDR_KEYBOARD_OVERLAY_HTML);
+  source->SetJsonPath("strings.js");
+  source->SetUseJsonJSFormatV2();
+  source->AddResourcePath("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);
+  source->SetDefaultResource(IDR_KEYBOARD_OVERLAY_HTML);
   return source;
 }
 
@@ -366,6 +366,6 @@ KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://keyboardoverlay/ source.
-  ChromeURLDataManager::AddDataSourceImpl(
+  ChromeURLDataManager::AddWebUIDataSource(
       profile, CreateKeyboardOverlayUIHTMLSource());
 }

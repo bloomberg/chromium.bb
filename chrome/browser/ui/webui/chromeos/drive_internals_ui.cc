@@ -683,14 +683,14 @@ DriveInternalsUI::DriveInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new DriveInternalsWebUIHandler());
 
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIDriveInternalsHost);
-  source->add_resource_path("drive_internals.css", IDR_DRIVE_INTERNALS_CSS);
-  source->add_resource_path("drive_internals.js", IDR_DRIVE_INTERNALS_JS);
-  source->set_default_resource(IDR_DRIVE_INTERNALS_HTML);
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIDriveInternalsHost);
+  source->AddResourcePath("drive_internals.css", IDR_DRIVE_INTERNALS_CSS);
+  source->AddResourcePath("drive_internals.js", IDR_DRIVE_INTERNALS_JS);
+  source->SetDefaultResource(IDR_DRIVE_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, source);
 }
 
 }  // namespace chromeos

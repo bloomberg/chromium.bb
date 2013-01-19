@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_client.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -115,10 +116,7 @@ HelpHandler::HelpHandler()
 HelpHandler::~HelpHandler() {
 }
 
-void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
-  DCHECK(localized_strings);
-  DCHECK(localized_strings->empty());
-
+void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
   struct L10nResources {
     const char* name;
     int ids;
@@ -164,11 +162,11 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
-    localized_strings->SetString(resources[i].name,
-                                 l10n_util::GetStringUTF16(resources[i].ids));
+    source->AddString(resources[i].name,
+                      l10n_util::GetStringUTF16(resources[i].ids));
   }
 
-  localized_strings->SetString(
+  source->AddString(
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
                                  BuildBrowserVersionString()));
@@ -177,31 +175,29 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       IDS_ABOUT_VERSION_LICENSE,
       ASCIIToUTF16(chrome::kChromiumProjectURL),
       ASCIIToUTF16(chrome::kChromeUICreditsURL));
-  localized_strings->SetString("productLicense", license);
+  source->AddString("productLicense", license);
 
 #if defined(OS_CHROMEOS)
   string16 os_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_VERSION_LICENSE,
       ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
-  localized_strings->SetString("productOsLicense", os_license);
+  source->AddString("productOsLicense", os_license);
 #endif
 
   string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, UTF8ToUTF16(chrome::kChromeUITermsURL));
-  localized_strings->SetString("productTOS", tos);
+  source->AddString("productTOS", tos);
 
-  localized_strings->SetString("webkitVersion",
-                               webkit_glue::GetWebKitVersion());
+  source->AddString("webkitVersion", webkit_glue::GetWebKitVersion());
 
-  localized_strings->SetString("jsEngine", "V8");
-  localized_strings->SetString("jsEngineVersion", v8::V8::GetVersion());
+  source->AddString("jsEngine", "V8");
+  source->AddString("jsEngineVersion", v8::V8::GetVersion());
 
-  localized_strings->SetString("userAgentInfo",
-                               content::GetUserAgent(GURL()));
+  source->AddString("userAgentInfo", content::GetUserAgent(GURL()));
 
   CommandLine::StringType command_line =
       CommandLine::ForCurrentProcess()->GetCommandLineString();
-  localized_strings->SetString("commandLineInfo", command_line);
+  source->AddString("commandLineInfo", command_line);
 }
 
 void HelpHandler::RegisterMessages() {

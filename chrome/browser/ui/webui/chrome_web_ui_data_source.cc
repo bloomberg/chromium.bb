@@ -43,6 +43,11 @@ class ChromeWebUIDataSource::InternalDataSource
   ChromeWebUIDataSource* parent_;
 };
 
+content::WebUIDataSource* ChromeWebUIDataSource::Create(
+    const std::string& source_name) {
+  return new ChromeWebUIDataSource(source_name);
+}
+
 ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
     : URLDataSourceImpl(
           source_name,
@@ -75,8 +80,29 @@ void ChromeWebUIDataSource::AddLocalizedStrings(
   localized_strings_.MergeDictionary(&localized_strings);
 }
 
+void ChromeWebUIDataSource::AddBoolean(const std::string& name, bool value) {
+  localized_strings_.SetBoolean(name, value);
+}
+
+void ChromeWebUIDataSource::SetJsonPath(const std::string& path) {
+  json_path_ = path;
+}
+
+void ChromeWebUIDataSource::SetUseJsonJSFormatV2() {
+  json_js_format_v2_ = true;
+}
+
+void ChromeWebUIDataSource::AddResourcePath(const std::string &path,
+                                            int resource_id) {
+  path_to_idr_map_[path] = resource_id;
+}
+
+void ChromeWebUIDataSource::SetDefaultResource(int resource_id) {
+  default_resource_ = resource_id;
+}
+
 void ChromeWebUIDataSource::SetRequestFilter(
-    const HandleRequestCallback& callback) {
+    const content::WebUIDataSource::HandleRequestCallback& callback) {
   filter_callback_ = callback;
 }
 

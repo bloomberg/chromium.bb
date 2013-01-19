@@ -46,17 +46,17 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-ChromeWebUIDataSource* CreateNaClUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUINaClHost);
+content::WebUIDataSource* CreateNaClUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUINaClHost);
 
-  source->set_use_json_js_format_v2();
+  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("loadingMessage", IDS_NACL_LOADING_MESSAGE);
   source->AddLocalizedString("naclLongTitle", IDS_NACL_TITLE_MESSAGE);
-  source->set_json_path("strings.js");
-  source->add_resource_path("about_nacl.css", IDR_ABOUT_NACL_CSS);
-  source->add_resource_path("about_nacl.js", IDR_ABOUT_NACL_JS);
-  source->set_default_resource(IDR_ABOUT_NACL_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("about_nacl.css", IDR_ABOUT_NACL_CSS);
+  source->AddResourcePath("about_nacl.js", IDR_ABOUT_NACL_JS);
+  source->SetDefaultResource(IDR_ABOUT_NACL_HTML);
   return source;
 }
 
@@ -277,5 +277,5 @@ NaClUI::NaClUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:nacl source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateNaClUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateNaClUIHTMLSource());
 }

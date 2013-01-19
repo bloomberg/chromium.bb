@@ -135,14 +135,14 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new DiagnosticsWebUIHandler());
 
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIDiagnosticsHost);
-  source->set_json_path("strings.js");
-  source->add_resource_path("main.css", IDR_DIAGNOSTICS_MAIN_CSS);
-  source->add_resource_path("main.js", IDR_DIAGNOSTICS_MAIN_JS);
-  source->add_resource_path("fail.png", IDR_DIAGNOSTICS_IMAGES_FAIL);
-  source->add_resource_path("tick.png", IDR_DIAGNOSTICS_IMAGES_TICK);
-  source->add_resource_path("warning.png", IDR_DIAGNOSTICS_IMAGES_WARNING);
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIDiagnosticsHost);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("main.css", IDR_DIAGNOSTICS_MAIN_CSS);
+  source->AddResourcePath("main.js", IDR_DIAGNOSTICS_MAIN_JS);
+  source->AddResourcePath("fail.png", IDR_DIAGNOSTICS_IMAGES_FAIL);
+  source->AddResourcePath("tick.png", IDR_DIAGNOSTICS_IMAGES_TICK);
+  source->AddResourcePath("warning.png", IDR_DIAGNOSTICS_IMAGES_WARNING);
   source->AddLocalizedString("diagnostics", IDS_DIAGNOSTICS_DIAGNOSTICS_TITLE);
   source->AddLocalizedString("refresh", IDS_DIAGNOSTICS_REFRESH);
   source->AddLocalizedString("choose-adapter", IDS_DIAGNOSTICS_CHOOSE_ADAPTER);
@@ -175,10 +175,10 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
                              IDS_DIAGNOSTICS_FIX_NO_IP_3G);
   source->AddLocalizedString("fix-gateway-connection",
                              IDS_DIAGNOSTICS_FIX_GATEWAY_CONNECTION);
-  source->set_default_resource(IDR_DIAGNOSTICS_MAIN_HTML);
+  source->SetDefaultResource(IDR_DIAGNOSTICS_MAIN_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, source);
 }
 
 }  // namespace chromeos

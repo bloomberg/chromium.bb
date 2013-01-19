@@ -19,13 +19,13 @@ using content::WebContents;
 
 namespace {
 
-ChromeWebUIDataSource* CreateMediaInternalsHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIMediaInternalsHost);
+content::WebUIDataSource* CreateMediaInternalsHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIMediaInternalsHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("media_internals.js", IDR_MEDIA_INTERNALS_JS);
-  source->set_default_resource(IDR_MEDIA_INTERNALS_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_JS);
+  source->SetDefaultResource(IDR_MEDIA_INTERNALS_HTML);
   return source;
 }
 
@@ -42,6 +42,6 @@ MediaInternalsUI::MediaInternalsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new MediaInternalsMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(
+  ChromeURLDataManager::AddWebUIDataSource(
       profile, CreateMediaInternalsHTMLSource());
 }

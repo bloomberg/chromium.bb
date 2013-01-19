@@ -213,12 +213,12 @@ bool HandleRequestCallback(
   return true;
 }
 
-ChromeWebUIDataSource* CreateInspectUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIInspectHost);
-  source->add_resource_path("inspect.css", IDR_INSPECT_CSS);
-  source->add_resource_path("inspect.js", IDR_INSPECT_JS);
-  source->set_default_resource(IDR_INSPECT_HTML);
+content::WebUIDataSource* CreateInspectUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIInspectHost);
+  source->AddResourcePath("inspect.css", IDR_INSPECT_CSS);
+  source->AddResourcePath("inspect.js", IDR_INSPECT_JS);
+  source->SetDefaultResource(IDR_INSPECT_HTML);
   source->SetRequestFilter(base::Bind(&HandleRequestCallback));
   return source;
 }
@@ -362,7 +362,8 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new InspectMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateInspectUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_CONNECTED,

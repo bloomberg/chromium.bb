@@ -98,13 +98,13 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
 
 #else  // USE_SOURCE_FILES_DIRECTLY
 
-ChromeWebUIDataSource* CreateProfilerHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIProfilerHost);
+content::WebUIDataSource* CreateProfilerHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIProfilerHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("profiler.js", IDR_PROFILER_JS);
-  source->set_default_resource(IDR_PROFILER_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("profiler.js", IDR_PROFILER_JS);
+  source->SetDefaultResource(IDR_PROFILER_HTML);
   return source;
 }
 
@@ -159,7 +159,7 @@ ProfilerUI::ProfilerUI(content::WebUI* web_ui)
 #if defined(USE_SOURCE_FILES_DIRECTLY)
   ChromeURLDataManager::AddDataSource(profile, new ProfilerWebUIDataSource);
 #else
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateProfilerHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateProfilerHTMLSource());
 #endif
 }
 

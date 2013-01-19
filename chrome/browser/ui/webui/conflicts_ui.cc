@@ -41,9 +41,9 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-ChromeWebUIDataSource* CreateConflictsUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIConflictsHost);
+content::WebUIDataSource* CreateConflictsUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIConflictsHost);
 
   source->AddLocalizedString("loadingMessage", IDS_CONFLICTS_LOADING_MESSAGE);
   source->AddLocalizedString("modulesLongTitle",
@@ -63,9 +63,9 @@ ChromeWebUIDataSource* CreateConflictsUIHTMLSource() {
   source->AddLocalizedString("headerLocation", IDS_CONFLICTS_HEADER_LOCATION);
   source->AddLocalizedString("headerVersion", IDS_CONFLICTS_HEADER_VERSION);
   source->AddLocalizedString("headerHelpTip", IDS_CONFLICTS_HEADER_HELP_TIP);
-  source->set_json_path("strings.js");
-  source->add_resource_path("conflicts.js", IDR_ABOUT_CONFLICTS_JS);
-  source->set_default_resource(IDR_ABOUT_CONFLICTS_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("conflicts.js", IDR_ABOUT_CONFLICTS_JS);
+  source->SetDefaultResource(IDR_ABOUT_CONFLICTS_HTML);
   return source;
 }
 
@@ -167,8 +167,8 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:conflicts source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreateConflictsUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateConflictsUIHTMLSource());
 }
 
 // static

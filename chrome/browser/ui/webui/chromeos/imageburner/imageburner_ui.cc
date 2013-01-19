@@ -39,9 +39,9 @@ const char kPropertyDeviceType[] = "type";
 const char kMoreInfoLink[] =
     "http://www.chromium.org/chromium-os/chromiumos-design-docs/recovery-mode";
 
-ChromeWebUIDataSource* CreateImageburnerUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIImageBurnerHost);
+content::WebUIDataSource* CreateImageburnerUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIImageBurnerHost);
 
   source->AddLocalizedString("headerTitle", IDS_IMAGEBURN_HEADER_TITLE);
   source->AddLocalizedString("headerDescription",
@@ -80,9 +80,9 @@ ChromeWebUIDataSource* CreateImageburnerUIHTMLSource() {
   source->AddLocalizedString("retryButton", IDS_IMAGEBURN_RETRY_BUTTON);
   source->AddString("moreInfoLink", ASCIIToUTF16(kMoreInfoLink));
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("image_burner.js", IDR_IMAGEBURNER_JS);
-  source->set_default_resource(IDR_IMAGEBURNER_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("image_burner.js", IDR_IMAGEBURNER_JS);
+  source->SetDefaultResource(IDR_IMAGEBURNER_HTML);
   return source;
 }
 
@@ -329,6 +329,6 @@ ImageBurnUI::ImageBurnUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(handler);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(
+  ChromeURLDataManager::AddWebUIDataSource(
       profile, chromeos::imageburner::CreateImageburnerUIHTMLSource());
 }

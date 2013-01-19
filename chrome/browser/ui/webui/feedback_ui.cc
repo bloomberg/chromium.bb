@@ -293,10 +293,10 @@ class FeedbackHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(FeedbackHandler);
 };
 
-ChromeWebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIFeedbackHost);
-  source->set_use_json_js_format_v2();
+content::WebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIFeedbackHost);
+  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("title", IDS_FEEDBACK_TITLE);
   source->AddLocalizedString("page-title", IDS_FEEDBACK_REPORT_PAGE_TITLE);
@@ -339,9 +339,9 @@ ChromeWebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
                              IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP);
   source->AddLocalizedString("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("feedback.js", IDR_FEEDBACK_JS);
-  source->set_default_resource(
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("feedback.js", IDR_FEEDBACK_JS);
+  source->SetDefaultResource(
       successful_init ? IDR_FEEDBACK_HTML : IDR_FEEDBACK_HTML_INVALID);
 
   return source;
@@ -720,12 +720,12 @@ FeedbackUI::FeedbackUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
 
   // The handler's init will determine whether we show the error html page.
-  ChromeWebUIDataSource* html_source =
+  content::WebUIDataSource* html_source =
       CreateFeedbackUIHTMLSource(handler->Init());
 
   // Set up the chrome://feedback/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 }
 
 #if defined(OS_CHROMEOS)

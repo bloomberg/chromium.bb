@@ -218,15 +218,15 @@ Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
   return dict;
 }
 
-ChromeWebUIDataSource* CreateNetInternalsHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUINetInternalsHost);
+content::WebUIDataSource* CreateNetInternalsHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
 
-  source->set_default_resource(IDR_NET_INTERNALS_INDEX_HTML);
-  source->add_resource_path("help.html", IDR_NET_INTERNALS_HELP_HTML);
-  source->add_resource_path("help.js", IDR_NET_INTERNALS_HELP_JS);
-  source->add_resource_path("index.js", IDR_NET_INTERNALS_INDEX_JS);
-  source->set_json_path("strings.js");
+  source->SetDefaultResource(IDR_NET_INTERNALS_INDEX_HTML);
+  source->AddResourcePath("help.html", IDR_NET_INTERNALS_HELP_HTML);
+  source->AddResourcePath("help.js", IDR_NET_INTERNALS_HELP_JS);
+  source->AddResourcePath("index.js", IDR_NET_INTERNALS_INDEX_JS);
+  source->SetJsonPath("strings.js");
   return source;
 }
 
@@ -1940,6 +1940,6 @@ NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://net-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreateNetInternalsHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateNetInternalsHTMLSource());
 }

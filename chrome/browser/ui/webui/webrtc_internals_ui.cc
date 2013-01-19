@@ -15,13 +15,13 @@ using content::WebContents;
 
 namespace {
 
-ChromeWebUIDataSource* CreateWebRTCInternalsHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIWebRTCInternalsHost);
+content::WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIWebRTCInternalsHost);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("webrtc_internals.js", IDR_WEBRTC_INTERNALS_JS);
-  source->set_default_resource(IDR_WEBRTC_INTERNALS_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("webrtc_internals.js", IDR_WEBRTC_INTERNALS_JS);
+  source->SetDefaultResource(IDR_WEBRTC_INTERNALS_HTML);
   return source;
 }
 
@@ -36,6 +36,6 @@ ChromeWebUIDataSource* CreateWebRTCInternalsHTMLSource() {
 WebRTCInternalsUI::WebRTCInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreateWebRTCInternalsHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateWebRTCInternalsHTMLSource());
 }

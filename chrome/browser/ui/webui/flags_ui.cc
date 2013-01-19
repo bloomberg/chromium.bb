@@ -41,11 +41,11 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIFlagsHost);
+content::WebUIDataSource* CreateFlagsUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIFlagsHost);
 
-  source->set_use_json_js_format_v2();
+  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
   source->AddLocalizedString("flagsTableTitle", IDS_FLAGS_TABLE_TITLE);
   source->AddLocalizedString("flagsNoExperimentsAvailable",
@@ -65,8 +65,8 @@ ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
   source->AddString("ownerUserId", UTF8ToUTF16(owner));
 #endif
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("flags.js", IDR_FLAGS_JS);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("flags.js", IDR_FLAGS_JS);
 
   int idr = IDR_FLAGS_HTML;
 #if defined (OS_CHROMEOS)
@@ -74,7 +74,7 @@ ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
       base::chromeos::IsRunningOnChromeOS())
     idr = IDR_FLAGS_HTML_WARNING;
 #endif
-  source->set_default_resource(idr);
+  source->SetDefaultResource(idr);
   return source;
 }
 
@@ -163,7 +163,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:flags source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateFlagsUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateFlagsUIHTMLSource());
 }
 
 // static

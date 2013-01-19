@@ -22,8 +22,8 @@
 GestureConfigUI::GestureConfigUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://gesture-config source.
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUIGestureConfigHost);
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIGestureConfigHost);
 
   // Register callback handlers.
   web_ui->RegisterMessageCallback(
@@ -40,12 +40,12 @@ GestureConfigUI::GestureConfigUI(content::WebUI* web_ui)
                  base::Unretained(this)));
 
   // Add required resources.
-  html_source->add_resource_path("gesture_config.css", IDR_GESTURE_CONFIG_CSS);
-  html_source->add_resource_path("gesture_config.js", IDR_GESTURE_CONFIG_JS);
-  html_source->set_default_resource(IDR_GESTURE_CONFIG_HTML);
+  html_source->AddResourcePath("gesture_config.css", IDR_GESTURE_CONFIG_CSS);
+  html_source->AddResourcePath("gesture_config.js", IDR_GESTURE_CONFIG_JS);
+  html_source->SetDefaultResource(IDR_GESTURE_CONFIG_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
 }
 
 GestureConfigUI::~GestureConfigUI() {

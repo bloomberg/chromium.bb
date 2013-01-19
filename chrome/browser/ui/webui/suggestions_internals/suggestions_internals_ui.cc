@@ -16,16 +16,16 @@
 SuggestionsInternalsUI::SuggestionsInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://suggestions-internals/ source.
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUISuggestionsInternalsHost);
-  html_source->add_resource_path("suggestions_internals.css",
-                                 IDR_SUGGESTIONS_INTERNALS_CSS);
-  html_source->add_resource_path("suggestions_internals.js",
-                                 IDR_SUGGESTIONS_INTERNALS_JS);
-  html_source->set_default_resource(IDR_SUGGESTIONS_INTERNALS_HTML);
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUISuggestionsInternalsHost);
+  html_source->AddResourcePath("suggestions_internals.css",
+                               IDR_SUGGESTIONS_INTERNALS_CSS);
+  html_source->AddResourcePath("suggestions_internals.js",
+                               IDR_SUGGESTIONS_INTERNALS_JS);
+  html_source->SetDefaultResource(IDR_SUGGESTIONS_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
   ChromeURLDataManager::AddDataSource(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 

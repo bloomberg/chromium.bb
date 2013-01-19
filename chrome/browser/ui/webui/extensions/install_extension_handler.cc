@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,12 +29,11 @@ InstallExtensionHandler::~InstallExtensionHandler() {
 }
 
 void InstallExtensionHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
-  DCHECK(localized_strings);
-  localized_strings->SetString(
+    content::WebUIDataSource* source) {
+  source->AddString(
       "extensionSettingsInstallDropTarget",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_DROP_TARGET));
-  localized_strings->SetBoolean(
+  source->AddBoolean(
       "offStoreInstallEnabled",
       extensions::FeatureSwitch::easy_off_store_install()->IsEnabled());
 }

@@ -19,6 +19,10 @@
 #include "chrome/browser/chromeos/version_loader.h"
 #endif  // defined(OS_CHROMEOS)
 
+namespace content {
+class WebUIDataSource;
+}
+
 // WebUI message handler for the help page.
 class HelpHandler : public content::WebUIMessageHandler,
                     public content::NotificationObserver {
@@ -29,8 +33,8 @@ class HelpHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // Fills |localized_strings| with string values for the UI.
-  void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  // Fills |source| with string values for the UI.
+  void GetLocalizedValues(content::WebUIDataSource* source);
 
   // NotificationObserver implementation.
   virtual void Observe(int type, const content::NotificationSource& source,

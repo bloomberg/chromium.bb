@@ -76,17 +76,17 @@ bool AllowPromoAtStartupForCurrentBrand() {
   return true;
 }
 
-ChromeWebUIDataSource* CreateSyncUIHTMLSource(content::WebUI* web_ui) {
-  ChromeWebUIDataSource* html_source =
-      new ChromeWebUIDataSource(chrome::kChromeUISyncPromoHost);
+content::WebUIDataSource* CreateSyncUIHTMLSource(content::WebUI* web_ui) {
+  content::WebUIDataSource* html_source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUISyncPromoHost);
   DictionaryValue localized_strings;
   options::CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
   html_source->AddLocalizedStrings(localized_strings);
-  html_source->set_json_path(kStringsJsFile);
-  html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
-  html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
-  html_source->set_use_json_js_format_v2();
+  html_source->SetJsonPath(kStringsJsFile);
+  html_source->AddResourcePath(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
+  html_source->SetDefaultResource(IDR_SYNC_PROMO_HTML);
+  html_source->SetUseJsonJSFormatV2();
   return html_source;
 }
 
@@ -103,8 +103,8 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   ChromeURLDataManager::AddDataSource(profile, theme);
 
   // Set up the sync promo source.
-  ChromeURLDataManager::AddDataSourceImpl(profile,
-                                          CreateSyncUIHTMLSource(web_ui));
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateSyncUIHTMLSource(web_ui));
 
   sync_promo_trial::RecordUserShownPromo(web_ui);
 }

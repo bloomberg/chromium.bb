@@ -40,10 +40,10 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-ChromeWebUIDataSource* CreateCrashesUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUICrashesHost);
-  source->set_use_json_js_format_v2();
+content::WebUIDataSource* CreateCrashesUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUICrashesHost);
+  source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("crashesTitle", IDS_CRASHES_TITLE);
   source->AddLocalizedString("crashCountFormat",
@@ -56,9 +56,9 @@ ChromeWebUIDataSource* CreateCrashesUIHTMLSource() {
                              IDS_CRASHES_NO_CRASHES_MESSAGE);
   source->AddLocalizedString("disabledHeader", IDS_CRASHES_DISABLED_HEADER);
   source->AddLocalizedString("disabledMessage", IDS_CRASHES_DISABLED_MESSAGE);
-  source->set_json_path("strings.js");
-  source->add_resource_path("crashes.js", IDR_CRASHES_JS);
-  source->set_default_resource(IDR_CRASHES_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("crashes.js", IDR_CRASHES_JS);
+  source->SetDefaultResource(IDR_CRASHES_HTML);
   return source;
 }
 
@@ -165,7 +165,8 @@ CrashesUI::CrashesUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://crashes/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateCrashesUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile,
+                                           CreateCrashesUIHTMLSource());
 }
 
 // static

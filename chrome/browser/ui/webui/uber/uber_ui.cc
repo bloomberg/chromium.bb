@@ -33,15 +33,15 @@ using content::WebContents;
 
 namespace {
 
-ChromeWebUIDataSource* CreateUberHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIUberHost);
+content::WebUIDataSource* CreateUberHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIUberHost);
 
-  source->set_use_json_js_format_v2();
-  source->set_json_path("strings.js");
-  source->add_resource_path("uber.js", IDR_UBER_JS);
-  source->add_resource_path("uber_utils.js", IDR_UBER_UTILS_JS);
-  source->set_default_resource(IDR_UBER_HTML);
+  source->SetUseJsonJSFormatV2();
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("uber.js", IDR_UBER_JS);
+  source->AddResourcePath("uber_utils.js", IDR_UBER_UTILS_JS);
+  source->SetDefaultResource(IDR_UBER_HTML);
 
   // Hack alert: continue showing "Loading..." until a real title is set.
   source->AddLocalizedString("pageTitle", IDS_TAB_LOADING_TITLE);
@@ -85,14 +85,14 @@ bool HasExtensionType(Profile* profile, const char* extensionType) {
   return false;
 }
 
-ChromeWebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIUberFrameHost);
+content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIUberFrameHost);
 
-  source->set_use_json_js_format_v2();
-  source->set_json_path("strings.js");
-  source->add_resource_path("uber_frame.js", IDR_UBER_FRAME_JS);
-  source->set_default_resource(IDR_UBER_FRAME_HTML);
+  source->SetUseJsonJSFormatV2();
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("uber_frame.js", IDR_UBER_FRAME_JS);
+  source->SetDefaultResource(IDR_UBER_FRAME_HTML);
 
   // TODO(jhawkins): Attempt to get rid of IDS_SHORT_PRODUCT_OS_NAME.
 #if defined(OS_CHROMEOS)
@@ -126,7 +126,7 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
 
 UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateUberHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateUberHTMLSource());
 
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL);
@@ -184,7 +184,7 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
 UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(
+  ChromeURLDataManager::AddWebUIDataSource(
       profile, CreateUberFrameHTMLSource(profile));
 
   // Register as an observer for when extensions are loaded and unloaded.

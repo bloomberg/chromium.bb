@@ -58,16 +58,16 @@ namespace {
 
 const char kFlashPlugin[] = "Flash plugin";
 
-ChromeWebUIDataSource* CreateFlashUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIFlashHost);
+content::WebUIDataSource* CreateFlashUIHTMLSource() {
+  content::WebUIDataSource* source =
+      ChromeWebUIDataSource::Create(chrome::kChromeUIFlashHost);
 
-  source->set_use_json_js_format_v2();
+  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("loadingMessage", IDS_FLASH_LOADING_MESSAGE);
   source->AddLocalizedString("flashLongTitle", IDS_FLASH_TITLE_MESSAGE);
-  source->set_json_path("strings.js");
-  source->add_resource_path("about_flash.js", IDR_ABOUT_FLASH_JS);
-  source->set_default_resource(IDR_ABOUT_FLASH_HTML);
+  source->SetJsonPath("strings.js");
+  source->AddResourcePath("about_flash.js", IDR_ABOUT_FLASH_JS);
+  source->SetDefaultResource(IDR_ABOUT_FLASH_HTML);
   return source;
 }
 
@@ -388,7 +388,7 @@ FlashUI::FlashUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:flash source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, CreateFlashUIHTMLSource());
+  ChromeURLDataManager::AddWebUIDataSource(profile, CreateFlashUIHTMLSource());
 }
 
 // static

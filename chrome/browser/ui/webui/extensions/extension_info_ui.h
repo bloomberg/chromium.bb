@@ -8,10 +8,13 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "googleurl/src/gurl.h"
 
-class ChromeWebUIDataSource;
 
 namespace base {
 class ListValue;
+}
+
+namespace content {
+class WebUIDataSource;
 }
 
 // WebUI controller for the informative bubble shown on clicking a script badge.
@@ -28,7 +31,7 @@ class ExtensionInfoUI : public content::WebUIController {
   // Load details about the extension into source_. Called during construction.
   void AddExtensionDataToSource(const std::string& extension_id);
 
-  ChromeWebUIDataSource* source_;
+  content::WebUIDataSource* source_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoUI);
 };
