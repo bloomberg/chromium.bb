@@ -343,7 +343,10 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
   chrome::CloseTab(browser2.get());
 }
 
-// Check that V1 apps are correctly reflected in the launcher menu.
+// Check that V1 apps are correctly reflected in the launcher menu using the
+// refocus logic.
+// Note that the extension matching logic is tested by the extension system
+// and does not need a separate test here.
 TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
   EXPECT_EQ(1U, BrowserList::size());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
