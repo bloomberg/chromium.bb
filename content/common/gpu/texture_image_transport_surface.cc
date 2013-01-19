@@ -207,6 +207,11 @@ bool TextureImageTransportSurface::SwapBuffers() {
   if (!frontbuffer_suggested_allocation_)
     return true;
 
+  if (!backbuffer_.service_id) {
+    LOG(ERROR) << "Swap without valid backing.";
+    return true;
+  }
+
   DCHECK(backbuffer_.size == current_size_);
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.size = backbuffer_.size;
@@ -239,6 +244,11 @@ bool TextureImageTransportSurface::PostSubBuffer(
   // An empty damage rect is a successful no-op.
   if (new_damage_rect.IsEmpty())
     return true;
+
+  if (!backbuffer_.service_id) {
+    LOG(ERROR) << "Swap without valid backing.";
+    return true;
+  }
 
   DCHECK(current_size_ == backbuffer_.size);
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
