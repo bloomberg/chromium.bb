@@ -64,4 +64,7 @@ const char kEnableEncryptedMedia[] = "enable-encrypted-media";
 // Enables Opus playback in media elements.
 const char kEnableOpusPlayback[] = "enable-opus-playback";
 
+// Enables VP9 playback in media elements.
+const char kEnableVp9Playback[] = "enable-vp9-playback";
+
 }  // namespace switches

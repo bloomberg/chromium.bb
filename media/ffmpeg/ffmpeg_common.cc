@@ -147,6 +147,8 @@ VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
       return kCodecMPEG4;
     case CODEC_ID_VP8:
       return kCodecVP8;
+    case AV_CODEC_ID_VP9:
+      return kCodecVP9;
     default:
       DVLOG(1) << "Unknown video CodecID: " << codec_id;
   }
@@ -163,6 +165,8 @@ static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
       return CODEC_ID_MPEG4;
     case kCodecVP8:
       return CODEC_ID_VP8;
+    case kCodecVP9:
+      return AV_CODEC_ID_VP9;
     default:
       DVLOG(1) << "Unknown VideoCodec: " << video_codec;
   }
@@ -335,13 +339,28 @@ void AVStreamToVideoDecoderConfig(
     aspect_ratio = stream->codec->sample_aspect_ratio;
 
   VideoCodec codec = CodecIDToVideoCodec(stream->codec->codec_id);
-  VideoCodecProfile profile = (codec == kCodecVP8) ? VP8PROFILE_MAIN :
-      ProfileIDToVideoCodecProfile(stream->codec->profile);
+
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  if (codec == kCodecVP8)
+    profile = VP8PROFILE_MAIN;
+  else if (codec == kCodecVP9)
+    profile = VP9PROFILE_MAIN;
+  else
+    profile = ProfileIDToVideoCodecProfile(stream->codec->profile);
+
   gfx::Size natural_size = GetNaturalSize(
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
+
+  VideoFrame::Format format = PixelFormatToVideoFormat(stream->codec->pix_fmt);
+  if (codec == kCodecVP9) {
+    // TODO(tomfinegan): libavcodec doesn't know about VP9.
+    format = VideoFrame::YV12;
+    coded_size = natural_size;
+  }
+
   config->Initialize(codec,
                      profile,
-                     PixelFormatToVideoFormat(stream->codec->pix_fmt),
+                     format,
                      coded_size, visible_rect, natural_size,
                      stream->codec->extradata, stream->codec->extradata_size,
                      false,  // Not encrypted.
