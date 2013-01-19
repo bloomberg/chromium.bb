@@ -390,6 +390,29 @@ public:
         delegatedRendererLayer->setTransform(transform);
 
         ScopedPtrVector<RenderPass> delegatedRenderPasses;
+
+        gfx::Rect childPassRect(20, 20, 7, 7);
+        gfx::Transform childPassTransform;
+        childPassTransform.Scale(0.8, 0.8);
+        childPassTransform.Translate(9.0, 9.0);
+
+        {
+            TestRenderPass* pass = addRenderPass(delegatedRenderPasses, RenderPass::Id(10, 7), childPassRect, gfx::Transform());
+            MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
+            AppendQuadsData data(pass->id);
+            SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
+            sharedState->SetAll(childPassTransform, childPassRect, childPassRect, childPassRect, false, 1);
+            scoped_ptr<SolidColorDrawQuad> colorQuad;
+
+            colorQuad = SolidColorDrawQuad::Create();
+            colorQuad->SetNew(sharedState, gfx::Rect(20, 20, 3, 7), 1u);
+            quadSink.append(colorQuad.PassAs<DrawQuad>(), data);
+
+            colorQuad = SolidColorDrawQuad::Create();
+            colorQuad->SetNew(sharedState, gfx::Rect(23, 20, 4, 7), 1u);
+            quadSink.append(colorQuad.PassAs<DrawQuad>(), data);
+        }
+
         gfx::Rect passRect(0, 0, 50, 50);
         gfx::Transform passTransform;
         passTransform.Scale(1.5, 1.5);
@@ -401,6 +424,20 @@ public:
         SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
         sharedState->SetAll(passTransform, passRect, passRect, passRect, false, 1);
         scoped_ptr<SolidColorDrawQuad> colorQuad;
+
+        scoped_ptr<RenderPassDrawQuad> renderPassQuad = RenderPassDrawQuad::Create();
+        renderPassQuad->SetNew(
+            sharedState,
+            gfx::Rect(5, 5, 7, 7),
+            RenderPass::Id(10, 7),
+            false, // is_replica
+            0, // mask_resource_id
+            childPassRect, // contents_changed_since_last_frame
+            gfx::RectF(), // mask_uv_rect
+            WebKit::WebFilterOperations(), // filters
+            skia::RefPtr<SkImageFilter>(), // filter
+            WebKit::WebFilterOperations()); // background_filters
+        quadSink.append(renderPassQuad.PassAs<DrawQuad>(), data);
 
         colorQuad = SolidColorDrawQuad::Create();
         colorQuad->SetNew(sharedState, gfx::Rect(0, 0, 10, 10), 1u);
@@ -441,24 +478,37 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
 
-    ASSERT_EQ(1u, frame.renderPasses.size());
-    EXPECT_EQ(1, frame.renderPasses[0]->id.layer_id);
-    EXPECT_EQ(0, frame.renderPasses[0]->id.index);
+    ASSERT_EQ(2u, frame.renderPasses.size());
+    // The contributing render pass in the DelegatedRendererLayer.
+    EXPECT_EQ(2, frame.renderPasses[0]->id.layer_id);
+    EXPECT_EQ(1, frame.renderPasses[0]->id.index);
+    // The root render pass.
+    EXPECT_EQ(1, frame.renderPasses[1]->id.layer_id);
+    EXPECT_EQ(0, frame.renderPasses[1]->id.index);
 
-    const QuadList& quadList = frame.renderPasses[0]->quad_list;
-    ASSERT_EQ(4u, quadList.size());
+    const QuadList& contribQuadList = frame.renderPasses[0]->quad_list;
+    ASSERT_EQ(2u, contribQuadList.size());
 
-    // All quads should share the same state.
-    const SharedQuadState* sharedState = quadList[0]->shared_quad_state;
-    EXPECT_EQ(sharedState, quadList[1]->shared_quad_state);
-    EXPECT_EQ(sharedState, quadList[2]->shared_quad_state);
-    EXPECT_EQ(sharedState, quadList[3]->shared_quad_state);
+    const QuadList& rootQuadList = frame.renderPasses[1]->quad_list;
+    ASSERT_EQ(5u, rootQuadList.size());
+
+    // All quads in a render pass should share the same state.
+    const SharedQuadState* contribSharedState = contribQuadList[0]->shared_quad_state;
+    EXPECT_EQ(contribSharedState, contribQuadList[1]->shared_quad_state);
+
+    const SharedQuadState* rootSharedState = rootQuadList[0]->shared_quad_state;
+    EXPECT_EQ(rootSharedState, rootQuadList[1]->shared_quad_state);
+    EXPECT_EQ(rootSharedState, rootQuadList[2]->shared_quad_state);
+    EXPECT_EQ(rootSharedState, rootQuadList[3]->shared_quad_state);
+    EXPECT_EQ(rootSharedState, rootQuadList[4]->shared_quad_state);
+
+    EXPECT_NE(rootQuadList[0]->shared_quad_state, contribQuadList[0]->shared_quad_state);
 
     // The state should be transformed only once.
     // The x/y values are: position (20) + transform (8 * 2) = 36
     // 36 - (width / 2) = 36 - 30 / 2 = 21
-    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), sharedState->clipped_rect_in_target);
-    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), sharedState->clip_rect);
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), rootSharedState->clipped_rect_in_target);
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), rootSharedState->clip_rect);
     gfx::Transform expected;
     // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
     expected.Translate(5.0, 5.0);
@@ -466,7 +516,15 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     expected.Translate(8.0, 8.0);
     expected.Scale(1.5, 1.5);
     expected.Translate(7.0, 7.0);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->content_to_target_transform);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expected, rootSharedState->content_to_target_transform);
+
+    // The contributing render pass should not be transformed from its input.
+    EXPECT_RECT_EQ(gfx::Rect(20, 20, 7, 7), contribSharedState->clipped_rect_in_target);
+    EXPECT_RECT_EQ(gfx::Rect(20, 20, 7, 7), contribSharedState->clip_rect);
+    expected.MakeIdentity();
+    expected.Scale(0.8, 0.8);
+    expected.Translate(9.0, 9.0);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expected, contribSharedState->content_to_target_transform);
 
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
