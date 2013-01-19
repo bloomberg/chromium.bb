@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -153,6 +153,7 @@ class MockHelper : public QuicConnectionHelperInterface {
 
 class MockConnection : public QuicConnection {
  public:
+  // Uses a MockHelper.
   MockConnection(QuicGuid guid, IPEndPoint address);
   MockConnection(QuicGuid guid,
                  IPEndPoint address,

@@ -50,6 +50,12 @@ void FramerVisitorCapturingAcks::OnCongestionFeedbackFrame(
   feedback_.reset(new QuicCongestionFeedbackFrame(frame));
 }
 
+MockConnectionVisitor::MockConnectionVisitor() {
+}
+
+MockConnectionVisitor::~MockConnectionVisitor() {
+}
+
 MockHelper::MockHelper() {
 }
 
@@ -62,19 +68,6 @@ const QuicClock* MockHelper::GetClock() const {
 
 QuicRandom* MockHelper::GetRandomGenerator() {
   return &random_generator_;
-}
-
-MockConnectionVisitor::MockConnectionVisitor() {
-}
-
-MockConnectionVisitor::~MockConnectionVisitor() {
-}
-
-MockScheduler::MockScheduler()
-    : QuicSendScheduler(NULL, kFixRate) {
-}
-
-MockScheduler::~MockScheduler() {
 }
 
 MockConnection::MockConnection(QuicGuid guid, IPEndPoint address)
@@ -117,6 +110,13 @@ MockSession::MockSession(QuicConnection* connection, bool is_server)
 }
 
 MockSession::~MockSession() {
+}
+
+MockScheduler::MockScheduler()
+    : QuicSendScheduler(NULL, kFixRate) {
+}
+
+MockScheduler::~MockScheduler() {
 }
 
 namespace {
@@ -255,7 +255,6 @@ QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
   frames.push_back(frame);
   return quic_framer.ConstructFrameDataPacket(header, frames);
 }
-
 
 }  // namespace test
 }  // namespace net
