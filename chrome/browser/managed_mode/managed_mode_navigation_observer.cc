@@ -14,6 +14,8 @@
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -231,11 +233,15 @@ ManagedModeNavigationObserver::~ManagedModeNavigationObserver() {
 ManagedModeNavigationObserver::ManagedModeNavigationObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      url_filter_(ManagedMode::GetURLFilterForUIThread()),
       warn_infobar_delegate_(NULL),
       preview_infobar_delegate_(NULL),
       state_(RECORDING_URLS_BEFORE_PREVIEW),
-      last_allowed_page_(-1) {}
+      last_allowed_page_(-1) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
+  url_filter_ = managed_user_service_->GetURLFilterForUIThread();
+}
 
 void ManagedModeNavigationObserver::AddTemporaryException() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -289,7 +295,7 @@ void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
       whitelist.AppendString(last_url_.host());
     }
   }
-  ManagedMode::AddToManualList(true, whitelist);
+  managed_user_service_->AddToManualList(true, whitelist);
   ClearObserverState();
 }
 

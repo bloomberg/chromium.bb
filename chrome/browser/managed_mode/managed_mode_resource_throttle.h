@@ -20,7 +20,8 @@ class ManagedModeResourceThrottle : public content::ResourceThrottle {
   ManagedModeResourceThrottle(const net::URLRequest* request,
                               int render_process_host_id,
                               int render_view_id,
-                              bool is_main_frame);
+                              bool is_main_frame,
+                              const ManagedModeURLFilter* url_filter);
   virtual ~ManagedModeResourceThrottle();
 
   // Adds/removes a temporary exception to filtering for a

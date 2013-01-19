@@ -62,6 +62,10 @@ class ManagedModeSiteList {
                       const ExtensionResource& path);
   ~ManagedModeSiteList();
 
+  // Creates a copy of the site list.
+  // Caller takes ownership of the returned value.
+  ManagedModeSiteList* Clone();
+
   // Returns a list of all categories.
   // TODO(bauerb): The list is hardcoded for now, but if we allow custom
   // categories, this should live in some registry.

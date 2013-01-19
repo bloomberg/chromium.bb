@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"

@@ -410,6 +410,9 @@
       'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
       'wix_path%': '<(DEPTH)/third_party/wix',
 
+      # Managed users are enabled by default.
+      'enable_managed_users%': 1,
+
       'conditions': [
         # TODO(epoger): Figure out how to set use_skia=1 for Mac outside of
         # the 'conditions' clause.  Initial attempts resulted in chromium and
@@ -518,6 +521,7 @@
           'notifications%': 0,
           'remoting%': 0,
           'safe_browsing%': 0,
+          'enable_managed_users%': 0,
         }],
 
         # Use GPU accelerated cross process image transport by default
@@ -740,6 +744,7 @@
     'google_api_key%': '<(google_api_key)',
     'google_default_client_id%': '<(google_default_client_id)',
     'google_default_client_secret%': '<(google_default_client_secret)',
+    'enable_managed_users%': '<(enable_managed_users)',
 
     # Use system mesa instead of bundled one.
     'use_system_mesa%': 0,
@@ -1193,6 +1198,8 @@
         'use_system_expat%': '<(android_build_type)',
         'use_system_icu%': '<(android_build_type)',
         'use_system_stlport%': '<(android_build_type)',
+
+        'enable_managed_users%': 0,
 
         # Copy it out one scope.
         'android_build_type%': '<(android_build_type)',
@@ -1961,6 +1968,9 @@
       }],
       ['disable_ftp_support==1', {
         'defines': ['DISABLE_FTP_SUPPORT=1'],
+      }],
+      ['enable_managed_users==1', {
+        'defines': ['ENABLE_MANAGED_USERS=1'],
       }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [

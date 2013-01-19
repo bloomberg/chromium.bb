@@ -13,6 +13,7 @@
 
 class InfoBarDelegate;
 class ManagedModeURLFilter;
+class ManagedUserService;
 
 class ManagedModeNavigationObserver
     : public content::WebContentsObserver,
@@ -106,7 +107,10 @@ class ManagedModeNavigationObserver
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Owned by ManagedMode (which is a singleton and outlives us).
+  // Owned by the profile, so outlives us.
+  ManagedUserService* managed_user_service_;
+
+  // Owned by ManagedUserService.
   const ManagedModeURLFilter* url_filter_;
 
   // Owned by the InfoBarService, which has the same lifetime as this object.

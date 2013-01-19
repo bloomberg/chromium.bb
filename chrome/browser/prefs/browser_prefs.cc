@@ -29,6 +29,7 @@
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -261,6 +262,10 @@ void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   policy::URLBlacklistManager::RegisterUserPrefs(user_prefs);
 #endif
 
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserService::RegisterUserPrefs(user_prefs);
+#endif
+
 #if defined(ENABLE_WEB_INTENTS)
   web_intents::RegisterUserPrefs(user_prefs);
 #endif
@@ -285,7 +290,6 @@ void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
-  ManagedMode::RegisterUserPrefs(user_prefs);
   PepperFlashSettingsManager::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);

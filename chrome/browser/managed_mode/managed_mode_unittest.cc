@@ -232,34 +232,3 @@ TEST_F(ManagedModeTest, Cancelled) {
   managed_mode_.EnterManagedModeForTesting(&managed_mode_profile_,
                                            CreateExpectedCallback(false));
 }
-
-TEST_F(ManagedModeTest, ExtensionManagementPolicyProvider) {
-  BrowserFixture managed_mode_browser(&managed_mode_, &managed_mode_profile_);
-
-  {
-    string16 error;
-    EXPECT_TRUE(managed_mode_.UserMayLoad(NULL, &error));
-    EXPECT_EQ(string16(), error);
-  }
-  {
-    string16 error;
-    EXPECT_TRUE(managed_mode_.UserMayModifySettings(NULL, &error));
-    EXPECT_EQ(string16(), error);
-  }
-
-  managed_mode_.SetInManagedMode(&managed_mode_profile_);
-  {
-    string16 error;
-    EXPECT_FALSE(managed_mode_.UserMayLoad(NULL, &error));
-    EXPECT_FALSE(error.empty());
-  }
-  {
-    string16 error;
-    EXPECT_FALSE(managed_mode_.UserMayModifySettings(NULL, &error));
-    EXPECT_FALSE(error.empty());
-  }
-
-#ifndef NDEBUG
-  EXPECT_FALSE(managed_mode_.GetDebugPolicyProviderName().empty());
-#endif
-}

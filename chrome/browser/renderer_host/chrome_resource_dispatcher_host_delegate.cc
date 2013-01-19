@@ -44,6 +44,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
+#endif
+
 #if defined(USE_SYSTEM_PROTOBUF)
 #include <google/protobuf/repeated_field.h>
 #else
@@ -52,8 +56,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
-#else
-#include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -325,10 +327,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   }
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_MANAGED_USERS)
   bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
   throttles->push_back(new ManagedModeResourceThrottle(
-        request, child_id, route_id, !is_subresource_request));
+        request, child_id, route_id, !is_subresource_request,
+        io_data->managed_mode_url_filter()));
 #endif
 
   content::ResourceThrottle* throttle =

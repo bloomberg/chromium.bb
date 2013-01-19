@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_MANAGED_MODE_MANAGED_MODE_URL_FILTER_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
 
 namespace policy {
 class URLBlacklist;
@@ -23,9 +24,12 @@ class GURL;
 
 // This class manages the filtering behavior for a given URL, i.e. it tells
 // callers if a given URL should be allowed, blocked or warned about.
-// It is not thread-safe, so it can only be used on one thread, but that can be
-// any thread.
-class ManagedModeURLFilter : public base::NonThreadSafe {
+// References to it can be passed around on different threads (the refcounting
+// is thread-safe), but the object itself should always be accessed on the same
+// thread (member access isn't thread-safe).
+class ManagedModeURLFilter
+    : public base::RefCountedThreadSafe<ManagedModeURLFilter>,
+      public base::NonThreadSafe {
  public:
   enum FilteringBehavior {
     ALLOW,
@@ -41,7 +45,6 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   struct Contents;
 
   ManagedModeURLFilter();
-  ~ManagedModeURLFilter();
 
   static FilteringBehavior BehaviorFromInt(int behavior_value);
 
@@ -65,8 +68,8 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   void SetFromPatterns(const std::vector<std::string>& patterns);
 
   // Sets the manual lists.
-  void SetManualLists(scoped_ptr<ListValue> whitelist,
-                      scoped_ptr<ListValue> blacklist);
+  void SetManualLists(const ListValue* whitelist,
+                      const ListValue* blacklist);
 
   // Adds a pattern to a manual list. If |is_whitelist| is true it gets added
   // to the whitelist, else to the blacklist.
@@ -77,11 +80,13 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   void RemoveObserver(Observer* observer);
 
  private:
+  friend class base::RefCountedThreadSafe<ManagedModeURLFilter>;
+  ~ManagedModeURLFilter();
+
   void SetContents(scoped_ptr<Contents> url_matcher);
 
   ObserverList<Observer> observers_;
 
-  base::WeakPtrFactory<ManagedModeURLFilter> weak_ptr_factory_;
   FilteringBehavior default_behavior_;
   scoped_ptr<Contents> contents_;
 

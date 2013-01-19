@@ -30,6 +30,7 @@ class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
+class ManagedModeURLFilter;
 class Profile;
 class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
@@ -158,6 +159,12 @@ class ProfileIOData {
     return resource_prefetch_predictor_observer_.get();
   }
 
+#if defined(ENABLE_MANAGED_USERS)
+  const ManagedModeURLFilter* managed_mode_url_filter() const {
+    return managed_mode_url_filter_.get();
+  }
+#endif
+
   // Initialize the member needed to track the metrics enabled state. This is
   // only to be called on the UI thread.
   void InitializeMetricsEnabledStateOnUIThread();
@@ -234,6 +241,11 @@ class ProfileIOData {
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
+
+#if defined(ENABLE_MANAGED_USERS)
+    scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter;
+#endif
+
     // The profile this struct was populated from. It's passed as a void* to
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
@@ -474,6 +486,10 @@ class ProfileIOData {
       chrome_http_user_agent_settings_;
 
   mutable chrome_browser_net::LoadTimeStats* load_time_stats_;
+
+#if defined(ENABLE_MANAGED_USERS)
+  mutable scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter_;
+#endif
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;

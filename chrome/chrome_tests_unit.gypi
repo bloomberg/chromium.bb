@@ -837,6 +837,7 @@
         'browser/mac/keystone_glue_unittest.mm',
         'browser/managed_mode/managed_mode_unittest.cc',
         'browser/managed_mode/managed_mode_url_filter_unittest.cc',
+        'browser/managed_mode/managed_user_service_unittest.cc',
         'browser/media/media_internals_unittest.cc',
         'browser/media_gallery/media_file_system_registry_unittest.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.cc',
@@ -1812,7 +1813,6 @@
         ['configuration_policy==0', {
           'sources!': [
             'browser/extensions/api/storage/policy_value_store_unittest.cc',
-            'browser/managed_mode/managed_mode_url_filter_unittest.cc',
             'browser/prefs/proxy_policy_unittest.cc',
             'browser/ui/webui/policy_ui_unittest.cc',
           ],
@@ -2122,8 +2122,6 @@
 
             'browser/browser_commands_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
-            'browser/managed_mode/managed_mode_unittest.cc',
-            'browser/managed_mode/managed_mode_url_filter_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/page_cycler/page_cycler_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',
@@ -2251,6 +2249,11 @@
         # google_apis_unittests target is established.
         ['use_official_google_api_keys==1', {
           'defines': ['USE_OFFICIAL_GOOGLE_API_KEYS=1'],
+        }],
+        ['enable_managed_users!=1', {
+          'sources/': [
+            ['exclude', '^browser/managed_mode/'],
+          ],
         }],
       ],
       'target_conditions': [

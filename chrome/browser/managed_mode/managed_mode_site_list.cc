@@ -142,6 +142,10 @@ ManagedModeSiteList::ManagedModeSiteList(const std::string& extension_id,
 ManagedModeSiteList::~ManagedModeSiteList() {
 }
 
+ManagedModeSiteList* ManagedModeSiteList::Clone() {
+  return new ManagedModeSiteList(extension_id_, path_);
+}
+
 // static
 void ManagedModeSiteList::GetCategoryNames(std::vector<string16>* categories) {
   // TODO(bauerb): Collect custom categories from extensions.

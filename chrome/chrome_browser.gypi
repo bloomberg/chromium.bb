@@ -1007,6 +1007,10 @@
         'browser/managed_mode/managed_mode_site_list.h',
         'browser/managed_mode/managed_mode_url_filter.cc',
         'browser/managed_mode/managed_mode_url_filter.h',
+        'browser/managed_mode/managed_user_service.cc',
+        'browser/managed_mode/managed_user_service.h',
+        'browser/managed_mode/managed_user_service_factory.cc',
+        'browser/managed_mode/managed_user_service_factory.h',
         'browser/media/media_capture_devices_dispatcher.cc',
         'browser/media/media_capture_devices_dispatcher.h',
         'browser/media/media_internals.cc',
@@ -2807,7 +2811,6 @@
             ['exclude', '^browser/first_run/'],
             ['include', '^browser/first_run/first_run.cc'], # For ctor/dtor of a struct.
             ['exclude', '^browser/importer/'],
-            ['exclude', '^browser/managed_mode/'],
             ['exclude', '^browser/service/'],
             ['exclude', '^browser/speech/'],
             ['exclude', '^browser/sync/glue/app_'],
@@ -2989,6 +2992,11 @@
             'browser/notifications/message_center_notification_manager.cc',
             'browser/notifications/message_center_notification_manager.h',
           ],
+        }],
+        ['enable_managed_users!=1', {
+          'sources/': [
+            ['exclude', '^browser/managed_mode/'],
+          ]
         }],
       ],
       'target_conditions': [

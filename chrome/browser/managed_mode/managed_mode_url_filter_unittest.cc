@@ -10,34 +10,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-class FailClosureHelper : public base::RefCountedThreadSafe<FailClosureHelper> {
- public:
-  explicit FailClosureHelper(const base::Closure& cb) : closure_runner_(cb) {}
-
-  void Fail() {
-    FAIL();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<FailClosureHelper>;
-
-  virtual ~FailClosureHelper() {}
-
-  base::ScopedClosureRunner closure_runner_;
-};
-
-// Returns a closure that FAILs when it is called. As soon as the closure is
-// destroyed (because the last reference to it is dropped), |continuation| is
-// called.
-base::Closure FailClosure(const base::Closure& continuation) {
-  scoped_refptr<FailClosureHelper> helper = new FailClosureHelper(continuation);
-  return base::Bind(&FailClosureHelper::Fail, helper);
-}
-
-}  // namespace
-
 class ManagedModeURLFilterTest : public ::testing::Test,
                                  public ManagedModeURLFilter::Observer {
  public:
@@ -63,7 +35,7 @@ class ManagedModeURLFilterTest : public ::testing::Test,
 
   MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  scoped_ptr<ManagedModeURLFilter> filter_;
+  scoped_refptr<ManagedModeURLFilter> filter_;
 };
 
 TEST_F(ManagedModeURLFilterTest, Basic) {
