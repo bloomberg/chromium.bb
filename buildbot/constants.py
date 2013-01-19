@@ -240,8 +240,12 @@ CHROME_LKGM_FILE = 'CHROMEOS_LKGM'
 COMMON_CACHE = 'common'
 
 # Artifact constants.
+def _SlashToUnderscore(string):
+  return string.replace('/', '_')
+
 DEFAULT_ARCHIVE_BUCKET = 'gs://chromeos-image-archive'
-CHROME_SYSROOT_TAR = 'sysroot_%s.tar.xz' % CHROME_CP.replace('/', '_')
+CHROME_SYSROOT_TAR = 'sysroot_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)
+CHROME_ENV_TAR = 'environment_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)
 BASE_IMAGE_NAME = 'chromiumos_base_image'
 BASE_IMAGE_TAR = '%s.tar.xz' % BASE_IMAGE_NAME
 BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME

@@ -102,7 +102,8 @@ class CleanUpStage(bs.BuilderStage):
   def _CleanChroot(self):
     commands.CleanupChromeKeywordsFile(self._boards,
                                        self._build_root)
-    chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
+    chroot_tmpdir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
+                                 'tmp')
     if os.path.exists(chroot_tmpdir):
       cros_build_lib.SudoRunCommand(['rm', '-rf', chroot_tmpdir],
                                     print_cmd=False)
@@ -110,7 +111,7 @@ class CleanUpStage(bs.BuilderStage):
                                     print_cmd=False)
 
   def _DeleteChroot(self):
-    chroot = os.path.join(self._build_root, 'chroot')
+    chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if os.path.exists(chroot):
       cros_build_lib.RunCommand(['cros_sdk', '--delete', '--chroot', chroot],
                                 self._build_root,
@@ -955,7 +956,7 @@ class BuildBoardStage(bs.BuilderStage):
       env['USE'] = 'git_gcc'
       env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
-    chroot_path = os.path.join(self._build_root, 'chroot')
+    chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       commands.MakeChroot(
           buildroot=self._build_root,
@@ -1490,6 +1491,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
     self._full_autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
 
+    # These variables will be initialized when the stage is run.
+    self._archive_path = None
+    self._pkg_dir = None
+
   def SetVersion(self, path_to_image):
     """Sets the cros version for the given built path to an image.
 
@@ -1690,9 +1695,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
   def ArchiveMetadataJson(self):
     """Create a JSON of various metadata describing this build."""
     config = self._build_config
-    archive_path = self._GetArchivePath()
 
-    target = os.path.join(archive_path, self._METADATA_JSON)
+    target = os.path.join(self._archive_path, self._METADATA_JSON)
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
         os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
         ignore_missing=True)
@@ -1716,7 +1720,67 @@ class ArchiveStage(BoardSpecificBuilderStage):
     osutils.WriteFile(target, json.dumps(json_input))
     self._upload_queue.put([self._METADATA_JSON])
 
+  @staticmethod
+  def _SingleMatchGlob(path_pattern):
+    """Returns the last match (after sort) if multiple found."""
+    files = glob.glob(path_pattern)
+    files.sort()
+    if not files:
+      raise NothingToArchiveException('No %s found!' % path_pattern)
+    elif len(files) > 1:
+      cros_build_lib.PrintBuildbotStepWarnings()
+      cros_build_lib.Warning('Expecting one result for %s package, but '
+                             'found multiple.', path_pattern)
+    return files[-1]
+
+  def ArchiveStrippedChrome(self):
+    """Generate and upload stripped Chrome package."""
+    cmd = ['strip_package', '--board', self._current_board,
+           constants.CHROME_PN]
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
+    pkg_dir = os.path.join(
+        self._build_root, constants.DEFAULT_CHROOT_DIR, 'build',
+        self._current_board, 'stripped-packages')
+    chrome_tarball = self._SingleMatchGlob(
+        os.path.join(pkg_dir, constants.CHROME_CP) + '-*')
+    filename = os.path.basename(chrome_tarball)
+    os.link(chrome_tarball, os.path.join(self._archive_path, filename))
+    self._upload_queue.put([filename])
+
+  def BuildAndArchiveChromeSysroot(self):
+    """Generate and upload sysroot for building Chrome."""
+    assert self._archive_path.startswith(self._build_root)
+    in_chroot_path = git.ReinterpretPathForChroot(self._archive_path)
+    cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
+           self._current_board, '--package', constants.CHROME_CP]
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
+    self._upload_queue.put([constants.CHROME_SYSROOT_TAR])
+
+  def ArchiveChromeEbuildEnv(self):
+    """Generate and upload Chrome ebuild environment."""
+    chrome_dir = self._SingleMatchGlob(
+        os.path.join(self._pkg_dir, constants.CHROME_CP) + '-*')
+    env_bzip = os.path.join(chrome_dir, 'environment.bz2')
+    with osutils.TempDirContextManager() as tempdir:
+      # Convert from bzip2 to tar format.
+      bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
+      cros_build_lib.RunCommand(
+          [bzip2, '-d', env_bzip, '-c'],
+          log_stdout_to_file=os.path.join(tempdir, 'environment'))
+      env_tar = os.path.join(self._archive_path, constants.CHROME_ENV_TAR)
+      cros_build_lib.CreateTarball(env_tar, tempdir)
+      self._upload_queue.put([os.path.basename(env_tar)])
+
+  def _Initialize(self):
+    """Do lazy initialization.  Called during _PerformStage()"""
+    self._archive_path = self._SetupArchivePath()
+    self._pkg_dir = os.path.join(
+        self._build_root, constants.DEFAULT_CHROOT_DIR,
+        'build', self._current_board, 'var', 'db', 'pkg')
+
   def _PerformStage(self):
+    self._Initialize()
+
     if self._options.remote_trybot:
       debug = self._options.debug_forced
     else:
@@ -1726,7 +1790,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     config = self._build_config
     board = self._current_board
     upload_url = self.GetGSUploadLocation()
-    archive_path = self._SetupArchivePath()
+    archive_path = self._archive_path
     image_dir = self.GetImageDirSymlink()
     release_upload_queue = self._release_upload_queue
     upload_queue = self._upload_queue
@@ -1761,6 +1825,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #          \- ArchiveHWQual
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
     #    \- ArchiveStrippedChrome
+    #    \- BuildAndArchiveChromeSysroot
+    #    \- ArchiveChromeEbuildEnv
     #    \- ArchiveTestResults
 
     def ArchiveAutotestTarballs():
@@ -1952,39 +2018,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
       cros_build_lib.CreateTarball(target, image_dir, inputs=files)
       upload_queue.put([constants.IMAGE_SCRIPTS_TAR])
 
-    def ArchiveStrippedChrome():
-      """Generate and upload stripped Chrome package."""
-      cmd = ['strip_package', '--board', board, constants.CHROME_PN]
-      cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
-      chrome_match = os.path.join(buildroot, 'chroot', 'build', board,
-                                  'stripped-packages',
-                                  constants.CHROME_CP + '-*')
-      files = glob.glob(chrome_match)
-      files.sort()
-      if not files:
-        raise NothingToArchiveException('No stripped Chrome found!')
-      elif len(files) > 1:
-        cros_build_lib.PrintBuildbotStepWarnings()
-        cros_build_lib.Warning('Expecting one stripped Chrome package, but '
-                               'found multiple in %s.',
-                               os.path.dirname(chrome_match))
-
-      chrome_tarball = files[-1]
-      filename = os.path.basename(chrome_tarball)
-      cros_build_lib.RunCommand(['ln', '-f', chrome_tarball, filename],
-                                 cwd=archive_path)
-      upload_queue.put([filename])
-
-    def BuildAndArchiveChromeSysroot():
-      """Generate and upload sysroot for building Chrome."""
-      assert archive_path.startswith(buildroot)
-      in_chroot_path = git.ReinterpretPathForChroot(archive_path)
-      cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
-             board, '--package', constants.CHROME_CP]
-      cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
-      filename = constants.CHROME_SYSROOT_TAR
-      upload_queue.put([filename])
-
     def PushImage():
       # This helper script is only available on internal manifests currently.
       if not config['internal']:
@@ -2018,8 +2051,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
       steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting,
                ArchiveTestResults, self.ArchiveMetadataJson]
       if config['images']:
-        steps.extend([ArchiveStrippedChrome, BuildAndArchiveChromeSysroot,
-                      ArchiveImageScripts])
+        steps.extend(
+            [self.ArchiveStrippedChrome, self.BuildAndArchiveChromeSysroot,
+             self.ArchiveChromeEbuildEnv, ArchiveImageScripts])
 
       with bg_task_runner(UploadSymbols, queue=upload_symbols_queue,
                           processes=1):

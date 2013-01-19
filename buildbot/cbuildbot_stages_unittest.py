@@ -1176,13 +1176,13 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     """Test that the json metadata is built correctly"""
     # First run the code.
     stage = self.ConstructStage()
-    archive_path = stage._SetupArchivePath()
+    stage._Initialize()
     stage.ArchiveMetadataJson()
 
     # Now check the results.
     json_file = stage._upload_queue.get()
     self.assertEquals(json_file, [stage._METADATA_JSON])
-    json_file = os.path.join(archive_path, json_file[0])
+    json_file = os.path.join(stage._archive_path, json_file[0])
     json_data = json.loads(osutils.ReadFile(json_file))
 
     important_keys = (
@@ -1203,6 +1203,25 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.assertEquals(json_data['metadata-version'], '1')
     self.assertEquals(json_data['toolchain-tuple'], ['i686-pc-linux-gnu',
                                                      'arm-none-eabi'])
+  def testChromeEnvironment(self):
+    """Test that the Chrome environment is built."""
+    # Create the chrome environment compressed file.
+    stage = self.ConstructStage()
+    stage._Initialize()
+    chrome_env_dir = os.path.join(
+        stage._pkg_dir, constants.CHROME_CP + '-25.3643.0_rc1')
+    env_file = os.path.join(chrome_env_dir, 'environment')
+    osutils.Touch(env_file, makedirs=True)
+
+    cros_build_lib.RunCommand(['bzip2', env_file])
+
+    # Run the code.
+    stage.ArchiveChromeEbuildEnv()
+
+    env_tar = stage._upload_queue.get()[0]
+    env_tar = os.path.join(stage._archive_path, env_tar)
+    self.assertTrue(os.path.exists(env_tar))
+    cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
 
 class UploadPrebuiltsStageTest(AbstractStageTest):
