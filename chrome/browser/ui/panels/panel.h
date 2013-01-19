@@ -112,10 +112,10 @@ class Panel : public BaseWindow,
 
   int TitleOnlyHeight() const;
 
-  // Returns true if the panel can show minimize or restore button in its
-  // titlebar, depending on its state.
-  bool CanShowMinimizeButton() const;
-  bool CanShowRestoreButton() const;
+  // Returns true if the panel can be minimized or restored, depending on the
+  // collection the panel is in.
+  bool CanMinimize() const;
+  bool CanRestore() const;
 
   // BaseWindow overrides.
   virtual bool IsActive() const OVERRIDE;

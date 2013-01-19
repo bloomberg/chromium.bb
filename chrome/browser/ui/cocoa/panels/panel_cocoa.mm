@@ -295,7 +295,6 @@ class CocoaNativePanelTesting : public NativePanelTesting {
   virtual bool VerifyDrawingAttention() const OVERRIDE;
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool VerifyAppIcon() const OVERRIDE;
-  virtual bool VerifySystemMinimizeState() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
@@ -364,12 +363,7 @@ bool CocoaNativePanelTesting::VerifyActiveState(bool is_active) {
 }
 
 bool CocoaNativePanelTesting::VerifyAppIcon() const {
-  // Nothing to do since panel does not show dock icon.
-  return true;
-}
-
-bool CocoaNativePanelTesting::VerifySystemMinimizeState() const {
-  // TODO(jianli): to be implemented.
+// Nothing to do since panel does not show dock icon.
   return true;
 }
 

@@ -92,9 +92,6 @@ class PanelCollection {
   virtual void OnPanelTitlebarClicked(Panel* panel,
                                       panel::ClickModifier modifier) = 0;
 
-  // Called when a panel's expansion state changes.
-  virtual void OnPanelExpansionStateChanged(Panel* panel) = 0;
-
   // Called when a panel in the collection becomes active or inactive.
   virtual void OnPanelActiveStateChanged(Panel* panel) = 0;
 
@@ -105,18 +102,12 @@ class PanelCollection {
   virtual void MinimizePanel(Panel* panel) = 0;
   virtual void RestorePanel(Panel* panel) = 0;
 
-  // Called when a panel's minimize/restore button is clicked.
-  // The behavior might be modified as indicated by |modifier|.
-  virtual void OnMinimizeButtonClicked(Panel* panel,
-                                       panel::ClickModifier modifier) = 0;
-  virtual void OnRestoreButtonClicked(Panel* panel,
-                                      panel::ClickModifier modifier) = 0;
+  // Updates the display to show all panels in the collection as
+  // minimized/restored.
+  virtual void MinimizeAll() = 0;
+  virtual void RestoreAll() = 0;
 
-  // Returns true if minimize or restore button can be shown on the panel's
-  // titlebar.
-  virtual bool CanShowMinimizeButton(const Panel* panel) const = 0;
-  virtual bool CanShowRestoreButton(const Panel* panel) const = 0;
-
+  virtual bool CanMinimizePanel(const Panel* panel) const = 0;
   virtual bool IsPanelMinimized(const Panel* panel) const = 0;
 
   // Saves/restores/discards the placement information of |panel|. This is

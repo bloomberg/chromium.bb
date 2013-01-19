@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 
 #include <algorithm>
-#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel_stack.h"
@@ -15,8 +14,7 @@
 StackedPanelCollection::StackedPanelCollection(PanelManager* panel_manager)
     : PanelCollection(PanelCollection::STACKED),
       panel_manager_(panel_manager),
-      native_stack_(NULL),
-      minimizing_all_(false) {
+      native_stack_(NULL) {
   native_stack_ = NativePanelStack::Create(make_scoped_ptr(this).Pass());
 }
 
@@ -38,16 +36,10 @@ void StackedPanelCollection::RefreshLayout() {
   int common_width = top_panel_bounds.width();
   int common_x = top_panel_bounds.x();
   int y = top_panel_bounds.bottom();
-  top_panel->UpdateMinimizeRestoreButtonVisibility();
 
   ++iter;
   for (; iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
-
-    // The visibility of minimize button might need to be updated due to that
-    // top panel might change when a panel is being added or removed from
-    // the stack.
-    panel->UpdateMinimizeRestoreButtonVisibility();
 
     // Don't update the stacked panel that is in preview mode.
     gfx::Rect bounds = panel->GetBounds();
@@ -56,7 +48,7 @@ void StackedPanelCollection::RefreshLayout() {
       bounds.set_y(y);
       bounds.set_width(common_width);
       panel->SetPanelBounds(bounds);
-      gfx::Size full_size = panel->full_size();
+      gfx::Size full_size = bounds.size();
       full_size.set_width(common_width);
       panel->set_full_size(full_size);
     }
@@ -111,18 +103,6 @@ void StackedPanelCollection::OnPanelAttentionStateChanged(Panel* panel) {
 
 void StackedPanelCollection::OnPanelTitlebarClicked(
     Panel* panel, panel::ClickModifier modifier) {
-  bool expanded = panel->expansion_state() == Panel::EXPANDED;
-  if (modifier == panel::APPLY_TO_ALL) {
-    if (expanded)
-      MinimizeAll();
-    else
-      RestoreAll();
-  } else {
-    if (expanded)
-      MinimizePanel(panel);
-    else
-      RestorePanel(panel);
-  }
 }
 
 void StackedPanelCollection::ResizePanelWindow(
@@ -131,71 +111,26 @@ void StackedPanelCollection::ResizePanelWindow(
 }
 
 void StackedPanelCollection::ActivatePanel(Panel* panel) {
-  // Nothing to do.
 }
 
 void StackedPanelCollection::MinimizePanel(Panel* panel) {
-  panel->SetExpansionState(Panel::TITLE_ONLY);
 }
 
 void StackedPanelCollection::RestorePanel(Panel* panel) {
-  panel->SetExpansionState(Panel::EXPANDED);
 }
 
 void StackedPanelCollection::MinimizeAll() {
-  // Set minimizing_all_ to prevent deactivation of each panel when it
-  // is minimized. See comments in OnPanelExpansionStateChanged.
-  base::AutoReset<bool> pin(&minimizing_all_, true);
-  Panel* minimized_active_panel = NULL;
-  for (Panels::const_iterator iter = panels_.begin();
-       iter != panels_.end(); ++iter) {
-    if ((*iter)->IsActive())
-      minimized_active_panel = *iter;
-    MinimizePanel(*iter);
-  }
-
-  // When a single panel is minimized, it is deactivated to ensure that
-  // a minimized panel does not have focus. However, when minimizing all,
-  // the deactivation is only done once after all panels are minimized,
-  // rather than per minimized panel, both for efficiency and to avoid
-  // temporary activations of random not-yet-minimized panels.
-  if (minimized_active_panel) {
-    minimized_active_panel->Deactivate();
-    // Layout will be refreshed in response to (de)activation notification.
-  }
 }
 
 void StackedPanelCollection::RestoreAll() {
-  for (Panels::const_iterator iter = panels_.begin();
-       iter != panels_.end(); ++iter) {
-    RestorePanel(*iter);
-  }
 }
 
-void StackedPanelCollection::OnMinimizeButtonClicked(
-    Panel* panel, panel::ClickModifier modifier) {
-  // The minimize button is only present in the top panel.
-  DCHECK_EQ(top_panel(), panel);
-
-  native_stack_->Minimize();
-}
-
-void StackedPanelCollection::OnRestoreButtonClicked(
-    Panel* panel, panel::ClickModifier modifier) {
-  NOTREACHED();
-}
-
-bool StackedPanelCollection::CanShowMinimizeButton(const Panel* panel) const {
-  // Only the top panel in the stack shows the minimize button.
-  return panel == top_panel();
-}
-
-bool StackedPanelCollection::CanShowRestoreButton(const Panel* panel) const {
-  return false;
+bool StackedPanelCollection::CanMinimizePanel(const Panel* panel) const {
+  return true;
 }
 
 bool StackedPanelCollection::IsPanelMinimized(const Panel* panel) const {
-  return panel->expansion_state() != Panel::EXPANDED;
+  return false;
 }
 
 void StackedPanelCollection::SavePanelPlacement(Panel* panel) {
@@ -245,8 +180,7 @@ void StackedPanelCollection::DiscardSavedPanelPlacement() {
 
 panel::Resizability StackedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
-  return (panel->expansion_state() == Panel::EXPANDED) ?
-      panel::RESIZABLE_ALL_SIDES : panel::NOT_RESIZABLE;
+  return panel::RESIZABLE_ALL_SIDES;
 }
 
 void StackedPanelCollection::OnPanelResizedByMouse(
@@ -264,25 +198,6 @@ void StackedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->SetAlwaysOnTop(false);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
-}
-
-void StackedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
-  DCHECK_NE(Panel::MINIMIZED, panel->expansion_state());
-
-  gfx::Rect bounds = panel->GetBounds();
-  bounds.set_height(panel->expansion_state() == Panel::EXPANDED ?
-      panel->full_size().height() : panel->TitleOnlyHeight());
-  panel->SetPanelBounds(bounds);
-
-  // Ensure minimized panel does not get the focus. If minimizing all,
-  // the active panel will be deactivated once when all panels are minimized
-  // rather than per minimized panel.
-  if (panel->expansion_state() != Panel::EXPANDED && !minimizing_all_ &&
-      panel->IsActive()) {
-    panel->Deactivate();
-  }
-
-  RefreshLayout();
 }
 
 void StackedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {

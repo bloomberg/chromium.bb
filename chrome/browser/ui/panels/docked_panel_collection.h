@@ -57,19 +57,18 @@ class DockedPanelCollection :
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
-  virtual void OnMinimizeButtonClicked(Panel* panel,
-                                       panel::ClickModifier modifier) OVERRIDE;
-  virtual void OnRestoreButtonClicked(Panel* panel,
-                                      panel::ClickModifier modifier) OVERRIDE;
-  virtual bool CanShowMinimizeButton(const Panel* panel) const OVERRIDE;
-  virtual bool CanShowRestoreButton(const Panel* panel) const OVERRIDE;
+  virtual void MinimizeAll() OVERRIDE;
+  virtual void RestoreAll() OVERRIDE;
+  virtual bool CanMinimizePanel(const Panel* panel) const OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement() OVERRIDE;
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
+
+  // Invoked when a panel's expansion state changes.
+  void OnPanelExpansionStateChanged(Panel* panel);
 
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
@@ -143,10 +142,6 @@ class DockedPanelCollection :
 
   // Keep track of the minimized panels to control mouse watching.
   void UpdateMinimizedPanelCount();
-
-  // Minimizes or restores all panels in the collection.
-  void MinimizeAll();
-  void RestoreAll();
 
   // Makes sure the panel's bounds reflect its expansion state and the
   // panel is aligned at the bottom of the screen. Does not touch the x

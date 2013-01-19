@@ -39,9 +39,6 @@ class NativePanelStack {
 
   // Sets the bounds that is big enough to enclose all panels in the stack.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
-
-  // Minimizes all the panels in the stack as a whole via system.
-  virtual void Minimize() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_H_

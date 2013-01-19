@@ -53,20 +53,8 @@ void DetachedPanelCollection::OnDisplayAreaChanged(
 }
 
 void DetachedPanelCollection::RefreshLayout() {
-  // A detached panel would still maintain its minimized state when it was
-  // moved out the stack and the drag has not ended. When the drag ends, it
-  // needs to be expanded. This could occur in the following scenarios:
-  // 1) It was originally a minimized panel that was dragged out of a stack.
-  // 2) It was originally a minimized panel that was the top panel in a stack.
-  //    The panel below it was dragged out of the stack which also caused
-  //    the top panel became detached.
-  for (Panels::const_iterator iter = panels_.begin();
-       iter != panels_.end(); ++iter) {
-    Panel* panel = *iter;
-    if (!panel->in_preview_mode() &&
-        panel->expansion_state() != Panel::EXPANDED)
-      panel->SetExpansionState(Panel::EXPANDED);
-  }
+  // Nothing needds to be done here: detached panels always stay
+  // where the user dragged them.
 }
 
 void DetachedPanelCollection::AddPanel(Panel* panel,
@@ -150,24 +138,18 @@ void DetachedPanelCollection::RestorePanel(Panel* panel) {
   // regardless of which collection the panel is in. So we just quietly return.
 }
 
-void DetachedPanelCollection::OnMinimizeButtonClicked(
-    Panel* panel, panel::ClickModifier modifier) {
+void DetachedPanelCollection::MinimizeAll() {
   // Detached panels do not minimize.
   NOTREACHED();
 }
 
-void DetachedPanelCollection::OnRestoreButtonClicked(
-    Panel* panel, panel::ClickModifier modifier) {
+void DetachedPanelCollection::RestoreAll() {
   // Detached panels do not minimize.
   NOTREACHED();
 }
 
-bool DetachedPanelCollection::CanShowMinimizeButton(const Panel* panel) const {
-  // Detached panels do not minimize.
-  return false;
-}
-
-bool DetachedPanelCollection::CanShowRestoreButton(const Panel* panel) const {
+bool DetachedPanelCollection::CanMinimizePanel(const Panel* panel) const {
+  DCHECK_EQ(this, panel->collection());
   // Detached panels do not minimize.
   return false;
 }
@@ -223,17 +205,6 @@ void DetachedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->SetAlwaysOnTop(false);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
-}
-
-void DetachedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
-  // This should only be reached when a minimized stacked panel is dragged out
-  // of the stack to become detached. For this case, the panel needs to be
-  // restored.
-  DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
-
-  gfx::Rect bounds = panel->GetBounds();
-  bounds.set_height(panel->full_size().height());
-  panel->SetPanelBounds(bounds);
 }
 
 void DetachedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {

@@ -522,8 +522,8 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 
 - (void)updateTitleBarMinimizeRestoreButtonVisibility {
   Panel* panel = windowShim_->panel();
-  [titlebar_view_ setMinimizeButtonVisibility:panel->CanShowMinimizeButton()];
-  [titlebar_view_ setRestoreButtonVisibility:panel->CanShowRestoreButton()];
+  [titlebar_view_ setMinimizeButtonVisibility:panel->CanMinimize()];
+  [titlebar_view_ setRestoreButtonVisibility:panel->CanRestore()];
 }
 
 - (void)webContentsInserted:(WebContents*)contents {

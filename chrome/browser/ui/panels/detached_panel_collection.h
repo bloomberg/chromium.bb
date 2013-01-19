@@ -42,18 +42,14 @@ class DetachedPanelCollection : public PanelCollection {
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
-  virtual void OnMinimizeButtonClicked(Panel* panel,
-                                       panel::ClickModifier modifier) OVERRIDE;
-  virtual void OnRestoreButtonClicked(Panel* panel,
-                                      panel::ClickModifier modifier) OVERRIDE;
-  virtual bool CanShowMinimizeButton(const Panel* panel) const OVERRIDE;
-  virtual bool CanShowRestoreButton(const Panel* panel) const OVERRIDE;
+  virtual void MinimizeAll() OVERRIDE;
+  virtual void RestoreAll() OVERRIDE;
+  virtual bool CanMinimizePanel(const Panel* panel) const OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement() OVERRIDE;
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   bool HasPanel(Panel* panel) const;

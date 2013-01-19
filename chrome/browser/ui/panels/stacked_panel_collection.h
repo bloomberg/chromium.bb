@@ -45,18 +45,14 @@ class StackedPanelCollection : public PanelCollection {
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
-  virtual void OnMinimizeButtonClicked(Panel* panel,
-                                       panel::ClickModifier modifier) OVERRIDE;
-  virtual void OnRestoreButtonClicked(Panel* panel,
-                                      panel::ClickModifier modifier) OVERRIDE;
-  virtual bool CanShowMinimizeButton(const Panel* panel) const OVERRIDE;
-  virtual bool CanShowRestoreButton(const Panel* panel) const OVERRIDE;
+  virtual void MinimizeAll() OVERRIDE;
+  virtual void RestoreAll() OVERRIDE;
+  virtual bool CanMinimizePanel(const Panel* panel) const OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement()  OVERRIDE;
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   Panel* GetPanelAbove(Panel* panel) const;
@@ -86,10 +82,6 @@ class StackedPanelCollection : public PanelCollection {
     PanelPlacement() : panel(NULL), top_panel(NULL) { }
   };
 
-  // Minimizes or restores all panels in the collection.
-  void MinimizeAll();
-  void RestoreAll();
-
   PanelManager* panel_manager_;
 
   NativePanelStack* native_stack_;  // Weak, owns us.
@@ -98,8 +90,6 @@ class StackedPanelCollection : public PanelCollection {
 
   // Used to save the placement information for a panel.
   PanelPlacement saved_panel_placement_;
-
-  bool minimizing_all_;  // True while minimizing all panels.
 
   DISALLOW_COPY_AND_ASSIGN(StackedPanelCollection);
 };

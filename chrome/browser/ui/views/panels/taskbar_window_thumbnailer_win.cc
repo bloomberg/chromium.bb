@@ -7,7 +7,6 @@
 #include <dwmapi.h>
 
 #include "base/logging.h"
-#include "base/win/scoped_hdc.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gdi_util.h"
@@ -57,14 +56,9 @@ TaskbarWindowThumbnailerWin::TaskbarWindowThumbnailerWin(HWND hwnd)
 TaskbarWindowThumbnailerWin::~TaskbarWindowThumbnailerWin() {
 }
 
-void TaskbarWindowThumbnailerWin::Start(
-    const std::vector<HWND>& snapshot_hwnds) {
-  snapshot_hwnds_ = snapshot_hwnds;
-  if (snapshot_hwnds_.empty())
-    snapshot_hwnds_.push_back(hwnd_);
+void TaskbarWindowThumbnailerWin::Start() {
   capture_bitmap_.reset(CaptureWindowImage());
-  if (capture_bitmap_)
-    EnableCustomThumbnail(hwnd_, true);
+  EnableCustomThumbnail(hwnd_, true);
 }
 
 void TaskbarWindowThumbnailerWin::Stop() {
@@ -129,59 +123,16 @@ bool TaskbarWindowThumbnailerWin::OnDwmSendIconicLivePreviewBitmap(
 }
 
 SkBitmap* TaskbarWindowThumbnailerWin::CaptureWindowImage() const {
-  int enclosing_x = 0;
-  int enclosing_y = 0;
-  int enclosing_right = 0;
-  int enclosing_bottom = 0;
-  for (std::vector<HWND>::const_iterator iter = snapshot_hwnds_.begin();
-       iter != snapshot_hwnds_.end(); ++iter) {
-    RECT bounds;
-    if (!::GetWindowRect(*iter, &bounds))
-      continue;
-    if (iter == snapshot_hwnds_.begin()) {
-      enclosing_x = bounds.left;
-      enclosing_y = bounds.top;
-      enclosing_right = bounds.right;
-      enclosing_bottom = bounds.bottom;
-    } else {
-      if (bounds.left < enclosing_x)
-        enclosing_x = bounds.left;
-      if (bounds.top < enclosing_y)
-        enclosing_y = bounds.top;
-      if (bounds.right > enclosing_right)
-        enclosing_right = bounds.right;
-      if (bounds.bottom > enclosing_bottom)
-        enclosing_bottom = bounds.bottom;
-    }
-  }
-
-  int width = enclosing_right - enclosing_x;
-  int height = enclosing_bottom - enclosing_y;
-  if (!width || !height)
-    return NULL;
+  RECT bounds;
+  ::GetWindowRect(hwnd_, &bounds);
+  int width = bounds.right - bounds.left;
+  int height = bounds.bottom - bounds.top;
 
   gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P, false);
-  {
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-    HDC target_dc = scoped_platform_paint.GetPlatformSurface();
-    for (std::vector<HWND>::const_iterator iter = snapshot_hwnds_.begin();
-         iter != snapshot_hwnds_.end(); ++iter) {
-      HWND current_hwnd = *iter;
-      RECT current_bounds;
-      if (!::GetWindowRect(current_hwnd, &current_bounds))
-        continue;
-      base::win::ScopedGetDC source_dc(current_hwnd);
-      ::BitBlt(target_dc,
-               current_bounds.left - enclosing_x,
-               current_bounds.top - enclosing_y,
-               current_bounds.right - current_bounds.left,
-               current_bounds.bottom - current_bounds.top,
-               source_dc,
-               0,
-               0,
-               SRCCOPY);
-      ::ReleaseDC(current_hwnd, source_dc);
-    }
-  }
+  HDC target_dc = canvas.BeginPlatformPaint();
+  HDC source_dc = ::GetDC(hwnd_);
+  ::BitBlt(target_dc, 0, 0, width, height, source_dc, 0, 0, SRCCOPY);
+  ::ReleaseDC(hwnd_, source_dc);
+  canvas.EndPlatformPaint();
   return new SkBitmap(canvas.ExtractImageRep().sk_bitmap());
 }

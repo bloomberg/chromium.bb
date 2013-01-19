@@ -242,10 +242,8 @@ void PanelTitlebarGtk::UpdateTextColor() {
 
 void PanelTitlebarGtk::UpdateMinimizeRestoreButtonVisibility() {
   Panel* panel = panel_gtk_->panel();
-  gtk_widget_set_visible(minimize_button_->widget(),
-                         panel->CanShowMinimizeButton());
-  gtk_widget_set_visible(restore_button_->widget(),
-                         panel->CanShowRestoreButton());
+  gtk_widget_set_visible(minimize_button_->widget(), panel->CanMinimize());
+  gtk_widget_set_visible(restore_button_->widget(), panel->CanRestore());
 }
 
 void PanelTitlebarGtk::OnButtonClicked(GtkWidget* button) {

@@ -12,7 +12,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 class StackedPanelCollection;
-class TaskbarWindowThumbnailerWin;
 
 // A native window that acts as the owner of all panels in the stack, in order
 // to make all panels appear as a single window on the taskbar or launcher.
@@ -29,7 +28,6 @@ class PanelStackView : public NativePanelStack,
   virtual void Close() OVERRIDE;
   virtual void OnPanelAddedOrRemoved(Panel* panel) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void Minimize() OVERRIDE;
 
  private:
   // Overridden from views::WidgetDelegate:
@@ -42,8 +40,6 @@ class PanelStackView : public NativePanelStack,
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
 
   void EnsureInitialized();
 
@@ -57,11 +53,6 @@ class PanelStackView : public NativePanelStack,
   bool delay_initialized_;
 
   views::Widget* window_;
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Used to provide custom taskbar thumbnail for Windows 7 and later.
-  scoped_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PanelStackView);
 };

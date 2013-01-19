@@ -250,8 +250,8 @@ void PanelFrameView::UpdateThrobber() {
 
 void PanelFrameView::UpdateTitlebarMinimizeRestoreButtonVisibility() {
   Panel* panel = panel_view_->panel();
-  minimize_button_->SetVisible(panel->CanShowMinimizeButton());
-  restore_button_->SetVisible(panel->CanShowRestoreButton());
+  minimize_button_->SetVisible(panel->CanMinimize());
+  restore_button_->SetVisible(panel->CanRestore());
 
   // Reset the button states in case that the hover states are not cleared when
   // mouse is clicked but not moved.

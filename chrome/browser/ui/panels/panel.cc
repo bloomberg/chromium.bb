@@ -255,12 +255,12 @@ content::WebContents* Panel::GetWebContents() const {
   return panel_host_.get() ? panel_host_->web_contents() : NULL;
 }
 
-bool Panel::CanShowMinimizeButton() const {
-  return collection_ && collection_->CanShowMinimizeButton(this);
+bool Panel::CanMinimize() const {
+  return collection_ && collection_->CanMinimizePanel(this) && !IsMinimized();
 }
 
-bool Panel::CanShowRestoreButton() const {
-  return collection_ && collection_->CanShowRestoreButton(this);
+bool Panel::CanRestore() const {
+  return collection_ && collection_->CanMinimizePanel(this) && IsMinimized();
 }
 
 panel::Resizability Panel::CanResizeByMouse() const {
@@ -736,13 +736,18 @@ void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
 }
 
 void Panel::OnMinimizeButtonClicked(panel::ClickModifier modifier) {
-  if (collection_)
-    collection_->OnMinimizeButtonClicked(this, modifier);
+  if (!collection_)
+    return;
+
+  if (modifier == panel::APPLY_TO_ALL)
+    collection_->MinimizeAll();
+  else
+    Minimize();
 }
 
 void Panel::OnRestoreButtonClicked(panel::ClickModifier modifier) {
-  if (collection_)
-    collection_->OnRestoreButtonClicked(this, modifier);
+  // Clicking the restore button has the same behavior as clicking the titlebar.
+  OnTitlebarClicked(modifier);
 }
 
 void Panel::OnPanelStartUserResizing() {
