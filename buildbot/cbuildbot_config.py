@@ -962,6 +962,7 @@ internal_paladin.add_config('mario-paladin',
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
+  upload_hw_test_artifacts=True,
 )
 
 internal_arm_paladin.add_config('spring-paladin',
