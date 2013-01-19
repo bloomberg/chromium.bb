@@ -22,6 +22,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_observer.h"
+#include "chrome/browser/autofill/validation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -1079,7 +1080,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, PrefsStringSavedAsIs) {
 IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
   ASSERT_TRUE(test_server()->Start());
   std::string card("4408 0412 3456 7890");
-  ASSERT_FALSE(CreditCard::IsValidCreditCardNumber(ASCIIToUTF16(card)));
+  ASSERT_FALSE(autofill::IsValidCreditCardNumber(ASCIIToUTF16(card)));
   SubmitCreditCard("Bob Smith", card.c_str(), "12", "2014");
   ASSERT_EQ(0u,
             InfoBarService::FromWebContents(
@@ -1098,10 +1099,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   ASSERT_EQ(2u, personal_data_manager()->credit_cards().size());
   string16 cc1 = personal_data_manager()->credit_cards()[0]->GetRawInfo(
       CREDIT_CARD_NUMBER);
-  ASSERT_TRUE(CreditCard::IsValidCreditCardNumber(cc1));
+  ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc1));
   string16 cc2 = personal_data_manager()->credit_cards()[1]->GetRawInfo(
       CREDIT_CARD_NUMBER);
-  ASSERT_TRUE(CreditCard::IsValidCreditCardNumber(cc2));
+  ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc2));
 }
 
 // Test that Autofill aggregates a minimum valid profile.

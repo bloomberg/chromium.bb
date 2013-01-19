@@ -22,6 +22,7 @@
 #include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/autofill/validation.h"
 #include "chrome/common/form_field_data.h"
 #include "grit/generated_resources.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
@@ -32,17 +33,9 @@ namespace {
 
 const char16 kCreditCardObfuscationSymbol = '*';
 
-// Returns a version of |number| that has any separator characters removed.
-const string16 StripSeparators(const string16& number) {
-  const char16 kSeparators[] = {'-', ' ', '\0'};
-  string16 stripped;
-  RemoveChars(number, kSeparators, &stripped);
-  return stripped;
-}
-
 std::string GetCreditCardType(const string16& number) {
   // Don't check for a specific type if this is not a credit card number.
-  if (!CreditCard::IsValidCreditCardNumber(number))
+  if (!autofill::IsValidCreditCardNumber(number))
     return kGenericCard;
 
   // Credit card number specifications taken from:
@@ -240,6 +233,14 @@ CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {
 }
 
 CreditCard::~CreditCard() {}
+
+// static
+const string16 CreditCard::StripSeparators(const string16& number) {
+  const char16 kSeparators[] = {'-', ' ', '\0'};
+  string16 stripped;
+  RemoveChars(number, kSeparators, &stripped);
+  return stripped;
+}
 
 std::string CreditCard::GetGUID() const {
   return guid();
@@ -521,42 +522,6 @@ bool CreditCard::operator!=(const CreditCard& credit_card) const {
   return !operator==(credit_card);
 }
 
-// static
-bool CreditCard::IsValidCreditCardNumber(const string16& text) {
-  string16 number = StripSeparators(text);
-
-  // Credit card numbers are at most 19 digits in length [1]. 12 digits seems to
-  // be a fairly safe lower-bound [2].
-  // [1] http://www.merriampark.com/anatomycc.htm
-  // [2] http://en.wikipedia.org/wiki/Bank_card_number
-  const size_t kMinCreditCardDigits = 12;
-  const size_t kMaxCreditCardDigits = 19;
-  if (number.size() < kMinCreditCardDigits ||
-      number.size() > kMaxCreditCardDigits)
-    return false;
-
-  // Use the Luhn formula [3] to validate the number.
-  // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
-  int sum = 0;
-  bool odd = false;
-  string16::reverse_iterator iter;
-  for (iter = number.rbegin(); iter != number.rend(); ++iter) {
-    if (!IsAsciiDigit(*iter))
-      return false;
-
-    int digit = *iter - '0';
-    if (odd) {
-      digit *= 2;
-      sum += digit / 10 + digit % 10;
-    } else {
-      sum += digit;
-    }
-    odd = !odd;
-  }
-
-  return (sum % 10) == 0;
-}
-
 bool CreditCard::IsEmpty() const {
   FieldTypeSet types;
   GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
@@ -565,7 +530,7 @@ bool CreditCard::IsEmpty() const {
 
 bool CreditCard::IsComplete() const {
   return
-      IsValidCreditCardNumber(number_) &&
+      autofill::IsValidCreditCardNumber(number_) &&
       expiration_month_ != 0 &&
       expiration_year_ != 0;
 }

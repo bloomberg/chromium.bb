@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
+#include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
@@ -99,17 +100,17 @@ void WalletClient::EncryptOtp(
 }
 
 void WalletClient::EscrowSensitiveInformation(
-    const std::string& primary_account_number,
-    const std::string& card_verification_number,
+    const Instrument& new_instrument,
     const std::string& obfuscated_gaia_id,
     WalletClient::WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ESCROW_SENSITIVE_INFORMATION;
 
-  std::string post_body = StringPrintf(kEscrowSensitiveInformationFormat,
-                                       obfuscated_gaia_id.c_str(),
-                                       primary_account_number.c_str(),
-                                       card_verification_number.c_str());
+  std::string post_body = StringPrintf(
+      kEscrowSensitiveInformationFormat,
+      obfuscated_gaia_id.c_str(),
+      new_instrument.primary_account_number().c_str(),
+      new_instrument.card_verification_number().c_str());
 
   MakeWalletRequest(GetEscrowUrl(), post_body, observer, kApplicationMimeType);
 }
@@ -157,6 +158,72 @@ void WalletClient::GetWalletItems(
   base::JSONWriter::Write(&request_dict, &post_body);
 
   MakeWalletRequest(GetGetWalletItemsUrl(), post_body, observer, kJsonMimeType);
+}
+
+void WalletClient::SaveAddress(
+    const Address& shipping_address,
+    WalletClient::WalletClientObserver* observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = SAVE_ADDRESS;
+
+  SaveToWallet(NULL,
+               std::string(),
+               &shipping_address,
+               observer);
+}
+
+void WalletClient::SaveInstrument(
+    const Instrument& instrument,
+    const std::string& escrow_handle,
+    WalletClient::WalletClientObserver* observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = SAVE_INSTRUMENT;
+
+  SaveToWallet(&instrument,
+               escrow_handle,
+               NULL,
+               observer);
+}
+
+void WalletClient::SaveInstrumentAndAddress(
+    const Instrument& instrument,
+    const std::string& escrow_handle,
+    const Address& address,
+    WalletClient::WalletClientObserver* observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = SAVE_INSTRUMENT_AND_ADDRESS;
+
+  SaveToWallet(&instrument,
+               escrow_handle,
+               &address,
+               observer);
+}
+
+void WalletClient::SaveToWallet(
+    const Instrument* instrument,
+    const std::string& escrow_handle,
+    const Address* shipping_address,
+    WalletClient::WalletClientObserver* observer) {
+  DictionaryValue request_dict;
+  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("risk_params", GetRiskParams());
+
+  if (instrument) {
+    request_dict.Set("instrument", instrument->ToDictionary().release());
+    request_dict.SetString("instrument_escrow_handle", escrow_handle);
+    request_dict.SetString("instrument_phone_number",
+                           instrument->address().phone_number());
+  }
+
+  if (shipping_address) {
+    request_dict.Set("shipping_address",
+                     shipping_address->ToDictionaryWithID().release());
+  }
+
+  std::string post_body;
+  base::JSONWriter::Write(&request_dict, &post_body);
+
+  MakeWalletRequest(GetSaveToWalletUrl(), post_body, observer, kJsonMimeType);
 }
 
 void WalletClient::SendAutocheckoutStatus(
@@ -258,7 +325,7 @@ void WalletClient::OnURLFetchComplete(
     case SEND_STATUS:
       observer_->OnDidSendAutocheckoutStatus();
       break;
-    case ENCRYPT_OTP: {
+    case ENCRYPT_OTP:
       if (!data.empty()) {
         std::vector<std::string> splits;
         base::SplitString(data, '|', &splits);
@@ -270,18 +337,17 @@ void WalletClient::OnURLFetchComplete(
         HandleMalformedResponse(old_request.get());
       }
       break;
-    }
     case ESCROW_SENSITIVE_INFORMATION:
       if (!data.empty())
         observer_->OnDidEscrowSensitiveInformation(data);
       else
         HandleMalformedResponse(old_request.get());
       break;
-    case GET_FULL_WALLET: {
-      if (response_dict.get()) {
+    case GET_FULL_WALLET:
+      if (response_dict) {
         scoped_ptr<FullWallet> full_wallet(
             FullWallet::CreateFullWallet(*response_dict));
-        if (full_wallet.get())
+        if (full_wallet)
           observer_->OnDidGetFullWallet(full_wallet.get());
         else
           HandleMalformedResponse(old_request.get());
@@ -289,12 +355,11 @@ void WalletClient::OnURLFetchComplete(
         HandleMalformedResponse(old_request.get());
       }
       break;
-    }
-    case GET_WALLET_ITEMS: {
-      if (response_dict.get()) {
+    case GET_WALLET_ITEMS:
+      if (response_dict) {
         scoped_ptr<WalletItems> wallet_items(
             WalletItems::CreateWalletItems(*response_dict));
-        if (wallet_items.get())
+        if (wallet_items)
           observer_->OnDidGetWalletItems(wallet_items.get());
         else
           HandleMalformedResponse(old_request.get());
@@ -302,10 +367,48 @@ void WalletClient::OnURLFetchComplete(
         HandleMalformedResponse(old_request.get());
       }
       break;
-    }
-    default: {
+    case SAVE_ADDRESS:
+      if (response_dict) {
+        std::string shipping_address_id;
+        if (response_dict->GetString("shipping_address_id",
+                                     &shipping_address_id))
+          observer_->OnDidSaveAddress(shipping_address_id);
+        else
+          HandleMalformedResponse(old_request.get());
+      } else {
+        HandleMalformedResponse(old_request.get());
+      }
+      break;
+    case SAVE_INSTRUMENT:
+      if (response_dict) {
+        std::string instrument_id;
+        if (response_dict->GetString("instrument_id", &instrument_id))
+          observer_->OnDidSaveInstrument(instrument_id);
+        else
+          HandleMalformedResponse(old_request.get());
+      } else {
+        HandleMalformedResponse(old_request.get());
+      }
+      break;
+    case SAVE_INSTRUMENT_AND_ADDRESS:
+      if (response_dict) {
+        std::string instrument_id;
+        response_dict->GetString("instrument_id", &instrument_id);
+        std::string shipping_address_id;
+        response_dict->GetString("shipping_address_id",
+                                 &shipping_address_id);
+        if (!instrument_id.empty() && !shipping_address_id.empty()) {
+          observer_->OnDidSaveInstrumentAndAddress(instrument_id,
+                                                   shipping_address_id);
+        } else {
+          HandleMalformedResponse(old_request.get());
+        }
+      } else {
+        HandleMalformedResponse(old_request.get());
+      }
+      break;
+    case NO_PENDING_REQUEST:
       NOTREACHED();
-    }
   }
 }
 

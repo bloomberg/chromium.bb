@@ -227,5 +227,67 @@ TEST_F(WalletAddressTest, CreateDisplayAddress) {
   ASSERT_EQ(address, *Address::CreateDisplayAddress(*dict));
 }
 
+TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
+  base::DictionaryValue expected;
+  expected.SetString("country_name_code",
+                     "country_name_code");
+  expected.SetString("recipient_name",
+                     "recipient_name");
+  expected.SetString("locality_name",
+                     "locality_name");
+  expected.SetString("administrative_area_name",
+                     "administrative_area_name");
+  expected.SetString("postal_code_number",
+                     "postal_code_number");
+  base::ListValue* address_lines = new base::ListValue();
+  address_lines->AppendString("address_line_1");
+  address_lines->AppendString("address_line_2");
+  expected.Set("address_line", address_lines);
+
+  Address address("country_name_code",
+                  "recipient_name",
+                  "address_line_1",
+                  "address_line_2",
+                  "locality_name",
+                  "administrative_area_name",
+                  "postal_code_number",
+                  "phone_number",
+                  "");
+
+  EXPECT_TRUE(expected.Equals(address.ToDictionaryWithoutID().get()));
+}
+
+TEST_F(WalletAddressTest, ToDictionaryWithID) {
+  base::DictionaryValue expected;
+  expected.SetString("id", "id");
+  expected.SetString("phone_number", "phone_number");
+  expected.SetString("postal_address.country_name_code",
+                     "country_name_code");
+  expected.SetString("postal_address.recipient_name",
+                     "recipient_name");
+  expected.SetString("postal_address.locality_name",
+                     "locality_name");
+  expected.SetString("postal_address.administrative_area_name",
+                     "administrative_area_name");
+  expected.SetString("postal_address.postal_code_number",
+                     "postal_code_number");
+  base::ListValue* address_lines = new base::ListValue();
+  address_lines->AppendString("address_line_1");
+  address_lines->AppendString("address_line_2");
+  expected.Set("postal_address.address_line", address_lines);
+
+  Address address("country_name_code",
+                  "recipient_name",
+                  "address_line_1",
+                  "address_line_2",
+                  "locality_name",
+                  "administrative_area_name",
+                  "postal_code_number",
+                  "phone_number",
+                  "id");
+
+  EXPECT_TRUE(expected.Equals(address.ToDictionaryWithID().get()));
+}
+
 }  // namespace wallet
 

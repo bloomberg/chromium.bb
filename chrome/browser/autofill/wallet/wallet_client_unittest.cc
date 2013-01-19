@@ -7,8 +7,10 @@
 #include "base/string_util.h"
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
+#include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_client.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
+#include "chrome/browser/autofill/wallet/wallet_test_util.h"
 #include "chrome/common/autofill/autocheckout_status.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -114,6 +116,37 @@ const char kGetWalletItemsValidResponse[] =
     "  ]"
     "}";
 
+const char kSaveAddressValidResponse[] =
+    "{"
+    "  \"shipping_address_id\":\"shipping_address_id\""
+    "}";
+
+const char kSaveInvalidResponse[] =
+    "{"
+    "  \"garbage\":123"
+    "}";
+
+const char kSaveInstrumentValidResponse[] =
+    "{"
+    "  \"instrument_id\":\"instrument_id\""
+    "}";
+
+const char kSaveInstrumentAndAddressValidResponse[] =
+    "{"
+    "  \"shipping_address_id\":\"shipping_address_id\","
+    "  \"instrument_id\":\"instrument_id\""
+    "}";
+
+const char kSaveInstrumentAndAddressMissingAddressResponse[] =
+    "{"
+    "  \"instrument_id\":\"instrument_id\""
+    "}";
+
+const char kSaveInstrumentAndAddressMissingInstrumentResponse[] =
+    "{"
+    "  \"shipping_address_id\":\"shipping_address_id\""
+    "}";
+
 // The JSON below is used to test against the request payload being sent to
 // Online Wallet. It's indented differently since JSONWriter creates compact
 // JSON from DictionaryValues.
@@ -152,6 +185,110 @@ const char kGetWalletItemsValidRequest[] =
         "\"risk_params\":\"\""
     "}";
 
+const char kSaveAddressValidRequest[] =
+    "{"
+        "\"api_key\":\"abcdefg\","
+        "\"risk_params\":\"\","
+        "\"shipping_address\":"
+        "{"
+            "\"phone_number\":\"ship_phone_number\","
+            "\"postal_address\":"
+            "{"
+                "\"address_line\":"
+                "["
+                    "\"ship_address_line_1\","
+                    "\"ship_address_line_2\""
+                "],"
+                "\"administrative_area_name\":\"ship_admin_area_name\","
+                "\"country_name_code\":\"ship_country_name_code\","
+                "\"locality_name\":\"ship_locality_name\","
+                "\"postal_code_number\":\"ship_postal_code_number\","
+                "\"recipient_name\":\"ship_recipient_name\""
+            "}"
+        "}"
+    "}";
+
+const char kSaveInstrumentValidRequest[] =
+    "{"
+        "\"api_key\":\"abcdefg\","
+        "\"instrument\":"
+        "{"
+            "\"credit_card\":"
+            "{"
+                "\"address\":"
+                "{"
+                    "\"address_line\":"
+                    "["
+                        "\"address_line_1\","
+                        "\"address_line_2\""
+                    "],"
+                    "\"administrative_area_name\":\"admin_area_name\","
+                    "\"country_name_code\":\"country_name_code\","
+                    "\"locality_name\":\"locality_name\","
+                    "\"postal_code_number\":\"postal_code_number\","
+                    "\"recipient_name\":\"recipient_name\""
+                "},"
+                "\"exp_month\":12,"
+                "\"exp_year\":2012,"
+                "\"fop_type\":\"VISA\","
+                "\"last_4_digits\":\"4448\""
+            "},"
+            "\"type\":\"CREDIT_CARD\""
+        "},"
+        "\"instrument_escrow_handle\":\"escrow_handle\","
+        "\"instrument_phone_number\":\"phone_number\","
+        "\"risk_params\":\"\""
+      "}";
+
+const char kSaveInstrumentAndAddressValidRequest[] =
+    "{"
+        "\"api_key\":\"abcdefg\","
+        "\"instrument\":"
+        "{"
+            "\"credit_card\":"
+            "{"
+                "\"address\":"
+                "{"
+                    "\"address_line\":"
+                    "["
+                        "\"address_line_1\","
+                        "\"address_line_2\""
+                    "],"
+                    "\"administrative_area_name\":\"admin_area_name\","
+                    "\"country_name_code\":\"country_name_code\","
+                    "\"locality_name\":\"locality_name\","
+                    "\"postal_code_number\":\"postal_code_number\","
+                    "\"recipient_name\":\"recipient_name\""
+                "},"
+                "\"exp_month\":12,"
+                "\"exp_year\":2012,"
+                "\"fop_type\":\"VISA\","
+                "\"last_4_digits\":\"4448\""
+            "},"
+            "\"type\":\"CREDIT_CARD\""
+        "},"
+        "\"instrument_escrow_handle\":\"escrow_handle\","
+        "\"instrument_phone_number\":\"phone_number\","
+        "\"risk_params\":\"\","
+        "\"shipping_address\":"
+        "{"
+            "\"phone_number\":\"ship_phone_number\","
+            "\"postal_address\":"
+            "{"
+                "\"address_line\":"
+                "["
+                    "\"ship_address_line_1\","
+                    "\"ship_address_line_2\""
+                "],"
+                "\"administrative_area_name\":\"ship_admin_area_name\","
+                "\"country_name_code\":\"ship_country_name_code\","
+                "\"locality_name\":\"ship_locality_name\","
+                "\"postal_code_number\":\"ship_postal_code_number\","
+                "\"recipient_name\":\"ship_recipient_name\""
+            "}"
+        "}"
+    "}";
+
 const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
     "{"
         "\"api_key\":\"abcdefg\","
@@ -170,7 +307,7 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
     "}";
 
 const char kEscrowSensitiveInformationRequest[] =
-    "gid=obfuscated_gaia_id&cardNumber=pan&cvv=cvn";
+    "gid=obfuscated_gaia_id&cardNumber=4444444444444448&cvv=123";
 
 }  // anonymous namespace
 
@@ -188,6 +325,18 @@ class WalletClientTest : public testing::Test {
   virtual void TearDown() {
     profile_.ResetRequestContext();
     io_thread_.Stop();
+  }
+
+  void VerifyAndFinishRequest(const net::TestURLFetcherFactory& fetcher_factory,
+                              net::HttpStatusCode response_code,
+                              const std::string& request_body,
+                              const std::string& response_body) {
+    net::TestURLFetcher* fetcher = fetcher_factory.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+    EXPECT_EQ(request_body, fetcher->upload_data());
+    fetcher->set_response_code(response_code);
+    fetcher->SetResponseString(response_body);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
  protected:
@@ -211,6 +360,11 @@ class MockWalletClientObserver
                void(const std::string& escrow_handle));
   MOCK_METHOD1(OnDidGetFullWallet, void(FullWallet* full_wallet));
   MOCK_METHOD1(OnDidGetWalletItems, void(WalletItems* wallet_items));
+  MOCK_METHOD1(OnDidSaveAddress, void(const std::string& address_id));
+  MOCK_METHOD1(OnDidSaveInstrument, void(const std::string& instrument_id));
+  MOCK_METHOD2(OnDidSaveInstrumentAndAddress,
+               void(const std::string& instrument_id,
+                    const std::string& shipping_address_id));
   MOCK_METHOD0(OnDidSendAutocheckoutStatus, void());
   MOCK_METHOD0(OnWalletError, void());
   MOCK_METHOD0(OnMalformedResponse, void());
@@ -315,17 +469,15 @@ TEST_F(WalletClientTest, EscrowSensitiveInformationSuccess) {
 
   net::TestURLFetcherFactory factory;
 
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.EscrowSensitiveInformation("pan",
-                                           "cvn",
+  wallet_client.EscrowSensitiveInformation(*instrument,
                                            "obfuscated_gaia_id",
                                            &observer);
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kEscrowSensitiveInformationRequest, fetcher->upload_data());
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString("abc");
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kEscrowSensitiveInformationRequest,
+                         "abc");
 }
 
 TEST_F(WalletClientTest, EscrowSensitiveInformationFailure) {
@@ -333,18 +485,15 @@ TEST_F(WalletClientTest, EscrowSensitiveInformationFailure) {
   EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
 
   net::TestURLFetcherFactory factory;
-
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.EscrowSensitiveInformation("pan",
-                                           "cvn",
+  wallet_client.EscrowSensitiveInformation(*instrument,
                                            "obfuscated_gaia_id",
                                            &observer);
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kEscrowSensitiveInformationRequest, fetcher->upload_data());
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString("");
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kEscrowSensitiveInformationRequest,
+                         std::string());
 }
 
 TEST_F(WalletClientTest, GetFullWallet) {
@@ -405,6 +554,135 @@ TEST_F(WalletClientTest, GetWalletItems) {
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetWalletItemsValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(WalletClientTest, SaveAddressSucceeded) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnDidSaveAddress("shipping_address_id")).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveAddress(*address, &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveAddressValidRequest,
+                         kSaveAddressValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveAddress(*address, &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveAddressValidRequest,
+                         kSaveInvalidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnDidSaveInstrument("instrument_id")).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrument(*instrument, "escrow_handle", &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentValidRequest,
+                         kSaveInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrument(*instrument, "escrow_handle", &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentValidRequest,
+                         kSaveInvalidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer,
+              OnDidSaveInstrumentAndAddress("instrument_id",
+                                            "shipping_address_id")).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrumentAndAddress(*instrument,
+                                         "escrow_handle",
+                                         *address,
+                                         &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentAndAddressValidRequest,
+                         kSaveInstrumentAndAddressValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrumentAndAddress(*instrument,
+                                         "escrow_handle",
+                                         *address,
+                                         &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentAndAddressValidRequest,
+                         kSaveInstrumentAndAddressMissingAddressResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrumentAndAddress(*instrument,
+                                         "escrow_handle",
+                                         *address,
+                                         &observer);
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentAndAddressValidRequest,
+                         kSaveInstrumentAndAddressMissingInstrumentResponse);
 }
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {

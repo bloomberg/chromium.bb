@@ -25,6 +25,9 @@ class CreditCard : public FormGroup {
   CreditCard(const CreditCard& credit_card);
   virtual ~CreditCard();
 
+  // Returns a version of |number| that has any separator characters removed.
+  static const string16 StripSeparators(const string16& number);
+
   // FormGroup implementation:
   virtual std::string GetGUID() const OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
@@ -80,10 +83,6 @@ class CreditCard : public FormGroup {
   // Used by tests.
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
-
-  // Returns true if |text| looks like a valid credit card number.
-  // Uses the Luhn formula to validate the number.
-  static bool IsValidCreditCardNumber(const string16& text);
 
   // Returns true if there are no values (field types) set.
   bool IsEmpty() const;

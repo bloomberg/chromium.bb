@@ -78,6 +78,15 @@ class Address {
     object_id_ = object_id;
   }
 
+  // If an address is being upgraded, it will be sent to the server in a
+  // different format and with a few additional fields set, most importantly
+  // |object_id_|.
+  scoped_ptr<base::DictionaryValue> ToDictionaryWithID() const;
+
+  // Newly created addresses will not have an associated |object_id_| and are
+  // sent to the server in a slightly different format.
+  scoped_ptr<base::DictionaryValue> ToDictionaryWithoutID() const;
+
   // Returns an empty scoped_ptr if input is invalid or a valid address that is
   // selectable for Google Wallet use.
   static scoped_ptr<Address>

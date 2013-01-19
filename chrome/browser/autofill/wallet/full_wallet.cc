@@ -57,8 +57,8 @@ scoped_ptr<FullWallet>
     if (required_actions.size() > 0) {
       return scoped_ptr<FullWallet>(new FullWallet(-1,
                                                    -1,
-                                                   "",
-                                                   "",
+                                                   std::string(),
+                                                   std::string(),
                                                    scoped_ptr<Address>(),
                                                    scoped_ptr<Address>(),
                                                    required_actions));

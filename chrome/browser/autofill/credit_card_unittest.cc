@@ -111,19 +111,6 @@ TEST(CreditCardTest, AssignmentOperator) {
   EXPECT_TRUE(a == b);
 }
 
-TEST(CreditCardTest, IsValidCreditCardNumber) {
-  for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
-    SCOPED_TRACE(kValidNumbers[i]);
-    EXPECT_TRUE(
-        CreditCard::IsValidCreditCardNumber(ASCIIToUTF16(kValidNumbers[i])));
-  }
-  for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
-    SCOPED_TRACE(kInvalidNumbers[i]);
-    EXPECT_FALSE(
-        CreditCard::IsValidCreditCardNumber(ASCIIToUTF16(kInvalidNumbers[i])));
-  }
-}
-
 TEST(CreditCardTest, IsComplete) {
   CreditCard card;
   EXPECT_FALSE(card.IsComplete());

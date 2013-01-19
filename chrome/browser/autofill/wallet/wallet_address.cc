@@ -32,6 +32,37 @@ Address::Address(const std::string& country_name_code,
 
 Address::~Address() {}
 
+scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+  if (!object_id_.empty())
+    dict->SetString("id", object_id_);
+  dict->SetString("phone_number", phone_number_);
+  dict->Set("postal_address", ToDictionaryWithoutID().release());
+
+  return dict.Pass();
+}
+
+scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+  scoped_ptr<base::ListValue> address_lines(new base::ListValue());
+  address_lines->AppendString(address_line_1_);
+  if (!address_line_2_.empty())
+    address_lines->AppendString(address_line_2_);
+  dict->Set("address_line", address_lines.release());
+
+  dict->SetString("country_name_code", country_name_code_);
+  dict->SetString("recipient_name", recipient_name_);
+  dict->SetString("locality_name", locality_name_);
+  dict->SetString("administrative_area_name",
+                  administrative_area_name_);
+  dict->SetString("postal_code_number", postal_code_number_);
+
+  return dict.Pass();
+}
+
+
 scoped_ptr<Address>
     Address::CreateAddressWithID(const base::DictionaryValue& dictionary) {
   std::string object_id;
@@ -149,7 +180,7 @@ scoped_ptr<Address>
                                          state,
                                          postal_code,
                                          phone_number,
-                                         ""));
+                                         std::string()));
 }
 
 bool Address::operator==(const Address& other) const {
