@@ -169,8 +169,8 @@ class ASH_EXPORT LauncherView : public views::View,
   // Common setup done for all children.
   void ConfigureChildView(views::View* view);
 
-  // Shows the overflow menu.
-  void ShowOverflowBubble();
+  // Toggles the overflow menu.
+  void ToggleOverflowBubble();
 
   // Update first launcher button's padding. This method adds padding to the
   // first button to include the leading inset. It needs to be called once on

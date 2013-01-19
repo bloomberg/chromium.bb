@@ -762,10 +762,15 @@ void LauncherView::ConfigureChildView(views::View* view) {
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 
-void LauncherView::ShowOverflowBubble() {
+void LauncherView::ToggleOverflowBubble() {
   int first_overflow_index = last_visible_index_ + 1;
   DCHECK_LE(first_overflow_index, last_hidden_index_);
   DCHECK_LT(last_hidden_index_, view_model_->view_size());
+
+  if (IsShowingOverflowBubble()) {
+    overflow_bubble_->Hide();
+    return;
+  }
 
   if (!overflow_bubble_.get())
     overflow_bubble_.reset(new OverflowBubble());
@@ -1109,7 +1114,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
     return;
 
   if (sender == overflow_button_) {
-    ShowOverflowBubble();
+    ToggleOverflowBubble();
     return;
   }
 
