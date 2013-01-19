@@ -75,6 +75,8 @@ chrome/browser/importer/nss_decryptor_win.h
 # Credits notice for Chrome.
 chrome/browser/resources/about_credits.html
 # String 'copyright' used in code.
+chrome/browser/resources/about_version.css
+# String 'copyright' used in code.
 chrome/browser/resources/about_version.html
 # Credits notice for ChromeOS.
 chrome/browser/resources/chromeos/about_os_credits.html
@@ -94,8 +96,6 @@ chrome/browser/resources/file_manager/js/mock_chrome.js
 chrome/browser/resources/file_manager/js/photo/photo_import_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/help/help.html
-# String 'copyright' used in code.
-chrome/browser/resources/shared/css/about_version.css
 # String 'copyright' used in code.
 chrome/browser/ui/webui/version_ui.cc
 # String 'copyright' used in code.
@@ -141,6 +141,8 @@ content/browser/renderer_host/render_widget_host_view_mac.mm
 content/browser/renderer_host/web_input_event_aurax11.cc
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
+# License file for missingImage.gif, uses word 'copyright'.
+content/shell/resources/README.txt
 # Uses word 'copyright'.
 LICENSE
 # Copyright Loren Merritt, Anton Mitrofanov and Jason Garrett-Glaser; ISC
