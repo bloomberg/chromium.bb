@@ -12,12 +12,15 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
  * Controller used to send start, stop, and registration-change commands to the invalidation
@@ -34,11 +37,6 @@ public class InvalidationController {
          */
         public static final String ACTION_REGISTER =
                 "org.chromium.sync.notifier.ACTION_REGISTER_TYPES";
-
-        /**
-         * Special syncable type that lets us know to sync all types.
-         */
-        public static final String ALL_TYPES_TYPE = "ALL_TYPES";
 
         /**
          * Parcelable-valued intent extra containing the account of the user.
@@ -64,7 +62,7 @@ public class InvalidationController {
             Intent registerIntent = new Intent(ACTION_REGISTER);
             String[] selectedTypesArray;
             if (allTypes) {
-                selectedTypesArray = new String[]{ALL_TYPES_TYPE};
+                selectedTypesArray = new String[]{ModelType.ALL_TYPES_TYPE};
             } else {
                 selectedTypesArray = new String[types.size()];
                 int pos = 0;
@@ -156,6 +154,15 @@ public class InvalidationController {
      * @return {@code intent}
      */
     private Intent setDestinationClassName(Intent intent) {
+        String className = getDestinationClassName(context);
+        if (className != null) {
+            intent.setClassName(context, className);
+        }
+        return intent;
+    }
+
+    @VisibleForTesting
+    @Nullable static String getDestinationClassName(Context context) {
         ApplicationInfo appInfo;
         try {
             // Fetch application info and read the appropriate metadata element.
@@ -168,12 +175,11 @@ public class InvalidationController {
             if (className == null) {
                 Log.wtf(TAG, "No value for " + IMPLEMENTING_CLASS_MANIFEST_PROPERTY
                         + " in manifest; sync notifications will not work");
-            } else {
-                intent.setClassName(context, className);
             }
+            return className;
         } catch (NameNotFoundException exception) {
             Log.wtf(TAG, "Cannot read own application info", exception);
         }
-        return intent;
+        return null;
     }
 }

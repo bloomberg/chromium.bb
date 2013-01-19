@@ -101,7 +101,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(account, intentAccount);
 
         // Validate registered types.
-        Set<String> expectedTypes = Sets.newHashSet(IntentProtocol.ALL_TYPES_TYPE);
+        Set<String> expectedTypes = Sets.newHashSet(ModelType.ALL_TYPES_TYPE);
         Set<String> actualTypes = Sets.newHashSet();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
@@ -111,6 +111,13 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     @Feature({"Sync"})
     public void testGetContractAuthority() throws Exception {
         assertEquals(mContext.getPackageName(), mController.getContractAuthority());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testGetIntentDestination() {
+        assertEquals("org.chromium.sync.notifier.TEST_VALUE",
+                InvalidationController.getDestinationClassName(mContext));
     }
 
     /**
