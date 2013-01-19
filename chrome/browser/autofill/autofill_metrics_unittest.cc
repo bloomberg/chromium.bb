@@ -301,6 +301,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread file_thread_;
 
   scoped_refptr<TestAutofillManager> autofill_manager_;
+  TestAutocheckoutManager autocheckout_manager_;
   TestPersonalDataManager personal_data_;
 
  private:
@@ -312,7 +313,8 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
 AutofillMetricsTest::AutofillMetricsTest()
   : ChromeRenderViewHostTestHarness(),
     ui_thread_(BrowserThread::UI, &message_loop_),
-    file_thread_(BrowserThread::FILE) {
+    file_thread_(BrowserThread::FILE),
+    autocheckout_manager_(NULL) {
 }
 
 AutofillMetricsTest::~AutofillMetricsTest() {
@@ -383,7 +385,7 @@ AutofillMetricsTest::CreateAutocheckoutDelegate(
       *metric_logger,
       url,
       ssl_status,
-      new TestAutocheckoutManager(NULL));
+      &autocheckout_manager_);
 }
 
 // Test that we log quality metrics appropriately.
