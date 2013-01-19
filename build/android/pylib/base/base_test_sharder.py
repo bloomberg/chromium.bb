@@ -127,6 +127,10 @@ class BaseTestSharder(object):
       retry_devices -= TestResults.DeviceExceptions(results_lists)
       # Retry on devices that didn't have any exception.
       self.attached_devices = list(retry_devices)
+
+      # TODO(frankf): Fix the retry logic:
+      # - GetAllBroken() should report all tests not ran.
+      # - Do not break TestResults encapsulation.
       if (retry == self.retries - 1 or
           len(self.attached_devices) == 0):
         all_passed = final_results.ok + test_results.ok
@@ -135,9 +139,11 @@ class BaseTestSharder(object):
         break
       else:
         final_results.ok += test_results.ok
-        # Timed out tests are not reported in GetAllBroken().
-        if test_results.timed_out:
-          final_results.timed_out = True
+        final_results.overall_timed_out = (final_results.overall_timed_out or
+                                           test_results.overall_timed_out)
+        final_results.overall_fail = (final_results.overall_fail or
+                                      test_results.overall_fail)
+
         self.tests = []
         for t in test_results.GetAllBroken():
           self.tests += [t.name]
