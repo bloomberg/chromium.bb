@@ -15,11 +15,17 @@ public:
   static scoped_refptr<FakeScrollbarLayer> Create(
       bool paint_during_update, bool has_thumb, int scrolling_layer_id) {
     return make_scoped_refptr(new FakeScrollbarLayer(
-        paint_during_update, has_thumb, scrolling_layer_id)); 
+        paint_during_update, has_thumb, scrolling_layer_id));
   }
 
-  int update_count() { return update_count_; }
+  int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
+  size_t last_update_full_upload_size() const {
+    return last_update_full_upload_size_;
+  }
+  size_t last_update_partial_upload_size() const {
+    return last_update_partial_upload_size_;
+  }
 
   virtual void update(
       ResourceUpdateQueue& queue,
@@ -32,6 +38,8 @@ private:
   virtual ~FakeScrollbarLayer();
 
   int update_count_;
+  size_t last_update_full_upload_size_;
+  size_t last_update_partial_upload_size_;
 };
 
 }  // namespace cc

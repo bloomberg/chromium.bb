@@ -64,8 +64,10 @@ FakeWebGraphicsContext3D::~FakeWebGraphicsContext3D() {
 
 bool FakeWebGraphicsContext3D::makeContextCurrent() {
   if (times_make_current_succeeds_ >= 0) {
-    if (!times_make_current_succeeds_)
-      loseContextCHROMIUM();
+    if (!times_make_current_succeeds_) {
+      loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                          GL_INNOCENT_CONTEXT_RESET_ARB);
+    }
     --times_make_current_succeeds_;
   }
   return !context_lost_;
@@ -355,8 +357,10 @@ void FakeWebGraphicsContext3D::bindRenderbuffer(
 void FakeWebGraphicsContext3D::bindTexture(
     WGC3Denum target, WebGLId texture_id) {
   if (times_bind_texture_succeeds_ >= 0) {
-    if (!times_bind_texture_succeeds_)
-      loseContextCHROMIUM();
+    if (!times_bind_texture_succeeds_) {
+      loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                          GL_INNOCENT_CONTEXT_RESET_ARB);
+    }
     --times_bind_texture_succeeds_;
   }
 
@@ -379,8 +383,10 @@ WGC3Dboolean FakeWebGraphicsContext3D::isQueryEXT(WebGLId query) {
 
 void FakeWebGraphicsContext3D::endQueryEXT(WebKit::WGC3Denum target) {
   if (times_end_query_succeeds_ >= 0) {
-    if (!times_end_query_succeeds_)
-      loseContextCHROMIUM();
+    if (!times_end_query_succeeds_) {
+      loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                          GL_INNOCENT_CONTEXT_RESET_ARB);
+    }
     --times_end_query_succeeds_;
   }
 }
@@ -399,7 +405,8 @@ void FakeWebGraphicsContext3D::setContextLostCallback(
   context_lost_callback_ = callback;
 }
 
-void FakeWebGraphicsContext3D::loseContextCHROMIUM() {
+void FakeWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
+                                                   WGC3Denum other) {
   if (context_lost_)
     return;
   context_lost_ = true;

@@ -589,7 +589,8 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual void setContextLostCallback(
       WebGraphicsContextLostCallback* callback);
 
-  virtual void loseContextCHROMIUM();
+  virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
+                                   WebKit::WGC3Denum other);
 
   // When set, MakeCurrent() will fail after this many times.
   void set_times_make_current_succeeds(int times) {

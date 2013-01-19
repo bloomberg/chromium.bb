@@ -322,8 +322,6 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* 
         return;
     if (visibleContentRect().IsEmpty())
         return;
-    if (!isDirty())
-        return;
 
     createUpdaterIfNeeded();
 

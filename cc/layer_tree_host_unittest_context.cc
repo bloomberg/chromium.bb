@@ -20,6 +20,7 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
@@ -30,6 +31,7 @@
 #include "cc/texture_layer.h"
 #include "cc/video_layer.h"
 #include "cc/video_layer_impl.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
 
 using media::VideoFrame;
@@ -53,7 +55,8 @@ class LayerTreeHostContextTest : public ThreadedTest {
   }
 
   void LoseContext() {
-    context3d_->loseContextCHROMIUM();
+    context3d_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                    GL_INNOCENT_CONTEXT_RESET_ARB);
     context3d_ = NULL;
   }
 
@@ -803,7 +806,8 @@ class LayerTreeHostContextTestFailsImmediately :
   virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() OVERRIDE {
     scoped_ptr<FakeWebGraphicsContext3D> context =
         LayerTreeHostContextTest::CreateContext3d();
-    context->loseContextCHROMIUM();
+    context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                 GL_INNOCENT_CONTEXT_RESET_ARB);
     return context.Pass();
   }
 
@@ -860,6 +864,54 @@ class LayerTreeHostContextTestImplSidePainting :
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostContextTestImplSidePainting)
+
+class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
+ public:
+  ScrollbarLayerLostContext() : commits_(0) {}
+
+  virtual void beginTest() OVERRIDE {
+    scoped_refptr<Layer> scroll_layer = Layer::create();
+    scrollbar_layer_ = FakeScrollbarLayer::Create(
+        false, true, scroll_layer->id());
+    scrollbar_layer_->setBounds(gfx::Size(10, 100));
+    m_layerTreeHost->rootLayer()->addChild(scrollbar_layer_);
+    m_layerTreeHost->rootLayer()->addChild(scroll_layer);
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void afterTest() OVERRIDE {
+  }
+
+  virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ++commits_;
+    size_t upload_count = scrollbar_layer_->last_update_full_upload_size() +
+        scrollbar_layer_->last_update_partial_upload_size();
+    switch(commits_) {
+      case 1:
+        // First (regular) update, we should upload 2 resources (thumb, and
+        // backtrack).
+        EXPECT_EQ(1, scrollbar_layer_->update_count());
+        EXPECT_EQ(2, upload_count);
+        LoseContext();
+        break;
+      case 2:
+        // Second update, after the lost context, we should still upload 2
+        // resources even if the contents haven't changed.
+        EXPECT_EQ(2, scrollbar_layer_->update_count());
+        EXPECT_EQ(2, upload_count);
+        endTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  int commits_;
+  scoped_refptr<FakeScrollbarLayer> scrollbar_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext)
 
 }  // namespace
 }  // namespace cc
