@@ -574,9 +574,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   void RefreshVideoMemoryUsageStats();
 
-  void AddItem(TaskManager::Resource* resource, bool notify_table);
-  void RemoveItem(TaskManager::Resource* resource);
-
   // Returns the network usage (in bytes per seconds) for the specified
   // resource. That's the value retrieved at the last timer's tick.
   int64 GetNetworkUsageForResource(TaskManager::Resource* resource) const;
