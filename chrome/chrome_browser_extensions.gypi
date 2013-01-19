@@ -229,8 +229,6 @@
         'browser/extensions/api/idltest/idltest_api.h',
         'browser/extensions/api/input/input.cc',
         'browser/extensions/api/input/input.h',
-        'browser/extensions/api/input_ime/input_ime_api.cc',
-        'browser/extensions/api/input_ime/input_ime_api.h',
         'browser/extensions/api/managed_mode/managed_mode_api.cc',
         'browser/extensions/api/managed_mode/managed_mode_api.h',
         'browser/extensions/api/management/management_api.cc',
@@ -301,8 +299,6 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
         'browser/extensions/api/record/record_api.cc',
         'browser/extensions/api/record/record_api.h',
-        'browser/extensions/api/rtc_private/rtc_private_api.cc',
-        'browser/extensions/api/rtc_private/rtc_private_api.h',
         'browser/extensions/api/runtime/runtime_api.cc',
         'browser/extensions/api/runtime/runtime_api.h',
         'browser/extensions/api/serial/serial_api.cc',
@@ -406,10 +402,6 @@
         'browser/extensions/api/tabs/tabs_constants.h',
         'browser/extensions/api/tabs/windows_event_router.cc',
         'browser/extensions/api/tabs/windows_event_router.h',
-        'browser/extensions/api/terminal/terminal_extension_helper.cc',
-        'browser/extensions/api/terminal/terminal_extension_helper.h',
-        'browser/extensions/api/terminal/terminal_private_api.cc',
-        'browser/extensions/api/terminal/terminal_private_api.h',
         'browser/extensions/api/test/test_api.cc',
         'browser/extensions/api/test/test_api.h',
         'browser/extensions/api/top_sites/top_sites_api.cc',
@@ -729,18 +721,7 @@
         'browser/extensions/window_controller_list_observer.h',
       ],
       'conditions': [
-        ['chromeos==0', {
-          'sources/': [
-            ['exclude', '^browser/extensions/api/input_ime/input_ime_api.cc'],
-            ['exclude', '^browser/extensions/api/input_ime/input_ime_api.h'],
-            ['exclude', '^browser/extensions/api/rtc_private/rtc_private_api.cc'],
-            ['exclude', '^browser/extensions/api/rtc_private/rtc_private_api.h'],
-            ['exclude', '^browser/extensions/api/terminal/terminal_extension_helper.cc'],
-            ['exclude', '^browser/extensions/api/terminal/terminal_extension_helper.h'],
-            ['exclude', '^browser/extensions/api/terminal/terminal_private_api.cc'],
-            ['exclude', '^browser/extensions/api/terminal/terminal_private_api.h'],
-          ],
-        }, {  # chromeos==1
+        ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../third_party/libevent/libevent.gyp:libevent',
@@ -750,6 +731,16 @@
           'sources!': [
             'browser/extensions/default_apps.cc',
             'browser/extensions/default_apps.h',
+          ],
+          'sources': [
+            'browser/extensions/api/input_ime/input_ime_api.cc',
+            'browser/extensions/api/input_ime/input_ime_api.h',
+            'browser/extensions/api/rtc_private/rtc_private_api.cc',
+            'browser/extensions/api/rtc_private/rtc_private_api.h',
+            'browser/extensions/api/terminal/terminal_extension_helper.cc',
+            'browser/extensions/api/terminal/terminal_extension_helper.h',
+            'browser/extensions/api/terminal/terminal_private_api.cc',
+            'browser/extensions/api/terminal/terminal_private_api.h',
           ],
         }],
         ['enable_extensions==0', {
