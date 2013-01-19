@@ -540,7 +540,7 @@
         },
       ],
       'conditions': [
-        ['disable_nacl!=1', {
+        ['disable_nacl!=1 and target_arch=="ia32"', {
           'targets': [
             {
               'target_name': 'chrome_nacl_win64',
