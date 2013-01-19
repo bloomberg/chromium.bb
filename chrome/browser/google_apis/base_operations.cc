@@ -297,6 +297,8 @@ void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
                                      const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  VLOG(1) << "JSON received from " << GetURL().spec() << ": "
+          << data.size() << " bytes";
   ParseJson(data,
             base::Bind(&GetDataOperation::OnDataParsed,
                        weak_ptr_factory_.GetWeakPtr(),
