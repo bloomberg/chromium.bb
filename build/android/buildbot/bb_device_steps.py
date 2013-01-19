@@ -169,8 +169,8 @@ def RunInstrumentationSuite(options, test):
   if options.asan:
     args.append('--tool=asan')
   if options.upload_to_flakiness_server:
-    args.append('--flakiness-dashboard-server='
-                'chrome-android-staging-results.appspot.com')
+    args.append('--flakiness-dashboard-server=%s' %
+                constants.UPSTREAM_FLAKINESS_SERVER)
 
   RunCmd(['build/android/run_instrumentation_tests.py'] + args)
 

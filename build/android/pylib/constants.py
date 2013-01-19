@@ -51,3 +51,5 @@ SCREENSHOTS_DIR = os.path.join(CHROME_DIR, 'out_screenshots')
 ANDROID_SDK_VERSION = 17
 ANDROID_SDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/sdk')
 ANDROID_NDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/ndk')
+
+UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'

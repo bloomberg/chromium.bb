@@ -15,9 +15,6 @@ from pylib import constants
 from pylib.utils import flakiness_dashboard_results_uploader
 
 
-_STAGING_SERVER = 'chrome-android-staging'
-
-
 class BaseTestResult(object):
   """A single result from a unit test."""
 
@@ -188,15 +185,13 @@ class TestResults(object):
       return
 
     try:
-      # TODO(frankf): Temp server for initial testing upstream.
-      # Use http://test-results.appspot.com once we're confident this works.
-      if _STAGING_SERVER in flakiness_server:
+      if flakiness_server == constants.UPSTREAM_FLAKINESS_SERVER:
           assert test_package in ['ContentShellTest',
                                   'ChromiumTestShellTest',
                                   'AndroidWebViewTest']
           dashboard_test_type = ('%s_instrumentation_tests' %
                                  test_package.lower().rstrip('test'))
-      # Downstream prod server.
+      # Downstream server.
       else:
         dashboard_test_type = 'Chromium_Android_Instrumentation'
 
