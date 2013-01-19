@@ -121,6 +121,19 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
   }
 }
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)  // Implies OS_CHROMEOS
+// For a device with |device_name| and a relative path |sub_folder|, construct
+// a display name. If |sub_folder| is empty, then just return |device_name|.
+string16 GetDisplayNameForSubFolder(const string16& device_name,
+                                    const FilePath& sub_folder) {
+  if (sub_folder.empty())
+    return device_name;
+  return (sub_folder.BaseName().LossyDisplayName() +
+          ASCIIToUTF16(" - ") +
+          device_name);
+}
+#endif
+
 }  // namespace
 
 // static
@@ -249,6 +262,7 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
                                   done);
 }
 
+// TODO(kmadhusu) Write unit tests for GetDeviceInfoFromPath().
 bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
                                              std::string* device_id,
                                              string16* device_name,
@@ -283,9 +297,10 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
       *device_id = device_info.device_id;
 
     FilePath sub_folder_path;
-    if (device_name || relative_path) {
-      bool success = FilePath(device_info.location)
-          .AppendRelativePath(path, &sub_folder_path);
+    if ((device_name || relative_path) &&
+        (path.value() != device_info.location)) {
+      FilePath device_path(device_info.location);
+      bool success = device_path.AppendRelativePath(path, &sub_folder_path);
       DCHECK(success);
     }
 
@@ -293,10 +308,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
 #if defined(OS_MACOSX) || defined(OS_LINUX)  // Implies OS_CHROMEOS
       *device_name = GetDisplayNameForDevice(
           notifier->GetStorageSize(device_info.location),
-          sub_folder_path.value().empty() ?
-              device_info.name :
-              sub_folder_path.BaseName().LossyDisplayName() +
-                  ASCIIToUTF16(" - ") + device_info.name);
+          GetDisplayNameForSubFolder(device_info.name, sub_folder_path));
 #else
       *device_name = device_info.name;
 #endif
