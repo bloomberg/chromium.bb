@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -65,7 +66,8 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
                                        public content::NotificationObserver,
                                        public PrefServiceSyncableObserver,
                                        public AppSyncUIStateObserver,
-                                       public ExtensionEnableFlowDelegate {
+                                       public ExtensionEnableFlowDelegate,
+                                       public chrome::BrowserListObserver {
  public:
   ChromeLauncherControllerPerApp(Profile* profile, ash::LauncherModel* model);
   virtual ~ChromeLauncherControllerPerApp();
@@ -295,6 +297,9 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // Note that for incognito windows the incognito icon will be returned.
   gfx::Image GetAppListIcon(content::WebContents* web_contents) const;
 
+  // Overridden from chrome::BrowserListObserver.
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+
  protected:
   // ChromeLauncherController overrides:
 
@@ -313,6 +318,9 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
 
  private:
   friend class ChromeLauncherControllerPerAppTest;
+
+  // Updates the activation state of the Broswer item.
+  void UpdateBrowserItemStatus();
 
   typedef std::map<ash::LauncherID, LauncherItemController*>
           IDToItemControllerMap;

@@ -643,6 +643,11 @@ bool BrowserView::IsAlwaysOnTop() const {
 }
 
 gfx::NativeWindow BrowserView::GetNativeWindow() {
+  // While the browser destruction is going on, the widget can already be gone,
+  // but utility functions like FindBrowserWithWindow will come here and crash.
+  // We short circuit therefore.
+  if (!GetWidget())
+    return NULL;
   return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 }
 

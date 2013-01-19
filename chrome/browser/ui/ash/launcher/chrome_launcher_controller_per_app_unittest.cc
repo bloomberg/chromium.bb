@@ -461,7 +461,3 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
 
 // TODO(skuhne) Add tests for:
 //   - V2 apps: create through item in launcher or directly
-//   - Tracking correct activation state (seems not to work from unit_test)
-//     - Check that browser is always running or active when browser is active
-//     - Check that v1 app active shows browser active and app.
-//       ..
