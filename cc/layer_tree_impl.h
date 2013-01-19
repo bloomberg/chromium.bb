@@ -31,6 +31,7 @@ class LayerTreeSettings;
 class OutputSurface;
 class PaintTimeCounter;
 class PinchZoomViewport;
+class Proxy;
 class ResourceProvider;
 class TileManager;
 
@@ -90,20 +91,15 @@ class CC_EXPORT LayerTreeImpl {
     hud_layer_ = layer_impl;
   }
 
-  LayerImpl* root_scroll_layer() { return root_scroll_layer_; }
-  const LayerImpl* root_scroll_layer() const { return root_scroll_layer_; }
-  void set_root_scroll_layer(LayerImpl* layer_impl) {
-    root_scroll_layer_ = layer_impl;
+  LayerImpl* RootScrollLayer();
+  LayerImpl* CurrentlyScrollingLayer();
+  void set_currently_scrolling_layer(LayerImpl* layer) {
+    currently_scrolling_layer_ = layer;
   }
 
-  LayerImpl* currently_scrolling_layer() { return currently_scrolling_layer_; }
-  void set_currently_scrolling_layer(LayerImpl* layer_impl) {
-    currently_scrolling_layer_ = layer_impl;
-  }
-
-  void FindRootScrollLayer();
   void ClearCurrentlyScrollingLayer();
 
+  void FindRootScrollLayer();
   void UpdateMaxScrollOffset();
 
   SkColor background_color() const { return background_color_; }

@@ -85,9 +85,10 @@ public:
     virtual bool haveTouchEventHandlersAt(const gfx::Point&) OVERRIDE;
 
     // TopControlsManagerClient implementation.
-    virtual LayerTreeImpl* activeTree() OVERRIDE;
     virtual void setNeedsUpdateDrawProperties() OVERRIDE;
     virtual void setNeedsRedraw() OVERRIDE;
+    virtual bool haveRootScrollLayer() const OVERRIDE;
+    virtual float rootScrollLayerTotalScrollY() const OVERRIDE;
 
     struct CC_EXPORT FrameData : public RenderPassSink {
         FrameData();
@@ -163,6 +164,7 @@ public:
 
     void readback(void* pixels, const gfx::Rect&);
 
+    LayerTreeImpl* activeTree() { return m_activeTree.get(); }
     const LayerTreeImpl* activeTree() const { return m_activeTree.get(); }
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }

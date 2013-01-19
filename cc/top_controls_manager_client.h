@@ -13,7 +13,8 @@ class CC_EXPORT TopControlsManagerClient {
  public:
   virtual void setNeedsRedraw() = 0;
   virtual void setNeedsUpdateDrawProperties() = 0;
-  virtual LayerTreeImpl* activeTree() = 0;
+  virtual bool haveRootScrollLayer() const = 0;
+  virtual float rootScrollLayerTotalScrollY() const = 0;
 
  protected:
   virtual ~TopControlsManagerClient() {}

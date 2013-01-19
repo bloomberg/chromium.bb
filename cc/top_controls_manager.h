@@ -50,7 +50,6 @@ class CC_EXPORT TopControlsManager {
  private:
   gfx::Vector2dF ScrollInternal(const gfx::Vector2dF pending_delta);
   void ResetAnimations();
-  LayerImpl* RootScrollLayer();
   float RootScrollLayerTotalScrollY();
   void SetupAnimation(bool show_controls);
   void StartAnimationIfNecessary();

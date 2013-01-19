@@ -46,7 +46,7 @@ TopControlsManager::~TopControlsManager() {
 }
 
 void TopControlsManager::UpdateDrawPositions() {
-  if (!RootScrollLayer())
+  if (!client_->haveRootScrollLayer())
     return;
 
   // If the scroll position has changed underneath us (i.e. a javascript
@@ -118,7 +118,7 @@ void TopControlsManager::ScrollEnd() {
 }
 
 void TopControlsManager::Animate(base::TimeTicks monotonic_time) {
-  if (!top_controls_animation_ || !RootScrollLayer())
+  if (!top_controls_animation_ || !client_->haveRootScrollLayer())
     return;
 
   double time = (monotonic_time - base::TimeTicks()).InMillisecondsF();
@@ -139,16 +139,8 @@ void TopControlsManager::ResetAnimations() {
     top_controls_animation_.reset();
 }
 
-LayerImpl* TopControlsManager::RootScrollLayer() {
-  return client_->activeTree()->root_scroll_layer();
-}
-
 float TopControlsManager::RootScrollLayerTotalScrollY() {
-  LayerImpl* layer = RootScrollLayer();
-  if (!layer)
-    return 0;
-  gfx::Vector2dF scroll_total = layer->scrollOffset() + layer->scrollDelta();
-  return scroll_total.y();
+  return client_->rootScrollLayerTotalScrollY();
 }
 
 void TopControlsManager::SetupAnimation(bool show_controls) {

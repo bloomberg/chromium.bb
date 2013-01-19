@@ -890,6 +890,16 @@ void LayerTreeHostImpl::readback(void* pixels, const gfx::Rect& rect)
     m_renderer->getFramebufferPixels(pixels, rect);
 }
 
+bool LayerTreeHostImpl::haveRootScrollLayer() const {
+  return rootScrollLayer();
+}
+
+float LayerTreeHostImpl::rootScrollLayerTotalScrollY() const {
+  if (LayerImpl* layer = rootScrollLayer())
+    return layer->scrollOffset().y() + layer->scrollDelta().y();
+  return 0.0f;
+}
+
 LayerImpl* LayerTreeHostImpl::rootLayer() const
 {
   return m_activeTree->RootLayer();
@@ -897,12 +907,12 @@ LayerImpl* LayerTreeHostImpl::rootLayer() const
 
 LayerImpl* LayerTreeHostImpl::rootScrollLayer() const
 {
-  return m_activeTree->root_scroll_layer();
+  return m_activeTree->RootScrollLayer();
 }
 
 LayerImpl* LayerTreeHostImpl::currentlyScrollingLayer() const
 {
-  return m_activeTree->currently_scrolling_layer();
+  return m_activeTree->CurrentlyScrollingLayer();
 }
 
 // Content layers can be either directly scrollable or contained in an outer
@@ -920,11 +930,6 @@ static LayerImpl* findScrollLayerForContentLayer(LayerImpl* layerImpl)
         return layerImpl->parent();
 
     return 0;
-}
-
-LayerTreeImpl* LayerTreeHostImpl::activeTree()
-{
-    return m_activeTree.get();
 }
 
 void LayerTreeHostImpl::createPendingTree()
@@ -1423,7 +1428,7 @@ void LayerTreeHostImpl::makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, gfx
     scroll.layerId = rootScrollLayer()->id();
     scroll.scrollDelta = scrollOffset - rootScrollLayer()->scrollOffset();
     scrollInfo->scrolls.push_back(scroll);
-    activeTree()->root_scroll_layer()->setSentScrollDelta(scroll.scrollDelta);
+    activeTree()->RootScrollLayer()->setSentScrollDelta(scroll.scrollDelta);
     scrollInfo->pageScaleDelta = pageScale / m_pinchZoomViewport.page_scale_factor();
     m_pinchZoomViewport.set_sent_page_scale_delta(scrollInfo->pageScaleDelta);
 }

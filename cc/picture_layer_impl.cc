@@ -42,7 +42,6 @@ const char* PictureLayerImpl::layerTypeAsString() const {
 
 void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                                    AppendQuadsData& appendQuadsData) {
-
   const gfx::Rect& rect = visibleContentRect();
   gfx::Rect content_rect(gfx::Point(), contentBounds());
 

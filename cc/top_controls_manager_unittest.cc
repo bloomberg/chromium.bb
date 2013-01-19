@@ -27,7 +27,6 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
         update_draw_properties_needed_(false) {
     active_tree_ = LayerTreeImpl::create(&host_impl_);
     root_scroll_layer_ = LayerImpl::create(active_tree_.get(), 1);
-    active_tree_->set_root_scroll_layer(root_scroll_layer_.get());
   }
 
   virtual ~MockTopControlsManagerClient() {}
@@ -40,18 +39,23 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
     update_draw_properties_needed_ = true;
   }
 
-  virtual LayerTreeImpl* activeTree() OVERRIDE {
-    return active_tree_.get();
+  virtual bool haveRootScrollLayer() const OVERRIDE {
+    return true;
+  }
+
+  virtual float rootScrollLayerTotalScrollY() const OVERRIDE {
+    return root_scroll_layer_->scrollOffset().y() +
+           root_scroll_layer_->scrollDelta().y();
+  }
+
+  LayerImpl* rootScrollLayer() {
+    return root_scroll_layer_.get();
   }
 
   TopControlsManager* manager() {
     if (!manager_)
       manager_ = TopControlsManager::Create(this, kTopControlsHeight);
     return manager_.get();
-  }
-
-  LayerImpl* rootScrollLayer() {
-    return root_scroll_layer_.get();
   }
 
  private:

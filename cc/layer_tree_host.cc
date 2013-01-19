@@ -285,7 +285,6 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
         TRACE_EVENT0("cc", "LayerTreeHost::pushProperties");
         TreeSynchronizer::pushProperties(rootLayer(), syncTree->RootLayer());
     }
-    syncTree->FindRootScrollLayer();
 
     m_needsFullTreeSync = false;
 
@@ -297,6 +296,8 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     syncTree->set_source_frame_number(commitNumber());
     syncTree->set_background_color(m_backgroundColor);
     syncTree->set_has_transparent_background(m_hasTransparentBackground);
+
+    syncTree->FindRootScrollLayer();
 
     if (!m_settings.implSidePainting) {
         // If we're not in impl-side painting, the tree is immediately

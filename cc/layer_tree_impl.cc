@@ -70,11 +70,22 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   // Clear all data structures that have direct references to the layer tree.
   scrolling_layer_id_from_previous_tree_ =
     currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
+  root_scroll_layer_ = NULL;
   currently_scrolling_layer_ = NULL;
 
   render_surface_layer_list_.clear();
   SetNeedsUpdateDrawProperties();
   return root_layer_.Pass();
+}
+
+LayerImpl* LayerTreeImpl::RootScrollLayer() {
+  DCHECK(IsActiveTree());
+  return root_scroll_layer_;
+}
+
+LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() {
+  DCHECK(IsActiveTree());
+  return currently_scrolling_layer_;
 }
 
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
@@ -83,11 +94,11 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
 }
 
 void LayerTreeImpl::UpdateMaxScrollOffset() {
-  if (!root_scroll_layer() || !root_scroll_layer()->children().size())
+  if (!root_scroll_layer_ || !root_scroll_layer_->children().size())
     return;
 
   gfx::SizeF view_bounds = device_viewport_size();
-  if (LayerImpl* clip_layer = root_scroll_layer()->parent()) {
+  if (LayerImpl* clip_layer = root_scroll_layer_->parent()) {
     // Compensate for non-overlay scrollbars.
     if (clip_layer->masksToBounds())
       view_bounds = gfx::ScaleSize(clip_layer->bounds(), device_scale_factor());
@@ -113,7 +124,7 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   // having a vertical scrollbar but no horizontal overflow.
   max_scroll.ClampToMin(gfx::Vector2dF());
 
-  root_scroll_layer()->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
+  root_scroll_layer_->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }
 
 void LayerTreeImpl::UpdateDrawProperties() {
@@ -121,8 +132,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
   if (!RootLayer())
     return;
 
-  if (root_scroll_layer()) {
-    root_scroll_layer()->setImplTransform(
+  if (root_scroll_layer_) {
+    root_scroll_layer_->setImplTransform(
         layer_tree_host_impl_->implTransform());
   }
 
@@ -177,11 +188,9 @@ const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
 }
 
 gfx::Size LayerTreeImpl::ContentSize() const {
-  // TODO(aelias): Hardcoding the first child here is weird. Think of
-  // a cleaner way to get the contentBounds on the Impl side.
-  if (!root_scroll_layer() || root_scroll_layer()->children().empty())
+  if (!root_scroll_layer_)
     return gfx::Size();
-  return root_scroll_layer()->children()[0]->contentBounds();
+  return root_scroll_layer_->bounds();
 }
 
 LayerImpl* LayerTreeImpl::LayerById(int id) {
@@ -214,6 +223,8 @@ static void DidBecomeActiveRecursive(LayerImpl* layer) {
 void LayerTreeImpl::DidBecomeActive() {
   if (RootLayer())
     DidBecomeActiveRecursive(RootLayer());
+  FindRootScrollLayer();
+  UpdateMaxScrollOffset();
 }
 
 bool LayerTreeImpl::ContentsTexturesPurged() const {
