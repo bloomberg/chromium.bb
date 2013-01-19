@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import errno
+import hashlib
 import json
 import optparse
 import os
@@ -390,8 +391,12 @@ class NmfUtils(object):
     manifest = {}
     manifest[PROGRAM_KEY] = {}
     manifest[PROGRAM_KEY][PORTABLE_KEY] = {}
+    sha = hashlib.sha256()
+    with open(self.main_files[0], 'rb') as f:
+      sha.update(f.read())
     manifest[PROGRAM_KEY][PORTABLE_KEY][TRANSLATE_KEY] = {
-      "url": os.path.basename(self.main_files[0])
+      "url": os.path.basename(self.main_files[0]),
+      "sha256": sha.hexdigest()
     }
     self.manifest = manifest
 
