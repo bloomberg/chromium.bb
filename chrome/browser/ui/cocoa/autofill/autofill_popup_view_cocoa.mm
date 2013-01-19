@@ -18,12 +18,24 @@
 
 namespace {
 
+NSColor* BackgroundColor() {
+  return [NSColor whiteColor];
+}
+
 NSColor* SeparatorColor() {
   return [NSColor colorWithCalibratedWhite:220 / 255.0 alpha:1];
 }
 
 NSColor* HighlightColor() {
   return [NSColor selectedControlColor];
+}
+
+NSColor* NameColor() {
+  return [NSColor blackColor];
+}
+
+NSColor* SubtextColor() {
+  return [NSColor grayColor];
 }
 
 }  // anonymous namespace
@@ -92,7 +104,7 @@ NSColor* HighlightColor() {
   if (!controller_)
     return;
 
-  [[NSColor whiteColor] set];
+  [BackgroundColor() set];
   [NSBezierPath fillRect:[self bounds]];
 
   for (size_t i = 0; i < controller_->names().size(); ++i) {
@@ -188,15 +200,19 @@ NSColor* HighlightColor() {
 
   BOOL isRTL = base::i18n::IsRTL();
 
-  // TODO(isherman): Set font, colors, and any other appropriate attributes.
-  NSSize nameSize = [name sizeWithAttributes:nil];
+  NSDictionary* nameAttributes =
+      [NSDictionary dictionaryWithObjectsAndKeys:
+           controller_->name_font().GetNativeFont(), NSFontAttributeName,
+           NameColor(), NSForegroundColorAttributeName,
+           nil];
+  NSSize nameSize = [name sizeWithAttributes:nameAttributes];
   CGFloat x = bounds.origin.x +
       (isRTL ?
        bounds.size.width - AutofillPopupView::kEndPadding - nameSize.width:
        AutofillPopupView::kEndPadding);
   CGFloat y = bounds.origin.y + (bounds.size.height - nameSize.height) / 2;
 
-  [name drawAtPoint:NSMakePoint(x, y) withAttributes:nil];
+  [name drawAtPoint:NSMakePoint(x, y) withAttributes:nameAttributes];
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -252,11 +268,16 @@ NSColor* HighlightColor() {
   }
 
   // Draw the subtext.
-  NSSize subtextSize = [subtext sizeWithAttributes:nil];
+  NSDictionary* subtextAttributes =
+      [NSDictionary dictionaryWithObjectsAndKeys:
+           controller_->subtext_font().GetNativeFont(), NSFontAttributeName,
+           SubtextColor(), NSForegroundColorAttributeName,
+           nil];
+  NSSize subtextSize = [subtext sizeWithAttributes:subtextAttributes];
   x += isRTL ? 0 : -subtextSize.width;
   y = bounds.origin.y + (bounds.size.height - subtextSize.height) / 2;
 
-  [subtext drawAtPoint:NSMakePoint(x, y) withAttributes:nil];
+  [subtext drawAtPoint:NSMakePoint(x, y) withAttributes:subtextAttributes];
 }
 
 - (NSImage*)iconAtIndex:(size_t)index {
