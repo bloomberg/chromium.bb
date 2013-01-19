@@ -206,6 +206,7 @@
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/panels/panel_drag_browsertest.cc',
         'browser/ui/panels/panel_resize_browsertest.cc',
+        'browser/ui/panels/stacked_panel_browsertest.cc',
         'browser/ui/panels/test_panel_active_state_observer.cc',
         'browser/ui/panels/test_panel_active_state_observer.h',
         'browser/ui/panels/test_panel_mouse_watcher.cc',

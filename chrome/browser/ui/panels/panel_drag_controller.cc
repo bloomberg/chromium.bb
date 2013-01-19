@@ -222,7 +222,7 @@ void PanelDragController::EndDragging(bool cancelled) {
     // The saved placement is no longer needed.
     dragging_panel_original_collection_->DiscardSavedPanelPlacement();
 
-    // Finalizing the drag is only needed for the stack.
+    // Finalizing the drag.
     if (current_collection->type() == PanelCollection::STACKED)
       StackedPanelDragHandler::FinalizeDrag(dragging_panel_);
 
@@ -231,6 +231,14 @@ void PanelDragController::EndDragging(bool cancelled) {
 
     // This could cause the panel to be moved to its finalized position.
     current_collection->RefreshLayout();
+
+    // This could cause the detached panel, that still keeps its minimized state
+    // when it gets detached due to unstacking, to expand. This could occur
+    // when the stack has more than 2 panels and the 2nd top panel is unstacked
+    // from the top panel: the top panel is detached while all other panels
+    // remain in the stack.
+    if (current_collection != panel_manager_->detached_collection())
+      panel_manager_->detached_collection()->RefreshLayout();
   }
 
   // If the origianl collection is a stack and it becomes empty, remove it.

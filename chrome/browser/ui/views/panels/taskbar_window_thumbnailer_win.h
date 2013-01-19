@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
 
+#include <vector>
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/win/hwnd_subclass.h"
 
@@ -17,7 +18,10 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
   explicit TaskbarWindowThumbnailerWin(HWND hwnd);
   virtual ~TaskbarWindowThumbnailerWin();
 
-  void Start();
+  // Use the snapshots from all the windows in |snapshot_hwnds| to construct
+  // the thumbnail. If |snapshot_hwnds| is empty, use the snapshot of current
+  // window.
+  void Start(const std::vector<HWND>& snapshot_hwnds);
   void Stop();
 
  private:
@@ -38,6 +42,7 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
   SkBitmap* CaptureWindowImage() const;
 
   HWND hwnd_;
+  std::vector<HWND> snapshot_hwnds_;
   scoped_ptr<SkBitmap> capture_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskbarWindowThumbnailerWin);

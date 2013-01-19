@@ -18,6 +18,11 @@
 #include "ui/base/win/shell.h"
 #endif
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "base/win/windows_version.h"
+#include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
+#endif
+
 // static
 NativePanelStack* NativePanelStack::Create(
     scoped_ptr<StackedPanelCollection> stacked_collection) {
@@ -87,6 +92,34 @@ void PanelStackView::SetBounds(const gfx::Rect& bounds) {
   window_->SetBounds(bounds);
 }
 
+void PanelStackView::Minimize() {
+  // When the owner stack window is minimized by the system, its live preview
+  // is lost. We need to set it explicitly.
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Live preview is only available since Windows 7.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  HWND native_window = window_->GetNativeWindow();
+
+  if (!thumbnailer_.get()) {
+    DCHECK(native_window);
+    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window));
+    ui::HWNDSubclass::AddFilterToTarget(native_window, thumbnailer_.get());
+  }
+
+  std::vector<HWND> native_panel_windows;
+  for (StackedPanelCollection::Panels::const_iterator iter =
+            stacked_collection_->panels().begin();
+        iter != stacked_collection_->panels().end(); ++iter) {
+    native_panel_windows.push_back((*iter)->GetNativeWindow());
+  }
+  thumbnailer_->Start(native_panel_windows);
+#endif
+
+  window_->Minimize();
+}
+
 string16 PanelStackView::GetWindowTitle() const {
   Panel* panel = stacked_collection_->top_panel();
   if (!panel)
@@ -125,6 +158,14 @@ void PanelStackView::DeleteDelegate() {
 
 void PanelStackView::OnWidgetClosing(views::Widget* widget) {
   window_ = NULL;
+}
+
+void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
+                                               bool active) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (active && thumbnailer_)
+    thumbnailer_->Stop();
+#endif
 }
 
 void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
