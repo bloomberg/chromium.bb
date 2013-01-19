@@ -11,6 +11,7 @@
 #include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
+#include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
 #include "ppapi/proxy/flash_font_file_resource.h"
 #include "ppapi/proxy/flash_menu_resource.h"
@@ -22,7 +23,6 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
-#include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
@@ -69,7 +69,7 @@ InterfaceProxy* ResourceCreationProxy::Create(Dispatcher* dispatcher) {
 }
 
 PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
-  return PPB_FileIO_Proxy::CreateProxyResource(instance);
+  return (new FileIOResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFileRef(PP_Resource file_system,
