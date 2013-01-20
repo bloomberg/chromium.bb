@@ -147,7 +147,7 @@ void VirtualAudioInputStream::ReadAudio() {
     // Reset the next read time if we end up getting too far behind. We'll just
     // slow down playback to avoid using up all the CPU.
     delay = buffer_duration_;
-    next_read_time_ = now;
+    next_read_time_ = now + buffer_duration_;
   }
 
   message_loop_->PostDelayedTask(FROM_HERE,
