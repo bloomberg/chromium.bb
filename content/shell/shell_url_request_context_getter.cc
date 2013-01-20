@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell_network_delegate.h"
+#include "content/shell/shell_switches.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/default_server_bound_cert_store.h"
 #include "net/base/host_resolver.h"
@@ -47,9 +48,11 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
   // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-  proxy_config_service_.reset(
-      net::ProxyService::CreateSystemProxyConfigService(
-          io_loop_->message_loop_proxy(), file_loop_));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    proxy_config_service_.reset(
+        net::ProxyService::CreateSystemProxyConfigService(
+            io_loop_->message_loop_proxy(), file_loop_));
+  }
 }
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
@@ -78,12 +81,16 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         net::HostResolver::CreateDefaultResolver(NULL));
 
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
-    // TODO(jam): use v8 if possible, look at chrome code.
-    storage_->set_proxy_service(
-        net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service_.release(),
-        0,
-        NULL));
+    if (command_line.HasSwitch(switches::kDumpRenderTree)) {
+      storage_->set_proxy_service(net::ProxyService::CreateDirect());
+    } else {
+      // TODO(jam): use v8 if possible, look at chrome code.
+      storage_->set_proxy_service(
+          net::ProxyService::CreateUsingSystemProxyResolver(
+          proxy_config_service_.release(),
+          0,
+          NULL));
+    }
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
