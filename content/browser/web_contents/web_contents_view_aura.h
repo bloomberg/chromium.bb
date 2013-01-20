@@ -26,6 +26,7 @@ class DropTargetEvent;
 }
 
 namespace content {
+class OverscrollNavigationOverlay;
 class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
@@ -76,6 +77,10 @@ class CONTENT_EXPORT WebContentsViewAura
   // Returns the amount the animating window should be translated in response to
   // the overscroll gesture.
   gfx::Vector2d GetTranslationForOverscroll(int delta_x, int delta_y);
+
+  // A window showing the screenshot is overlayed during a navigation triggered
+  // by overscroll. This function sets this up.
+  void PrepareOverscrollNavigationOverlay();
 
   // Overridden from WebContentsView:
   virtual void CreateView(
@@ -190,6 +195,10 @@ class CONTENT_EXPORT WebContentsViewAura
   // This is the completed overscroll gesture. This is used for the animation
   // callback that happens in response to a completed overscroll gesture.
   OverscrollMode completed_overscroll_gesture_;
+
+  // This manages the overlay window that shows the screenshot during a history
+  // navigation triggered by the overscroll gesture.
+  scoped_ptr<OverscrollNavigationOverlay> navigation_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

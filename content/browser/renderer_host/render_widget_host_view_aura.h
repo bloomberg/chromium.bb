@@ -61,6 +61,33 @@ class RenderWidgetHostViewAura
       public ImageTransportFactoryObserver,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
  public:
+  // Used to notify whenever the paint-content of the view changes.
+  class PaintObserver {
+   public:
+    PaintObserver() {}
+    virtual ~PaintObserver() {}
+
+    // This is called when painting of the page is completed.
+    virtual void OnPaintComplete() = 0;
+
+    // This is called when compositor painting of the page is completed.
+    virtual void OnCompositingComplete() = 0;
+
+    // This is called when the contents for compositor painting changes.
+    virtual void OnUpdateCompositorContent() = 0;
+
+    // This is called loading the page has completed.
+    virtual void OnPageLoadComplete() = 0;
+
+    // This is called when the view is destroyed, so that the observer can
+    // perform any necessary clean-up.
+    virtual void OnViewDestroyed() = 0;
+  };
+
+  void set_paint_observer(PaintObserver* observer) {
+    paint_observer_ = observer;
+  }
+
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
@@ -432,6 +459,11 @@ class RenderWidgetHostViewAura
     NO_PENDING_COMMIT,
   };
   CanLockCompositorState can_lock_compositor_;
+
+  // An observer to notify that the paint content of the view has changed. The
+  // observer is not owned by the view, and must remove itself as an oberver
+  // when it is being destroyed.
+  PaintObserver* paint_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

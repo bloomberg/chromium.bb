@@ -299,7 +299,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
       accelerated_compositing_state_changed_(false),
-      can_lock_compositor_(YES) {
+      can_lock_compositor_(YES),
+      paint_observer_(NULL) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   window_->AddObserver(window_observer_.get());
@@ -568,6 +569,8 @@ void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
+  if (is_loading_ && !is_loading && paint_observer_)
+    paint_observer_->OnPageLoadComplete();
   is_loading_ = is_loading;
   UpdateCursorIfOverSelf();
 }
@@ -893,6 +896,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
   }
 
+  if (paint_observer_)
+    paint_observer_->OnUpdateCompositorContent();
   SwapBuffersCompleted(ack_params);
 }
 
@@ -952,6 +957,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     rect_to_paint.Inset(-1, -1);
     rect_to_paint.Intersect(window_->bounds());
 
+    if (paint_observer_)
+      paint_observer_->OnUpdateCompositorContent();
     window_->SchedulePaintInRect(rect_to_paint);
   }
 
@@ -1357,6 +1364,8 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
   if (backing_store) {
     static_cast<BackingStoreAura*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
+    if (paint_observer_)
+      paint_observer_->OnPaintComplete();
   } else if (aura::Env::GetInstance()->render_white_bg()) {
     canvas->DrawColor(SK_ColorWHITE);
   }
@@ -1756,6 +1765,8 @@ void RenderWidgetHostViewAura::OnCompositingStarted(
 
 void RenderWidgetHostViewAura::OnCompositingEnded(
     ui::Compositor* compositor) {
+  if (paint_observer_)
+    paint_observer_->OnCompositingComplete();
 }
 
 void RenderWidgetHostViewAura::OnCompositingAborted(
@@ -1796,6 +1807,8 @@ void RenderWidgetHostViewAura::OnLostResources() {
 // RenderWidgetHostViewAura, private:
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  if (paint_observer_)
+    paint_observer_->OnViewDestroyed();
   if (!shared_surface_handle_.is_null()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     factory->DestroySharedSurfaceHandle(shared_surface_handle_);
