@@ -517,6 +517,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
         l10n_util::GetStringUTF16(IDS_APP_LIST_OPT_IN_TEXT));
     app_launcher_opt_in_checkbox_->SetFont(
         rb.GetFont(ui::ResourceBundle::BoldFont));
+    app_launcher_opt_in_checkbox_->SetChecked(true);
     layout->AddView(app_launcher_opt_in_checkbox_);
   }
 }
