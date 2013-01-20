@@ -104,6 +104,7 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
 }
 
 DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+  web_ui->SetBindings(0);
   ChromeURLDataManager::AddDataSource(
       Profile::FromWebUI(web_ui), new DevToolsDataSource);
 }

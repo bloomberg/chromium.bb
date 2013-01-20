@@ -193,8 +193,6 @@ DevToolsWindow* DevToolsWindow::Create(
   // Create WebContents with devtools.
   WebContents* web_contents =
       WebContents::Create(WebContents::CreateParams(profile));
-  web_contents->GetRenderViewHost()->AllowBindings(
-      content::BINDINGS_POLICY_WEB_UI);
   web_contents->GetController().LoadURL(
       GetDevToolsUrl(profile, dock_side, shared_worker_frontend),
       content::Referrer(),
