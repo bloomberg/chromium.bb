@@ -1,12 +1,6 @@
-# net/ OWNERS can also review testserver changes (except for
-# sync-specific bits).
-
-# General reviewer, except sync-specific bits.
+# net/ OWNERS can also review testserver changes
+# General reviewer.
 phajdan.jr@chromium.org
-
-# For changes to chromiumsync.py and xmppserver.py.
-akalin@chromium.org
-nick@chromium.org
 
 # For changes to device_management.py.
 joaodasilva@chromium.org

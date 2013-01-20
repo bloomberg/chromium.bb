@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -329,45 +329,6 @@ def GetMemoryUsageOfProcess(pid):
     return float(stdout.strip()) / 1024
   else:
     return 0
-
-
-def GetCredsKey():
-  """Get the credential key associated with a bot on the waterfall.
-
-  The key is associated with the proper credentials in the text data file stored
-  in the private directory. The key determines a bot's OS and machine name. Each
-  key credential is associated with its own user/password value. This allows
-  sync integration tests to run in parallel on all bots.
-
-  Returns:
-    A String of the credentials key for the specified bot. Otherwise None.
-  """
-  if pyauto.PyUITest.IsWin():
-    system_name = 'win'
-  elif pyauto.PyUITest.IsLinux():
-    system_name = 'linux'
-  elif pyauto.PyUITest.IsMac():
-    system_name = 'mac'
-  else:
-    return None
-  node = platform.uname()[1].split('.')[0]
-  creds_key = 'test_google_acct_%s_%s' % (system_name, node)
-  return creds_key
-
-
-def SignInToSyncAndVerifyState(test, account_key):
-  """Sign into sync and verify that it was successful.
-
-  Args:
-    test: derived from pyauto.PyUITest - base class for UI test cases.
-    account_key: the credentials key in the private account dictionary file.
-  """
-  creds = test.GetPrivateInfo()[account_key]
-  username = creds['username']
-  password = creds['password']
-  test.assertTrue(test.GetSyncInfo()['last synced'] == 'Never')
-  test.assertTrue(test.SignInToSync(username, password))
-  test.assertTrue(test.GetSyncInfo()['last synced'] == 'Just now')
 
 
 def LoginToDevice(test, test_account='test_google_account'):

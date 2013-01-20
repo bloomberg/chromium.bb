@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TEST_LOCAL_SYNC_TEST_SERVER_H_
-#define NET_TEST_LOCAL_SYNC_TEST_SERVER_H_
+#ifndef SYNC_TEST_LOCAL_SYNC_TEST_SERVER_H_
+#define SYNC_TEST_LOCAL_SYNC_TEST_SERVER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/test/local_test_server.h"
 
-namespace net {
+namespace syncer {
 
-// Runs a Python-based sync test server on the same machine in which the
+// Runs a Python-based sync test server on the same machine on which the
 // LocalSyncTestServer runs.
-class LocalSyncTestServer : public LocalTestServer {
+class LocalSyncTestServer : public net::LocalTestServer {
  public:
   // Initialize a sync server that listens on localhost using ephemeral ports
   // for sync and p2p notifications.
@@ -25,10 +25,16 @@ class LocalSyncTestServer : public LocalTestServer {
 
   virtual ~LocalSyncTestServer();
 
-  // Calls LocalTestServer::AddCommandLineArguments and then appends the
-  // --xmpp-port flag to |command_line| if required. Returns true on success.
+  // Overriden from net::LocalTestServer.
   virtual bool AddCommandLineArguments(
       CommandLine* command_line) const OVERRIDE;
+  virtual bool SetPythonPath() const OVERRIDE;
+  virtual bool GetTestServerPath(FilePath* testserver_path) const OVERRIDE;
+
+  // Returns true if the path to |test_script_name| is successfully stored  in
+  // |*test_script_path|. Used by the run_sync_testserver executable.
+  bool GetTestScriptPath(const FilePath::StringType& test_script_name,
+                         FilePath* test_script_path) const;
 
  private:
   // Port on which the Sync XMPP server listens.
@@ -37,6 +43,6 @@ class LocalSyncTestServer : public LocalTestServer {
   DISALLOW_COPY_AND_ASSIGN(LocalSyncTestServer);
 };
 
-}  // namespace net
+}  // namespace syncer
 
-#endif  // NET_TEST_LOCAL_SYNC_TEST_SERVER_H_
+#endif  // SYNC_TEST_LOCAL_SYNC_TEST_SERVER_H_

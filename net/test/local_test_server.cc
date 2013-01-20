@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,28 +77,16 @@ LocalTestServer::~LocalTestServer() {
   Stop();
 }
 
-// static
-bool LocalTestServer::GetTestServerDirectory(FilePath* directory) {
-  // Get path to python server script.
+bool LocalTestServer::GetTestServerPath(FilePath* testserver_path) const {
   FilePath testserver_dir;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &testserver_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
     return false;
   }
-
-  testserver_dir = testserver_dir
-      .Append(FILE_PATH_LITERAL("net"))
-      .Append(FILE_PATH_LITERAL("tools"))
-      .Append(FILE_PATH_LITERAL("testserver"));
-  *directory = testserver_dir;
-  return true;
-}
-
-bool LocalTestServer::GetTestServerPath(FilePath* testserver_path) const {
-  if (!GetTestServerDirectory(testserver_path))
-    return false;
-  *testserver_path = testserver_path->Append(FILE_PATH_LITERAL(
-      "testserver.py"));
+  testserver_dir = testserver_dir.Append(FILE_PATH_LITERAL("net"))
+                                 .Append(FILE_PATH_LITERAL("tools"))
+                                 .Append(FILE_PATH_LITERAL("testserver"));
+  *testserver_path = testserver_dir.Append(FILE_PATH_LITERAL("testserver.py"));
   return true;
 }
 
@@ -166,11 +154,6 @@ bool LocalTestServer::Init(const FilePath& document_root) {
 }
 
 bool LocalTestServer::SetPythonPath() const {
-  return SetPythonPathStatic();
-}
-
-// static
-bool LocalTestServer::SetPythonPathStatic() {
   FilePath third_party_dir;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
@@ -196,9 +179,10 @@ bool LocalTestServer::SetPythonPathStatic() {
                  << "Testserver features that rely on it will not work";
     return true;
   }
-
   AppendToPythonPath(pyproto_dir);
-  AppendToPythonPath(pyproto_dir.AppendASCII("sync").AppendASCII("protocol"));
+
+  // TODO(cloud_policy): Move this out of net/, since net/ should not have to
+  // depend on chrome/. See http://crbug.com/119403.
   AppendToPythonPath(pyproto_dir.AppendASCII("chrome")
                                 .AppendASCII("browser")
                                 .AppendASCII("policy")
@@ -235,19 +219,17 @@ bool LocalTestServer::AddCommandLineArguments(CommandLine* command_line) const {
 
   // Append the appropriate server type argument.
   switch (type()) {
-    case TYPE_HTTP:
+    case TYPE_HTTP:  // The default type is HTTP, no argument required.
+      break;
     case TYPE_HTTPS:
-      // The default type is HTTP, no argument required.
+      command_line->AppendArg("--https");
       break;
     case TYPE_WS:
     case TYPE_WSS:
       command_line->AppendArg("--websocket");
       break;
     case TYPE_FTP:
-      command_line->AppendArg("-f");
-      break;
-    case TYPE_SYNC:
-      command_line->AppendArg("--sync");
+      command_line->AppendArg("--ftp");
       break;
     case TYPE_TCP_ECHO:
       command_line->AppendArg("--tcp-echo");

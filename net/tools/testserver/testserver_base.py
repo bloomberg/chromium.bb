@@ -1,10 +1,15 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import BaseHTTPServer
+import errno
 import json
 import optparse
 import os
+import re
+import socket
+import SocketServer
 import struct
 import sys
 import warnings
@@ -14,6 +19,12 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 if sys.platform == 'win32':
   import msvcrt
+
+# Using debug() seems to cause hangs on XP: see http://crbug.com/64515.
+debug_output = sys.stderr
+def debug(string):
+  debug_output.write(string + "\n")
+  debug_output.flush()
 
 
 class Error(Exception):
@@ -44,6 +55,47 @@ class FileMultiplexer(object):
     self.__fd2.flush()
 
 
+class ClientRestrictingServerMixIn:
+  """Implements verify_request to limit connections to our configured IP
+  address."""
+
+  def verify_request(self, _request, client_address):
+    return client_address[0] == self.server_address[0]
+
+
+class BrokenPipeHandlerMixIn:
+  """Allows the server to deal with "broken pipe" errors (which happen if the
+  browser quits with outstanding requests, like for the favicon). This mix-in
+  requires the class to derive from SocketServer.BaseServer and not override its
+  handle_error() method. """
+
+  def handle_error(self, request, client_address):
+    value = sys.exc_info()[1]
+    if isinstance(value, socket.error):
+      err = value.args[0]
+      if sys.platform in ('win32', 'cygwin'):
+        # "An established connection was aborted by the software in your host."
+        pipe_err = 10053
+      else:
+        pipe_err = errno.EPIPE
+      if err == pipe_err:
+        print "testserver.py: Broken pipe"
+        return
+    SocketServer.BaseServer.handle_error(self, request, client_address)
+
+
+class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
+  """This is a specialization of BaseHTTPServer to allow it
+  to be exited cleanly (by setting its "stop" member to True)."""
+
+  def serve_forever(self):
+    self.stop = False
+    self.nonce_time = None
+    while not self.stop:
+      self.handle_request()
+    self.socket.close()
+
+
 def MultiplexerHack(std_fd, log_fd):
   """Creates a FileMultiplexer that will write to both specified files.
 
@@ -55,6 +107,59 @@ def MultiplexerHack(std_fd, log_fd):
   if std_fd.fileno() <= 0:
     return log_fd
   return FileMultiplexer(std_fd, log_fd)
+
+
+class BasePageHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+
+  def __init__(self, request, client_address, socket_server,
+               connect_handlers, get_handlers, head_handlers, post_handlers,
+               put_handlers):
+    self._connect_handlers = connect_handlers
+    self._get_handlers = get_handlers
+    self._head_handlers = head_handlers
+    self._post_handlers = post_handlers
+    self._put_handlers = put_handlers
+    BaseHTTPServer.BaseHTTPRequestHandler.__init__(
+      self, request, client_address, socket_server)
+
+  def log_request(self, *args, **kwargs):
+    # Disable request logging to declutter test log output.
+    pass
+
+  def _ShouldHandleRequest(self, handler_name):
+    """Determines if the path can be handled by the handler.
+
+    We consider a handler valid if the path begins with the
+    handler name. It can optionally be followed by "?*", "/*".
+    """
+
+    pattern = re.compile('%s($|\?|/).*' % handler_name)
+    return pattern.match(self.path)
+
+  def do_CONNECT(self):
+    for handler in self._connect_handlers:
+      if handler():
+        return
+
+  def do_GET(self):
+    for handler in self._get_handlers:
+      if handler():
+        return
+
+  def do_HEAD(self):
+    for handler in self._head_handlers:
+      if handler():
+        return
+
+  def do_POST(self):
+    for handler in self._post_handlers:
+      if handler():
+        return
+
+  def do_PUT(self):
+    for handler in self._put_handlers:
+      if handler():
+        return
 
 
 class TestServerRunner(object):
@@ -71,7 +176,7 @@ class TestServerRunner(object):
   def main(self):
     self.options, self.args = self.option_parser.parse_args()
 
-    logfile = open('testserver.log', 'w')
+    logfile = open(self.options.log_file, 'w')
     sys.stderr = MultiplexerHack(sys.stderr, logfile)
     if self.options.log_to_console:
       sys.stdout = MultiplexerHack(sys.stdout, logfile)
@@ -108,6 +213,9 @@ class TestServerRunner(object):
                                   dest='log_to_console',
                                   help='Enables or disables sys.stdout logging '
                                   'to the console.')
+    self.option_parser.add_option('--log-file', default='testserver.log',
+                                  dest='log_file',
+                                  help='The name of the server log file.')
     self.option_parser.add_option('--port', default=0, type='int',
                                   help='Port used by the server. If '
                                   'unspecified, the server will listen on an '
@@ -117,6 +225,9 @@ class TestServerRunner(object):
                                   help='Hostname or IP upon which the server '
                                   'will listen. Client connections will also '
                                   'only be allowed from this address.')
+    self.option_parser.add_option('--data-dir', dest='data_dir',
+                                  help='Directory from which to read the '
+                                  'files.')
 
   def _notify_startup_complete(self, server_data):
     # Notify the parent that we've started. (BaseServer subclasses

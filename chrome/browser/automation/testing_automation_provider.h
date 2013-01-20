@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/importer/importer_list_observer.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_type.h"
@@ -564,42 +563,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "is_visible": true }
   void IsFindInPageVisible(base::DictionaryValue* args,
                            IPC::Message* reply_message);
-
-  // Signs in to sync using the given username and password.
-  // Uses the JSON interface for input/output.
-  void SignInToSync(Browser* browser,
-                    base::DictionaryValue* args,
-                    IPC::Message* reply_message);
-
-  // Returns info about sync.
-  // Uses the JSON interface for input/output.
-  void GetSyncInfo(Browser* browser,
-                   base::DictionaryValue* args,
-                   IPC::Message* reply_message);
-
-  // Waits for the ongoing sync cycle to complete.
-  // Uses the JSON interface for input/output.
-  void AwaitFullSyncCompletion(Browser* browser,
-                               base::DictionaryValue* args,
-                               IPC::Message* reply_message);
-
-  // Waits for sync to reinitialize (for example, after a browser restart).
-  // Uses the JSON interface for input/output.
-  void AwaitSyncRestart(Browser* browser,
-                        base::DictionaryValue* args,
-                        IPC::Message* reply_message);
-
-  // Enables sync for one or more sync datatypes.
-  // Uses the JSON interface for input/output.
-  void EnableSyncForDatatypes(Browser* browser,
-                              base::DictionaryValue* args,
-                              IPC::Message* reply_message);
-
-  // Disables sync for one or more sync datatypes.
-  // Uses the JSON interface for input/output.
-  void DisableSyncForDatatypes(Browser* browser,
-                               base::DictionaryValue* args,
-                               IPC::Message* reply_message);
 
   // Get ordered list of all active and queued HTML5 notifications.
   // Uses the JSON interface for input/output.
@@ -1558,9 +1521,6 @@ class TestingAutomationProvider : public AutomationProvider,
 
   std::map<std::string, JsonHandler> handler_map_;
   std::map<std::string, BrowserJsonHandler> browser_handler_map_;
-
-  // Used to wait on various browser sync events.
-  scoped_ptr<ProfileSyncServiceHarness> sync_waiter_;
 
   content::NotificationRegistrar registrar_;
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -1988,10 +1988,10 @@
         'renderer',
         'test_support_common',
         '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync_notifier',
+        '../sync/sync.gyp:test_support_sync_testserver',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
@@ -2153,6 +2153,7 @@
         'test_support_common',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync_notifier',
+        '../sync/sync.gyp:test_support_sync_testserver',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
@@ -2212,7 +2213,7 @@
           ],
         }],
         ['OS=="mac"', {
-          # The sync_integration_tests do not run on mac without this flag.
+          # The sync_performance_tests do not run on mac without this flag.
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],

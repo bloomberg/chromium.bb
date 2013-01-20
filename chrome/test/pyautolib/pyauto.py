@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -760,26 +760,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       os.kill(pid, signal.SIGTERM)
 
   @staticmethod
-  def ChromeFlagsForSyncTestServer(port, xmpp_port):
-    """Creates the flags list for the browser to connect to the sync server.
-
-    Use the |ExtraBrowser| class to launch a new browser with these flags.
-
-    Args:
-      port: The HTTP port number.
-      xmpp_port: The XMPP port number.
-
-    Returns:
-      A list with the flags.
-    """
-    return [
-      '--sync-url=http://127.0.0.1:%s/chromiumsync' % port,
-      '--sync-allow-insecure-xmpp-connection',
-      '--sync-notification-host-port=127.0.0.1:%s' % xmpp_port,
-      '--sync-notification-method=p2p',
-    ]
-
-  @staticmethod
   def GetPrivateInfo():
     """Fetch info from private_tests_info.txt in private dir.
 
@@ -861,29 +841,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                       retval)
       time.sleep(retry_sleep)
     return retval if return_retval else False
-
-  def StartSyncServer(self):
-    """Start a local sync server.
-
-    Adds a dictionary attribute 'ports' in returned object.
-
-    Returns:
-      A handle to Sync Server, an instance of TestServer
-    """
-    sync_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_SYNC,
-                                       '127.0.0.1',
-                                       pyautolib.FilePath(''))
-    assert sync_server.Start(), 'Could not start sync server'
-    sync_server.ports = dict(port=sync_server.GetPort(),
-                             xmpp_port=sync_server.GetSyncXmppPort())
-    logging.debug('Started sync server at ports %s.', sync_server.ports)
-    return sync_server
-
-  def StopSyncServer(self, sync_server):
-    """Stop the local sync server."""
-    assert sync_server, 'Sync Server not yet started'
-    assert sync_server.Stop(), 'Could not stop sync server'
-    logging.debug('Stopped sync server at ports %s.', sync_server.ports)
 
   def StartFTPServer(self, data_dir):
     """Start a local file server hosting data files over ftp://
@@ -3696,142 +3653,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     js = '%s(%s)' % (function, ', '.join(converted_args))
     logging.debug('Executing javascript: %s', js)
     return self.ExecuteJavascript(js, tab_index, windex)
-
-  def SignInToSync(self, username, password):
-    """Signs in to sync using the given username and password.
-
-    Args:
-      username: The account with which to sign in. Example: "user@gmail.com".
-      password: Password for the above account. Example: "pa$$w0rd".
-
-    Returns:
-      True, on success.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'SignInToSync',
-      'username': username,
-      'password': password,
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)['success']
-
-  def GetSyncInfo(self):
-    """Returns info about sync.
-
-    Returns:
-      A dictionary of info about sync.
-      Example dictionaries:
-        {u'summary': u'SYNC DISABLED'}
-
-        { u'authenticated': True,
-          u'last synced': u'Just now',
-          u'summary': u'READY',
-          u'sync url': u'clients4.google.com',
-          u'updates received': 42,
-          u'synced datatypes': [ u'Bookmarks',
-                                 u'Preferences',
-                                 u'Passwords',
-                                 u'Autofill',
-                                 u'Themes',
-                                 u'Extensions',
-                                 u'Apps']}
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'GetSyncInfo',
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)['sync_info']
-
-  def AwaitSyncCycleCompletion(self):
-    """Waits for the ongoing sync cycle to complete. Must be signed in to sync
-       before calling this method.
-
-    Returns:
-      True, on success.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'AwaitSyncCycleCompletion',
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)['success']
-
-  def AwaitSyncRestart(self):
-    """Waits for sync to reinitialize itself. Typically used when the browser
-       is restarted and a full sync cycle is not expected to occur. Must be
-       previously signed in to sync before calling this method.
-
-    Returns:
-      True, on success.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'AwaitSyncRestart',
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)['success']
-
-  def EnableSyncForDatatypes(self, datatypes):
-    """Enables sync for a given list of sync datatypes. Must be signed in to
-       sync before calling this method.
-
-    Args:
-      datatypes: A list of strings indicating the datatypes for which to enable
-                 sync. Strings that can be in the list are:
-                 Bookmarks, Preferences, Passwords, Autofill, Themes,
-                 Typed URLs, Extensions, Encryption keys, Sessions, Apps, All.
-                 For an updated list of valid sync datatypes, refer to the
-                 function ModelTypeToString() in the file
-                 chrome/browser/sync/syncable/model_type.cc.
-                 Examples:
-                   ['Bookmarks', 'Preferences', 'Passwords']
-                   ['All']
-
-    Returns:
-      True, on success.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'EnableSyncForDatatypes',
-      'datatypes': datatypes,
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)['success']
-
-  def DisableSyncForDatatypes(self, datatypes):
-    """Disables sync for a given list of sync datatypes. Must be signed in to
-       sync before calling this method.
-
-    Args:
-      datatypes: A list of strings indicating the datatypes for which to
-                 disable sync. Strings that can be in the list are:
-                 Bookmarks, Preferences, Passwords, Autofill, Themes,
-                 Typed URLs, Extensions, Encryption keys, Sessions, Apps, All.
-                 For an updated list of valid sync datatypes, refer to the
-                 function ModelTypeToString() in the file
-                 chrome/browser/sync/syncable/model_type.cc.
-                 Examples:
-                   ['Bookmarks', 'Preferences', 'Passwords']
-                   ['All']
-
-    Returns:
-      True, on success.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'DisableSyncForDatatypes',
-      'datatypes': datatypes,
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)['success']
 
   def HeapProfilerDump(self, process_type, reason, tab_index=0, windex=0):
     """Dumps a heap profile.  It works only on Linux and ChromeOS.

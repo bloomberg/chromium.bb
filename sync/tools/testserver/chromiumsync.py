@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -442,13 +442,11 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=BOOKMARK),
       PermanentItem('bookmark_bar', name='Bookmark Bar',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
-      PermanentItem('synced_bookmarks', name='Mobile Bookmarks',
-                    parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('other_bookmarks', name='Other Bookmarks',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('synced_bookmarks', name='Synced Bookmarks',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK,
-                    create_by_default=False),
+                    create_by_default=False),  # Must be True in the iOS tree.
       PermanentItem('google_chrome_autofill', name='Autofill',
                     parent_tag=ROOT_ID, sync_type=AUTOFILL),
       PermanentItem('google_chrome_autofill_profiles', name='Autofill Profiles',
@@ -472,7 +470,8 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=PASSWORD),
       PermanentItem('google_chrome_preferences', name='Preferences',
                     parent_tag=ROOT_ID, sync_type=PREFERENCE),
-      PermanentItem('google_chrome_preferences', name='Synced Notifications',
+      PermanentItem('google_chrome_synced_notifications',
+                    name='Synced Notifications',
                     parent_tag=ROOT_ID, sync_type=SYNCED_NOTIFICATION),
       PermanentItem('google_chrome_search_engines', name='Search Engines',
                     parent_tag=ROOT_ID, sync_type=SEARCH_ENGINE),
@@ -1047,7 +1046,7 @@ class TestServer(object):
 
   TestServer consumes the sync command messages that are the outermost
   layers of the protocol, performs the corresponding actions on its
-  SyncDataModel, and constructs an appropropriate response message.
+  SyncDataModel, and constructs an appropriate response message.
   """
 
   def __init__(self):

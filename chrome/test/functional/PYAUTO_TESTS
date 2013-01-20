@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -56,7 +56,6 @@
       'pyauto_webdriver',
       'search_engines',
       'special_tabs',
-      'sync.SyncTest',
       'test_pyauto',
 
       # ===========================
@@ -90,8 +89,6 @@
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
       # crbug.com/133315
       '-infobars.OneClickInfobarTest.testDisplayOneClickInfobarAfterDismiss',
-      # crbug.com/124913
-      '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/165843
       '-instant.InstantTest.testInstantWithNonInstantSearchEngine',
       # Mysteriously broken?
@@ -129,8 +126,6 @@
       '-prefs_ui.PrefsUITest.testNoInitialLineEntryInUI',
       # crbug.com/132285
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
-      # crbug.com/88593
-      '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/168081
       '-ntp.NTPTest.testCloseOneTab',
     ],
@@ -171,16 +166,6 @@
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
-      # Disable sync.SyncIntegrationTest on the QA bots in FULL,
-      # until sync protobufs are copied over.
-      # Also, see crbug.com/104227
-      '-sync.SyncIntegrationTest',
-      # crbug.com/88679
-      '-sync.SyncTest',
-      # crbug.com/86949
-      '-sync.SyncTest.testRestartBrowser',
-      # crbug.com/87642
-      '-sync.SyncTest.testDisableAndEnableDatatypes',
     ],
 
     'mac': [
@@ -215,8 +200,6 @@
       '-passwords',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
-      # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
-      '-sync',
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
@@ -240,8 +223,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
-      # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
-      '-sync',
     ],
 
     'chromeos': [
@@ -311,8 +292,6 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       '-prefs.PrefsTest.testSessionRestoreURLs',
       '-prefs.PrefsTest.testSessionRestore',
-      # sync tests were running into a secondary passphrase. crosbug.com/15016.
-      '-sync',
       # Deal with i18n chars.  crosbug.com/12639
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',

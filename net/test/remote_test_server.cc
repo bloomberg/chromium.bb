@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,6 @@ std::string GetServerTypeString(BaseTestServer::Type type) {
     case BaseTestServer::TYPE_WS:
     case BaseTestServer::TYPE_WSS:
       return "ws";
-    case BaseTestServer::TYPE_SYNC:
-      return "sync";
     case BaseTestServer::TYPE_TCP_ECHO:
       return "tcpecho";
     case BaseTestServer::TYPE_UDP_ECHO:

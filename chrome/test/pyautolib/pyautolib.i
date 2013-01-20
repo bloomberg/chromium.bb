@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -193,7 +193,6 @@ class TestServer {
     TYPE_FTP,
     TYPE_HTTP,
     TYPE_HTTPS,
-    TYPE_SYNC,
   };
 
   // Initialize a TestServer listening on the specified host (IP or hostname).
@@ -223,14 +222,6 @@ class TestServer {
   int GetPort() const {
     int val = 0;
     $self->server_data().GetInteger("port", &val);
-    return val;
-  }
-
-  %feature("docstring", "Get xmpp port number in case of sync server.")
-      GetSyncXmppPort;
-  int GetSyncXmppPort() const {
-    int val = 0;
-    $self->server_data().GetInteger("xmpp_port", &val);
     return val;
   }
 };

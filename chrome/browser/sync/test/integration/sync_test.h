@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
 #include "net/base/mock_host_resolver.h"
-#include "net/test/local_sync_test_server.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
+#include "sync/test/local_sync_test_server.h"
 
 class CommandLine;
 class Profile;
@@ -302,8 +302,8 @@ class SyncTest : public InProcessBrowserTest {
   // the default URLFetcher creation mechanism.
   void ClearMockGaiaResponses();
 
-  // Test server of type sync, started on demand.
-  net::LocalSyncTestServer sync_server_;
+  // Python sync test server, started on demand.
+  syncer::LocalSyncTestServer sync_server_;
 
   // Helper class to whitelist the notification port.
   scoped_ptr<net::ScopedPortException> xmpp_port_;

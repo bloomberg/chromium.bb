@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,18 +24,19 @@ from forwarder import Forwarder
 import ports
 
 
-# Path that are needed to import necessary modules when running testserver.py.
-os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + ':%s:%s:%s:%s' % (
-    os.path.join(constants.CHROME_DIR, 'third_party'),
-    os.path.join(constants.CHROME_DIR, 'third_party', 'tlslite'),
-    os.path.join(constants.CHROME_DIR, 'third_party', 'pyftpdlib', 'src'),
-    os.path.join(constants.CHROME_DIR, 'net', 'tools', 'testserver'))
+# Path that are needed to import necessary modules when launching a testserver.
+os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
+    % (os.path.join(constants.CHROME_DIR, 'third_party'),
+       os.path.join(constants.CHROME_DIR, 'third_party', 'tlslite'),
+       os.path.join(constants.CHROME_DIR, 'third_party', 'pyftpdlib', 'src'),
+       os.path.join(constants.CHROME_DIR, 'net', 'tools', 'testserver'),
+       os.path.join(constants.CHROME_DIR, 'sync', 'tools', 'testserver')))
 
 
 SERVER_TYPES = {
     'http': '',
     'ftp': '-f',
-    'sync': '--sync',
+    'sync': '',  # Sync uses its own script, and doesn't take a server type arg.
     'tcpecho': '--tcp-echo',
     'udpecho': '--udp-echo',
 }
@@ -207,8 +208,13 @@ class TestServerThread(threading.Thread):
     logging.info('Start running the thread!')
     self.wait_event.clear()
     self._GenerateCommandLineArguments()
-    command = [os.path.join(constants.CHROME_DIR, 'net', 'tools',
-                            'testserver', 'testserver.py')] + self.command_line
+    command = constants.CHROME_DIR
+    if self.arguments['server-type'] == 'sync':
+      command = [os.path.join(command, 'sync', 'tools', 'testserver',
+                              'sync_testserver.py')] + self.command_line
+    else:
+      command = [os.path.join(command, 'net', 'tools', 'testserver',
+                              'testserver.py')] + self.command_line
     logging.info('Running: %s', command)
     self.process = subprocess.Popen(command)
     if self.process:

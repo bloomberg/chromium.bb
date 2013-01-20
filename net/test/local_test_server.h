@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,17 +45,8 @@ class LocalTestServer : public BaseTestServer {
   // Modify PYTHONPATH to contain libraries we need.
   virtual bool SetPythonPath() const WARN_UNUSED_RESULT;
 
-  // This is a static version so that RunSyncTest in run_testserver.cc can use
-  // it.
-  // TODO(mattm): We should refactor so this isn't necessary (crbug.com/159731).
-  static bool SetPythonPathStatic() WARN_UNUSED_RESULT;
-
-  // Returns true if successfully stored the FilePath for the directory of the
-  // testserver python script in |*directory|.
-  static bool GetTestServerDirectory(FilePath* directory) WARN_UNUSED_RESULT;
-
-  // Returns true if successfully stored the FilePath for the testserver python
-  // script in |*testserver_path|.
+  // Returns true if the FilePath for the testserver python script is
+  // successfully stored  in |*testserver_path|.
   virtual bool GetTestServerPath(FilePath* testserver_path) const
       WARN_UNUSED_RESULT;
 
