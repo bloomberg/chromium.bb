@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +25,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/auto_launch_util.h"
@@ -695,6 +697,17 @@ void HandleActiveSetupForBrowser(const FilePath& installation_root,
   FilePath chrome_exe(installation_root.Append(kChromeExe));
   CreateOrUpdateShortcuts(
       chrome_exe, chrome, prefs, CURRENT_USER, install_operation);
+}
+
+bool InstallFromWebstore(const std::string& app_code) {
+  FilePath app_host_path(chrome_launcher_support::GetAnyAppHostPath());
+  if (app_host_path.empty())
+    return false;
+
+  CommandLine cmd(app_host_path);
+  cmd.AppendSwitchASCII(::switches::kInstallFromWebstore, app_code);
+  VLOG(1) << "App install command: " << cmd.GetCommandLineString();
+  return base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
 }
 
 }  // namespace installer

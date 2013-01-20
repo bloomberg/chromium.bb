@@ -131,6 +131,11 @@ void HandleActiveSetupForBrowser(const FilePath& installation_root,
                                  const Product& chrome,
                                  bool force);
 
+// Launches app_host.exe to install content from web store (non-blocking).
+// Returns true on successful execution (although successful installation
+// is not guaranteed).
+bool InstallFromWebstore(const std::string& app_code);
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_INSTALL_H_

@@ -266,6 +266,7 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
+            'launcher_support',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -413,6 +414,7 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
+            'launcher_support',
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',

@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_UTIL_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_UTIL_H_
 
+#include <string>
+
 namespace google_update {
 
 // If user-level Google Update is absent, calls the system-level
@@ -18,6 +20,11 @@ bool EnsureUserLevelGoogleUpdatePresent();
 // system rather than waiting for the next time the scheduled task runs.
 // Returns false if Google Update could not be executed, or times out.
 bool UninstallGoogleUpdate(bool system_install);
+
+// Returns the value corresponding to |key| in untrusted data passed from
+// Google Update.  Returns an empty string if |key| is absent or if its value
+// contains non-printable characters.
+std::string GetUntrustedDataValue(const std::string& key);
 
 }  // namespace google_update
 

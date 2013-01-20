@@ -7,6 +7,8 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
+#include <string>
+
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -882,6 +884,16 @@ installer::InstallStatus InstallProductsHelper(
             DCHECK_NE(chrome_exe, string16());
             installer::RemoveChromeLegacyRegistryKeys(chrome->distribution(),
                                                       chrome_exe);
+          }
+        }
+
+        if (prefs.install_chrome_app_launcher() &&
+            InstallUtil::GetInstallReturnCode(install_status) == 0) {
+          std::string webstore_item(google_update::GetUntrustedDataValue(
+              installer::kInstallFromWebstore));
+          if (!webstore_item.empty()) {
+            bool success = installer::InstallFromWebstore(webstore_item);
+            VLOG_IF(1, !success) << "Failed to launch app installation.";
           }
         }
       }
