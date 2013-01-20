@@ -238,9 +238,27 @@ TEST_F(DelegatedRendererLayerImplTestSimple, DoesNotOwnARenderSurface)
     m_hostImpl->didDrawAllLayers(frame);
 }
 
-TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurface)
+TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurfaceForOpacity)
 {
     m_delegatedRendererLayerPtr->setOpacity(0.5f);
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+
+    // This test case has quads from multiple layers in the delegated renderer,
+    // so if the DelegatedRendererLayer has opacity < 1, it should end up with
+    // a render surface.
+    EXPECT_TRUE(m_delegatedRendererLayerPtr->renderSurface());
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
+}
+
+TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurfaceForTransform)
+{
+    gfx::Transform rotation;
+    rotation.RotateAboutZAxis(30.0);
+    m_delegatedRendererLayerPtr->setTransform(rotation);
 
     LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
