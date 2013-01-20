@@ -18,6 +18,7 @@ class CC_EXPORT DelegatedFrameData {
   DelegatedFrameData();
   ~DelegatedFrameData();
 
+  // TODO(danakj): This is redundant with the root render pass outputRect.
   gfx::Size size;
   TransferableResourceList resource_list;
   ScopedPtrVector<RenderPass> render_pass_list;

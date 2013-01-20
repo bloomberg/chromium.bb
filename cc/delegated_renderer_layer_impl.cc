@@ -107,6 +107,11 @@ void DelegatedRendererLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData
 
     RenderPass::Id targetRenderPassId = appendQuadsData.renderPassId;
 
+    const RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.back();
+
+    DCHECK(rootDelegatedRenderPass->output_rect.origin().IsOrigin());
+    gfx::Size frameSize = rootDelegatedRenderPass->output_rect.size();
+
     // If the index of the renderPassId is 0, then it is a renderPass generated for a layer
     // in this compositor, not the delegated renderer. Then we want to merge our root renderPass with
     // the target renderPass. Otherwise, it is some renderPass which we added from the delegated
@@ -116,19 +121,18 @@ void DelegatedRendererLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData
         // Verify that the renderPass we are appending to is created our renderTarget.
         DCHECK(targetRenderPassId.layer_id == renderTarget()->id());
 
-        const RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.back();
-        appendRenderPassQuads(quadSink, appendQuadsData, rootDelegatedRenderPass);
+        appendRenderPassQuads(quadSink, appendQuadsData, rootDelegatedRenderPass, frameSize);
     } else {
         // Verify that the renderPass we are appending to was created by us.
         DCHECK(targetRenderPassId.layer_id == id());
 
         int renderPassIndex = idToIndex(targetRenderPassId.index);
         const RenderPass* delegatedRenderPass = m_renderPassesInDrawOrder[renderPassIndex];
-        appendRenderPassQuads(quadSink, appendQuadsData, delegatedRenderPass);
+        appendRenderPassQuads(quadSink, appendQuadsData, delegatedRenderPass, frameSize);
     }
 }
 
-void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, const RenderPass* delegatedRenderPass) const
+void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, const RenderPass* delegatedRenderPass, gfx::Size frameSize) const
 {
     const SharedQuadState* currentSharedQuadState = 0;
     SharedQuadState* copiedSharedQuadState = 0;
@@ -145,9 +149,18 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
               // This layer must be drawing to a renderTarget other than itself.
               DCHECK(renderTarget() != this);
 
-              copiedSharedQuadState->content_to_target_transform = drawTransform() * copiedSharedQuadState->content_to_target_transform;
-              copiedSharedQuadState->clipped_rect_in_target = MathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clipped_rect_in_target);
-              copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clip_rect);
+              // Don't allow areas inside the bounds that are empty.
+              DCHECK(m_displaySize.IsEmpty() || gfx::Rect(m_displaySize).Contains(gfx::Rect(bounds())));
+              gfx::Size displaySize = m_displaySize.IsEmpty() ? bounds() : m_displaySize;
+
+              gfx::Transform delegatedFrameToLayerSpaceTransform;
+              delegatedFrameToLayerSpaceTransform.Scale(
+                  static_cast<double>(displaySize.width()) / frameSize.width(),
+                  static_cast<double>(displaySize.height()) / frameSize.height());
+
+              copiedSharedQuadState->content_to_target_transform = drawTransform() * delegatedFrameToLayerSpaceTransform * copiedSharedQuadState->content_to_target_transform;
+              copiedSharedQuadState->clipped_rect_in_target = MathUtil::mapClippedRect(drawTransform() * delegatedFrameToLayerSpaceTransform, copiedSharedQuadState->clipped_rect_in_target);
+              copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(drawTransform() * delegatedFrameToLayerSpaceTransform, copiedSharedQuadState->clip_rect);
               copiedSharedQuadState->opacity *= drawOpacity();
             }
         }

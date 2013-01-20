@@ -88,7 +88,7 @@ public:
         TestRenderPass* pass2 = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 7), gfx::Rect(7, 7, 7, 7), gfx::Transform());
         addQuad(pass2, gfx::Rect(0, 0, 7, 7), 22u);
         addRenderPassQuad(pass2, pass1);
-        TestRenderPass* pass3 = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 8), gfx::Rect(8, 8, 8, 8), gfx::Transform());
+        TestRenderPass* pass3 = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 8), gfx::Rect(0, 0, 8, 8), gfx::Transform());
         addRenderPassQuad(pass3, pass2);
         delegatedRendererLayer->setRenderPasses(delegatedRenderPasses);
 
@@ -210,8 +210,11 @@ TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedF
 
     // The DelegatedRendererLayer is at position 3,3 compared to its target, and has a translation transform of 1,1.
     // So its root RenderPass' quads should all be transformed by that combined amount.
+    // The DelegatedRendererLayer has a size of 10x10, but the root delegated RenderPass has a size of 8x8, so
+    // any quads should be scaled by 10/8.
     gfx::Transform transform;
-    transform.Translate(4, 4);
+    transform.Translate(4.0, 4.0);
+    transform.Scale(10.0 / 8.0, 10.0 / 8.0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(transform, frame.renderPasses[3]->quad_list[0]->quadTransform());
 
     // Quads from non-root RenderPasses should not be shifted though.
@@ -523,15 +526,22 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_NE(rootQuadList[0]->shared_quad_state, contribQuadList[0]->shared_quad_state);
 
     // The state should be transformed only once.
+
     // The x/y values are: position (20) + transform (8 * 2) = 36
     // 36 - (width / 2) = 36 - 30 / 2 = 21
-    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), rootSharedState->clipped_rect_in_target);
-    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), rootSharedState->clip_rect);
+    // The size is 100 scaled to fit inside the layer's bounds at 30x30 from a frame at 50x50.
+    // 100 * 30 / 50 = 60.
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 60, 60), rootSharedState->clipped_rect_in_target);
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 60, 60), rootSharedState->clip_rect);
     gfx::Transform expected;
+    // This is the transform from the layer's space to its target.
     // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
     expected.Translate(5.0, 5.0);
     expected.Scale(2.0, 2.0);
     expected.Translate(8.0, 8.0);
+    // The frame has size 50x50 but the layer's bounds are 30x30.
+    expected.Scale(30.0 / 50.0, 30.0 / 50.0);
+    // This is the transform within the source frame.
     expected.Scale(1.5, 1.5);
     expected.Translate(7.0, 7.0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, rootSharedState->content_to_target_transform);
@@ -543,6 +553,45 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     expected.Scale(0.8, 0.8);
     expected.Translate(9.0, 9.0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, contribSharedState->content_to_target_transform);
+
+    m_hostImpl->drawLayers(frame);
+    m_hostImpl->didDrawAllLayers(frame);
+}
+
+TEST_F(DelegatedRendererLayerImplTestSharedData, DisplaySize)
+{
+    // Cause the layer to scale its output to be larger than its bounds.
+    m_delegatedRendererLayerPtr->setDisplaySize(gfx::Size(40, 40));
+    EXPECT_LT(m_delegatedRendererLayerPtr->bounds().width(), 40);
+    EXPECT_LT(m_delegatedRendererLayerPtr->bounds().height(), 40);
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+
+    ASSERT_EQ(2u, frame.renderPasses.size());
+
+    const QuadList& rootQuadList = frame.renderPasses[1]->quad_list;
+    ASSERT_EQ(5u, rootQuadList.size());
+
+    const SharedQuadState* rootSharedState = rootQuadList[0]->shared_quad_state;
+
+    // The results are similar to the SharedData test, but are scaled up by displaySize/bounds, which is 40/30.
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 80, 80), rootSharedState->clipped_rect_in_target);
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 80, 80), rootSharedState->clip_rect);
+    gfx::Transform expected;
+    // This is the transform from the layer's space to its target.
+    // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
+    expected.Translate(5.0, 5.0);
+    expected.Scale(2.0, 2.0);
+    expected.Translate(8.0, 8.0);
+    // The frame has size 50x50 but the layer's bounds are 30x30.
+    expected.Scale(30.0 / 50.0, 30.0 / 50.0);
+    // The display size is 40x40 but the bounds are 30x30.
+    expected.Scale(40.0 / 30.0, 40.0 / 30.0);
+    // This is the transform within the source frame.
+    expected.Scale(1.5, 1.5);
+    expected.Translate(7.0, 7.0);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expected, rootSharedState->content_to_target_transform);
 
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);

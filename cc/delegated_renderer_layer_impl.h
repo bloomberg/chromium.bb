@@ -23,6 +23,11 @@ public:
     void setRenderPasses(ScopedPtrVector<RenderPass>&);
     void clearRenderPasses();
 
+    // Set the size at which the frame should be displayed, with the origin at the layer's origin.
+    // This must always contain at least the layer's bounds. A value of (0, 0) implies that the
+    // frame should be displayed to fit exactly in the layer's bounds.
+    void setDisplaySize(gfx::Size displaySize) { m_displaySize = displaySize; }
+
     virtual void didLoseOutputSurface() OVERRIDE;
 
     virtual RenderPass::Id firstContributingRenderPassId() const OVERRIDE;
@@ -36,12 +41,13 @@ private:
 
     RenderPass::Id convertDelegatedRenderPassId(RenderPass::Id delegatedRenderPassId) const;
 
-    void appendRenderPassQuads(QuadSink&, AppendQuadsData&, const RenderPass* fromDelegatedRenderPass) const;
+    void appendRenderPassQuads(QuadSink&, AppendQuadsData&, const RenderPass* fromDelegatedRenderPass, gfx::Size frameSize) const;
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
     ScopedPtrVector<RenderPass> m_renderPassesInDrawOrder;
     base::hash_map<RenderPass::Id, int> m_renderPassesIndexById;
+    gfx::Size m_displaySize;
 };
 
 }

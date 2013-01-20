@@ -535,6 +535,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
                != frame.renderPassesById.end());
     }
 #endif
+    DCHECK(frame.renderPasses.back()->output_rect.origin().IsOrigin());
 
     if (!activeTree()->has_transparent_background()) {
         frame.renderPasses.back()->has_transparent_background = false;
