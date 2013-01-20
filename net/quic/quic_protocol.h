@@ -479,6 +479,13 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
   QuicEncryptedPacket(char* buffer, size_t length, bool owns_buffer)
       : QuicData(buffer, length, owns_buffer) { }
 
+  // By default, gtest prints the raw bytes of an object. The bool data
+  // member (in the base class QuicData) causes this object to have padding
+  // bytes, which causes the default gtest object printer to read
+  // uninitialize memory. So we need to teach gtest how to print this object.
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicEncryptedPacket& s);
+
   base::StringPiece AssociatedData() const {
     return base::StringPiece(data() + kStartOfHashData, kStartOfEncryptedData);
   }
@@ -495,6 +502,14 @@ struct QuicConsumedData {
       : bytes_consumed(bytes_consumed),
         fin_consumed(fin_consumed) {
   }
+
+  // By default, gtest prints the raw bytes of an object. The bool data
+  // member causes this object to have padding bytes, which causes the
+  // default gtest object printer to read uninitialize memory. So we need
+  // to teach gtest how to print this object.
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicConsumedData& s);
+
   size_t bytes_consumed;
   bool fin_consumed;
 };

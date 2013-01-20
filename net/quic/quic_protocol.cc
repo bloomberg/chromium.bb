@@ -79,7 +79,7 @@ QuicAckFrame::QuicAckFrame(QuicPacketSequenceNumber largest_observed,
 }
 
 ostream& operator<<(ostream& os, const SentPacketInfo& sent_info) {
-  os << "least_waiting: " << sent_info.least_unacked;
+  os << "least_unacked: " << sent_info.least_unacked;
   return os;
 }
 
@@ -167,6 +167,17 @@ QuicData::~QuicData() {
   if (owns_buffer_) {
     delete [] const_cast<char*>(buffer_);
   }
+}
+
+ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
+  os << s.length() << "-byte data";
+  return os;
+}
+
+ostream& operator<<(ostream& os, const QuicConsumedData& s) {
+  os << "bytes_consumed: " << s.bytes_consumed
+     << " fin_consumed: " << s.fin_consumed;
+  return os;
 }
 
 }  // namespace net
