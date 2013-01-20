@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <fcntl.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/resource.h>
@@ -14,9 +15,15 @@
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace {
-  std::string TestFailedMessage(const std::string& msg) {
-    return msg.empty() ? "" : "Actual test failure: " + msg;
-  }
+std::string TestFailedMessage(const std::string& msg) {
+  return msg.empty() ? "" : "Actual test failure: " + msg;
+}
+
+int GetSubProcessTimeoutTimeInSeconds() {
+  // 10s ought to be enough for anybody.
+  return 10;
+}
+
 }
 
 namespace sandbox {
@@ -67,6 +74,8 @@ void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
   // insecure manner.
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
+  // Check that our pipe is not on one of the standard file descriptor.
+  SANDBOX_ASSERT(fds[0] > 2 && fds[1] > 2);
 
   pid_t pid;
   ASSERT_LE(0, (pid = fork()));
@@ -81,7 +90,7 @@ void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
     // Don't set a timeout if running on Valgrind, since it's generally much
     // slower.
     if (!RUNNING_ON_VALGRIND) {
-      SetProcessTimeout(10 /* seconds */);
+      SetProcessTimeout(GetSubProcessTimeoutTimeInSeconds());
     }
 
     // Disable core files. They are not very useful for our individual test
@@ -96,13 +105,28 @@ void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
   (void)HANDLE_EINTR(close(fds[1]));
   std::vector<char> msg_buf;
   ssize_t rc;
-  do {
-    const unsigned int kCapacity = 256;
-    size_t len = msg_buf.size();
+
+  // Make sure read() will never block as we'll use poll() to
+  // block with a timeout instead.
+  const int fcntl_ret = fcntl(fds[0], F_SETFL,  O_NONBLOCK);
+  ASSERT_EQ(fcntl_ret, 0);
+  struct pollfd poll_fd = { fds[0], POLLIN | POLLRDHUP, 0 };
+
+  int poll_ret;
+  // We prefer the SIGALRM timeout to trigger in the child than this timeout
+  // so we double the common value here.
+  int poll_timeout = GetSubProcessTimeoutTimeInSeconds() * 2 * 1000;
+  while ((poll_ret = poll(&poll_fd, 1, poll_timeout) > 0)) {
+    const size_t kCapacity = 256;
+    const size_t len = msg_buf.size();
     msg_buf.resize(len + kCapacity);
     rc = HANDLE_EINTR(read(fds[0], &msg_buf[len], kCapacity));
     msg_buf.resize(len + std::max(rc, static_cast<ssize_t>(0)));
-  } while (rc > 0);
+    if (rc <= 0)
+      break;
+  }
+  ASSERT_NE(poll_ret, -1) << "poll() failed";
+  ASSERT_NE(poll_ret, 0) << "Timeout while reading child state";
   (void)HANDLE_EINTR(close(fds[0]));
   std::string msg(msg_buf.begin(), msg_buf.end());
 
