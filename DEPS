@@ -75,13 +75,13 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@176115",
+    "/trunk/deps/third_party/icu46@177751",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell@176100",
+   "/trunk/deps/third_party/hunspell@177853",
 
   "src/third_party/hunspell_dictionaries":
     "/trunk/deps/third_party/hunspell_dictionaries@175986",
@@ -150,7 +150,7 @@ deps = {
     Var("webkit_trunk") + "/Tools/TestWebKitAPI@" + Var("webkit_revision"),
 
   "src/third_party/ots":
-    (Var("googlecode_url") % "ots") + "/trunk@96",
+    (Var("googlecode_url") % "ots") + "/trunk@97",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@171600",
@@ -262,16 +262,16 @@ deps = {
     "/trunk/deps/third_party/libsrtp@174628",
 
   "src/third_party/speex":
-    "/trunk/deps/third_party/speex@175205",
+    "/trunk/deps/third_party/speex@177782",
 
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@167605",
 
   "src/third_party/libjpeg_turbo":
-    "/trunk/deps/third_party/libjpeg_turbo@149334",
+    "/trunk/deps/third_party/libjpeg_turbo@177737",
 
   "src/third_party/flac":
-    "/trunk/deps/third_party/flac@175206",
+    "/trunk/deps/third_party/flac@177788",
 
   "src/third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
@@ -522,7 +522,7 @@ deps_os = {
        Var("lss_revision")),
 
     "src/third_party/openssl":
-      "/trunk/deps/third_party/openssl@172029",
+      "/trunk/deps/third_party/openssl@177803",
 
     "src/third_party/WebKit/Tools/gdb":
       Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
