@@ -97,6 +97,11 @@ cr.define('options', function() {
     EditDictionaryOverlay.getInstance().wordList_.setWordList(entries);
   };
 
+  EditDictionaryOverlay.updateWords = function(add_words, remove_words) {
+    EditDictionaryOverlay.getInstance().wordList_.addWords(add_words);
+    EditDictionaryOverlay.getInstance().wordList_.removeWords(remove_words);
+  };
+
   EditDictionaryOverlay.getWordListForTesting = function() {
     return EditDictionaryOverlay.getInstance().wordList_;
   };

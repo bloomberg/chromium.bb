@@ -98,7 +98,15 @@ cr.define('options.dictionary_words', function() {
     allWordsList_: null,
 
     /**
-     * Add a dictionary word.
+     * The list of words that the user removed, but |DictionaryWordList| has not
+     * received a notification of their removal yet.
+     * @type {Array}
+     * @private
+     */
+    removedWordsList_: [],
+
+    /**
+     * Adds a dictionary word.
      * @param {string} dictionaryWord The word to add.
      * @private
      */
@@ -110,7 +118,7 @@ cr.define('options.dictionary_words', function() {
     },
 
     /**
-     * Search the list for the matching words.
+     * Searches the list for the matching words.
      * @param {string} searchTerm The search term.
      */
     search: function(searchTerm) {
@@ -124,7 +132,7 @@ cr.define('options.dictionary_words', function() {
     },
 
     /**
-     * Set the list of dictionary words.
+     * Sets the list of dictionary words.
      * @param {Array} entries The list of dictionary words.
      */
     setWordList: function(entries) {
@@ -136,7 +144,57 @@ cr.define('options.dictionary_words', function() {
     },
 
     /**
-     * True if the data model contains no words, otherwise false.
+     * Adds non-duplicate dictionary words.
+     * @param {Array} entries The list of dictionary words.
+     */
+    addWords: function(entries) {
+      var to_add = [];
+      for (var i = 0; i < entries.length; i++) {
+        if (this.allWordsList_.indexOf(entries[i]) == -1) {
+          this.allWordsList_.push(entries[i]);
+          to_add.push(entries[i]);
+        }
+      }
+      if (to_add.length == 0)
+        return;
+      for (var i = 0; i < to_add.length; i++)
+        this.dataModel.splice(this.dataModel.length - 1, 0, to_add[i]);
+      this.onWordListChanged();
+    },
+
+    /**
+     * Removes dictionary words that are not in |removedWordsList_|. If a word
+     * is in |removedWordsList_|, then removes the word from there instead.
+     * @param {Array} entries The list of dictionary words.
+     */
+    removeWords: function(entries) {
+      var index;
+      var to_remove = [];
+      for (var i = 0; i < entries.length; i++) {
+        index = this.removedWordsList_.indexOf(entries[i]);
+        if (index > -1) {
+          this.removedWordsList_.splice(index, 1);
+        } else {
+          index = this.allWordsList_.indexOf(entries[i]);
+          if (index > -1) {
+            this.allWordsList_.splice(index, 1);
+            to_remove.push(entries[i]);
+          }
+        }
+      }
+      if (to_remove.length == 0)
+        return;
+      for (var i = 0; i < to_remove.length; i++) {
+        index = this.dataModel.indexOf(to_remove[i]);
+        if (index > -1)
+          this.dataModel.splice(index, 1);
+      }
+      this.onWordListChanged();
+    },
+
+    /**
+     * Returns true if the data model contains no words, otherwise returns
+     * false.
      * @type {boolean}
      */
     get empty() {
@@ -162,6 +220,7 @@ cr.define('options.dictionary_words', function() {
       assert(allWordsListIndex > -1);
       this.allWordsList_.splice(allWordsListIndex, 1);
       this.dataModel.splice(index, 1);
+      this.removedWordsList_.push(item);
       this.onWordListChanged();
       chrome.send('removeDictionaryWord', [item]);
     },

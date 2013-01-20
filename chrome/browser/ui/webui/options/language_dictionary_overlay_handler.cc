@@ -77,10 +77,22 @@ void LanguageDictionaryOverlayHandler::OnCustomDictionaryLoaded() {
 
 void LanguageDictionaryOverlayHandler::OnCustomDictionaryWordAdded(
     const std::string& word) {
+  ListValue add_words;
+  ListValue remove_words;
+  add_words.AppendString(word);
+  web_ui()->CallJavascriptFunction("EditDictionaryOverlay.updateWords",
+                                   add_words,
+                                   remove_words);
 }
 
 void LanguageDictionaryOverlayHandler::OnCustomDictionaryWordRemoved(
     const std::string& word) {
+  ListValue add_words;
+  ListValue remove_words;
+  remove_words.AppendString(word);
+  web_ui()->CallJavascriptFunction("EditDictionaryOverlay.updateWords",
+                                   add_words,
+                                   remove_words);
 }
 
 void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
