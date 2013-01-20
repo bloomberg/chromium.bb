@@ -4,12 +4,6 @@
 
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
-#include <BluetoothAPIs.h>
-#if defined(_WIN32_WINNT_WIN8) && _MSC_VER < 1700
-// The Windows 8 SDK defines FACILITY_VISUALCPP in winerror.h.
-#undef FACILITY_VISUALCPP
-#endif
-#include <delayimp.h>
 #include <string>
 
 #include "base/bind.h"
@@ -21,8 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
-
-#pragma comment(lib, "Bthprops.lib")
+#include "device/bluetooth/bluetooth_includes_win.h"
 
 namespace {
 
