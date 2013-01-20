@@ -1,0 +1,12 @@
+{
+  "name": "USB Invalid-Length Transfer",
+  "version": "0.1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [
+    "usb"
+  ]
+}

@@ -62,7 +62,10 @@ static const char* kErrorMalformedParameters = "Error parsing parameters.";
 static const char* kErrorNoDevice = "No such device.";
 static const char* kErrorPermissionDenied =
     "Permission to access device was denied";
+static const char* kErrorInvalidTransferLength = "Transfer length must be a "
+    "positive number less than 104,857,600.";
 
+static const size_t kMaxTransferLength = 100 * 1024 * 1024;
 static UsbDevice* device_for_test_ = NULL;
 
 static bool ConvertDirection(const Direction& input,
@@ -129,7 +132,8 @@ template<class T>
 static bool GetTransferSize(const T& input, size_t* output) {
   if (input.direction == usb::DIRECTION_IN) {
     const int* length = input.length.get();
-    if (length) {
+    if (length && *length >= 0 &&
+        static_cast<size_t>(*length) < kMaxTransferLength) {
       *output = *length;
       return true;
     }
@@ -143,9 +147,10 @@ static bool GetTransferSize(const T& input, size_t* output) {
 }
 
 template<class T>
-static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
-  size_t size = 0;
-  if (!GetTransferSize(input, &size))
+static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(
+    const T& input, UsbDevice::TransferDirection direction, size_t size) {
+
+  if (size > kMaxTransferLength)
     return NULL;
 
   // Allocate a |size|-bytes buffer, or a one-byte buffer if |size| is 0. This
@@ -153,11 +158,17 @@ static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
   // cannot represent a zero-length buffer, while an URB can.
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(std::max(
       static_cast<size_t>(1), size));
-  if (!input.data.get())
-    return buffer;
 
-  memcpy(buffer->data(), input.data->data(), size);
-  return buffer;
+  if (direction == UsbDevice::INBOUND) {
+    return buffer;
+  } else if (direction == UsbDevice::OUTBOUND) {
+    if (input.data.get() && size <= input.data->size()) {
+      memcpy(buffer->data(), input.data->data(), size);
+      return buffer;
+    }
+  }
+  NOTREACHED();
+  return NULL;
 }
 
 static const char* ConvertTransferStatusToErrorString(
@@ -475,8 +486,7 @@ void UsbControlTransferFunction::AsyncWorkStart() {
   UsbDevice::TransferDirection direction;
   UsbDevice::TransferRequestType request_type;
   UsbDevice::TransferRecipient recipient;
-  size_t size;
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(transfer);
+  size_t size = 0;
 
   if (!ConvertDirectionSafely(transfer.direction, &direction) ||
       !ConvertRequestTypeSafely(transfer.request_type, &request_type) ||
@@ -485,7 +495,14 @@ void UsbControlTransferFunction::AsyncWorkStart() {
     return;
   }
 
-  if (!GetTransferSize(transfer, &size) || !buffer) {
+  if (!GetTransferSize(transfer, &size)) {
+    CompleteWithError(kErrorInvalidTransferLength);
+    return;
+  }
+
+  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
+      transfer, direction, size);
+  if (!buffer) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
@@ -516,15 +533,21 @@ void UsbBulkTransferFunction::AsyncWorkStart() {
   const GenericTransferInfo& transfer = parameters_->transfer_info;
 
   UsbDevice::TransferDirection direction;
-  size_t size;
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(transfer);
+  size_t size = 0;
 
   if (!ConvertDirectionSafely(transfer.direction, &direction)) {
     AsyncWorkCompleted();
     return;
   }
 
-  if (!GetTransferSize(transfer, &size) || !buffer) {
+  if (!GetTransferSize(transfer, &size)) {
+    CompleteWithError(kErrorInvalidTransferLength);
+    return;
+  }
+
+  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
+      transfer, direction, size);
+  if (!buffer) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
@@ -554,15 +577,21 @@ void UsbInterruptTransferFunction::AsyncWorkStart() {
   const GenericTransferInfo& transfer = parameters_->transfer_info;
 
   UsbDevice::TransferDirection direction;
-  size_t size;
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(transfer);
+  size_t size = 0;
 
   if (!ConvertDirectionSafely(transfer.direction, &direction)) {
     AsyncWorkCompleted();
     return;
   }
 
-  if (!GetTransferSize(transfer, &size) || !buffer) {
+  if (!GetTransferSize(transfer, &size)) {
+    CompleteWithError(kErrorInvalidTransferLength);
+    return;
+  }
+
+  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
+      transfer, direction, size);
+  if (!buffer) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
@@ -592,18 +621,23 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
   const IsochronousTransferInfo& transfer = parameters_->transfer_info;
   const GenericTransferInfo& generic_transfer = transfer.transfer_info;
 
-  size_t size;
+  size_t size = 0;
   UsbDevice::TransferDirection direction;
-  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
-      generic_transfer);
 
   if (!ConvertDirectionSafely(generic_transfer.direction, &direction)) {
     AsyncWorkCompleted();
     return;
   }
 
-  if (!GetTransferSize(generic_transfer, &size) || !buffer) {
-    CompleteWithError(kErrorNoDevice);
+  if (!GetTransferSize(generic_transfer, &size)) {
+    CompleteWithError(kErrorInvalidTransferLength);
+    return;
+  }
+
+  scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
+      generic_transfer, direction, size);
+  if (!buffer) {
+    CompleteWithError(kErrorMalformedParameters);
     return;
   }
 

@@ -117,3 +117,9 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
   EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/transfer_failure"));
 }
+
+IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidLengthTransfer) {
+  EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
+  ASSERT_TRUE(RunExtensionTest("usb/invalid_length_transfer"));
+}
+
