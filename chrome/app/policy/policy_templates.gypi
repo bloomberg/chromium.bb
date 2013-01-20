@@ -37,6 +37,7 @@
                   'inputs': ['../../VERSION'],
                   'outputs': ['<(version_path)'],
                   'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+                  'msvs_cygwin_shell': 1,
                 },
                 {
                   # Add all the templates generated at the previous step into
@@ -157,6 +158,7 @@
               'message':
                 'Copy the Localizable.strings files to the manifest bundle',
               'process_outputs_as_mac_bundle_resources': 1,
+              'msvs_cygwin_shell': 1,
             },
           ],
         },
