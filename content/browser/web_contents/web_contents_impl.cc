@@ -47,6 +47,7 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/color_chooser.h"
+#include "content/public/browser/compositor_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
@@ -485,7 +486,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
   prefs.force_compositing_mode =
-      command_line.HasSwitch(switches::kForceCompositingMode) &&
+      content::IsForceCompositingModeEnabled() &&
       !command_line.HasSwitch(switches::kDisableForceCompositingMode);
   prefs.fixed_position_compositing_enabled =
       command_line.HasSwitch(switches::kEnableCompositingForFixedPosition);
@@ -553,10 +554,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
    prefs.touch_adjustment_enabled =
        !command_line.HasSwitch(switches::kDisableTouchAdjustment);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   bool default_enable_scroll_animator = true;
 #else
-  // On CrOS, the launcher always passes in the --enable flag.
   bool default_enable_scroll_animator = false;
 #endif
   prefs.enable_scroll_animator = default_enable_scroll_animator;
