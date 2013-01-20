@@ -76,6 +76,57 @@ TEST_F(BaseLayoutManagerTest, Minimize) {
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 
+// A WindowDelegate which sets the focus when the window
+// becomes visible.
+class FocusDelegate : public aura::test::TestWindowDelegate {
+ public:
+  FocusDelegate()
+      : window_(NULL),
+        show_state_(ui::SHOW_STATE_END) {
+  }
+  virtual ~FocusDelegate() {}
+
+  void set_window(aura::Window* window) { window_ = window; }
+
+  // aura::test::TestWindowDelegate overrides:
+  virtual void OnWindowTargetVisibilityChanged(bool visible) {
+    if (window_) {
+      if (visible)
+        window_->Focus();
+      show_state_ = window_->GetProperty(aura::client::kShowStateKey);
+    }
+  }
+
+  ui::WindowShowState GetShowStateAndReset() {
+    ui::WindowShowState ret = show_state_;
+    show_state_ = ui::SHOW_STATE_END;
+    return ret;
+  }
+
+ private:
+  aura::Window* window_;
+  ui::WindowShowState show_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusDelegate);
+};
+
+// Make sure that the window's show state is correct in
+// |WindowDelegate::OnWindowTargetVisibilityChanged|, and setting
+// focus in this callback doesn't cause DCHECK error.  See
+// crbug.com/168383.
+TEST_F(BaseLayoutManagerTest, FocusDuringUnminimize) {
+  FocusDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, 0, gfx::Rect(100, 100, 100, 100)));
+  delegate.set_window(window.get());
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_EQ(ui::SHOW_STATE_MINIMIZED, delegate.GetShowStateAndReset());
+  window->Show();
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, delegate.GetShowStateAndReset());
+}
+
 // Tests maximized window size during root window resize.
 TEST_F(BaseLayoutManagerTest, MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);

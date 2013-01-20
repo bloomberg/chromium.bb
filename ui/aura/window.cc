@@ -698,11 +698,12 @@ void Window::SetVisible(bool visible) {
   }
   visible_ = visible;
   SchedulePaint();
+  if (parent_ && parent_->layout_manager_.get())
+    parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);
+
   if (delegate_)
     delegate_->OnWindowTargetVisibilityChanged(visible);
 
-  if (parent_ && parent_->layout_manager_.get())
-    parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanged(this, visible));
 
