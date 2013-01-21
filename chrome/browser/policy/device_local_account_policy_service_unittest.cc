@@ -71,6 +71,8 @@ class DeviceLocalAccountPolicyServiceTest
         true);
     device_local_account_policy_.policy_data().set_policy_type(
         dm_protocol::kChromePublicAccountPolicyType);
+    device_local_account_policy_.policy_data().set_settings_entity_id(
+        PolicyBuilder::kFakeUsername);
     device_local_account_policy_.Build();
 
     device_policy_.payload().mutable_device_local_accounts()->add_account()->

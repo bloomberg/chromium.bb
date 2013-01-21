@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/policy/device_management_service.h"
@@ -52,7 +53,10 @@ const char* kMachineInfoSerialNumberKeys[] = {
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
     EnterpriseInstallAttributes* install_attributes)
-    : CloudPolicyManager(store.get()),
+    : CloudPolicyManager(
+          PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType,
+                             std::string()),
+          store.get()),
       device_store_(store.Pass()),
       install_attributes_(install_attributes),
       device_management_service_(NULL),
@@ -141,7 +145,6 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),
                             USER_AFFILIATION_NONE,
-                            CloudPolicyClient::POLICY_TYPE_DEVICE,
                             device_status_provider_.get(),
                             device_management_service_));
 }

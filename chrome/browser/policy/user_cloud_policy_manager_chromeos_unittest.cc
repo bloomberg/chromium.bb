@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
@@ -43,6 +44,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
     // Create a fake policy blob to deliver to the client.
     em::PolicyData policy_data;
+    policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
     em::PolicyFetchResponse* policy_response =
         policy_blob_.mutable_policy_response()->add_response();
     ASSERT_TRUE(policy_data.SerializeToString(

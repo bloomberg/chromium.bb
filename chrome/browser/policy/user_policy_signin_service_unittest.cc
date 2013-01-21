@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/mock_user_cloud_policy_store.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
@@ -201,6 +202,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     // Create a fake policy blob to deliver to the client.
     em::DeviceManagementResponse policy_blob;
     em::PolicyData policy_data;
+    policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
     em::PolicyFetchResponse* policy_response =
         policy_blob.mutable_policy_response()->add_response();
     ASSERT_TRUE(policy_data.SerializeToString(

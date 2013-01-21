@@ -115,7 +115,7 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
   // If the client has already fetched policy, assume that happened recently. If
   // that assumption ever breaks, the proper thing to do probably is to move the
   // |last_refresh_| bookkeeping to CloudPolicyClient.
-  if (client_->policy()) {
+  if (!client_->responses().empty()) {
     last_refresh_ = base::Time::NowFromSystemTime();
     return;
   }

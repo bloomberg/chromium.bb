@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
@@ -115,7 +116,9 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedNotYetFetched) {
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
   last_refresh_ = base::Time::NowFromSystemTime();
-  client_.SetPolicy(em::PolicyFetchResponse());
+  client_.SetPolicy(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
+                                       std::string()),
+      em::PolicyFetchResponse());
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   CheckTiming(kPolicyRefreshRate);
   EXPECT_CALL(client_, FetchPolicy()).Times(1);

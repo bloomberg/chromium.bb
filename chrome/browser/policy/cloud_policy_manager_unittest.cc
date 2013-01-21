@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
@@ -69,7 +70,9 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   // Create and initialize the store.
   store_.NotifyStoreLoaded();
-  ConfigurationPolicyProvider* provider = new CloudPolicyManager(&store_);
+  ConfigurationPolicyProvider* provider = new CloudPolicyManager(
+      PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
+      &store_);
   Mock::VerifyAndClearExpectations(&store_);
   return provider;
 }
@@ -127,7 +130,10 @@ INSTANTIATE_TEST_CASE_P(
 class TestCloudPolicyManager : public CloudPolicyManager {
  public:
   explicit TestCloudPolicyManager(CloudPolicyStore* store)
-      : CloudPolicyManager(store) {}
+      : CloudPolicyManager(PolicyNamespaceKey(
+                               dm_protocol::kChromeUserPolicyType,
+                               std::string()),
+                           store) {}
   virtual ~TestCloudPolicyManager() {}
 
   // Publish the protected members for testing.
@@ -146,7 +152,8 @@ MATCHER_P(ProtoMatches, proto, "") {
 
 class CloudPolicyManagerTest : public testing::Test {
  protected:
-  CloudPolicyManagerTest() {}
+  CloudPolicyManagerTest()
+      : policy_ns_key_(dm_protocol::kChromeUserPolicyType, std::string()) {}
 
   virtual void SetUp() OVERRIDE {
     // Set up a policy map for testing.
@@ -175,6 +182,7 @@ class CloudPolicyManagerTest : public testing::Test {
   MessageLoop loop_;
 
   // Testing policy.
+  const PolicyNamespaceKey policy_ns_key_;
   UserPolicyBuilder policy_;
   PolicyMap policy_map_;
   PolicyBundle expected_bundle_;
@@ -233,7 +241,7 @@ TEST_F(CloudPolicyManagerTest, RegistrationAndFetch) {
   client->SetDMToken(policy_.policy_data().request_token());
   client->NotifyRegistrationStateChanged();
 
-  client->SetPolicy(policy_.policy());
+  client->SetPolicy(policy_ns_key_, policy_.policy());
   EXPECT_CALL(store_, Store(ProtoMatches(policy_.policy())));
   client->NotifyPolicyFetched();
   Mock::VerifyAndClearExpectations(&store_);
@@ -306,7 +314,7 @@ TEST_F(CloudPolicyManagerTest, RefreshSuccessful) {
   // Respond to the policy fetch, which should trigger a write to |store_|.
   EXPECT_CALL(observer_, OnUpdatePolicy(_)).Times(0);
   EXPECT_CALL(store_, Store(_));
-  client->SetPolicy(policy_.policy());
+  client->SetPolicy(policy_ns_key_, policy_.policy());
   client->NotifyPolicyFetched();
   Mock::VerifyAndClearExpectations(&observer_);
   Mock::VerifyAndClearExpectations(&store_);

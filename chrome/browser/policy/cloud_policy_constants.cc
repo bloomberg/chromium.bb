@@ -36,6 +36,7 @@ const char kChromeUserPolicyType[] = "google/chromeos/user";
 const char kChromeUserPolicyType[] = "google/chrome/user";
 #endif
 const char kChromePublicAccountPolicyType[] = "google/chromeos/publicaccount";
+const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 
 }  // namespace dm_protocol
 

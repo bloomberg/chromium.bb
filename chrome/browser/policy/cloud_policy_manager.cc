@@ -14,8 +14,9 @@
 
 namespace policy {
 
-CloudPolicyManager::CloudPolicyManager(CloudPolicyStore* cloud_policy_store)
-    : core_(cloud_policy_store),
+CloudPolicyManager::CloudPolicyManager(const PolicyNamespaceKey& policy_ns_key,
+                                       CloudPolicyStore* cloud_policy_store)
+    : core_(policy_ns_key, cloud_policy_store),
       waiting_for_policy_refresh_(false) {
   store()->AddObserver(this);
 

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/policy/device_management_service.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 
@@ -30,6 +30,11 @@ DeviceMode TranslateProtobufDeviceMode(
   return DEVICE_MODE_NOT_SET;
 }
 
+bool IsChromePolicy(const std::string& type) {
+  return type == dm_protocol::kChromeDevicePolicyType ||
+         type == dm_protocol::kChromeUserPolicyType;
+}
+
 }  // namespace
 
 CloudPolicyClient::Observer::~Observer() {}
@@ -39,13 +44,11 @@ CloudPolicyClient::StatusProvider::~StatusProvider() {}
 CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
                                      const std::string& machine_model,
                                      UserAffiliation user_affiliation,
-                                     PolicyType type,
                                      StatusProvider* status_provider,
                                      DeviceManagementService* service)
     : machine_id_(machine_id),
       machine_model_(machine_model),
       user_affiliation_(user_affiliation),
-      type_(type),
       device_mode_(DEVICE_MODE_NOT_SET),
       submit_machine_id_(false),
       public_key_version_(-1),
@@ -55,7 +58,9 @@ CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
       status_(DM_STATUS_SUCCESS) {
 }
 
-CloudPolicyClient::~CloudPolicyClient() {}
+CloudPolicyClient::~CloudPolicyClient() {
+  STLDeleteValues(&responses_);
+}
 
 void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
                                           const std::string& client_id) {
@@ -66,12 +71,13 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
   dm_token_ = dm_token;
   client_id_ = client_id;
   request_job_.reset();
-  policy_.reset();
+  STLDeleteValues(&responses_);
 
   NotifyRegistrationStateChanged();
 }
 
-void CloudPolicyClient::Register(const std::string& auth_token,
+void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
+                                 const std::string& auth_token,
                                  const std::string& client_id,
                                  bool is_auto_enrollement) {
   DCHECK(service_);
@@ -96,7 +102,7 @@ void CloudPolicyClient::Register(const std::string& auth_token,
       request_job_->GetRequest()->mutable_register_request();
   if (!client_id.empty())
     request->set_reregister(true);
-  SetRegistrationType(request);
+  request->set_type(type);
   if (!machine_id_.empty())
     request->set_machine_id(machine_id_);
   if (!machine_model_.empty())
@@ -119,21 +125,31 @@ void CloudPolicyClient::FetchPolicy() {
 
   em::DeviceManagementRequest* request = request_job_->GetRequest();
 
-  // Build policy fetch request.
-  em::PolicyFetchRequest* policy_request =
-      request->mutable_policy_request()->add_request();
-  policy_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
-  SetPolicyType(policy_request);
-  if (!last_policy_timestamp_.is_null()) {
-    base::TimeDelta timestamp(last_policy_timestamp_ - base::Time::UnixEpoch());
-    policy_request->set_timestamp(timestamp.InMilliseconds());
+  // Build policy fetch requests.
+  em::DevicePolicyRequest* policy_request = request->mutable_policy_request();
+  for (NamespaceSet::iterator it = namespaces_to_fetch_.begin();
+       it != namespaces_to_fetch_.end(); ++it) {
+    em::PolicyFetchRequest* fetch_request = policy_request->add_request();
+    fetch_request->set_policy_type(it->first);
+    if (!it->second.empty())
+      fetch_request->set_settings_entity_id(it->second);
+
+    // All policy types ask for a signed policy blob.
+    fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
+    if (public_key_version_valid_)
+      fetch_request->set_public_key_version(public_key_version_);
+
+    // These fields are included only in requests for chrome policy.
+    if (IsChromePolicy(it->first)) {
+      if (submit_machine_id_ && !machine_id_.empty())
+        fetch_request->set_machine_id(machine_id_);
+      if (!last_policy_timestamp_.is_null()) {
+        base::TimeDelta timestamp(
+            last_policy_timestamp_ - base::Time::UnixEpoch());
+        fetch_request->set_timestamp(timestamp.InMilliseconds());
+      }
+    }
   }
-  if (submit_machine_id_ && !machine_id_.empty())
-    policy_request->set_machine_id(machine_id_);
-  if (public_key_version_valid_)
-    policy_request->set_public_key_version(public_key_version_);
-  if (!entity_id_.empty())
-    policy_request->set_settings_entity_id(entity_id_);
 
   // Add status data.
   if (status_provider_) {
@@ -171,35 +187,18 @@ void CloudPolicyClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void CloudPolicyClient::SetRegistrationType(
-    em::DeviceRegisterRequest* request) const {
-  switch (type_) {
-    case POLICY_TYPE_USER:
-      request->set_type(em::DeviceRegisterRequest::USER);
-      return;
-    case POLICY_TYPE_DEVICE:
-      request->set_type(em::DeviceRegisterRequest::DEVICE);
-      return;
-    case POLICY_TYPE_PUBLIC_ACCOUNT:
-      LOG(FATAL) << "Cannot register for public account policy.";
-      return;
-  }
-  NOTREACHED() << "Invalid policy type " << type_;
+void CloudPolicyClient::AddNamespaceToFetch(const PolicyNamespaceKey& key) {
+  namespaces_to_fetch_.insert(key);
 }
 
-void CloudPolicyClient::SetPolicyType(em::PolicyFetchRequest* request) const {
-  switch (type_) {
-    case POLICY_TYPE_USER:
-      request->set_policy_type(dm_protocol::kChromeUserPolicyType);
-      return;
-    case POLICY_TYPE_DEVICE:
-      request->set_policy_type(dm_protocol::kChromeDevicePolicyType);
-      return;
-    case POLICY_TYPE_PUBLIC_ACCOUNT:
-      request->set_policy_type(dm_protocol::kChromePublicAccountPolicyType);
-      return;
-  }
-  NOTREACHED() << "Invalid policy type " << type_;
+void CloudPolicyClient::RemoveNamespaceToFetch(const PolicyNamespaceKey& key) {
+  namespaces_to_fetch_.erase(key);
+}
+
+const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
+    const PolicyNamespaceKey& key) const {
+  ResponseMap::const_iterator it = responses_.find(key);
+  return it == responses_.end() ? NULL : it->second;
 }
 
 void CloudPolicyClient::OnRegisterCompleted(
@@ -238,15 +237,35 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
         response.policy_response().response_size() == 0) {
       LOG(WARNING) << "Empty policy response.";
       status = DM_STATUS_RESPONSE_DECODING_ERROR;
-    } else if (response.policy_response().response_size() > 1) {
-      LOG(WARNING) << "More than one response entries, ignoring all but first.";
     }
   }
 
   status_ = status;
   if (status == DM_STATUS_SUCCESS) {
-    policy_.reset(new enterprise_management::PolicyFetchResponse(
-        response.policy_response().response(0)));
+    const em::DevicePolicyResponse& policy_response =
+        response.policy_response();
+    STLDeleteValues(&responses_);
+    for (int i = 0; i < policy_response.response_size(); ++i) {
+      const em::PolicyFetchResponse& response = policy_response.response(i);
+      em::PolicyData policy_data;
+      if (!policy_data.ParseFromString(response.policy_data()) ||
+          !policy_data.IsInitialized() ||
+          !policy_data.has_policy_type()) {
+        LOG(WARNING) << "Invalid PolicyData received, ignoring";
+        continue;
+      }
+      const std::string& type = policy_data.policy_type();
+      std::string entity_id;
+      if (policy_data.has_settings_entity_id())
+        entity_id = policy_data.settings_entity_id();
+      PolicyNamespaceKey key(type, entity_id);
+      if (ContainsKey(responses_, key)) {
+        LOG(WARNING) << "Duplicate PolicyFetchResponse for type: "
+            << type << ", entity: " << entity_id << ", ignoring";
+        continue;
+      }
+      responses_[key] = new em::PolicyFetchResponse(response);
+    }
     if (status_provider_)
       status_provider_->OnSubmittedSuccessfully();
     NotifyPolicyFetched();

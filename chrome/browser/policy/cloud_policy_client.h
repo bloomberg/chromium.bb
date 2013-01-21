@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_POLICY_CLIENT_H_
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_CLIENT_H_
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -12,15 +14,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
-
-namespace enterprise_management {
-class DeviceManagementResponse;
-class DeviceRegisterRequest;
-class DeviceStatusReportRequest;
-class PolicyFetchRequest;
-class PolicyFetchResponse;
-class SessionStatusReportRequest;
-}
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
@@ -37,12 +31,9 @@ class DeviceManagementService;
 // installed in the cloud policy cache.
 class CloudPolicyClient {
  public:
-  // Indicates the type of policy the client should register for and fetch.
-  enum PolicyType {
-    POLICY_TYPE_DEVICE,
-    POLICY_TYPE_USER,
-    POLICY_TYPE_PUBLIC_ACCOUNT,
-  };
+  // Maps a PolicyNamespaceKey to its corresponding PolicyFetchResponse.
+  typedef std::map<PolicyNamespaceKey,
+                   enterprise_management::PolicyFetchResponse*> ResponseMap;
 
   // Observer interface for state and policy changes.
   class Observer {
@@ -84,7 +75,6 @@ class CloudPolicyClient {
   CloudPolicyClient(const std::string& machine_id,
                     const std::string& machine_model,
                     UserAffiliation user_affiliation,
-                    PolicyType policy_type,
                     StatusProvider* provider,
                     DeviceManagementService* service);
   virtual ~CloudPolicyClient();
@@ -97,9 +87,11 @@ class CloudPolicyClient {
 
   // Attempts to register with the device management service. Results in a
   // registration change or error notification.
-  virtual void Register(const std::string& auth_token,
-                        const std::string& client_id,
-                        bool is_auto_enrollment);
+  virtual void Register(
+      enterprise_management::DeviceRegisterRequest::Type registration_type,
+      const std::string& auth_token,
+      const std::string& client_id,
+      bool is_auto_enrollment);
 
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered
@@ -136,9 +128,11 @@ class CloudPolicyClient {
     public_key_version_valid_ = false;
   }
 
-  void set_entity_id(const std::string& entity_id) {
-    entity_id_ = entity_id;
-  }
+  // FetchPolicy() calls will request this policy namespace.
+  void AddNamespaceToFetch(const PolicyNamespaceKey& policy_ns_key);
+
+  // FetchPolicy() calls won't request the given policy namespace anymore.
+  void RemoveNamespaceToFetch(const PolicyNamespaceKey& policy_ns_key);
 
   // Whether the client is registered with the device management service.
   bool is_registered() const { return !dm_token_.empty(); }
@@ -148,25 +142,26 @@ class CloudPolicyClient {
   // The device mode as received in the registration request.
   DeviceMode device_mode() const { return device_mode_; }
 
-  // The policy response as obtained by the last request to the cloud. This
-  // policy blob hasn't gone through verification, so its contents cannot be
+  // The policy responses as obtained by the last request to the cloud. These
+  // policies haven't gone through verification, so their contents cannot be
   // trusted. Use CloudPolicyStore::policy() and CloudPolicyStore::policy_map()
   // instead for making policy decisions.
-  const enterprise_management::PolicyFetchResponse* policy() const {
-    return policy_.get();
+  const ResponseMap& responses() const {
+    return responses_;
   }
+
+  // Returns the policy response for |policy_ns_key|, if found in |responses()|;
+  // otherwise returns NULL.
+  const enterprise_management::PolicyFetchResponse* GetPolicyFor(
+      const PolicyNamespaceKey& policy_ns_key) const;
 
   DeviceManagementStatus status() const {
     return status_;
   }
 
  protected:
-  // Sets the registration type suitable for the policy scope used.
-  void SetRegistrationType(
-      enterprise_management::DeviceRegisterRequest* request) const;
-
-  // Sets the appropriate policy type in the fetch request.
-  void SetPolicyType(enterprise_management::PolicyFetchRequest* request) const;
+  // A set of PolicyNamespaceKeys to fetch.
+  typedef std::set<PolicyNamespaceKey> NamespaceSet;
 
   // Callback for registration requests.
   void OnRegisterCompleted(
@@ -192,7 +187,7 @@ class CloudPolicyClient {
   const std::string machine_id_;
   const std::string machine_model_;
   const UserAffiliation user_affiliation_;
-  const PolicyType type_;
+  NamespaceSet namespaces_to_fetch_;
 
   std::string dm_token_;
   DeviceMode device_mode_;
@@ -201,7 +196,6 @@ class CloudPolicyClient {
   base::Time last_policy_timestamp_;
   int public_key_version_;
   bool public_key_version_valid_;
-  std::string entity_id_;
 
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;
@@ -210,8 +204,8 @@ class CloudPolicyClient {
   // Status upload data is produced by |status_provider_|.
   StatusProvider* status_provider_;
 
-  // The policy blob returned by the last policy fetch operation.
-  scoped_ptr<enterprise_management::PolicyFetchResponse> policy_;
+  // The policy responses returned by the last policy fetch operation.
+  ResponseMap responses_;
   DeviceManagementStatus status_;
 
   ObserverList<Observer, true> observers_;

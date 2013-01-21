@@ -38,7 +38,9 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   };
 
   // |client| and |store| must remain valid for the object life time.
-  CloudPolicyService(CloudPolicyClient* client, CloudPolicyStore* store);
+  CloudPolicyService(const PolicyNamespaceKey& policy_ns_key,
+                     CloudPolicyClient* client,
+                     CloudPolicyStore* store);
   virtual ~CloudPolicyService();
 
   // Returns the domain that manages this user/device, according to the current
@@ -72,6 +74,9 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   // Invokes the refresh callbacks and clears refresh state. The |success| flag
   // is passed through to the refresh callbacks.
   void RefreshCompleted(bool success);
+
+  // The policy namespace fetched by |client_| and expected by |store_|.
+  PolicyNamespaceKey policy_ns_key_;
 
   // The client used to talk to the cloud.
   CloudPolicyClient* client_;

@@ -50,6 +50,8 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   store_->AddObserver(this);
   client_->AddObserver(this);
+  client_->AddNamespaceToFetch(PolicyNamespaceKey(
+      dm_protocol::kChromeDevicePolicyType, std::string()));
 }
 
 EnrollmentHandlerChromeOS::~EnrollmentHandlerChromeOS() {
@@ -75,10 +77,18 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   enrollment_step_ = STEP_VALIDATION;
 
   // Validate the policy.
+  const em::PolicyFetchResponse* policy = client_->GetPolicyFor(
+      PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType, std::string()));
+  if (!policy) {
+    ReportResult(EnrollmentStatus::ForFetchError(
+        DM_STATUS_RESPONSE_DECODING_ERROR));
+    return;
+  }
+
   scoped_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
           scoped_ptr<em::PolicyFetchResponse>(
-              new em::PolicyFetchResponse(*client_->policy()))));
+              new em::PolicyFetchResponse(*policy))));
 
   validator->ValidateTimestamp(base::Time(), base::Time::NowFromSystemTime(),
                                false);
@@ -144,7 +154,8 @@ void EnrollmentHandlerChromeOS::AttemptRegistration() {
   CHECK_EQ(STEP_LOADING_STORE, enrollment_step_);
   if (store_->is_initialized()) {
     enrollment_step_ = STEP_REGISTRATION;
-    client_->Register(auth_token_, client_id_, is_auto_enrollment_);
+    client_->Register(em::DeviceRegisterRequest::DEVICE,
+                      auth_token_, client_id_, is_auto_enrollment_);
   }
 }
 

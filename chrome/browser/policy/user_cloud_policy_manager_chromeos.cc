@@ -9,12 +9,16 @@
 #include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/common/pref_names.h"
 
+namespace em = enterprise_management;
+
 namespace policy {
 
 UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     scoped_ptr<CloudPolicyStore> store,
     bool wait_for_policy_fetch)
-    : CloudPolicyManager(store.get()),
+    : CloudPolicyManager(
+          PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
+          store.get()),
       store_(store.Pass()),
       wait_for_policy_fetch_(wait_for_policy_fetch) {}
 
@@ -29,8 +33,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   local_state_ = local_state;
   scoped_ptr<CloudPolicyClient> cloud_policy_client(
       new CloudPolicyClient(std::string(), std::string(), user_affiliation,
-                            CloudPolicyClient::POLICY_TYPE_USER, NULL,
-                            device_management_service));
+                            NULL, device_management_service));
   core()->Connect(cloud_policy_client.Pass());
   client()->AddObserver(this);
 
@@ -72,7 +75,8 @@ void UserCloudPolicyManagerChromeOS::RegisterClient(
   DCHECK(client()) << "Callers must invoke Initialize() first";
   if (!client()->is_registered()) {
     DVLOG(1) << "Registering client with access token: " << access_token;
-    client()->Register(access_token, std::string(), false);
+    client()->Register(em::DeviceRegisterRequest::USER,
+                       access_token, std::string(), false);
   }
 }
 

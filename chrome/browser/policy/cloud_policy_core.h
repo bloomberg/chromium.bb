@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_member.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 
 class PrefService;
 
@@ -28,7 +29,8 @@ class CloudPolicyStore;
 // CloudPolicyRefreshScheduler which triggers periodic refreshes.
 class CloudPolicyCore {
  public:
-  explicit CloudPolicyCore(CloudPolicyStore* store);
+  CloudPolicyCore(const PolicyNamespaceKey& policy_ns_key,
+                  CloudPolicyStore* store);
   ~CloudPolicyCore();
 
   CloudPolicyClient* client() { return client_.get(); }
@@ -65,6 +67,7 @@ class CloudPolicyCore {
   // Updates the refresh scheduler on refresh delay changes.
   void UpdateRefreshDelayFromPref();
 
+  PolicyNamespaceKey policy_ns_key_;
   CloudPolicyStore* store_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_ptr<CloudPolicyService> service_;

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_CLIENT_H_
 #define CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_CLIENT_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
@@ -17,7 +20,11 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   virtual ~MockCloudPolicyClient();
 
   MOCK_METHOD2(SetupRegistration, void(const std::string&, const std::string&));
-  MOCK_METHOD3(Register, void(const std::string&, const std::string&, bool));
+  MOCK_METHOD4(Register, void(
+      enterprise_management::DeviceRegisterRequest::Type type,
+      const std::string&,
+      const std::string&,
+      bool));
   MOCK_METHOD0(FetchPolicy, void(void));
   MOCK_METHOD0(Unregister, void(void));
 
@@ -25,7 +32,8 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   void SetDMToken(const std::string& token);
 
   // Injects policy.
-  void SetPolicy(const enterprise_management::PolicyFetchResponse& policy);
+  void SetPolicy(const PolicyNamespaceKey& policy_ns_key,
+                 const enterprise_management::PolicyFetchResponse& policy);
 
   // Sets the status field.
   void SetStatus(DeviceManagementStatus status);
