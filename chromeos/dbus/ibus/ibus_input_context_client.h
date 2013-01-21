@@ -25,6 +25,27 @@ namespace ibus {
 class IBusText;
 }  // namespace
 
+class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
+ public:
+  // Called when the engine commit a text.
+  virtual void CommitText(const ibus::IBusText& text) = 0;
+
+  // Called when the engine forward a key event.
+  virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
+
+  // Called when the engine update preedit stroing.
+  virtual void UpdatePreeditText(const ibus::IBusText& text,
+                                 uint32 cursor_pos,
+                                 bool visible) = 0;
+
+  // Called when the engine request showing preedit string.
+  virtual void ShowPreeditText() = 0;
+
+  // Called when the engine request hiding preedit string.
+  virtual void HidePreeditText() = 0;
+
+};
+
 // A class to make the actual DBus calls for IBusInputContext service.
 // The ibus-daemon creates object paths on demand, so the target object path is
 // not determined before calling CreateInputContext. It is good to initialize
@@ -33,15 +54,6 @@ class IBusText;
 // one input context but it is enough for ChromeOS.
 class CHROMEOS_EXPORT IBusInputContextClient {
  public:
-  typedef base::Callback<void(const ibus::IBusText& text)> CommitTextHandler;
-  typedef base::Callback<void(uint32 keyval, uint32 keycode, uint32 state)>
-      ForwardKeyEventHandler;
-  typedef base::Callback<void(const ibus::IBusText& text,
-                              uint32 cursor_pos,
-                              bool visible)>
-      UpdatePreeditTextHandler;
-  typedef base::Callback<void()> ShowPreeditTextHandler;
-  typedef base::Callback<void()> HidePreeditTextHandler;
   typedef base::Callback<void(bool is_keyevent_used)> ProcessKeyEventCallback;
   typedef base::Callback<void()> ErrorCallback;
 
@@ -51,6 +63,11 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   virtual void Initialize(dbus::Bus* bus,
                           const dbus::ObjectPath& object_path) = 0;
 
+  // Sets input context handler. This function can be called multiple times and
+  // also can be passed |handler| as NULL. Caller must release |handler|.
+  virtual void SetInputContextHandler(
+      IBusInputContextHandlerInterface* handler) = 0;
+
   // Resets object proxy. If you want to use InputContext again, should call
   // Initialize function again.
   virtual void ResetObjectProxy() = 0;
@@ -58,35 +75,6 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   // Returns true if the object proxy is ready to communicate with ibus-daemon,
   // otherwise return false.
   virtual bool IsObjectProxyReady() const = 0;
-
-  // Signal handler accessors. Setting function can be called multiple times. If
-  // you call setting function multiple times, previous callback will be
-  // overwritten.
-  // Sets CommitText signal handler.
-  virtual void SetCommitTextHandler(
-      const CommitTextHandler& commit_text_handler) = 0;
-  // Sets ForwardKeyEvent signal handler.
-  virtual void SetForwardKeyEventHandler(
-      const ForwardKeyEventHandler& forward_key_event_handler) = 0;
-  // Sets UpdatePreeditText signal handler.
-  virtual void SetUpdatePreeditTextHandler(
-      const UpdatePreeditTextHandler& update_preedit_text_handler) = 0;
-  // Sets ShowPreeditText signal handler.
-  virtual void SetShowPreeditTextHandler(
-      const ShowPreeditTextHandler& show_preedit_text_handler) = 0;
-  // Sets HidePreeditText signal handler.
-  virtual void SetHidePreeditTextHandler(
-      const HidePreeditTextHandler& hide_preedit_text_handler) = 0;
-  // Unsets CommitText signal handler.
-  virtual void UnsetCommitTextHandler() = 0;
-  // Unsets FowardKeyEvent signal handler.
-  virtual void UnsetForwardKeyEventHandler() = 0;
-  // Unsets UpdatePreeditText signal handler.
-  virtual void UnsetUpdatePreeditTextHandler() = 0;
-  // Unsets ShowPreeditText signal handler.
-  virtual void UnsetShowPreeditTextHandler() = 0;
-  // Unsets HidePreeditText signal handler.
-  virtual void UnsetHidePreeditTextHandler() = 0;
 
   // Invokes SetCapabilities method call.
   virtual void SetCapabilities(uint32 capability) = 0;

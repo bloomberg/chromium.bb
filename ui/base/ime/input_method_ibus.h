@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ibus_client.h"
@@ -29,7 +30,9 @@ class IBusText;
 namespace ui {
 
 // A ui::InputMethod implementation based on IBus.
-class UI_EXPORT InputMethodIBus : public InputMethodBase {
+class UI_EXPORT InputMethodIBus
+    : public InputMethodBase,
+      public chromeos::IBusInputContextHandlerInterface {
  public:
   explicit InputMethodIBus(internal::InputMethodDelegate* delegate);
   virtual ~InputMethodIBus();
@@ -163,14 +166,16 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   // Returns true if the input context is ready to use.
   bool IsContextReady();
 
-  // Event handlers for IBusInputContext:
-  void OnCommitText(const chromeos::ibus::IBusText& text);
-  void OnForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 status);
-  void OnShowPreeditText();
-  void OnUpdatePreeditText(const chromeos::ibus::IBusText& text,
-                           uint32 cursor_pos,
-                           bool visible);
-  void OnHidePreeditText();
+  // chromeos::IBusInputContextHandlerInterface overrides:
+  virtual void CommitText(const chromeos::ibus::IBusText& text) OVERRIDE;
+  virtual void ForwardKeyEvent(uint32 keyval,
+                               uint32 keycode,
+                               uint32 status) OVERRIDE;
+  virtual void ShowPreeditText() OVERRIDE;
+  virtual void HidePreeditText() OVERRIDE;
+  virtual void UpdatePreeditText(const chromeos::ibus::IBusText& text,
+                                 uint32 cursor_pos,
+                                 bool visible) OVERRIDE;
 
   void CreateInputContextDone(const dbus::ObjectPath& object_path);
   void CreateInputContextFail();

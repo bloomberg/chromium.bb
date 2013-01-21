@@ -96,6 +96,8 @@ InputMethodIBus::~InputMethodIBus() {
   AbandonAllPendingKeyEvents();
   if (IsContextReady())
     DestroyContext();
+  if (GetInputContextClient())
+    GetInputContextClient()->SetInputContextHandler(NULL);
 }
 
 void InputMethodIBus::set_ibus_client(
@@ -316,28 +318,9 @@ void InputMethodIBus::CreateContext() {
 void InputMethodIBus::SetUpSignalHandlers() {
   DCHECK(IsContextReady());
 
-  // connect input context signals
-  chromeos::IBusInputContextClient* input_context_client =
-      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
-  input_context_client->SetCommitTextHandler(
-      base::Bind(&InputMethodIBus::OnCommitText,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  input_context_client->SetForwardKeyEventHandler(
-      base::Bind(&InputMethodIBus::OnForwardKeyEvent,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  input_context_client->SetUpdatePreeditTextHandler(
-      base::Bind(&InputMethodIBus::OnUpdatePreeditText,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  input_context_client->SetShowPreeditTextHandler(
-      base::Bind(&InputMethodIBus::OnShowPreeditText,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  input_context_client->SetHidePreeditTextHandler(
-      base::Bind(&InputMethodIBus::OnHidePreeditText,
-                 weak_ptr_factory_.GetWeakPtr()));
+  // We should reset the handler to NULL before |this| is deleted so handler
+  // functions are not called after |this| is deleted.
+  GetInputContextClient()->SetInputContextHandler(this);
 
   GetInputContextClient()->SetCapabilities(
       kIBusCapabilityPreeditText | kIBusCapabilityFocus |
@@ -355,9 +338,10 @@ void InputMethodIBus::DestroyContext() {
   if (input_context_state_ == INPUT_CONTEXT_STOP)
     return;
   input_context_state_ = INPUT_CONTEXT_STOP;
-  const chromeos::IBusInputContextClient* input_context =
-      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
-  if (input_context && input_context->IsObjectProxyReady()) {
+  chromeos::IBusInputContextClient* input_context = GetInputContextClient();
+  if (!input_context)
+    return;
+  if (input_context->IsObjectProxyReady()) {
     // We can't use IsContextReady here because we want to destroy object proxy
     // regardless of connection. The IsContextReady contains connection check.
     ResetInputContext();
@@ -657,7 +641,7 @@ void InputMethodIBus::AbandonAllPendingKeyEvents() {
   pending_key_events_.clear();
 }
 
-void InputMethodIBus::OnCommitText(const chromeos::ibus::IBusText& text) {
+void InputMethodIBus::CommitText(const chromeos::ibus::IBusText& text) {
   if (suppress_next_result_ || text.text().empty())
     return;
 
@@ -685,7 +669,7 @@ void InputMethodIBus::OnCommitText(const chromeos::ibus::IBusText& text) {
   }
 }
 
-void InputMethodIBus::OnForwardKeyEvent(uint32 keyval,
+void InputMethodIBus::ForwardKeyEvent(uint32 keyval,
                                         uint32 keycode,
                                         uint32 state) {
   KeyboardCode ui_key_code = KeyboardCodeFromXKeysym(keyval);
@@ -709,16 +693,16 @@ void InputMethodIBus::OnForwardKeyEvent(uint32 keyval,
   }
 }
 
-void InputMethodIBus::OnShowPreeditText() {
+void InputMethodIBus::ShowPreeditText() {
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
 
   composing_text_ = true;
 }
 
-void InputMethodIBus::OnUpdatePreeditText(const chromeos::ibus::IBusText& text,
-                                          uint32 cursor_pos,
-                                          bool visible) {
+void InputMethodIBus::UpdatePreeditText(const chromeos::ibus::IBusText& text,
+                                        uint32 cursor_pos,
+                                        bool visible) {
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
 
@@ -733,7 +717,7 @@ void InputMethodIBus::OnUpdatePreeditText(const chromeos::ibus::IBusText& text,
   // If it's only for clearing the current preedit text, then why not just use
   // OnHidePreeditText()?
   if (!visible) {
-    OnHidePreeditText();
+    HidePreeditText();
     return;
   }
 
@@ -756,7 +740,7 @@ void InputMethodIBus::OnUpdatePreeditText(const chromeos::ibus::IBusText& text,
   }
 }
 
-void InputMethodIBus::OnHidePreeditText() {
+void InputMethodIBus::HidePreeditText() {
   if (composition_.text.empty() || IsTextInputTypeNone())
     return;
 

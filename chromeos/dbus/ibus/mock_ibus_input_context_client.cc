@@ -27,6 +27,10 @@ void MockIBusInputContextClient::Initialize(
   is_initialized_ = true;
 }
 
+void MockIBusInputContextClient::SetInputContextHandler(
+    IBusInputContextHandlerInterface* handler) {
+}
+
 void MockIBusInputContextClient::ResetObjectProxy() {
   reset_object_proxy_call_caount_++;
   is_initialized_ = false;
@@ -37,41 +41,6 @@ bool MockIBusInputContextClient::IsObjectProxyReady() const {
     return true;
   else
     return false;
-}
-
-void MockIBusInputContextClient::SetCommitTextHandler(
-    const CommitTextHandler& commit_text_handler) {
-}
-
-void MockIBusInputContextClient::SetForwardKeyEventHandler(
-    const ForwardKeyEventHandler& forward_key_event_handler) {
-}
-
-void MockIBusInputContextClient::SetUpdatePreeditTextHandler(
-    const UpdatePreeditTextHandler& update_preedit_text_handler) {
-}
-
-void MockIBusInputContextClient::SetShowPreeditTextHandler(
-    const ShowPreeditTextHandler& show_preedit_text_handler) {
-}
-
-void MockIBusInputContextClient::SetHidePreeditTextHandler(
-    const HidePreeditTextHandler& hide_preedit_text_handler) {
-}
-
-void MockIBusInputContextClient::UnsetCommitTextHandler() {
-}
-
-void MockIBusInputContextClient::UnsetForwardKeyEventHandler() {
-}
-
-void MockIBusInputContextClient::UnsetUpdatePreeditTextHandler() {
-}
-
-void MockIBusInputContextClient::UnsetShowPreeditTextHandler() {
-}
-
-void MockIBusInputContextClient::UnsetHidePreeditTextHandler() {
 }
 
 void MockIBusInputContextClient::SetCapabilities(uint32 capabilities) {

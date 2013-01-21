@@ -44,30 +44,15 @@ const char kPropertyKey[] = "Property Key";
 const ibus::IBusPropertyState kPropertyState =
     ibus::IBUS_PROPERTY_STATE_CHECKED;
 
-class MockCommitTextHandler {
+class MockInputContextHandler : public IBusInputContextHandlerInterface {
  public:
-  MOCK_METHOD1(Run, void(const IBusText& text));
-};
-
-class MockForwardKeyEventHandler {
- public:
-  MOCK_METHOD3(Run, void(uint32 keyval, uint32 keycode, uint32 state));
-};
-
-class MockHidePreeditTextHandler {
- public:
-  MOCK_METHOD0(Run, void());
-};
-
-class MockShowPreeditTextHandler {
- public:
-  MOCK_METHOD0(Run, void());
-};
-
-class MockUpdatePreeditTextHandler {
- public:
-  MOCK_METHOD3(Run, void(const IBusText& text, uint32 cursor_pos,
-                         bool visible));
+  MOCK_METHOD1(CommitText, void(const IBusText& text));
+  MOCK_METHOD3(ForwardKeyEvent,
+               void(uint32 keyval, uint32 keycode, uint32 state));
+  MOCK_METHOD0(ShowPreeditText, void());
+  MOCK_METHOD0(HidePreeditText, void());
+  MOCK_METHOD3(UpdatePreeditText,
+               void(const IBusText& text, uint32 cursor_pos, bool visible));
 };
 
 class MockProcessKeyEventHandler {
@@ -362,10 +347,9 @@ TEST_F(IBusInputContextClientTest, CommitTextHandler) {
   ibus_text.set_text(kSampleText);
 
   // Set handler expectations.
-  MockCommitTextHandler handler;
-  EXPECT_CALL(handler, Run(IBusTextEq(&ibus_text)));
-  client_->SetCommitTextHandler(base::Bind(&MockCommitTextHandler::Run,
-                                           base::Unretained(&handler)));
+  MockInputContextHandler mock_handler;
+  EXPECT_CALL(mock_handler, CommitText(IBusTextEq(&ibus_text)));
+  client_->SetInputContextHandler(&mock_handler);
   message_loop_.RunUntilIdle();
 
   // Emit signal.
@@ -378,17 +362,15 @@ TEST_F(IBusInputContextClientTest, CommitTextHandler) {
   signal_callback_map_[ibus::input_context::kCommitTextSignal].Run(&signal);
 
   // Unset the handler so expect not calling handler.
-  client_->UnsetCommitTextHandler();
+  client_->SetInputContextHandler(NULL);
   signal_callback_map_[ibus::input_context::kCommitTextSignal].Run(&signal);
 }
 
 TEST_F(IBusInputContextClientTest, ForwardKeyEventHandlerTest) {
   // Set handler expectations.
-  MockForwardKeyEventHandler handler;
-  EXPECT_CALL(handler, Run(kKeyval, kKeycode, kState));
-  client_->SetForwardKeyEventHandler(
-      base::Bind(&MockForwardKeyEventHandler::Run,
-                 base::Unretained(&handler)));
+  MockInputContextHandler mock_handler;
+  EXPECT_CALL(mock_handler, ForwardKeyEvent(kKeyval, kKeycode, kState));
+  client_->SetInputContextHandler(&mock_handler);
   message_loop_.RunUntilIdle();
 
   // Emit signal.
@@ -405,18 +387,16 @@ TEST_F(IBusInputContextClientTest, ForwardKeyEventHandlerTest) {
       &signal);
 
   // Unset the handler so expect not calling handler.
-  client_->UnsetForwardKeyEventHandler();
+  client_->SetInputContextHandler(NULL);
   signal_callback_map_[ibus::input_context::kForwardKeyEventSignal].Run(
       &signal);
 }
 
 TEST_F(IBusInputContextClientTest, HidePreeditTextHandlerTest) {
   // Set handler expectations.
-  MockHidePreeditTextHandler handler;
-  EXPECT_CALL(handler, Run());
-  client_->SetHidePreeditTextHandler(
-      base::Bind(&MockHidePreeditTextHandler::Run,
-                 base::Unretained(&handler)));
+  MockInputContextHandler mock_handler;
+  EXPECT_CALL(mock_handler, HidePreeditText());
+  client_->SetInputContextHandler(&mock_handler);
   message_loop_.RunUntilIdle();
 
   // Emit signal.
@@ -429,18 +409,16 @@ TEST_F(IBusInputContextClientTest, HidePreeditTextHandlerTest) {
       &signal);
 
   // Unset the handler so expect not calling handler.
-  client_->UnsetHidePreeditTextHandler();
+  client_->SetInputContextHandler(NULL);
   signal_callback_map_[ibus::input_context::kHidePreeditTextSignal].Run(
       &signal);
 }
 
 TEST_F(IBusInputContextClientTest, ShowPreeditTextHandlerTest) {
   // Set handler expectations.
-  MockShowPreeditTextHandler handler;
-  EXPECT_CALL(handler, Run());
-  client_->SetShowPreeditTextHandler(
-      base::Bind(&MockShowPreeditTextHandler::Run,
-                 base::Unretained(&handler)));
+  MockInputContextHandler mock_handler;
+  EXPECT_CALL(mock_handler, ShowPreeditText());
+  client_->SetInputContextHandler(&mock_handler);
   message_loop_.RunUntilIdle();
 
   // Emit signal.
@@ -453,7 +431,7 @@ TEST_F(IBusInputContextClientTest, ShowPreeditTextHandlerTest) {
       &signal);
 
   // Unset the handler so expect not calling handler.
-  client_->UnsetShowPreeditTextHandler();
+  client_->SetInputContextHandler(NULL);
   signal_callback_map_[ibus::input_context::kShowPreeditTextSignal].Run(
       &signal);
 }
@@ -466,11 +444,10 @@ TEST_F(IBusInputContextClientTest, UpdatePreeditTextHandlerTest) {
   ibus_text.set_text(kSampleText);
 
   // Set handler expectations.
-  MockUpdatePreeditTextHandler handler;
-  EXPECT_CALL(handler, Run(IBusTextEq(&ibus_text), kCursorPos, kVisible));
-  client_->SetUpdatePreeditTextHandler(
-      base::Bind(&MockUpdatePreeditTextHandler::Run,
-                 base::Unretained(&handler)));
+  MockInputContextHandler mock_handler;
+  EXPECT_CALL(mock_handler,
+              UpdatePreeditText(IBusTextEq(&ibus_text), kCursorPos, kVisible));
+  client_->SetInputContextHandler(&mock_handler);
   message_loop_.RunUntilIdle();
 
   // Emit signal.
@@ -487,7 +464,7 @@ TEST_F(IBusInputContextClientTest, UpdatePreeditTextHandlerTest) {
       &signal);
 
   // Unset the handler so expect not calling handler.
-  client_->UnsetUpdatePreeditTextHandler();
+  client_->SetInputContextHandler(NULL);
   signal_callback_map_[ibus::input_context::kUpdatePreeditTextSignal].Run(
       &signal);
 }

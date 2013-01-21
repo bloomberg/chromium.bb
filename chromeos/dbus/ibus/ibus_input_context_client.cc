@@ -45,6 +45,12 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   }
 
   // IBusInputContextClient override.
+  virtual void SetInputContextHandler(
+      IBusInputContextHandlerInterface* handler) OVERRIDE {
+    handler_ = handler;
+  }
+
+  // IBusInputContextClient override.
   virtual void ResetObjectProxy() OVERRIDE {
     // Do not delete proxy here, proxy object is managed by dbus::Bus object.
     proxy_ = NULL;
@@ -53,66 +59,6 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   // IBusInputContextClient override.
   virtual bool IsObjectProxyReady() const OVERRIDE {
     return proxy_ != NULL;
-  }
-
-  // IBusInputContextClient override.
-  virtual void SetCommitTextHandler(
-      const CommitTextHandler& commit_text_handler) OVERRIDE {
-    DCHECK(!commit_text_handler.is_null());
-    commit_text_handler_ = commit_text_handler;
-  }
-
-  // IBusInputContextClient override.
-  virtual void SetForwardKeyEventHandler(
-      const ForwardKeyEventHandler& forward_key_event_handler) OVERRIDE {
-    DCHECK(!forward_key_event_handler.is_null());
-    forward_key_event_handler_ = forward_key_event_handler;
-  }
-
-  // IBusInputContextClient override.
-  virtual void SetUpdatePreeditTextHandler(
-      const UpdatePreeditTextHandler& update_preedit_text_handler) OVERRIDE {
-    DCHECK(!update_preedit_text_handler.is_null());
-    update_preedit_text_handler_ = update_preedit_text_handler;
-  }
-
-  // IBusInputContextClient override.
-  virtual void SetShowPreeditTextHandler(
-      const ShowPreeditTextHandler& show_preedit_text_handler) OVERRIDE {
-    DCHECK(!show_preedit_text_handler.is_null());
-    show_preedit_text_handler_ = show_preedit_text_handler;
-  }
-
-  // IBusInputContextClient override.
-  virtual void SetHidePreeditTextHandler(
-      const HidePreeditTextHandler& hide_preedit_text_handler) OVERRIDE {
-    DCHECK(!hide_preedit_text_handler.is_null());
-    hide_preedit_text_handler_ = hide_preedit_text_handler;
-  }
-
-  // IBusInputContextClient override.
-  virtual void UnsetCommitTextHandler() OVERRIDE {
-    commit_text_handler_.Reset();
-  }
-
-  // IBusInputContextClient override.
-  virtual void UnsetForwardKeyEventHandler() OVERRIDE {
-    forward_key_event_handler_.Reset();
-  }
-
-  // IBusInputContextClient override.
-  virtual void UnsetUpdatePreeditTextHandler() OVERRIDE {
-    update_preedit_text_handler_.Reset();
-  }
-
-  // IBusInputContextClient override.
-  virtual void UnsetShowPreeditTextHandler() OVERRIDE {
-    show_preedit_text_handler_.Reset();
-  }
-
-  // IBusInputContextClient override.
-  virtual void UnsetHidePreeditTextHandler() OVERRIDE {
-    hide_preedit_text_handler_.Reset();
   }
 
   // IBusInputContextClient override.
@@ -269,7 +215,7 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
 
   // Handles CommitText signal.
   void OnCommitText(dbus::Signal* signal) {
-    if (commit_text_handler_.is_null())
+    if (!handler_)
       return;
     dbus::MessageReader reader(signal);
     IBusText ibus_text;
@@ -278,12 +224,12 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    commit_text_handler_.Run(ibus_text);
+    handler_->CommitText(ibus_text);
   }
 
   // Handles ForwardKeyEvetn signal.
   void OnForwardKeyEvent(dbus::Signal* signal) {
-    if (forward_key_event_handler_.is_null())
+    if (!handler_)
       return;
     dbus::MessageReader reader(signal);
     uint32 keyval = 0;
@@ -296,12 +242,12 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    forward_key_event_handler_.Run(keyval, keycode, state);
+    handler_->ForwardKeyEvent(keyval, keycode, state);
   }
 
   // Handles UpdatePreeditText signal.
   void OnUpdatePreeditText(dbus::Signal* signal) {
-    if (update_preedit_text_handler_.is_null())
+    if (!handler_)
       return;
     dbus::MessageReader reader(signal);
     IBusText ibus_text;
@@ -314,19 +260,19 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    update_preedit_text_handler_.Run(ibus_text, cursor_pos, visible);
+    handler_->UpdatePreeditText(ibus_text, cursor_pos, visible);
   }
 
   // Handles ShowPreeditText signal.
   void OnShowPreeditText(dbus::Signal* signal) {
-    if (!show_preedit_text_handler_.is_null())
-      show_preedit_text_handler_.Run();
+    if (handler_)
+      handler_->ShowPreeditText();
   }
 
   // Handles HidePreeditText signal.
   void OnHidePreeditText(dbus::Signal* signal) {
-    if (!hide_preedit_text_handler_.is_null())
-      hide_preedit_text_handler_.Run();
+    if (handler_)
+      handler_->HidePreeditText();
   }
 
   // Connects signals to signal handlers.
@@ -382,12 +328,8 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
 
   dbus::ObjectProxy* proxy_;
 
-  // Signal handlers.
-  CommitTextHandler commit_text_handler_;
-  ForwardKeyEventHandler forward_key_event_handler_;
-  HidePreeditTextHandler hide_preedit_text_handler_;
-  ShowPreeditTextHandler show_preedit_text_handler_;
-  UpdatePreeditTextHandler update_preedit_text_handler_;
+  // The pointer for input context handler. This can be NULL.
+  IBusInputContextHandlerInterface* handler_;
 
   base::WeakPtrFactory<IBusInputContextClientImpl> weak_ptr_factory_;
 
@@ -405,6 +347,8 @@ class IBusInputContextClientStubImpl : public IBusInputContextClient {
   // IBusInputContextClient override.
   virtual void Initialize(dbus::Bus* bus,
                           const dbus::ObjectPath& object_path) OVERRIDE {}
+  virtual void SetInputContextHandler(
+      IBusInputContextHandlerInterface* handler) OVERRIDE {}
   // IBusInputContextClient override.
   virtual void ResetObjectProxy() OVERRIDE {}
   // IBusInputContextClient override.
@@ -412,21 +356,6 @@ class IBusInputContextClientStubImpl : public IBusInputContextClient {
     return true;
   }
   // IBusInputContextClient overrides.
-  virtual void SetCommitTextHandler(
-      const CommitTextHandler& commit_text_handler) OVERRIDE {}
-  virtual void SetForwardKeyEventHandler(
-      const ForwardKeyEventHandler& forward_key_event_handler) OVERRIDE {}
-  virtual void SetUpdatePreeditTextHandler(
-      const UpdatePreeditTextHandler& update_preedit_text_handler) OVERRIDE {}
-  virtual void SetShowPreeditTextHandler(
-      const ShowPreeditTextHandler& show_preedit_text_handler) OVERRIDE {}
-  virtual void SetHidePreeditTextHandler(
-      const HidePreeditTextHandler& hide_preedit_text_handler) OVERRIDE {}
-  virtual void UnsetCommitTextHandler() OVERRIDE {}
-  virtual void UnsetForwardKeyEventHandler() OVERRIDE {}
-  virtual void UnsetUpdatePreeditTextHandler() OVERRIDE {}
-  virtual void UnsetShowPreeditTextHandler() OVERRIDE {}
-  virtual void UnsetHidePreeditTextHandler() OVERRIDE {}
   virtual void SetCapabilities(uint32 capability) OVERRIDE {}
   virtual void FocusIn() OVERRIDE {}
   virtual void FocusOut() OVERRIDE {}
