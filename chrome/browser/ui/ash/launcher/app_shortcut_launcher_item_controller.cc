@@ -33,9 +33,7 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension =
       launcher_controller()->GetExtensionForAppID(app_id);
-  // Some unit tests have no real extension and will set their
-  if (extension)
-    refocus_url_ = GURL(extension->launch_web_url() + "*");
+  refocus_url_ = GURL(extension->launch_web_url() + "*");
 }
 
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {
@@ -65,7 +63,8 @@ void AppShortcutLauncherItemController::Launch(int event_flags) {
 }
 
 void AppShortcutLauncherItemController::Activate() {
-  std::vector<content::WebContents*> content = GetRunningApplications();
+  std::vector<content::WebContents*> content =
+      app_controller_->GetV1ApplicationsFromAppId(app_id());
   if (content.empty()) {
     Launch(ui::EF_NONE);
     return;

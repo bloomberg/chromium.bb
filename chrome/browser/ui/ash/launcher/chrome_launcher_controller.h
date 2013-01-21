@@ -282,9 +282,6 @@ class ChromeLauncherController
   friend class BrowserLauncherItemControllerTest;
   friend class LauncherPlatformAppBrowserTest;
   friend class LauncherAppBrowserTest;
-  // TODO(skuhne): Remove these when the old launcher get removed.
-  friend class LauncherPlatformPerAppAppBrowserTest;
-  friend class LauncherPerAppAppBrowserTest;
 
   // Creates a new app shortcut item and controller on the launcher at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.

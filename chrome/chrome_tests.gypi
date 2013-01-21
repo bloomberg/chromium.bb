@@ -1199,7 +1199,6 @@
         'browser/ui/ash/caps_lock_handler_browsertest.cc',
         'browser/ui/ash/chrome_shell_delegate_browsertest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
-        'browser/ui/ash/launcher/chrome_launcher_controller_per_app_browsertest.cc',
         'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
         'browser/ui/ash/shelf_browsertest.cc',
         'browser/ui/ash/volume_controller_browsertest_chromeos.cc',
@@ -1559,7 +1558,6 @@
             # TODO: enable these for win_ash browser tests.
             'browser/chromeos/system/tray_accessibility_browsertest.cc',
             'browser/ui/ash/chrome_shell_delegate_browsertest.cc',
-            'browser/ui/ash/launcher/chrome_launcher_controller_per_app_browsertest.cc',
             'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
             'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
             'browser/ui/ash/shelf_browsertest.cc',
