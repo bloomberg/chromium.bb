@@ -23,6 +23,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
@@ -39,6 +40,7 @@
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "chrome/installer/util/wmi.h"
 #include "google_update/google_update_idl.h"
 
 using base::Time;
@@ -354,6 +356,27 @@ BOOL CALLBACK ChromeWindowEnumProc(HWND hwnd, LPARAM lparam) {
   return TRUE;
 }
 
+// Returns true and populates |chrome_exe_path| with the path to chrome.exe if
+// a valid installation can be found.
+bool GetGoogleChromePath(FilePath* chrome_exe_path) {
+  HKEY install_key = HKEY_LOCAL_MACHINE;
+  if (!IsChromeInstalled(install_key)) {
+    install_key = HKEY_CURRENT_USER;
+    if (!IsChromeInstalled(install_key)) {
+      return false;
+    }
+  }
+
+  // Now grab the uninstall string from the appropriate ClientState key
+  // and use that as the base for a path to chrome.exe.
+  *chrome_exe_path =
+      chrome_launcher_support::GetChromePathForInstallationLevel(
+          install_key == HKEY_LOCAL_MACHINE ?
+              chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION :
+              chrome_launcher_support::USER_LEVEL_INSTALLATION);
+  return !chrome_exe_path->empty();
+}
+
 }  // namespace
 
 BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
@@ -397,25 +420,9 @@ BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
 }
 
 BOOL __stdcall LaunchGoogleChrome() {
-  // Check to make sure we have a valid Chrome installation.
-  HKEY install_key = HKEY_LOCAL_MACHINE;
-  if (!IsChromeInstalled(install_key)) {
-    install_key = HKEY_CURRENT_USER;
-    if (!IsChromeInstalled(install_key)) {
-      return false;
-    }
-  }
-
-  // Now grab the uninstall string from the appropriate ClientState key
-  // and use that as the base for a path to chrome.exe.
-  FilePath chrome_exe_path(
-      chrome_launcher_support::GetChromePathForInstallationLevel(
-          install_key == HKEY_LOCAL_MACHINE ?
-              chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION :
-              chrome_launcher_support::USER_LEVEL_INSTALLATION));
-  if (chrome_exe_path.empty()) {
+  FilePath chrome_exe_path;
+  if (!GetGoogleChromePath(&chrome_exe_path))
     return false;
-  }
 
   ScopedCOMInitializer com_initializer;
   if (::CoInitializeSecurity(NULL, -1, NULL, NULL,
@@ -500,8 +507,29 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
                                                 int width,
                                                 int height,
                                                 bool in_background) {
-  if (!LaunchGoogleChrome())
-    return false;
+  if (in_background) {
+    FilePath chrome_exe_path;
+    if (!GetGoogleChromePath(&chrome_exe_path))
+      return false;
+
+    // When launching in the background, use WMI to ensure that chrome.exe is
+    // is not our child process. This prevents it from pushing itself to
+    // foreground.
+    CommandLine chrome_command(chrome_exe_path);
+
+    ScopedCOMInitializer com_initializer;
+    if (!installer::WMIProcess::Launch(chrome_command.GetCommandLineString(),
+                                       NULL)) {
+      // For some reason WMI failed. Try and launch the old fashioned way,
+      // knowing that visual glitches will occur when the window pops up.
+      if (!LaunchGoogleChrome())
+        return false;
+    }
+
+  } else {
+    if (!LaunchGoogleChrome())
+      return false;
+  }
 
   HWND hwnd_insert_after = in_background ? HWND_BOTTOM : NULL;
   DWORD set_window_flags = in_background ? SWP_NOACTIVATE : SWP_NOZORDER;
@@ -518,22 +546,22 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   // Chrome may have been launched, but the window may not have appeared
   // yet. Wait for it to appear for 10 seconds, but exit if it takes longer
   // than that.
-  int seconds_elapsed = 0;
-  int timeout = 10;
+  int ms_elapsed = 0;
+  int timeout = 10000;
   bool found_window = false;
-  while (seconds_elapsed < timeout) {
+  while (ms_elapsed < timeout) {
     // Enum all top-level windows looking for Chrome windows.
     ::EnumWindows(ChromeWindowEnumProc, reinterpret_cast<LPARAM>(&enum_params));
 
-    // Give it ten more seconds after finding the first window until we stop
+    // Give it five more seconds after finding the first window until we stop
     // shoving new windows into the background.
     if (!found_window && enum_params.success) {
       found_window = true;
-      timeout = seconds_elapsed + 10;
+      timeout = ms_elapsed + 5000;
     }
 
-    Sleep(1000);
-    seconds_elapsed++;
+    Sleep(10);
+    ms_elapsed += 10;
   }
 
   return found_window;
