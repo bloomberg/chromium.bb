@@ -281,13 +281,10 @@ void TextDatabase::Optimize() {
   statement.Run();
 }
 
-void TextDatabase::GetTextMatches(const std::string& query,
+bool TextDatabase::GetTextMatches(const std::string& query,
                                   const QueryOptions& options,
                                   std::vector<Match>* results,
-                                  URLSet* found_urls,
-                                  base::Time* first_time_searched) {
-  *first_time_searched = options.begin_time;
-
+                                  URLSet* found_urls) {
   std::string sql =
       "SELECT info.rowid, url, title, time, offsets(pages), body FROM pages "
       "LEFT OUTER JOIN info ON pages.rowid = info.rowid WHERE ";
@@ -296,7 +293,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
   if (!options.cursor.empty())
     sql += " OR (time = ? AND info.rowid < ?)";
   // Times may not be unique, so also sort by rowid to ensure a stable order.
-  sql += ") ORDER BY time DESC, info.rowid DESC LIMIT ?";
+  sql += ") ORDER BY time DESC, info.rowid DESC";
 
   // Generate unique IDs for the different variations of the statement,
   // so they don't share the same cached prepared statement.
@@ -325,7 +322,10 @@ void TextDatabase::GetTextMatches(const std::string& query,
     statement.BindInt64(i++, options.EffectiveEndTime());
     statement.BindInt64(i++, options.cursor.rowid_);
   }
-  statement.BindInt(i++, options.EffectiveMaxCount());
+
+  // |results| may not be initially empty, so keep track of how many were added
+  // by this call.
+  int result_count = 0;
 
   while (statement.Step()) {
     // TODO(brettw) allow canceling the query in the middle.
@@ -336,6 +336,9 @@ void TextDatabase::GetTextMatches(const std::string& query,
     URLSet::const_iterator found_url = found_urls->find(url);
     if (found_url != found_urls->end())
       continue;  // Don't add this duplicate.
+
+    if (options.max_count > 0 && ++result_count > options.max_count)
+      break;
 
     // Fill the results into the vector (avoid copying the URL with Swap()).
     results->resize(results->size() + 1);
@@ -362,21 +365,8 @@ void TextDatabase::GetTextMatches(const std::string& query,
     std::string body = statement.ColumnString(5);
     match.snippet.ComputeSnippet(match_positions, body);
   }
-
-  // When we have returned all the results possible (or determined that there
-  // are none), then we have searched all the time requested, so we can
-  // set the first_time_searched to that value.
-  if (results->empty() ||
-      options.max_count == 0 ||  // Special case for wanting all the results.
-      static_cast<int>(results->size()) < options.max_count) {
-    *first_time_searched = options.begin_time;
-  } else {
-    // Since we got the results in order, we know the last item is the last
-    // time we considered.
-    *first_time_searched = results->back().time;
-  }
-
   statement.Reset(true);
+  return result_count > options.max_count;
 }
 
 }  // namespace history

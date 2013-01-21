@@ -124,9 +124,7 @@ class TextDatabase {
 
   // Executes the given query. See QueryOptions for more info on input.
   //
-  // The results are appended to any existing ones in |*results|, and the first
-  // time considered for the output is in |first_time_searched|
-  // (see QueryResults for more).
+  // The results are appended to any existing ones in |*results|.
   //
   // Any URLs found will be added to |unique_urls|. If a URL is already in the
   // set, additional results will not be added (giving the ability to uniquify
@@ -134,11 +132,13 @@ class TextDatabase {
   //
   // Callers must run QueryParser on the user text and pass the results of the
   // QueryParser to this method as the query string.
-  void GetTextMatches(const std::string& query,
+  //
+  // Returns true if there are more results available, i.e. if the number of
+  // results was restricted by |options.max_count|.
+  bool GetTextMatches(const std::string& query,
                       const QueryOptions& options,
                       std::vector<Match>* results,
-                      URLSet* unique_urls,
-                      base::Time* first_time_searched);
+                      URLSet* unique_urls);
 
   // Converts the given database identifier to a filename. This does not include
   // the path, just the file and extension.

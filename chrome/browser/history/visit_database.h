@@ -109,7 +109,10 @@ class VisitDatabase {
   //
   // Only one visit for each URL will be returned, and it will be the most
   // recent one in the time range.
-  void GetVisibleVisitsInRange(const QueryOptions& options,
+  //
+  // Returns true if there are more results available, i.e. if the number of
+  // results was restricted by |options.max_count|.
+  bool GetVisibleVisitsInRange(const QueryOptions& options,
                                VisitVector* visits);
 
   // Fills all visits in the given time ranges into the given vector that are

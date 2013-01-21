@@ -55,10 +55,8 @@ int RowCount(TextDatabase* db) {
   // Leave end_time at now.
 
   std::vector<TextDatabase::Match> results;
-  Time first_time_searched;
   TextDatabase::URLSet unique_urls;
-  db->GetTextMatches("COUNTTAG", options, &results, &unique_urls,
-                     &first_time_searched);
+  db->GetTextMatches("COUNTTAG", options, &results, &unique_urls);
   return static_cast<int>(results.size());
 }
 
@@ -194,10 +192,8 @@ TEST_F(TextDatabaseTest, Query) {
   options.begin_time = Time::FromInternalValue(0);
 
   std::vector<TextDatabase::Match> results;
-  Time first_time_searched;
   TextDatabase::URLSet unique_urls;
-  db->GetTextMatches("COUNTTAG", options, &results, &unique_urls,
-                     &first_time_searched);
+  db->GetTextMatches("COUNTTAG", options, &results, &unique_urls);
   EXPECT_TRUE(unique_urls.empty()) << "Didn't ask for unique URLs";
 
   // All 3 sites should be returned in order.
@@ -245,10 +241,9 @@ TEST_F(TextDatabaseTest, TimeRange) {
   options.end_time = Time::FromInternalValue(kTime3);
 
   std::vector<TextDatabase::Match> results;
-  Time first_time_searched;
   TextDatabase::URLSet unique_urls;
-  db->GetTextMatches("COUNTTAG", options, &results,  &unique_urls,
-                     &first_time_searched);
+  bool has_more_results = db->GetTextMatches(
+      "COUNTTAG", options, &results,  &unique_urls);
   EXPECT_TRUE(unique_urls.empty()) << "Didn't ask for unique URLs";
 
   // The first and second should have been returned.
@@ -256,20 +251,17 @@ TEST_F(TextDatabaseTest, TimeRange) {
   EXPECT_TRUE(ResultsHaveURL(results, kURL1));
   EXPECT_TRUE(ResultsHaveURL(results, kURL2));
   EXPECT_FALSE(ResultsHaveURL(results, kURL3));
-  EXPECT_EQ(kTime1, first_time_searched.ToInternalValue());
+  EXPECT_EQ(kTime1, results.back().time.ToInternalValue());
+  EXPECT_FALSE(has_more_results);
 
-  // ---------------------------------------------------------------------------
-  // Do a query where there isn't a result on the begin boundary, so we can
-  // test that the first time searched is set to the minimum time considered
-  // instead of the min value.
+  // Do a query where there isn't a result on the begin boundary.
   options.begin_time = Time::FromInternalValue((kTime2 - kTime1) / 2 + kTime1);
   options.end_time = Time::FromInternalValue(kTime3 + 1);
   results.clear();  // GetTextMatches does *not* clear the results.
-  db->GetTextMatches("COUNTTAG", options, &results, &unique_urls,
-                     &first_time_searched);
+  has_more_results = db->GetTextMatches(
+      "COUNTTAG", options, &results, &unique_urls);
   EXPECT_TRUE(unique_urls.empty()) << "Didn't ask for unique URLs";
-  EXPECT_EQ(options.begin_time.ToInternalValue(),
-            first_time_searched.ToInternalValue());
+  EXPECT_FALSE(has_more_results);
 
   // Should have two results, the second and third.
   EXPECT_EQ(2U, results.size());
@@ -277,14 +269,13 @@ TEST_F(TextDatabaseTest, TimeRange) {
   EXPECT_TRUE(ResultsHaveURL(results, kURL2));
   EXPECT_TRUE(ResultsHaveURL(results, kURL3));
 
-  // No results should also set the first_time_searched.
+  // Try a range that has no results.
   options.begin_time = Time::FromInternalValue(kTime3 + 1);
   options.end_time = Time::FromInternalValue(kTime3 * 100);
   results.clear();
-  db->GetTextMatches("COUNTTAG", options, &results, &unique_urls,
-                     &first_time_searched);
-  EXPECT_EQ(options.begin_time.ToInternalValue(),
-            first_time_searched.ToInternalValue());
+  has_more_results = db->GetTextMatches(
+      "COUNTTAG", options, &results, &unique_urls);
+  EXPECT_FALSE(has_more_results);
 }
 
 // Make sure that max_count works.
@@ -303,18 +294,14 @@ TEST_F(TextDatabaseTest, MaxCount) {
   options.max_count = 1;
 
   std::vector<TextDatabase::Match> results;
-  Time first_time_searched;
   TextDatabase::URLSet unique_urls;
-  db->GetTextMatches("google", options, &results, &unique_urls,
-                     &first_time_searched);
+  db->GetTextMatches("google", options, &results, &unique_urls);
   EXPECT_TRUE(unique_urls.empty()) << "Didn't ask for unique URLs";
 
   // There should be one result, the most recent one.
   EXPECT_EQ(1U, results.size());
   EXPECT_TRUE(ResultsHaveURL(results, kURL2));
-
-  // The max time considered should be the date of the returned item.
-  EXPECT_EQ(kTime2, first_time_searched.ToInternalValue());
+  EXPECT_EQ(kTime2, results.back().time.ToInternalValue());
 }
 
 }  // namespace history

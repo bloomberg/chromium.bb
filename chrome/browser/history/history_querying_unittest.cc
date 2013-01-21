@@ -243,22 +243,60 @@ TEST_F(HistoryQueryTest, ReachedBeginning) {
 
   QueryHistory(std::string(), options, &results);
   EXPECT_TRUE(results.reached_beginning());
+  QueryHistory("some", options, &results);
+  EXPECT_TRUE(results.reached_beginning());
 
   options.begin_time = test_entries[1].time;
   QueryHistory(std::string(), options, &results);
   EXPECT_FALSE(results.reached_beginning());
+  QueryHistory("some", options, &results);
+  EXPECT_FALSE(results.reached_beginning());
 
+  // Try |begin_time| just later than the oldest visit.
   options.begin_time = test_entries[0].time + TimeDelta::FromMicroseconds(1);
   QueryHistory(std::string(), options, &results);
   EXPECT_FALSE(results.reached_beginning());
+  QueryHistory("some", options, &results);
+  EXPECT_FALSE(results.reached_beginning());
 
+  // Try |begin_time| equal to the oldest visit.
   options.begin_time = test_entries[0].time;
   QueryHistory(std::string(), options, &results);
   EXPECT_TRUE(results.reached_beginning());
+  QueryHistory("some", options, &results);
+  EXPECT_TRUE(results.reached_beginning());
 
+  // Try |begin_time| just earlier than the oldest visit.
   options.begin_time = test_entries[0].time - TimeDelta::FromMicroseconds(1);
   QueryHistory(std::string(), options, &results);
   EXPECT_TRUE(results.reached_beginning());
+  QueryHistory("some", options, &results);
+  EXPECT_TRUE(results.reached_beginning());
+
+  // Test with |max_count| specified.
+  options.max_count = 1;
+  QueryHistory(std::string(), options, &results);
+  EXPECT_FALSE(results.reached_beginning());
+  QueryHistory("some", options, &results);
+  EXPECT_FALSE(results.reached_beginning());
+
+  // Test with |max_count| greater than the number of results,
+  // and exactly equal to the number of results.
+  options.max_count = 100;
+  QueryHistory(std::string(), options, &results);
+  EXPECT_TRUE(results.reached_beginning());
+  options.max_count = results.size();
+  QueryHistory(std::string(), options, &results);
+  EXPECT_TRUE(results.reached_beginning());
+
+  options.max_count = 100;
+  QueryHistory("some", options, &results);
+  EXPECT_TRUE(results.reached_beginning());
+  options.max_count = results.size();
+  QueryHistory("some", options, &results);
+  // Since the query didn't cover the oldest visit in the database, we
+  // expect false here.
+  EXPECT_FALSE(results.reached_beginning());
 }
 
 // This does most of the same tests above, but searches for a FTS string that
