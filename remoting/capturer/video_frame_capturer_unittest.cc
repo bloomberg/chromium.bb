@@ -61,7 +61,13 @@ TEST_F(VideoFrameCapturerTest, StartCapturer) {
   capturer_->Stop();
 }
 
-TEST_F(VideoFrameCapturerTest, Capture) {
+#if defined(THREAD_SANITIZER)
+// ThreadSanitizer v2 reports a use-after-free, see http://crbug.com/163641.
+#define MAYBE_Capture DISABLED_Capture
+#else
+#define MAYBE_Capture Capture
+#endif
+TEST_F(VideoFrameCapturerTest, MAYBE_Capture) {
   // Assume that Start() treats the screen as invalid initially.
   EXPECT_CALL(delegate_,
               OnCaptureCompleted(DirtyRegionIsNonEmptyRect()));
