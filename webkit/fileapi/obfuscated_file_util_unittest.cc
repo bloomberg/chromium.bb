@@ -1085,7 +1085,7 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
 
   context.reset(NewContext(NULL));
   std::vector<base::FileUtilProxy::Entry> entries;
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
             FileUtilHelper::ReadDirectory(
                 context.get(), ofu(), url, &entries));
 

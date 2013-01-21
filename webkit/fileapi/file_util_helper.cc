@@ -364,9 +364,14 @@ base::PlatformFileError FileUtilHelper::ReadDirectory(
     std::vector<base::FileUtilProxy::Entry>* entries) {
   DCHECK(entries);
 
-  // TODO(kkanetkar): Implement directory read in multiple chunks.
-  if (!DirectoryExists(context, file_util, url))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  base::PlatformFileInfo file_info;
+  FilePath platform_path;
+  PlatformFileError error = file_util->GetFileInfo(
+      context, url, &file_info, &platform_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (!file_info.is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
       file_util->CreateFileEnumerator(context, url, false /* recursive */));

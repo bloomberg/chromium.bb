@@ -955,8 +955,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
   operation()->ReadDirectory(URLForPath(file_path),
                              RecordReadDirectoryCallback());
   MessageLoop::current()->RunUntilIdle();
-  // TODO(kkanetkar) crbug.com/54309 to change the error code.
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
