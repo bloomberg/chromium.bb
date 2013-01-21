@@ -32,26 +32,9 @@ gfx::Display GetSecondaryDisplay() {
 
 typedef test::AshTestBase MouseCursorEventFilterTest;
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_WarpMouse DISABLED_WarpMouse
-#define MAYBE_CursorDeviceScaleFactor DISABLED_CursorDeviceScaleFactor
-#define MAYBE_WarpMouseDifferentSizeDisplays \
-        DISABLED_WarpMouseDifferentSizeDisplays
-#define MAYBE_WarpMouseDifferentScaleDisplays \
-        DISABLED_WarpMouseDifferentScaleDisplays
-#define MAYBE_SetMouseWarpModeFlag DISABLED_SetMouseWarpModeFlag
-#else
-#define MAYBE_WarpMouse WarpMouse
-#define MAYBE_CursorDeviceScaleFactor CursorDeviceScaleFactor
-#define MAYBE_WarpMouseDifferentSizeDisplays WarpMouseDifferentSizeDisplays
-#define MAYBE_WarpMouseDifferentScaleDisplays WarpMouseDifferentScaleDisplays
-#define MAYBE_SetMouseWarpModeFlag SetMouseWarpModeFlag
-#endif
-
 // Verifies if the mouse pointer correctly moves to another display when there
 // are two displays.
-TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouse) {
+TEST_F(MouseCursorEventFilterTest, WarpMouse) {
   UpdateDisplay("500x500,500x500");
 
   MouseCursorEventFilter* event_filter =
@@ -109,10 +92,9 @@ TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouse) {
   EXPECT_FALSE(is_warped);
 }
 
-
 // Verifies if the mouse pointer correctly moves to another display even when
 // two displays are not the same size.
-TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouseDifferentSizeDisplays) {
+TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
   UpdateDisplay("500x500,600x600");  // the second one is larger.
 
   MouseCursorEventFilter* event_filter =
@@ -144,7 +126,7 @@ TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouseDifferentSizeDisplays) {
 
 // Verifies if the mouse pointer correctly moves between displays with
 // different scale factors.
-TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouseDifferentScaleDisplays) {
+TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
   UpdateDisplay("500x500,600x600*2");
 
   MouseCursorEventFilter* event_filter =
@@ -177,7 +159,7 @@ TEST_F(MouseCursorEventFilterTest, MAYBE_WarpMouseDifferentScaleDisplays) {
 }
 
 // Verifies if MouseCursorEventFilter::set_mouse_warp_mode() works as expected.
-TEST_F(MouseCursorEventFilterTest, MAYBE_SetMouseWarpModeFlag) {
+TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
   UpdateDisplay("500x500,500x500");
 
   MouseCursorEventFilter* event_filter =
@@ -324,11 +306,10 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
   event_filter->HideSharedEdgeIndicator();
 }
 
-
 // Verifies cursor's device scale factor is updated when a cursor has moved
 // across root windows with different device scale factors
 // (http://crbug.com/154183).
-TEST_F(MouseCursorEventFilterTest, MAYBE_CursorDeviceScaleFactor) {
+TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   UpdateDisplay("400x400,800x800*2");
   DisplayController* controller =
       Shell::GetInstance()->display_controller();

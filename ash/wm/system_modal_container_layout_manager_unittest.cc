@@ -436,7 +436,14 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   // TODO(mukai): add the test case when the bug is fixed.
 }
 
-TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_MultiDisplays DISABLED_MultiDisplays
+#else
+#define MAYBE_MultiDisplays MultiDisplays
+#endif
+
+TEST_F(SystemModalContainerLayoutManagerTest, MAYBE_MultiDisplays) {
   UpdateDisplay("500x500,500x500");
 
   scoped_ptr<aura::Window> normal(OpenToplevelTestWindow(false));

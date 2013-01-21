@@ -266,7 +266,16 @@ TEST_F(FramePainterTest, UseSoloWindowHeader) {
   EXPECT_TRUE(p1.UseSoloWindowHeader());
 }
 
-TEST_F(FramePainterTest, UseSoloWindowHeaderMultiDisplay) {
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_UseSoloWindowHeaderMultiDisplay \
+        DISABLED_UseSoloWindowHeaderMultiDisplay
+#else
+#define MAYBE_UseSoloWindowHeaderMultiDisplay \
+        UseSoloWindowHeaderMultiDisplay
+#endif
+
+TEST_F(FramePainterTest, MAYBE_UseSoloWindowHeaderMultiDisplay) {
   UpdateDisplay("1000x600,600x400");
 
   // Create two widgets and painters for them.

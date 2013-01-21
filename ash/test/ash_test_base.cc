@@ -31,6 +31,9 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_WIN)
+#include "ash/test/test_metro_viewer_process_host.h"
+#include "base/win/windows_version.h"
+#include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window_host_win.h"
 #endif
 
@@ -88,6 +91,7 @@ void AshTestBase::SetUp() {
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
   ui::TextInputTestSupport::Initialize();
+
   // Creates Shell and hook with Desktop.
   test_shell_delegate_ = new TestShellDelegate;
   ash::Shell::CreateInstance(test_shell_delegate_);
@@ -97,11 +101,29 @@ void AshTestBase::SetUp() {
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    metro_viewer_host_.reset(new TestMetroViewerProcessHost("viewer"));
+    ASSERT_TRUE(
+        metro_viewer_host_->LaunchImmersiveChromeAndWaitForConnection());
+    aura::RemoteRootWindowHostWin* root_window_host =
+        aura::RemoteRootWindowHostWin::Instance();
+    ASSERT_TRUE(root_window_host != NULL);
+  }
+#endif
 }
 
 void AshTestBase::TearDown() {
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Check that our viewer connection is still established.
+    ASSERT_FALSE(metro_viewer_host_->closed_unexpectedly());
+  }
+#endif
 
   // Tear down the shell.
   Shell::DeleteInstance();
@@ -109,6 +131,8 @@ void AshTestBase::TearDown() {
   ui::TextInputTestSupport::Shutdown();
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(false);
+  // Kill the viewer process if we spun one up.
+  metro_viewer_host_.reset();
 #endif
   event_generator_.reset();
 }

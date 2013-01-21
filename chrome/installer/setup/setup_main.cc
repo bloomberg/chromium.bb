@@ -1163,7 +1163,8 @@ installer::InstallStatus RegisterDevChrome(
   // Only proceed with registering a dev chrome if no real Chrome installation
   // of the same distribution are present on this system.
   const ProductState* existing_chrome =
-    original_state.GetProductState(false, BrowserDistribution::CHROME_BROWSER);
+      original_state.GetProductState(false,
+                                     BrowserDistribution::CHROME_BROWSER);
   if (!existing_chrome) {
     existing_chrome =
       original_state.GetProductState(true, BrowserDistribution::CHROME_BROWSER);

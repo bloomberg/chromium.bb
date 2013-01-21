@@ -15,6 +15,10 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/views/test/test_views_delegate.h"
 
+#if defined(OS_WIN)
+#include "base/memory/scoped_ptr.h"
+#endif
+
 namespace aura {
 class Window;
 class WindowDelegate;
@@ -31,6 +35,7 @@ class DisplayManager;
 
 namespace test {
 
+class TestMetroViewerProcessHost;
 class TestShellDelegate;
 
 class AshTestViewsDelegate : public views::TestViewsDelegate {
@@ -105,6 +110,9 @@ class AshTestBase : public testing::Test {
   TestShellDelegate* test_shell_delegate_;
 
   scoped_ptr<aura::test::EventGenerator> event_generator_;
+#if defined(OS_WIN)
+  scoped_ptr<TestMetroViewerProcessHost> metro_viewer_host_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

@@ -925,9 +925,16 @@ class DragImageWindowObserver : public aura::WindowObserver {
 
 }
 
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_DragCancelAcrossDisplays DISABLED_DragCancelAcrossDisplays
+#else
+#define MAYBE_DragCancelAcrossDisplays DragCancelAcrossDisplays
+#endif
+
 // Verifies the drag image moves back to the position where drag is started
 // across displays when drag is cancelled.
-TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
+TEST_F(DragDropControllerTest, MAYBE_DragCancelAcrossDisplays) {
   UpdateDisplay("400x400,400x400");
   Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();

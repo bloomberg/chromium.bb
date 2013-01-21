@@ -117,7 +117,14 @@ class RootWindowControllerTest : public test::AshTestBase {
   }
 };
 
-TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_MoveWindows_Basic DISABLED_MoveWindows_Basic
+#else
+#define MAYBE_MoveWindows_Basic MoveWindows_Basic
+#endif
+
+TEST_F(RootWindowControllerTest, MAYBE_MoveWindows_Basic) {
   UpdateDisplay("600x600,500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   internal::RootWindowController* controller =
@@ -210,7 +217,14 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 }
 
-TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_MoveWindows_Modal DISABLED_MoveWindows_Modal
+#else
+#define MAYBE_MoveWindows_Modal MoveWindows_Modal
+#endif
+
+TEST_F(RootWindowControllerTest, MAYBE_MoveWindows_Modal) {
   UpdateDisplay("500x500,500x500");
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();

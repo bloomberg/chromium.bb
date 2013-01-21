@@ -21,6 +21,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace ash {
 
 namespace {
@@ -167,7 +171,16 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 
 using message_center::NotificationList;
 
+
 TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
+#if defined(OS_WIN)
+  // This test seems to tickle a race condition on Metro/Ash causing the test
+  // suite to crash.
+  // TODO(robertshield): Fix this. http://crbug.com/170418
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   WebNotificationTray* tray = GetWebNotificationTray();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(tray->message_center()));
 
@@ -188,6 +201,14 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
 }
 
 TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
+#if defined(OS_WIN)
+  // This test seems to tickle a race condition on Metro/Ash causing the test
+  // suite to crash.
+  // TODO(robertshield): Fix this. http://crbug.com/170418
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   WebNotificationTray* tray = GetWebNotificationTray();
   scoped_ptr<TestDelegate> delegate(new TestDelegate(tray->message_center()));
 

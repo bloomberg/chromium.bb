@@ -479,7 +479,16 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
   EXPECT_EQ(window, GetTooltipWindow());
 }
 
-TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_TooltipsOnMultiDisplayShouldNotCrash \
+        DISABLED_TooltipsOnMultiDisplayShouldNotCrash
+#else
+#define MAYBE_TooltipsOnMultiDisplayShouldNotCrash \
+        TooltipsOnMultiDisplayShouldNotCrash
+#endif
+
+TEST_F(TooltipControllerTest, MAYBE_TooltipsOnMultiDisplayShouldNotCrash) {
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<views::Widget> widget1(CreateNewWidgetWithBoundsOn(

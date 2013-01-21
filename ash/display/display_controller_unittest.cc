@@ -439,16 +439,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
-        DISABLED_CursorDeviceScaleFactorSwapPrimary
-#else
-#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
-        CursorDeviceScaleFactorSwapPrimary
-#endif
-
-TEST_F(DisplayControllerTest, MAYBE_CursorDeviceScaleFactorSwapPrimary) {
+TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 

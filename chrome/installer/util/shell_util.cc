@@ -43,6 +43,7 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/util_constants.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -1455,7 +1456,15 @@ string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
                                       bool is_per_user_install) {
   string16 app_id(dist->GetBaseAppId());
   string16 suffix;
-  if (is_per_user_install && !GetUserSpecificRegistrySuffix(&suffix)) {
+
+  // TODO(robertshield): Temporary hack to make the kRegisterChromeBrowserSuffix
+  // apply to all registry values computed down in these murky depths.
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(
+          installer::switches::kRegisterChromeBrowserSuffix)) {
+    suffix = command_line.GetSwitchValueNative(
+        installer::switches::kRegisterChromeBrowserSuffix);
+  } else if (is_per_user_install && !GetUserSpecificRegistrySuffix(&suffix)) {
     NOTREACHED();
   }
   // There is only one component (i.e. the suffixed appid) in this case, but it
@@ -1710,9 +1719,15 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   if (!dist->CanSetAsDefault())
     return false;
 
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
   string16 suffix;
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;
+  } else if (command_line.HasSwitch(
+                 installer::switches::kRegisterChromeBrowserSuffix)) {
+    suffix = command_line.GetSwitchValueNative(
+        installer::switches::kRegisterChromeBrowserSuffix);
   } else if (!GetInstallationSpecificSuffix(dist, chrome_exe, &suffix)) {
     return false;
   }

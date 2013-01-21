@@ -36,6 +36,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace ash {
 namespace internal {
 
@@ -804,6 +808,13 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
+#if defined(OS_WIN)
+  // This test seems to tickle a race condition on Metro/Ash causing the test
+  // suite to crash.
+  // TODO(robertshield): Fix this. http://crbug.com/170418
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();
 
@@ -846,6 +857,13 @@ TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
+#if defined(OS_WIN)
+  // This test seems to tickle a race condition on Metro/Ash causing the test
+  // suite to crash.
+  // TODO(robertshield): Fix this. http://crbug.com/170418
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
 
   // Turn on auto-hide for the shelf.

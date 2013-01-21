@@ -17,6 +17,10 @@
 #include "ash/test/test_suite_init.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -37,7 +41,15 @@ void AuraShellTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
   ui::CompositorTestSupport::Initialize();
+
+#if defined(OS_WIN)
+  // The glue code that connects the tests to the metro viewer process depends
+  // on using the real compositor.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    ui::SetupTestCompositor();
+#else
   ui::SetupTestCompositor();
+#endif
 }
 
 void AuraShellTestSuite::Shutdown() {

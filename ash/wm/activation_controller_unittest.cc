@@ -533,9 +533,18 @@ TEST_F(ActivationControllerTest, ActivateLockScreen) {
   EXPECT_TRUE(w1->HasFocus());
 }
 
+#if defined(OS_WIN)
+// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
+#define MAYBE_NextActiveWindowOnMultipleDisplays \
+        DISABLED_NextActiveWindowOnMultipleDisplays
+#else
+#define MAYBE_NextActiveWindowOnMultipleDisplays \
+        NextActiveWindowOnMultipleDisplays
+#endif
+
 // Verifies that a next active window is chosen from current
 // active display.
-TEST_F(ActivationControllerTest, NextActiveWindowOnMultipleDisplays) {
+TEST_F(ActivationControllerTest, MAYBE_NextActiveWindowOnMultipleDisplays) {
   UpdateDisplay("300x300,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
