@@ -135,7 +135,7 @@ class AppListController {
 
  private:
   // Utility methods for showing the app list.
-  bool SnapArrowLocationToTaskbarEdge(
+  void SnapArrowLocationToTaskbarEdge(
       const gfx::Display& display,
       views::BubbleBorder::ArrowLocation* arrow,
       gfx::Point* anchor);
@@ -334,104 +334,70 @@ bool GetTaskbarRect(gfx::Rect* rect) {
 #endif
 }
 
-bool AppListController::SnapArrowLocationToTaskbarEdge(
+void AppListController::SnapArrowLocationToTaskbarEdge(
     const gfx::Display& display,
     views::BubbleBorder::ArrowLocation* arrow,
     gfx::Point* anchor) {
   const int kSnapDistance = 50;
   const int kSnapOffset = 5;
+  const int kEdgeOffset = 60;
 
   gfx::Rect taskbar_rect;
-  if (!GetTaskbarRect(&taskbar_rect))
-    return false;
 
+  // If we can't find the taskbar, snap to the bottom left.
   // If the display size is the same as the work area, and does not contain the
-  // taskbar, either the taskbar is hidden or on another monitor, so don't snap.
-  if (display.work_area() == display.bounds() &&
-      !display.work_area().Contains(taskbar_rect)) {
-    return false;
+  // taskbar, either the taskbar is hidden or on another monitor, so just snap
+  // to the bottom left.
+  if (!GetTaskbarRect(&taskbar_rect) ||
+      (display.work_area() == display.bounds() &&
+          !display.work_area().Contains(taskbar_rect))) {
+    anchor->set_x(display.work_area().x() + kEdgeOffset);
+    anchor->set_y(display.work_area().bottom());
+    *arrow = views::BubbleBorder::BOTTOM_CENTER;
+    return;
   }
 
   const gfx::Rect& screen_rect = display.bounds();
+
+  // Snap to the taskbar edge. If the cursor is greater than kSnapDistance away,
+  // also move to the left (for horizontal taskbars) or top (for vertical).
 
   // First handle taskbar on bottom.
   if (taskbar_rect.width() == screen_rect.width()) {
     if (taskbar_rect.bottom() == screen_rect.bottom()) {
       if (taskbar_rect.y() - anchor->y() > kSnapDistance)
-        return false;
+        anchor->set_x(display.work_area().x() + kEdgeOffset);
 
       anchor->set_y(taskbar_rect.y() + kSnapOffset);
       *arrow = views::BubbleBorder::BOTTOM_CENTER;
-      return true;
+      return;
     }
 
     // Now try on the top.
     if (anchor->y() - taskbar_rect.bottom() > kSnapDistance)
-      return false;
+      anchor->set_x(display.work_area().x()+ kEdgeOffset);
 
     anchor->set_y(taskbar_rect.bottom() - kSnapOffset);
     *arrow = views::BubbleBorder::TOP_CENTER;
-    return true;
+    return;
   }
 
   // Now try the left.
   if (taskbar_rect.x() == screen_rect.x()) {
     if (anchor->x() - taskbar_rect.right() > kSnapDistance)
-      return false;
+      anchor->set_y(display.work_area().y()+ kEdgeOffset);
 
     anchor->set_x(taskbar_rect.right() - kSnapOffset);
     *arrow = views::BubbleBorder::LEFT_CENTER;
-    return true;
+    return;
   }
 
   // Finally, try the right.
   if (taskbar_rect.x() - anchor->x() > kSnapDistance)
-    return false;
+    anchor->set_y(display.work_area().y() + kEdgeOffset);
 
   anchor->set_x(taskbar_rect.x() + kSnapOffset);
   *arrow = views::BubbleBorder::RIGHT_CENTER;
-  return true;
-}
-
-void AppListController::UpdateAnchorLocationForCursor(
-    const gfx::Display& display,
-    views::BubbleBorder::ArrowLocation* arrow,
-    gfx::Point* anchor) {
-  const int kArrowSize = 10;
-  const int kPadding = 20;
-
-  // Add the size of the arrow to the space needed, as the preferred size is
-  // of the view excluding the arrow.
-  gfx::Size preferred = current_view_->GetPreferredSize();
-  int min_space_x = preferred.width() + kAnchorOffset + kPadding + kArrowSize;
-  int min_space_y = preferred.height() + kAnchorOffset + kPadding + kArrowSize;
-
-  const gfx::Rect& screen_rect = display.bounds();
-
-  // Position within the screen so that it is pointing at the cursor. Prefer the
-  // arrow on the bottom (i.e. launcher above the cursor).
-  if (anchor->y() - screen_rect.y() >= min_space_y) {
-    *arrow = views::BubbleBorder::BOTTOM_CENTER;
-    anchor->Offset(0, -kAnchorOffset);
-    return;
-  }
-
-  // The view won't fit above the cursor. Will it fit below?
-  if (screen_rect.bottom() - anchor->y() >= min_space_y) {
-    *arrow = views::BubbleBorder::TOP_CENTER;
-    anchor->Offset(0, kAnchorOffset);
-    return;
-  }
-
-  // Now try with the view on the right.
-  if (screen_rect.right() - anchor->x() >= min_space_x) {
-    *arrow = views::BubbleBorder::LEFT_CENTER;
-    anchor->Offset(kAnchorOffset, 0);
-    return;
-  }
-
-  *arrow = views::BubbleBorder::RIGHT_CENTER;
-  anchor->Offset(-kAnchorOffset, 0);
 }
 
 void AppListController::UpdateArrowPositionAndAnchorPoint(
@@ -442,14 +408,7 @@ void AppListController::UpdateArrowPositionAndAnchorPoint(
   gfx::Display display = screen->GetDisplayNearestPoint(anchor);
   views::BubbleBorder::ArrowLocation arrow;
 
-  // If the cursor is in an appropriate location, snap it to the edge of the
-  // taskbar. Otherwise position near the cursor so the launcher is fully on
-  // screen.
-  if (!SnapArrowLocationToTaskbarEdge(display, &arrow, &anchor)) {
-    UpdateAnchorLocationForCursor(display,
-                                    &arrow,
-                                    &anchor);
-  }
+  SnapArrowLocationToTaskbarEdge(display, &arrow, &anchor);
 
   current_view_->SetBubbleArrowLocation(arrow);
   current_view_->SetAnchorPoint(anchor);
