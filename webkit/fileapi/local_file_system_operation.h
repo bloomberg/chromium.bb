@@ -260,9 +260,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // after it resumed from the working thread, cancellation takes place.
   WriteCallback write_callback_;
   StatusCallback cancel_callback_;
-  void set_write_callback(const WriteCallback& write_callback) {
-    write_callback_ = write_callback;
-  }
 
   // Used only by OpenFile, in order to clone the file handle back to the
   // requesting process.

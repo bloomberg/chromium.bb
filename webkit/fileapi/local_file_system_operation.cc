@@ -535,7 +535,7 @@ base::Closure LocalFileSystemOperation::GetWriteClosure(
                  weak_factory_.GetWeakPtr(), url),
       writer.Pass()));
 
-  set_write_callback(callback);
+  write_callback_ = callback;
   scoped_ptr<net::URLRequest> blob_request(url_request_context->CreateRequest(
       blob_url, file_writer_delegate_.get()));
 
