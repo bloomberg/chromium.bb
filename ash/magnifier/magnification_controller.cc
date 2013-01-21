@@ -120,6 +120,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   aura::RootWindow* root_window_;
 
@@ -134,6 +135,10 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   bool move_cursor_after_animation_;
   // Stores the position of cursor to be moved after animation.
   gfx::Point position_after_animation_;
+
+  // Stores the last mouse cursor (or last touched) location. This value is
+  // used on zooming to keep this location visible.
+  gfx::Point point_of_interest_;
 
   // Current scale, origin (left-top) position of the magnification window.
   float scale_;
@@ -152,6 +157,9 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       move_cursor_after_animation_(false),
       scale_(kNonMagnifiedScale) {
   Shell::GetInstance()->AddPreTargetHandler(this);
+
+  if (root_window_)
+    point_of_interest_ = root_window_->bounds().CenterPoint();
 }
 
 MagnificationControllerImpl::~MagnificationControllerImpl() {
@@ -160,7 +168,7 @@ MagnificationControllerImpl::~MagnificationControllerImpl() {
 
 void MagnificationControllerImpl::RedrawKeepingMousePosition(
     float scale, bool animate) {
-  gfx::Point mouse_in_root = root_window_->GetLastMouseLocationInRoot();
+  gfx::Point mouse_in_root = point_of_interest_;
 
   // mouse_in_root is invalid value when the cursor is hidden.
   if (!root_window_->bounds().Contains(mouse_in_root))
@@ -171,7 +179,7 @@ void MagnificationControllerImpl::RedrawKeepingMousePosition(
                       (scale_ / scale) * (mouse_in_root.x() - origin_.x()),
                   mouse_in_root.y() -
                       (scale_ / scale) * (mouse_in_root.y() - origin_.y()));
-  bool changed = Redraw(origin, scale, animate);
+  bool changed = RedrawDIP(origin, scale, animate);
   if (changed)
     AfterAnimationMoveCursorTo(mouse_in_root);
 }
@@ -507,13 +515,13 @@ void MagnificationControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
       if (current_root != root_window_)
         SwitchTargetRootWindow(current_root);
 
+      point_of_interest_ = event->root_location();
       OnMouseMove(event->root_location());
     }
   }
 }
 
-void MagnificationControllerImpl::OnScrollEvent(
-    ui::ScrollEvent* event) {
+void MagnificationControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->IsAltDown() && event->IsControlDown()) {
     if (event->type() == ui::ET_SCROLL_FLING_START ||
         event->type() == ui::ET_SCROLL_FLING_CANCEL) {
@@ -529,6 +537,16 @@ void MagnificationControllerImpl::OnScrollEvent(
       event->StopPropagation();
       return;
     }
+  }
+}
+
+void MagnificationControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::RootWindow* current_root = target->GetRootWindow();
+  if (current_root == root_window_) {
+    gfx::Rect root_bounds = current_root->bounds();
+    if (root_bounds.Contains(event->root_location()))
+      point_of_interest_ = event->root_location();
   }
 }
 
