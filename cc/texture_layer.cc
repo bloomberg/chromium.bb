@@ -12,12 +12,12 @@
 
 namespace cc {
 
-static void runCallbackOnMainThread(const TextureLayer::MailboxCallback& callback, unsigned syncPoint)
+static void runCallbackOnMainThread(const TextureMailbox::ReleaseCallback& callback, unsigned syncPoint)
 {
     callback.Run(syncPoint);
 }
 
-static void postCallbackToMainThread(Thread *mainThread, const TextureLayer::MailboxCallback& callback, unsigned syncPoint)
+static void postCallbackToMainThread(Thread *mainThread, const TextureMailbox::ReleaseCallback& callback, unsigned syncPoint)
 {
     mainThread->postTask(base::Bind(&runCallbackOnMainThread, callback, syncPoint));
 }
@@ -59,8 +59,8 @@ TextureLayer::~TextureLayer()
         if (m_rateLimitContext && m_client)
             layerTreeHost()->stopRateLimiter(m_client->context());
     }
-    if (!m_contentCommitted && !m_mailboxName.empty())
-        m_mailboxReleaseCallback.Run(0);
+    if (!m_contentCommitted)
+        m_textureMailbox.RunReleaseCallback(0);
 }
 
 scoped_ptr<LayerImpl> TextureLayer::createLayerImpl(LayerTreeImpl* treeImpl)
@@ -121,17 +121,15 @@ void TextureLayer::setTextureId(unsigned id)
     setNeedsCommit();
 }
 
-void TextureLayer::setTextureMailbox(const std::string& mailboxName, const MailboxCallback& callback)
+void TextureLayer::setTextureMailbox(const TextureMailbox& mailbox)
 {
     DCHECK(m_usesMailbox);
-    DCHECK(mailboxName.empty() == callback.is_null());
-    if (m_mailboxName.compare(mailboxName) == 0)
+    if (m_textureMailbox.Equals(mailbox))
         return;
     // If we never commited the mailbox, we need to release it here
-    if (!m_contentCommitted && !m_mailboxName.empty())
-        m_mailboxReleaseCallback.Run(0);
-    m_mailboxReleaseCallback = callback;
-    m_mailboxName = mailboxName;
+    if (!m_contentCommitted)
+        m_textureMailbox.RunReleaseCallback(0);
+    m_textureMailbox = mailbox;
 
     setNeedsCommit();
 }
@@ -161,7 +159,7 @@ void TextureLayer::setLayerTreeHost(LayerTreeHost* host)
 
 bool TextureLayer::drawsContent() const
 {
-    return (m_client || m_textureId || !m_mailboxName.empty()) && !m_contextLost && Layer::drawsContent();
+    return (m_client || m_textureId || !m_textureMailbox.IsEmpty()) && !m_contextLost && Layer::drawsContent();
 }
 
 void TextureLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
@@ -186,7 +184,10 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
     if (m_usesMailbox) {
         Thread* mainThread = layerTreeHost()->proxy()->mainThread();
-        textureLayer->setTextureMailbox(m_mailboxName, base::Bind(&postCallbackToMainThread, mainThread, m_mailboxReleaseCallback));
+        TextureMailbox::ReleaseCallback callback;
+        if (!m_textureMailbox.IsEmpty())
+          callback = base::Bind(&postCallbackToMainThread, mainThread, m_textureMailbox.callback());
+        textureLayer->setTextureMailbox(TextureMailbox(m_textureMailbox.name(), callback));
     } else {
         textureLayer->setTextureId(m_textureId);
     }

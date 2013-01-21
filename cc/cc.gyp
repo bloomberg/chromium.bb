@@ -262,6 +262,8 @@
       'texture_layer_client.h',
       'texture_layer_impl.cc',
       'texture_layer_impl.h',
+      'texture_mailbox.cc',
+      'texture_mailbox.h',
       'texture_uploader.cc',
       'texture_uploader.h',
       'thread.h',

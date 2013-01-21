@@ -42,7 +42,7 @@ public:
     void setVertexOpacity(const float vertexOpacity[4]);
     virtual bool canClipSelf() const OVERRIDE;
 
-    void setTextureMailbox(const std::string& mailboxName, const base::Callback<void(unsigned)>& releaseCallback);
+    void setTextureMailbox(const TextureMailbox&);
 
 private:
     TextureLayerImpl(LayerTreeImpl* treeImpl, int id, bool usesMailbox);
@@ -58,8 +58,7 @@ private:
     float m_vertexOpacity[4];
 
     bool m_hasPendingMailbox;
-    std::string m_pendingMailboxName;
-    base::Callback<void(unsigned)> m_pendingMailboxReleaseCallback;
+    TextureMailbox m_pendingTextureMailbox;
     bool m_usesMailbox;
 };
 

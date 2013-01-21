@@ -36,23 +36,22 @@ TextureLayerImpl::~TextureLayerImpl()
         ResourceProvider* provider = layerTreeImpl()->resource_provider();
         provider->deleteResource(m_externalTextureResource);
     }
-    if (m_hasPendingMailbox && !m_pendingMailboxName.empty())
-        m_pendingMailboxReleaseCallback.Run(0);
+    if (m_hasPendingMailbox)
+        m_pendingTextureMailbox.RunReleaseCallback(0);
 }
 
-void TextureLayerImpl::setTextureMailbox(const std::string& mailboxName, const base::Callback<void(unsigned)>& releaseCallback)
+void TextureLayerImpl::setTextureMailbox(const TextureMailbox& mailbox)
 {
     DCHECK(m_usesMailbox);
     // Same mailbox name was commited, nothing to do.
-    if (m_pendingMailboxName.compare(mailboxName) == 0)
+    if (m_pendingTextureMailbox.Equals(mailbox))
         return;
     // Two commits without a draw, ack the previous mailbox.
-    if (m_hasPendingMailbox && !m_pendingMailboxReleaseCallback.is_null())
-        m_pendingMailboxReleaseCallback.Run(0);
+    if (m_hasPendingMailbox)
+        m_pendingTextureMailbox.RunReleaseCallback(0);
 
-    m_pendingMailboxName = mailboxName;
+    m_pendingTextureMailbox = mailbox;
     m_hasPendingMailbox = true;
-    m_pendingMailboxReleaseCallback = releaseCallback;
 }
 
 void TextureLayerImpl::willDraw(ResourceProvider* resourceProvider)
@@ -72,8 +71,8 @@ void TextureLayerImpl::willDraw(ResourceProvider* resourceProvider)
         resourceProvider->deleteResource(m_externalTextureResource);
         m_externalTextureResource = 0;
     }
-    if (!m_pendingMailboxName.empty())
-        m_externalTextureResource = resourceProvider->createResourceFromTextureMailbox(m_pendingMailboxName, m_pendingMailboxReleaseCallback);
+    if (!m_pendingTextureMailbox.IsEmpty())
+        m_externalTextureResource = resourceProvider->createResourceFromTextureMailbox(m_pendingTextureMailbox);
     m_hasPendingMailbox = false;
 }
 

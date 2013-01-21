@@ -241,7 +241,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture
     return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createResourceFromTextureMailbox(const std::string& mailbox, const base::Callback<void(unsigned)>& releaseCallback)
+ResourceProvider::ResourceId ResourceProvider::createResourceFromTextureMailbox(const TextureMailbox& mailbox)
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
     // Just store the information. Mailbox will be consumed in lockForRead().
@@ -250,8 +250,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromTextureMailbox(
     Resource resource(textureId, gfx::Size(), 0, GL_LINEAR);
     resource.external = true;
     resource.allocated = true;
-    resource.mailbox.setName(reinterpret_cast<const int8*>(mailbox.data()));
-    resource.mailboxReleaseCallback = releaseCallback;
+    resource.mailbox = mailbox;
     m_resources[id] = resource;
     return id;
 }
@@ -291,18 +290,17 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
         DCHECK(context3d);
         GLC(context3d, context3d->deleteBuffer(resource->glPixelBufferId));
     }
-    if (!resource->mailbox.isZero() && resource->external) {
+    if (!resource->mailbox.IsEmpty() && resource->external) {
         WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
         DCHECK(context3d);
         unsigned syncPoint = 0;
         if (resource->glId) {
             GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
-            GLC(context3d, context3d->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
+            GLC(context3d, context3d->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.data()));
             GLC(context3d, context3d->deleteTexture(resource->glId));
             syncPoint = context3d->insertSyncPoint();
         }
-        if (!resource->mailboxReleaseCallback.is_null())
-            resource->mailboxReleaseCallback.Run(syncPoint);
+        resource->mailbox.RunReleaseCallback(syncPoint);
     }
     if (resource->pixels)
         delete[] resource->pixels;
@@ -424,12 +422,12 @@ const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
     DCHECK(!resource->exported);
     DCHECK(resource->allocated); // Uninitialized! Call setPixels or lockForWrite first.
 
-    if (!resource->glId && resource->external && !resource->mailbox.isZero()) {
+    if (!resource->glId && resource->external && !resource->mailbox.IsEmpty()) {
         WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
         DCHECK(context3d);
         resource->glId = context3d->createTexture();
         GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
-        GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
+        GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.data()));
     }
 
     resource->lockForReadCount++;
@@ -694,7 +692,7 @@ void ResourceProvider::receiveFromChild(int child, const TransferableResourceLis
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         ResourceId id = m_nextId++;
         Resource resource(textureId, it->size, it->format, it->filter);
-        resource.mailbox.setName(it->mailbox.name);
+        resource.mailbox.SetName(it->mailbox);
         // Don't allocate a texture for a child.
         resource.allocated = true;
         m_resources[id] = resource;
@@ -719,7 +717,7 @@ void ResourceProvider::receiveFromParent(const TransferableResourceList& resourc
         Resource* resource = &mapIterator->second;
         DCHECK(resource->exported);
         resource->exported = false;
-        resource->mailbox.setName(it->mailbox.name);
+        DCHECK(resource->mailbox.Equals(it->mailbox));
         GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         if (resource->markedForDeletion)
@@ -736,7 +734,7 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
     Resource* source = &it->second;
     DCHECK(!source->lockedForWrite);
     DCHECK(!source->lockForReadCount);
-    DCHECK(!source->external || (source->external && !source->mailbox.isZero()));
+    DCHECK(!source->external || (source->external && !source->mailbox.IsEmpty()));
     DCHECK(source->allocated);
     if (source->exported)
         return false;
@@ -745,13 +743,12 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
     resource->filter = source->filter;
     resource->size = source->size;
 
-    if (source->mailbox.isZero()) {
-      GLbyte name[GL_MAILBOX_SIZE_CHROMIUM];
-      GLC(context3d, context3d->genMailboxCHROMIUM(name));
-      source->mailbox.setName(name);
-    }
+    if (source->mailbox.IsEmpty()) {
+        GLC(context3d, context3d->genMailboxCHROMIUM(resource->mailbox.name));
+        source->mailbox.SetName(resource->mailbox);
+    } else
+        resource->mailbox = source->mailbox.name();
 
-    resource->mailbox = source->mailbox;
     GLC(context, context->bindTexture(GL_TEXTURE_2D, source->glId));
     GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
     return true;

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "cc/cc_export.h"
 #include "cc/layer.h"
+#include "cc/texture_mailbox.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -22,8 +23,6 @@ class TextureLayerClient;
 // A Layer containing a the rendered output of a plugin instance.
 class CC_EXPORT TextureLayer : public Layer {
 public:
-    typedef base::Callback<void(unsigned)> MailboxCallback;
-
     // If this texture layer requires special preparation logic for each frame driven by
     // the compositor, pass in a non-nil client. Pass in a nil client pointer if texture updates
     // are driven by an external process.
@@ -57,7 +56,7 @@ public:
     void setTextureId(unsigned);
 
     // Code path for plugins which supply their own texture ID.
-    void setTextureMailbox(const std::string&, const MailboxCallback&);
+    void setTextureMailbox(const TextureMailbox&);
 
     void willModifyTexture();
 
@@ -78,7 +77,6 @@ protected:
 private:
     TextureLayerClient* m_client;
     bool m_usesMailbox;
-    MailboxCallback m_mailboxReleaseCallback;
 
     bool m_flipped;
     gfx::PointF m_uvTopLeft;
@@ -91,7 +89,7 @@ private:
     bool m_contentCommitted;
 
     unsigned m_textureId;
-    std::string m_mailboxName;
+    TextureMailbox m_textureMailbox;
 };
 
 }

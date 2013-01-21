@@ -17,6 +17,7 @@
 #include "cc/cc_export.h"
 #include "cc/output_surface.h"
 #include "cc/texture_copier.h"
+#include "cc/texture_mailbox.h"
 #include "cc/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -86,7 +87,7 @@ public:
     ResourceId createResourceFromExternalTexture(unsigned textureId);
 
     // Wraps an external texture mailbox into a GL resource.
-    ResourceId createResourceFromTextureMailbox(const std::string& mailboxName, const base::Callback<void(unsigned)>& releaseCallback);
+    ResourceId createResourceFromTextureMailbox(const TextureMailbox&);
 
     void deleteResource(ResourceId);
 
@@ -252,8 +253,7 @@ private:
         unsigned glPixelBufferId;
         // Query used to determine when asynchronous set pixels complete.
         unsigned glUploadQueryId;
-        Mailbox mailbox;
-        base::Callback<void(unsigned)> mailboxReleaseCallback;
+        TextureMailbox mailbox;
         uint8_t* pixels;
         uint8_t* pixelBuffer;
         int lockForReadCount;
