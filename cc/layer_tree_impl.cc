@@ -188,9 +188,9 @@ const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
 }
 
 gfx::Size LayerTreeImpl::ContentSize() const {
-  if (!root_scroll_layer_)
+  if (!root_scroll_layer_ || root_scroll_layer_->children().empty())
     return gfx::Size();
-  return root_scroll_layer_->bounds();
+  return root_scroll_layer_->children()[0]->bounds();
 }
 
 LayerImpl* LayerTreeImpl::LayerById(int id) {
