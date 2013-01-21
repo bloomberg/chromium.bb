@@ -193,6 +193,11 @@ void FilterDisabledTests() {
     "URLRequestTestHTTP.BasicAuth",
     "URLRequestTestHTTP.BasicAuthWithCookies",
 
+    // ChromeFrame does not support load timing.
+    "URLRequestTestHTTP.BasicAuthLoadTiming",
+    "URLRequestTestHTTP.GetTestLoadTiming",
+    "URLRequestTestHTTP.RedirectLoadTiming",
+
     // HTTPS tests temporarily disabled due to the certificate error dialog.
     // TODO(tommi): The tests currently fail though, so need to fix.
     "HTTPSRequestTest.HTTPSMismatchedTest",

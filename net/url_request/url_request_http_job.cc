@@ -949,6 +949,12 @@ void URLRequestHttpJob::GetResponseInfo(HttpResponseInfo* info) {
   }
 }
 
+void URLRequestHttpJob::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  if (transaction_)
+    transaction_->GetLoadTimingInfo(load_timing_info);
+}
+
 bool URLRequestHttpJob::GetResponseCookies(std::vector<std::string>* cookies) {
   DCHECK(transaction_.get());
 

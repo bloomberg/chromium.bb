@@ -26,6 +26,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/ssl_cert_request_info.h"
@@ -481,6 +482,17 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
   OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
 }
 
+bool HttpNetworkTransaction::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  if (!stream_ || !stream_->GetLoadTimingInfo(load_timing_info))
+    return false;
+
+  load_timing_info->send_start = send_start_time_;
+  load_timing_info->send_end = send_end_time_;
+  load_timing_info->receive_headers_end = receive_headers_end_;
+  return true;
+}
+
 bool HttpNetworkTransaction::is_https_request() const {
   return request_->url.SchemeIs("https");
 }
@@ -788,12 +800,14 @@ int HttpNetworkTransaction::DoBuildRequestComplete(int result) {
 }
 
 int HttpNetworkTransaction::DoSendRequest() {
+  send_start_time_ = base::TimeTicks::Now();
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
 
   return stream_->SendRequest(request_headers_, &response_, io_callback_);
 }
 
 int HttpNetworkTransaction::DoSendRequestComplete(int result) {
+  send_end_time_ = base::TimeTicks::Now();
   if (result < 0)
     return HandleIOError(result);
   next_state_ = STATE_READ_HEADERS;
@@ -816,6 +830,8 @@ int HttpNetworkTransaction::HandleConnectionClosedBeforeEndOfHeaders() {
 }
 
 int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
+  receive_headers_end_ = base::TimeTicks::Now();
+
   // We can get a certificate error or ERR_SSL_CLIENT_AUTH_CERT_NEEDED here
   // due to SSL renegotiation.
   if (IsCertificateError(result)) {
@@ -1306,6 +1322,10 @@ void HttpNetworkTransaction::ResetStateForRestart() {
 }
 
 void HttpNetworkTransaction::ResetStateForAuthRestart() {
+  send_start_time_ = base::TimeTicks();
+  send_end_time_ = base::TimeTicks();
+  receive_headers_end_ = base::TimeTicks();
+
   pending_auth_target_ = HttpAuth::AUTH_NONE;
   read_buf_ = NULL;
   read_buf_len_ = 0;

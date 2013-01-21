@@ -89,6 +89,7 @@ namespace net {
 class CookieOptions;
 class HostPortPair;
 class IOBuffer;
+struct LoadTimingInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
 class UploadDataStream;
@@ -495,6 +496,18 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     return response_info_.ssl_info;
   }
 
+  // Gets timing information related to the request.  Events that have not yet
+  // occurred are left uninitialized.  After a second request occurs, due to
+  // a redirect or authentication, values will be reset.
+  //
+  // LoadTimingInfo only contains ConnectTiming information and socket IDs for
+  // non-cached HTTP responses.  To get this information, this must be called
+  // while there's still a connection.  The delegate callbacks where this will
+  // be the case are: OnBeforeSendHeaders, OnBeforeRedirect, and
+  // OnResponseBodyStarted.  In some error cases there may be no connect times.
+  // Note that this does not include OnReadCompleted or OnCompleted.
+  void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
+
   // Returns the cookie values included in the response, if the request is one
   // that can have cookies.  Returns true if the request is a cookie-bearing
   // type, false otherwise.  This method may only be called once the
@@ -834,6 +847,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   int64 received_response_content_length_;
 
   base::TimeTicks creation_time_;
+
+  // Time the last request was started, as a Time and the equivalent TimeTicks.
+  base::Time start_time_;
+  base::TimeTicks start_time_ticks_;
 
   scoped_ptr<const base::debug::StackTrace> stack_trace_;
 

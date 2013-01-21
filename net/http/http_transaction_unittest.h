@@ -186,6 +186,9 @@ class MockNetworkTransaction : public net::HttpTransaction {
 
   virtual net::UploadProgress GetUploadProgress() const OVERRIDE;
 
+  virtual bool GetLoadTimingInfo(
+      net::LoadTimingInfo* load_timing_info) const OVERRIDE;
+
  private:
   void CallbackLater(const net::CompletionCallback& callback, int result);
   void RunCallback(const net::CompletionCallback& callback, int result);

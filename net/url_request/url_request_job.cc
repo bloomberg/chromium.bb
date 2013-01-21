@@ -117,6 +117,10 @@ bool URLRequestJob::GetCharset(std::string* charset) {
 void URLRequestJob::GetResponseInfo(HttpResponseInfo* info) {
 }
 
+void URLRequestJob::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
+  // Only certain request types return more than just request start times.
+}
+
 bool URLRequestJob::GetResponseCookies(std::vector<std::string>* cookies) {
   return false;
 }

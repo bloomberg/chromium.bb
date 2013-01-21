@@ -293,7 +293,10 @@ TestNetworkDelegate::TestNetworkDelegate()
       cookie_options_bit_mask_(0),
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
-      set_cookie_count_(0) {
+      set_cookie_count_(0),
+      has_load_timing_info_(false),
+      has_load_timing_info_before_redirect_(false),
+      has_load_timing_info_before_auth_(false) {
 }
 
 TestNetworkDelegate::~TestNetworkDelegate() {
@@ -302,6 +305,24 @@ TestNetworkDelegate::~TestNetworkDelegate() {
     event_order_[i->first] += "~TestNetworkDelegate\n";
     EXPECT_TRUE(i->second & kStageDestruction) << event_order_[i->first];
   }
+}
+
+bool TestNetworkDelegate::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  *load_timing_info = load_timing_info_;
+  return has_load_timing_info_;
+}
+
+bool TestNetworkDelegate::GetLoadTimingInfoBeforeRedirect(
+    LoadTimingInfo* load_timing_info_before_redirect) const {
+  *load_timing_info_before_redirect = load_timing_info_before_redirect_;
+  return has_load_timing_info_before_redirect_;
+}
+
+bool TestNetworkDelegate::GetLoadTimingInfoBeforeAuth(
+    LoadTimingInfo* load_timing_info_before_auth) const {
+  *load_timing_info_before_auth = load_timing_info_before_auth_;
+  return has_load_timing_info_before_auth_;
 }
 
 void TestNetworkDelegate::InitRequestStatesIfNew(int request_id) {
@@ -384,6 +405,12 @@ int TestNetworkDelegate::OnHeadersReceived(
 
 void TestNetworkDelegate::OnBeforeRedirect(URLRequest* request,
                                            const GURL& new_location) {
+  load_timing_info_before_redirect_ = LoadTimingInfo();
+  request->GetLoadTimingInfo(&load_timing_info_before_redirect_);
+  has_load_timing_info_before_redirect_ = true;
+  EXPECT_FALSE(load_timing_info_before_redirect_.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info_before_redirect_.request_start.is_null());
+
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnBeforeRedirect\n";
@@ -401,6 +428,12 @@ void TestNetworkDelegate::OnBeforeRedirect(URLRequest* request,
 }
 
 void TestNetworkDelegate::OnResponseStarted(URLRequest* request) {
+  load_timing_info_ = LoadTimingInfo();
+  request->GetLoadTimingInfo(&load_timing_info_);
+  has_load_timing_info_ = true;
+  EXPECT_FALSE(load_timing_info_.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info_.request_start.is_null());
+
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnResponseStarted\n";
@@ -457,6 +490,12 @@ NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
     const AuthChallengeInfo& auth_info,
     const AuthCallback& callback,
     AuthCredentials* credentials) {
+  load_timing_info_before_auth_ = LoadTimingInfo();
+  request->GetLoadTimingInfo(&load_timing_info_before_auth_);
+  has_load_timing_info_before_auth_ = true;
+  EXPECT_FALSE(load_timing_info_before_auth_.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info_before_auth_.request_start.is_null());
+
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnAuthRequired\n";

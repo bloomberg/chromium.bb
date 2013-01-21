@@ -23,6 +23,7 @@
 #include "googleurl/src/url_util.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/ssl_config_service_defaults.h"
@@ -195,6 +196,18 @@ class TestNetworkDelegate : public NetworkDelegate {
   TestNetworkDelegate();
   virtual ~TestNetworkDelegate();
 
+  // Writes the LoadTimingInfo during the most recent call to OnResponseStarted
+  // to |load_timing_info|.  Returns the same value as URLequest::GetLoadTiming.
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
+
+  // Same as GetLoadTimingInfo, except for calls to OnBeforeRedirect.
+  bool GetLoadTimingInfoBeforeRedirect(
+      LoadTimingInfo* load_timing_info_before_redirect) const;
+
+  // Same as GetLoadTimingInfo, except for calls to AuthRequiredResponse.
+  bool GetLoadTimingInfoBeforeAuth(
+      LoadTimingInfo* load_timing_info_before_auth) const;
+
   void set_cookie_options(int o) {cookie_options_bit_mask_ = o; }
 
   int last_error() const { return last_error_; }
@@ -271,6 +284,15 @@ class TestNetworkDelegate : public NetworkDelegate {
   // A log that records for each request id (key) the order in which On...
   // functions were called.
   std::map<int, std::string> event_order_;
+
+  LoadTimingInfo load_timing_info_;
+  bool has_load_timing_info_;
+
+  LoadTimingInfo load_timing_info_before_redirect_;
+  bool has_load_timing_info_before_redirect_;
+
+  LoadTimingInfo load_timing_info_before_auth_;
+  bool has_load_timing_info_before_auth_;
 };
 
 // Overrides the host used by the LocalHttpTestServer in

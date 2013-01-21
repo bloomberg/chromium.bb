@@ -82,6 +82,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                                           const ProxyInfo& used_proxy_info,
                                           HttpStreamBase* stream) OVERRIDE;
 
+  virtual bool GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy2Test,
                            ResetStateForRestart);
@@ -288,6 +291,14 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // The time the Start method was called.
   base::Time start_time_;
+
+  // When the transaction started / finished sending the request, including
+  // the body, if present.
+  base::TimeTicks send_start_time_;
+  base::TimeTicks send_end_time_;
+
+  // When the transaction finished reading the request headers.
+  base::TimeTicks receive_headers_end_;
 
   // The next state in the state machine.
   State next_state_;

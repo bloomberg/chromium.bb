@@ -28,6 +28,7 @@ class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseInfo;
 class IOBuffer;
+struct LoadTimingInfo;
 class NetworkDelegate;
 class SSLCertRequestInfo;
 class SSLInfo;
@@ -109,6 +110,8 @@ class NET_EXPORT URLRequestJob : public base::RefCounted<URLRequestJob>,
 
   // Called to get response info.
   virtual void GetResponseInfo(HttpResponseInfo* info);
+
+  virtual void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
   // Returns the cookie values included in the response, if applicable.
   // Returns true if applicable.

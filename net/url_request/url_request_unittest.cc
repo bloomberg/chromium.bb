@@ -27,9 +27,12 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/ev_root_ca_metadata.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_timing_info.h"
+#include "net/base/load_timing_info_test_util.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -81,6 +84,52 @@ namespace {
 const string16 kChrome(ASCIIToUTF16("chrome"));
 const string16 kSecret(ASCIIToUTF16("secret"));
 const string16 kUser(ASCIIToUTF16("user"));
+
+// Tests load timing information in the case a fresh connection was used.
+// These tests use the TestServer, which doesn't support keep-alive sockets,
+// so there are no tests here that reuse sockets.
+void TestLoadTimingNotReused(const net::LoadTimingInfo& load_timing_info,
+                             int connect_timing_flags) {
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info.request_start.is_null());
+
+  EXPECT_LE(load_timing_info.request_start,
+            load_timing_info.connect_timing.connect_start);
+  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                              connect_timing_flags);
+  EXPECT_LE(load_timing_info.connect_timing.connect_end,
+            load_timing_info.send_start);
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+
+  // Not set by these tests.
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+}
+
+// Tests load timing in the case that there is no underlying connection.  This
+// can be used to test in the case of cached responses, errors, or non-HTTP
+// requests.
+void TestLoadTimingNoHttpConnection(
+    const net::LoadTimingInfo& load_timing_info) {
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_EQ(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  // Only the request times should be non-null.
+  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
+  EXPECT_FALSE(load_timing_info.request_start.is_null());
+
+  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+  EXPECT_TRUE(load_timing_info.send_start.is_null());
+  EXPECT_TRUE(load_timing_info.send_end.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+}
 
 base::StringPiece TestNetResourceProvider(int key) {
   return "header";
@@ -464,6 +513,7 @@ class URLRequestTest : public PlatformTest {
  public:
   URLRequestTest() : default_context_(true) {
     default_context_.set_network_delegate(&default_network_delegate_);
+    default_context_.set_net_log(&net_log_);
     default_context_.Init();
   }
   virtual ~URLRequestTest() {}
@@ -478,6 +528,7 @@ class URLRequestTest : public PlatformTest {
   }
 
  protected:
+  CapturingNetLog net_log_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   scoped_ptr<URLRequestJobFactoryImpl> job_factory_;
   TestURLRequestContext default_context_;
@@ -2811,6 +2862,32 @@ TEST_F(URLRequestTestHTTP, GetTest) {
   }
 }
 
+TEST_F(URLRequestTestHTTP, GetTestLoadTiming) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  {
+    URLRequest r(test_server_.GetURL(""), &d, &default_context_);
+
+    r.Start();
+    EXPECT_TRUE(r.is_pending());
+
+    MessageLoop::current()->Run();
+
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.received_data_before_response());
+    EXPECT_NE(0, d.bytes_received());
+    EXPECT_EQ(test_server_.host_port_pair().host(),
+              r.GetSocketAddress().host());
+    EXPECT_EQ(test_server_.host_port_pair().port(),
+              r.GetSocketAddress().port());
+  }
+}
+
 TEST_F(URLRequestTestHTTP, GetZippedTest) {
   ASSERT_TRUE(test_server_.Start());
 
@@ -2888,6 +2965,44 @@ TEST_F(URLRequestTestHTTP, DISABLED_HTTPSToHTTPRedirectNoRefererTest) {
   EXPECT_EQ(1, d.received_redirect_count());
   EXPECT_EQ(http_destination, req.url());
   EXPECT_EQ(std::string(), req.referrer());
+}
+
+TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL destination_url = test_server_.GetURL("");
+  GURL original_url = test_server_.GetURL(
+      "server-redirect?" + destination_url.spec());
+  TestDelegate d;
+  URLRequest req(original_url, &d, &default_context_);
+  req.Start();
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(1, d.response_started_count());
+  EXPECT_EQ(1, d.received_redirect_count());
+  EXPECT_EQ(destination_url, req.url());
+  EXPECT_EQ(original_url, req.original_url());
+  ASSERT_EQ(2U, req.url_chain().size());
+  EXPECT_EQ(original_url, req.url_chain()[0]);
+  EXPECT_EQ(destination_url, req.url_chain()[1]);
+
+  LoadTimingInfo load_timing_info_before_redirect;
+  EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfoBeforeRedirect(
+      &load_timing_info_before_redirect));
+  TestLoadTimingNotReused(load_timing_info_before_redirect,
+                          CONNECT_TIMING_HAS_DNS_TIMES);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+
+  // Check that a new socket was used on redirect, since the server does not
+  // supposed keep-alive sockets, and that the times before the redirect are
+  // before the ones recorded for the second request.
+  EXPECT_NE(load_timing_info_before_redirect.socket_log_id,
+            load_timing_info.socket_log_id);
+  EXPECT_LE(load_timing_info_before_redirect.receive_headers_end,
+            load_timing_info.connect_timing.connect_start);
 }
 
 TEST_F(URLRequestTestHTTP, MultipleRedirectTest) {
@@ -3596,6 +3711,63 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
     // Make sure we sent the cookie in the restarted transaction.
     EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true")
         != std::string::npos);
+  }
+}
+
+// Tests that load timing works as expected with auth and the cache.
+TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
+  ASSERT_TRUE(test_server_.Start());
+
+  // populate the cache
+  {
+    TestDelegate d;
+    d.set_credentials(AuthCredentials(kUser, kSecret));
+
+    URLRequest r(test_server_.GetURL("auth-basic"), &d, &default_context_);
+    r.Start();
+
+    MessageLoop::current()->Run();
+
+    EXPECT_TRUE(d.data_received().find("user/secret") != std::string::npos);
+
+    LoadTimingInfo load_timing_info_before_auth;
+    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfoBeforeAuth(
+        &load_timing_info_before_auth));
+    TestLoadTimingNotReused(load_timing_info_before_auth,
+                            CONNECT_TIMING_HAS_DNS_TIMES);
+
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    // The test server does not support keep alive sockets, so the second
+    // request with auth should use a new socket.
+    TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+    EXPECT_NE(load_timing_info_before_auth.socket_log_id,
+              load_timing_info.socket_log_id);
+    EXPECT_LE(load_timing_info_before_auth.receive_headers_end,
+              load_timing_info.connect_timing.connect_start);
+  }
+
+  // repeat request with end-to-end validation.  since auth-basic results in a
+  // cachable page, we expect this test to result in a 304.  in which case, the
+  // response should be fetched from the cache.
+  {
+    TestDelegate d;
+    d.set_credentials(AuthCredentials(kUser, kSecret));
+
+    URLRequest r(test_server_.GetURL("auth-basic"), &d, &default_context_);
+    r.set_load_flags(LOAD_VALIDATE_CACHE);
+    r.Start();
+
+    MessageLoop::current()->Run();
+
+    EXPECT_TRUE(d.data_received().find("user/secret") != std::string::npos);
+
+    // Should be the same cached document.
+    EXPECT_TRUE(r.was_cached());
+
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    TestLoadTimingNoHttpConnection(load_timing_info);
   }
 }
 
@@ -4959,6 +5131,10 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTest) {
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(d.bytes_received(), static_cast<int>(file_size));
+
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(default_network_delegate_.GetLoadTimingInfo(&load_timing_info));
+    TestLoadTimingNoHttpConnection(load_timing_info);
   }
 }
 

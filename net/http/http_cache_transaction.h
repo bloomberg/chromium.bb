@@ -122,6 +122,8 @@ class HttpCache::Transaction : public HttpTransaction {
   virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
   virtual UploadProgress GetUploadProgress(void) const OVERRIDE;
+  virtual bool GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE;
 
  private:
   static const size_t kNumValidationHeaders = 2;

@@ -24,6 +24,8 @@
 #include "net/base/cert_test_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_cache.h"
+#include "net/base/load_timing_info.h"
+#include "net/base/load_timing_info_test_util.h"
 #include "net/base/mock_cert_verifier.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_log.h"
@@ -131,6 +133,44 @@ bool GetHeaders(DictionaryValue* params, std::string* headers) {
   return true;
 }
 
+// |connect_time_flags| is ignored if expect_reused is true.
+void TestLoadTiming(const net::LoadTimingInfo& load_timing_info,
+                    bool expect_reused, int connect_timing_flags) {
+  EXPECT_EQ(expect_reused, load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  if (expect_reused) {
+    net::ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+    EXPECT_FALSE(load_timing_info.send_start.is_null());
+  } else {
+    net::ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                                     connect_timing_flags);
+    EXPECT_LE(load_timing_info.connect_timing.connect_end,
+              load_timing_info.send_start);
+  }
+
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+
+  // Not set by these tests.
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+
+  // Set by URLRequest, at a higher level.
+  EXPECT_TRUE(load_timing_info.request_start_time.is_null());
+  EXPECT_TRUE(load_timing_info.request_start.is_null());
+}
+
+void TestLoadTimingReused(const net::LoadTimingInfo& load_timing_info) {
+  TestLoadTiming(load_timing_info, true,
+                 net::CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+}
+
+void TestLoadTimingNotReused(const net::LoadTimingInfo& load_timing_info,
+                             int connect_timing_flags) {
+  TestLoadTiming(load_timing_info, false, connect_timing_flags);
+}
+
 }  // namespace
 
 namespace net {
@@ -149,6 +189,7 @@ class HttpNetworkTransactionSpdy2Test : public PlatformTest {
     int rv;
     std::string status_line;
     std::string response_data;
+    LoadTimingInfo load_timing_info;
   };
 
   virtual void SetUp() {
@@ -183,6 +224,8 @@ class HttpNetworkTransactionSpdy2Test : public PlatformTest {
     request.load_flags = 0;
 
     SpdySessionDependencies session_deps;
+    CapturingBoundNetLog log;
+    session_deps.net_log = log.bound().net_log();
     scoped_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(CreateSession(&session_deps)));
 
@@ -192,12 +235,17 @@ class HttpNetworkTransactionSpdy2Test : public PlatformTest {
 
     TestCompletionCallback callback;
 
-    CapturingBoundNetLog log;
     EXPECT_TRUE(log.bound().IsLoggingAllEvents());
     int rv = trans->Start(&request, callback.callback(), log.bound());
     EXPECT_EQ(ERR_IO_PENDING, rv);
 
     out.rv = callback.WaitForResult();
+
+    // Even in the failure cases that use this function, connections are always
+    // successfully established before the error.
+    EXPECT_TRUE(trans->GetLoadTimingInfo(&out.load_timing_info));
+    TestLoadTimingNotReused(out.load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+
     if (out.rv != OK)
       return out;
 
@@ -1009,6 +1057,8 @@ void HttpNetworkTransactionSpdy2Test::KeepAliveConnectionResendRequestTest(
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps;
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
 
   // Written data for successfully sending both requests.
@@ -1052,6 +1102,7 @@ void HttpNetworkTransactionSpdy2Test::KeepAliveConnectionResendRequestTest(
     "hello", "world"
   };
 
+  uint32 first_socket_log_id = NetLog::Source::kInvalidId;
   for (int i = 0; i < 2; ++i) {
     TestCompletionCallback callback;
 
@@ -1062,6 +1113,16 @@ void HttpNetworkTransactionSpdy2Test::KeepAliveConnectionResendRequestTest(
 
     rv = callback.WaitForResult();
     EXPECT_EQ(OK, rv);
+
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+    TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+    if (i == 0) {
+      first_socket_log_id = load_timing_info.socket_log_id;
+    } else {
+      // The second request should be using a new socket.
+      EXPECT_NE(first_socket_log_id, load_timing_info.socket_log_id);
+    }
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
@@ -1236,6 +1297,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, KeepAliveAfterUnreadBody) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps;
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
 
   // Note that because all these reads happen in the same
@@ -1270,6 +1333,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, KeepAliveAfterUnreadBody) {
   const int kNumUnreadBodies = arraysize(data1_reads) - 2;
   std::string response_lines[kNumUnreadBodies];
 
+  uint32 first_socket_log_id = NetLog::Source::kInvalidId;
   for (size_t i = 0; i < arraysize(data1_reads) - 2; ++i) {
     TestCompletionCallback callback;
 
@@ -1280,6 +1344,16 @@ TEST_F(HttpNetworkTransactionSpdy2Test, KeepAliveAfterUnreadBody) {
 
     rv = callback.WaitForResult();
     EXPECT_EQ(OK, rv);
+
+    LoadTimingInfo load_timing_info;
+    EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+    if (i == 0) {
+      TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+      first_socket_log_id = load_timing_info.socket_log_id;
+    } else {
+      TestLoadTimingReused(load_timing_info);
+      EXPECT_EQ(first_socket_log_id, load_timing_info.socket_log_id);
+    }
 
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
@@ -1331,6 +1405,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuth) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps;
+  CapturingNetLog log;
+  session_deps.net_log = &log;
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(CreateSession(&session_deps)));
 
@@ -1385,6 +1461,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuth) {
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info1));
+  TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_DNS_TIMES);
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
   EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
@@ -1397,6 +1477,15 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuth) {
 
   rv = callback2.WaitForResult();
   EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingNotReused(load_timing_info2, CONNECT_TIMING_HAS_DNS_TIMES);
+  // The load timing after restart should have a new socket ID, and times after
+  // those of the first load timing.
+  EXPECT_LE(load_timing_info1.receive_headers_end,
+            load_timing_info2.connect_timing.connect_start);
+  EXPECT_NE(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -1454,6 +1543,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthKeepAlive) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps;
+  CapturingNetLog log;
+  session_deps.net_log = &log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
 
   MockWrite data_writes1[] = {
@@ -1505,6 +1596,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthKeepAlive) {
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info1));
+  TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_DNS_TIMES);
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
   EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
@@ -1517,6 +1612,15 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthKeepAlive) {
 
   rv = callback2.WaitForResult();
   EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingReused(load_timing_info2);
+  // The load timing after restart should have the same socket ID, and times
+  // those of the first load timing.
+  EXPECT_LE(load_timing_info1.receive_headers_end,
+            load_timing_info2.send_start);
+  EXPECT_EQ(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -2183,6 +2287,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxyGet) {
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info,
+                          CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
@@ -2241,6 +2350,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyGet) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info,
+                          CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -2422,6 +2536,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectHttps) {
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_SSL_TIMES);
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
   ASSERT_TRUE(response->headers != NULL);
@@ -2499,6 +2617,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectSpdy) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_SSL_TIMES);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -2625,6 +2747,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxyAuthRetry) {
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info,
+                          CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
   ASSERT_FALSE(response->headers == NULL);
@@ -2640,6 +2767,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxyAuthRetry) {
 
   rv = callback2.WaitForResult();
   EXPECT_EQ(OK, rv);
+
+  load_timing_info = LoadTimingInfo();
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  // Retrying with HTTP AUTH is considered to be reusing a socket.
+  TestLoadTimingReused(load_timing_info);
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);

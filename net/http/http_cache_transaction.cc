@@ -464,6 +464,15 @@ UploadProgress HttpCache::Transaction::GetUploadProgress() const {
   return final_upload_progress_;
 }
 
+bool HttpCache::Transaction::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  if (network_trans_)
+    return network_trans_->GetLoadTimingInfo(load_timing_info);
+  // Don't modify |load_timing_info| when reading from the cache instead of the
+  // network.
+  return false;
+}
+
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::DoCallback(int rv) {

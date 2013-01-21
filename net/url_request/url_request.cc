@@ -18,6 +18,7 @@
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/network_change_notifier.h"
@@ -370,6 +371,16 @@ HttpResponseHeaders* URLRequest::response_headers() const {
   return response_info_.headers.get();
 }
 
+void URLRequest::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
+  // Downstream functions all expect |load_timing_info| to have null times.
+  *load_timing_info = LoadTimingInfo();
+
+  if (job_)
+    job_->GetLoadTimingInfo(load_timing_info);
+  load_timing_info->request_start_time = start_time_;
+  load_timing_info->request_start = start_time_ticks_;
+}
+
 bool URLRequest::GetResponseCookies(ResponseCookies* cookies) {
   DCHECK(job_);
   return job_->GetResponseCookies(cookies);
@@ -453,7 +464,9 @@ void URLRequest::Start() {
   DCHECK_EQ(network_delegate_, context_->network_delegate());
 
   g_url_requests_started = true;
-  response_info_.request_time = Time::Now();
+  response_info_.request_time = base::Time::Now();
+  start_time_ = response_info_.request_time;
+  start_time_ticks_ = base::TimeTicks::Now();
 
   // Only notify the delegate for the initial request.
   if (network_delegate_) {
@@ -719,7 +732,10 @@ void URLRequest::PrepareToRestart() {
   OrphanJob();
 
   response_info_ = HttpResponseInfo();
-  response_info_.request_time = Time::Now();
+  response_info_.request_time = base::Time::Now();
+  start_time_ = response_info_.request_time;
+  start_time_ticks_ = base::TimeTicks::Now();
+
   status_ = URLRequestStatus();
   is_pending_ = false;
 }

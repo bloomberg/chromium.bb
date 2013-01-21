@@ -320,6 +320,11 @@ net::UploadProgress MockNetworkTransaction::GetUploadProgress() const {
   return net::UploadProgress();
 }
 
+bool MockNetworkTransaction::GetLoadTimingInfo(
+    net::LoadTimingInfo* load_timing_info) const {
+  return false;
+}
+
 void MockNetworkTransaction::CallbackLater(
     const net::CompletionCallback& callback, int result) {
   MessageLoop::current()->PostTask(

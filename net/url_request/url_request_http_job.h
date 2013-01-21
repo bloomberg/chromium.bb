@@ -80,6 +80,8 @@ class URLRequestHttpJob : public URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual bool GetCharset(std::string* charset) OVERRIDE;
   virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
+  virtual void GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE;
   virtual bool GetResponseCookies(std::vector<std::string>* cookies) OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual Filter* SetupFilter() const OVERRIDE;
