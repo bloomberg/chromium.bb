@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
+#include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
@@ -61,9 +62,9 @@ content::WebDragDestDelegate*
 bool ChromeWebContentsViewDelegateViews::Focus() {
   SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents_);
   if (sad_tab_helper) {
-    views::Widget* sad_tab = sad_tab_helper->sad_tab();
+    SadTabView* sad_tab = static_cast<SadTabView*>(sad_tab_helper->sad_tab());
     if (sad_tab) {
-      sad_tab->GetContentsView()->RequestFocus();
+      sad_tab->RequestFocus();
       return true;
     }
   }
@@ -169,9 +170,9 @@ void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
   SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents_);
   if (!sad_tab_helper)
     return;
-  views::Widget* sad_tab = sad_tab_helper->sad_tab();
+  SadTabView* sad_tab = static_cast<SadTabView*>(sad_tab_helper->sad_tab());
   if (sad_tab)
-    sad_tab->SetBounds(gfx::Rect(size));
+    sad_tab->GetWidget()->SetBounds(gfx::Rect(size));
 }
 
 views::Widget* ChromeWebContentsViewDelegateViews::GetTopLevelWidget() {

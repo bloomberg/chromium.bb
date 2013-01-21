@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,6 +26,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/widget/widget.h"
 
 using content::OpenURLParams;
 using content::WebContents;
@@ -243,6 +245,42 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 }
 
+void SadTabView::Show() {
+  views::Widget::InitParams sad_tab_params(
+      views::Widget::InitParams::TYPE_CONTROL);
+
+  // It is not possible to create a native_widget_win that has no parent in
+  // and later re-parent it.
+  // TODO(avi): This is a cheat. Can this be made cleaner?
+  sad_tab_params.parent = web_contents_->GetView()->GetNativeView();
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Crash data indicates we can get here when the parent is no longer valid.
+  // Attempting to create a child window with a bogus parent crashes. So, we
+  // don't show a sad tab in this case in hopes the tab is in the process of
+  // shutting down.
+  if (!IsWindow(sad_tab_params.parent))
+    return;
+#endif
+
+  set_owned_by_client();
+
+  views::Widget* sad_tab = new views::Widget;
+  sad_tab->Init(sad_tab_params);
+  sad_tab->SetContentsView(this);
+
+  views::Widget::ReparentNativeView(sad_tab->GetNativeView(),
+                                    web_contents_->GetView()->GetNativeView());
+  gfx::Rect bounds;
+  web_contents_->GetView()->GetContainerBounds(&bounds);
+  sad_tab->SetBounds(gfx::Rect(bounds.size()));
+}
+
+void SadTabView::Close() {
+  if (GetWidget())
+    GetWidget()->Close();
+}
+
 views::Label* SadTabView::CreateLabel(const string16& text) {
   views::Label* label = new views::Label(text);
   label->SetBackgroundColor(background()->get_color());
@@ -257,3 +295,12 @@ views::Link* SadTabView::CreateLink(const string16& text) {
   link->set_listener(this);
   return link;
 }
+
+namespace chrome {
+
+SadTab* SadTab::Create(content::WebContents* web_contents,
+                       SadTabKind kind) {
+  return new SadTabView(web_contents, kind);
+}
+
+}  // namespace chrome

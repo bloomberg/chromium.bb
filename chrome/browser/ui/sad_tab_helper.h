@@ -17,12 +17,6 @@ namespace chrome {
 class SadTab;
 }
 
-#if defined(TOOLKIT_VIEWS)
-namespace views {
-class Widget;
-}
-#endif
-
 // Per-tab class to manage sad tab views.
 class SadTabHelper : public content::WebContentsObserver,
                      public content::NotificationObserver,
@@ -30,9 +24,7 @@ class SadTabHelper : public content::WebContentsObserver,
  public:
   virtual ~SadTabHelper();
 
-#if defined(TOOLKIT_VIEWS)
-  views::Widget* sad_tab() { return sad_tab_.get(); }
-#endif
+  chrome::SadTab* sad_tab() { return sad_tab_.get(); }
 
  private:
   friend class content::WebContentsUserData<SadTabHelper>;
@@ -52,11 +44,7 @@ class SadTabHelper : public content::WebContentsObserver,
   // Used to get notifications about renderers coming and going.
   content::NotificationRegistrar registrar_;
 
-#if defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::Widget> sad_tab_;
-#elif defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   scoped_ptr<chrome::SadTab> sad_tab_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(SadTabHelper);
 };
