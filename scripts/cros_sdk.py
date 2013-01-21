@@ -271,8 +271,6 @@ If given args those are passed to the chroot environment, and executed."""
   # Some sanity checks first, before we ask for sudo credentials.
   cros_build_lib.AssertOutsideChroot()
 
-  _ReExecuteIfNeeded([sys.argv[0]] + argv)
-
   host = os.uname()[4]
   if host != 'x86_64':
     parser.error(
@@ -282,11 +280,13 @@ If given args those are passed to the chroot environment, and executed."""
   missing = osutils.FindMissingBinaries(NEEDED_TOOLS)
   if missing:
     parser.error((
-        'The tool(s) %s were not found.'
-        'Please install the appropriate package in your host.'
-        'Example(ubuntu):'
+        'The tool(s) %s were not found.\n'
+        'Please install the appropriate package in your host.\n'
+        'Example(ubuntu):\n'
         '  sudo apt-get install <packagename>'
         % (', '.join(missing))))
+
+  _ReExecuteIfNeeded([sys.argv[0]] + argv)
 
   # Expand out the aliases...
   if options.replace:
