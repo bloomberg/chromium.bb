@@ -16,7 +16,7 @@ function FileListBannerController(directoryModel, volumeManager, document) {
   this.driveEnabled_ = false;
 
   var board = str('CHROMEOS_RELEASE_BOARD');
-  if (!board.match(/^x86-(mario|zgb|alex)/i))
+  if (!board.match(/^x86-(mario|zgb|alex)/i) && !board.match(/^stout/i))
     this.checkPromoAvailable_();
   else
     this.newWelcome_ = false;
