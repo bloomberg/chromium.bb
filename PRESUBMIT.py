@@ -700,7 +700,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
         input_api, output_api,
         input_api.PresubmitLocalPath(),
-        whitelist=[r'.+_test\.py$']))
+        whitelist=[r'^PRESUBMIT_test\.py$']))
   return results
 
 
