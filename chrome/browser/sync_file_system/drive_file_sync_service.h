@@ -312,6 +312,7 @@ class DriveFileSyncService
                                   bool is_deleted,
                                   const std::string& resource_id,
                                   int64 changestamp,
+                                  const std::string& remote_file_md5,
                                   RemoteSyncType sync_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
