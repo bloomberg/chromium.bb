@@ -6,7 +6,6 @@
 
 namespace webkit {
 
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 WebTransformOperationsImpl::WebTransformOperationsImpl() {
 }
 
@@ -58,6 +57,5 @@ bool WebTransformOperationsImpl::isIdentity() const {
 
 WebTransformOperationsImpl::~WebTransformOperationsImpl() {
 }
-#endif  // WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 
 }  // namespace webkit

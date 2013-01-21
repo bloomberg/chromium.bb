@@ -22,15 +22,9 @@ namespace {
 TEST(WebTransformAnimationCurveTest, OneTransformKeyframe)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations(new WebTransformOperationsImpl());
     operations->appendTranslate(2, 0, 0);
     curve->add(WebTransformKeyframe(0, operations.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations;
-    operations.appendTranslate(2, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     EXPECT_FLOAT_EQ(2, curve->getValue(-1).m41());
     EXPECT_FLOAT_EQ(2, curve->getValue(0).m41());
@@ -43,21 +37,12 @@ TEST(WebTransformAnimationCurveTest, OneTransformKeyframe)
 TEST(WebTransformAnimationCurveTest, TwoTransformKeyframe)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(2, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(4, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(2, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(4, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
     EXPECT_FLOAT_EQ(2, curve->getValue(-1).m41());
     EXPECT_FLOAT_EQ(2, curve->getValue(0).m41());
     EXPECT_FLOAT_EQ(3, curve->getValue(0.5).m41());
@@ -69,7 +54,6 @@ TEST(WebTransformAnimationCurveTest, TwoTransformKeyframe)
 TEST(WebTransformAnimationCurveTest, ThreeTransformKeyframe)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(2, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
@@ -79,17 +63,6 @@ TEST(WebTransformAnimationCurveTest, ThreeTransformKeyframe)
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(2, operations3.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(2, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(4, 0, 0);
-    WebTransformOperations operations3;
-    operations3.appendTranslate(8, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(2, operations3), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
     EXPECT_FLOAT_EQ(2, curve->getValue(-1).m41());
     EXPECT_FLOAT_EQ(2, curve->getValue(0).m41());
     EXPECT_FLOAT_EQ(3, curve->getValue(0.5).m41());
@@ -104,7 +77,6 @@ TEST(WebTransformAnimationCurveTest, RepeatedTransformKeyTimes)
 {
     // A step function.
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(4, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
@@ -117,20 +89,6 @@ TEST(WebTransformAnimationCurveTest, RepeatedTransformKeyTimes)
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(1, operations3.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(2, operations4.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(4, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(4, 0, 0);
-    WebTransformOperations operations3;
-    operations3.appendTranslate(6, 0, 0);
-    WebTransformOperations operations4;
-    operations4.appendTranslate(6, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(1, operations3), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(2, operations4), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     EXPECT_FLOAT_EQ(4, curve->getValue(-1).m41());
     EXPECT_FLOAT_EQ(4, curve->getValue(0).m41());
@@ -149,7 +107,6 @@ TEST(WebTransformAnimationCurveTest, RepeatedTransformKeyTimes)
 TEST(WebTransformAnimationCurveTest, UnsortedKeyframes)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(2, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
@@ -159,17 +116,6 @@ TEST(WebTransformAnimationCurveTest, UnsortedKeyframes)
     curve->add(WebTransformKeyframe(2, operations3.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(2, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(4, 0, 0);
-    WebTransformOperations operations3;
-    operations3.appendTranslate(8, 0, 0);
-    curve->add(WebTransformKeyframe(2, operations3), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     EXPECT_FLOAT_EQ(2, curve->getValue(-1).m41());
     EXPECT_FLOAT_EQ(2, curve->getValue(0).m41());
@@ -184,21 +130,12 @@ TEST(WebTransformAnimationCurveTest, UnsortedKeyframes)
 TEST(WebTransformAnimationCurveTest, CubicBezierTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), 0.25, 0, 0.75, 1);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), 0.25, 0, 0.75, 1);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
     EXPECT_FLOAT_EQ(0, curve->getValue(0).m41());
     EXPECT_LT(0, curve->getValue(0.25).m41());
     EXPECT_GT(0.25, curve->getValue(0.25).m41());
@@ -212,21 +149,12 @@ TEST(WebTransformAnimationCurveTest, CubicBezierTimingFunction)
 TEST(WebTransformAnimationCurveTest, EaseTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeEase);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEase);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     scoped_ptr<cc::TimingFunction> timingFunction(cc::EaseTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
@@ -239,21 +167,12 @@ TEST(WebTransformAnimationCurveTest, EaseTimingFunction)
 TEST(WebTransformAnimationCurveTest, LinearTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeLinear);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
@@ -265,21 +184,12 @@ TEST(WebTransformAnimationCurveTest, LinearTimingFunction)
 TEST(WebTransformAnimationCurveTest, EaseInTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeEaseIn);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEaseIn);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     scoped_ptr<cc::TimingFunction> timingFunction(cc::EaseInTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
@@ -292,21 +202,12 @@ TEST(WebTransformAnimationCurveTest, EaseInTimingFunction)
 TEST(WebTransformAnimationCurveTest, EaseOutTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeEaseOut);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEaseOut);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     scoped_ptr<cc::TimingFunction> timingFunction(cc::EaseOutTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
@@ -319,21 +220,12 @@ TEST(WebTransformAnimationCurveTest, EaseOutTimingFunction)
 TEST(WebTransformAnimationCurveTest, EaseInOutTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), WebAnimationCurve::TimingFunctionTypeEaseInOut);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEaseInOut);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     scoped_ptr<cc::TimingFunction> timingFunction(cc::EaseInOutTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
@@ -350,21 +242,12 @@ TEST(WebTransformAnimationCurveTest, CustomBezierTimingFunction)
     double y1 = 0.2;
     double x2 = 0.8;
     double y2 = 0.7;
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()), x1, y1, x2, y2);
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1), x1, y1, x2, y2);
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     scoped_ptr<cc::TimingFunction> timingFunction(cc::CubicBezierTimingFunction::create(x1, y1, x2, y2));
     for (int i = 0; i <= 4; ++i) {
@@ -377,21 +260,12 @@ TEST(WebTransformAnimationCurveTest, CustomBezierTimingFunction)
 TEST(WebTransformAnimationCurveTest, DefaultTimingFunction)
 {
     scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     scoped_ptr<WebTransformOperations> operations1(new WebTransformOperationsImpl());
     operations1->appendTranslate(0, 0, 0);
     scoped_ptr<WebTransformOperations> operations2(new WebTransformOperationsImpl());
     operations2->appendTranslate(1, 0, 0);
     curve->add(WebTransformKeyframe(0, operations1.release()));
     curve->add(WebTransformKeyframe(1, operations2.release()), WebAnimationCurve::TimingFunctionTypeLinear);
-#else
-    WebTransformOperations operations1;
-    operations1.appendTranslate(0, 0, 0);
-    WebTransformOperations operations2;
-    operations2.appendTranslate(1, 0, 0);
-    curve->add(WebTransformKeyframe(0, operations1));
-    curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
-#endif
 
     scoped_ptr<cc::TimingFunction> timingFunction(cc::EaseTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {

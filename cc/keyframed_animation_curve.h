@@ -10,7 +10,6 @@
 #include "cc/scoped_ptr_vector.h"
 #include "cc/timing_function.h"
 #include "cc/transform_operations.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 
 namespace cc {
 
@@ -45,7 +44,6 @@ private:
     float m_value;
 };
 
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 class CC_EXPORT TransformKeyframe : public Keyframe {
 public:
     static scoped_ptr<TransformKeyframe> create(double time, const TransformOperations& value, scoped_ptr<TimingFunction>);
@@ -60,22 +58,6 @@ private:
 
     TransformOperations m_value;
 };
-#else
-class CC_EXPORT TransformKeyframe : public Keyframe {
-public:
-    static scoped_ptr<TransformKeyframe> create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction>);
-    virtual ~TransformKeyframe();
-
-    const WebKit::WebTransformOperations& value() const;
-
-    scoped_ptr<TransformKeyframe> clone() const;
-
-private:
-    TransformKeyframe(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction>);
-
-    WebKit::WebTransformOperations m_value;
-};
-#endif // WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 
 class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
 public:

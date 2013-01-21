@@ -33,24 +33,16 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe)
 
 void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe, TimingFunctionType type)
 {
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     const cc::TransformOperations& transformOperations =
         static_cast<const webkit::WebTransformOperationsImpl&>(keyframe.value()).AsTransformOperations();
     m_curve->addKeyframe(cc::TransformKeyframe::create(keyframe.time(), transformOperations, createTimingFunction(type)));
-#else
-    m_curve->addKeyframe(cc::TransformKeyframe::create(keyframe.time, keyframe.value, createTimingFunction(type)));
-#endif
 }
 
 void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe, double x1, double y1, double x2, double y2)
 {
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
     const cc::TransformOperations& transformOperations =
         static_cast<const webkit::WebTransformOperationsImpl&>(keyframe.value()).AsTransformOperations();
     m_curve->addKeyframe(cc::TransformKeyframe::create(keyframe.time(), transformOperations, cc::CubicBezierTimingFunction::create(x1, y1, x2, y2).PassAs<cc::TimingFunction>()));
-#else
-    m_curve->addKeyframe(cc::TransformKeyframe::create(keyframe.time, keyframe.value, cc::CubicBezierTimingFunction::create(x1, y1, x2, y2).PassAs<cc::TimingFunction>()));
-#endif
 }
 
 WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(double time) const

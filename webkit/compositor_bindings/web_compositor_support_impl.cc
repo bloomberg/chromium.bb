@@ -167,10 +167,8 @@ WebTransformAnimationCurve*
   return new WebKit::WebTransformAnimationCurveImpl();
 }
 
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 WebTransformOperations* WebCompositorSupportImpl::createTransformOperations() {
   return new WebTransformOperationsImpl();
 }
-#endif
 
 }  // namespace webkit

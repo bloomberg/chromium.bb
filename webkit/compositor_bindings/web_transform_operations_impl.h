@@ -12,7 +12,6 @@
 
 namespace webkit {
 
-#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformOperationsImpl();
@@ -38,7 +37,6 @@ class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
 
   cc::TransformOperations transform_operations_;
 };
-#endif  // WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
 
 }  // namespace webkit
 
