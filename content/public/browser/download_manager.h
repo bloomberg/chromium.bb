@@ -166,6 +166,9 @@ class CONTENT_EXPORT DownloadManager
   // it is or state it's in.
   virtual DownloadItem* GetDownload(int id) = 0;
 
+  // Prohibits OpenDownload() from actually opening downloads for testing.
+  virtual void MockDownloadOpenForTesting() = 0;
+
  protected:
   virtual ~DownloadManager() {}
 

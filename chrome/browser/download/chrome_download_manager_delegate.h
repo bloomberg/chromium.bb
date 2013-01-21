@@ -86,6 +86,8 @@ class ChromeDownloadManagerDelegate
       const FilePath::StringType& default_extension,
       bool can_save_as_complete,
       const content::SavePackagePathPickedCallback& callback) OVERRIDE;
+  virtual void OpenDownload(content::DownloadItem* download) OVERRIDE;
+  virtual void ShowDownloadInShell(content::DownloadItem* download) OVERRIDE;
 
   // Clears the last directory chosen by the user in response to a file chooser
   // prompt. Called when clearing recent history.

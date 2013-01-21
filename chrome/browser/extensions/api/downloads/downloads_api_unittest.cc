@@ -813,30 +813,6 @@ const char HTML5FileWriter::kHTML5FileWritten[] = "html5_file_written";
 const char HTML5FileWriter::kURLRequestContextToreDown[] =
   "url_request_context_tore_down";
 
-// While an object of this class exists, it will mock out download
-// opening for all downloads created on the specified download manager.
-class MockDownloadOpeningObserver : public DownloadManager::Observer {
- public:
-  explicit MockDownloadOpeningObserver(DownloadManager* manager)
-      : download_manager_(manager) {
-    download_manager_->AddObserver(this);
-  }
-
-  ~MockDownloadOpeningObserver() {
-    download_manager_->RemoveObserver(this);
-  }
-
-  virtual void OnDownloadCreated(
-      DownloadManager* manager, DownloadItem* item) OVERRIDE {
-    item->MockDownloadOpenForTesting();
-  }
-
- private:
-  DownloadManager* download_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
-};
-
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
@@ -846,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                    new DownloadsOpenFunction(),
                    "[-42]").c_str());
 
-  MockDownloadOpeningObserver mock_open_observer(GetCurrentManager());
+  GetCurrentManager()->MockDownloadOpenForTesting();
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
   EXPECT_FALSE(download_item->GetOpened());

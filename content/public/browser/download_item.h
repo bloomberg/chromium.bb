@@ -318,7 +318,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Debug/testing -------------------------------------------------------------
   virtual std::string DebugString(bool verbose) const = 0;
-  virtual void MockDownloadOpenForTesting() = 0;
 };
 
 }  // namespace content

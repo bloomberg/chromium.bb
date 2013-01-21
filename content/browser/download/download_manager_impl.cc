@@ -223,7 +223,8 @@ DownloadManagerImpl::DownloadManagerImpl(
       shutdown_needed_(false),
       browser_context_(NULL),
       delegate_(NULL),
-      net_log_(net_log) {
+      net_log_(net_log),
+      open_enabled_(true) {
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -659,7 +660,11 @@ void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
   }
 }
 
-void DownloadManagerImpl::DownloadOpened(DownloadItemImpl* download) {
+void DownloadManagerImpl::MockDownloadOpenForTesting() {
+  open_enabled_ = false;
+}
+
+void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   int num_unopened = 0;
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
@@ -669,6 +674,14 @@ void DownloadManagerImpl::DownloadOpened(DownloadItemImpl* download) {
       ++num_unopened;
   }
   RecordOpensOutstanding(num_unopened);
+
+  if (delegate_ && open_enabled_)  // Some tests disable OpenDownload().
+    delegate_->OpenDownload(download);
+}
+
+void DownloadManagerImpl::ShowDownloadInShell(DownloadItemImpl* download) {
+  if (delegate_)
+    delegate_->ShowDownloadInShell(download);
 }
 
 }  // namespace content

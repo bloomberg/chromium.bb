@@ -1193,14 +1193,6 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
 }
 
-void ChromeContentBrowserClient::OpenItem(const FilePath& path) {
-  platform_util::OpenItem(path);
-}
-
-void ChromeContentBrowserClient::ShowItemInFolder(const FilePath& path) {
-  platform_util::ShowItemInFolder(path);
-}
-
 void ChromeContentBrowserClient::AllowCertificateError(
     int render_process_id,
     int render_view_id,

@@ -152,7 +152,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void SetOpened(bool opened) OVERRIDE;
   virtual void SetDisplayName(const FilePath& name) OVERRIDE;
   virtual std::string DebugString(bool verbose) const OVERRIDE;
-  virtual void MockDownloadOpenForTesting() OVERRIDE;
 
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
@@ -465,9 +464,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // when the user closes the shelf before the item has been opened but should
   // be treated as though the user opened it.
   bool opened_;
-
-  // Do we actually open downloads when requested?  For testing purposes only.
-  bool open_enabled_;
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_;

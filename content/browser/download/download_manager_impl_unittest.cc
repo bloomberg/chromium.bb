@@ -164,7 +164,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());
   MOCK_METHOD1(SetDisplayName, void(const FilePath&));
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, FilePath());
-  MOCK_METHOD0(MockDownloadOpenForTesting, void());
   // May be called when vlog is on.
   virtual std::string DebugString(bool verbose) const OVERRIDE { return ""; }
 };

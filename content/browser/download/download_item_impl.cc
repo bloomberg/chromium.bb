@@ -149,7 +149,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       is_temporary_(false),
       all_data_saved_(false),
       opened_(opened),
-      open_enabled_(true),
       delegate_delayed_complete_(false),
       bound_net_log_(bound_net_log),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -198,7 +197,6 @@ DownloadItemImpl::DownloadItemImpl(
       is_temporary_(!info.save_info->file_path.empty()),
       all_data_saved_(false),
       opened_(false),
-      open_enabled_(true),
       delegate_delayed_complete_(false),
       bound_net_log_(bound_net_log),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -251,7 +249,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false),
-      open_enabled_(true),
       delegate_delayed_complete_(false),
       bound_net_log_(bound_net_log),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -437,20 +434,13 @@ void DownloadItemImpl::OpenDownload() {
   RecordOpen(GetEndTime(), !GetOpened());
   opened_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
-  delegate_->DownloadOpened(this);
-
-  // For testing: If download opening is disabled on this item,
-  // make the rest of the routine a no-op.
-  if (!open_enabled_)
-    return;
-
-  GetContentClient()->browser()->OpenItem(GetFullPath());
+  delegate_->OpenDownload(this);
 }
 
 void DownloadItemImpl::ShowDownloadInShell() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetContentClient()->browser()->ShowItemInFolder(GetFullPath());
+  delegate_->ShowDownloadInShell(this);
 }
 
 int32 DownloadItemImpl::GetId() const {
@@ -795,10 +785,6 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
   description += " }";
 
   return description;
-}
-
-void DownloadItemImpl::MockDownloadOpenForTesting() {
-  open_enabled_ = false;
 }
 
 DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {

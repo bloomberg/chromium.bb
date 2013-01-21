@@ -33,6 +33,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -521,6 +522,15 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
   new SavePackageFilePicker(web_contents, suggested_path, default_extension,
       can_save_as_complete, download_prefs_.get(), callback);
 #endif
+}
+
+void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
+  platform_util::OpenItem(download->GetFullPath());
+}
+
+void ChromeDownloadManagerDelegate::ShowDownloadInShell(
+    DownloadItem* download) {
+  platform_util::ShowItemInFolder(download->GetFullPath());
 }
 
 void ChromeDownloadManagerDelegate::ClearLastDownloadPath() {

@@ -196,14 +196,6 @@ AwContentBrowserClient::CreateQuotaPermissionContext() {
   return new AwQuotaPermissionContext;
 }
 
-void AwContentBrowserClient::OpenItem(const FilePath& path) {
-  NOTREACHED() << "Android WebView does not use chromium downloads";
-}
-
-void AwContentBrowserClient::ShowItemInFolder(const FilePath& path) {
-  NOTREACHED() << "Android WebView does not use chromium downloads";
-}
-
 void AwContentBrowserClient::AllowCertificateError(
     int render_process_id,
     int render_view_id,

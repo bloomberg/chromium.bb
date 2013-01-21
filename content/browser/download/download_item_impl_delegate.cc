@@ -65,7 +65,10 @@ BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
 
 void DownloadItemImplDelegate::UpdatePersistence(DownloadItemImpl* download) {}
 
-void DownloadItemImplDelegate::DownloadOpened(DownloadItemImpl* download) {}
+void DownloadItemImplDelegate::OpenDownload(DownloadItemImpl* download) {}
+
+void DownloadItemImplDelegate::ShowDownloadInShell(DownloadItemImpl* download) {
+}
 
 void DownloadItemImplDelegate::DownloadRemoved(DownloadItemImpl* download) {}
 

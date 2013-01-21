@@ -126,8 +126,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual content::QuotaPermissionContext*
       CreateQuotaPermissionContext() OVERRIDE;
-  virtual void OpenItem(const FilePath& path) OVERRIDE;
-  virtual void ShowItemInFolder(const FilePath& path) OVERRIDE;
   virtual void AllowCertificateError(
       int render_process_id,
       int render_view_id,

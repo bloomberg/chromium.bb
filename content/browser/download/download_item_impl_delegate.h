@@ -77,9 +77,14 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // Update the persistent store with our information.
   virtual void UpdatePersistence(DownloadItemImpl* download);
 
+  // Opens the file associated with this download.
+  virtual void OpenDownload(DownloadItemImpl* download);
+
+  // Shows the download via the OS shell.
+  virtual void ShowDownloadInShell(DownloadItemImpl* download);
+
   // Handle any delegate portions of a state change operation on the
   // DownloadItem.
-  virtual void DownloadOpened(DownloadItemImpl* download);
   virtual void DownloadRemoved(DownloadItemImpl* download);
 
   // Show the download in the browser.
