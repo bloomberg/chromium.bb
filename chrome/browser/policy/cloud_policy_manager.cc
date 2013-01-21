@@ -57,7 +57,10 @@ void CloudPolicyManager::OnStoreLoaded(CloudPolicyStore* cloud_policy_store) {
 
 void CloudPolicyManager::OnStoreError(CloudPolicyStore* cloud_policy_store) {
   DCHECK_EQ(store(), cloud_policy_store);
-  // No action required, the old policy is still valid.
+  // Publish policy (even though it hasn't changed) in order to signal load
+  // complete on the ConfigurationPolicyProvider interface. Technically, this
+  // is only required on the first load, but doesn't hurt in any case.
+  CheckAndPublishPolicy();
 }
 
 void CloudPolicyManager::CheckAndPublishPolicy() {

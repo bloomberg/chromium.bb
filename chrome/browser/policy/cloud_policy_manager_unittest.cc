@@ -318,5 +318,15 @@ TEST_F(CloudPolicyManagerTest, RefreshSuccessful) {
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
+TEST_F(CloudPolicyManagerTest, SignalOnError) {
+  // Simulate a failed load and verify that it triggers OnUpdatePolicy().
+  store_.policy_.reset(new em::PolicyData(policy_.policy_data()));
+  EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
+  store_.NotifyStoreError();
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  EXPECT_TRUE(manager_->IsInitializationComplete());
+}
+
 }  // namespace
 }  // namespace policy
