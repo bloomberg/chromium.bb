@@ -7,17 +7,14 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <propkey.h>
-#include <propvarutil.h>
 
 #include "base/file_path.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// propsys.lib is required for PropvariantTo*().
-#pragma comment(lib, "propsys.lib")
 
 namespace base {
 namespace win {
@@ -120,34 +117,42 @@ void ValidateShortcut(const FilePath& shortcut_path,
 
   if (GetVersion() >= VERSION_WIN7) {
     ScopedComPtr<IPropertyStore> property_store;
-    // Note that, as mentioned on MSDN at http://goo.gl/M8h9g, if a property is
-    // not set, GetValue will return S_OK and the PROPVARIANT will be set to
-    // VT_EMPTY.
-    PROPVARIANT pv_app_id, pv_dual_mode;
     EXPECT_TRUE(SUCCEEDED(hr = property_store.QueryFrom(i_shell_link)));
     if (FAILED(hr))
       return;
-    EXPECT_EQ(S_OK, property_store->GetValue(PKEY_AppUserModel_ID, &pv_app_id));
-    EXPECT_EQ(S_OK, property_store->GetValue(PKEY_AppUserModel_IsDualMode,
-                                             &pv_dual_mode));
 
-    // Note, as mentioned on MSDN at
-    // http://msdn.microsoft.com/library/windows/desktop/bb776559.aspx, if
-    // |pv_app_id| is a VT_EMPTY it is successfully converted to the empty
-    // string as desired.
-    wchar_t read_app_id[MAX_PATH] = {0};
-    PropVariantToString(pv_app_id, read_app_id, MAX_PATH);
-    if (properties.options & ShortcutProperties::PROPERTIES_APP_ID)
-      EXPECT_EQ(properties.app_id, read_app_id);
+    if (properties.options & ShortcutProperties::PROPERTIES_APP_ID) {
+      ScopedPropVariant pv_app_id;
+      EXPECT_EQ(S_OK, property_store->GetValue(PKEY_AppUserModel_ID,
+                                               pv_app_id.Receive()));
+      switch (pv_app_id.get().vt) {
+        case VT_EMPTY:
+          EXPECT_TRUE(properties.app_id.empty());
+          break;
+        case VT_LPWSTR:
+          EXPECT_EQ(properties.app_id, pv_app_id.get().pwszVal);
+          break;
+        default:
+          ADD_FAILURE() << "Unexpected variant type: " << pv_app_id.get().vt;
+      }
+    }
 
-    // Note, as mentioned on MSDN at
-    // http://msdn.microsoft.com/library/windows/desktop/bb776531.aspx, if
-    // |pv_dual_mode| is a VT_EMPTY it is successfully converted to false as
-    // desired.
-    BOOL read_dual_mode;
-    PropVariantToBoolean(pv_dual_mode, &read_dual_mode);
-    if (properties.options & ShortcutProperties::PROPERTIES_DUAL_MODE)
-      EXPECT_EQ(properties.dual_mode, static_cast<bool>(read_dual_mode));
+    if (properties.options & ShortcutProperties::PROPERTIES_DUAL_MODE) {
+      ScopedPropVariant pv_dual_mode;
+      EXPECT_EQ(S_OK, property_store->GetValue(PKEY_AppUserModel_IsDualMode,
+                                               pv_dual_mode.Receive()));
+      switch (pv_dual_mode.get().vt) {
+        case VT_EMPTY:
+          EXPECT_FALSE(properties.dual_mode);
+          break;
+        case VT_BOOL:
+          EXPECT_EQ(properties.dual_mode,
+                    static_cast<bool>(pv_dual_mode.get().boolVal));
+          break;
+        default:
+          ADD_FAILURE() << "Unexpected variant type: " << pv_dual_mode.get().vt;
+      }
+    }
   }
 }
 

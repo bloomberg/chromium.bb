@@ -807,17 +807,6 @@
             'test/test_file_util_linux.cc',
           ],
         }],
-        ['OS=="win"', {
-          'direct_dependent_settings': {
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'DelayLoadDLLs': [
-                  'propsys.dll',
-                ],
-              },
-            },
-          },
-        }],
       ],
       'sources': [
         'perftimer.cc',

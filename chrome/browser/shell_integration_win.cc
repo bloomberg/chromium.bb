@@ -7,9 +7,6 @@
 #include <windows.h>
 #include <shobjidl.h>
 #include <propkey.h>
-#include <propvarutil.h>
-#include <tchar.h>
-#include <strsafe.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -22,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -38,9 +36,6 @@
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "content/public/browser/browser_thread.h"
-
-// propsys.lib is required for PropvariantTo*().
-#pragma comment(lib, "propsys.lib")
 
 using content::BrowserThread;
 
@@ -385,7 +380,7 @@ int ShellIntegration::MigrateShortcutsInPathInternal(const FilePath& chrome_exe,
   int shortcuts_migrated = 0;
   FilePath target_path;
   string16 arguments;
-  string16 existing_app_id;
+  base::win::ScopedPropVariant propvariant;
   for (FilePath shortcut = shortcuts_enum.Next(); !shortcut.empty();
        shortcut = shortcuts_enum.Next()) {
     // TODO(gab): Use ProgramCompare instead of comparing FilePaths below once
@@ -420,57 +415,52 @@ int ShellIntegration::MigrateShortcutsInPathInternal(const FilePath& chrome_exe,
 
     // Validate the existing app id for the shortcut.
     base::win::ScopedComPtr<IPropertyStore> property_store;
-    PROPVARIANT pv_app_id;
-    PropVariantInit(&pv_app_id);
+    propvariant.Reset();
     if (FAILED(property_store.QueryFrom(shell_link)) ||
-        property_store->GetValue(PKEY_AppUserModel_ID, &pv_app_id) != S_OK) {
+        property_store->GetValue(PKEY_AppUserModel_ID,
+                                 propvariant.Receive()) != S_OK) {
       // When in doubt, prefer not updating the shortcut.
       NOTREACHED();
       continue;
-    } else if (pv_app_id.vt == VT_EMPTY) {
-      // If there is no app_id set, set our app_id if one is expected.
-      if (!expected_app_id.empty())
-        updated_properties.set_app_id(expected_app_id);
     } else {
-      // Validate that the existing app_id is the expected app_id; if not, set
-      // the expected app_id on the shortcut.
-      size_t expected_size = expected_app_id.size() + 1;
-      HRESULT result = PropVariantToString(
-          pv_app_id, WriteInto(&existing_app_id, expected_size), expected_size);
-      PropVariantClear(&pv_app_id);
-      if (result != S_OK && result != STRSAFE_E_INSUFFICIENT_BUFFER) {
-        // Accept the STRSAFE_E_INSUFFICIENT_BUFFER error state as it means the
-        // existing appid is longer than |expected_app_id| and thus we will
-        // simply assume inequality.
-        NOTREACHED();
-        continue;
-      } else if (result == STRSAFE_E_INSUFFICIENT_BUFFER ||
-                 expected_app_id != existing_app_id) {
-        updated_properties.set_app_id(expected_app_id);
+      switch (propvariant.get().vt) {
+        case VT_EMPTY:
+          // If there is no app_id set, set our app_id if one is expected.
+          if (!expected_app_id.empty())
+            updated_properties.set_app_id(expected_app_id);
+          break;
+        case VT_LPWSTR:
+          if (expected_app_id != string16(propvariant.get().pwszVal))
+            updated_properties.set_app_id(expected_app_id);
+          break;
+        default:
+          NOTREACHED();
+          continue;
       }
     }
 
     if (check_dual_mode) {
-      BOOL existing_dual_mode;
-      PROPVARIANT pv_dual_mode;
-      PropVariantInit(&pv_dual_mode);
+      propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
-                                   &pv_dual_mode) != S_OK) {
+                                   propvariant.Receive()) != S_OK) {
         // When in doubt, prefer to not update the shortcut.
         NOTREACHED();
         continue;
-      } else if (pv_dual_mode.vt == VT_EMPTY) {
-        // If dual_mode is not set at all, make sure it gets set to true.
-        updated_properties.set_dual_mode(true);
       } else {
-        // If it is set to false, make sure it gets set to true as well.
-        if (PropVariantToBoolean(pv_dual_mode, &existing_dual_mode) != S_OK) {
-          NOTREACHED();
-          continue;
+        switch (propvariant.get().vt) {
+          case VT_EMPTY:
+            // If dual_mode is not set at all, make sure it gets set to true.
+            updated_properties.set_dual_mode(true);
+            break;
+          case VT_BOOL:
+            // If it is set to false, make sure it gets set to true as well.
+            if (!propvariant.get().boolVal)
+              updated_properties.set_dual_mode(true);
+            break;
+          default:
+            NOTREACHED();
+            continue;
         }
-        PropVariantClear(&pv_dual_mode);
-        if (!existing_dual_mode)
-          updated_properties.set_dual_mode(true);
       }
     }
 
