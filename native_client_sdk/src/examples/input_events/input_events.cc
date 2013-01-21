@@ -22,6 +22,10 @@
 #include "custom_events.h"
 #include "shared_queue.h"
 
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 namespace event_queue {
 const char* const kDidChangeView = "DidChangeView";
 const char* const kHandleInputEvent = "DidHandleInputEvent";
@@ -89,7 +93,8 @@ class EventInstance : public pp::Instance {
 
   // Create the 'worker thread'.
   bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    pthread_create(&event_thread_, NULL, ProcessEventOnWorkerThread, this);
+    event_thread_ = new pthread_t;
+    pthread_create(event_thread_, NULL, ProcessEventOnWorkerThread, this);
     return true;
   }
 
@@ -319,11 +324,12 @@ class EventInstance : public pp::Instance {
     void CancelQueueAndWaitForWorker() {
       if (event_thread_) {
         event_queue_.CancelQueue();
-        pthread_join(event_thread_, NULL);
+        pthread_join(*event_thread_, NULL);
+        delete event_thread_;
         event_thread_ = NULL;
       }
     }
-    pthread_t event_thread_;
+    pthread_t* event_thread_;
     LockingQueue<Event*> event_queue_;
     pp::CompletionCallbackFactory<EventInstance> callback_factory_;
 };
