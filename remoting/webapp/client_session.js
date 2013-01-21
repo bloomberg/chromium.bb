@@ -524,7 +524,6 @@ remoting.ClientSession.prototype.hasReceivedFrame = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendIq_ = function(msg) {
-  console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(msg));
   // Extract the session id, so we can close the session later.
   var parser = new DOMParser();
   var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
@@ -535,6 +534,19 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
       this.sessionId = jingleNode.getAttribute('sid');
     }
   }
+
+  // HACK: Add 'x' prefix to the IDs of the outgoing messages to make sure that
+  // stanza IDs used by host and client do not match. This is necessary to
+  // workaround bug in the signaling endpoint used by chromoting.
+  // TODO(sergeyu): Remove this hack once the server-side bug is fixed.
+  var type = iqNode.getAttribute('type');
+  if (type == 'set') {
+    var id = iqNode.getAttribute('id');
+    iqNode.setAttribute('id', 'x' + id);
+    msg = (new XMLSerializer()).serializeToString(iqNode);
+  }
+
+  console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(msg));
 
   // Send the stanza.
   if (remoting.wcs) {
@@ -561,6 +573,20 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
   var forwardIq = plugin.onIncomingIq.bind(plugin);
   /** @param {string} stanza The IQ stanza received. */
   var onIncomingIq = function(stanza) {
+    // HACK: Remove 'x' prefix added to the id in sendIq_().
+    try {
+      var parser = new DOMParser();
+      var iqNode = parser.parseFromString(stanza, 'text/xml').firstChild;
+      var type = iqNode.getAttribute('type');
+      var id = iqNode.getAttribute('id');
+      if (type != 'set' && id.charAt(0) == 'x') {
+        iqNode.setAttribute('id', id.substr(1));
+        stanza = (new XMLSerializer()).serializeToString(iqNode);
+      }
+    } catch (err) {
+      // Pass message as is when it is malformed.
+    }
+
     console.log(remoting.timestamp(),
                 remoting.formatIq.prettifyReceiveIq(stanza));
     forwardIq(stanza);
