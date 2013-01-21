@@ -843,8 +843,6 @@ void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
       InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
       has_temporary_text_ = false;
       is_temporary_text_set_by_instant_ = false;
-      if (KeywordIsSelected())
-        AcceptKeyword();
     }
     if ((old_state != DOWN_WITH_CHANGE) && popup_->IsOpen()) {
       // Autocomplete history provider results may change, so refresh the
