@@ -378,12 +378,6 @@ TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 // UDPSocketPrivate tests.
 // UDPSocketPrivate_Broadcast is disabled for OSX because it requires
 // root permissions on OSX 10.7+.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
-#if !defined(OS_MACOSX)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivate_Broadcast)
-#endif  // !defined(OS_MACOSX)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
 #if !defined(OS_MACOSX)

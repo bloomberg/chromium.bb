@@ -101,7 +101,6 @@ class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
 class PPB_ImageData_Impl;
 class PPB_TCPSocket_Private_Impl;
-class PPB_UDPSocket_Private_Impl;
 
 // Virtual interface that the browser implements to implement features for
 // PPAPI plugins.
@@ -547,21 +546,6 @@ class PluginDelegate {
   virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id) = 0;
-
-  // For PPB_UDPSocket_Private.
-  virtual uint32 UDPSocketCreate() = 0;
-  virtual void UDPSocketSetBoolSocketFeature(PPB_UDPSocket_Private_Impl* socket,
-                                             uint32 socket_id,
-                                             int32_t name,
-                                             bool value) = 0;
-  virtual void UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
-                             uint32 socket_id,
-                             const PP_NetAddress_Private& addr) = 0;
-  virtual void UDPSocketRecvFrom(uint32 socket_id, int32_t num_bytes) = 0;
-  virtual void UDPSocketSendTo(uint32 socket_id,
-                               const std::string& buffer,
-                               const PP_NetAddress_Private& addr) = 0;
-  virtual void UDPSocketClose(uint32 socket_id) = 0;
 
   // For PPB_TCPServerSocket_Private.
   virtual void TCPServerSocketListen(PP_Resource socket_resource,

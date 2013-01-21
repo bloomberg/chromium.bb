@@ -16,6 +16,7 @@
 #include "base/process.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/process_type.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/ssl_config_service.h"
@@ -23,7 +24,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_flash.h"
-#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -49,7 +49,6 @@ namespace content {
 class BrowserContext;
 class PepperTCPServerSocket;
 class PepperTCPSocket;
-class PepperUDPSocket;
 class ResourceContext;
 
 // This class is used in two contexts, both supporting PPAPI plugins. The first
@@ -61,23 +60,21 @@ class PepperMessageFilter
     : public BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  enum ProcessType { PLUGIN, RENDERER, NACL };
-
   // Constructor when used in the context of a render process (the argument is
-  // provided for sanity checking and must be RENDERER).
-  PepperMessageFilter(ProcessType type,
+  // provided for sanity checking and must be PROCESS_TYPE_RENDERER).
+  PepperMessageFilter(ProcessType process_type,
                       int process_id,
                       BrowserContext* browser_context);
 
   // Constructor when used in the context of a PPAPI process (the argument is
-  // provided for sanity checking and must be PLUGIN).
-  PepperMessageFilter(ProcessType type,
+  // provided for sanity checking and must be PROCESS_TYPE_PPAPI_PLUGIN).
+  PepperMessageFilter(ProcessType process_type,
                       const ppapi::PpapiPermissions& permissions,
                       net::HostResolver* host_resolver);
 
   // Constructor when used in the context of a NaCl process (the argument is
-  // provided for sanity checking and must be NACL).
-  PepperMessageFilter(ProcessType type,
+  // provided for sanity checking and must be PROCESS_TYPE_NACL_LOADER).
+  PepperMessageFilter(ProcessType process_type,
                       const ppapi::PpapiPermissions& permissions,
                       net::HostResolver* host_resolver,
                       int process_id,
@@ -127,7 +124,6 @@ class PepperMessageFilter
 
   // Containers for sockets keyed by socked_id.
   typedef std::map<uint32, linked_ptr<PepperTCPSocket> > TCPSocketMap;
-  typedef std::map<uint32, linked_ptr<PepperUDPSocket> > UDPSocketMap;
   typedef std::map<uint32,
                    linked_ptr<PepperTCPServerSocket> > TCPServerSocketMap;
 
@@ -156,24 +152,6 @@ class PepperMessageFilter
   void OnTCPRead(uint32 socket_id, int32_t bytes_to_read);
   void OnTCPWrite(uint32 socket_id, const std::string& data);
   void OnTCPDisconnect(uint32 socket_id);
-
-  void OnUDPCreate(int32 routing_id,
-                   uint32 plugin_dispatcher_id,
-                   uint32* socket_id);
-  void OnUDPSetBoolSocketFeature(int32 routing_id,
-                                 uint32 socket_id,
-                                 int32_t name,
-                                 bool value);
-  void OnUDPBind(int32 routing_id,
-                 uint32 socket_id,
-                 const PP_NetAddress_Private& addr);
-  void OnUDPRecvFrom(uint32 socket_id, int32_t num_bytes);
-  void OnUDPSendTo(int32 routing_id,
-                   uint32 socket_id,
-                   const std::string& data,
-                   const PP_NetAddress_Private& addr);
-  void OnUDPClose(uint32 socket_id);
-
   void OnTCPServerListen(int32 routing_id,
                          uint32 plugin_dispatcher_id,
                          PP_Resource socket_resource,
@@ -208,15 +186,6 @@ class PepperMessageFilter
                                   int32 routing_id,
                                   uint32 socket_id,
                                   const PP_NetAddress_Private& net_addr);
-  void DoUDPBind(bool allowed,
-                 int32 routing_id,
-                 uint32 socket_id,
-                 const PP_NetAddress_Private& addr);
-  void DoUDPSendTo(bool allowed,
-                   int32 routing_id,
-                   uint32 socket_id,
-                   const std::string& data,
-                   const PP_NetAddress_Private& addr);
   void DoTCPServerListen(bool allowed,
                          int32 routing_id,
                          uint32 plugin_dispatcher_id,
@@ -239,10 +208,6 @@ class PepperMessageFilter
   // Return true if render with given ID can use socket APIs.
   bool CanUseSocketAPIs(int32 render_id,
       const content::SocketPermissionRequest& params);
-
-  content::SocketPermissionRequest CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::OperationType type,
-      const PP_NetAddress_Private& net_addr);
 
   void GetAndSendNetworkList();
   void DoGetNetworkList();
@@ -280,7 +245,6 @@ class PepperMessageFilter
   uint32 next_socket_id_;
 
   TCPSocketMap tcp_sockets_;
-  UDPSocketMap udp_sockets_;
   TCPServerSocketMap tcp_server_sockets_;
 
   NetworkMonitorIdSet network_monitor_ids_;

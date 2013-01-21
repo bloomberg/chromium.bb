@@ -24,7 +24,6 @@
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_x509_certificate_private_impl.h"
@@ -234,10 +233,6 @@ PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
 
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {
   return PPB_TCPSocket_Private_Impl::CreateResource(instance);
-}
-
-PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {
-  return PPB_UDPSocket_Private_Impl::CreateResource(instance);
 }
 
 PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {

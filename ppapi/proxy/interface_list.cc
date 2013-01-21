@@ -94,7 +94,6 @@
 #include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_testing_proxy.h"
-#include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"

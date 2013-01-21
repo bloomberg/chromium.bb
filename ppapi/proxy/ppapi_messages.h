@@ -666,24 +666,6 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_WriteACK,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
 
-// PPB_UDPSocket_Private.
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_BindACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    PP_NetAddress_Private /* bound_addr */)
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBUDPSocket_RecvFromACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    std::string /* data */,
-                    PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_SendToACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    int32_t /* bytes_written */)
-
 // PPB_URLLoader_Trusted
 IPC_MESSAGE_ROUTED1(
     PpapiMsg_PPBURLLoader_UpdateProgress,
@@ -1226,30 +1208,29 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Write,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPSocket_Disconnect,
                      uint32 /* socket_id */)
 
-// PPB_UDPSocket_Private.
-IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBUDPSocket_Create,
-                            int32 /* routing_id */,
-                            uint32 /* plugin_dispatcher_id */,
-                            uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL4(PpapiHostMsg_PPBUDPSocket_SetBoolSocketFeature,
-                     int32 /* routing_id */,
-                     uint32 /* socket_id */,
+// UDPSocketPrivate.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Create)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature,
                      int32_t /* name */,
                      bool /* value */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_Bind,
-                     int32 /* routing_id */,
-                     uint32 /* socket_id */,
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocketPrivate_Bind,
                      PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBUDPSocket_RecvFrom,
-                     uint32 /* socket_id */,
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocketPrivate_RecvFrom,
                      int32_t /* num_bytes */)
-IPC_MESSAGE_CONTROL4(PpapiHostMsg_PPBUDPSocket_SendTo,
-                     int32 /* routing_id */,
-                     uint32 /* socket_id */,
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SendTo,
                      std::string /* data */,
                      PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBUDPSocket_Close,
-                     uint32 /* socket_id */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Close)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocketPrivate_BindReply,
+                     bool /* succeeded */,
+                     PP_NetAddress_Private /* bound_addr */)
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_UDPSocketPrivate_RecvFromReply,
+                     bool /* succeeded */,
+                     std::string /* data */,
+                     PP_NetAddress_Private /* remote_addr */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocketPrivate_SendToReply,
+                     bool /* succeeded */,
+                     int32_t /* bytes_written */)
 
 // PPB_TCPServerSocket_Private.
 IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPServerSocket_Listen,

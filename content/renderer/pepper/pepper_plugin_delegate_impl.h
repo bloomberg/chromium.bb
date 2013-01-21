@@ -23,7 +23,6 @@
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
-#include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -270,22 +269,6 @@ class PepperPluginDelegateImpl
   virtual void RegisterTCPSocket(
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id) OVERRIDE;
-  virtual uint32 UDPSocketCreate() OVERRIDE;
-  virtual void UDPSocketSetBoolSocketFeature(
-      webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
-      uint32 socket_id,
-      int32_t name,
-      bool value) OVERRIDE;
-  virtual void UDPSocketBind(
-      webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
-      uint32 socket_id,
-      const PP_NetAddress_Private& addr) OVERRIDE;
-  virtual void UDPSocketRecvFrom(uint32 socket_id,
-                                 int32_t num_bytes) OVERRIDE;
-  virtual void UDPSocketSendTo(uint32 socket_id,
-                               const std::string& buffer,
-                               const PP_NetAddress_Private& addr) OVERRIDE;
-  virtual void UDPSocketClose(uint32 socket_id) OVERRIDE;
   virtual void TCPServerSocketListen(
       PP_Resource socket_resource,
       const PP_NetAddress_Private& addr,
@@ -360,19 +343,6 @@ class PepperPluginDelegateImpl
                            uint32 socket_id,
                            bool succeeded,
                            int32_t bytes_written);
-  void OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
-                          uint32 socket_id,
-                          bool succeeded,
-                          const PP_NetAddress_Private& addr);
-  void OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
-                            uint32 socket_id,
-                            bool succeeded,
-                            int32_t bytes_written);
-  void OnUDPSocketRecvFromACK(uint32 plugin_dispatcher_id,
-                              uint32 socket_id,
-                              bool succeeded,
-                              const std::string& data,
-                              const PP_NetAddress_Private& addr);
   void OnTCPServerSocketListenACK(uint32 plugin_dispatcher_id,
                                   PP_Resource socket_resource,
                                   uint32 socket_id,
@@ -440,8 +410,6 @@ class PepperPluginDelegateImpl
   IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
   IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
-
-  IDMap<webkit::ppapi::PPB_UDPSocket_Private_Impl> udp_sockets_;
 
   IDMap<ppapi::PPB_TCPServerSocket_Shared> tcp_server_sockets_;
 

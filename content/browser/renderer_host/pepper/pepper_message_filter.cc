@@ -18,9 +18,9 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/pepper_lookup_request.h"
+#include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_socket.h"
-#include "content/browser/renderer_host/pepper/pepper_udp_socket.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/pepper_messages.h"
@@ -28,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
@@ -68,17 +67,17 @@ void CreateNetAddressListFromAddressList(
 
 }  // namespace
 
-PepperMessageFilter::PepperMessageFilter(ProcessType type,
+PepperMessageFilter::PepperMessageFilter(ProcessType process_type,
                                          int process_id,
                                          BrowserContext* browser_context)
-    : process_type_(type),
+    : process_type_(process_type),
       permissions_(),
       process_id_(process_id),
       nacl_render_view_id_(0),
       resource_context_(browser_context->GetResourceContext()),
       host_resolver_(NULL),
       next_socket_id_(1) {
-  DCHECK(type == RENDERER);
+  DCHECK(process_type == PROCESS_TYPE_RENDERER);
   DCHECK(browser_context);
   // Keep BrowserContext data in FILE-thread friendly storage.
   browser_path_ = browser_context->GetPath();
@@ -87,10 +86,10 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
 }
 
 PepperMessageFilter::PepperMessageFilter(
-    ProcessType type,
+    ProcessType process_type,
     const ppapi::PpapiPermissions& permissions,
     net::HostResolver* host_resolver)
-    : process_type_(type),
+    : process_type_(process_type),
       permissions_(permissions),
       process_id_(0),
       nacl_render_view_id_(0),
@@ -98,24 +97,24 @@ PepperMessageFilter::PepperMessageFilter(
       host_resolver_(host_resolver),
       next_socket_id_(1),
       incognito_(false) {
-  DCHECK(type == PLUGIN);
+  DCHECK(process_type == PROCESS_TYPE_PPAPI_PLUGIN);
   DCHECK(host_resolver);
 }
 
 PepperMessageFilter::PepperMessageFilter(
-    ProcessType type,
+    ProcessType process_type,
     const ppapi::PpapiPermissions& permissions,
     net::HostResolver* host_resolver,
     int process_id,
     int render_view_id)
-    : process_type_(type),
+    : process_type_(process_type),
       permissions_(permissions),
       process_id_(process_id),
       nacl_render_view_id_(render_view_id),
       resource_context_(NULL),
       host_resolver_(host_resolver),
       next_socket_id_(1) {
-  DCHECK(type == NACL);
+  DCHECK(process_type == PROCESS_TYPE_NACL_LOADER);
   DCHECK(host_resolver);
 }
 
@@ -125,8 +124,6 @@ void PepperMessageFilter::OverrideThreadForMessage(
   if (message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID ||
-      message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID ||
-      message.type() == PpapiHostMsg_PPBUDPSocket_SendTo::ID ||
       message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
   }
@@ -146,15 +143,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Read, OnTCPRead)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Write, OnTCPWrite)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Disconnect, OnTCPDisconnect)
-
-    // UDP messages.
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_Create, OnUDPCreate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_SetBoolSocketFeature,
-                        OnUDPSetBoolSocketFeature)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_Bind, OnUDPBind)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_RecvFrom, OnUDPRecvFrom)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_SendTo, OnUDPSendTo)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_Close, OnUDPClose)
 
     // TCP Server messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Listen,
@@ -282,8 +270,10 @@ void PepperMessageFilter::OnTCPConnectWithNetAddress(
     uint32 socket_id,
     const PP_NetAddress_Private& net_addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::TCP_CONNECT, net_addr));
+  bool allowed = CanUseSocketAPIs(
+      routing_id,
+      pepper_socket_utils::CreateSocketPermissionRequest(
+          content::SocketPermissionRequest::TCP_CONNECT, net_addr));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&PepperMessageFilter::DoTCPConnectWithNetAddress, this,
           allowed, routing_id, socket_id, net_addr));
@@ -357,137 +347,16 @@ void PepperMessageFilter::OnTCPDisconnect(uint32 socket_id) {
   tcp_sockets_.erase(iter);
 }
 
-void PepperMessageFilter::OnUDPCreate(int32 routing_id,
-                                      uint32 plugin_dispatcher_id,
-                                      uint32* socket_id) {
-  *socket_id = GenerateSocketID();
-  if (*socket_id == kInvalidSocketID)
-    return;
-
-  udp_sockets_[*socket_id] = linked_ptr<PepperUDPSocket>(
-      new PepperUDPSocket(this, routing_id, plugin_dispatcher_id, *socket_id));
-}
-
-void PepperMessageFilter::OnUDPSetBoolSocketFeature(
-    int32 routing_id,
-    uint32 socket_id,
-    int32_t name,
-    bool value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
-  if (iter == udp_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  if (routing_id != iter->second->routing_id()) {
-    NOTREACHED();
-    return;
-  }
-
-  switch(static_cast<PP_UDPSocketFeature_Private>(name)) {
-    case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
-      iter->second->AllowAddressReuse(value);
-      break;
-    case PP_UDPSOCKETFEATURE_BROADCAST:
-      iter->second->AllowBroadcast(value);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void PepperMessageFilter::OnUDPBind(int32 routing_id,
-                                    uint32 socket_id,
-                                    const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::UDP_BIND, addr));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&PepperMessageFilter::DoUDPBind, this,
-          allowed, routing_id, socket_id, addr));
-}
-
-void PepperMessageFilter::DoUDPBind(bool allowed,
-                                    int32 routing_id,
-                                    uint32 socket_id,
-                                    const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
-  if (iter == udp_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  if (routing_id == iter->second->routing_id() && allowed)
-    iter->second->Bind(addr);
-  else
-    iter->second->SendBindACKError();
-}
-
-void PepperMessageFilter::OnUDPRecvFrom(uint32 socket_id, int32_t num_bytes) {
-  UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
-  if (iter == udp_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  iter->second->RecvFrom(num_bytes);
-}
-
-void PepperMessageFilter::OnUDPSendTo(int32 routing_id,
-                                      uint32 socket_id,
-                                      const std::string& data,
-                                      const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::UDP_SEND_TO, addr));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&PepperMessageFilter::DoUDPSendTo, this,
-          allowed, routing_id, socket_id, data, addr));
-
-}
-
-void PepperMessageFilter::DoUDPSendTo(bool allowed,
-                                      int32 routing_id,
-                                      uint32 socket_id,
-                                      const std::string& data,
-                                      const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
-  if (iter == udp_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  if (routing_id == iter->second->routing_id() && allowed)
-    iter->second->SendTo(data, addr);
-  else
-    iter->second->SendSendToACKError();
-}
-
-void PepperMessageFilter::OnUDPClose(uint32 socket_id) {
-  UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
-  if (iter == udp_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Destroy the UDPSocket instance will cancel any pending completion
-  // callback. From this point on, there won't be any messages associated with
-  // this socket sent to the plugin side.
-  udp_sockets_.erase(iter);
-}
-
 void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
                                             uint32 plugin_dispatcher_id,
                                             PP_Resource socket_resource,
                                             const PP_NetAddress_Private& addr,
                                             int32_t backlog) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::TCP_LISTEN, addr));
+  bool allowed = CanUseSocketAPIs(
+      routing_id,
+      pepper_socket_utils::CreateSocketPermissionRequest(
+          content::SocketPermissionRequest::TCP_LISTEN, addr));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&PepperMessageFilter::DoTCPServerListen,
                                      this,
@@ -552,8 +421,10 @@ void PepperMessageFilter::OnHostResolverResolve(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::SocketPermissionRequest request(
       content::SocketPermissionRequest::NONE, "", 0);
-  if (process_type_ == NACL && !CanUseSocketAPIs(routing_id, request))
+  if (process_type_ == PROCESS_TYPE_NACL_LOADER &&
+      !CanUseSocketAPIs(routing_id, request)) {
     return;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -656,7 +527,7 @@ bool PepperMessageFilter::SendHostResolverResolveACKError(
 
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
-  if (process_type_ != RENDERER &&
+  if (process_type_ != PROCESS_TYPE_RENDERER &&
       !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
     return;
 
@@ -669,7 +540,7 @@ void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
 
 void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
-  if (process_type_ != RENDERER &&
+  if (process_type_ != PROCESS_TYPE_RENDERER &&
       !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
     return;
 
@@ -698,10 +569,8 @@ uint32 PepperMessageFilter::GenerateSocketID() {
   // PepperSocketMessageHandler object, because for each plugin or renderer
   // process, there is at most one PepperMessageFilter (in other words, at most
   // one PepperSocketMessageHandler) talking to it.
-  if (tcp_sockets_.size() + udp_sockets_.size() + tcp_server_sockets_.size() >=
-      kMaxSocketsAllowed) {
+  if (tcp_sockets_.size() + tcp_server_sockets_.size() >= kMaxSocketsAllowed)
     return kInvalidSocketID;
-  }
 
   uint32 socket_id = kInvalidSocketID;
   do {
@@ -710,7 +579,6 @@ uint32 PepperMessageFilter::GenerateSocketID() {
     socket_id = next_socket_id_++;
   } while (socket_id == kInvalidSocketID ||
            tcp_sockets_.find(socket_id) != tcp_sockets_.end() ||
-           udp_sockets_.find(socket_id) != udp_sockets_.end() ||
            tcp_server_sockets_.find(socket_id) != tcp_server_sockets_.end());
 
   return socket_id;
@@ -719,46 +587,19 @@ uint32 PepperMessageFilter::GenerateSocketID() {
 bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
     const content::SocketPermissionRequest& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (process_type_ == PLUGIN) {
-    // Always allow socket APIs for out-process plugins (except NACL).
-    return true;
-  }
+
   // NACL plugins always get their own PepperMessageFilter, initialized with
   // a render view id. Use this instead of the one that came with the message,
   // which is actually an API ID.
-  if (process_type_ == NACL)
+  if (process_type_ == PROCESS_TYPE_NACL_LOADER)
     render_id = nacl_render_view_id_;
 
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(process_id_, render_id);
-  if (!render_view_host)
-    return false;
 
-  SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  if (!site_instance)
-    return false;
-
-  if (!GetContentClient()->browser()->AllowPepperSocketAPI(
-          site_instance->GetBrowserContext(),
-          site_instance->GetSiteURL(),
-          params)) {
-    LOG(ERROR) << "Host " << site_instance->GetSiteURL().host()
-               << " cannot use socket API or destination is not allowed";
-    return false;
-  }
-
-  return true;
-}
-
-content::SocketPermissionRequest
-PepperMessageFilter::CreateSocketPermissionRequest(
-    content::SocketPermissionRequest::OperationType type,
-    const PP_NetAddress_Private& net_addr) {
-  std::string host = NetAddressPrivateImpl::DescribeNetAddress(net_addr, false);
-  int port = 0;
-  std::vector<unsigned char> address;
-  NetAddressPrivateImpl::NetAddressToIPEndPoint(net_addr, &address, &port);
-  return content::SocketPermissionRequest(type, host, port);
+  return pepper_socket_utils::CanUseSocketAPIs(process_type_,
+                                               params,
+                                               render_view_host);
 }
 
 void PepperMessageFilter::GetAndSendNetworkList() {

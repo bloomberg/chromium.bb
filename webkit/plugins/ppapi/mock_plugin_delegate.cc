@@ -271,34 +271,6 @@ void MockPluginDelegate::RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                            uint32 socket_id) {
 }
 
-uint32 MockPluginDelegate::UDPSocketCreate() {
-  return 0;
-}
-
-void MockPluginDelegate::UDPSocketSetBoolSocketFeature(
-    PPB_UDPSocket_Private_Impl* socket,
-    uint32 socket_id,
-    int32_t name,
-    bool value) {
-}
-
-void MockPluginDelegate::UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
-                                       uint32 socket_id,
-                                       const PP_NetAddress_Private& addr) {
-}
-
-void MockPluginDelegate::UDPSocketRecvFrom(uint32 socket_id,
-                                           int32_t num_bytes) {
-}
-
-void MockPluginDelegate::UDPSocketSendTo(uint32 socket_id,
-                                         const std::string& buffer,
-                                         const PP_NetAddress_Private& addr) {
-}
-
-void MockPluginDelegate::UDPSocketClose(uint32 socket_id) {
-}
-
 void MockPluginDelegate::TCPServerSocketListen(
     PP_Resource socket_resource,
     const PP_NetAddress_Private& addr,

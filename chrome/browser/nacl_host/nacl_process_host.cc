@@ -38,6 +38,7 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/process_type.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
 #include "ipc/ipc_channel.h"
@@ -789,6 +790,8 @@ void NaClProcessHost::OnPpapiChannelCreated(
   // If the proxy channel is null, this must be the initial NaCl-Browser IPC
   // channel.
   if (!ipc_proxy_channel_.get()) {
+    DCHECK_EQ(content::PROCESS_TYPE_NACL_LOADER, process_->GetData().type);
+
     ipc_proxy_channel_.reset(
         new IPC::ChannelProxy(channel_handle,
                               IPC::Channel::MODE_CLIENT,
@@ -797,7 +800,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
     // Create the browser ppapi host and enable PPAPI message dispatching to the
     // browser process.
     ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
-        ipc_proxy_channel_.get(), //process_.get(),  // sender
+        ipc_proxy_channel_.get(),  // sender
         permissions_,
         process_->GetData().handle,
         ipc_proxy_channel_.get(),

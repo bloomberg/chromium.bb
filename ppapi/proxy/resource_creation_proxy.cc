@@ -32,12 +32,12 @@
 #include "ppapi/proxy/ppb_network_monitor_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
-#include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/talk_resource.h"
+#include "ppapi/proxy/udp_socket_private_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
 #include "ppapi/proxy/video_capture_resource.h"
@@ -276,7 +276,8 @@ PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(
 
 PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(
     PP_Instance instance) {
-  return PPB_UDPSocket_Private_Proxy::CreateProxyResource(instance);
+  return (new UDPSocketPrivateResource(
+      GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {

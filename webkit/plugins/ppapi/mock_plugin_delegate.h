@@ -125,19 +125,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPSocketDisconnect(uint32 socket_id);
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id);
-  virtual uint32 UDPSocketCreate();
-  virtual void UDPSocketSetBoolSocketFeature(PPB_UDPSocket_Private_Impl* socket,
-                                             uint32 socket_id,
-                                             int32_t name,
-                                             bool value);
-  virtual void UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
-                             uint32 socket_id,
-                             const PP_NetAddress_Private& addr);
-  virtual void UDPSocketRecvFrom(uint32 socket_id, int32_t num_bytes);
-  virtual void UDPSocketSendTo(uint32 socket_id,
-                               const std::string& buffer,
-                               const PP_NetAddress_Private& addr);
-  virtual void UDPSocketClose(uint32 socket_id);
   virtual void TCPServerSocketListen(PP_Resource socket_resource,
                                      const PP_NetAddress_Private& addr,
                                      int32_t backlog);

@@ -5,11 +5,12 @@
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/ppapi_host.h"
@@ -90,6 +91,12 @@ PP_Resource PepperInProcessResourceCreation::CreatePrinting(
   return (new ppapi::proxy::PrintingResource(
       host_impl_->in_process_router()->GetPluginConnection(),
       instance))->GetReference();
+}
+
+PP_Resource PepperInProcessResourceCreation::CreateUDPSocketPrivate(
+    PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(

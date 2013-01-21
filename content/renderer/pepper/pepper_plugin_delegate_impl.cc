@@ -87,7 +87,6 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -1188,58 +1187,6 @@ void PepperPluginDelegateImpl::RegisterTCPSocket(
   tcp_sockets_.AddWithID(socket, socket_id);
 }
 
-uint32 PepperPluginDelegateImpl::UDPSocketCreate() {
-  uint32 socket_id = 0;
-  render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Create(
-      render_view_->routing_id(), 0, &socket_id));
-  return socket_id;
-}
-
-void PepperPluginDelegateImpl::UDPSocketSetBoolSocketFeature(
-    webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
-    uint32 socket_id,
-    int32_t name,
-    bool value) {
-  render_view_->Send(
-      new PpapiHostMsg_PPBUDPSocket_SetBoolSocketFeature(
-          render_view_->routing_id(), socket_id, name, value));
-}
-
-void PepperPluginDelegateImpl::UDPSocketBind(
-    webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
-    uint32 socket_id,
-    const PP_NetAddress_Private& addr) {
-  if (!udp_sockets_.Lookup(socket_id))
-    udp_sockets_.AddWithID(socket, socket_id);
-  render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Bind(
-      render_view_->routing_id(), socket_id, addr));
-}
-
-void PepperPluginDelegateImpl::UDPSocketRecvFrom(uint32 socket_id,
-                                                 int32_t num_bytes) {
-  DCHECK(udp_sockets_.Lookup(socket_id));
-  render_view_->Send(
-      new PpapiHostMsg_PPBUDPSocket_RecvFrom(socket_id, num_bytes));
-}
-
-void PepperPluginDelegateImpl::UDPSocketSendTo(
-    uint32 socket_id,
-    const std::string& buffer,
-    const PP_NetAddress_Private& net_addr) {
-  DCHECK(udp_sockets_.Lookup(socket_id));
-  render_view_->Send(
-      new PpapiHostMsg_PPBUDPSocket_SendTo(render_view_->routing_id(),
-                                           socket_id, buffer, net_addr));
-}
-
-void PepperPluginDelegateImpl::UDPSocketClose(uint32 socket_id) {
-  // There are no DCHECK(udp_sockets_.Lookup(socket_id)) because it
-  // can be called before UDPSocketBind is called.
-  render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Close(socket_id));
-  if (udp_sockets_.Lookup(socket_id))
-    udp_sockets_.Remove(socket_id);
-}
-
 void PepperPluginDelegateImpl::TCPServerSocketListen(
     PP_Resource socket_resource,
     const PP_NetAddress_Private& addr,
@@ -1484,10 +1431,6 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
                         OnTCPSocketSSLHandshakeACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnTCPSocketReadACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_BindACK, OnUDPSocketBindACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_RecvFromACK,
-                        OnUDPSocketRecvFromACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_SendToACK, OnUDPSocketSendToACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_ListenACK,
                         OnTCPServerSocketListenACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
@@ -1548,41 +1491,6 @@ void PepperPluginDelegateImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
       tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnWriteCompleted(succeeded, bytes_written);
-}
-
-void PepperPluginDelegateImpl::OnUDPSocketBindACK(
-    uint32 plugin_dispatcher_id,
-    uint32 socket_id,
-    bool succeeded,
-    const PP_NetAddress_Private& addr) {
-  webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
-      udp_sockets_.Lookup(socket_id);
-  if (socket)
-    socket->OnBindCompleted(succeeded, addr);
-  if (!succeeded)
-    udp_sockets_.Remove(socket_id);
-}
-
-void PepperPluginDelegateImpl::OnUDPSocketRecvFromACK(
-    uint32 plugin_dispatcher_id,
-    uint32 socket_id,
-    bool succeeded,
-    const std::string& data,
-    const PP_NetAddress_Private& remote_addr) {
-  webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
-      udp_sockets_.Lookup(socket_id);
-  if (socket)
-    socket->OnRecvFromCompleted(succeeded, data, remote_addr);
-}
-
-void PepperPluginDelegateImpl::OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
-                                                    uint32 socket_id,
-                                                    bool succeeded,
-                                                    int32_t bytes_written) {
-  webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
-      udp_sockets_.Lookup(socket_id);
-  if (socket)
-    socket->OnSendToCompleted(succeeded, bytes_written);
 }
 
 void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(

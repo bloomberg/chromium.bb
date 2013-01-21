@@ -123,8 +123,6 @@
           'shared_impl/private/ppb_x509_certificate_private_shared.h',
           'shared_impl/private/tcp_socket_private_impl.cc',
           'shared_impl/private/tcp_socket_private_impl.h',
-          'shared_impl/private/udp_socket_private_impl.cc',
-          'shared_impl/private/udp_socket_private_impl.h',
 
           'thunk/enter.cc',
           'thunk/enter.h',
