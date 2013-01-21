@@ -24,7 +24,7 @@ class SpeechRecognitionTrayIconController
  public:
   SpeechRecognitionTrayIconController();
 
-  void Show(const string16& tooltip, bool show_balloon);
+  void Show(const string16& tooltip);
   void Hide();
   void SetVUMeterVolume(float volume);
 
@@ -34,7 +34,6 @@ class SpeechRecognitionTrayIconController
 
   void Initialize();
   void DrawVolume(SkCanvas* canvas, const gfx::ImageSkia& image, float volume);
-  void ShowNotificationBalloon(const string16& text);
 
   scoped_ptr<SkBitmap> mic_image_;
   scoped_ptr<SkBitmap> buffer_image_;

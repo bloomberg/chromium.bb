@@ -35,7 +35,6 @@ class NotificationTrayImages {
  public:
   gfx::ImageSkia* mic_full() { return mic_full_; }
   gfx::ImageSkia* mic_empty() { return mic_empty_; }
-  gfx::ImageSkia* balloon_icon() { return balloon_icon_; }
 
  private:
   // Private constructor to enforce singleton.
@@ -45,8 +44,6 @@ class NotificationTrayImages {
   // These images are owned by ResourceBundle and need not be destroyed.
   gfx::ImageSkia* mic_full_; // Tray mic image with full volume.
   gfx::ImageSkia* mic_empty_; // Tray mic image with zero volume.
-  // High resolution mic for the notification balloon.
-  gfx::ImageSkia* balloon_icon_;
 };
 
 NotificationTrayImages::NotificationTrayImages() {
@@ -54,8 +51,6 @@ NotificationTrayImages::NotificationTrayImages() {
       IDR_SPEECH_INPUT_TRAY_MIC_EMPTY);
   mic_full_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_TRAY_MIC_FULL);
-  balloon_icon_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_SPEECH_INPUT_TRAY_BALLOON_ICON);
 }
 
 base::LazyInstance<NotificationTrayImages> g_images = LAZY_INSTANCE_INITIALIZER;
@@ -71,12 +66,10 @@ SpeechRecognitionTrayIconController::~SpeechRecognitionTrayIconController() {
   DCHECK(!tray_icon_);
 }
 
-void SpeechRecognitionTrayIconController::Show(const string16& tooltip,
-                                               bool show_balloon) {
+void SpeechRecognitionTrayIconController::Show(const string16& tooltip) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&SpeechRecognitionTrayIconController::Show, this,
-                   tooltip, show_balloon));
+        base::Bind(&SpeechRecognitionTrayIconController::Show, this, tooltip));
     return;
   }
 
@@ -96,9 +89,6 @@ void SpeechRecognitionTrayIconController::Show(const string16& tooltip,
     VLOG(1) << "This platform doesn't support notification icons.";
     return;
   }
-
-  if (show_balloon)
-    ShowNotificationBalloon(tooltip);
 }
 
 void SpeechRecognitionTrayIconController::Hide() {
@@ -182,15 +172,4 @@ void SpeechRecognitionTrayIconController::DrawVolume(
   buffer_canvas.drawBitmap(*image.bitmap(), 0, 0);
 
   canvas->drawBitmap(*buffer_image_.get(), 0, 0);
-}
-
-void SpeechRecognitionTrayIconController::ShowNotificationBalloon(
-    const string16& text) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  string16 title = l10n_util::GetStringUTF16(
-      IDS_SPEECH_INPUT_TRAY_BALLOON_TITLE);
-  string16 message = l10n_util::GetStringFUTF16(
-      IDS_SPEECH_INPUT_TRAY_BALLOON_BODY, text);
-
-  tray_icon_->DisplayBalloon(*g_images.Get().balloon_icon(), title, message);
 }

@@ -340,9 +340,7 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioStart(int session_id) {
     DCHECK_EQ(session_id, GetBubbleController()->GetActiveSessionID());
     GetBubbleController()->SetBubbleRecordingMode();
   } else if (RequiresTrayIcon(session_id)) {
-    // We post the action to the UI thread for sessions requiring a tray icon,
-    // since ChromeSpeechRecognitionPreferences (which requires UI thread) is
-    // involved for determining whether a security alert balloon is required.
+    // We post the action to the UI thread for sessions requiring a tray icon.
     const content::SpeechRecognitionSessionContext& context =
         SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
@@ -503,6 +501,8 @@ void ChromeSpeechRecognitionManagerDelegate::ShowTrayIconOnUIThread(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   scoped_refptr<ChromeSpeechRecognitionPreferences> pref =
       ChromeSpeechRecognitionPreferences::GetForProfile(profile);
+  // TODO(xians): clean up the code since we don't need to show the balloon
+  // bubble any more.
   bool show_notification = pref->ShouldShowSecurityNotification(context_name);
   if (show_notification)
     pref->SetHasShownSecurityNotification(context_name);
@@ -521,7 +521,7 @@ void ChromeSpeechRecognitionManagerDelegate::ShowTrayIconOnUIThread(
     initiator_name = UTF8ToUTF16(extension->name());
   }
 
-  tray_icon_controller->Show(initiator_name, show_notification);
+  tray_icon_controller->Show(initiator_name);
 }
 
 void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(

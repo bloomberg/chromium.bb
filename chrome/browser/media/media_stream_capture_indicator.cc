@@ -267,33 +267,31 @@ void MediaStreamCaptureIndicator::ShowBalloon(
   else if (!audio && video)
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
 
+  // Only show the balloon for extensions.
   const extensions::Extension* extension =
       GetExtension(render_process_id, render_view_id);
-  if (extension) {
-    string16 message =
-        l10n_util::GetStringFUTF16(message_id,
-                                   UTF8ToUTF16(extension->name()));
-
-    WebContents* web_contents = tab_util::GetWebContentsByID(
-        render_process_id, render_view_id);
-
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-    should_show_balloon_ = true;
-    extensions::ImageLoader::Get(profile)->LoadImageAsync(
-        extension,
-        extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
-        gfx::Size(32, 32),
-        base::Bind(&MediaStreamCaptureIndicator::OnImageLoaded,
-                   this, message));
+  if (!extension) {
+    DVLOG(1) << "Balloon is shown only for extensions";
     return;
   }
 
-  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  string16 body = l10n_util::GetStringFUTF16(message_id,
-      GetSecurityOrigin(render_process_id, render_view_id));
-  status_icon_->DisplayBalloon(*balloon_image_, title, body);
+  string16 message =
+      l10n_util::GetStringFUTF16(message_id,
+                                 UTF8ToUTF16(extension->name()));
+
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+        render_process_id, render_view_id);
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  should_show_balloon_ = true;
+  extensions::ImageLoader::Get(profile)->LoadImageAsync(
+      extension,
+      extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
+      gfx::Size(32, 32),
+      base::Bind(&MediaStreamCaptureIndicator::OnImageLoaded,
+                 this, message));
 }
 
 void MediaStreamCaptureIndicator::OnImageLoaded(
