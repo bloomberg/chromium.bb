@@ -157,6 +157,9 @@ class Operand(object):
   def Writable(self):
     return self.read_write_attr in [self.WRITE, self.READ_WRITE]
 
+  def ResidesInModRM(self):
+    return self.arg_type in 'CDEGMNPQRSUVW'
+
   def __str__(self):
     return '%s%s%s%s' % (
         self.read_write_attr,
@@ -255,6 +258,9 @@ class Instruction(object):
       assert opcode_regex.match(opcode), opcode
 
     self.opcodes = opcodes
+
+  def HasModRM(self):
+    return any(operand.ResidesInModRM() for operand in self.operands)
 
   def __str__(self):
     return ' '.join([self.name] + map(str, self.operands))

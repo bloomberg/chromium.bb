@@ -58,7 +58,7 @@ class TestOperand(unittest.TestCase):
 
 class TestInstruction(unittest.TestCase):
 
-  def test_add(self):
+  def test_name_and_operands(self):
     instr = gen_dfa.Instruction()
     instr.ParseNameAndOperands('add G E')
     self.assertEquals(instr.name, 'add')
@@ -69,6 +69,21 @@ class TestInstruction(unittest.TestCase):
     assert op2.Readable() and op2.Writable()
 
     self.assertEquals(str(instr), 'add =G &E')
+
+  def test_modrm_presence(self):
+    instr = gen_dfa.Instruction.Parse(
+        'add G E, 0x00, lock nacl-amd64-zero-extends')
+    assert instr.HasModRM()
+
+    instr = gen_dfa.Instruction.Parse(
+        'mov O !a, 0xa0, ia32')
+    assert not instr.HasModRM()
+
+    # Technically, mfence has ModRM byte (0xf0), but for our purposes
+    # we treat it as part of opcode.
+    instr = gen_dfa.Instruction.Parse(
+        'mfence, 0x0f 0xae 0xf0, CPUFeature_SSE2')
+    assert not instr.HasModRM()
 
 
 class TestParser(unittest.TestCase):
