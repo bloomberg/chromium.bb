@@ -180,14 +180,15 @@ void ResourceMetadataDB::Clear() {
 
 // DriveResourceMetadata class implementation.
 
-DriveResourceMetadata::DriveResourceMetadata()
+DriveResourceMetadata::DriveResourceMetadata(
+    const std::string& root_resource_id)
     : blocking_task_runner_(NULL),
       serialized_size_(0),
       largest_changestamp_(0),
       loaded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   root_ = CreateDriveDirectory().Pass();
-  root_->set_resource_id(kWAPIRootDirectoryResourceId);
+  root_->set_resource_id(root_resource_id);
   root_->set_title(kDriveRootDirectory);
   root_->SetBaseNameFromTitle();
 
@@ -859,7 +860,6 @@ bool DriveResourceMetadata::ParseFromString(
   }
 
   root_->FromProto(proto.drive_directory());
-  DCHECK_EQ(kWAPIRootDirectoryResourceId, root_->resource_id());
 
   loaded_ = true;
   largest_changestamp_ = proto.largest_changestamp();

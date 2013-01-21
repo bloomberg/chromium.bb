@@ -129,6 +129,11 @@ bool FakeDriveService::HasRefreshToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;
 }
+
+std::string FakeDriveService::GetRootResourceId() const {
+  return "fake_root";
+}
+
 void FakeDriveService::GetResourceList(
     const GURL& feed_url,
     int64 start_changestamp,

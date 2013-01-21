@@ -165,6 +165,10 @@ void ParseAppListAndRun(const google_apis::GetAppListCallback& callback,
   callback.Run(error, app_list.Pass());
 }
 
+// The resource ID for the root directory for Drive API is defined in the spec:
+// https://developers.google.com/drive/folder
+const char kDriveApiRootDirectoryResourceId[] = "root";
+
 }  // namespace
 
 DriveAPIService::DriveAPIService(
@@ -231,6 +235,10 @@ bool DriveAPIService::CancelForFilePath(const FilePath& file_path) {
 OperationProgressStatusList DriveAPIService::GetProgressStatusList() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->GetProgressStatusList();
+}
+
+std::string DriveAPIService::GetRootResourceId() const {
+  return kDriveApiRootDirectoryResourceId;
 }
 
 void DriveAPIService::GetResourceList(

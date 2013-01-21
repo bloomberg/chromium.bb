@@ -32,6 +32,10 @@ bool DummyDriveService::HasAccessToken() const { return true; }
 
 bool DummyDriveService::HasRefreshToken() const { return true; }
 
+std::string DummyDriveService::GetRootResourceId() const {
+  return "dummy_root";
+}
+
 void DummyDriveService::GetResourceList(
     const GURL& feed_url,
     int64 start_changestamp,

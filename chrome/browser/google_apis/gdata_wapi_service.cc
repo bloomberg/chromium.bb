@@ -185,6 +185,10 @@ const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
+// The resource ID for the root directory for WAPI is defined in the spec:
+// https://developers.google.com/google-apps/documents-list/
+const char kWapiRootDirectoryResourceId[] = "folder:root";
+
 }  // namespace
 
 GDataWapiService::GDataWapiService(
@@ -256,6 +260,10 @@ bool GDataWapiService::CancelForFilePath(const FilePath& file_path) {
 OperationProgressStatusList GDataWapiService::GetProgressStatusList() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->GetProgressStatusList();
+}
+
+std::string GDataWapiService::GetRootResourceId() const {
+  return kWapiRootDirectoryResourceId;
 }
 
 void GDataWapiService::GetResourceList(

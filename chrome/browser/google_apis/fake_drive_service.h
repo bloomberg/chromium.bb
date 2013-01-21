@@ -60,6 +60,7 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
   virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
+  virtual std::string GetRootResourceId() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void GetResourceList(

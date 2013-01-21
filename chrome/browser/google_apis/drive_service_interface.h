@@ -129,6 +129,9 @@ class DriveServiceInterface {
 
   // Document access:
 
+  // Returns the resource id for the root directory.
+  virtual std::string GetRootResourceId() const = 0;
+
   // Fetches a feed from |feed_url|. If this URL is empty, the call will fetch
   // from the default URL. When |start_changestamp| is 0, the default behavior
   // is to fetch the resource list feed containing the list of all entries. If

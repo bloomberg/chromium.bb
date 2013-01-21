@@ -623,7 +623,7 @@ class DriveFileSystemTest : public testing::Test {
     DriveEntryProto* dir_base = root_dir->mutable_drive_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
     dir_base->set_title("drive");
-    dir_base->set_resource_id(kWAPIRootDirectoryResourceId);
+    dir_base->set_resource_id(fake_drive_service_->GetRootResourceId());
     dir_base->set_upload_url("http://resumable-create-media/1");
     platform_info->set_is_directory(true);
 
@@ -789,7 +789,7 @@ TEST_F(DriveFileSystemTest, SearchRootDirectory) {
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
       FilePath(FILE_PATH_LITERAL(kFilePath)));
   ASSERT_TRUE(entry.get());
-  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry->resource_id());
+  EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 }
 
 TEST_F(DriveFileSystemTest, SearchExistingFile) {

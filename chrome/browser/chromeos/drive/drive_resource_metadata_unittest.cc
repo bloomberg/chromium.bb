@@ -28,6 +28,8 @@ namespace {
 const char kResumableEditMediaUrl[] = "http://resumable-edit-media/";
 const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 
+const char kTestRootResourceId[] = "test_root";
+
 // Callback for DriveResourceMetadata::InitFromDB.
 void CopyResultsFromInitFromDBCallback(DriveFileError* expected_error,
                                        DriveFileError actual_error) {
@@ -85,16 +87,17 @@ class DriveResourceMetadataTest : public testing::Test {
 };
 
 DriveResourceMetadataTest::DriveResourceMetadataTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+    : resource_metadata_(kTestRootResourceId),
+      ui_thread_(content::BrowserThread::UI, &message_loop_) {
   Init();
 }
 
 void DriveResourceMetadataTest::Init() {
   int sequence_id = 1;
   ASSERT_TRUE(AddDriveEntryProto(
-      sequence_id++, true, kWAPIRootDirectoryResourceId));
+      sequence_id++, true, kTestRootResourceId));
   ASSERT_TRUE(AddDriveEntryProto(
-      sequence_id++, true, kWAPIRootDirectoryResourceId));
+      sequence_id++, true, kTestRootResourceId));
   ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir1"));
 
   ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir1"));
@@ -157,11 +160,11 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   DriveEntryProto* mutable_entry =
       proto.mutable_drive_directory()->mutable_drive_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
-  mutable_entry->set_resource_id(kWAPIRootDirectoryResourceId);
+  mutable_entry->set_resource_id(kTestRootResourceId);
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
-  DriveResourceMetadata resource_metadata;
+  DriveResourceMetadata resource_metadata(kTestRootResourceId);
 
   std::string serialized_proto;
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
@@ -188,7 +191,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 }
 
 TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
-  DriveResourceMetadata resource_metadata;
+  DriveResourceMetadata resource_metadata(kTestRootResourceId);
 
   int64 in_changestamp = 123456;
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -208,7 +211,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
-  DriveResourceMetadata resource_metadata;
+  DriveResourceMetadata resource_metadata(kTestRootResourceId);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath drive_file_path;
@@ -216,7 +219,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
 
   // Look up the root directory by its resource ID.
   resource_metadata.GetEntryInfoByResourceId(
-      kWAPIRootDirectoryResourceId,
+      kTestRootResourceId,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -420,7 +423,7 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
   ASSERT_EQ(DRIVE_FILE_ERROR_IN_USE, db_error);
 
   // InitFromDB should succeed.
-  DriveResourceMetadata test_resource_metadata;
+  DriveResourceMetadata test_resource_metadata(kTestRootResourceId);
   test_resource_metadata.InitFromDB(
       db_path,
       blocking_task_runner,
@@ -515,7 +518,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
 
   // Try removing root. This should fail.
   resource_metadata_.RemoveEntryFromParent(
-      kWAPIRootDirectoryResourceId,
+      kTestRootResourceId,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
@@ -777,7 +780,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry_proto->resource_id());
+  EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
   EXPECT_TRUE(entry_proto->upload_url().empty());
 
   // Set upload url and call RefreshEntry on root.
@@ -794,7 +797,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
   EXPECT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry_proto->resource_id());
+  EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
   EXPECT_EQ("http://root.upload.url/", entry_proto->upload_url());
 
   // Make sure the children have moved over. Test file9.
@@ -952,7 +955,7 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry_proto->resource_id());
+  EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
 
   // root should have no children.
   resource_metadata_.ReadDirectoryByPath(

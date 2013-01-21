@@ -49,12 +49,6 @@ enum DriveFileType {
 // name is used in URLs for the file manager, hence user-visible.
 const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
 
-// The resource ID for the root directory for WAPI is defined in the spec:
-// https://developers.google.com/google-apps/documents-list/
-// Note that this special ID only applies to WAPI. Drive uses a non-constant
-// unique ID given in About resource.
-const char kWAPIRootDirectoryResourceId[] = "folder:root";
-
 // This should be incremented when incompatibility change is made in
 // drive.proto.
 const int32 kProtoVersion = 2;
@@ -215,7 +209,8 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // Map of resource id strings to DriveEntry*.
   typedef std::map<std::string, DriveEntry*> ResourceMap;
 
-  DriveResourceMetadata();
+  // |root_resource_id| is the resource id for the root directory.
+  explicit DriveResourceMetadata(const std::string& root_resource_id);
   virtual ~DriveResourceMetadata();
 
   // Last time when we dumped serialized file system to disk.

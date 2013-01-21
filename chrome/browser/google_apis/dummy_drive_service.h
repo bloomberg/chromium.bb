@@ -26,6 +26,7 @@ class DummyDriveService : public DriveServiceInterface {
   virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
+  virtual std::string GetRootResourceId() const OVERRIDE;
   virtual void GetResourceList(
       const GURL& feed_url,
       int64 start_changestamp,
