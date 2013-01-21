@@ -546,12 +546,8 @@ size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
   if (!hyphen_dictionary_) {
     // Initialize the hyphen library with a sample dictionary. To avoid test
     // flakiness, this code synchronously loads the dictionary.
-    FilePath path;
-    if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
-      return 0;
-    path = path.AppendASCII("third_party");
-    path = path.AppendASCII("hyphen");
-    path = path.AppendASCII("hyph_en_US.dic");
+    FilePath path = webkit_support::GetChromiumRootDirFilePath();
+    path = path.Append(FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
     std::string dictionary;
     if (!file_util::ReadFileToString(path, &dictionary))
       return 0;

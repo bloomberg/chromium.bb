@@ -352,6 +352,18 @@ void SetUpTestEnvironmentImpl(bool unit_test_mode,
 
 namespace webkit_support {
 
+FilePath GetChromiumRootDirFilePath() {
+  FilePath basePath;
+  PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
+  if (file_util::PathExists(
+          basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
+    // We're in a WebKit-in-chrome checkout.
+    return basePath;
+  }
+  return GetWebKitRootDirFilePath()
+         .Append(FILE_PATH_LITERAL("Source/WebKit/chromium"));
+}
+
 void SetUpTestEnvironment() {
   SetUpTestEnvironment(NULL);
 }
