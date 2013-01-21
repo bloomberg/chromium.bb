@@ -7,9 +7,12 @@
 
 #include <vector>
 
-#include "base/string16.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/base/models/combobox_model.h"
+
+class BookmarkModel;
+class BookmarkNode;
 
 // Model for the combobox showing the list of folders to choose from. The
 // list always contains the bookmark bar, other node and parent. The list

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
+#include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/startup_metric_utils.h"

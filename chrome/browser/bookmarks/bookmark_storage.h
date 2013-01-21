@@ -8,8 +8,8 @@
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_index.h"
 
+class BookmarkIndex;
 class BookmarkModel;
 class BookmarkPermanentNode;
 
