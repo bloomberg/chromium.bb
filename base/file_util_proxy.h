@@ -59,6 +59,8 @@ class BASE_EXPORT FileUtilProxy {
   // callback. If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to
   // create a new file at the given |file_path| and calls back with
   // PLATFORM_FILE_ERROR_FILE_EXISTS if the |file_path| already exists.
+  //
+  // This returns false if task posting to |task_runner| has failed.
   static bool CreateOrOpen(TaskRunner* task_runner,
                            const FilePath& file_path,
                            int file_flags,
@@ -72,23 +74,29 @@ class BASE_EXPORT FileUtilProxy {
   //   base::PLATFORM_FILE_TEMPORARY.
   // Set |additional_file_flags| to 0 for synchronous writes and set to
   // base::PLATFORM_FILE_ASYNC to support asynchronous file operations.
+  //
+  // This returns false if task posting to |task_runner| has failed.
   static bool CreateTemporary(
       TaskRunner* task_runner,
       int additional_file_flags,
       const CreateTemporaryCallback& callback);
 
   // Close the given file handle.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Close(TaskRunner* task_runner,
                     PlatformFile,
                     const StatusCallback& callback);
 
   // Retrieves the information about a file. It is invalid to pass a null
   // callback.
+  // This returns false if task posting to |task_runner| has failed.
   static bool GetFileInfo(
       TaskRunner* task_runner,
       const FilePath& file_path,
       const GetFileInfoCallback& callback);
 
+  // Does the same as GetFileInfo but takes PlatformFile instead of FilePath.
+  // This returns false if task posting to |task_runner| has failed.
   static bool GetFileInfoFromPlatformFile(
       TaskRunner* task_runner,
       PlatformFile file,
@@ -96,12 +104,14 @@ class BASE_EXPORT FileUtilProxy {
 
   // Deletes a file or a directory.
   // It is an error to delete a non-empty directory with recursive=false.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Delete(TaskRunner* task_runner,
                      const FilePath& file_path,
                      bool recursive,
                      const StatusCallback& callback);
 
   // Deletes a directory and all of its contents.
+  // This returns false if task posting to |task_runner| has failed.
   static bool RecursiveDelete(
       TaskRunner* task_runner,
       const FilePath& file_path,
@@ -109,6 +119,9 @@ class BASE_EXPORT FileUtilProxy {
 
   // Reads from a file. On success, the file pointer is moved to position
   // |offset + bytes_to_read| in the file. The callback can be null.
+  //
+  // This returns false if |bytes_to_read| is less than zero, or
+  // if task posting to |task_runner| has failed.
   static bool Read(
       TaskRunner* task_runner,
       PlatformFile file,
@@ -120,6 +133,9 @@ class BASE_EXPORT FileUtilProxy {
   // |false| is returned. On success, the file pointer is moved to position
   // |offset + bytes_to_write| in the file. The callback can be null.
   // |bytes_to_write| must be greater than zero.
+  //
+  // This returns false if |bytes_to_write| is less than or equal to zero,
+  // if |buffer| is NULL, or if task posting to |task_runner| has failed.
   static bool Write(
       TaskRunner* task_runner,
       PlatformFile file,
@@ -129,6 +145,7 @@ class BASE_EXPORT FileUtilProxy {
       const WriteCallback& callback);
 
   // Touches a file. The callback can be null.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Touch(
       TaskRunner* task_runner,
       PlatformFile file,
@@ -137,6 +154,7 @@ class BASE_EXPORT FileUtilProxy {
       const StatusCallback& callback);
 
   // Touches a file. The callback can be null.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Touch(
       TaskRunner* task_runner,
       const FilePath& file_path,
@@ -147,6 +165,7 @@ class BASE_EXPORT FileUtilProxy {
   // Truncates a file to the given length. If |length| is greater than the
   // current length of the file, the file will be extended with zeroes.
   // The callback can be null.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Truncate(
       TaskRunner* task_runner,
       PlatformFile file,
@@ -156,6 +175,7 @@ class BASE_EXPORT FileUtilProxy {
   // Truncates a file to the given length. If |length| is greater than the
   // current length of the file, the file will be extended with zeroes.
   // The callback can be null.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Truncate(
       TaskRunner* task_runner,
       const FilePath& path,
@@ -163,18 +183,19 @@ class BASE_EXPORT FileUtilProxy {
       const StatusCallback& callback);
 
   // Flushes a file. The callback can be null.
+  // This returns false if task posting to |task_runner| has failed.
   static bool Flush(
       TaskRunner* task_runner,
       PlatformFile file,
       const StatusCallback& callback);
 
   // Relay helpers.
+  // They return false if posting a given task to |task_runner| has failed.
   static bool RelayCreateOrOpen(
       TaskRunner* task_runner,
       const CreateOrOpenTask& open_task,
       const CloseTask& close_task,
       const CreateOrOpenCallback& callback);
-
   static bool RelayClose(
       TaskRunner* task_runner,
       const CloseTask& close_task,
