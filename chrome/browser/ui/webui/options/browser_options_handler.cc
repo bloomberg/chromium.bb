@@ -426,19 +426,21 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
                     chrome::kChromeAccessibilityHelpURL);
 
   // Creates magnifierList.
-  base::ListValue* magnifierList = new base::ListValue();
-  base::ListValue* option_full = new base::ListValue();
-  option_full->Append(base::Value::CreateIntegerValue(ash::MAGNIFIER_FULL));
-  option_full->Append(new base::StringValue(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL)));
-  base::ListValue* option_partial = new base::ListValue();
-  option_partial->Append(base::Value::CreateIntegerValue(
-      ash::MAGNIFIER_PARTIAL));
+  scoped_ptr<base::ListValue> magnifier_list(new base::ListValue);
+
+  scoped_ptr<base::ListValue> option_full(new base::ListValue);
+  option_full->AppendInteger(ash::MAGNIFIER_FULL);
+  option_full->AppendString(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL));
+  magnifier_list->Append(option_full.release());
+
+  scoped_ptr<base::ListValue> option_partial(new base::ListValue);
+  option_partial->AppendInteger(ash::MAGNIFIER_PARTIAL);
   option_partial->Append(new base::StringValue(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL)));
-  magnifierList->Append(option_full);
-  magnifierList->Append(option_partial);
-  values->Set("magnifierList", magnifierList);
+  magnifier_list->Append(option_partial.release());
+
+  values->Set("magnifierList", magnifier_list.release());
 
 #endif
 #if defined(OS_MACOSX)
