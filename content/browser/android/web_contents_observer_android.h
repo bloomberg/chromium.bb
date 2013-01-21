@@ -9,6 +9,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "googleurl/src/gurl.h"

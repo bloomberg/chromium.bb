@@ -100,6 +100,10 @@
 #include "ui/base/touch/touch_factory.h"
 #endif // defined (USE_AURA) && defined(USE_X11)
 
+#if defined(ENABLE_JAVA_BRIDGE)
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
+#endif
+
 // Cross-Site Navigations
 //
 // If a WebContentsImpl is told to navigate to a different web site (as
