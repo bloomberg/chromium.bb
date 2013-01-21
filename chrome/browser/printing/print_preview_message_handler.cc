@@ -55,9 +55,8 @@ base::RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
     return NULL;
   }
 
-  char* preview_data = static_cast<char*>(shared_buf->memory());
-  std::vector<unsigned char> data(data_size);
-  memcpy(&data[0], preview_data, data_size);
+  unsigned char* data_begin = static_cast<unsigned char*>(shared_buf->memory());
+  std::vector<unsigned char> data(data_begin, data_begin + data_size);
   return base::RefCountedBytes::TakeVector(&data);
 }
 
@@ -167,7 +166,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   // needs updating to accept the RefCountedMemory* base class.
   base::RefCountedBytes* data_bytes =
       GetDataFromHandle(params.metafile_data_handle, params.data_size);
-  if (!data_bytes)
+  if (!data_bytes || !data_bytes->size())
     return;
 
   print_preview_ui->SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,

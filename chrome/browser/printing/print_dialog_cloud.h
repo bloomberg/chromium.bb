@@ -42,7 +42,7 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
 // to.
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
                                gfx::NativeWindow modal_parent,
-                               scoped_refptr<base::RefCountedBytes> data,
+                               const base::RefCountedBytes* data,
                                const string16& print_job_title,
                                const string16& print_ticket,
                                const std::string& file_type);

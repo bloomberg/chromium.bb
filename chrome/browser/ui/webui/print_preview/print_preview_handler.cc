@@ -184,7 +184,8 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
   return settings.release();
 }
 
-int GetPageCountFromSettingsDictionary(const DictionaryValue& settings) {
+void ReportPageCount(const DictionaryValue& settings,
+                     const std::string& printer_type) {
   int count = 0;
   const ListValue* page_range_array;
   if (settings.GetList(printing::kSettingPageRange, &page_range_array)) {
@@ -201,7 +202,9 @@ int GetPageCountFromSettingsDictionary(const DictionaryValue& settings) {
       count += (range.to - range.from) + 1;
     }
   }
-  return count;
+  UMA_HISTOGRAM_COUNTS(base::StringPrintf("PrintPreview.PageCount.%s",
+                                          printer_type.c_str()),
+                       count);
 }
 
 // Track the popularity of print settings and report the stats.
@@ -449,17 +452,31 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
   }
 
+  if (print_to_pdf) {
+    ReportPageCount(*settings, "PrintToPDF");
+    ReportUserActionHistogram(PRINT_TO_PDF);
+    PrintToPdf();
+    return;
+  }
+
+  scoped_refptr<base::RefCountedBytes> data;
+  string16 title;
+  if (!GetPreviewDataAndTitle(&data, &title)) {
+    // Nothing to print, no preview available.
+    return;
+  }
+
   if (is_cloud_printer) {
-    SendCloudPrintJob();
-  } else if (print_to_pdf) {
-    HandlePrintToPdf(*settings);
+    ReportPageCount(*settings, "PrintToCloudPrint");
+    ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
+    SendCloudPrintJob(data);
   } else if (is_cloud_dialog) {
-    HandlePrintWithCloudPrint(NULL);
+    ReportPageCount(*settings, "PrintToCloudPrintWebDialog");
+    PrintWithCloudPrintDialog(data, title);
   } else {
-    ReportPrintSettingsStats(*settings);
+    ReportPageCount(*settings, "PrintToPrinter");
     ReportUserActionHistogram(PRINT_TO_PRINTER);
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter",
-                         GetPageCountFromSettingsDictionary(*settings));
+    ReportPrintSettingsStats(*settings);
 
     // This tries to activate the initiator tab as well, so do not clear the
     // association with the initiator tab yet.
@@ -474,8 +491,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
     RenderViewHost* rvh = preview_web_contents()->GetRenderViewHost();
-    rvh->Send(
-        new PrintMsg_PrintForPrintPreview(rvh->GetRoutingID(), *settings));
+    rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->GetRoutingID(),
+                                                *settings));
 
     // For all other cases above, the preview dialog will stay open until the
     // printing has finished. Then the dialog closes and PrintPreviewDone() gets
@@ -489,22 +506,16 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   }
 }
 
-void PrintPreviewHandler::HandlePrintToPdf(
-    const base::DictionaryValue& settings) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
+void PrintPreviewHandler::PrintToPdf() {
   if (print_to_pdf_path_.get()) {
     // User has already selected a path, no need to show the dialog again.
-    scoped_refptr<base::RefCountedBytes> data;
-    print_preview_ui->GetPrintPreviewDataForIndex(
-        printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-    PostPrintToPdfTask(data);
-  } else if (!select_file_dialog_.get() || !select_file_dialog_->IsRunning(
-        platform_util::GetTopLevel(preview_web_contents()->GetNativeView()))) {
-    ReportUserActionHistogram(PRINT_TO_PDF);
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF",
-                         GetPageCountFromSettingsDictionary(settings));
-
+    PostPrintToPdfTask();
+  } else if (!select_file_dialog_ ||
+             !select_file_dialog_->IsRunning(
+                  platform_util::GetTopLevel(
+                      preview_web_contents()->GetNativeView()))) {
+    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+        web_ui()->GetController());
     // Pre-populating select file dialog with print job title.
     string16 print_job_title_utf16 = print_preview_ui->initiator_tab_title();
 
@@ -586,21 +597,12 @@ void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
       base::Bind(&PrintPreviewHandler::OnSigninComplete, AsWeakPtr()));
 }
 
-void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
+void PrintPreviewHandler::PrintWithCloudPrintDialog(
+    const base::RefCountedBytes* data,
+    const string16& title) {
   // Record the number of times the user asks to print via cloud print
   // instead of the print preview dialog.
   ReportStats();
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  scoped_refptr<base::RefCountedBytes> data;
-  print_preview_ui->GetPrintPreviewDataForIndex(
-      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  if (!data.get()) {
-    NOTREACHED();
-    return;
-  }
-  DCHECK_GT(data->size(), 0U);
 
   gfx::NativeWindow modal_parent =
       platform_util::GetTopLevel(preview_web_contents()->GetNativeView());
@@ -608,7 +610,7 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
       preview_web_contents()->GetBrowserContext(),
       modal_parent,
       data,
-      string16(print_preview_ui->initiator_tab_title()),
+      title,
       string16(),
       std::string("application/pdf"));
 
@@ -654,6 +656,17 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
 void PrintPreviewHandler::HandleManagePrinters(const ListValue* /*args*/) {
   ++manage_printers_dialog_request_count_;
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
+}
+
+void PrintPreviewHandler::HandlePrintWithCloudPrint(
+    const base::ListValue* /*args*/) {
+  scoped_refptr<base::RefCountedBytes> data;
+  string16 title;
+  if (!GetPreviewDataAndTitle(&data, &title)) {
+    // Nothing to print, no preview available.
+    return;
+  }
+  PrintWithCloudPrintDialog(data, title);
 }
 
 void PrintPreviewHandler::HandleClosePreviewDialog(const ListValue* /*args*/) {
@@ -814,25 +827,17 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
   }
 }
 
-void PrintPreviewHandler::SendCloudPrintJob() {
-  ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
-  scoped_refptr<base::RefCountedBytes> data;
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  print_preview_ui->GetPrintPreviewDataForIndex(
-      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  if (data.get() && data->size() > 0U && data->front()) {
-    // BASE64 encode the job data.
-    std::string raw_data(reinterpret_cast<const char*>(data->front()),
-                         data->size());
-    std::string base64_data;
-    if (!base::Base64Encode(raw_data, &base64_data)) {
-      NOTREACHED() << "Base64 encoding PDF data.";
-    }
-    StringValue data_value(base64_data);
-
-    web_ui()->CallJavascriptFunction("printToCloud", data_value);
+void PrintPreviewHandler::SendCloudPrintJob(const base::RefCountedBytes* data) {
+  // BASE64 encode the job data.
+  std::string raw_data(reinterpret_cast<const char*>(data->front()),
+                       data->size());
+  std::string base64_data;
+  if (!base::Base64Encode(raw_data, &base64_data)) {
+    NOTREACHED() << "Base64 encoding PDF data.";
   }
+  StringValue data_value(base64_data);
+
+  web_ui()->CallJavascriptFunction("printToCloud", data_value);
 }
 
 WebContents* PrintPreviewHandler::GetInitiatorTab() const {
@@ -908,20 +913,16 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   sticky_settings->StoreSavePath(path.DirName());
   sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  print_preview_ui->web_ui()->CallJavascriptFunction("fileSelectionCompleted");
-  scoped_refptr<base::RefCountedBytes> data;
-  print_preview_ui->GetPrintPreviewDataForIndex(
-      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
+  web_ui()->CallJavascriptFunction("fileSelectionCompleted");
   print_to_pdf_path_.reset(new FilePath(path));
-  PostPrintToPdfTask(data);
+  PostPrintToPdfTask();
 }
 
-void PrintPreviewHandler::PostPrintToPdfTask(base::RefCountedBytes* data) {
-  if (!data) {
-    NOTREACHED();
+void PrintPreviewHandler::PostPrintToPdfTask() {
+  scoped_refptr<base::RefCountedBytes> data;
+  string16 title;
+  if (!GetPreviewDataAndTitle(&data, &title)) {
+    NOTREACHED() << "Preview data was checked before file dialog.";
     return;
   }
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
@@ -962,3 +963,24 @@ void PrintPreviewHandler::ClearInitiatorTabDetails() {
   if (dialog_controller)
     dialog_controller->EraseInitiatorTabInfo(preview_web_contents());
 }
+
+bool PrintPreviewHandler::GetPreviewDataAndTitle(
+    scoped_refptr<base::RefCountedBytes>* data,
+    string16* title) const {
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+      web_ui()->GetController());
+  scoped_refptr<base::RefCountedBytes> tmp_data;
+  print_preview_ui->GetPrintPreviewDataForIndex(
+      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &tmp_data);
+
+  if (!tmp_data) {
+    // Nothing to print, no preview available.
+    return false;
+  }
+  DCHECK(tmp_data->size() && tmp_data->front());
+
+  *data = tmp_data;
+  *title = print_preview_ui->initiator_tab_title();
+  return true;
+}
+
