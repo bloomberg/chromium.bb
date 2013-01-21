@@ -38,9 +38,6 @@ bool HasAnyAvailableDevice() {
   return !audio_devices.empty() || !video_devices.empty();
 };
 
-const char kAudioKey[] = "audio";
-const char kVideoKey[] = "video";
-
 }  // namespace
 
 MediaStreamDevicesController::MediaStreamDevicesController(
