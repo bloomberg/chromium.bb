@@ -59,6 +59,7 @@ public:
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
     virtual void sendManagedMemoryStats() = 0;
     virtual bool isInsideDraw() = 0;
+    virtual void renewTreePriority() = 0;
 };
 
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
@@ -259,6 +260,8 @@ public:
     skia::RefPtr<SkPicture> capturePicture();
 
     bool pinchGestureActive() const { return m_pinchGestureActive; }
+
+    void setTreePriority(TreePriority priority);
 
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);

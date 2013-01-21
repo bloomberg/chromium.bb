@@ -12,6 +12,7 @@
 #include "cc/frame_rate_controller.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/scheduler.h"
@@ -1098,6 +1099,19 @@ void ThreadProxy::capturePictureOnImplThread(CompletionEvent* completion, skia::
     DCHECK(isImplThread());
     *picture = m_layerTreeHostImpl->capturePicture();
     completion->signal();
+}
+
+void ThreadProxy::renewTreePriority()
+{
+    // We use the same priority for both trees by default.
+    TreePriority priority = SAME_PRIORITY_FOR_BOTH_TREES;
+
+    // New content always takes priority when we have an active tree with
+    // evicted resources.
+    if (m_layerTreeHostImpl->activeTree()->ContentsTexturesPurged())
+        priority = NEW_CONTENT_TAKES_PRIORITY;
+
+    m_layerTreeHostImpl->setTreePriority(priority);
 }
 
 }  // namespace cc

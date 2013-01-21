@@ -71,6 +71,7 @@ public:
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
     virtual void sendManagedMemoryStats() OVERRIDE;
     virtual bool isInsideDraw() OVERRIDE;
+    virtual void renewTreePriority() OVERRIDE;
 
     // SchedulerClient implementation
     virtual void scheduledActionBeginFrame() OVERRIDE;
@@ -142,6 +143,7 @@ private:
     void setNeedsForcedCommitOnImplThread();
     void commitPendingOnImplThreadForTesting(CommitPendingRequest* request);
     void capturePictureOnImplThread(CompletionEvent*, skia::RefPtr<SkPicture>*);
+    void renewTreePriorityOnImplThread();
 
     // Accessed on main thread only.
     bool m_animateRequested; // Set only when setNeedsAnimate is called.

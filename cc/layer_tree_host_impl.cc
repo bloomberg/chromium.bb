@@ -695,6 +695,7 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
             pendingTree()->SetContentsTexturesPurged();
         m_client->setNeedsCommitOnImplThread();
         m_client->onCanDrawStateChanged(canDraw());
+        m_client->renewTreePriority();
     }
     m_client->sendManagedMemoryStats();
 
@@ -970,6 +971,7 @@ void LayerTreeHostImpl::activatePendingTree()
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
     m_client->setNeedsRedrawOnImplThread();
+    m_client->renewTreePriority();
 }
 
 void LayerTreeHostImpl::setVisible(bool visible)
@@ -1647,6 +1649,20 @@ void LayerTreeHostImpl::animateScrollbarsRecursive(LayerImpl* layer, base::TimeT
 
     for (size_t i = 0; i < layer->children().size(); ++i)
         animateScrollbarsRecursive(layer->children()[i], time);
+}
+
+void LayerTreeHostImpl::setTreePriority(TreePriority priority)
+{
+    if (!m_tileManager)
+        return;
+
+    GlobalStateThatImpactsTilePriority new_state(m_tileManager->GlobalState());
+    if (new_state.tree_priority == priority)
+        return;
+
+    TRACE_COUNTER_ID1("cc", "TreePriority", this, priority);
+    new_state.tree_priority = priority;
+    m_tileManager->SetGlobalState(new_state);
 }
 
 // static

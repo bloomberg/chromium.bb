@@ -179,8 +179,8 @@ void TileManager::ManageTiles() {
   manage_tiles_pending_ = false;
   ++manage_tiles_call_count_;
 
-  const bool smoothness_takes_priority =
-      global_state_.smoothness_takes_priority;
+  const TreePriority tree_priority = global_state_.tree_priority;
+  TRACE_COUNTER_ID1("cc", "TreePriority", this, tree_priority);
 
   // For each tree, bin into different categories of tiles.
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
@@ -188,10 +188,17 @@ void TileManager::ManageTiles() {
     ManagedTileState& mts = tile->managed_state();
 
     TilePriority prio;
-    if (smoothness_takes_priority)
-      prio = tile->priority(ACTIVE_TREE);
-    else
-      prio = tile->combined_priority();
+    switch (tree_priority) {
+      case SAME_PRIORITY_FOR_BOTH_TREES:
+        prio = tile->combined_priority();
+        break;
+      case SMOOTHNESS_TAKES_PRIORITY:
+        prio = tile->priority(ACTIVE_TREE);
+        break;
+      case NEW_CONTENT_TAKES_PRIORITY:
+        prio = tile->priority(PENDING_TREE);
+        break;
+    }
 
     mts.resolution = prio.resolution;
     mts.time_to_needed_in_seconds = prio.time_to_needed_in_seconds();

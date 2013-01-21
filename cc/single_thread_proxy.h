@@ -62,6 +62,7 @@ public:
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
     virtual void sendManagedMemoryStats() OVERRIDE;
     virtual bool isInsideDraw() OVERRIDE;
+    virtual void renewTreePriority() OVERRIDE { }
 
     // Called by the legacy path where RenderWidget does the scheduling.
     void compositeImmediately();

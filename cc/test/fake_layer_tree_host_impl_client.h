@@ -30,6 +30,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual bool reduceContentsTextureMemoryOnImplThread(size_t, int) OVERRIDE;
   virtual void sendManagedMemoryStats() OVERRIDE { }
   virtual bool isInsideDraw() OVERRIDE;
+  virtual void renewTreePriority() OVERRIDE { }
 };
 
 }  // namespace cc

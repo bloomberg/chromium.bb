@@ -93,20 +93,25 @@ enum TileMemoryLimitPolicy {
   ALLOW_ANYTHING, // Venti.
 };
 
+enum TreePriority {
+  SAME_PRIORITY_FOR_BOTH_TREES,
+  SMOOTHNESS_TAKES_PRIORITY,
+  NEW_CONTENT_TAKES_PRIORITY
+};
+
 class GlobalStateThatImpactsTilePriority {
  public:
   GlobalStateThatImpactsTilePriority()
     : memory_limit_policy(ALLOW_NOTHING)
     , memory_limit_in_bytes(0)
-    , smoothness_takes_priority(false) {
+    , tree_priority(SAME_PRIORITY_FOR_BOTH_TREES) {
   }
 
   TileMemoryLimitPolicy memory_limit_policy;
 
   size_t memory_limit_in_bytes;
 
-  // Set when scrolling.
-  bool smoothness_takes_priority;
+  TreePriority tree_priority;
 };
 
 }  // namespace cc

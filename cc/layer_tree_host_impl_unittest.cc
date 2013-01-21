@@ -103,6 +103,7 @@ public:
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return m_reduceMemoryResult; }
     virtual void sendManagedMemoryStats() OVERRIDE { }
     virtual bool isInsideDraw() OVERRIDE { return false; }
+    virtual void renewTreePriority() OVERRIDE { }
 
     void setReduceMemoryResult(bool reduceMemoryResult) { m_reduceMemoryResult = reduceMemoryResult; }
 
