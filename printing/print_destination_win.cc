@@ -4,6 +4,7 @@
 
 #include "printing/print_destination_interface.h"
 
+#include "base/safe_numerics.h"
 #include "base/win/metro.h"
 #include "win8/util/win8_util.h"
 
@@ -33,7 +34,8 @@ class PrintDestinationWin : public PrintDestinationInterface {
                               void* content,
                               size_t content_size) {
     if (metro_set_print_page_content_)
-      metro_set_print_page_content_(page_number - 1, content, content_size);
+      metro_set_print_page_content_(page_number - 1, content,
+          base::checked_numeric_cast<UINT32>(content_size));
   }
  private:
   typedef void (*MetroSetPrintPageCount)(INT);

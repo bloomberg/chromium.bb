@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/md5.h"
+#include "base/safe_numerics.h"
 #include "base/string_number_conversions.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -71,7 +72,8 @@ bool Image::SaveToPng(const FilePath& filepath) const {
   if (success) {
     int write_bytes = file_util::WriteFile(
         filepath,
-        reinterpret_cast<char*>(&*compressed.begin()), compressed.size());
+        reinterpret_cast<char*>(&*compressed.begin()),
+        base::checked_numeric_cast<int>(compressed.size()));
     success = (write_bytes == static_cast<int>(compressed.size()));
     DCHECK(success);
   }
@@ -149,7 +151,8 @@ bool Image::LoadPng(const std::string& compressed) {
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
   NativeMetafile metafile;
-  if (!metafile.InitFromData(data.data(), data.size()))
+  if (!metafile.InitFromData(data.data(),
+                             base::checked_numeric_cast<uint32>(data.size())))
     return false;
   return LoadMetafile(metafile);
 }
