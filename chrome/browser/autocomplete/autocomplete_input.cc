@@ -72,6 +72,16 @@ AutocompleteInput::AutocompleteInput(const string16& text,
 
   size_t chars_removed = RemoveForcedQueryStringIfNecessary(type_, &text_);
   AdjustCursorPositionIfNecessary(chars_removed, &cursor_position_);
+  if (chars_removed) {
+    // Remove spaces between opening question mark and first actual character.
+    string16 trimmed_text;
+    if ((TrimWhitespace(text_, TRIM_LEADING, &trimmed_text) & TRIM_LEADING) !=
+        0) {
+      AdjustCursorPositionIfNecessary(text_.length() - trimmed_text.length(),
+                                      &cursor_position_);
+      text_ = trimmed_text;
+    }
+  }
 }
 
 AutocompleteInput::~AutocompleteInput() {

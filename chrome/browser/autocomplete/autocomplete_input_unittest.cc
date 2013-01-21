@@ -222,6 +222,9 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
 
     // forced query.
     { ASCIIToUTF16("?foo bar"), 2, ASCIIToUTF16("foo bar"), 1 },
+    { ASCIIToUTF16("  ?foo bar"), 4, ASCIIToUTF16("foo bar"), 1 },
+    { ASCIIToUTF16("?  foo bar"), 4, ASCIIToUTF16("foo bar"), 1 },
+    { ASCIIToUTF16("  ?  foo bar"), 6, ASCIIToUTF16("foo bar"), 1 },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
