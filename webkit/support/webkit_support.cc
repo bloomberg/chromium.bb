@@ -267,16 +267,17 @@ FilePath GetWebKitRootDirFilePath() {
   if (file_util::PathExists(
           basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
     // We're in a WebKit-in-chrome checkout.
-    return basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+    basePath = basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
   } else if (file_util::PathExists(
           basePath.Append(FILE_PATH_LITERAL("chromium")))) {
     // We're in a WebKit-only checkout on Windows.
-    return basePath.Append(FILE_PATH_LITERAL("../.."));
+    basePath = basePath.Append(FILE_PATH_LITERAL("../.."));
   } else if (file_util::PathExists(
           basePath.Append(FILE_PATH_LITERAL("webkit/support")))) {
     // We're in a WebKit-only/xcodebuild checkout on Mac
-    return basePath.Append(FILE_PATH_LITERAL("../../.."));
+    basePath = basePath.Append(FILE_PATH_LITERAL("../../.."));
   }
+  CHECK(file_util::AbsolutePath(&basePath));
   // We're in a WebKit-only, make-build, so the DIR_SOURCE_ROOT is already the
   // WebKit root. That, or we have no idea where we are.
   return basePath;
@@ -480,7 +481,6 @@ WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota) {
 
 WebKit::WebString GetWebKitRootDir() {
   FilePath path = GetWebKitRootDirFilePath();
-  CHECK(file_util::AbsolutePath(&path));
   std::string path_ascii = path.MaybeAsASCII();
   CHECK(!path_ascii.empty());
   return WebKit::WebString::fromUTF8(path_ascii.c_str());
