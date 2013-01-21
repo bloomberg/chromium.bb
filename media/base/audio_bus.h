@@ -83,7 +83,7 @@ class MEDIA_EXPORT AudioBus {
   const float* channel(int channel) const { return channel_data_[channel]; }
   void SetChannelData(int channel, float* data);
 
-  int channels() const { return channel_data_.size(); }
+  int channels() const { return static_cast<int>(channel_data_.size()); }
   int frames() const { return frames_; }
   void set_frames(int frames);
 

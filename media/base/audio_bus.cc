@@ -90,10 +90,9 @@ static void ToInterleavedInternal(const AudioBus* source, int start_frame,
   }
 }
 
-static void ValidateConfig(int channels, int frames) {
+static void ValidateConfig(size_t channels, int frames) {
   CHECK_GT(frames, 0);
-  CHECK_GT(channels, 0);
-  CHECK_LE(channels, limits::kMaxChannels);
+  CHECK_LE(channels, static_cast<size_t>(limits::kMaxChannels));
 }
 
 static void CheckOverflow(int start_frame, int frames, int total_frames) {
