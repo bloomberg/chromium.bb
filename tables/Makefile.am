@@ -60,6 +60,7 @@ table_files = \
 	dra.ctb \
 	en_CA.ctb \
 	en-chess.ctb \
+	en-gb-comp8.ctb \
 	en-gb-g1.utb \
 	en-GB-g2.ctb \
 	en-ueb-g1.ctb \
