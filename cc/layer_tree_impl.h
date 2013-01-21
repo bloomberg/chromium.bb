@@ -121,7 +121,7 @@ class CC_EXPORT LayerTreeImpl {
 
   const LayerList& RenderSurfaceLayerList() const;
 
-  gfx::Size ContentSize() const;
+  gfx::Size ScrollableSize() const;
 
   LayerImpl* LayerById(int id);
 

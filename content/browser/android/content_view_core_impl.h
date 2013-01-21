@@ -258,7 +258,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  gfx::Rect GetBounds() const;
+  gfx::Size GetPhysicalSize() const;
+  gfx::Size GetDIPSize() const;
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);

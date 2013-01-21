@@ -295,7 +295,6 @@ private:
     bool calculateRenderPasses(FrameData&);
     void animateLayersRecursive(LayerImpl*, base::TimeTicks monotonicTime, base::Time wallClockTime, AnimationEventsVector*, bool& didAnimate, bool& needsAnimateLayers);
     void setBackgroundTickingEnabled(bool);
-    gfx::Size contentSize() const;
 
     void sendDidLoseOutputSurfaceRecursive(LayerImpl*);
     void clearRenderSurfaces();

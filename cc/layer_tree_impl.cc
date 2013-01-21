@@ -97,28 +97,21 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   if (!root_scroll_layer_ || !root_scroll_layer_->children().size())
     return;
 
-  gfx::SizeF view_bounds = device_viewport_size();
-  if (LayerImpl* clip_layer = root_scroll_layer_->parent()) {
-    // Compensate for non-overlay scrollbars.
-    if (clip_layer->masksToBounds())
-      view_bounds = gfx::ScaleSize(clip_layer->bounds(), device_scale_factor());
-  }
-
-  gfx::Size content_bounds = ContentSize();
-  if (settings().pageScalePinchZoomEnabled) {
-    // Pinch with pageScale scrolls entirely in layout space.  ContentSize
-    // returns the bounds including the page scale factor, so calculate the
-    // pre page-scale layout size here.
-    float page_scale_factor = pinch_zoom_viewport().page_scale_factor();
-    content_bounds.set_width(content_bounds.width() / page_scale_factor);
-    content_bounds.set_height(content_bounds.height() / page_scale_factor);
-  } else {
+  gfx::SizeF view_bounds;
+  if (!settings().pageScalePinchZoomEnabled) {
+    view_bounds = device_viewport_size();
+    if (LayerImpl* clip_layer = root_scroll_layer_->parent()) {
+      // Compensate for non-overlay scrollbars.
+      if (clip_layer->masksToBounds())
+        view_bounds = gfx::ScaleSize(clip_layer->bounds(), device_scale_factor());
+    }
     view_bounds.Scale(1 / pinch_zoom_viewport().page_scale_delta());
+  } else {
+    view_bounds = layout_viewport_size();
   }
 
-  gfx::Vector2dF max_scroll = gfx::Rect(content_bounds).bottom_right() -
+  gfx::Vector2dF max_scroll = gfx::Rect(ScrollableSize()).bottom_right() -
       gfx::RectF(view_bounds).bottom_right();
-  max_scroll.Scale(1 / device_scale_factor());
 
   // The viewport may be larger than the contents in some cases, such as
   // having a vertical scrollbar but no horizontal overflow.
@@ -187,7 +180,7 @@ const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
   return render_surface_layer_list_;
 }
 
-gfx::Size LayerTreeImpl::ContentSize() const {
+gfx::Size LayerTreeImpl::ScrollableSize() const {
   if (!root_scroll_layer_ || root_scroll_layer_->children().empty())
     return gfx::Size();
   return root_scroll_layer_->children()[0]->bounds();

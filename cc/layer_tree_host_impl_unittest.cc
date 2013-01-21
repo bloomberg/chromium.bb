@@ -541,23 +541,6 @@ TEST_P(LayerTreeHostImplTest, scrollByReturnsCorrectValue)
     EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(5000, 5000)));
 }
 
-TEST_P(LayerTreeHostImplTest, maxScrollOffsetChangedByDeviceScaleFactor)
-{
-    setupScrollAndContentsLayers(gfx::Size(100, 100));
-
-    float deviceScaleFactor = 2;
-    gfx::Size layoutViewport(25, 25);
-    gfx::Size deviceViewport(gfx::ToFlooredSize(gfx::ScaleSize(layoutViewport, deviceScaleFactor)));
-    m_hostImpl->setViewportSize(layoutViewport, deviceViewport);
-    m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
-    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), gfx::Vector2d(25, 25));
-
-    deviceScaleFactor = 1;
-    m_hostImpl->setViewportSize(layoutViewport, layoutViewport);
-    m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
-    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), gfx::Vector2d(75, 75));
-}
-
 TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));

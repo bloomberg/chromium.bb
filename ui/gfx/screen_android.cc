@@ -14,7 +14,7 @@ class ScreenAndroid : public Screen {
   ScreenAndroid() {}
 
   bool IsDIPEnabled() OVERRIDE {
-    return false;
+    return true;
   }
 
   gfx::Point GetCursorScreenPoint() OVERRIDE {

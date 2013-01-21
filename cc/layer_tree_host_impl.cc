@@ -261,15 +261,15 @@ void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool
         return;
 
     gfx::Vector2dF scrollTotal = rootScrollLayer()->scrollOffset() + rootScrollLayer()->scrollDelta();
-    gfx::SizeF scaledContentSize = contentSize();
+    gfx::SizeF scaledScrollableSize = activeTree()->ScrollableSize();
     if (!m_settings.pageScalePinchZoomEnabled) {
         scrollTotal.Scale(1 / m_pinchZoomViewport.page_scale_factor());
-        scaledContentSize.Scale(1 / m_pinchZoomViewport.page_scale_factor());
+        scaledScrollableSize.Scale(1 / m_pinchZoomViewport.page_scale_factor());
     }
     gfx::SizeF viewportSize = gfx::ScaleSize(m_deviceViewportSize, 1 / m_deviceScaleFactor);
 
     double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
-    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, m_pinchZoomViewport.total_page_scale_factor(), viewportSize, scaledContentSize, startTimeSeconds);
+    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, m_pinchZoomViewport.total_page_scale_factor(), viewportSize, scaledScrollableSize, startTimeSeconds);
 
     if (anchorPoint) {
         gfx::Vector2dF anchor(targetOffset);
@@ -561,11 +561,6 @@ void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
     m_timeSourceClientAdapter->setActive(enabled);
 }
 
-gfx::Size LayerTreeHostImpl::contentSize() const
-{
-    return activeTree()->ContentSize();
-}
-
 static inline RenderPass* findRenderPassById(RenderPass::Id renderPassId, const LayerTreeHostImpl::FrameData& frame)
 {
     RenderPassIdHashMap::const_iterator it = frame.renderPassesById.find(renderPassId);
@@ -777,8 +772,8 @@ CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
 {
     CompositorFrameMetadata metadata;
     metadata.page_scale_factor = m_pinchZoomViewport.total_page_scale_factor();
-    metadata.viewport_size = m_pinchZoomViewport.Bounds().size();
-    metadata.root_layer_size = contentSize();
+    metadata.viewport_size = m_pinchZoomViewport.ZoomedViewport().size();
+    metadata.root_layer_size = activeTree()->ScrollableSize();
     metadata.min_page_scale_factor = m_pinchZoomViewport.min_page_scale_factor();
     metadata.max_page_scale_factor = m_pinchZoomViewport.max_page_scale_factor();
     if (m_topControlsManager) {
@@ -1053,6 +1048,7 @@ void LayerTreeHostImpl::setViewportSize(const gfx::Size& layoutViewportSize, con
     m_deviceViewportSize = deviceViewportSize;
 
     m_pinchZoomViewport.set_layout_viewport_size(layoutViewportSize);
+    m_pinchZoomViewport.set_device_viewport_size(deviceViewportSize);
 
     updateMaxScrollOffset();
 
@@ -1406,13 +1402,13 @@ void LayerTreeHostImpl::computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo)
     scrollBegin.Scale(m_pinchZoomViewport.page_scale_delta());
     float scaleBegin = m_pinchZoomViewport.total_page_scale_factor();
     float pageScaleDeltaToSend = m_pinchZoomViewport.min_page_scale_factor() / m_pinchZoomViewport.page_scale_factor();
-    gfx::SizeF scaledContentsSize = gfx::ScaleSize(contentSize(), pageScaleDeltaToSend);
+    gfx::SizeF scaledScrollableSize = gfx::ScaleSize(activeTree()->ScrollableSize(), pageScaleDeltaToSend);
 
     gfx::Vector2d anchorOffset = m_previousPinchAnchor.OffsetFromOrigin();
     gfx::Vector2dF scrollEnd = scrollBegin + anchorOffset;
     scrollEnd.Scale(m_pinchZoomViewport.min_page_scale_factor() / scaleBegin);
     scrollEnd -= anchorOffset;
-    scrollEnd.ClampToMax(gfx::RectF(scaledContentsSize).bottom_right() - gfx::Rect(m_deviceViewportSize).bottom_right());
+    scrollEnd.ClampToMax(gfx::RectF(scaledScrollableSize).bottom_right() - gfx::Rect(m_deviceViewportSize).bottom_right());
     scrollEnd.ClampToMin(gfx::Vector2d());
     scrollEnd.Scale(1 / pageScaleDeltaToSend);
     scrollEnd.Scale(m_deviceScaleFactor);

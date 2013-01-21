@@ -57,7 +57,9 @@ void SetContentCommandLineFlags(int max_render_process_count) {
       switches::kEnableCompositedScrollingForFrames);
 
   parsed_command_line->AppendSwitch(switches::kEnableGestureTapHighlight);
-  parsed_command_line->AppendSwitch(switches::kEnableCssTransformPinch);
+  parsed_command_line->AppendSwitch(switches::kEnablePinch);
+  if (!parsed_command_line->HasSwitch(cc::switches::kEnableImplSidePainting))
+    parsed_command_line->AppendSwitch(switches::kEnableCssTransformPinch);
 
   // Run the GPU service as a thread in the browser instead of as a
   // standalone process.

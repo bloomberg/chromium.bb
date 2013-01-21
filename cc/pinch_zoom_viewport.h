@@ -47,9 +47,10 @@ class CC_EXPORT PinchZoomViewport {
                                    float min_page_scale_factor,
                                    float max_page_scale_factor);
 
-  // Returns the bounds and offset of the scaled and translated viewport to use
-  // for pinch-zoom.
-  gfx::RectF Bounds() const;
+  // Returns the zoomed viewport in layout space. The rect's position is an
+  // offset from the root layer's scroll position (therefore, zero if fully
+  // zoomed out).
+  gfx::RectF ZoomedViewport() const;
 
   const gfx::Vector2dF& zoomed_viewport_offset() const {
     return zoomed_viewport_offset_;
@@ -57,6 +58,12 @@ class CC_EXPORT PinchZoomViewport {
 
   void set_layout_viewport_size(const gfx::SizeF& size) {
     layout_viewport_size_ = size;
+  }
+  // We need to store device_viewport_size separately because in mobile
+  // fixed-layout mode, there is not necessarily a simple mapping between layout
+  // viewport size and device viewport size.
+  void set_device_viewport_size(const gfx::SizeF& size) {
+    device_viewport_size_ = size;
   }
 
   // Apply the scroll offset in layout space to the offset of the pinch-zoom
@@ -81,6 +88,7 @@ class CC_EXPORT PinchZoomViewport {
 
   gfx::Vector2dF zoomed_viewport_offset_;
   gfx::SizeF layout_viewport_size_;
+  gfx::SizeF device_viewport_size_;
 };
 
 }  // namespace cc
