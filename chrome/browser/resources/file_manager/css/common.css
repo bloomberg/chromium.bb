@@ -188,6 +188,12 @@ input.common[type='checkbox']::after {
   color: #333;
 }
 
+.buttonbar button:hover,
+.buttonbar button:active,
+.buttonbar button[disabled] {
+  z-index: 10;
+}
+
 .buttonbar button:active img {
   opacity: 1.0;
 }
