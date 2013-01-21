@@ -468,6 +468,7 @@ WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota) {
 
 WebKit::WebString GetWebKitRootDir() {
   FilePath path = GetWebKitRootDirFilePath();
+  CHECK(file_util::AbsolutePath(&path));
   std::string path_ascii = path.MaybeAsASCII();
   CHECK(!path_ascii.empty());
   return WebKit::WebString::fromUTF8(path_ascii.c_str());
