@@ -1131,6 +1131,7 @@
         'browser/locale_tests_browsertest.cc',
         'browser/logging_chrome_browsertest.cc',
         'browser/managed_mode/managed_mode_browsertest.cc',
+        'browser/media/chrome_webrtc_browsertest.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.h',
         'browser/metrics/metrics_service_browsertest.cc',
@@ -1523,6 +1524,11 @@
         ['enable_rlz==0', {
           'sources!': [
             'browser/rlz/rlz_extension_apitest.cc',
+          ],
+        }],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'browser/media/chrome_webrtc_browsertest.cc',
           ],
         }],
         ['OS=="win"', {
