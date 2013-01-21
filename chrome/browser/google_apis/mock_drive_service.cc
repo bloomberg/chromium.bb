@@ -119,7 +119,7 @@ void MockDriveService::DownloadHostedDocumentStub(
 
 void MockDriveService::CopyHostedDocumentStub(
     const std::string& resource_id,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const GetResourceEntryCallback& callback) {
   scoped_ptr<ResourceEntry> resource_entry =
       ResourceEntry::ExtractAndParse(*document_data_);
@@ -131,7 +131,7 @@ void MockDriveService::CopyHostedDocumentStub(
 
 void MockDriveService::RenameResourceStub(
     const GURL& edit_url,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
@@ -158,7 +158,7 @@ void MockDriveService::RemoveResourceFromDirectoryStub(
 
 void MockDriveService::CreateDirectoryStub(
     const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
+    const std::string& directory_name,
     const GetResourceEntryCallback& callback) {
   scoped_ptr<ResourceEntry> resource_entry =
       ResourceEntry::ExtractAndParse(*directory_data_);

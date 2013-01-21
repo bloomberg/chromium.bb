@@ -156,7 +156,7 @@ void DriveScheduler::DeleteResource(
 
 void DriveScheduler::CopyHostedDocument(
     const std::string& resource_id,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -173,7 +173,7 @@ void DriveScheduler::CopyHostedDocument(
 
 void DriveScheduler::RenameResource(
     const GURL& edit_url,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -225,7 +225,7 @@ void DriveScheduler::RemoveResourceFromDirectory(
 
 void DriveScheduler::AddNewDirectory(
     const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
+    const std::string& directory_name,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

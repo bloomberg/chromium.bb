@@ -180,7 +180,7 @@ class FakeDriveService : public google_apis::DummyDriveService {
 
   virtual void AddNewDirectory(
       const GURL& parent_content_url,
-      const FilePath::StringType& directory_name,
+      const std::string& directory_name,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
     scoped_ptr<base::Value> dir_value(
         google_apis::test_util::LoadJSONFile(kTestDirectory));
@@ -464,4 +464,3 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
 }
 
 }  // namespace
-

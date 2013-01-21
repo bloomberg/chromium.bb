@@ -116,12 +116,12 @@ class DriveScheduler
   // Adds a CopyHostedDocument operation to the queue.
   void CopyHostedDocument(
       const std::string& resource_id,
-      const FilePath::StringType& new_name,
+      const std::string& new_name,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a RenameResource operation to the queue.
   void RenameResource(const GURL& edit_url,
-                      const FilePath::StringType& new_name,
+                      const std::string& new_name,
                       const google_apis::EntryActionCallback& callback);
 
   // Adds a AddResourceToDirectory operation to the queue.
@@ -137,7 +137,7 @@ class DriveScheduler
 
   // Adds a AddNewDirectory operation to the queue.
   void AddNewDirectory(const GURL& parent_content_url,
-                       const FilePath::StringType& directory_name,
+                       const std::string& directory_name,
                        const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a DownloadFile operation to the queue.
@@ -194,7 +194,7 @@ class DriveScheduler
     // Used by:
     //   TYPE_COPY_HOSTED_DOCUMENT
     //   TYPE_RENAME_RESOURCE
-    FilePath::StringType new_name;
+    std::string new_name;
 
     // Parameters for AddNewDirectory
     // Used by:
@@ -202,7 +202,7 @@ class DriveScheduler
     //   TYPE_ADD_RESOURCE_TO_DIRECTORY
     //   TYPE_REMOVE_RESOURCE_FROM_DIRECTORY
     GURL parent_content_url;
-    FilePath::StringType directory_name;
+    std::string directory_name;
 
     // Callback for operations that take a GetResourceListCallback.
     // Used by:

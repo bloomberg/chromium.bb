@@ -228,7 +228,7 @@ class CreateDirectoryOperation : public GetDataOperation {
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
       const GURL& parent_content_url,
-      const FilePath::StringType& directory_name);
+      const std::string& directory_name);
   virtual ~CreateDirectoryOperation();
 
  protected:
@@ -241,7 +241,7 @@ class CreateDirectoryOperation : public GetDataOperation {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const GURL parent_content_url_;
-  const FilePath::StringType directory_name_;
+  const std::string directory_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
 };
@@ -260,7 +260,7 @@ class CopyHostedDocumentOperation : public GetDataOperation {
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
       const std::string& resource_id,
-      const FilePath::StringType& new_name);
+      const std::string& new_name);
   virtual ~CopyHostedDocumentOperation();
 
  protected:
@@ -273,7 +273,7 @@ class CopyHostedDocumentOperation : public GetDataOperation {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const std::string resource_id_;
-  const FilePath::StringType new_name_;
+  const std::string new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyHostedDocumentOperation);
 };
@@ -289,7 +289,7 @@ class RenameResourceOperation : public EntryActionOperation {
       net::URLRequestContextGetter* url_request_context_getter,
       const EntryActionCallback& callback,
       const GURL& edit_url,
-      const FilePath::StringType& new_name);
+      const std::string& new_name);
   virtual ~RenameResourceOperation();
 
  protected:
@@ -302,7 +302,7 @@ class RenameResourceOperation : public EntryActionOperation {
 
  private:
   const GURL edit_url_;
-  const FilePath::StringType new_name_;
+  const std::string new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
 };

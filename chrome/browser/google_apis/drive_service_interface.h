@@ -199,7 +199,7 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void CopyHostedDocument(
       const std::string& resource_id,
-      const FilePath::StringType& new_name,
+      const std::string& new_name,
       const GetResourceEntryCallback& callback) = 0;
 
   // Renames a document or collection identified by its |edit_url|
@@ -207,7 +207,7 @@ class DriveServiceInterface {
   // invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual void RenameResource(const GURL& edit_url,
-                              const FilePath::StringType& new_name,
+                              const std::string& new_name,
                               const EntryActionCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
@@ -236,7 +236,7 @@ class DriveServiceInterface {
   // a macro on Windows.
   // |callback| must not be null.
   virtual void AddNewDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
+                               const std::string& directory_name,
                                const GetResourceEntryCallback& callback) = 0;
 
   // Downloads a file identified by its |content_url|. The downloaded file will

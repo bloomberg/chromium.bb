@@ -401,7 +401,7 @@ void FakeDriveService::DownloadFile(
 
 void FakeDriveService::CopyHostedDocument(
     const std::string& resource_id,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -446,8 +446,7 @@ void FakeDriveService::CopyHostedDocument(
             scoped_ptr<DictionaryValue> copied_entry(entry->DeepCopy());
             copied_entry->SetString("gd$resourceId.$t",
                                     resource_id + "_copied");
-            copied_entry->SetString("title.$t",
-                                    FilePath(new_name).AsUTF8Unsafe());
+            copied_entry->SetString("title.$t", new_name);
 
             AddNewChangestamp(copied_entry.get());
 
@@ -477,7 +476,7 @@ void FakeDriveService::CopyHostedDocument(
 
 void FakeDriveService::RenameResource(
     const GURL& edit_url,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -490,8 +489,7 @@ void FakeDriveService::RenameResource(
 
   base::DictionaryValue* entry = FindEntryByEditUrl(edit_url);
   if (entry) {
-    entry->SetString("title.$t",
-                     FilePath(new_name).AsUTF8Unsafe());
+    entry->SetString("title.$t", new_name);
     AddNewChangestamp(entry);
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
@@ -592,7 +590,7 @@ void FakeDriveService::RemoveResourceFromDirectory(
 
 void FakeDriveService::AddNewDirectory(
     const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
+    const std::string& directory_name,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -625,7 +623,7 @@ void FakeDriveService::AddNewDirectory(
   scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
   // Set the resource ID and the title
   new_entry->SetString("gd$resourceId.$t", new_resource_id);
-  new_entry->SetString("title.$t", FilePath(directory_name).AsUTF8Unsafe());
+  new_entry->SetString("title.$t", directory_name);
 
   // Add "category" which sets the resource type to folder.
   base::ListValue* categories = new base::ListValue;

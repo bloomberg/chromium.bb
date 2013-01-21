@@ -201,7 +201,7 @@ void CopyOperation::CopyHostedDocumentToDirectory(
 
   drive_scheduler_->CopyHostedDocument(
       resource_id,
-      new_name,
+      FilePath(new_name).AsUTF8Unsafe(),
       base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  dir_path,

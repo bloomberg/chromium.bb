@@ -2223,7 +2223,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   scoped_ptr<google_apis::ResourceEntry> resource_entry;
   fake_drive_service_->AddNewDirectory(
       GURL(),  // Add to the root directory.
-      FILE_PATH_LITERAL("New Directory 1!"),
+      "New Directory 1!",
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
           &error,

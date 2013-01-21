@@ -200,7 +200,7 @@ class DriveFileSyncClient
                        scoped_ptr<google_apis::ResourceList> feed);
 
   void DidGetParentDirectoryForCreateDirectory(
-      const FilePath::StringType& directory_name,
+      const std::string& directory_name,
       const ResourceIdCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);

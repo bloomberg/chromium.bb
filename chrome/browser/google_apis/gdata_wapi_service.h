@@ -89,11 +89,11 @@ class GDataWapiService : public DriveServiceInterface,
       const GetContentCallback& get_content_callback) OVERRIDE;
   virtual void CopyHostedDocument(
       const std::string& resource_id,
-      const FilePath::StringType& new_name,
+      const std::string& new_name,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void RenameResource(
       const GURL& edit_url,
-      const FilePath::StringType& new_name,
+      const std::string& new_name,
       const EntryActionCallback& callback) OVERRIDE;
   virtual void AddResourceToDirectory(
       const GURL& parent_content_url,
@@ -105,7 +105,7 @@ class GDataWapiService : public DriveServiceInterface,
       const EntryActionCallback& callback) OVERRIDE;
   virtual void AddNewDirectory(
       const GURL& parent_content_url,
-      const FilePath::StringType& directory_name,
+      const std::string& directory_name,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void InitiateUpload(
       const InitiateUploadParams& params,

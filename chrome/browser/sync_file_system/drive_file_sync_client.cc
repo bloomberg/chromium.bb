@@ -169,7 +169,7 @@ void DriveFileSyncClient::DidGetDirectory(
       // Use empty content URL for root directory.
       drive_service_->AddNewDirectory(
           GURL(),  // parent_content_url
-          FilePath().AppendASCII(directory_name).value(),
+          directory_name,
           base::Bind(&DriveFileSyncClient::DidCreateDirectory,
                      AsWeakPtr(), callback));
       return;
@@ -178,8 +178,7 @@ void DriveFileSyncClient::DidGetDirectory(
         parent_resource_id,
         base::Bind(
             &DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory,
-            AsWeakPtr(), FilePath().AppendASCII(directory_name).value(),
-            callback));
+            AsWeakPtr(), directory_name, callback));
     return;
   }
 
@@ -191,7 +190,7 @@ void DriveFileSyncClient::DidGetDirectory(
 }
 
 void DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory(
-    const FilePath::StringType& directory_name,
+    const std::string& directory_name,
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {

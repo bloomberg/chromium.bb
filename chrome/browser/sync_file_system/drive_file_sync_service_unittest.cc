@@ -509,8 +509,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   scoped_ptr<google_apis::ResourceEntry> origin_directory_created
       = google_apis::ResourceEntry::ExtractAndParse(
           *origin_directory_created_value);
-  FilePath::StringType dirname = FilePath().AppendASCII(
-      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)).value();
+  std::string dirname =
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin);
   EXPECT_CALL(*mock_drive_service(),
               AddNewDirectory(kSyncRootContentURL, dirname, _))
       .WillOnce(InvokeGetResourceEntryCallback2(

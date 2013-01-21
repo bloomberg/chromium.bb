@@ -117,8 +117,8 @@ void MoveOperation::OnFilePathUpdated(const FileOperationCallback& callback,
 }
 
 void MoveOperation::Rename(const FilePath& file_path,
-                             const FilePath::StringType& new_name,
-                             const FileMoveCallback& callback) {
+                           const FilePath::StringType& new_name,
+                           const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -176,7 +176,7 @@ void MoveOperation::RenameAfterGetEntryInfo(
 
   drive_scheduler_->RenameResource(
       GURL(entry_proto->edit_url()),
-      file_name,
+      FilePath(file_name).AsUTF8Unsafe(),
       base::Bind(&MoveOperation::RenameEntryLocally,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,

@@ -683,7 +683,7 @@ void DriveFileSystem::CreateDirectoryAfterFindFirstMissingPath(
 
   scheduler_->AddNewDirectory(
       result.last_dir_content_url,
-      result.first_missing_parent_path.BaseName().value(),
+      result.first_missing_parent_path.BaseName().AsUTF8Unsafe(),
       base::Bind(&DriveFileSystem::AddNewDirectory,
                  ui_weak_ptr_,
                  CreateDirectoryParams(

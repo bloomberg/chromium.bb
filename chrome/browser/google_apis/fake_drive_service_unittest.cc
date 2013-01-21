@@ -45,7 +45,7 @@ class FakeDriveServiceTest : public testing::Test {
   // Adds a new directory at |parent_content_url| (root if empty) with the
   // given name. Returns true on success.
   bool AddNewDirectory(const GURL& parent_content_url,
-                       const FilePath::StringType& directory_name) {
+                       const std::string& directory_name) {
     GDataErrorCode error = GDATA_OTHER_ERROR;
     scoped_ptr<ResourceEntry> resource_entry;
     fake_service_.AddNewDirectory(
@@ -170,7 +170,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
       "gdata/account_metadata.json"));
   // Add a new directory in the root directory. The new directory will have
   // the changestamp of 654322.
-  ASSERT_TRUE(AddNewDirectory(GURL(), FILE_PATH_LITERAL("new directory")));
+  ASSERT_TRUE(AddNewDirectory(GURL(), "new directory"));
 
   // Get the resource list newer than 654321.
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -469,7 +469,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.CopyHostedDocument(
       kResourceId,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -492,7 +492,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonexistingHostedDocument) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.CopyHostedDocument(
       kResourceId,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -509,7 +509,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingRegularFile) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.CopyHostedDocument(
       kResourceId,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -529,7 +529,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.CopyHostedDocument(
       kResourceId,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -548,7 +548,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RenameResource(
       kEditUrl,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -570,7 +570,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RenameResource(
       kEditUrl,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -588,7 +588,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RenameResource(
       kEditUrl,
-      FILE_PATH_LITERAL("new name"),
+      "new name",
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -780,7 +780,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewDirectory(
       GURL(),  // Empty means add it to the root directory.
-      FILE_PATH_LITERAL("new directory"),
+      "new directory",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -809,7 +809,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewDirectory(
       kParentContentUrl,
-      FILE_PATH_LITERAL("new directory"),
+      "new directory",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -837,7 +837,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewDirectory(
       kParentContentUrl,
-      FILE_PATH_LITERAL("new directory"),
+      "new directory",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));
@@ -855,7 +855,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.AddNewDirectory(
       GURL(),  // Empty means add it to the root directory.
-      FILE_PATH_LITERAL("new directory"),
+      "new directory",
       base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
                  &error,
                  &resource_entry));

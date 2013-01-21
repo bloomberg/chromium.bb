@@ -625,7 +625,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
                  &result_code,
                  &result_data),
       test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
-      FILE_PATH_LITERAL("new directory"));
+      "new directory");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -660,7 +660,7 @@ TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
                  &result_code,
                  &result_data),
       "document:5_document_resource_id",  // source resource ID
-      FILE_PATH_LITERAL("New Document"));
+      "New Document");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -692,7 +692,7 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
                  &result_code),
       test_server_.GetURL(
           "/feeds/default/private/full/file:2_file_resource_id"),
-      FILE_PATH_LITERAL("New File"));
+      "New File");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));

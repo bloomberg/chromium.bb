@@ -279,7 +279,7 @@ CreateDirectoryOperation::CreateDirectoryOperation(
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const GURL& parent_content_url,
-    const FilePath::StringType& directory_name)
+    const std::string& directory_name)
     : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_content_url_(parent_content_url),
@@ -316,7 +316,7 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
                           "http://schemas.google.com/docs/2007#folder");
   xml_writer.EndElement();  // Ends "category" element.
 
-  xml_writer.WriteElement("title", FilePath(directory_name_).AsUTF8Unsafe());
+  xml_writer.WriteElement("title", directory_name_);
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
@@ -334,7 +334,7 @@ CopyHostedDocumentOperation::CopyHostedDocumentOperation(
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const std::string& resource_id,
-    const FilePath::StringType& new_name)
+    const std::string& new_name)
     : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
@@ -362,7 +362,7 @@ bool CopyHostedDocumentOperation::GetContentData(
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
   xml_writer.WriteElement("id", resource_id_);
-  xml_writer.WriteElement("title", FilePath(new_name_).AsUTF8Unsafe());
+  xml_writer.WriteElement("title", new_name_);
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
@@ -379,7 +379,7 @@ RenameResourceOperation::RenameResourceOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback,
     const GURL& edit_url,
-    const FilePath::StringType& new_name)
+    const std::string& new_name)
     : EntryActionOperation(registry, url_request_context_getter, callback),
       edit_url_(edit_url),
       new_name_(new_name) {
@@ -411,7 +411,7 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   xml_writer.StartElement("entry");
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
-  xml_writer.WriteElement("title", FilePath(new_name_).AsUTF8Unsafe());
+  xml_writer.WriteElement("title", new_name_);
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();

@@ -72,11 +72,11 @@ void DummyDriveService::DownloadFile(
 
 void DummyDriveService::CopyHostedDocument(
     const std::string& resource_id,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const GetResourceEntryCallback& callback) {}
 
 void DummyDriveService::RenameResource(const GURL& edit_url,
-                                       const FilePath::StringType& new_name,
+                                       const std::string& new_name,
                                        const EntryActionCallback& callback) {}
 
 void DummyDriveService::AddResourceToDirectory(
@@ -91,7 +91,7 @@ void DummyDriveService::RemoveResourceFromDirectory(
 
 void DummyDriveService::AddNewDirectory(
     const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
+    const std::string& directory_name,
     const GetResourceEntryCallback& callback) {}
 
 void DummyDriveService::InitiateUpload(const InitiateUploadParams& params,

@@ -326,7 +326,7 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
   EXPECT_CALL(*mock_drive_service(),
               AddNewDirectory(
                   GURL(),  // content_url
-                  FilePath().AppendASCII(kSyncRootDirectoryName).value(),
+                  kSyncRootDirectoryName,
                   _))
       .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
                                                 base::Passed(&created_result)));
@@ -426,7 +426,7 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
   // Expected to call AddNewDirectory from GetDriveDirectoryForOrigin.
   EXPECT_CALL(*mock_drive_service(),
               AddNewDirectory(GURL("https://sync_root_content_url"),
-                              FilePath().AppendASCII(dir_title).value(),
+                              dir_title,
                               _))
       .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
                                                 base::Passed(&created_result)));

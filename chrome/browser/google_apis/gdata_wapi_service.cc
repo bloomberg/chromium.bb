@@ -379,7 +379,7 @@ void GDataWapiService::DeleteResource(
 
 void GDataWapiService::AddNewDirectory(
     const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
+    const std::string& directory_name,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -396,7 +396,7 @@ void GDataWapiService::AddNewDirectory(
 
 void GDataWapiService::CopyHostedDocument(
     const std::string& resource_id,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -413,7 +413,7 @@ void GDataWapiService::CopyHostedDocument(
 
 void GDataWapiService::RenameResource(
     const GURL& edit_url,
-    const FilePath::StringType& new_name,
+    const std::string& new_name,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

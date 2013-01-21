@@ -210,7 +210,7 @@ TEST_F(DriveSchedulerTest, CopyHostedDocument) {
 
   scheduler_->CopyHostedDocument(
       "document:5_document_resource_id",  // resource ID
-      FILE_PATH_LITERAL("New Document"),  // new name
+      "New Document",  // new name
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
           &error,
@@ -228,7 +228,7 @@ TEST_F(DriveSchedulerTest, RenameResource) {
 
   scheduler_->RenameResource(
       GURL("https://file1_link_self/file:2_file_resource_id"),
-      FILE_PATH_LITERAL("New Name"),
+      "New Name",
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
           &error));
@@ -277,7 +277,7 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
 
   scheduler_->AddNewDirectory(
       GURL(),  // Root directory.
-      FILE_PATH_LITERAL("New Directory"),
+      "New Directory",
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
           &error,
