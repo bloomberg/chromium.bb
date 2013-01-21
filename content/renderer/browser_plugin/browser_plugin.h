@@ -334,7 +334,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Used for HW compositing.
   bool compositing_enabled_;
-  scoped_ptr<BrowserPluginCompositingHelper> compositing_helper_;
+  scoped_refptr<BrowserPluginCompositingHelper> compositing_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };

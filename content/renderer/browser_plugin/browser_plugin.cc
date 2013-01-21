@@ -808,9 +808,10 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     return;
 
   if (enable && !compositing_helper_) {
-    compositing_helper_.reset(new BrowserPluginCompositingHelper(
+    compositing_helper_ = new BrowserPluginCompositingHelper(
         container_,
-        render_view_routing_id_));
+        browser_plugin_manager(),
+        render_view_routing_id_);
   }
 
   compositing_helper_->EnableCompositing(enable);
@@ -821,7 +822,8 @@ void BrowserPlugin::destroy() {
   // The BrowserPlugin's WebPluginContainer is deleted immediately after this
   // call returns, so let's not keep a reference to it around.
   container_ = NULL;
-  compositing_helper_.reset();
+  if (compositing_helper_)
+    compositing_helper_->OnContainerDestroy();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 

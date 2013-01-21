@@ -49,6 +49,8 @@ bool BrowserPluginManagerImpl::OnMessageReceived(
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginManagerImpl, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped,
+                        OnUnhandledSwap);
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_PluginAtPositionRequest,
                         OnPluginAtPositionRequest);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -75,6 +77,26 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
 
   Send(new BrowserPluginHostMsg_PluginAtPositionResponse(
        message.routing_id(), instance_id, request_id, local_position));
+}
+
+void BrowserPluginManagerImpl::OnUnhandledSwap(const IPC::Message& message,
+                                               int instance_id,
+                                               const gfx::Size& size,
+                                               std::string mailbox_name,
+                                               int gpu_route_id,
+                                               int gpu_host_id) {
+  // After the BrowserPlugin object sends a destroy message to the
+  // guest, it goes away and is unable to handle messages that
+  // might still be coming from the guest.
+  // In this case, we might receive a BuffersSwapped message that
+  // we need to ACK.
+  // Issue is tracked in crbug.com/170745.
+  Send(new BrowserPluginHostMsg_BuffersSwappedACK(
+      message.routing_id(),
+      gpu_route_id,
+      gpu_host_id,
+      mailbox_name,
+      0));
 }
 
 // static
