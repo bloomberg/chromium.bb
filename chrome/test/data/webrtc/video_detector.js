@@ -27,7 +27,7 @@ var gFingerprints = [];
 function startDetection(videoElementId, canvasId, width, height) {
   var video = document.getElementById(videoElementId);
   var canvas = document.getElementById(canvasId);
-  var NUM_FINGERPRINTS_TO_SAVE = 5;
+  var NUM_FINGERPRINTS_TO_SAVE = 10;
 
   setInterval(function() {
     var context = canvas.getContext('2d');
@@ -36,7 +36,7 @@ function startDetection(videoElementId, canvasId, width, height) {
     if (gFingerprints.length > NUM_FINGERPRINTS_TO_SAVE) {
       gFingerprints.shift();
     }
-  }, 100);
+  }, 200);
 
   returnToTest('ok-started');
 }
