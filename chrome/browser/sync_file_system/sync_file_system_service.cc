@@ -14,7 +14,11 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
@@ -121,6 +125,10 @@ SyncEventObserver::SyncServiceState RemoteStateToSyncServiceState(
   }
   NOTREACHED();
   return SyncEventObserver::SYNC_SERVICE_DISABLED;
+}
+
+void DidUnregisterOriginForTrackingChanges(fileapi::SyncStatusCode code) {
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, code);
 }
 
 }  // namespace
@@ -277,6 +285,10 @@ void SyncFileSystemService::Initialize(
 
   local_file_service_->AddChangeObserver(this);
   remote_file_service_->AddObserver(this);
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
 }
 
 void SyncFileSystemService::DidGetConflictFileInfo(
@@ -498,6 +510,22 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
       OnSyncStateUpdated(GURL(),
                          RemoteStateToSyncServiceState(state),
                          description));
+}
+
+void SyncFileSystemService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  // Extension unloaded means extension disabled or uninstalled.
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
+
+  // Unregister origin for remote synchronization.
+  std::string extension_id =
+      content::Details<const extensions::UnloadedExtensionInfo>(
+          details)->extension->id();
+  remote_file_service_->UnregisterOriginForTrackingChanges(
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id),
+      base::Bind(&DidUnregisterOriginForTrackingChanges));
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------

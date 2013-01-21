@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
@@ -33,6 +35,7 @@ class SyncFileSystemService
     : public ProfileKeyedService,
       public LocalFileSyncService::Observer,
       public RemoteFileSyncService::Observer,
+      public content::NotificationObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
   // ProfileKeyedService overrides.
@@ -130,7 +133,13 @@ class SyncFileSystemService
       RemoteServiceState state,
       const std::string& description) OVERRIDE;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   Profile* profile_;
+  content::NotificationRegistrar registrar_;
 
   int64 pending_local_changes_;
   int64 pending_remote_changes_;
