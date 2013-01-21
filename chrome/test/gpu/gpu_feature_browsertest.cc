@@ -453,8 +453,8 @@ IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, MAYBE_ThreadedCompositor) {
 }
 
 
-#if defined(OS_WIN)
-// http://crbug.com/162343: flaky on Windows
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// http://crbug.com/162343: flaky on Windows, failing on ChromiumOS.
 #define MAYBE_RafNoDamage DISABLED_RafNoDamage
 #else
 #define MAYBE_RafNoDamage RafNoDamage
