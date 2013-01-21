@@ -6641,12 +6641,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_OPUS_PLAYBACK_DESCRIPTION" desc="Description for the flag to enable Opus playback in &lt;video&gt; elements.">
         Enable experimental Opus playback in the video element.
       </message>
-      <message name="IDS_FLAGS_ENABLE_VP9_PLAYBACK_NAME" desc="Title for the flag to enable VP9 playback in &lt;video&gt; elements.">
-        Enable VP9 playback in &lt;video&gt; elements.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_VP9_PLAYBACK_DESCRIPTION" desc="Description for the flag to enable VP9 playback in &lt;video&gt; elements.">
-        Enable experimental VP9 playback in the video element.
-      </message>
       <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME" desc="Title for the flag to enable fancy translucent windows.">
         Translucent windows
       </message>

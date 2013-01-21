@@ -14,7 +14,6 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
-#include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "webkit/media/media_stream_client.h"
 
@@ -44,12 +43,6 @@ static void AddDefaultDecodersToCollection(
   scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
       new media::FFmpegVideoDecoder(message_loop);
   filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
-
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback)) {
-    scoped_refptr<media::VpxVideoDecoder> vpx_video_decoder =
-        new media::VpxVideoDecoder(message_loop);
-    filter_collection->GetVideoDecoders()->push_back(vpx_video_decoder);
-  }
 }
 
 bool BuildMediaStreamCollection(

@@ -809,7 +809,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableTouchAdjustment,
     switches::kEnableViewport,
     switches::kEnableOpusPlayback,
-    switches::kEnableVp9Playback,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)
