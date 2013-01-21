@@ -1010,6 +1010,23 @@
           },
         },
         {
+          'target_name': 'sb_sigutil',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'safe_browsing_proto',
+          ],
+          'sources': [
+            'browser/safe_browsing/signature_util.h',
+            'browser/safe_browsing/signature_util_win.cc',
+            'tools/safe_browsing/sb_sigutil.cc',
+          ],
+        },
+      ]},  # 'targets'
+    ],  # OS=="win"
+    ['OS=="win" and target_arch=="ia32"',
+      { 'targets': [
+        {
           'target_name': 'crash_service_win64',
           'type': 'executable',
           'product_name': 'crash_service64',
@@ -1043,21 +1060,8 @@
             },
           },
         },
-        {
-          'target_name': 'sb_sigutil',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            'safe_browsing_proto',
-          ],
-          'sources': [
-            'browser/safe_browsing/signature_util.h',
-            'browser/safe_browsing/signature_util_win.cc',
-            'tools/safe_browsing/sb_sigutil.cc',
-          ],
-        },
       ]},  # 'targets'
-    ],  # OS=="win"
+    ],  # OS=="win" and target_arch=="ia32"
     ['chromeos==1', {
       'includes': [ 'chrome_browser_chromeos.gypi' ],
     }],  # chromeos==1

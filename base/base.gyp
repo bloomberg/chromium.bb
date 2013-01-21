@@ -389,37 +389,6 @@
         '..',
       ],
     },
-    {
-      # TODO(rvargas): Remove this when gyp finally supports a clean model.
-      # See bug 36232.
-      'target_name': 'base_static_win64',
-      'type': 'static_library',
-      'sources': [
-        'base_switches.cc',
-        'base_switches.h',
-        'win/pe_image.cc',
-        'win/pe_image.h',
-      ],
-      'sources!': [
-        # base64.cc depends on modp_b64.
-        'base64.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
-      'defines': [
-        'NACL_WIN64',
-      ],
-      # TODO(rvargas): Bug 78117. Remove this.
-      'msvs_disabled_warnings': [
-        4244,
-      ],
-    },
     # Include this target for a main() function that simply instantiates
     # and runs a base::TestSuite.
     {
@@ -920,7 +889,7 @@
         },
       ],
     }],
-    ['OS == "win"', {
+    ['OS == "win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'base_nacl_win64',
@@ -985,6 +954,37 @@
               'msvs_target_platform': 'x64',
             },
           },
+        },
+        {
+          # TODO(rvargas): Remove this when gyp finally supports a clean model.
+          # See bug 36232.
+          'target_name': 'base_static_win64',
+          'type': 'static_library',
+          'sources': [
+            'base_switches.cc',
+            'base_switches.h',
+            'win/pe_image.cc',
+            'win/pe_image.h',
+          ],
+          'sources!': [
+            # base64.cc depends on modp_b64.
+            'base64.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+          'defines': [
+            'NACL_WIN64',
+          ],
+          # TODO(rvargas): Bug 78117. Remove this.
+          'msvs_disabled_warnings': [
+            4244,
+          ],
         },
       ],
     }],

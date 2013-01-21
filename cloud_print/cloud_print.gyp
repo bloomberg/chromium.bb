@@ -14,6 +14,10 @@
           'dependencies': [
             'virtual_driver/win/install/virtual_driver_install.gyp:*',
             'virtual_driver/win/virtual_driver.gyp:*',
+          ],
+        }],
+        ['OS=="win" and target_arch=="ia32"', {
+          'dependencies': [
             'virtual_driver/win/virtual_driver64.gyp:*',
           ],
         }],

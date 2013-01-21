@@ -546,6 +546,27 @@
           ],
         },
         {
+          'target_name': 'tcmalloc_unittest',
+          'type': 'executable',
+          'sources': [
+            'tcmalloc_unittest.cc',
+          ],
+          'include_dirs': [
+            '../..',
+            # For constants of TCMalloc.
+            '<(tcmalloc_dir)/src',
+          ],
+          'dependencies': [
+            '../../testing/gtest.gyp:gtest',
+            '../base.gyp:base',
+            'allocator',
+          ],
+        },
+      ],
+    }],
+    ['OS=="win" and target_arch=="ia32"', {
+      'targets': [
+        {
           'target_name': 'allocator_extension_thunks_win64',
           'type': 'static_library',
           'sources': [
@@ -562,23 +583,6 @@
             },
           },
         },
-      {
-        'target_name': 'tcmalloc_unittest',
-        'type': 'executable',
-        'sources': [
-          'tcmalloc_unittest.cc',
-        ],
-        'include_dirs': [
-          '../..',
-          # For constants of TCMalloc.
-          '<(tcmalloc_dir)/src',
-        ],
-        'dependencies': [
-          '../../testing/gtest.gyp:gtest',
-          '../base.gyp:base',
-          'allocator',
-        ],
-      },
       ],
     }],
     ['OS=="linux" and clang_type_profiler==1', {

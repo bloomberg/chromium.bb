@@ -32,7 +32,7 @@
     ],
   },
   'conditions': [
-    [ 'OS=="win"', {
+    ['OS=="win"', {
       'targets': [
         {
           'target_name': 'breakpad_handler',
@@ -70,6 +70,10 @@
             ],
           },
         },
+      ],
+    }],
+    ['OS=="win" and target_arch=="ia32"', {
+      'targets': [
         {
           'target_name': 'breakpad_handler_win64',
           'type': 'static_library',

@@ -67,6 +67,10 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome.gyp:crash_service',  # run time dependency
+          ],
+        }],
+        ['OS=="win" and target_arch=="ia32"', {
+          'dependencies': [
             'chrome.gyp:crash_service_win64',  # run time dependency
           ],
         }],

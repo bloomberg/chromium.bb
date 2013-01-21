@@ -163,6 +163,10 @@
             }],
           ],
         },
+      ],
+    }],
+    ['OS=="win" and target_arch=="ia32"', {
+      'targets': [
         {
           'target_name': 'installer_util_nacl_win64',
           'type': 'static_library',

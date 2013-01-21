@@ -415,7 +415,7 @@
         },
       ],
     }],
-    ['disable_nacl!=1 and OS=="win"', {
+    ['disable_nacl!=1 and OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'gpu_ipc_win64',
