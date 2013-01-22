@@ -195,7 +195,7 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.assertCommandContains(['--toolchain-upload-path',
                                 '1994/04/%%(target)s-%(version)s.tar.xz'])
     self.assertCommandContains(tarball_args)
-    self.assertCommandContains(['--version', version])
+    self.assertCommandContains(['--set-version', version])
     self.assertCommandContains(['--prepackaged-tarball',
                                 os.path.join(self._buildroot,
                                              'built-sdk.tar.xz')])
