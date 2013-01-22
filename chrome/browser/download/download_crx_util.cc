@@ -64,11 +64,16 @@ bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
 
   extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
 
+  if (!url_patterns.MatchesURL(item.GetURL()))
+    return false;
+
+  // The referrer URL must also be whitelisted, unless the URL has the file
+  // scheme (there's no referrer for those URLs).
   // TODO(aa): RefererURL is cleared in some cases, for example when going
   // between secure and non-secure URLs. It would be better if DownloadItem
   // tracked the initiating page explicitly.
-  return url_patterns.MatchesURL(item.GetURL()) &&
-      url_patterns.MatchesURL(item.GetReferrerUrl());
+  return url_patterns.MatchesURL(item.GetReferrerUrl()) ||
+         item.GetURL().SchemeIsFile();
 }
 
 }  // namespace
