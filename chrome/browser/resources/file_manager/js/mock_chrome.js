@@ -587,6 +587,7 @@ chrome.fileBrowserPrivate = {
       CUT_BUTTON_LABEL: 'Cut',
 
       OPEN_WITH_BUTTON_LABEL: 'Open with...',
+      ZIP_SELECTION_BUTTON_LABEL: 'Zip selection',
 
       UNMOUNT_FAILED: 'Unable to eject: $1',
       UNMOUNT_DEVICE_BUTTON_LABEL: 'Eject device',
