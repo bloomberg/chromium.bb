@@ -134,6 +134,8 @@
         'browser/aw_result_codes.h',
         'browser/find_helper.cc',
         'browser/find_helper.h',
+        'browser/icon_helper.cc',
+        'browser/icon_helper.h',
         'browser/input_stream.h',
         'browser/intercepted_request_data.h',
         'browser/net/android_stream_reader_url_request_job.cc',

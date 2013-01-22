@@ -42,6 +42,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -140,6 +141,11 @@ void AwContents::ResetCompositor() {
 
 void AwContents::SetWebContents(content::WebContents* web_contents) {
   web_contents_.reset(web_contents);
+  if (find_helper_.get()) {
+    find_helper_->SetListener(NULL);
+  }
+  icon_helper_.reset(new IconHelper(web_contents_.get()));
+  icon_helper_->SetListener(this);
   web_contents_->SetUserData(kAwContentsUserDataKey,
                              new AwContentsUserData(this));
 
@@ -158,6 +164,8 @@ AwContents::~AwContents() {
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())
     find_helper_->SetListener(NULL);
+  if (icon_helper_.get())
+    icon_helper_->SetListener(NULL);
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
@@ -678,6 +686,36 @@ void AwContents::OnFindResultReceived(int active_ordinal,
 
   Java_AwContents_onFindResultReceived(
       env, obj.obj(), active_ordinal, match_count, finished);
+}
+
+void AwContents::OnReceivedIcon(const SkBitmap& bitmap) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AwContents_onReceivedIcon(
+      env, obj.obj(), gfx::ConvertToJavaBitmap(&bitmap).obj());
+
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetActiveEntry();
+
+  if (!entry || entry->GetURL().is_empty())
+    return;
+
+  // TODO(acleung): Get the last history entry and set
+  // the icon.
+}
+
+void AwContents::OnReceivedTouchIconUrl(const std::string& url,
+                                        bool precomposed) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AwContents_onReceivedTouchIconUrl(
+      env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
 }
 
 void AwContents::ScheduleComposite() {

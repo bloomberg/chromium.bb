@@ -9,6 +9,7 @@
 #include <string>
 
 #include "android_webview/browser/find_helper.h"
+#include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/scoped_java_ref.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/javascript_dialogs.h"
 
 typedef void* EGLContext;
+class SkBitmap;
 class TabContents;
 
 namespace cc {
@@ -39,6 +41,7 @@ class AwWebContentsDelegate;
 // WebView functionality; analogous to chrome's TabContents, but with a
 // level of indirection provided by the AwContentsContainer abstraction.
 class AwContents : public FindHelper::Listener,
+                   public IconHelper::Listener,
                    public content::Compositor::Client,
                    public AwRenderViewHostExt::Client {
  public:
@@ -122,6 +125,10 @@ class AwContents : public FindHelper::Listener,
   virtual void OnFindResultReceived(int active_ordinal,
                                     int match_count,
                                     bool finished) OVERRIDE;
+  // IconHelper::Listener implementation.
+  virtual void OnReceivedIcon(const SkBitmap& bitmap) OVERRIDE;
+  virtual void OnReceivedTouchIconUrl(const std::string& url,
+                                      const bool precomposed) OVERRIDE;
 
   // content::Compositor::Client implementation.
   virtual void ScheduleComposite() OVERRIDE;
@@ -145,6 +152,7 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
   scoped_ptr<FindHelper> find_helper_;
+  scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<content::WebContents> pending_contents_;
 
   // Compositor-specific state.

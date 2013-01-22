@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
@@ -247,6 +248,12 @@ public abstract class AwContentsClient extends ContentViewClient {
     protected abstract boolean onCreateWindow(boolean isDialog, boolean isUserGesture);
 
     protected abstract void onCloseWindow();
+
+    // TODO(acleung): Make abstract when landed in Android
+    public void onReceivedTouchIconUrl(String url, boolean precomposed) { }
+
+    // TODO(acleung): Make abstract when landed in Android
+    public void onReceivedIcon(Bitmap bitmap) { }
 
     protected abstract void onRequestFocus();
 

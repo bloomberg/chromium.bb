@@ -97,6 +97,7 @@ public class AwContents {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private boolean mIsPaused;
+    private Bitmap mFavicon;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData;
@@ -358,8 +359,7 @@ public class AwContents {
     }
 
     public Bitmap getFavicon() {
-        // To be implemented.
-        return null;
+        return mFavicon;
     }
 
     /**
@@ -784,6 +784,17 @@ public class AwContents {
     private static void onDocumentHasImagesResponse(boolean result, Message message) {
         message.arg1 = result ? 1 : 0;
         message.sendToTarget();
+    }
+
+    @CalledByNative
+    private void onReceivedTouchIconUrl(String url, boolean precomposed) {
+        mContentsClient.onReceivedTouchIconUrl(url, precomposed);
+    }
+
+    @CalledByNative
+    private void onReceivedIcon(Bitmap bitmap) {
+        mContentsClient.onReceivedIcon(bitmap);
+        mFavicon = bitmap;
     }
 
     /** Callback for generateMHTML. */
