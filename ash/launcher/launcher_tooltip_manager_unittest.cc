@@ -142,6 +142,14 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
 }
 
 TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsAutoHide) {
+  // Create a visible window so auto-hide behavior is enforced.
+  views::Widget* dummy = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+  dummy->Init(params);
+  dummy->Show();
+
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 

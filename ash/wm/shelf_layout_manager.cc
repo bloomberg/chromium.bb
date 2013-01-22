@@ -16,6 +16,8 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_animations.h"
 #include "base/auto_reset.h"
@@ -858,8 +860,22 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
                        alignment_ == SHELF_ALIGNMENT_TOP ?
                            -kNotificationBubbleGapHeight : 0);
   }
-  return shelf_region.Contains(Shell::GetScreen()->GetCursorScreenPoint()) ?
-      SHELF_AUTO_HIDE_SHOWN : SHELF_AUTO_HIDE_HIDDEN;
+
+  if (shelf_region.Contains(Shell::GetScreen()->GetCursorScreenPoint()))
+    return SHELF_AUTO_HIDE_SHOWN;
+
+  const std::vector<aura::Window*> windows =
+      ash::WindowCycleController::BuildWindowList(NULL);
+
+  // Process the window list and check if there are any visible windows.
+  for (size_t i = 0; i < windows.size(); ++i) {
+    if (windows[i] && windows[i]->IsVisible() &&
+        !ash::wm::IsWindowMinimized(windows[i]))
+      return SHELF_AUTO_HIDE_HIDDEN;
+  }
+
+  // If there are no visible windows do not hide the shelf.
+  return SHELF_AUTO_HIDE_SHOWN;
 }
 
 void ShelfLayoutManager::UpdateHitTestBounds() {
