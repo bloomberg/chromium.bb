@@ -19,8 +19,8 @@ namespace cc {
 namespace {
 // These constants were chosen empirically for their visually pleasant behavior.
 // Contact tedchoc@chromium.org for questions about changing these values.
-const float kShowHideThreshold = 0.75f;
-const int64 kShowHideMaxDurationMs = 250;
+const float kShowHideThreshold = 0.5f;
+const int64 kShowHideMaxDurationMs = 175;
 }
 
 // static
@@ -32,13 +32,13 @@ scoped_ptr<TopControlsManager> TopControlsManager::Create(
 TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
                                        float top_controls_height)
     : client_(client),
+      animation_direction_(NO_ANIMATION),
       is_overlay_mode_(false),
+      scroll_readjustment_enabled_(false),
       top_controls_height_(top_controls_height),
       controls_top_offset_(0),
       content_top_offset_(top_controls_height),
-      previous_root_scroll_offset_(0.f),
-      scroll_readjustment_enabled_(false),
-      is_showing_animation_(false) {
+      previous_root_scroll_offset_(0.f) {
   CHECK(client_);
 }
 
@@ -127,35 +127,35 @@ void TopControlsManager::Animate(base::TimeTicks monotonic_time) {
   ScrollInternal(scroll_vector);
   client_->setNeedsRedraw();
 
-  if ((is_showing_animation_ && new_offset >= 0) ||
-      (!is_showing_animation_ && new_offset <= -top_controls_height_)) {
-    top_controls_animation_.reset();
-    StartAnimationIfNecessary();
-  }
+  if (IsAnimationCompleteAtTime(monotonic_time))
+    ResetAnimations();
 }
 
 void TopControlsManager::ResetAnimations() {
   if (top_controls_animation_)
     top_controls_animation_.reset();
+
+  animation_direction_ = NO_ANIMATION;
 }
 
 float TopControlsManager::RootScrollLayerTotalScrollY() {
   return client_->rootScrollLayerTotalScrollY();
 }
 
-void TopControlsManager::SetupAnimation(bool show_controls) {
+void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   top_controls_animation_ = KeyframedFloatAnimationCurve::create();
   double start_time =
       (base::TimeTicks::Now() - base::TimeTicks()).InMillisecondsF();
   top_controls_animation_->addKeyframe(
       FloatKeyframe::create(start_time, controls_top_offset_,
                             scoped_ptr<TimingFunction>()));
-  float max_ending_offset = (show_controls ? 1 : -1) * top_controls_height_;
+  float max_ending_offset =
+      (direction == SHOWING_CONTROLS ? 1 : -1) * top_controls_height_;
   top_controls_animation_->addKeyframe(
       FloatKeyframe::create(start_time + kShowHideMaxDurationMs,
                             controls_top_offset_ + max_ending_offset,
                             EaseTimingFunction::create()));
-  is_showing_animation_ = show_controls;
+  animation_direction_ = direction;
 }
 
 void TopControlsManager::StartAnimationIfNecessary() {
@@ -163,10 +163,29 @@ void TopControlsManager::StartAnimationIfNecessary() {
 
   if (controls_top_offset_ != 0
       && controls_top_offset_ != -top_controls_height_) {
-    SetupAnimation(
-        controls_top_offset_ >= -(top_controls_height_ * kShowHideThreshold));
-    client_->setNeedsRedraw();
+    AnimationDirection show_controls =
+        controls_top_offset_ >= -(top_controls_height_ * kShowHideThreshold) ?
+            SHOWING_CONTROLS : HIDING_CONTROLS;
+    if (!top_controls_animation_ || animation_direction_ != show_controls) {
+      SetupAnimation(show_controls);
+      client_->setNeedsRedraw();
+    }
   }
+}
+
+bool TopControlsManager::IsAnimationCompleteAtTime(base::TimeTicks time) {
+  if (!top_controls_animation_)
+    return true;
+
+  double time_ms = (time - base::TimeTicks()).InMillisecondsF();
+  float new_offset = top_controls_animation_->getValue(time_ms);
+
+  if ((animation_direction_ == SHOWING_CONTROLS && new_offset >= 0) ||
+      (animation_direction_ == HIDING_CONTROLS
+          && new_offset <= -top_controls_height_)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace cc

@@ -73,6 +73,8 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
   TopControlsManager* manager = client.manager();
   client.rootScrollLayer()->setScrollDelta(gfx::Vector2dF(0.f, 0.f));
 
+  manager->ScrollBegin();
+
   gfx::Vector2dF remaining_scroll = manager->ScrollBy(
       gfx::Vector2dF(0.f, 30.f));
   EXPECT_EQ(0.f, remaining_scroll.y());

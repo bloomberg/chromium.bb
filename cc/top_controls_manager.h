@@ -24,6 +24,12 @@ class TopControlsManagerClient;
 // Manages the position of the top controls.
 class CC_EXPORT TopControlsManager {
  public:
+  enum AnimationDirection {
+    NO_ANIMATION,
+    SHOWING_CONTROLS,
+    HIDING_CONTROLS
+  };
+
   static scoped_ptr<TopControlsManager> Create(TopControlsManagerClient* client,
                                                float top_controls_height);
   virtual ~TopControlsManager();
@@ -34,6 +40,7 @@ class CC_EXPORT TopControlsManager {
   KeyframedFloatAnimationCurve* animation() {
     return top_controls_animation_.get();
   }
+  AnimationDirection animation_direction() { return animation_direction_; }
 
   void UpdateDrawPositions();
 
@@ -51,19 +58,20 @@ class CC_EXPORT TopControlsManager {
   gfx::Vector2dF ScrollInternal(const gfx::Vector2dF pending_delta);
   void ResetAnimations();
   float RootScrollLayerTotalScrollY();
-  void SetupAnimation(bool show_controls);
+  void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();
+  bool IsAnimationCompleteAtTime(base::TimeTicks time);
 
   TopControlsManagerClient* client_;  // The client manages the lifecycle of
                                       // this.
 
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
-  bool is_showing_animation_;
+  AnimationDirection animation_direction_;
   bool is_overlay_mode_;
+  bool scroll_readjustment_enabled_;
   float controls_top_offset_;
   float content_top_offset_;
   float top_controls_height_;
-  bool scroll_readjustment_enabled_;
   float previous_root_scroll_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TopControlsManager);
