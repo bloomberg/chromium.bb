@@ -766,7 +766,7 @@ jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
   if (rwhv) {
     using WebKit::WebTouchEvent;
     WebKit::WebTouchEvent event;
-    TouchPoint::BuildWebTouchEvent(env, type, time_ms, pts, event);
+    TouchPoint::BuildWebTouchEvent(env, type, time_ms, DpiScale(), pts, event);
     UpdateVSyncFlagOnInputEvent(&event);
     rwhv->SendTouchEvent(event);
     return true;

@@ -15,7 +15,10 @@ using WebKit::WebTouchPoint;
 
 namespace {
 
-void MaybeAddTouchPoint(JNIEnv* env, jobject pt, WebKit::WebTouchEvent& event) {
+void MaybeAddTouchPoint(JNIEnv* env,
+                        jobject pt,
+                        float dpi_scale,
+                        WebKit::WebTouchEvent& event) {
   WebTouchPoint::State state = static_cast<WebTouchPoint::State>(
       Java_TouchPoint_getState(env, pt));
   if (state == WebTouchPoint::StateUndefined)
@@ -34,8 +37,8 @@ void MaybeAddTouchPoint(JNIEnv* env, jobject pt, WebKit::WebTouchEvent& event) {
   WebTouchPoint wtp;
   wtp.id = Java_TouchPoint_getId(env, pt);
   wtp.state = state;
-  wtp.position.x = Java_TouchPoint_getX(env, pt);
-  wtp.position.y = Java_TouchPoint_getY(env, pt);
+  wtp.position.x = Java_TouchPoint_getX(env, pt) / dpi_scale;
+  wtp.position.y = Java_TouchPoint_getY(env, pt) / dpi_scale;
   // TODO(joth): Raw event co-ordinates.
   wtp.screenPosition = wtp.position;
   wtp.force = Java_TouchPoint_getPressure(env, pt);
@@ -50,8 +53,8 @@ void MaybeAddTouchPoint(JNIEnv* env, jobject pt, WebKit::WebTouchEvent& event) {
   const static double SCALE_FACTOR = 1024.0;
   const int radius = static_cast<int>(
       (sqrt(Java_TouchPoint_getSize(env, pt)) / PI) * SCALE_FACTOR);
-  wtp.radiusX = radius;
-  wtp.radiusY = radius;
+  wtp.radiusX = radius / dpi_scale;
+  wtp.radiusY = radius / dpi_scale;
   // Since our radii are equal, a rotation angle doesn't mean anything.
   wtp.rotationAngle = 0.0;
 
@@ -64,8 +67,12 @@ void MaybeAddTouchPoint(JNIEnv* env, jobject pt, WebKit::WebTouchEvent& event) {
 
 namespace content {
 
-void TouchPoint::BuildWebTouchEvent(JNIEnv* env, jint type, jlong time_ms,
-    jobjectArray pts, WebKit::WebTouchEvent& event) {
+void TouchPoint::BuildWebTouchEvent(JNIEnv* env,
+                                    jint type,
+                                    jlong time_ms,
+                                    float dpi_scale,
+                                    jobjectArray pts,
+                                    WebKit::WebTouchEvent& event) {
   event.type = static_cast<WebTouchEvent::Type>(type);
   event.timeStampSeconds =
       static_cast<double>(time_ms) / base::Time::kMillisecondsPerSecond;
@@ -74,7 +81,7 @@ void TouchPoint::BuildWebTouchEvent(JNIEnv* env, jint type, jlong time_ms,
   // array has been filled
   for (int i = 0; i < arrayLength; i++) {
     jobject pt = env->GetObjectArrayElement(pts, i);
-    MaybeAddTouchPoint(env, pt, event);
+    MaybeAddTouchPoint(env, pt, dpi_scale, event);
     if (event.touchesLength >= event.touchesLengthCap)
       break;
   }

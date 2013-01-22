@@ -15,8 +15,12 @@ namespace content {
 // events into a WebKit::WebTouchEvent.
 class TouchPoint {
  public:
-  static void BuildWebTouchEvent(JNIEnv* env, jint type, jlong time_ms,
-      jobjectArray pts, WebKit::WebTouchEvent& event);
+  static void BuildWebTouchEvent(JNIEnv* env,
+                                 jint type,
+                                 jlong time_ms,
+                                 float dpi_scale,
+                                 jobjectArray pts,
+                                 WebKit::WebTouchEvent& event);
 };
 
 bool RegisterTouchPoint(JNIEnv* env);
