@@ -256,8 +256,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  if (url.host() == chrome::kChromeUIDialogHost)
-    return &NewWebUI<ConstrainedWebDialogUI>;
   // Feedback on Android uses the built-in feedback app.
   if (url.host() == chrome::kChromeUIFeedbackHost)
     return &NewWebUI<FeedbackUI>;
@@ -342,9 +340,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif  // defined(USE_AURA)
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-  if (url.host() == chrome::kChromeUICollectedCookiesHost ||
-      url.host() == chrome::kChromeUIHttpAuthHost ||
-      url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
+  if (url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
     return &NewWebUI<ConstrainedWebDialogUI>;
   }
 #endif

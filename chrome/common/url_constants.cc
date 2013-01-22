@@ -43,7 +43,6 @@ const char kChromeUIFlashURL[] = "chrome://flash/";
 const char kChromeUIHelpFrameURL[] = "chrome://help-frame/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIHistoryFrameURL[] = "chrome://history-frame/";
-const char kChromeUIInputWindowDialogURL[] = "chrome://input-window-dialog/";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
@@ -117,8 +116,6 @@ const char kChromeUIGestureConfigHost[] = "gesture";
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
-const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
 const char kChromeUITabModalConfirmDialogURL[] =
     "chrome://tab-modal-confirm-dialog/";
 #endif
@@ -141,7 +138,6 @@ const char kChromeUICrashHost[] = "crash";
 const char kChromeUICreditsHost[] = "credits";
 const char kChromeUIDefaultHost[] = "version";
 const char kChromeUIDevToolsHost[] = "devtools";
-const char kChromeUIDialogHost[] = "dialog";
 const char kChromeUIDNSHost[] = "dns";
 const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIDriveInternalsHost[] = "drive-internals";
@@ -162,7 +158,6 @@ const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistoryFrameHost[] = "history-frame";
-const char kChromeUIInputWindowDialogHost[] = "input-window-dialog";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInstantHost[] = "instant";
 const char kChromeUIIPCHost[] = "ipc";
@@ -265,8 +260,6 @@ const char kChromeUIFileManagerHost[] = "files";
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-const char kChromeUICollectedCookiesHost[] = "collected-cookies";
-const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
 #endif
 

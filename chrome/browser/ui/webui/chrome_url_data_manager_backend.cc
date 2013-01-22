@@ -58,11 +58,8 @@ class ChromeURLContentSecurityPolicyExceptionSet
  public:
   ChromeURLContentSecurityPolicyExceptionSet() : std::set<std::string>() {
     // TODO(tsepez) whittle this list down to nothing.
-    insert(chrome::kChromeUICloudPrintResourcesHost);
     insert(chrome::kChromeUICloudPrintSetupHost);
     insert(chrome::kChromeUIDevToolsHost);
-    insert(chrome::kChromeUIDialogHost);
-    insert(chrome::kChromeUIInputWindowDialogHost);
     insert(chrome::kChromeUINewTabHost);
 #if defined(OS_CHROMEOS)
     insert(chrome::kChromeUIMobileSetupHost);
@@ -74,8 +71,6 @@ class ChromeURLContentSecurityPolicyExceptionSet
     insert(chrome::kChromeUISystemInfoHost);
 #endif
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
-    insert(chrome::kChromeUICollectedCookiesHost);
-    insert(chrome::kChromeUIHttpAuthHost);
     insert(chrome::kChromeUITabModalConfirmDialogHost);
 #endif
   }

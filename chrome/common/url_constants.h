@@ -42,7 +42,6 @@ extern const char kChromeUIFlashURL[];
 extern const char kChromeUIHelpFrameURL[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIHistoryFrameURL[];
-extern const char kChromeUIInputWindowDialogURL[];
 extern const char kChromeUIInspectURL[];
 extern const char kChromeUIInstantURL[];
 extern const char kChromeUIIPCURL[];
@@ -114,8 +113,6 @@ extern const char kChromeUIGestureConfigHost[];
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-extern const char kChromeUICollectedCookiesURL[];
-extern const char kChromeUIHttpAuthURL[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
@@ -136,7 +133,6 @@ extern const char kChromeUICrashHost[];
 extern const char kChromeUICreditsHost[];
 extern const char kChromeUIDefaultHost[];
 extern const char kChromeUIDevToolsHost[];
-extern const char kChromeUIDialogHost[];
 extern const char kChromeUIDNSHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIDriveInternalsHost[];
@@ -157,7 +153,6 @@ extern const char kChromeUIGpuInternalsHost[];
 extern const char kChromeUIHangHost[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIHistoryFrameHost[];
-extern const char kChromeUIInputWindowDialogHost[];
 extern const char kChromeUIInspectHost[];
 extern const char kChromeUIInstantHost[];
 extern const char kChromeUIIPCHost[];
@@ -260,8 +255,6 @@ extern const char kChromeUIFileManagerHost[];
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
-extern const char kChromeUICollectedCookiesHost[];
-extern const char kChromeUIHttpAuthHost[];
 extern const char kChromeUITabModalConfirmDialogHost[];
 #endif
 
