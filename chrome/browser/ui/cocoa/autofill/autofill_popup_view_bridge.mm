@@ -75,7 +75,6 @@ void AutofillPopupViewBridge::Hide() {
 }
 
 void AutofillPopupViewBridge::Show() {
-  SetInitialBounds();
   UpdateBoundsAndRedrawPopup();
   [[controller_->container_view() window] addChildWindow:window_
                                                  ordered:NSWindowAbove];
@@ -109,20 +108,6 @@ void AutofillPopupViewBridge::UpdateBoundsAndRedrawPopup() {
   // TODO(isherman): The view should support scrolling if the popup gets too
   // big to fit on the screen.
   [window_ setFrame:frame display:YES];
-}
-
-void AutofillPopupViewBridge::SetInitialBounds() {
-  // The bounds rect in Chrome's screen coordinates.  The popup should be
-  // positioned just below the element which initiated it.
-  gfx::Rect bounds(controller_->element_bounds().x(),
-                   controller_->element_bounds().bottom(),
-                   controller_->GetPopupRequiredWidth(),
-                   controller_->GetPopupRequiredHeight());
-
-  // TODO(isherman): Position the popup correctly if it can't fit below the text
-  // field: http://crbug.com/164603
-
-  controller_->SetPopupBounds(bounds);
 }
 
 AutofillPopupView* AutofillPopupView::Create(

@@ -49,13 +49,6 @@ class AutofillPopupViewViews : public AutofillPopupView,
                          int index,
                          const gfx::Rect& entry_rect);
 
-  // Set the initial bounds of the popup to show, including the placement
-  // of it.
-  void SetInitialBounds();
-
-  // Get the size of the screen that the popup appears of, in pixels.
-  gfx::Size GetScreenSize();
-
   AutofillPopupController* controller_;  // Weak reference.
 
   // The widget that |this| observes. Weak reference.

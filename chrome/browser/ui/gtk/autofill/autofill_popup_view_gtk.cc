@@ -70,7 +70,6 @@ void AutofillPopupViewGtk::Hide() {
 }
 
 void AutofillPopupViewGtk::Show() {
-  SetInitialBounds();
   UpdateBoundsAndRedrawPopup();
 
   gtk_widget_show(window_);
@@ -304,32 +303,6 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   cairo_move_to(cairo_context, x_align_left, subtext_content_y);
   pango_cairo_show_layout(cairo_context, layout_);
   cairo_restore(cairo_context);
-}
-
-void AutofillPopupViewGtk::SetInitialBounds() {
-  GdkScreen* screen =
-      gtk_widget_get_screen(GTK_WIDGET(controller_->container_view()));
-  gint screen_height = gdk_screen_get_height(screen);
-
-  int bottom_of_field = controller_->element_bounds().bottom();
-  int popup_height = controller_->GetPopupRequiredHeight();
-
-  // Find the correct top position of the popup so that is doesn't go off
-  // the screen.
-  int top_of_popup = 0;
-  if (screen_height < bottom_of_field + popup_height) {
-    // The popup must appear above the field.
-    top_of_popup = controller_->element_bounds().y() - popup_height;
-  } else {
-    // The popup can appear below the field.
-    top_of_popup = bottom_of_field;
-  }
-
-  controller_->SetPopupBounds(gfx::Rect(
-      controller_->element_bounds().x(),
-      top_of_popup,
-      controller_->GetPopupRequiredWidth(),
-      popup_height));
 }
 
 AutofillPopupView* AutofillPopupView::Create(

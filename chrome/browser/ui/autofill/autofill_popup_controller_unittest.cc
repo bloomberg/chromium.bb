@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 
 using ::testing::_;
@@ -33,11 +35,23 @@ class MockAutofillExternalDelegate :
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
  public:
   explicit TestAutofillPopupController(
-      AutofillExternalDelegate* external_delegate)
-      : AutofillPopupControllerImpl(external_delegate, NULL, gfx::Rect()) {}
+      AutofillExternalDelegate* external_delegate,
+      const gfx::Rect& element_bounds)
+      : AutofillPopupControllerImpl(external_delegate, NULL, element_bounds) {}
   virtual ~TestAutofillPopupController() {}
 
+  void set_display(const gfx::Display display) {
+    display_ = display;
+  }
+  virtual gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const
+      OVERRIDE {
+    return display_;
+  }
+
   // Making protected functions public for testing
+  const std::vector<string16>& names() const {
+    return AutofillPopupControllerImpl::names();
+  }
   const std::vector<string16>& subtexts() const {
     return AutofillPopupControllerImpl::subtexts();
   }
@@ -59,6 +73,26 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   void DoHide() {
     AutofillPopupControllerImpl::Hide();
   }
+  const gfx::Rect& popup_bounds() const {
+    return AutofillPopupControllerImpl::popup_bounds();
+  }
+  const gfx::Rect& element_bounds() const {
+    return AutofillPopupControllerImpl::element_bounds();
+  }
+#if !defined(OS_ANDROID)
+  const gfx::Font& name_font() const {
+    return AutofillPopupControllerImpl::name_font();
+  }
+  const gfx::Font& subtext_font() const {
+    return AutofillPopupControllerImpl::subtext_font();
+  }
+#endif
+  int GetDesiredPopupWidth() const {
+    return AutofillPopupControllerImpl::GetDesiredPopupWidth();
+  }
+  int GetDesiredPopupHeight() const {
+    return AutofillPopupControllerImpl::GetDesiredPopupHeight();
+  }
 
   MOCK_METHOD1(InvalidateRow, void(size_t));
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
@@ -66,6 +100,8 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
 
  private:
   virtual void ShowView() OVERRIDE {}
+
+  gfx::Display display_;
 };
 
 }  // namespace
@@ -75,7 +111,7 @@ class AutofillPopupControllerUnitTest : public ::testing::Test {
   AutofillPopupControllerUnitTest()
     : autofill_popup_controller_(
           new testing::NiceMock<TestAutofillPopupController>(
-              &external_delegate_)) {}
+              &external_delegate_, gfx::Rect())) {}
   virtual ~AutofillPopupControllerUnitTest() {
     // This will make sure the controller and the view (if any) are both
     // cleaned up.
@@ -239,8 +275,9 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   EXPECT_EQ(controller, controller2);
   controller->Hide();
 
-  TestAutofillPopupController* test_controller =
-      new TestAutofillPopupController(&delegate);
+  testing::NiceMock<TestAutofillPopupController>* test_controller =
+      new testing::NiceMock<TestAutofillPopupController>(&delegate,
+                                                         gfx::Rect());
   EXPECT_CALL(*test_controller, Hide());
 
   gfx::Rect bounds(0, 0, 1, 2);
@@ -257,4 +294,102 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
 
   EXPECT_CALL(delegate, ControllerDestroyed());
   delete test_controller;
+}
+
+#if !defined(OS_ANDROID)
+TEST_F(AutofillPopupControllerUnitTest, ElideText) {
+  std::vector<string16> names;
+  names.push_back(ASCIIToUTF16("Text that will need to be trimmed"));
+  names.push_back(ASCIIToUTF16("Untrimmed"));
+
+  std::vector<string16> subtexts;
+  subtexts.push_back(ASCIIToUTF16("Label that will be trimmed"));
+  subtexts.push_back(ASCIIToUTF16("Untrimmed"));
+
+  std::vector<string16> icons(2, string16());
+  std::vector<int> autofill_ids(2, 0);
+
+  // Ensure the popup will be too small to display all of the first row.
+  int popup_max_width =
+      autofill_popup_controller_->name_font().GetStringWidth(names[0]) +
+      autofill_popup_controller_->subtext_font().GetStringWidth(subtexts[0]) -
+      25;
+  gfx::Rect popup_bounds = gfx::Rect(0, 0, popup_max_width, 0);
+  autofill_popup_controller_->set_display(gfx::Display(0, popup_bounds));
+
+  autofill_popup_controller_->Show(names, subtexts, icons, autofill_ids);
+
+  // The first element was long so it should have been trimmed.
+  EXPECT_NE(names[0], autofill_popup_controller_->names()[0]);
+  EXPECT_NE(subtexts[0], autofill_popup_controller_->subtexts()[0]);
+
+  // The second element was shorter so it should be unchanged.
+  EXPECT_EQ(names[1], autofill_popup_controller_->names()[1]);
+  EXPECT_EQ(subtexts[1], autofill_popup_controller_->subtexts()[1]);
+}
+#endif
+
+TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
+  std::vector<string16> names(1);
+  std::vector<int> autofill_ids(1, 1);
+
+  // Call Show so that GetDesired...() will be able to provide valid values.
+  autofill_popup_controller_->Show(names, names, names, autofill_ids);
+  int desired_width = autofill_popup_controller_->GetDesiredPopupWidth();
+  int desired_height = autofill_popup_controller_->GetDesiredPopupHeight();
+
+  // Setup the visible screen space.
+  gfx::Display display(0, gfx::Rect(0, 0,
+                                    desired_width * 2, desired_height * 2));
+
+  // Store the possible element bounds and the popup bounds they should result
+  // in.
+  std::vector<gfx::Rect> element_bounds;
+  std::vector<gfx::Rect> expected_popup_bounds;
+
+  // The popup grows down and to the right.
+  element_bounds.push_back(gfx::Rect(0, 0, 0, 0));
+  expected_popup_bounds.push_back(
+      gfx::Rect(0, 0, desired_width, desired_height));
+
+  // The popup grows down and to the left.
+  element_bounds.push_back(gfx::Rect(2 * desired_width, 0, 0, 0));
+  expected_popup_bounds.push_back(
+      gfx::Rect(desired_width, 0, desired_width, desired_height));
+
+  // The popup grows up and to the right.
+  element_bounds.push_back(gfx::Rect(0, 2 * desired_height, 0, 0));
+  expected_popup_bounds.push_back(
+      gfx::Rect(0, desired_height, desired_width, desired_height));
+
+  // The popup grows up and to the left.
+  element_bounds.push_back(
+      gfx::Rect(2 * desired_width, 2 * desired_height, 0, 0));
+  expected_popup_bounds.push_back(
+      gfx::Rect(desired_width, desired_height, desired_width, desired_height));
+
+  // The popup would be partial off the top and left side of the screen.
+  element_bounds.push_back(
+      gfx::Rect(-desired_width / 2, -desired_height / 2, 0, 0));
+  expected_popup_bounds.push_back(
+      gfx::Rect(0, 0, desired_width, desired_height));
+
+  // The popup would be partially off the bottom and the right side of
+  // the screen.
+  element_bounds.push_back(
+      gfx::Rect(desired_width * 1.5, desired_height * 1.5, 0, 0));
+  expected_popup_bounds.push_back(gfx::Rect(
+          desired_width / 2, desired_height /2, desired_width, desired_height));
+
+  for (size_t i = 0; i < element_bounds.size(); ++i) {
+    autofill_popup_controller_ =
+        new testing::NiceMock<TestAutofillPopupController>(&external_delegate_,
+                                                           element_bounds[i]);
+    autofill_popup_controller_->set_display(display);
+    autofill_popup_controller_->Show(names, names, names, autofill_ids);
+
+    EXPECT_EQ(expected_popup_bounds[i].ToString(),
+              autofill_popup_controller_->popup_bounds().ToString()) <<
+        "Popup bounds failed to match for test " << i;
+  }
 }

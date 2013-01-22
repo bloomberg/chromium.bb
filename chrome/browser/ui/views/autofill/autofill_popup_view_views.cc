@@ -10,11 +10,9 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 
@@ -135,7 +133,6 @@ void AutofillPopupViewViews::Show() {
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
-  SetInitialBounds();
   UpdateBoundsAndRedrawPopup();
 }
 
@@ -213,37 +210,6 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
                              controller_->subtext_font()),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
-}
-
-void AutofillPopupViewViews::SetInitialBounds() {
-  int bottom_of_field = controller_->element_bounds().bottom();
-  int popup_height = controller_->GetPopupRequiredHeight();
-
-  // Find the correct top position of the popup so that it doesn't go off
-  // the screen.
-  int top_of_popup = 0;
-  if (GetScreenSize().height() < bottom_of_field + popup_height) {
-    // The popup must appear above the field.
-    top_of_popup = controller_->element_bounds().y() - popup_height;
-  } else {
-    // The popup can appear below the field.
-    top_of_popup = bottom_of_field;
-  }
-
-  controller_->SetPopupBounds(gfx::Rect(
-      controller_->element_bounds().x(),
-      top_of_popup,
-      controller_->GetPopupRequiredWidth(),
-      popup_height));
-}
-
-gfx::Size AutofillPopupViewViews::GetScreenSize() {
-  gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(controller_->container_view());
-  gfx::Display display =
-      screen->GetDisplayNearestPoint(controller_->element_bounds().origin());
-
-  return display.GetSizeInPixel();
 }
 
 AutofillPopupView* AutofillPopupView::Create(

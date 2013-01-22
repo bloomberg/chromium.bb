@@ -43,15 +43,7 @@ class AutofillPopupController {
   virtual int GetIconResourceID(const string16& resource_name) = 0;
 
   // Returns true if the given index refers to an element that can be deleted.
-  virtual bool CanDelete(size_t index) = 0;
-
-#if !defined(OS_ANDROID)
-  // Calculates the width of the popup based on its contents.
-  virtual int GetPopupRequiredWidth() = 0;
-
-  // Calculates the height of the popup based on its contents.
-  virtual int GetPopupRequiredHeight() = 0;
-#endif
+  virtual bool CanDelete(size_t index) const = 0;
 
   // Updates the bounds of the popup and initiates a redraw.
   virtual void SetPopupBounds(const gfx::Rect& bounds) = 0;

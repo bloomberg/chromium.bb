@@ -15,6 +15,10 @@
 class AutofillPopupDelegate;
 class AutofillPopupView;
 
+namespace gfx {
+class Display;
+}
+
 namespace ui {
 class KeyEvent;
 }
@@ -65,11 +69,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual void MouseExitedPopup() OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(const string16& resource_name) OVERRIDE;
-  virtual bool CanDelete(size_t index) OVERRIDE;
-#if !defined(OS_ANDROID)
-  virtual int GetPopupRequiredWidth() OVERRIDE;
-  virtual int GetPopupRequiredHeight() OVERRIDE;
-#endif
+  virtual bool CanDelete(size_t index) const OVERRIDE;
   virtual gfx::Rect GetRowBounds(size_t index) OVERRIDE;
   virtual void SetPopupBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual const gfx::Rect& popup_bounds() const OVERRIDE;
@@ -109,7 +109,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   int LineFromY(int y);
 
   // Returns the height of a row depending on its type.
-  int GetRowHeightFromId(int identifier);
+  int GetRowHeightFromId(int identifier) const;
 
   // Returns true if the given |x| and |y| coordinates refer to a point that
   // hits the delete icon in the current selected line.
@@ -127,7 +127,45 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual void ShowView();
   virtual void InvalidateRow(size_t row);
 
+  // Protected so tests can access.
+#if !defined(OS_ANDROID)
+  // Calculates the desired width of the popup based on its contents.
+  int GetDesiredPopupWidth() const;
+
+  // Calculates the desired height of the popup based on its contents.
+  int GetDesiredPopupHeight() const;
+#endif
+
  private:
+#if !defined(OS_ANDROID)
+  // Calculate the width of the row, excluding all the text. This provides
+  // the size of the row that won't be reducible (since all the text can be
+  // elided if there isn't enough space).
+  int RowWidthWithoutText(int row) const;
+
+  // Calculates and sets the bounds of the popup, including placing it properly
+  // to prevent it from going off the screen.
+  void UpdatePopupBounds();
+#endif
+
+  // A helper function to get the display closest to the given point (virtual
+  // for testing).
+  virtual gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const;
+
+  // Calculates the width of the popup and the x position of it. These values
+  // will stay on the screen.
+  std::pair<int, int> CalculatePopupXAndWidth(
+      const gfx::Display& left_display,
+      const gfx::Display& right_display,
+      int popup_required_width) const;
+
+  // Calculates the height of the popup and the y position of it. These values
+  // will stay on the screen.
+  std::pair<int, int> CalculatePopupYAndHeight(
+      const gfx::Display& top_display,
+      const gfx::Display& bottom_display,
+      int popup_required_height) const;
+
   AutofillPopupView* view_;  // Weak reference.
   AutofillPopupDelegate* delegate_;  // Weak reference.
   gfx::NativeView container_view_;  // Weak reference.
@@ -144,6 +182,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   std::vector<string16> subtexts_;
   std::vector<string16> icons_;
   std::vector<int> identifiers_;
+
+  // Since names_ can be elided to ensure that it fits on the screen, we need to
+  // keep an unelided copy of the names to be able to pass to the delegate.
+  std::vector<string16> full_names_;
 
 #if !defined(OS_ANDROID)
   // The fonts for the popup text.
