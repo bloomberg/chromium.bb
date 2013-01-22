@@ -234,7 +234,7 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
 
 
 # pylint: disable=W0212,R0904,W0702
-def _TempDirSetup(self, prefix='tmp', update_env=True):
+def _TempDirSetup(self, prefix='tmp', update_env=True, base_dir=None):
   """Generate a tempdir, modifying the object, and env to use it.
 
   Specifically, if update_env is True, then from this invocation forward,
@@ -244,7 +244,7 @@ def _TempDirSetup(self, prefix='tmp', update_env=True):
   """
   # Stash the old tempdir that was used so we can
   # switch it back on the way out.
-  self.tempdir = tempfile.mkdtemp(prefix=prefix)
+  self.tempdir = tempfile.mkdtemp(prefix=prefix, dir=base_dir)
   os.chmod(self.tempdir, 0700)
 
   if update_env:
@@ -291,10 +291,13 @@ def _TempDirTearDown(self, force_sudo):
 
 
 @contextlib.contextmanager
-def TempDirContextManager(prefix='tmp', storage=None, sudo_rm=False):
+def TempDirContextManager(prefix='tmp', base_dir=None, storage=None,
+                          sudo_rm=False):
   """ContextManager constraining all tempfile/TMPDIR activity to a tempdir
 
   Arguments:
+    prefix: See tempfile.mkdtemp documentation.
+    base_dir: The directory to place the temporary directory.
     storage: The object that will have its 'tempdir' attribute set.
     sudo_rm: Whether the temporary dir will need root privileges to remove.
   """
@@ -306,7 +309,7 @@ def TempDirContextManager(prefix='tmp', storage=None, sudo_rm=False):
       pass
     storage = foon()
 
-  _TempDirSetup(storage, prefix=prefix)
+  _TempDirSetup(storage, base_dir=base_dir, prefix=prefix)
   try:
     yield storage.tempdir
   finally:

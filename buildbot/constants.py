@@ -234,3 +234,6 @@ CHROOT_ENVIRONMENT_WHITELIST = (
 # Paths for Chrome LKGM which are relative to the Chromium base url.
 PATH_TO_CHROME_LKGM = 'trunk/src/chromeos'
 CHROME_LKGM_FILE = 'CHROMEOS_LKGM'
+
+# Cache constants.
+COMMON_CACHE = 'common'

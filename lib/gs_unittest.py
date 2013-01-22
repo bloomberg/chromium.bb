@@ -12,6 +12,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
+from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -67,6 +68,41 @@ class GSContextMock(partial_mock.PartialCmdMock):
 
     with rc_mock:
       return self.backup['_DoCommand'](inst, gsutil_cmd, **kwargs)
+
+
+class FetchGSUtilMock(partial_mock.PartialMock):
+  """Mocks out FetchGSUtil functionality."""
+  TARGET = 'chromite.lib.gs'
+  ATTRS = ('GSUTIL_URL',)
+
+  GSUTIL_URL = None
+
+  def __init__(self):
+    partial_mock.PartialMock.__init__(self, create_tempdir=True)
+
+  def PreStart(self):
+    gsutil_path = os.path.join(self.tempdir, gs.GSUTIL_TAR)
+    osutils.WriteFile(gsutil_path, 'some content')
+    self.GSUTIL_URL = 'file://%s' % gsutil_path
+
+
+class FetchGSUtilTest(cros_test_lib.MockTempDirTestCase):
+  """Test the fetching of 'gsutil' tarball"""
+  def setUp(self):
+    self.mock = FetchGSUtilMock()
+    self.StartPatcher(self.mock)
+    self.cache = cache.TarballCache(os.path.join(self.tempdir, 'cache'))
+    self.PatchObject(cache, 'Untar')
+
+  def testFetch(self):
+    """Test that the function runs through."""
+    gs.FetchGSUtil(self.cache)
+
+  def testReuse(self):
+    """Test that second fetch is a cache hit."""
+    gs.FetchGSUtil(self.cache)
+    gs.GSUTIL_URL = None
+    gs.FetchGSUtil(self.cache)
 
 
 class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):

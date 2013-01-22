@@ -5,9 +5,11 @@
 """Library to make common google storage operations more reliable.
 """
 
+import contextlib
 import logging
 import os
 
+from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
@@ -21,7 +23,8 @@ GSUTIL_BIN = None
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
 PRIVATE_BASE_HTTPS_URL = 'https://sandbox.google.com/storage/'
 BASE_GS_URL = 'gs://'
-GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'chromeos-public/gsutil.tar.gz'
+GSUTIL_TAR = 'gsutil-3.10.tar.gz'
+GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'chromeos-public/%s' % GSUTIL_TAR
 
 
 def CanonicalizeURL(url, strict=False):
@@ -59,15 +62,30 @@ def GetGsURL(bucket, for_gsutil=False, public=True, suburl=''):
   return '%s%s/%s' % (urlbase, bucket, suburl)
 
 
-def FetchGSUtil(dest_dir):
-  """Grabs GSUtil from a public location."""
-  logging.info('Fetching gsutil.')
-  gsutil_tar = os.path.join(dest_dir, 'gsutil.tar.gz')
-  cros_build_lib.RunCurl([GSUTIL_URL, '-o', gsutil_tar],
-                         debug_level=logging.DEBUG)
-  cros_build_lib.RunCommand(['tar', '-xzf', gsutil_tar],
-      debug_level=logging.DEBUG, cwd=dest_dir)
-  return os.path.join(dest_dir, 'gsutil', 'gsutil')
+@contextlib.contextmanager
+def FetchGSUtil(tarball_cache_dir):
+  """Reuses previously fetched GSUtil, performing the fetch if necessary.
+
+  Arguments:
+    tarball_cache_dir: The path of the cache that stores previously fetched
+      gsutil tarballs.
+  """
+  tar_cache = cache.TarballCache(tarball_cache_dir)
+  key = (GSUTIL_TAR,)
+
+  with tar_cache.Lookup(key) as ref:
+    if ref.Exists(lock=True):
+      logging.info('Reusing cached gsutil.')
+    else:
+      logging.info('Fetching gsutil.')
+      with osutils.TempDirContextManager(
+          base_dir=tar_cache.staging_dir) as tempdir:
+        gsutil_tar = os.path.join(tempdir, GSUTIL_TAR)
+        cros_build_lib.RunCurl([GSUTIL_URL, '-o', gsutil_tar],
+                               debug_level=logging.DEBUG)
+        ref.SetDefault(gsutil_tar, lock=True)
+
+    yield os.path.join(ref.path, 'gsutil', 'gsutil')
 
 
 class GSContextException(Exception):
@@ -172,6 +190,10 @@ class GSContext(object):
   def _InitBoto(self):
     if not self._TestGSLs():
       self._ConfigureBotoConfig()
+
+  def Cat(self, path):
+    """Returns the contents of a GS object."""
+    return self._DoCommand(['cat', path], redirect_stdout=True)
 
   def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
                version=None):

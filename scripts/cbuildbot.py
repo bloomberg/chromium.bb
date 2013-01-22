@@ -1236,7 +1236,7 @@ def main(argv):
     if not options.resume:
       # If we're in resume mode, use our parents tempdir rather than
       # nesting another layer.
-      stack.Add(osutils.TempDirContextManager, 'cbuildbot-tmp')
+      stack.Add(osutils.TempDirContextManager, prefix='cbuildbot-tmp')
       logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
 
     # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359
