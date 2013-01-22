@@ -44,9 +44,11 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 static const int kIconSize = 69;
 
 ExtensionUninstallDialog::ExtensionUninstallDialog(
+    Profile* profile,
     Browser* browser,
     ExtensionUninstallDialog::Delegate* delegate)
-    : browser_(browser),
+    : profile_(profile),
+      browser_(browser),
       delegate_(delegate),
       extension_(NULL),
       state_(kImageIsLoading),
@@ -77,7 +79,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
   state_ = kImageIsLoading;
   extensions::ImageLoader* loader =
-      extensions::ImageLoader::Get(browser_->profile());
+      extensions::ImageLoader::Get(profile_);
   loader->LoadImageAsync(extension_, image,
                          gfx::Size(pixel_size, pixel_size),
                          base::Bind(&ExtensionUninstallDialog::OnImageLoaded,
@@ -106,7 +108,6 @@ void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image) {
   DCHECK(state_ == kImageIsLoading || state_ == kBrowserIsClosing);
   if (state_ == kImageIsLoading) {
     state_ = kDialogIsShowing;
-    DCHECK(browser_ != NULL);
     Show();
   }
 }
@@ -117,13 +118,12 @@ void ExtensionUninstallDialog::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSING);
 
+  browser_ = NULL;
   // If the browser is closed while waiting for the image, we need to send a
   // "cancel" event here, because there will not be another opportunity to
   // notify the delegate of the cancellation as we won't open the dialog.
   if (state_ == kImageIsLoading) {
     state_ = kBrowserIsClosing;
-    DCHECK(browser_ != NULL);
-    browser_ = NULL;
     delegate_->ExtensionUninstallCanceled();
   }
 }

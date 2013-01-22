@@ -886,7 +886,8 @@ ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
     Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(browser, this));
+        ExtensionUninstallDialog::Create(extension_service_->profile(),
+                                         browser, this));
   }
   return extension_uninstall_dialog_.get();
 }

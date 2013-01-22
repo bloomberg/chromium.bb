@@ -26,7 +26,10 @@ namespace {
 // so there's no way for the dialog to outlive its delegate.
 class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogCocoa(Browser* browser, Delegate* delegate);
+  ExtensionUninstallDialogCocoa(
+      Profile* profile,
+      Browser* browser,
+      Delegate* delegate);
   virtual ~ExtensionUninstallDialogCocoa() OVERRIDE;
 
  private:
@@ -34,8 +37,10 @@ class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
 };
 
 ExtensionUninstallDialogCocoa::ExtensionUninstallDialogCocoa(
-    Browser* browser, ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(browser, delegate) {}
+    Profile* profile,
+    Browser* browser,
+    ExtensionUninstallDialog::Delegate* delegate)
+    : ExtensionUninstallDialog(profile, browser, delegate) {}
 
 ExtensionUninstallDialogCocoa::~ExtensionUninstallDialogCocoa() {}
 
@@ -68,6 +73,8 @@ void ExtensionUninstallDialogCocoa::Show() {
 
 // static
 ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Browser* browser, Delegate* delegate) {
-  return new ExtensionUninstallDialogCocoa(browser, delegate);
+    Profile* profile,
+    Browser* browser,
+    Delegate* delegate) {
+  return new ExtensionUninstallDialogCocoa(profile, browser, delegate);
 }

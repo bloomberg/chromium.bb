@@ -55,7 +55,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
       : extension_(extension),
         profile_(browser->profile()) {
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(browser, this));
+        ExtensionUninstallDialog::Create(profile_, browser, this));
     extension_uninstall_dialog_->ConfirmUninstall(extension_);
   }
 

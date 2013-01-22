@@ -15,6 +15,7 @@
 
 class Browser;
 class MessageLoop;
+class Profile;
 
 namespace extensions {
 class Extension;
@@ -41,9 +42,12 @@ class ExtensionUninstallDialog
   };
 
   // Creates a platform specific implementation of ExtensionUninstallDialog.
+  // |profile| and |delegate| can never be NULL.
   // |browser| can be NULL only for Ash when this is used with the applist
   // window.
-  static ExtensionUninstallDialog* Create(Browser* browser, Delegate* delegate);
+  static ExtensionUninstallDialog* Create(Profile* profile,
+                                          Browser* browser,
+                                          Delegate* delegate);
 
   virtual ~ExtensionUninstallDialog();
 
@@ -55,7 +59,11 @@ class ExtensionUninstallDialog
 
  protected:
   // Constructor used by the derived classes.
-  ExtensionUninstallDialog(Browser* browser, Delegate* delegate);
+  ExtensionUninstallDialog(Profile* profile,
+                           Browser* browser,
+                           Delegate* delegate);
+
+  Profile* const profile_;
 
   Browser* browser_;
 

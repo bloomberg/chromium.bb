@@ -79,7 +79,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
       return;
     }
     controller_->OnShowExtensionPrompt();
-    dialog_.reset(ExtensionUninstallDialog::Create(NULL, this));
+    dialog_.reset(ExtensionUninstallDialog::Create(profile_, NULL, this));
     dialog_->ConfirmUninstall(extension);
   }
 

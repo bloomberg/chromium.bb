@@ -124,7 +124,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
     case UNINSTALL: {
       AddRef();  // Balanced in Accepted() and Canceled()
       extension_uninstall_dialog_.reset(
-          ExtensionUninstallDialog::Create(browser_, this));
+          ExtensionUninstallDialog::Create(profile_, browser_, this));
       extension_uninstall_dialog_->ConfirmUninstall(extension);
       break;
     }

@@ -28,7 +28,9 @@ const int kPanelHorizMargin = 13;
 // GTK implementation of the uninstall dialog.
 class ExtensionUninstallDialogGtk : public ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogGtk(Browser* browser, Delegate* delegate);
+  ExtensionUninstallDialogGtk(Profile* profile,
+                              Browser* browser,
+                              Delegate* delegate);
   virtual ~ExtensionUninstallDialogGtk() OVERRIDE;
 
  private:
@@ -40,8 +42,10 @@ class ExtensionUninstallDialogGtk : public ExtensionUninstallDialog {
 };
 
 ExtensionUninstallDialogGtk::ExtensionUninstallDialogGtk(
-    Browser* browser, ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(browser, delegate),
+    Profile* profile,
+    Browser* browser,
+    ExtensionUninstallDialog::Delegate* delegate)
+    : ExtensionUninstallDialog(profile, browser, delegate),
       dialog_(NULL) {}
 
 void ExtensionUninstallDialogGtk::Show() {
@@ -121,6 +125,6 @@ void ExtensionUninstallDialogGtk::OnResponse(
 // static
 // Platform specific implementation of the uninstall dialog show method.
 ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Browser* browser, Delegate* delegate) {
-  return new ExtensionUninstallDialogGtk(browser, delegate);
+    Profile* profile, Browser* browser, Delegate* delegate) {
+  return new ExtensionUninstallDialogGtk(profile, browser, delegate);
 }
