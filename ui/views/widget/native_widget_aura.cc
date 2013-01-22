@@ -136,15 +136,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (parent) {
     parent->AddChild(window_);
   } else {
-    // TODO(erg): Once I've threaded context through chrome, uncomment this
-    // check, which currently fails on the NULL == NULL case.
-    //
-    // DCHECK_NE(params.GetParent(), params.context);
-
-    // TODO(erg): Remove this NULL check once we've made everything in views
-    // actually pass us a context.
-    aura::RootWindow* root_window = context ? context->GetRootWindow() : NULL;
-    window_->SetDefaultParentByRootWindow(root_window, window_bounds);
+    window_->SetDefaultParentByRootWindow(context->GetRootWindow(),
+                                          window_bounds);
   }
 
   // Wait to set the bounds until we have a parent. That way we can know our

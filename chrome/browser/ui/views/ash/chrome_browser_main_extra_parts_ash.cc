@@ -15,7 +15,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
-#include "ui/views/widget/desktop_aura/desktop_stacking_client.h"
 
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"

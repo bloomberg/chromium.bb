@@ -83,7 +83,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
-  virtual aura::client::StackingClient* CreateStackingClient() OVERRIDE;
   virtual ash::RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
 
   // content::NotificationObserver override:

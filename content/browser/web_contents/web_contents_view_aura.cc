@@ -741,10 +741,18 @@ void WebContentsViewAura::CreateView(
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
-  // TODO(mukai, erg): Should use a non-NULL value later when the DCHECK is
-  // turned on in SetDefaultParentByRootWindow().
-  aura::RootWindow* target_root = context ? context->GetRootWindow() : NULL;
-  window_->SetDefaultParentByRootWindow(target_root, gfx::Rect());
+  if (context) {
+    // There are places where there is no context currently because object
+    // hierarchies are built before they're attached to a Widget. (See
+    // views::WebView as an example; GetWidget() returns NULL at the point
+    // where we are created.)
+    //
+    // It should be OK to not set a default parent since such users will
+    // explicitly add this WebContentsViewAura to their tree after they create
+    // us.
+    window_->SetDefaultParentByRootWindow(context->GetRootWindow(),
+                                          gfx::Rect());
+  }
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 

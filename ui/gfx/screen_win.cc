@@ -57,6 +57,13 @@ int ScreenWin::GetNumDisplays() {
 
 gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
   HWND window_hwnd = GetHWNDFromNativeView(window);
+  if (!window_hwnd) {
+    // When |window| isn't rooted to a display, we should just return the
+    // default display so we get some correct display information like the
+    // scaling factor.
+    return GetPrimaryDisplay();
+  }
+
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(MonitorFromWindow(window_hwnd, MONITOR_DEFAULTTONEAREST),

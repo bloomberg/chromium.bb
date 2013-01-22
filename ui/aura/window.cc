@@ -320,8 +320,7 @@ void Window::SetExternalTexture(ui::Texture* texture) {
 
 void Window::SetDefaultParentByRootWindow(RootWindow* root_window,
                                           const gfx::Rect& bounds_in_screen) {
-  // TODO(erg): Enable this DCHECK once it is safe.
-  //  DCHECK(root_window);
+  DCHECK(root_window);
 
   // Stacking clients are mandatory on RootWindow objects.
   client::StackingClient* client = client::GetStackingClient(root_window);

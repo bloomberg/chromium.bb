@@ -283,8 +283,12 @@ void DesktopNativeWidgetAura::SetAccessibleState(
 }
 
 void DesktopNativeWidgetAura::InitModalType(ui::ModalType modal_type) {
-  // We should never be asked to create a DesktopNativeWidgetAura that is modal.
-  DCHECK_EQ(ui::MODAL_TYPE_NONE, modal_type);
+  // 99% of the time, we should not be asked to create a
+  // DesktopNativeWidgetAura that is modal. The case where this breaks down is
+  // when there are no browser windows and a background extension tries to
+  // display a simple alert dialog. (This case was masked because we used to
+  // have a hidden RootWindow which was the parent of these modal dialogs; they
+  // weren't displayed to the user.)
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWindowBoundsInScreen() const {

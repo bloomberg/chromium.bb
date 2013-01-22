@@ -52,7 +52,8 @@ gfx::Display DesktopScreenWin::GetDisplayMatching(
 }
 
 HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
-  return window->GetRootWindow()->GetAcceleratedWidget();
+  aura::RootWindow* root_window = window->GetRootWindow();
+  return root_window ? root_window->GetAcceleratedWidget() : NULL;
 }
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {

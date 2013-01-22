@@ -1920,7 +1920,8 @@ class TestChangeNativeViewHierarchy {
     view_test_ = view_test;
     native_host_ = new NativeViewHost();
     host_ = new Widget;
-    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params =
+        view_test->CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(0, 0, 500, 300);
     host_->Init(params);
     host_->GetRootView()->AddChildView(native_host_);

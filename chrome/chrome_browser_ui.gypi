@@ -193,8 +193,6 @@
         'browser/ui/aura/active_desktop_monitor.h',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
-        'browser/ui/aura/stacking_client_aura.cc',
-        'browser/ui/aura/stacking_client_aura.h',
         'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.cc',
         'browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h',
         'browser/ui/aura/tabs/dock_info_aurax11.cc',

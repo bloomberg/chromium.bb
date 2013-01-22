@@ -8,7 +8,6 @@
 #include "ash/launcher/launcher_types.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm/stacking_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
@@ -560,10 +559,6 @@ double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::RootWindow* root) {
   DCHECK(launcher_delegate_);
   return new LauncherContextMenu(launcher_delegate_, root);
-}
-
-aura::client::StackingClient* ChromeShellDelegate::CreateStackingClient() {
-  return new ash::StackingController;
 }
 
 ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {

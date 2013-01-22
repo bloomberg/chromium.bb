@@ -32,6 +32,7 @@ class RootWindowEventFilter;
 
 namespace ash {
 class Launcher;
+class StackingController;
 class SystemTray;
 class ToplevelWindowEventHandler;
 
@@ -175,6 +176,8 @@ class ASH_EXPORT RootWindowController {
 
   scoped_ptr<aura::RootWindow> root_window_;
   RootWindowLayoutManager* root_window_layout_;
+
+  scoped_ptr<StackingController> stacking_controller_;
 
   // Widget containing system tray.
   StatusAreaWidget* status_area_widget_;
