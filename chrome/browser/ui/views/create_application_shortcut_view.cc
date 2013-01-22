@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/select_favicon_frames.h"
@@ -485,7 +486,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const extensions::Extension* app) :
       CreateApplicationShortcutView(profile),
       app_(app),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   web_app::UpdateShortcutInfoForApp(*app, profile, &shortcut_info_);
   // The icon will be resized to |max_size|.
   const gfx::Size max_size(kAppIconSize, kAppIconSize);
@@ -508,23 +509,17 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 
   InitControls();
 
-  // tracker_.LoadImage() can call OnImageLoaded() before it returns if the
-  // image is cached.  This is very rare.  app_info_ must be initialized
-  // when OnImageLoaded() is called, so we check it here.
-  CHECK(app_info_);
-  tracker_.LoadImage(app_,
-                     icon_resource,
-                     max_size,
-                     ImageLoadingTracker::DONT_CACHE);
+  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile);
+  loader->LoadImageAsync(app_, icon_resource, max_size,
+      base::Bind(&CreateChromeApplicationShortcutView::OnImageLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
-// Called by tracker_ when the app's icon is loaded.
+// Called by ImageLoader when the app's icon is loaded.
 void CreateChromeApplicationShortcutView::OnImageLoaded(
-    const gfx::Image& image,
-    const std::string& extension_id,
-    int index) {
+    const gfx::Image& image) {
   if (image.IsEmpty()) {
     shortcut_info_.favicon = ui::ResourceBundle::GetSharedInstance().
         GetImageNamed(IDR_APP_DEFAULT_ICON);
