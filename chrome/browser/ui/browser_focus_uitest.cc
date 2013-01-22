@@ -735,11 +735,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
 // Focus stays on page with interstitials.
 // http://crbug.com/81451
-#if defined(OS_MACOSX) || defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_InterstitialFocus) {
-#else
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
-#endif
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
