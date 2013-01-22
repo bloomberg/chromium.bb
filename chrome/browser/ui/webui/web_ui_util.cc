@@ -14,7 +14,7 @@
 #include "chrome/browser/disposition_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
-#include "grit/platform_locale_settings.h"
+#include "grit/app_locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="IDS_WEB_FONT_FAMILY">Norasi,Waree,Garuda,Loma,sans-serif</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">TlwgMono</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">Norasi</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Norasi</translation>

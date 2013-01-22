@@ -117,25 +117,6 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-      <!-- The font used in Web UI (e.g. History). -->
-      <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
-        'Segoe UI', Tahoma, sans-serif
-      </message>
-      <!-- The font used in Web UI on Windows XP (e.g. History). -->
-      <message name="IDS_WEB_FONT_FAMILY_XP" use_name_for_id="true">
-        Tahoma, sans-serif
-      </message>
-
-      <!-- The relative font size in % used in Web UI (e.g. History).  -->
-      <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
-        75%
-      </message>
-      <!-- The relative font size in % used in web-style native pages
-      on Windows earlier than Vista (e.g. History).  -->
-      <message name="IDS_WEB_FONT_SIZE_XP" use_name_for_id="true">
-        75%
-      </message>
-
       <!-- The default value for |WebPreference::standard_font_family| -->
       <message name="IDS_STANDARD_FONT_FAMILY" use_name_for_id="true">
         Times New Roman

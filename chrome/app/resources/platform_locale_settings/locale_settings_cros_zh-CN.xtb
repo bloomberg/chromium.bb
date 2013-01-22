@@ -2,14 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <if expr="pp_ifdef('_google_chrome')">
-  <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, MYingHeiGB18030, MYingHeiB5HK, sans-serif</translation>
   <translation id="IDS_STANDARD_FONT_FAMILY">MYingHeiGB18030</translation>
   <translation id="IDS_FIXED_FONT_FAMILY">N Song ASC</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">Song ASC</translation>
   <translation id="IDS_SANS_SERIF_FONT_FAMILY">MYingHeiGB18030</translation>
 </if>
 <if expr="not pp_ifdef('_google_chrome')">
-  <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, Droid Sans Fallback, sans-serif</translation>
   <translation id="IDS_STANDARD_FONT_FAMILY">Droid Sans Fallback</translation>
   <translation id="IDS_FIXED_FONT_FAMILY">Droid Sans Fallback</translation>
   <translation id="IDS_SANS_SERIF_FONT_FAMILY">Droid Sans Fallback</translation>

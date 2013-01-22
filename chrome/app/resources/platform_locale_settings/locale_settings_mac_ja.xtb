@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="IDS_STANDARD_FONT_FAMILY">Hiragino Kaku Gothic Pro</translation>
-<translation id="IDS_WEB_FONT_FAMILY">Helvetica,Hiragino Kaku Gothic Pro,sans-serif</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">Osaka-Mono</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">Hiragino Mincho Pro</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Hiragino Kaku Gothic Pro</translation>

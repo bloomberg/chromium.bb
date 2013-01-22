@@ -169,6 +169,11 @@
            (Indian) have. In that case, this need to be enclosed
            by platform-dependent if-clause. -->
       <if expr="is_win">
+        <!-- Limit minimum UI font size to 5 by default. -->
+        <message name="IDS_MINIMUM_UI_FONT_SIZE" use_name_for_id="true">
+          5
+        </message>
+
         <message name="IDS_UI_FONT_FAMILY" use_name_for_id="true">
           default
         </message>
@@ -188,9 +193,46 @@
           100
         </message>
 
-        <!-- Limit minimum UI font size to 5 by default. -->
-        <message name="IDS_MINIMUM_UI_FONT_SIZE" use_name_for_id="true">
-          5
+        <!-- The font used in Web UI (e.g. History). -->
+        <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
+          'Segoe UI', Tahoma, sans-serif
+        </message>
+        <!-- The font used in Web UI on Windows XP (e.g. History). -->
+        <message name="IDS_WEB_FONT_FAMILY_XP" use_name_for_id="true">
+          Tahoma, sans-serif
+        </message>
+
+        <!-- The relative font size in % used in Web UI (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
+          75%
+        </message>
+        <!-- The relative font size in % used in web-style native pages
+        on Windows earlier than Vista (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE_XP" use_name_for_id="true">
+          75%
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <!-- The font used in Web UI (e.g. History). -->
+        <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
+          'Lucida Grande', sans-serif
+        </message>
+
+        <!-- The relative font size in % used in Web UI (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
+          75%
+        </message>
+      </if>
+      <if expr="is_linux and not pp_ifdef('chromeos')">
+        <!-- The font used in Web UI (e.g. History). Note that these are only
+             backups. We try to use the system font if possible. -->
+        <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
+          Arial, sans-serif
+        </message>
+
+        <!-- The relative font size in % used in Web UI (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
+          75%
         </message>
       </if>
       <!-- For Chrome OS -->
@@ -198,6 +240,16 @@
         <!-- The font name like: 'Font Name, 10' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
           Noto Sans UI,ui-sans, 12px
+        </message>
+
+        <!-- The font used in Web UI (e.g. History). -->
+        <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
+          'Noto Sans UI', sans-serif
+        </message>
+
+        <!-- The relative font size in % used in Web UI (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
+          75%
         </message>
       </if>
     </messages>
