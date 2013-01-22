@@ -44,9 +44,9 @@ def _ReorderBinary(relink_exe, executable, symbol, destination_dir):
   """
   cmd = [relink_exe,
          '--overwrite',
-         '--input-dll=%s' % executable,
+         '--input-image=%s' % executable,
          '--input-pdb=%s' % symbol,
-         '--output-dll=%s' % os.path.abspath(
+         '--output-image=%s' % os.path.abspath(
              os.path.join(destination_dir, os.path.basename(executable))),
          '--output-pdb=%s' % os.path.abspath(
              os.path.join(destination_dir, os.path.basename(symbol))),]
