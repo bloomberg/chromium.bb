@@ -84,7 +84,7 @@ FcMakeTempfile (char *template)
 #  ifdef F_DUPFD_CLOEXEC
     if (fd != -1)
     {
-	int newfd = fcntl(fd, F_DUPFD_CLOEXEC);
+	int newfd = fcntl(fd, F_DUPFD_CLOEXEC, STDIN_FILENO);
 
 	close(fd);
 	fd = newfd;
