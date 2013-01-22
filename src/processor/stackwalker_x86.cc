@@ -33,6 +33,7 @@
 //
 // Author: Mark Mentovai
 
+#include <assert.h>
 #include <string>
 
 #include "common/scoped_ptr.h"
@@ -103,6 +104,12 @@ StackFrameX86::~StackFrameX86() {
   if (cfi_frame_info)
     delete cfi_frame_info;
   cfi_frame_info = NULL;
+}
+
+u_int64_t StackFrameX86::ReturnAddress() const
+{
+  assert(context_validity & StackFrameX86::CONTEXT_VALID_EIP);
+  return context.eip;   
 }
 
 StackFrame* StackwalkerX86::GetContextFrame() {
@@ -597,14 +604,11 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack* stack) {
   if (new_frame->context.esp <= last_frame->context.esp)
     return NULL;
 
-  // new_frame->context.eip is the return address, which is one instruction
-  // past the CALL that caused us to arrive at the callee. Set
-  // new_frame->instruction to one less than that. This won't reference the
-  // beginning of the CALL instruction, but it's guaranteed to be within
-  // the CALL, which is sufficient to get the source line information to
-  // match up with the line that contains a function call. Callers that
-  // require the exact return address value may access the context.eip
-  // field of StackFrameX86.
+  // new_frame->context.eip is the return address, which is the instruction
+  // after the CALL that caused us to arrive at the callee. Set
+  // new_frame->instruction to one less than that, so it points within the
+  // CALL instruction. See StackFrame::instruction for details, and
+  // StackFrameAMD64::ReturnAddress.
   new_frame->instruction = new_frame->context.eip - 1;
 
   return new_frame.release();
