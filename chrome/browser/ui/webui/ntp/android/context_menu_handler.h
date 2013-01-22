@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace base {
 class ListValue;

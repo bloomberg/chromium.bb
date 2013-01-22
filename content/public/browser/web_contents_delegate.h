@@ -17,9 +17,9 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class FilePath;
 class GURL;

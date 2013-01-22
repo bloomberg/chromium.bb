@@ -7,7 +7,7 @@
 
 #include <string>
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace content {
 class WebContents;

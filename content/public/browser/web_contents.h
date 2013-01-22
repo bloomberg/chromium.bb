@@ -17,9 +17,9 @@
 #include "content/public/browser/web_ui.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/window_open_disposition.h"
 
 namespace base {
 class TimeTicks;

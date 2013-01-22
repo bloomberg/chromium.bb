@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 @implementation ConfirmInfoBarController
 

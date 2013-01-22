@@ -20,8 +20,8 @@
 #include "ui/base/ime/win/tsf_event_router.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/win/extra_sdk_defines.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/font.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class LocationBarView;
 class OmniboxPopupView;

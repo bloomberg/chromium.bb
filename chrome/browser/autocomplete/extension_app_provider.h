@@ -15,7 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 // This provider is responsible for keeping track of which Extension Apps are
 // installed and their URLs.  An instance of it gets created and managed by

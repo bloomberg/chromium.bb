@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/font.h"
 #include "ui/views/view.h"
-#include "webkit/glue/window_open_disposition.h"
 
 struct AutocompleteMatch;
 class OmniboxEditModel;

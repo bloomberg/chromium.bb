@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "ui/base/range/range.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
-#include "webkit/glue/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"

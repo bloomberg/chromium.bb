@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
-#define WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
+#ifndef UI_BASE_WINDOW_OPEN_DISPOSITION_H_
+#define UI_BASE_WINDOW_OPEN_DISPOSITION_H_
 
 enum WindowOpenDisposition {
   UNKNOWN,
@@ -20,4 +20,4 @@ enum WindowOpenDisposition {
   IGNORE_ACTION
 };
 
-#endif  // WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
+#endif  // UI_BASE_WINDOW_OPEN_DISPOSITION_H_

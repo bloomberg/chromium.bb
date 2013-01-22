@@ -14,7 +14,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "ui/base/models/menu_model.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class Browser;
 

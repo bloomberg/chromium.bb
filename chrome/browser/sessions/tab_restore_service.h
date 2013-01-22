@@ -16,7 +16,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/session_storage_namespace.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;

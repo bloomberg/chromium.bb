@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class BookmarkNode;
 class Browser;

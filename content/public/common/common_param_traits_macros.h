@@ -15,10 +15,10 @@
 #include "content/public/common/ssl_status.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
+#include "ui/base/window_open_disposition.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/window_open_disposition.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #undef IPC_MESSAGE_EXPORT

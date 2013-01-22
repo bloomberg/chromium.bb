@@ -26,8 +26,8 @@
 #include "grit/ui_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/gtk_util.h"
-#include "webkit/glue/window_open_disposition.h"
 
 using content::OpenURLParams;
 using content::PageNavigator;

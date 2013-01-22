@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 #import "chrome/browser/ui/cocoa/draggable_button.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 @class BookmarkBarFolderController;
 @class BookmarkButton;

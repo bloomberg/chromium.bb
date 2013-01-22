@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/window_open_disposition.h"
 
 typedef struct _cairo cairo_t;
 typedef struct _GdkColor GdkColor;

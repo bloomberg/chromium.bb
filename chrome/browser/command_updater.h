@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class CommandObserver;
 class CommandUpdaterDelegate;

@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "content/public/common/page_transition_types.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class TestLocationBar : public LocationBar {
  public:

@@ -23,7 +23,7 @@
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 IPC_ENUM_TRAITS(AutomationMsg_NavigationResponseValues)
 IPC_ENUM_TRAITS(content::PageType)

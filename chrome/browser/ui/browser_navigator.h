@@ -13,8 +13,8 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class Browser;
 class Profile;

@@ -373,7 +373,6 @@
         'web_intent_service_data.h',
         'web_io_operators.cc',
         'web_io_operators.h',
-        'window_open_disposition.h',
         'worker_task_runner.cc',
         'worker_task_runner.h',
       ],

@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/common/page_transition_types.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class ExtensionAction;
 class LocationBarTesting;

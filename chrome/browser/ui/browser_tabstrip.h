@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_
 #define CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_
 
-#include "content/public/common/page_transition_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "content/public/common/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 
 class Browser;
 class GURL;

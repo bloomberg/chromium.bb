@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class MetricsServiceTest : public InProcessBrowserTest {
  public:

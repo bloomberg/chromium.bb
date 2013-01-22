@@ -7,7 +7,7 @@
 
 #include <gtk/gtk.h>
 
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace event_utils {
 

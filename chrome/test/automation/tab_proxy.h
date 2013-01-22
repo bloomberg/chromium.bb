@@ -24,7 +24,7 @@
 #include "content/public/common/security_style.h"
 #include "net/base/cert_status_flags.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class BrowserProxy;
 class FilePath;

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DISPOSITION_UTILS_H_
 #define CHROME_BROWSER_DISPOSITION_UTILS_H_
 
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace disposition_utils {
 

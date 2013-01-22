@@ -6,8 +6,8 @@
 
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
-#include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -19,12 +19,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/point.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/window_open_disposition.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin.h"

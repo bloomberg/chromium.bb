@@ -19,8 +19,8 @@
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 #include "jni/WebContentsDelegateAndroid_jni.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/window_open_disposition.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_COMMAND_UPDATER_DELEGATE_H_
 #define CHROME_BROWSER_COMMAND_UPDATER_DELEGATE_H_
 
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 // Implement this interface so that your object can execute commands when
 // needed.

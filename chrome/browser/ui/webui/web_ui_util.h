@@ -10,7 +10,7 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "ui/base/layout.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class GURL;
 class SkBitmap;

@@ -14,7 +14,7 @@
 
 #include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 class TestShellTest : public testing::Test {

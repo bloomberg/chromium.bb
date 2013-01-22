@@ -9,7 +9,7 @@
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class Browser;
 class BookmarkModel;

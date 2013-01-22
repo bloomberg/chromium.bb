@@ -10,12 +10,12 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/window_open_disposition.h"
 
 using WebKit::WebDragOperationsMask;
 using content::OpenURLParams;

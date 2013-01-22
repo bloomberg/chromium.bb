@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "ui/base/window_open_disposition.h"
 
 class CreditCard;
 class PersonalDataManager;

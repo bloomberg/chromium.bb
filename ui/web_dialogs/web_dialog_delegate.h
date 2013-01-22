@@ -10,8 +10,8 @@
 
 #include "base/string16.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class GURL;
 

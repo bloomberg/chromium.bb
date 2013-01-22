@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -24,8 +24,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/window_open_disposition.h"
 #include "ipc/ipc_message.h"
+#include "ui/base/window_open_disposition.h"
 
 using content::LoadNotificationDetails;
 using content::NavigationController;

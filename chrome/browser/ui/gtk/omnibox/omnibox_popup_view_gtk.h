@@ -18,8 +18,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/font.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class GtkThemeService;
 class OmniboxEditModel;
