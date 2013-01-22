@@ -286,7 +286,7 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
     LocalChangeObserverMultipleContexts
 #endif
 
-TEST_F(LocalFileSyncServiceTest, LocalChangeObserverMultipleContexts) {
+TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   fileapi::CannedSyncableFileSystem file_system2(
       GURL(kOrigin2), kServiceName,

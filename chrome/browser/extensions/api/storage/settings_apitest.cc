@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
 #define MAYBE_ManagedStorageEvents ManagedStorageEvents
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, MAYBE_ManagedStorageEvents) {
   // This test runs after PRE_ManagedStorageEvents without having deleted the
   // profile, so the extension is still around. While the browser restarted the
   // policy went back to the empty default, and so the extension should receive
