@@ -1501,7 +1501,7 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   }
   prefs->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
                              custom_frame_default,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 WebContents* BrowserWindowGtk::GetDisplayedTab() {

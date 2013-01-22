@@ -517,19 +517,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kUsesSystemTheme) {
 }
 #endif  // TOOLKIT_GTK
 
-// TCM ID - 3636292
-#if defined(TOOLKIT_GTK)
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       kUseCustomChromeFrame) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kUseCustomChromeFrame));
-
-  ChangeBooleanPref(0, prefs::kUseCustomChromeFrame);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kUseCustomChromeFrame));
-}
-#endif  // TOOLKIT_GTK
-
 // TCM ID - 6473347.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kTapToClickEnabled) {
