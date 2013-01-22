@@ -6484,3 +6484,11 @@
    fun:_ZN7WebCore14SQLTransaction19postflightAndCommitEv
    fun:_ZN7WebCore14SQLTransaction13runStatementsEv
 }
+{
+   bug_171547
+   Memcheck:Leak
+   ...
+   fun:_ZN18ManagedUserService4InitEv
+   fun:_ZN18ManagedUserServiceC1EP7Profile
+   fun:_ZN61ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test8TestBodyEv
+}
