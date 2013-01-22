@@ -221,6 +221,11 @@ class QueueWithProgress(Queue.PriorityQueue):
     Queue.PriorityQueue.__init__(self, *args, **kwargs)
     self.progress = Progress(maxsize)
 
+  def set_progress(self, progress):
+    """Replace the current progress, mainly used when a progress should be
+    shared between queues."""
+    self.progress = progress
+
   def task_done(self):
     """Contrary to Queue.task_done(), it wakes self.all_tasks_done at each task
     done.
@@ -251,6 +256,10 @@ class QueueWithProgress(Queue.PriorityQueue):
 
 class ThreadPool(run_isolated.ThreadPool):
   QUEUE_CLASS = QueueWithProgress
+
+  def __init__(self, progress, *args, **kwargs):
+    super(ThreadPool, self).__init__(*args, **kwargs)
+    self.tasks.set_progress(progress)
 
 
 class Progress(object):
@@ -557,7 +566,7 @@ class Runner(object):
   """Immutable settings to run many test cases in a loop."""
   def __init__(
       self, cmd, cwd_dir, timeout, progress, retries, decider, verbose,
-      add_task):
+      add_task, add_serial_task):
     self.cmd = cmd[:]
     self.cwd_dir = cwd_dir
     self.timeout = timeout
@@ -568,6 +577,7 @@ class Runner(object):
     self.decider = decider
     self.verbose = verbose
     self.add_task = add_task
+    self.add_serial_task = add_serial_task
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
@@ -615,10 +625,17 @@ class Runner(object):
     self.progress.update_item(line, True, need_to_retry)
 
     if need_to_retry:
-      # The test failed and needs to be retried.
-      # Leave a buffer of ~40 test cases before retrying.
-      priority += 40
-      self.add_task(priority, self.map, priority, test_case, try_count + 1)
+      if try_count + 1 < self.retries:
+        # The test failed and needs to be retried normally.
+        # Leave a buffer of ~40 test cases before retrying.
+        priority += 40
+        self.add_task(priority, self.map, priority, test_case, try_count + 1)
+      else:
+        # This test only has one retry left, so the final retry should be
+        # done serially.
+        self.add_serial_task(priority, self.map, priority, test_case,
+                             try_count + 1)
+
     return [data]
 
 
@@ -719,7 +736,6 @@ def append_gtest_output_to_xml(final_xml, filepath):
 def run_test_cases(
     cmd, cwd, test_cases, jobs, timeout, retries, run_all, max_failures,
     no_cr, gtest_output, result_file, verbose):
-  """Traces test cases one by one."""
   if not test_cases:
     return 0
   if run_all:
@@ -749,17 +765,37 @@ def run_test_cases(
         print >> sys.stderr, 'Can\'t parse --gtest_output=%s' % gtest_output
         return 1
 
-    with ThreadPool(jobs, jobs, len(test_cases)) as pool:
+    progress = Progress(len(test_cases))
+    serial_tasks = QueueWithProgress(0)
+    serial_tasks.set_progress(progress)
+
+    def add_serial_task(priority, func, *args, **kwargs):
+      """Adds a serial task, to be executed later."""
+      assert isinstance(priority, int)
+      assert callable(func)
+      serial_tasks.put((priority, func, args, kwargs))
+
+    with ThreadPool(progress, jobs, jobs, len(test_cases)) as pool:
       runner = Runner(
-          cmd, cwd, timeout, pool.tasks.progress, retries, decider, verbose,
-          pool.add_task)
+          cmd, cwd, timeout, progress, retries, decider, verbose,
+          pool.add_task, add_serial_task)
       function = runner.map
       logging.debug('Adding tests to ThreadPool')
-      pool.tasks.progress.use_cr_only = not no_cr
+      progress.use_cr_only = not no_cr
       for i, test_case in enumerate(test_cases):
         pool.add_task(i, function, i, test_case, 0)
       logging.debug('All tests added to the ThreadPool')
       results = pool.join()
+
+      # Retry any failed tests serially.
+      while not serial_tasks.empty():
+        _priority, func, args, kwargs = serial_tasks.get()
+        results.append(func(*args, **kwargs))
+        serial_tasks.task_done()
+
+      # Call join since that is a standard call once a queue has been emptied.
+      serial_tasks.join()
+
       duration = time.time() - pool.tasks.progress.start
 
     # Merges the XMLs into one before having the directory deleted.
