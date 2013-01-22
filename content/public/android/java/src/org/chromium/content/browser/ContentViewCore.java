@@ -1900,7 +1900,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             mContentHeight = newContentHeight;
 
             if (mContentSizeChangeListener != null) {
-                mContentSizeChangeListener.onContentSizeChanged(width, height);
+                mContentSizeChangeListener.onContentSizeChanged(getContentWidth(),
+                        getContentHeight());
             }
         }
     }
