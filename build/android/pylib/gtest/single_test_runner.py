@@ -196,6 +196,10 @@ class SingleTestRunner(BaseTestRunner):
       return [
           'media/test/data',
           ]
+    elif self.test_package.test_suite_basename == 'cc_perftests':
+      return [
+        'cc/test/data',
+      ]
     return []
 
   def LaunchHelperToolsForTestSuite(self):
