@@ -30,7 +30,9 @@ struct DeclarativeWebRequestData {
       const net::HttpResponseHeaders* original_response_headers)
       : request(request), stage(stage),
         original_response_headers(original_response_headers) {}
+  // The network request that is currently being processed.
   net::URLRequest* request;
+  // The stage (progress) of the network request.
   RequestStage stage;
   // Additional information about requests that is not
   // available in all request stages.

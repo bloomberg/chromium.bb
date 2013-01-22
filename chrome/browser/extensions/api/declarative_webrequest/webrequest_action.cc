@@ -314,6 +314,8 @@ struct WebRequestActionFactory {
       (* FactoryMethod)(const base::DictionaryValue* /* dict */ ,
                         std::string* /* error */,
                         bool* /* bad_message */);
+  // Maps the name of a declarativeWebRequest action type to the factory
+  // function creating it.
   std::map<std::string, FactoryMethod> factory_methods;
 
   WebRequestActionFactory() {
