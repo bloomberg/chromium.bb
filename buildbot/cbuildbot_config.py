@@ -791,20 +791,23 @@ chrome_perf.add_config('lumpy-chrome-perf',
   trybot_list=True,
 )
 
+chromium_info_x86 = \
 chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
 )
 
-cpfq_arm = \
+chromium_info_arm = \
 chromium_info.add_config('arm-tegra2-tot-chrome-pfq-informational',
   arm,
   boards=['tegra2'],
 )
 
-cpfq_arm.add_config('daisy-tot-chrome-pfq-informational',
+chromium_info_daisy = \
+chromium_info_arm.add_config('daisy-tot-chrome-pfq-informational',
   boards=['daisy'],
 )
 
+chromium_info_amd64 = \
 chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-generic'],
@@ -822,6 +825,10 @@ chrome_info.add_config('alex-tot-chrome-pfq-informational',
 chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
   boards=['lumpy'],
 )
+
+chromium_info_x86.add_config('x86-webrtc-chrome-pfq-informational',)
+chromium_info_amd64.add_config('amd64-webrtc-chrome-pfq-informational',)
+chromium_info_daisy.add_config('daisy-webrtc-chrome-pfq-informational',)
 
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
