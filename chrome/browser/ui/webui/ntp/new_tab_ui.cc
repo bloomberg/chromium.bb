@@ -420,6 +420,10 @@ bool NewTabUI::NewTabHTMLSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
+bool NewTabUI::NewTabHTMLSource::ShouldAddContentSecurityPolicy() const {
+  return false;
+}
+
 void NewTabUI::NewTabHTMLSource::AddResource(const char* resource,
                                              const char* mime_type,
                                              int resource_id) {

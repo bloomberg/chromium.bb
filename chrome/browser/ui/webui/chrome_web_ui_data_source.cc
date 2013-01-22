@@ -38,6 +38,22 @@ class ChromeWebUIDataSource::InternalDataSource
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
     return parent_->StartDataRequest(path, is_incognito, callback);
   }
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+    return parent_->add_csp_;
+  }
+  virtual std::string GetContentSecurityPolicyObjectSrc() const OVERRIDE {
+    if (parent_->object_src_set_)
+      return parent_->object_src_;
+    return content::URLDataSource::GetContentSecurityPolicyObjectSrc();
+  }
+  virtual std::string GetContentSecurityPolicyFrameSrc() const OVERRIDE {
+    if (parent_->frame_src_set_)
+      return parent_->frame_src_;
+    return content::URLDataSource::GetContentSecurityPolicyFrameSrc();
+  }
+  virtual bool ShouldDenyXFrameOptions() const OVERRIDE {
+    return parent_->deny_xframe_options_;
+  }
 
  private:
   ChromeWebUIDataSource* parent_;
@@ -54,7 +70,11 @@ ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
           new InternalDataSource(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       source_name_(source_name),
       default_resource_(-1),
-      json_js_format_v2_(false) {
+      json_js_format_v2_(false),
+      add_csp_(true),
+      object_src_set_(false),
+      frame_src_set_(false),
+      deny_xframe_options_(true) {
 }
 
 ChromeWebUIDataSource::~ChromeWebUIDataSource() {
@@ -104,6 +124,26 @@ void ChromeWebUIDataSource::SetDefaultResource(int resource_id) {
 void ChromeWebUIDataSource::SetRequestFilter(
     const content::WebUIDataSource::HandleRequestCallback& callback) {
   filter_callback_ = callback;
+}
+
+void ChromeWebUIDataSource::DisableContentSecurityPolicy() {
+  add_csp_ = false;
+}
+
+void ChromeWebUIDataSource::OverrideContentSecurityPolicyObjectSrc(
+    const std::string& data) {
+  object_src_set_ = true;
+  object_src_ = data;
+}
+
+void ChromeWebUIDataSource::OverrideContentSecurityPolicyFrameSrc(
+    const std::string& data) {
+  frame_src_set_ = true;
+  frame_src_ = data;
+}
+
+void ChromeWebUIDataSource::DisableDenyXFrameOptions() {
+  deny_xframe_options_ = false;
 }
 
 std::string ChromeWebUIDataSource::GetSource() {

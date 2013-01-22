@@ -44,6 +44,7 @@ class DevToolsDataSource : public content::URLDataSource {
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
 
  private:
   ~DevToolsDataSource() {}
@@ -91,6 +92,10 @@ std::string DevToolsDataSource::GetMimeType(const std::string& path) const {
   }
   NOTREACHED();
   return "text/plain";
+}
+
+bool DevToolsDataSource::ShouldAddContentSecurityPolicy() const {
+  return false;
 }
 
 // static

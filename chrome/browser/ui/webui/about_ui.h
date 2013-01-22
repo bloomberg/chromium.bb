@@ -28,6 +28,8 @@ class AboutUIHTMLSource : public content::URLDataSource {
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
+  virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
 
   // Send the response data.
   void FinishDataRequest(

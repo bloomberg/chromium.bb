@@ -108,6 +108,9 @@ class RegisterPageUIHTMLSource : public content::URLDataSource {
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
   }
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+    return false;
+  }
 
  private:
   ~RegisterPageUIHTMLSource() {}

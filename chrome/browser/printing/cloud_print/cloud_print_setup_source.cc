@@ -134,6 +134,10 @@ std::string CloudPrintSetupSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
+bool CloudPrintSetupSource::ShouldAddContentSecurityPolicy() const {
+  return false;
+}
+
 std::string CloudPrintSetupSource::GetLocalizedUrl(
     const std::string& url) const {
   GURL original_url(url);

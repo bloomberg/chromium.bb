@@ -24,6 +24,7 @@ content::WebUIDataSource* CreateAboutPageHTMLSource() {
   source->SetUseJsonJSFormatV2();
   source->AddResourcePath("help.js", IDR_HELP_JS);
   source->SetDefaultResource(IDR_HELP_HTML);
+  source->DisableDenyXFrameOptions();
   return source;
 }
 

@@ -64,6 +64,17 @@ class WebUIDataSource {
 
   // Allows a caller to add a filter for URL requests.
   virtual void SetRequestFilter(const HandleRequestCallback& callback) = 0;
+
+  // The following map to methods on URLDataSource. See the documentation there.
+  // NOTE: it's not acceptable to call DisableContentSecurityPolicy for new
+  // pages, see URLDataSource::ShouldAddContentSecurityPolicy and talk to
+  // tsepez.
+  virtual void DisableContentSecurityPolicy() = 0;
+  virtual void OverrideContentSecurityPolicyObjectSrc(
+      const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyFrameSrc(
+      const std::string& data) = 0;
+  virtual void DisableDenyXFrameOptions() = 0;
 };
 
 }  // namespace content

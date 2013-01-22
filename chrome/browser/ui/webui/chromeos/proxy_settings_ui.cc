@@ -41,6 +41,9 @@ class ProxySettingsHTMLSource : public content::URLDataSource {
   virtual std::string GetMimeType(const std::string&) const OVERRIDE {
     return "text/html";
   }
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
+    return false;
+  }
 
  protected:
   virtual ~ProxySettingsHTMLSource() {}

@@ -49,6 +49,8 @@ class CONTENT_EXPORT URLDataSource {
   // string to specify no mime type.
   virtual std::string GetMimeType(const std::string& path) const = 0;
 
+  // The following methods are all called on the IO thread.
+
   // Returns the MessageLoop on which the delegate wishes to have
   // StartDataRequest called to handle the request for |path|. The default
   // implementation returns BrowserThread::UI. If the delegate does not care
@@ -69,6 +71,27 @@ class CONTENT_EXPORT URLDataSource {
 
   // Returns true if responses from this URLDataSource can be cached.
   virtual bool AllowCaching() const;
+
+  // If you are overriding this, then you have a bug.
+  // It is not acceptable to disable content-security-policy on chrome:// pages
+  // to permit functionality excluded by CSP, such as inline script.
+  // Instead, you must go back and change your WebUI page so that it is
+  // compliant with the policy. This typically involves ensuring that all script
+  // is delivered through the data manager backend. Talk to tsepez for more
+  // info.
+  virtual bool ShouldAddContentSecurityPolicy() const;
+
+  // It is OK to override the following two methods to a custom CSP directive
+  // thereby slightly reducing the protection applied to the page.
+
+  // By default, "object-src 'none';" is added to CSP. Override to change this.
+  virtual std::string GetContentSecurityPolicyObjectSrc() const;
+  // By default, "frame-src 'none';" is added to CSP. Override to change this.
+  virtual std::string GetContentSecurityPolicyFrameSrc() const;
+
+  // By default, the "X-Frame-Options: DENY" header is sent. To stop this from
+  // happening, return false. It is OK to return false as needed.
+  virtual bool ShouldDenyXFrameOptions() const;
 };
 
 }  // namespace content

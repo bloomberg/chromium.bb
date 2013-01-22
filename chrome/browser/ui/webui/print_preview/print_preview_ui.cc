@@ -332,6 +332,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                           IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   source->SetRequestFilter(base::Bind(&HandleRequestCallback));
+  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
   return source;
 }
 

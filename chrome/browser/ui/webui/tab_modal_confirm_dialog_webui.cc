@@ -50,6 +50,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
   content::WebUIDataSource* data_source =
       ChromeWebUIDataSource::Create(chrome::kChromeUITabModalConfirmDialogHost);
   data_source->SetDefaultResource(IDR_TAB_MODAL_CONFIRM_DIALOG_HTML);
+  data_source->DisableContentSecurityPolicy();
   ChromeURLDataManager::AddWebUIDataSource(profile, data_source);
 
   constrained_web_dialog_delegate_ =

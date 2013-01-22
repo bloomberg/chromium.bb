@@ -44,128 +44,7 @@ const char kChromeURLContentSecurityPolicyHeaderBase[] =
     "Content-Security-Policy: script-src chrome://resources "
     "'self' 'unsafe-eval'; ";
 
-// TODO(tsepez) The following should be replaced with a centralized table.
-// See crbug.com/104631.
-
-// If you are inserting new exemptions into this list, then you have a bug.
-// It is not acceptable to disable content-security-policy on chrome:// pages
-// to permit functionality excluded by the above policy, such as inline script.
-// Instead, you must go back and change your WebUI page so that it is compliant
-// with the policy. This typically involves ensuring that all script is
-// delivered through the data manager backend.
-class ChromeURLContentSecurityPolicyExceptionSet
-    : public std::set<std::string> {
- public:
-  ChromeURLContentSecurityPolicyExceptionSet() : std::set<std::string>() {
-    // TODO(tsepez) whittle this list down to nothing.
-    insert(chrome::kChromeUICloudPrintSetupHost);
-    insert(chrome::kChromeUIDevToolsHost);
-    insert(chrome::kChromeUINewTabHost);
-#if defined(OS_CHROMEOS)
-    insert(chrome::kChromeUIMobileSetupHost);
-    insert(chrome::kChromeUIOobeHost);
-    insert(chrome::kChromeUIOSCreditsHost);
-    insert(chrome::kChromeUIProxySettingsHost);
-    insert(chrome::kChromeUIRegisterPageHost);
-    insert(chrome::kChromeUISimUnlockHost);
-    insert(chrome::kChromeUISystemInfoHost);
-#endif
-#if defined(OS_CHROMEOS) || defined(USE_AURA)
-    insert(chrome::kChromeUITabModalConfirmDialogHost);
-#endif
-  }
-};
-
-// It is OK to add URLs to these maps which map specific URLs to custom CSP
-// directives thereby slightly reducing the protection applied to the page.
-class ChromeURLObjectSrcExceptionMap
-    : public std::map<std::string, std::string> {
- public:
-  ChromeURLObjectSrcExceptionMap() : std::map<std::string, std::string>() {
-    insert(std::pair<std::string, std::string>(
-        chrome::kChromeUIPrintHost, "object-src 'self';"));
-  }
-};
-
-class ChromeURLFrameSrcExceptionMap
-    : public std::map<std::string, std::string> {
- public:
-  ChromeURLFrameSrcExceptionMap() : std::map<std::string, std::string>() {
-    insert(std::pair<std::string, std::string>(
-        chrome::kChromeUIUberHost, "frame-src chrome:;"));
-    insert(std::pair<std::string, std::string>(
-        chrome::kChromeUIUberFrameHost, "frame-src chrome:;"));
-  }
-};
-
-base::LazyInstance<ChromeURLContentSecurityPolicyExceptionSet>
-    g_chrome_url_content_security_policy_exception_set =
-        LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<ChromeURLObjectSrcExceptionMap>
-    g_chrome_url_object_src_exception_map = LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<ChromeURLFrameSrcExceptionMap>
-    g_chrome_url_frame_src_exception_map = LAZY_INSTANCE_INITIALIZER;
-
-// Determine the least-privileged content security policy header, if any,
-// that is compatible with a given WebUI URL, and append it to the existing
-// response headers.
-void AddContentSecurityPolicyHeader(
-    const GURL& url, net::HttpResponseHeaders* headers) {
-  ChromeURLContentSecurityPolicyExceptionSet* exceptions =
-      g_chrome_url_content_security_policy_exception_set.Pointer();
-
-  if (exceptions->find(url.host()) == exceptions->end()) {
-    std::string base = kChromeURLContentSecurityPolicyHeaderBase;
-
-    ChromeURLObjectSrcExceptionMap* object_map =
-        g_chrome_url_object_src_exception_map.Pointer();
-    ChromeURLObjectSrcExceptionMap::iterator object_iter =
-        object_map->find(url.host());
-    base.append(object_iter == object_map->end() ?
-                "object-src 'none';" : object_iter->second);
-
-    ChromeURLFrameSrcExceptionMap* frame_map =
-        g_chrome_url_frame_src_exception_map.Pointer();
-    ChromeURLFrameSrcExceptionMap::iterator frame_iter =
-        frame_map->find(url.host());
-    base.append(frame_iter == frame_map->end() ?
-                "frame-src 'none';" : frame_iter->second);
-
-    headers->AddHeader(base);
-  }
-}
-
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
-
-// It is OK to add exceptions to this set as needed.
-class ChromeURLXFrameOptionsExceptionSet
-    : public std::set<std::string> {
- public:
-  ChromeURLXFrameOptionsExceptionSet() : std::set<std::string>() {
-    insert(chrome::kChromeUIExtensionsFrameHost);
-    insert(chrome::kChromeUIHelpFrameHost);
-    insert(chrome::kChromeUIHistoryFrameHost);
-    insert(chrome::kChromeUISettingsFrameHost);
-    insert(chrome::kChromeUIUberFrameHost);
-#if defined(OS_CHROMEOS)
-    // chrome://terms page is embedded in iframe to chrome://oobe.
-    insert(chrome::kChromeUITermsHost);
-#endif
-  }
-};
-
-base::LazyInstance<ChromeURLXFrameOptionsExceptionSet>
-    g_chrome_url_x_frame_options_exception_set = LAZY_INSTANCE_INITIALIZER;
-
-void AddXFrameOptionsHeader(
-    const GURL& url, net::HttpResponseHeaders* headers) {
-  ChromeURLXFrameOptionsExceptionSet* exceptions =
-      g_chrome_url_x_frame_options_exception_set.Pointer();
-  if (exceptions->find(url.host()) == exceptions->end())
-    headers->AddHeader(kChromeURLXFrameOptionsHeader);
-}
 
 // Parse a URL into the components used to resolve its request. |source_name|
 // is the hostname and |path| is the remaining portion of the URL.
@@ -232,6 +111,24 @@ class URLRequestChromeJob : public net::URLRequestJob,
     allow_caching_ = allow_caching;
   }
 
+  void set_add_content_security_policy(bool add_content_security_policy) {
+    add_content_security_policy_ = add_content_security_policy;
+  }
+
+  void set_content_security_policy_object_source(
+      const std::string& data) {
+    content_security_policy_object_source_ = data;
+  }
+
+  void set_content_security_policy_frame_source(
+      const std::string& data) {
+    content_security_policy_frame_source_ = data;
+  }
+
+  void set_deny_xframe_options(bool deny_xframe_options) {
+    deny_xframe_options_ = deny_xframe_options;
+  }
+
   // Returns true when job was generated from an incognito profile.
   bool is_incognito() const {
     return is_incognito_;
@@ -263,6 +160,16 @@ class URLRequestChromeJob : public net::URLRequestJob,
   // If true, set a header in the response to prevent it from being cached.
   bool allow_caching_;
 
+  // If true, set the Content Security Policy (CSP) header.
+  bool add_content_security_policy_;
+
+  // These are used with the CSP.
+  std::string content_security_policy_object_source_;
+  std::string content_security_policy_frame_source_;
+
+  // If true, sets  the "X-Frame-Options: DENY" header.
+  bool deny_xframe_options_;
+
   // True when job is generated from an incognito profile.
   const bool is_incognito_;
 
@@ -282,6 +189,10 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       data_offset_(0),
       pending_buf_size_(0),
       allow_caching_(true),
+      add_content_security_policy_(true),
+      content_security_policy_object_source_("object-src 'none';"),
+      content_security_policy_frame_source_("frame-src 'none';"),
+      deny_xframe_options_(true),
       is_incognito_(is_incognito),
       backend_(backend),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -319,8 +230,20 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // status code of 200. Without this they return a 0, which makes the status
   // indistiguishable from other error types. Instant relies on getting a 200.
   info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
-  AddContentSecurityPolicyHeader(request_->url(), info->headers);
-  AddXFrameOptionsHeader(request_->url(), info->headers);
+
+  // Determine the least-privileged content security policy header, if any,
+  // that is compatible with a given WebUI URL, and append it to the existing
+  // response headers.
+  if (add_content_security_policy_) {
+    std::string base = kChromeURLContentSecurityPolicyHeaderBase;
+    base.append(content_security_policy_object_source_);
+    base.append(content_security_policy_frame_source_);
+    info->headers->AddHeader(base);
+  }
+
+  if (deny_xframe_options_)
+    info->headers->AddHeader(kChromeURLXFrameOptionsHeader);
+
   if (!allow_caching_)
     info->headers->AddHeader("Cache-Control: no-cache");
 }
@@ -515,6 +438,14 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   pending_requests_.insert(std::make_pair(request_id, job));
 
   job->set_allow_caching(source->source()->AllowCaching());
+  job->set_add_content_security_policy(
+      source->source()->ShouldAddContentSecurityPolicy());
+  job->set_content_security_policy_object_source(
+      source->source()->GetContentSecurityPolicyObjectSrc());
+  job->set_content_security_policy_frame_source(
+      source->source()->GetContentSecurityPolicyFrameSrc());
+  job->set_deny_xframe_options(
+      source->source()->ShouldDenyXFrameOptions());
 
   // Forward along the request to the data source.
   MessageLoop* target_message_loop =

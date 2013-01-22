@@ -136,15 +136,16 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource() {
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
-  source->SetJsonPath(kStringsJsFile);
-  source->AddResourcePath(kHistoryJsFile, IDR_HISTORY_JS);
-  source->SetDefaultResource(IDR_HISTORY_HTML);
-  source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("displayfiltersites", IDS_GROUP_BY_DOMAIN_LABEL);
   source->AddLocalizedString("numbervisits", IDS_HISTORY_NUMBER_VISITS);
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
+  source->SetJsonPath(kStringsJsFile);
+  source->AddResourcePath(kHistoryJsFile, IDR_HISTORY_JS);
+  source->SetDefaultResource(IDR_HISTORY_HTML);
+  source->SetUseJsonJSFormatV2();
+  source->DisableDenyXFrameOptions();
 
   return source;
 }

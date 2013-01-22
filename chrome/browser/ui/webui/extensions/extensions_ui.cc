@@ -30,6 +30,7 @@ content::WebUIDataSource* CreateExtensionsHTMLSource() {
                           IDR_EXTENSION_COMMAND_LIST_JS);
   source->AddResourcePath("extension_list.js", IDR_EXTENSION_LIST_JS);
   source->SetDefaultResource(IDR_EXTENSIONS_HTML);
+  source->DisableDenyXFrameOptions();
   return source;
 }
 

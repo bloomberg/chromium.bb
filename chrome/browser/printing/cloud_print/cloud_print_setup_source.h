@@ -20,6 +20,7 @@ class CloudPrintSetupSource : public content::URLDataSource {
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
 
   static const char kInvalidPasswordHelpUrl[];
   static const char kCanNotAccessAccountUrl[];

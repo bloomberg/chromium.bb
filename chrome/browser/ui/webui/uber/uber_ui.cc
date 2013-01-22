@@ -42,6 +42,7 @@ content::WebUIDataSource* CreateUberHTMLSource() {
   source->AddResourcePath("uber.js", IDR_UBER_JS);
   source->AddResourcePath("uber_utils.js", IDR_UBER_UTILS_JS);
   source->SetDefaultResource(IDR_UBER_HTML);
+  source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
 
   // Hack alert: continue showing "Loading..." until a real title is set.
   source->AddLocalizedString("pageTitle", IDS_TAB_LOADING_TITLE);
@@ -118,6 +119,8 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
       chrome::kChromeUIHistoryHost);
   source->AddString("overridesHistory",
                     ASCIIToUTF16(overridesHistory ? "yes" : "no"));
+  source->DisableDenyXFrameOptions();
+  source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
 
   return source;
 }

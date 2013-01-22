@@ -1035,6 +1035,24 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
+bool AboutUIHTMLSource::ShouldAddContentSecurityPolicy() const {
+#if defined(OS_CHROMEOS)
+  if (source_name_ == chrome::kChromeUIOSCreditsHost)
+    return false;
+#endif
+  return content::URLDataSource::ShouldAddContentSecurityPolicy();
+}
+
+bool AboutUIHTMLSource::ShouldDenyXFrameOptions() const {
+#if defined(OS_CHROMEOS)
+  if (source_name_ == chrome::kChromeUITermsHost) {
+    // chrome://terms page is embedded in iframe to chrome://oobe.
+    return false;
+  }
+#endif
+  return content::URLDataSource::ShouldDenyXFrameOptions();
+}
+
 AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);

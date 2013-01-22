@@ -112,8 +112,9 @@ class OptionsUIHTMLSource : public content::URLDataSource {
   virtual void StartDataRequest(
       const std::string& path,
       bool is_incognito,
-      const content::URLDataSource::GotDataCallback& callback);
-  virtual std::string GetMimeType(const std::string&) const;
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
+  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
+  virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
 
  private:
   virtual ~OptionsUIHTMLSource();
@@ -164,6 +165,10 @@ std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {
     return "application/javascript";
 
   return "text/html";
+}
+
+bool OptionsUIHTMLSource::ShouldDenyXFrameOptions() const {
+  return false;
 }
 
 OptionsUIHTMLSource::~OptionsUIHTMLSource() {}

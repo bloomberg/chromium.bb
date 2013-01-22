@@ -21,4 +21,20 @@ bool URLDataSource::AllowCaching() const {
   return true;
 }
 
+bool URLDataSource::ShouldAddContentSecurityPolicy() const {
+  return true;
+}
+
+std::string URLDataSource::GetContentSecurityPolicyObjectSrc() const {
+  return "object-src 'none';";
+}
+
+std::string URLDataSource::GetContentSecurityPolicyFrameSrc() const {
+  return "frame-src 'none';";
+}
+
+bool URLDataSource::ShouldDenyXFrameOptions() const {
+  return true;
+}
+
 }  // namespace content

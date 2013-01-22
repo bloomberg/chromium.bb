@@ -40,6 +40,12 @@ class ChromeWebUIDataSource : public URLDataSourceImpl,
   virtual void SetDefaultResource(int resource_id) OVERRIDE;
   virtual void SetRequestFilter(
       const content::WebUIDataSource::HandleRequestCallback& callback) OVERRIDE;
+  virtual void DisableContentSecurityPolicy() OVERRIDE;
+  virtual void OverrideContentSecurityPolicyObjectSrc(
+      const std::string& data) OVERRIDE;
+  virtual void OverrideContentSecurityPolicyFrameSrc(
+      const std::string& data) OVERRIDE;
+  virtual void DisableDenyXFrameOptions() OVERRIDE;
 
  protected:
   virtual ~ChromeWebUIDataSource();
@@ -78,6 +84,12 @@ class ChromeWebUIDataSource : public URLDataSourceImpl,
   std::map<std::string, int> path_to_idr_map_;
   DictionaryValue localized_strings_;
   content::WebUIDataSource::HandleRequestCallback filter_callback_;
+  bool add_csp_;
+  bool object_src_set_;
+  std::string object_src_;
+  bool frame_src_set_;
+  std::string frame_src_;
+  bool deny_xframe_options_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUIDataSource);
 };
