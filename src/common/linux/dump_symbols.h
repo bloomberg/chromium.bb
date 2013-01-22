@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "common/using_std_string.h"
 
@@ -48,10 +49,10 @@ class Module;
 // or shared library, and write it to SYM_STREAM in the Breakpad symbol
 // file format.
 // If OBJ_FILE has been stripped but contains a .gnu_debuglink section,
-// then look for the debug file in DEBUG_DIR.
+// then look for the debug file in DEBUG_DIRS.
 // If CFI is set to false, then omit the CFI section.
 bool WriteSymbolFile(const string &obj_file,
-                     const string &debug_dir,
+                     const std::vector<string>& debug_dirs,
                      bool cfi,
                      std::ostream &sym_stream);
 
@@ -59,7 +60,7 @@ bool WriteSymbolFile(const string &obj_file,
 // instead of writing it to a stream. The caller owns the resulting
 // Module object and must delete it when finished.
 bool ReadSymbolData(const string& obj_file,
-                    const string& debug_dir,
+                    const std::vector<string>& debug_dirs,
                     bool cfi,
                     Module** module);
 

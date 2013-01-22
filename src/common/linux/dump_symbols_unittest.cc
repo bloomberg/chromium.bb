@@ -46,8 +46,8 @@
 
 namespace google_breakpad {
 bool ReadSymbolDataInternal(const uint8_t* obj_file,
-                            const string &obj_filename,
-                            const string &debug_dir,
+                            const string& obj_filename,
+                            const std::vector<string>& debug_dir,
                             bool cfi,
                             Module** module);
 }
@@ -84,10 +84,10 @@ TEST_F(DumpSymbols, Invalid) {
   memset(&header, 0, sizeof(header));
   Module* module;
   EXPECT_FALSE(ReadSymbolDataInternal(reinterpret_cast<uint8_t*>(&header),
-                                       "foo",
-                                       "",
-                                       true,
-                                       &module));
+                                      "foo",
+                                      vector<string>(),
+                                      true,
+                                      &module));
 }
 
 TEST_F(DumpSymbols, SimplePublic32) {
@@ -117,7 +117,7 @@ TEST_F(DumpSymbols, SimplePublic32) {
   Module* module;
   EXPECT_TRUE(ReadSymbolDataInternal(elfdata,
                                      "foo",
-                                     "",
+                                     vector<string>(),
                                      true,
                                      &module));
 
@@ -156,7 +156,7 @@ TEST_F(DumpSymbols, SimplePublic64) {
   Module* module;
   EXPECT_TRUE(ReadSymbolDataInternal(elfdata,
                                      "foo",
-                                     "",
+                                     vector<string>(),
                                      true,
                                      &module));
 
