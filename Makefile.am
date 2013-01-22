@@ -178,7 +178,6 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/process_state.cc \
 	src/processor/range_map-inl.h \
 	src/processor/range_map.h \
-	src/processor/scoped_ptr.h \
 	src/processor/simple_serializer-inl.h \
 	src/processor/simple_serializer.h \
 	src/processor/simple_symbol_supplier.cc \
@@ -1042,6 +1041,7 @@ EXTRA_DIST = \
 	src/common/mac/string_utilities.h \
 	src/common/md5.cc \
 	src/common/md5.h \
+	src/common/scoped_ptr.h \
 	src/common/solaris/dump_symbols.cc \
 	src/common/solaris/dump_symbols.h \
 	src/common/solaris/file_id.cc \
