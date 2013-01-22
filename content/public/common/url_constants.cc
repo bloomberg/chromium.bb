@@ -43,6 +43,8 @@ const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
 const char kChromeUIGpuHangURL[] = "chrome://gpuhang";
 const char kChromeUIHangURL[] = "chrome://hang";
 const char kChromeUIKillURL[] = "chrome://kill";
+const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash";
+const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang";
 
 }  // namespace chrome
 

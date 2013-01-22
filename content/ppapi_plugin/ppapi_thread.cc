@@ -11,6 +11,8 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
@@ -138,6 +140,8 @@ bool PpapiThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnLoadPlugin)
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnCreateChannel)
     IPC_MESSAGE_HANDLER(PpapiMsg_SetNetworkState, OnSetNetworkState)
+    IPC_MESSAGE_HANDLER(PpapiMsg_Crash, OnCrash)
+    IPC_MESSAGE_HANDLER(PpapiMsg_Hang, OnHang)
     IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnResourceReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -380,6 +384,18 @@ void PpapiThread::OnSetNetworkState(bool online) {
       plugin_entry_points_.get_interface(PPP_NETWORK_STATE_DEV_INTERFACE));
   if (ns)
     ns->SetOnLine(PP_FromBool(online));
+}
+
+void PpapiThread::OnCrash() {
+  // Intentionally crash upon the request of the browser.
+  volatile int* null_pointer = NULL;
+  *null_pointer = 0;
+}
+
+void PpapiThread::OnHang() {
+  // Intentionally hang upon the request of the browser.
+  for (;;)
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
 }
 
 bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,

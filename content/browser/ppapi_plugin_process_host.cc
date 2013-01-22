@@ -137,6 +137,16 @@ void PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
   // That's OK, we can just ignore this message.
 }
 
+// static
+void PpapiPluginProcessHost::FindByName(
+    const string16& name,
+    std::vector<PpapiPluginProcessHost*>* hosts) {
+  for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->process_.get() && iter->process_->GetData().name == name)
+      hosts->push_back(*iter);
+  }
+}
+
 bool PpapiPluginProcessHost::Send(IPC::Message* message) {
   return process_->Send(message);
 }

@@ -5,14 +5,15 @@
 #ifndef CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
 #define CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
 
-#include <string>
 #include <queue>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
+#include "base/string16.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -93,6 +94,11 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   // The opposite of DIdCreate... above.
   static void DidDeleteOutOfProcessInstance(int plugin_process_id,
                                             int32 pp_instance);
+
+  // Returns the instances that match the specified process name.
+  // It can only be called on the IO thread.
+  static void FindByName(const string16& name,
+                         std::vector<PpapiPluginProcessHost*>* hosts);
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;

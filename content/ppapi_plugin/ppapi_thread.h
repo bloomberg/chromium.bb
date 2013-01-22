@@ -97,6 +97,8 @@ class PpapiThread : public ChildThread,
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
   void OnSetNetworkState(bool online);
+  void OnCrash();
+  void OnHang();
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.

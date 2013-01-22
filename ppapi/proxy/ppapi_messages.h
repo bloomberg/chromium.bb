@@ -314,6 +314,12 @@ IPC_MESSAGE_CONTROL4(PpapiMsg_CreateNaClChannel,
                      bool /* incognito */,
                      ppapi::proxy::SerializedHandle /* channel_handle */)
 
+// Instructs the plugin process to crash.
+IPC_MESSAGE_CONTROL0(PpapiMsg_Crash)
+
+// Instructs the plugin process to hang.
+IPC_MESSAGE_CONTROL0(PpapiMsg_Hang)
+
 // Each plugin may be referenced by multiple renderers. We need the instance
 // IDs to be unique within a plugin, despite coming from different renderers,
 // and unique within a renderer, despite going to different plugins. This means

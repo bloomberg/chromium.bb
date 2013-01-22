@@ -51,6 +51,8 @@ CONTENT_EXPORT extern const char kChromeUIGpuCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuHangURL[];
 CONTENT_EXPORT extern const char kChromeUIHangURL[];
 CONTENT_EXPORT extern const char kChromeUIKillURL[];
+CONTENT_EXPORT extern const char kChromeUIPpapiFlashCrashURL[];
+CONTENT_EXPORT extern const char kChromeUIPpapiFlashHangURL[];
 
 }  // namespace chrome
 

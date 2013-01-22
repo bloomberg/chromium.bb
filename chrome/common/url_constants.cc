@@ -509,6 +509,8 @@ const char* const kChromeDebugURLs[] = {
   kChromeUIGpuCleanURL,
   kChromeUIGpuCrashURL,
   kChromeUIGpuHangURL,
+  kChromeUIPpapiFlashCrashURL,
+  kChromeUIPpapiFlashHangURL
 };
 const int kNumberOfChromeDebugURLs =
     static_cast<int>(arraysize(kChromeDebugURLs));
