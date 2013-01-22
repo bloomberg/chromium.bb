@@ -10,7 +10,7 @@
 
 class Profile;
 
-namespace extensions {
+namespace apps {
 
 class AppRestoreService;
 
@@ -37,6 +37,6 @@ class AppRestoreServiceFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 };
 
-}  // namespace extensions
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_RESTORE_SERVICE_FACTORY_H_

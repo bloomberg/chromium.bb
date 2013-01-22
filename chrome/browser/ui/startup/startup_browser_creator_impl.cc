@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "apps/app_restore_service.h"
+#include "apps/app_restore_service_factory.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -27,8 +29,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/app_restore_service.h"
-#include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -620,8 +620,8 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
   else if (pref.type == SessionStartupPref::DEFAULT)
     VLOG(1) << "Pref: default";
 
-  extensions::AppRestoreService* service =
-      extensions::AppRestoreServiceFactory::GetForProfile(profile_);
+  apps::AppRestoreService* service =
+      apps::AppRestoreServiceFactory::GetForProfile(profile_);
   // NULL in incognito mode.
   if (service) {
     bool should_restore_apps = StartupBrowserCreator::WasRestarted();

@@ -1,0 +1,10 @@
+include_rules = [
+  "+base",
+  "+content",
+  # Temporary allowed includes.
+  # TODO(benwells): remove these.
+  "+chrome/browser/extensions",
+  "+chrome/browser/profiles",
+  "+chrome/common/chrome_notification_types.h",
+  "+chrome/common/extensions",
+]

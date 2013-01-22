@@ -2261,6 +2261,7 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
+            'apps',
             'autofill_regexes',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'browser_extensions',

@@ -1,4 +1,5 @@
 include_rules = [
+  "+apps",
   "+breakpad",
   "+chrome/app",
   "+chrome/installer",

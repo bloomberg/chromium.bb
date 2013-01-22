@@ -5,17 +5,19 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_APP_RESTORE_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_APP_RESTORE_SERVICE_H_
 
+#include <string>
+
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-#include <string>
-
 class Profile;
 
 namespace extensions {
-
 class Extension;
+}
+
+namespace apps {
 
 // Tracks what apps need to be restarted when the browser restarts.
 class AppRestoreService : public ProfileKeyedService,
@@ -35,12 +37,12 @@ class AppRestoreService : public ProfileKeyedService,
 
   void RecordAppStart(const std::string& extension_id);
   void RecordAppStop(const std::string& extension_id);
-  void RestoreApp(const Extension* extension);
+  void RestoreApp(const extensions::Extension* extension);
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;
 };
 
-}  // namespace extensions
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_RESTORE_SERVICE_H_

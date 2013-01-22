@@ -10,8 +10,6 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
-#include "chrome/browser/extensions/app_restore_service.h"
-#include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -652,37 +650,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // Wait for javascript to verify that the second window got the updated
   // coordinates, ignoring the default coordinates passed to the create method.
   ASSERT_TRUE(done2_listener.WaitUntilSatisfied());
-}
-
-// Tests that a running app is recorded in the preferences as such.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
-  content::WindowedNotificationObserver extension_suspended(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::NotificationService::AllSources());
-
-  const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("platform_apps/restart_test"));
-  ASSERT_TRUE(extension);
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
-
-  // App is running.
-  ASSERT_TRUE(extension_prefs->IsExtensionRunning(extension->id()));
-
-  // Wait for the extension to get suspended.
-  extension_suspended.Wait();
-
-  // App isn't running because it got suspended.
-  ASSERT_FALSE(extension_prefs->IsExtensionRunning(extension->id()));
-
-  // Pretend that the app is supposed to be running.
-  extension_prefs->SetExtensionRunning(extension->id(), true);
-
-  ExtensionTestMessageListener restart_listener("onRestarted", false);
-  AppRestoreServiceFactory::GetForProfile(browser()->profile())->
-      HandleStartup(true);
-  restart_listener.WaitUntilSatisfied();
 }
 
 namespace {

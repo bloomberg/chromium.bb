@@ -2,24 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/app_restore_service.h"
+#include "apps/app_restore_service.h"
 
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
-namespace extensions {
+using extensions::AppEventRouter;
+using extensions::Extension;
+using extensions::ExtensionHost;
+using extensions::ExtensionPrefs;
+using extensions::ExtensionSystem;
+
+namespace apps {
 
 AppRestoreService::AppRestoreService(Profile* profile)
     : profile_(profile) {
@@ -97,4 +100,4 @@ void AppRestoreService::RestoreApp(const Extension* extension) {
   AppEventRouter::DispatchOnRestartedEvent(profile_, extension);
 }
 
-}  // namespace extensions
+}  // namespace apps

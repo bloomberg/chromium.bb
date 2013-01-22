@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/app_restore_service_factory.h"
+#include "apps/app_restore_service_factory.h"
 
-#include "chrome/browser/extensions/app_restore_service.h"
+#include "apps/app_restore_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
-namespace extensions {
+namespace apps {
 
 // static
 AppRestoreService* AppRestoreServiceFactory::GetForProfile(Profile* profile) {
@@ -43,4 +43,4 @@ bool AppRestoreServiceFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-}  // namespace extensions
+}  // namespace apps
