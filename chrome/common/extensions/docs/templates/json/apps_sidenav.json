@@ -63,9 +63,27 @@
         "title": "Notifications",
         "toggleable": true,
         "items": [
-          {
-            "title": "Google Cloud Messaging for Chrome",
-            "fileName": "cloudMessaging.html"
+            {
+            "title": "Cloud Messaging",
+            "toggleable": true,
+            "items": [
+              {
+                "title": "About Cloud Messaging",
+                "fileName": "cloudMessaging.html"
+              },
+              {
+                "title": "Client Reference",
+                "fileName": "pushMessaging.html"
+              },
+              {
+                "title": "Service Reference",
+                "fileName": "gcm_server.html"
+              },
+              {
+                "title": "Terms of Service",
+                "fileName": "gcm_tos.html"
+              }
+            ]
           },
           {
             "title": "Desktop Notifications",
@@ -93,9 +111,12 @@
       },
       {
         "title": "MVC Architecture",
-        "fileName": "app_frameworks.html",
         "toggleable": true,
         "items": [
+          {
+            "title": "About MVC Architecture",
+            "fileName": "app_frameworks.html"
+          },
           {
             "title": "Build Apps with AngularJS",
             "fileName": "angular_framework.html"

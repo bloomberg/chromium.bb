@@ -34,10 +34,12 @@ At a glance, push messaging works like this:
   to the push messaging service.</li>
   <li>The push messaging service routes the message
   to all instances of Chrome where the user is signed in.</li>
-  <li>When the message arrives on the client,
-  Chrome will start the app or extension, if it is not already running.</li>
   <li>When the app or extension starts,
-  it needs to register a handler to receive the event.</li>
+  it needs to register a handler to receive the
+  $ref:pushMessaging.onMessage event.</li>
+  <li>When the message arrives on the client,
+  Chrome will start the app or extension, if it is not already running,
+  and call the registered handler.</li>
 </ul>
 
 <p>
@@ -175,7 +177,7 @@ To get the refresh token and initial access token:
 
 <ol>
   <li>Open an Incognito window in Chrome;
-  this ensures that you are logged into the correct Google acount.
+  this ensures that you are logged into the correct Google account.
   If you only have one Google account,
   you don't need to use an incognito window.</li>
   <li>Go to the
@@ -186,7 +188,7 @@ To get the refresh token and initial access token:
   enter the client ID and client secret, and click "Close".</li>
   <li>In the "Step 1" section, enter the scope
   <code>https://www.googleapis.com/auth/gcm_for_chrome</code> into the
-  "Input your own scopes text box and click "Authorize APIs" button.</li>
+  "Input your own scopes" text box and click "Authorize APIs" button.</li>
   <li>Assuming you are in Incognito mode,
   you will be redirected to the Google login page.
   Login with the same Google Account that you will use to upload your app or extension
@@ -334,7 +336,7 @@ A sample request would like something like this:
 
 <pre>
 POST /o/oauth2/token HTTP/1.1
-Host: accounts.google.com/o/oauth2/token
+Host: accounts.google.com
 Content-Type: application/x-www-form-urlencoded
 
 client_id=291796959215.apps.googleusercontent.com&
@@ -459,7 +461,8 @@ your app or extension on the Extensions management page
 (go to <strong>chrome://extensions</strong> in your browser).
 Your app or extension doesn't need to be running, just installed.
 You will need to get the channel ID at install time
-using $ref:app.runtime.onLaunched.
+using <a href="http://developer.chrome.com/apps/app.runtime.html#event-onLaunched">app.runtime.onLaunched</a> (apps) or
+<a href="http://developer.chrome.com/extensions/runtime.html#event-onInstalled">runtime.onInstalled</a> (extensions).
 Then, use that channel ID on the server to send a test
 push message through the system.
 All going well,
