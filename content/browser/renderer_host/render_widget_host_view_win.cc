@@ -3001,7 +3001,7 @@ void RenderWidgetHostViewWin::UpdateInputScopeIfNecessary(
     ui::TextInputType text_input_type) {
   // The text store is responsible for handling input scope when TSF-aware is
   // required.
-  if (!base::win::IsTSFAwareRequired())
+  if (base::win::IsTSFAwareRequired())
     return;
 
   ui::tsf_inputscope::SetInputScopeForTsfUnawareWindow(m_hWnd,
