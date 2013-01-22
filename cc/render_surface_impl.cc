@@ -150,27 +150,6 @@ void RenderSurfaceImpl::clearLayerLists()
     m_contributingDelegatedRenderPassLayerList.clear();
 }
 
-static inline gfx::Rect computeClippedRectInTarget(const LayerImpl* owningLayer)
-{
-    DCHECK(owningLayer->parent());
-
-    const LayerImpl* renderTarget = owningLayer->parent()->renderTarget();
-    const RenderSurfaceImpl* self = owningLayer->renderSurface();
-
-    gfx::Rect clippedRectInTarget = self->clipRect();
-    if (owningLayer->backgroundFilters().hasFilterThatMovesPixels()) {
-        // If the layer has background filters that move pixels, we cannot scissor as tightly.
-        // FIXME: this should be able to be a tighter scissor, perhaps expanded by the filter outsets?
-        clippedRectInTarget = renderTarget->renderSurface()->contentRect();
-    } else if (clippedRectInTarget.IsEmpty()) {
-        // For surfaces, empty clipRect means that the surface does not clip anything.
-        clippedRectInTarget = renderTarget->renderSurface()->contentRect();
-        clippedRectInTarget.Intersect(gfx::ToEnclosingRect(self->drawableContentRect()));
-    } else
-        clippedRectInTarget.Intersect(gfx::ToEnclosingRect(self->drawableContentRect()));
-    return clippedRectInTarget;
-}
-
 RenderPass::Id RenderSurfaceImpl::renderPassId()
 {
     int layerId = m_owningLayer->id();
@@ -193,10 +172,9 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 {
     DCHECK(!forReplica || m_owningLayer->hasReplica());
 
-    gfx::Rect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
     const gfx::Transform& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::Create());
-    sharedQuadState->SetAll(drawTransform, m_contentRect, clippedRectInTarget, m_clipRect, m_isClipped, m_drawOpacity);
+    sharedQuadState->SetAll(drawTransform, m_contentRect, m_clipRect, m_isClipped, m_drawOpacity);
 
     if (m_owningLayer->showDebugBorders()) {
         SkColor color = forReplica ? DebugColors::SurfaceReplicaBorderColor() : DebugColors::SurfaceBorderColor();

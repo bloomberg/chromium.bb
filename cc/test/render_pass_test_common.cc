@@ -76,7 +76,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   shared_state->SetAll(gfx::Transform(),
                        rect,
                        rect,
-                       rect,
                        false,
                        1);
 

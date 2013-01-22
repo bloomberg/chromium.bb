@@ -3720,7 +3720,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
     // One shared state for all quads - we don't need the correct details
     testData.sharedQuadState = SharedQuadState::Create();
-    testData.sharedQuadState->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), gfx::Rect(), false, 1.0);
+    testData.sharedQuadState->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), false, 1.0);
 
     const char* currentChar = testScript;
 

@@ -48,7 +48,6 @@ class CCMessagesTest : public testing::Test {
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
     EXPECT_EQ(a->content_to_target_transform, b->content_to_target_transform);
     EXPECT_EQ(a->visible_content_rect, b->visible_content_rect);
-    EXPECT_EQ(a->clipped_rect_in_target, b->clipped_rect_in_target);
     EXPECT_EQ(a->clip_rect, b->clip_rect);
     EXPECT_EQ(a->is_clipped, b->is_clipped);
     EXPECT_EQ(a->opacity, b->opacity);
@@ -239,7 +238,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   shared_state1_in->SetAll(arbitrary_matrix,
                            arbitrary_rect1,
                            arbitrary_rect2,
-                           arbitrary_rect3,
                            arbitrary_bool1,
                            arbitrary_float1);
   scoped_ptr<SharedQuadState> shared_state1_cmp = shared_state1_in->Copy();
@@ -302,7 +300,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   shared_state2_in->SetAll(arbitrary_matrix,
                            arbitrary_rect2,
                            arbitrary_rect3,
-                           arbitrary_rect1,
                            arbitrary_bool1,
                            arbitrary_float2);
   scoped_ptr<SharedQuadState> shared_state2_cmp = shared_state2_in->Copy();
@@ -311,7 +308,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   shared_state3_in->SetAll(arbitrary_matrix,
                            arbitrary_rect3,
                            arbitrary_rect1,
-                           arbitrary_rect2,
                            arbitrary_bool1,
                            arbitrary_float3);
   scoped_ptr<SharedQuadState> shared_state3_cmp = shared_state3_in->Copy();

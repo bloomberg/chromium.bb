@@ -159,7 +159,6 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
                   static_cast<double>(displaySize.height()) / frameSize.height());
 
               copiedSharedQuadState->content_to_target_transform = drawTransform() * delegatedFrameToLayerSpaceTransform * copiedSharedQuadState->content_to_target_transform;
-              copiedSharedQuadState->clipped_rect_in_target = MathUtil::mapClippedRect(drawTransform() * delegatedFrameToLayerSpaceTransform, copiedSharedQuadState->clipped_rect_in_target);
               copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(drawTransform() * delegatedFrameToLayerSpaceTransform, copiedSharedQuadState->clip_rect);
               copiedSharedQuadState->opacity *= drawOpacity();
             }

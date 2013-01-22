@@ -93,14 +93,12 @@ scoped_ptr<RenderPass> CreateTestRenderPass(RenderPass::Id id, gfx::Rect rect) {
 scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
     gfx::Transform content_to_target_transform, gfx::Rect rect) {
   const gfx::Rect visible_content_rect = rect;
-  const gfx::Rect clipped_rect_in_target = rect;
   const gfx::Rect clip_rect = rect;
   const bool is_clipped = false;
   const float opacity = 1.0f;
   scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();
   shared_state->SetAll(content_to_target_transform,
                        visible_content_rect,
-                       clipped_rect_in_target,
                        clip_rect,
                        is_clipped,
                        opacity);

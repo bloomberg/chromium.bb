@@ -35,9 +35,9 @@ public:
     void leaveLayer(const LayerIteratorPosition<LayerType>&);
 
     // Returns true if the given rect in content space for a layer is fully occluded in either screen space or the layer's target surface.  |renderTarget| is the contributing layer's render target, and |drawTransform|, |transformsToTargetKnown| and |clippedRectInTarget| are relative to that.
-    bool occluded(const LayerType* renderTarget, const gfx::Rect& contentRect, const gfx::Transform& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
+    bool occluded(const LayerType* renderTarget, gfx::Rect contentRect, const gfx::Transform& drawTransform, bool implDrawTransformIsUnknown, bool isClipped, gfx::Rect clipRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
     // Gives an unoccluded sub-rect of |contentRect| in the content space of a layer. Used when considering occlusion for a layer that paints/draws something. |renderTarget| is the contributing layer's render target, and |drawTransform|, |transformsToTargetKnown| and |clippedRectInTarget| are relative to that.
-    gfx::Rect unoccludedContentRect(const LayerType* renderTarget, const gfx::Rect& contentRect, const gfx::Transform& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
+    gfx::Rect unoccludedContentRect(const LayerType* renderTarget, gfx::Rect contentRect, const gfx::Transform& drawTransform, bool implDrawTransformIsUnknown, bool isClipped, gfx::Rect clipRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
 
     // Gives an unoccluded sub-rect of |contentRect| in the content space of the renderTarget owned by the layer.
     // Used when considering occlusion for a contributing surface that is rendering into another target.
@@ -75,9 +75,6 @@ protected:
     // - When we visit a layer representing a contributing surface, the current target will never be the top of the stack since we just came from the contributing surface.
     // We merge the occlusion at the top of the stack with the new current subtree. This new target is pushed onto the stack if not already there.
     std::vector<StackObject> m_stack;
-
-    // Allow tests to override this.
-    virtual gfx::Rect layerClipRectInTarget(const LayerType*) const;
 
 private:
     // Called when visiting a layer representing itself. If the target was not already current, then this indicates we have entered a new surface subtree.

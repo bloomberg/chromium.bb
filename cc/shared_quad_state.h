@@ -21,7 +21,6 @@ class CC_EXPORT SharedQuadState {
 
   void SetAll(const gfx::Transform& content_to_target_transform,
               const gfx::Rect& visible_content_rect,
-              const gfx::Rect& clipped_rect_in_target,
               const gfx::Rect& clip_rect,
               bool is_clipped,
               float opacity);
@@ -30,7 +29,6 @@ class CC_EXPORT SharedQuadState {
   gfx::Transform content_to_target_transform;
   // This rect lives in the content space for the quad's originating layer.
   gfx::Rect visible_content_rect;
-  gfx::Rect clipped_rect_in_target;
   gfx::Rect clip_rect;
   bool is_clipped;
   float opacity;

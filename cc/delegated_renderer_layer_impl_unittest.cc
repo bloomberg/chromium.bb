@@ -422,7 +422,7 @@ public:
             MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
             AppendQuadsData data(pass->id);
             SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-            sharedState->SetAll(childPassTransform, childPassRect, childPassRect, childPassRect, false, 1);
+            sharedState->SetAll(childPassTransform, childPassRect, childPassRect, false, 1);
             scoped_ptr<SolidColorDrawQuad> colorQuad;
 
             colorQuad = SolidColorDrawQuad::Create();
@@ -443,7 +443,7 @@ public:
         MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
         AppendQuadsData data(pass->id);
         SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-        sharedState->SetAll(passTransform, passRect, passRect, passRect, false, 1);
+        sharedState->SetAll(passTransform, passRect, passRect, false, 1);
         scoped_ptr<SolidColorDrawQuad> colorQuad;
 
         scoped_ptr<RenderPassDrawQuad> renderPassQuad = RenderPassDrawQuad::Create();
@@ -531,7 +531,6 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     // 36 - (width / 2) = 36 - 30 / 2 = 21
     // The size is 100 scaled to fit inside the layer's bounds at 30x30 from a frame at 50x50.
     // 100 * 30 / 50 = 60.
-    EXPECT_RECT_EQ(gfx::Rect(21, 21, 60, 60), rootSharedState->clipped_rect_in_target);
     EXPECT_RECT_EQ(gfx::Rect(21, 21, 60, 60), rootSharedState->clip_rect);
     gfx::Transform expected;
     // This is the transform from the layer's space to its target.
@@ -547,7 +546,6 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, rootSharedState->content_to_target_transform);
 
     // The contributing render pass should not be transformed from its input.
-    EXPECT_RECT_EQ(gfx::Rect(20, 20, 7, 7), contribSharedState->clipped_rect_in_target);
     EXPECT_RECT_EQ(gfx::Rect(20, 20, 7, 7), contribSharedState->clip_rect);
     expected.MakeIdentity();
     expected.Scale(0.8, 0.8);
@@ -576,7 +574,6 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, DisplaySize)
     const SharedQuadState* rootSharedState = rootQuadList[0]->shared_quad_state;
 
     // The results are similar to the SharedData test, but are scaled up by displaySize/bounds, which is 40/30.
-    EXPECT_RECT_EQ(gfx::Rect(21, 21, 80, 80), rootSharedState->clipped_rect_in_target);
     EXPECT_RECT_EQ(gfx::Rect(21, 21, 80, 80), rootSharedState->clip_rect);
     gfx::Transform expected;
     // This is the transform from the layer's space to its target.

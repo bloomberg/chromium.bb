@@ -418,7 +418,6 @@ static void appendQuadsToFillScreen(RenderPass* targetRenderPass, LayerImpl* roo
     sharedQuadState->SetAll(rootLayer->drawTransform(),
                             rootTargetRect,
                             rootTargetRect,
-                            rootTargetRect,
                             false,
                             opacity);
 
@@ -489,7 +488,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         } else if (it.representsItself() && !it->visibleContentRect().IsEmpty()) {
             bool hasOcclusionFromOutsideTargetSurface;
             bool implDrawTransformIsUnknown = false;
-            if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->drawableContentRect(), &hasOcclusionFromOutsideTargetSurface))
+            if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->isClipped(), it->clipRect(), &hasOcclusionFromOutsideTargetSurface))
                 appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
             else {
                 DCHECK_EQ(activeTree(), it->layerTreeImpl());

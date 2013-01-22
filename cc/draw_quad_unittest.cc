@@ -27,18 +27,16 @@ TEST(DrawQuadTest, copySharedQuadState)
 {
     gfx::Transform quadTransform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
     gfx::Rect visibleContentRect(10, 12, 14, 16);
-    gfx::Rect clippedRectInTarget(19, 21, 23, 25);
-    gfx::Rect clipRect = clippedRectInTarget;
+    gfx::Rect clipRect(19, 21, 23, 25);
     bool isClipped = true;
     float opacity = 0.25;
 
     scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
-    state->SetAll(quadTransform, visibleContentRect, clippedRectInTarget, clipRect, isClipped, opacity);
+    state->SetAll(quadTransform, visibleContentRect, clipRect, isClipped, opacity);
 
     scoped_ptr<SharedQuadState> copy(state->Copy());
     EXPECT_EQ(quadTransform, copy->content_to_target_transform);
     EXPECT_RECT_EQ(visibleContentRect, copy->visible_content_rect);
-    EXPECT_RECT_EQ(clippedRectInTarget, copy->clipped_rect_in_target);
     EXPECT_EQ(opacity, copy->opacity);
     EXPECT_RECT_EQ(clipRect, copy->clip_rect);
     EXPECT_EQ(isClipped, copy->is_clipped);
@@ -48,13 +46,12 @@ scoped_ptr<SharedQuadState> createSharedQuadState()
 {
     gfx::Transform quadTransform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
     gfx::Rect visibleContentRect(10, 12, 14, 16);
-    gfx::Rect clippedRectInTarget(19, 21, 23, 25);
-    gfx::Rect clipRect = clippedRectInTarget;
+    gfx::Rect clipRect(19, 21, 23, 25);
     bool isClipped = false;
     float opacity = 1;
 
     scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
-    state->SetAll(quadTransform, visibleContentRect, clippedRectInTarget, clipRect, isClipped, opacity);
+    state->SetAll(quadTransform, visibleContentRect, clipRect, isClipped, opacity);
     return state.Pass();
 }
 
