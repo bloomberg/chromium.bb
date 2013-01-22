@@ -182,7 +182,24 @@ struct ParamTraits<TransportDIB::Id> {
     l->append(")");
   }
 };
-#endif
+
+#if defined(USE_AURA)
+template <>
+struct ParamTraits<HWND> {
+  typedef HWND param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteUInt32(reinterpret_cast<uint32>(p));
+  }
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
+    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<HWND>");
+  }
+};
+#endif  // defined(USE_AURA)
+#endif  // defined(OS_WIN)
 
 #if defined(USE_X11)
 template<>

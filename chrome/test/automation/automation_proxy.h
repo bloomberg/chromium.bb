@@ -186,8 +186,8 @@ class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
   // that can be reparented in another process.
   scoped_refptr<TabProxy> CreateExternalTab(
       const ExternalTabSettings& settings,
-      gfx::NativeWindow* external_tab_container,
-      gfx::NativeWindow* tab);
+      gfx::AcceleratedWidget* external_tab_container,
+      gfx::AcceleratedWidget* tab);
 
   base::TimeDelta action_timeout() const {
     return action_timeout_;

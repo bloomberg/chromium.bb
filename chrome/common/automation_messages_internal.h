@@ -258,8 +258,8 @@ IPC_MESSAGE_CONTROL3(AutomationMsg_DEPRECATED_WindowKeyPress,
 //   ExternalTabSettings - settings for external tab
 IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_CreateExternalTab,
                             ExternalTabSettings  /* settings*/,
-                            gfx::NativeWindow  /* Tab container window */,
-                            gfx::NativeWindow  /* Tab window */,
+                            gfx::AcceleratedWidget  /* Tab container window */,
+                            gfx::AcceleratedWidget  /* Tab window */,
                             int  /* Handle to the new tab */,
                             int  /* Session Id of the new tab */)
 
@@ -722,9 +722,9 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_AttachExternalTab,
 IPC_SYNC_MESSAGE_CONTROL3_4(AutomationMsg_ConnectExternalTab,
                             uint64 /* cookie */,
                             bool   /* allow/block tab*/,
-                            gfx::NativeWindow  /* parent window */,
-                            gfx::NativeWindow  /* Tab container window */,
-                            gfx::NativeWindow  /* Tab window */,
+                            gfx::AcceleratedWidget  /* parent window */,
+                            gfx::AcceleratedWidget  /* Tab container window */,
+                            gfx::AcceleratedWidget  /* Tab window */,
                             int  /* Handle to the new tab */,
                             int  /* Session Id of the new tab */)
 

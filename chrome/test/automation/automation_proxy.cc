@@ -378,8 +378,8 @@ bool AutomationProxy::OpenNewBrowserWindow(Browser::Type type, bool show) {
 
 scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(
     const ExternalTabSettings& settings,
-    gfx::NativeWindow* external_tab_container,
-    gfx::NativeWindow* tab) {
+    gfx::AcceleratedWidget* external_tab_container,
+    gfx::AcceleratedWidget* tab) {
   int handle = 0;
   int session_id = 0;
   bool succeeded =
