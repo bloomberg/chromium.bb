@@ -103,7 +103,7 @@ void AudioScheduler::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
   if (encoded_packet.get()) {
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&AudioScheduler::SendAudioPacket,
-                              this, base::Passed(encoded_packet.Pass())));
+                              this, base::Passed(&encoded_packet)));
   }
 }
 

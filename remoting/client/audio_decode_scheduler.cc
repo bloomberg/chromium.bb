@@ -86,7 +86,7 @@ void AudioDecodeScheduler::Core::DecodePacket(
 
   main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &AudioDecodeScheduler::Core::ProcessDecodedPacket, this,
-      base::Passed(decoded_packet.Pass()), done));
+      base::Passed(&decoded_packet), done));
 }
 
 void AudioDecodeScheduler::Core::ProcessDecodedPacket(
