@@ -824,6 +824,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
       new RemoveResourceFromDirectoryOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
           test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),

@@ -32,6 +32,10 @@ const char kResourceListRootURL[] = "/feeds/default/private/full";
 // Metadata feed with things like user quota.
 const char kAccountMetadataURL[] = "/feeds/metadata/default";
 
+// URL for the content_url of the root directory.
+const char kRootContentURL[] =
+    "/feeds/default/private/full/folder%3Aroot/contents";
+
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
 // almost always. Be careful not to use something too small on account that
@@ -159,6 +163,10 @@ GURL GDataWapiUrlGenerator::GenerateResourceListRootUrl() const {
 
 GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl() const {
   return AddMetadataUrlParams(base_url_.Resolve(kAccountMetadataURL));
+}
+
+GURL GDataWapiUrlGenerator::GenerateRootContentUrl() const {
+  return base_url_.Resolve(kRootContentURL);
 }
 
 }  // namespace google_apis

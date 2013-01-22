@@ -581,6 +581,14 @@ void FakeDriveService::RemoveResourceFromDirectory(
           return;
         }
       }
+
+      // We are dealing with a no-"parent"-link file as in the root directory.
+      if (parent_content_url.is_empty()) {
+        AddNewChangestamp(entry);
+        MessageLoop::current()->PostTask(
+            FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+        return;
+      }
     }
   }
 

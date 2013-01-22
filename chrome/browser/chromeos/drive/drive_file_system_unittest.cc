@@ -1442,7 +1442,7 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
@@ -1484,7 +1484,7 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 

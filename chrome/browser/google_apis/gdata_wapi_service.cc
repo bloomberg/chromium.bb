@@ -452,6 +452,7 @@ void GDataWapiService::RemoveResourceFromDirectory(
   runner_->StartOperationWithRetry(
       new RemoveResourceFromDirectoryOperation(operation_registry(),
                                                url_request_context_getter_,
+                                               url_generator_,
                                                callback,
                                                parent_content_url,
                                                resource_id));

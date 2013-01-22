@@ -89,6 +89,9 @@ class GDataWapiUrlGenerator {
   // Generates a URL for getting the account metadata feed.
   GURL GenerateAccountMetadataUrl() const;
 
+  // Generates a URL for getting the root directory's content URL.
+  GURL GenerateRootContentUrl() const;
+
  private:
   const GURL base_url_;
 };

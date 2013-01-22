@@ -378,6 +378,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
   RemoveResourceFromDirectoryOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
       const GURL& parent_content_url,
       const std::string& resource_id);
@@ -390,6 +391,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
+  const GDataWapiUrlGenerator url_generator_;
   const std::string resource_id_;
   const GURL parent_content_url_;
 
