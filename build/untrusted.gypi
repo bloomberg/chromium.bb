@@ -825,7 +825,9 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  # Having this in the input somehow causes devenv warnings
+                  # when building pnacl browser tests.
+                  # '<(DEPTH)/native_client/build/build_nexe.py',
                   '>(out_pnacl_newlib)',
                 ],
                 'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
@@ -848,7 +850,9 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  # Having this in the input somehow causes devenv warnings
+                  # when building pnacl browser tests.
+                  # '<(DEPTH)/native_client/build/build_nexe.py',
                   '>(out_pnacl_newlib)',
                 ],
                 'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
@@ -871,7 +875,9 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'translating >(out_pnacl_newlib_arm_nexe)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Having this in the input somehow causes devenv warnings
+                 # when building pnacl browser tests.
+                 # '<(DEPTH)/native_client/build/build_nexe.py',
                   '>(out_pnacl_newlib)',
                 ],
                 'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
