@@ -88,7 +88,7 @@ class TestInstruction(unittest.TestCase):
 
 class TestPrinter(unittest.TestCase):
 
-  def test_nop(self):
+  def test_nop_signature(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
     instr = gen_dfa.Instruction.Parse(
         '"nopw   0x0(%eax,%eax,1)", 0x66 0x0f 0x1f 0x44 0x00 0x00, ia32 norex')
@@ -102,7 +102,7 @@ class TestPrinter(unittest.TestCase):
         @operands_count_is_0
         """.split())
 
-  def test_simple_mov(self):
+  def test_simple_mov_signature(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
     instr = gen_dfa.Instruction.Parse('mov =Ob !ab, 0xa0, ia32')
 
@@ -116,6 +116,35 @@ class TestPrinter(unittest.TestCase):
         @operand0_8bit
         @operand1_8bit
         """.split())
+
+  def test_nop_opcode(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'nop, 0x90, norex')
+
+    printer.PrintOpcode(instr)
+
+    self.assertEquals(printer.GetContent(), '0x90')
+
+  def test_register_in_opcode(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'bswap ry, 0x0f 0xc8')
+
+    printer.PrintOpcode(instr)
+
+    self.assertEquals(
+        printer.GetContent(),
+        '0x0f (0xc8|0xc9|0xca|0xcb|0xcc|0xcd|0xce|0xcf)')
+
+  def test_opcode_in_modrm(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'add I E, 0x80 /0, lock nacl-amd64-zero-extends')
+
+    printer.PrintOpcode(instr)
+
+    self.assertEquals(printer.GetContent(), '0x80')
 
 
 class TestParser(unittest.TestCase):

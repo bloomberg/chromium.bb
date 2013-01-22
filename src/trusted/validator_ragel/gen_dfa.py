@@ -285,6 +285,19 @@ class Instruction(object):
   def HasModRM(self):
     return any(operand.ResidesInModRM() for operand in self.operands)
 
+  def HasRegisterInOpcode(self):
+    return any(operand.arg_type == 'r' for operand in self.operands)
+
+  def GetMainOpcodePart(self):
+    result = []
+    for opcode in self.opcodes:
+      if opcode.startswith('/'):
+        # Either '/' (opcode in immediate) or '/0'-'/7' (opcode in ModRM).
+        # Anyway, main part of the opcode is over.
+        break
+      result.append(opcode)
+    return result
+
   def GetNameAsIdentifier(self):
     """Return name in a form suitable to use as part of C identifier.
 
@@ -315,6 +328,26 @@ class InstructionPrinter(object):
 
   def GetContent(self):
     return self.out.getvalue()
+
+  def PrintOpcode(self, instruction):
+    main_opcode_part = instruction.GetMainOpcodePart()
+    if instruction.HasRegisterInOpcode():
+      assert not instruction.HasModRM()
+
+      self.out.write(' '.join(main_opcode_part[:-1]))
+
+      # Register is encoded in three least significant bits of the last byte
+      # of the opcode (in 64-bit case REX.B bit also will be involved, but it
+      # will be handled elsewhere).
+      last_byte = int(main_opcode_part[-1], 16)
+      assert last_byte & 0b00000111 == 0
+      self.out.write(' (%s)' % '|'.join(
+          hex(b) for b in range(last_byte, last_byte + 2**3)))
+
+      # TODO(shcherbina): Print operand*_from_opcode(_x87) actions (or maybe
+      # do it somewhere else).
+    else:
+      self.out.write(' '.join(main_opcode_part))
 
   def PrintSignature(self, instruction):
     """Print actions specifying instruction name and info about its operands.
