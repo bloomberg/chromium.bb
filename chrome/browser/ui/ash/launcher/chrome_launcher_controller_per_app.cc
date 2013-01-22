@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -285,12 +286,7 @@ void ChromeLauncherControllerPerApp::SetItemStatus(
       return;
   }
   // Determine the new browser's active state and change if necessary.
-  int browser_index = -1;
-  for (size_t index = 0; index < model_->items().size() && browser_index == -1;
-       index++) {
-    if (model_->items()[index].type == ash::TYPE_BROWSER_SHORTCUT)
-      browser_index = index;
-  }
+  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
   DCHECK(browser_index >= 0);
   ash::LauncherItem browser_item = model_->items()[browser_index];
   ash::LauncherItemStatus browser_status = browser_item.status;
@@ -812,10 +808,19 @@ ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
-    if (i->second->HasWindow(window))
+    if (i->second->HasWindow(window)) {
+      // Since this might be a reserved index, there might be no item in the
+      // launcher for it.
+      if (model_->ItemIndexByID(i->first) < 0)
+        break;
       return i->first;
+    }
   }
-  return 0;
+  // Coming here we are looking for the associated browser item as the default.
+  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
+  // Note that there should always be a browser item in the launcher.
+  DCHECK_GE(browser_index, 0);
+  return model_->items()[browser_index].id;
 }
 
 bool ChromeLauncherControllerPerApp::IsDraggable(

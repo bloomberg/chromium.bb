@@ -130,6 +130,8 @@
         'launcher/launcher_tooltip_manager.h',
         'launcher/launcher_types.cc',
         'launcher/launcher_types.h',
+        'launcher/launcher_util.cc',
+        'launcher/launcher_util.h',
         'launcher/launcher_view.cc',
         'launcher/launcher_view.h',
         'launcher/overflow_bubble.cc',
