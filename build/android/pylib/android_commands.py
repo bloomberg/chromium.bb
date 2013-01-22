@@ -778,7 +778,7 @@ class AndroidCommands(object):
     Args:
       clear: If True the existing logcat output will be cleared, to avoiding
              matching historical output lurking in the log.
-      timeout: How long WaitForLogMatch will wait for the given match
+      timeout: Deprecated, will be removed soon.
       filters: A list of logcat filters to be used.
     """
     if clear:
@@ -823,9 +823,11 @@ class AndroidCommands(object):
           |success_re|. If None is given, no error condition will be detected.
       clear: If True the existing logcat output will be cleared, defaults to
           false.
+      timeout: Timeout in seconds to wait for a log match.
 
     Raises:
-      pexpect.TIMEOUT upon the timeout specified by StartMonitoringLogcat().
+      pexpect.TIMEOUT after |timeout| seconds without a match for |success_re|
+      or |error_re|.
 
     Returns:
       The re match object if |success_re| is matched first or None if |error_re|
@@ -840,7 +842,7 @@ class AndroidCommands(object):
         while True:
           # Note this will block for upto the timeout _per log line_, so we need
           # to calculate the overall timeout remaining since t0.
-          time_remaining = t0 + self._logcat.timeout - time.time()
+          time_remaining = t0 + timeout - time.time()
           if time_remaining < 0: raise pexpect.TIMEOUT(self._logcat)
           self._logcat.expect(PEXPECT_LINE_RE, timeout=time_remaining)
           line = self._logcat.match.group(1)
