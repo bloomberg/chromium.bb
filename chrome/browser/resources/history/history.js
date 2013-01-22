@@ -70,11 +70,17 @@ function Visit(result, continued, model, id) {
 
 /**
  * Returns a dom structure for a browse page result or a search page result.
- * @param {boolean} searchResultFlag Indicates whether the result is a search
- *     result or not.
+ * @param {Object} propertyBag A bag of configuration properties, false by
+ * default:
+ * <ul>
+ * <li>isSearchResult: Whether or not the result is a search result.</li>
+ * <li>addTitleFavicon: Whether or not the favicon should be added.</li>
+ * </ul>
  * @return {Node} A DOM node to represent the history entry or search result.
  */
-Visit.prototype.getResultDOM = function(searchResultFlag) {
+Visit.prototype.getResultDOM = function(propertyBag) {
+  var isSearchResult = propertyBag.isSearchResult || false;
+  var addTitleFavicon = propertyBag.addTitleFavicon || false;
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
   var entryBox = createElementWithClassName('label', 'entry-box');
@@ -113,9 +119,9 @@ Visit.prototype.getResultDOM = function(searchResultFlag) {
   // Prevent clicks on the drop down from affecting the checkbox.
   dropDown.addEventListener('click', function(e) { e.preventDefault(); });
 
-  // We use a wrapper div so that the entry contents will be shinkwrapped.
+  // We use a wrapper div so that the entry contents will be shrinkwrapped.
   entryBox.appendChild(time);
-  entryBox.appendChild(this.getTitleDOM_());
+  entryBox.appendChild(this.getTitleDOM_(addTitleFavicon));
   entryBox.appendChild(domain);
   entryBox.appendChild(dropDown);
 
@@ -129,7 +135,7 @@ Visit.prototype.getResultDOM = function(searchResultFlag) {
 
   node.appendChild(entryBox);
 
-  if (searchResultFlag) {
+  if (isSearchResult) {
     time.appendChild(document.createTextNode(this.dateShort));
     var snippet = createElementWithClassName('div', 'snippet');
     this.addHighlightedText_(snippet,
@@ -191,13 +197,18 @@ Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
 };
 
 /**
- * @return {DOMObject} DOM representation for the title block.
+ * Returns the DOM element containing a link on the title of the URL for the
+ * current visit. Optionally sets the favicon as well.
+ * @param {boolean} addFavicon Whether to add a favicon or not.
+ * @return {Element} DOM representation for the title block.
  * @private
  */
-Visit.prototype.getTitleDOM_ = function() {
+Visit.prototype.getTitleDOM_ = function(addFavicon) {
   var node = createElementWithClassName('div', 'title');
-  node.style.backgroundImage = getFaviconImageSet(this.url_);
-  node.style.backgroundSize = '16px';
+  if (addFavicon) {
+    node.style.backgroundImage = getFaviconImageSet(this.url_);
+    node.style.backgroundSize = '16px';
+  }
 
   var link = document.createElement('a');
   link.href = this.url_;
@@ -218,6 +229,15 @@ Visit.prototype.getTitleDOM_ = function() {
   }
 
   return node;
+};
+
+/**
+ * Set the favicon for an element.
+ * @param {Element} el The DOM element to which to add the icon.
+ * @private
+ */
+Visit.prototype.addFaviconToElement_ = function(el) {
+  el.style.backgroundImage = getFaviconImageSet(this.url_);
 };
 
 /**
@@ -308,14 +328,25 @@ HistoryModel.prototype.setSearchText = function(searchText, opt_page) {
 };
 
 /**
+ * Clear the search text.
+ */
+HistoryModel.prototype.clearSearchText = function() {
+  this.searchText_ = '';
+};
+
+/**
  * Reload our model with the current parameters.
  */
 HistoryModel.prototype.reload = function() {
+  // Save user-visible state, clear the model, and restore the state.
   var search = this.searchText_;
   var page = this.requestedPage_;
+  var groupByDomain = this.groupByDomain_;
+
   this.clearModel_();
   this.searchText_ = search;
   this.requestedPage_ = page;
+  this.groupByDomain_ = groupByDomain;
   this.queryHistory_();
 };
 
@@ -348,9 +379,9 @@ HistoryModel.prototype.addResults = function(info, results) {
   this.isQueryFinished_ = info.finished;
   this.queryCursor_ = info.cursor;
 
-  // If there are no results, or they're not for the current search term,
-  // there's nothing more to do.
-  if (!results || !results.length || info.term != this.searchText_)
+  // If the results are not for the current search term there's nothing more
+  // to do.
+  if (info.term != this.searchText_)
     return;
 
   // If necessary, sort the results from newest to oldest.
@@ -415,6 +446,8 @@ HistoryModel.prototype.hasMoreResults = function() {
 HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false;  // Whether a query is inflight.
   this.searchText_ = '';
+  // Flag to show that the results are grouped by domain or not.
+  this.groupByDomain_ = false;
 
   this.visits_ = [];  // Date-sorted list of visits (most recent first).
   this.last_id_ = 0;
@@ -445,22 +478,21 @@ HistoryModel.prototype.clearModel_ = function() {
 /**
  * Figure out if we need to do more queries to fill the currently requested
  * page. If we think we can fill the page, call the view and let it know
- * we're ready to show something.
+ * we're ready to show something. This only applies to the daily time-based
+ * view.
  * @private
  */
 HistoryModel.prototype.updateSearch_ = function() {
-  var doneLoading =
-      this.canFillPage_(this.requestedPage_) || this.isQueryFinished_;
+  var doneLoading = this.isQueryFinished_ ||
+                    this.canFillPage_(this.requestedPage_);
 
-  // Try to fetch more results if the current page isn't full.
+  // Try to fetch more results if the results are not grouped by domain and
+  // the current page isn't full.
   if (!doneLoading && !this.inFlight_)
     this.queryHistory_();
 
-  // If we have any data for the requested page, show it.
-  if (this.changed && this.haveDataForPage_(this.requestedPage_)) {
-    this.view_.onModelReady();
-    this.changed = false;
-  }
+  // Show the result or a message if no results were returned.
+  this.view_.onModelReady();
 };
 
 /**
@@ -469,7 +501,7 @@ HistoryModel.prototype.updateSearch_ = function() {
  */
 HistoryModel.prototype.queryHistory_ = function() {
   var endTime = 0;
-
+  // Do the time-based search.
   // If there are already some visits, pick up the previous query where it
   // left off.
   if (this.visits_.length > 0) {
@@ -502,6 +534,22 @@ HistoryModel.prototype.haveDataForPage_ = function(page) {
  */
 HistoryModel.prototype.canFillPage_ = function(page) {
   return ((page + 1) * RESULTS_PER_PAGE <= this.getSize());
+};
+
+/**
+ * Enables or disables grouping by domain.
+ * @param {boolean} groupByDomain New groupByDomain_ value.
+ */
+HistoryModel.prototype.setGroupByDomain = function(groupByDomain) {
+  this.groupByDomain_ = groupByDomain;
+};
+
+/**
+ * Gets whether we are grouped by domain.
+ * @return {boolean} Whether the results are grouped by domain.
+ */
+HistoryModel.prototype.getGroupByDomain = function() {
+  return this.groupByDomain_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -542,6 +590,10 @@ function HistoryView(model) {
   $('older-button').addEventListener('click', function() {
     self.setPage(self.pageIndex_ + 1);
   });
+
+  $('display-filter-sites').addEventListener('click', function(e) {
+    self.setGroupByDomain($('display-filter-sites').checked);
+  });
 }
 
 // HistoryView, public: -------------------------------------------------------
@@ -555,7 +607,22 @@ HistoryView.prototype.setSearch = function(term, opt_page) {
   this.pageIndex_ = parseInt(opt_page || 0, 10);
   window.scrollTo(0, 0);
   this.model_.setSearchText(term, this.pageIndex_);
-  pageState.setUIState(term, this.pageIndex_);
+  pageState.setUIState(term, this.pageIndex_, this.model_.getGroupByDomain());
+};
+
+/**
+ * Enable or disable results as being grouped by domain.
+ * @param {boolean} groupedByDomain Whether to group by domain or not.
+ */
+HistoryView.prototype.setGroupByDomain = function(groupedByDomain) {
+  // Group by domain is not currently supported for search results, so reset
+  // the search term if there was one.
+  this.model_.clearSearchText();
+  this.model_.setGroupByDomain(groupedByDomain);
+  this.model_.reload();
+  pageState.setUIState(this.model_.getSearchText(),
+                       this.pageIndex_,
+                       this.model_.getGroupByDomain());
 };
 
 /**
@@ -575,7 +642,9 @@ HistoryView.prototype.setPage = function(page) {
   this.pageIndex_ = parseInt(page, 10);
   window.scrollTo(0, 0);
   this.model_.requestPage(page);
-  pageState.setUIState(this.model_.getSearchText(), this.pageIndex_);
+  pageState.setUIState(this.model_.getSearchText(),
+                       this.pageIndex_,
+                       this.model_.getGroupByDomain());
 };
 
 /**
@@ -629,6 +698,121 @@ HistoryView.prototype.setVisitRendered_ = function(visit) {
 };
 
 /**
+ * This function generates and adds the grouped visits DOM for a certain
+ * domain. This includes the clickable arrow and domain name and the visit
+ * entries for that domain.
+ * @param {Element} results DOM object to which to add the elements.
+ * @param {string} domain Current domain name.
+ * @param {Array} domainVisits Array of visits for this domain.
+ * @private
+ */
+HistoryView.prototype.getGroupedVisitsDOM_ = function(
+    results, domain, domainVisits) {
+  // Add a new domain entry.
+  var siteResults = results.appendChild(
+      createElementWithClassName('li', 'site-entry'));
+  // Make a wrapper that will contain the arrow, the favicon and the domain.
+  var siteDomainWrapper = siteResults.appendChild(
+      createElementWithClassName('div', 'site-domain-wrapper'));
+  var siteArrow = siteDomainWrapper.appendChild(
+      createElementWithClassName('div', 'site-domain-arrow collapse'));
+  siteArrow.textContent = '►';
+  var siteDomain = siteDomainWrapper.appendChild(
+      createElementWithClassName('div', 'site-domain'));
+  var numberOfVisits = createElementWithClassName('span', 'number-visits');
+  numberOfVisits.textContent = loadTimeData.getStringF('numbervisits',
+                                                       domainVisits.length);
+  siteDomain.textContent = domain;
+  siteDomain.appendChild(numberOfVisits);
+  siteResults.appendChild(siteDomainWrapper);
+  var resultsList = siteResults.appendChild(
+      createElementWithClassName('ol', 'site-results'));
+
+  domainVisits[0].addFaviconToElement_(siteDomain);
+
+  siteDomainWrapper.addEventListener('click', toggleHandler);
+  // Collapse until it gets toggled.
+  resultsList.style.height = 0;
+
+  // Add the results for each of the domain.
+  for (var j = 0, visit; visit = domainVisits[j]; j++) {
+    resultsList.appendChild(visit.getResultDOM({}));
+    this.setVisitRendered_(visit);
+  }
+};
+
+/**
+ * Groups visits by domain, sorting them by the number of visits.
+ * @param {Array} visits Visits received from the query results.
+ * @param {Element} results Object where the results are added to.
+ * @private
+ */
+HistoryView.prototype.groupVisitsByDomain_ = function(visits, results) {
+  var visitsByDomain = {};
+  var domains = [];
+
+  // Group the visits into a dictionary and generate a list of domains.
+  for (var i = 0, visit; visit = visits[i]; i++) {
+    var domain = visit.getDomainFromURL_(visit.url_);
+    if (!visitsByDomain[domain]) {
+      visitsByDomain[domain] = [];
+      domains.push(domain);
+    }
+    visitsByDomain[domain].push(visit);
+  }
+  var sortByVisits = function(a, b) {
+    return visitsByDomain[b].length - visitsByDomain[a].length;
+  };
+  domains.sort(sortByVisits);
+
+  for (var i = 0, domain; domain = domains[i]; i++) {
+    this.getGroupedVisitsDOM_(results, domain, visitsByDomain[domain]);
+  }
+};
+
+/**
+ * Adds the results grouped by days, grouping them if needed.
+ * @param {Array} visits Visits returned by the query.
+ * @param {Element} parentElement Element to which to add the results to.
+ * @private
+ */
+HistoryView.prototype.addDayResults_ = function(visits, parentElement) {
+  if (visits.length == 0)
+    return;
+
+  var firstVisit = visits[0];
+  var day = parentElement.appendChild(createElementWithClassName('h3', 'day'));
+  day.appendChild(document.createTextNode(firstVisit.dateRelativeDay));
+  if (firstVisit.continued) {
+    day.appendChild(document.createTextNode(' ' +
+                                            loadTimeData.getString('cont')));
+  }
+  var dayResults = parentElement.appendChild(
+      createElementWithClassName('ol', 'day-results'));
+
+  if (this.model_.getGroupByDomain()) {
+    this.groupVisitsByDomain_(visits, dayResults);
+  } else {
+    var lastTime;
+
+    for (var i = 0, visit; visit = visits[i]; i++) {
+      // If enough time has passed between visits, indicate a gap in browsing.
+      var thisTime = visit.date.getTime();
+      if (lastTime && lastTime - thisTime > BROWSING_GAP_TIME)
+        dayResults.appendChild(createElementWithClassName('li', 'gap'));
+
+      // Insert the visit into the DOM.
+      dayResults.appendChild(visit.getResultDOM({
+        addTitleFavicon: true
+      }));
+      this.setVisitRendered_(visit);
+
+      lastTime = thisTime;
+    }
+  }
+};
+
+/**
  * Update the page with results.
  * @private
  */
@@ -638,6 +822,8 @@ HistoryView.prototype.displayResults_ = function() {
   var results = this.model_.getNumberedRange(rangeStart, rangeEnd);
 
   var searchText = this.model_.getSearchText();
+  var groupByDomain = this.model_.getGroupByDomain();
+
   if (searchText) {
     // Add a header for the search results, if there isn't already one.
     if (!this.resultDiv_.querySelector('h3')) {
@@ -649,55 +835,51 @@ HistoryView.prototype.displayResults_ = function() {
 
     var searchResults = createElementWithClassName('ol', 'search-results');
     if (results.length == 0) {
-      var noResults = document.createElement('div');
-      noResults.textContent = loadTimeData.getString('noresults');
-      searchResults.appendChild(noResults);
+      var noSearchResults = document.createElement('div');
+      noSearchResults.textContent = loadTimeData.getString('nosearchresults');
+      searchResults.appendChild(noSearchResults);
     } else {
       for (var i = 0, visit; visit = results[i]; i++) {
         if (!visit.isRendered) {
-          searchResults.appendChild(visit.getResultDOM(true));
+          searchResults.appendChild(visit.getResultDOM({
+            isSearchResult: true,
+            addTitleFavicon: true
+          }));
           this.setVisitRendered_(visit);
         }
       }
     }
     this.resultDiv_.appendChild(searchResults);
   } else {
-    var resultsFragment = document.createDocumentFragment();
-    var lastTime = Math.infinity;
-    var dayResults;
-
-    for (var i = 0, visit; visit = results[i]; i++) {
-      if (visit.isRendered)
-        continue;
-
-      var thisTime = visit.date.getTime();
-
-      // Break across day boundaries and insert gaps for browsing pauses.
-      // Create a dayResults element to contain results for each day.
-      if ((i == 0 && visit.continued) || !visit.continued) {
-        // It's the first visit of the day, or the day is continued from
-        // the previous page. Create a header for the day on the current page.
-        var day = createElementWithClassName('h3', 'day');
-        day.appendChild(document.createTextNode(visit.dateRelativeDay));
-        if (visit.continued) {
-          day.appendChild(document.createTextNode(' ' +
-              loadTimeData.getString('cont')));
-        }
-
-        resultsFragment.appendChild(day);
-        dayResults = createElementWithClassName('ol', 'day-results');
-        resultsFragment.appendChild(dayResults);
-      } else if (dayResults && lastTime - thisTime > BROWSING_GAP_TIME) {
-        dayResults.appendChild(createElementWithClassName('li', 'gap'));
-      }
-      lastTime = thisTime;
-
-      // Add the entry to the appropriate day.
-      dayResults.appendChild(visit.getResultDOM(false));
-      this.setVisitRendered_(visit);
+    if (results.length == 0) {
+      var noResults = document.createElement('div');
+      noResults.textContent = loadTimeData.getString('noresults');
+      this.resultDiv_.appendChild(noResults);
+      this.updateNavBar_();
+      return;
     }
+
+    var resultsFragment = document.createDocumentFragment();
+
+    var dayStart = 0;
+    var dayEnd = 0;
+    // Go through all of the visits and process them in chunks of one day.
+    while (dayEnd < results.length) {
+      // Skip over the ones that are already rendered.
+      while (dayStart < results.length && results[dayStart].isRendered)
+        ++dayStart;
+      var dayEnd = dayStart + 1;
+      while (dayEnd < results.length && results[dayEnd].continued)
+        ++dayEnd;
+
+      this.addDayResults_(
+          results.slice(dayStart, dayEnd), resultsFragment, groupByDomain);
+    }
+
+    // Add all the days and their visits to the page.
     this.resultDiv_.appendChild(resultsFragment);
   }
+  this.updateNavBar_();
 };
 
 /**
@@ -739,6 +921,9 @@ function PageState(model, view) {
       state_obj.view.setSearch(hashData.q, parseInt(hashData.p, 10));
     } else if (parseInt(hashData.p, 10) != state_obj.view.getPage()) {
       state_obj.view.setPage(hashData.p);
+    } else if ((hashData.g == 'true') !=
+               state_obj.view.model_.getGroupByDomain()) {
+      state_obj.view.setGroupByDomain(hashData.g);
     }
   }), 50, this);
 }
@@ -755,12 +940,12 @@ PageState.prototype.getHashData = function() {
   var result = {
     e: 0,
     q: '',
-    p: 0
+    p: 0,
+    g: false
   };
 
-  if (!window.location.hash) {
+  if (!window.location.hash)
     return result;
-  }
 
   var hashSplit = window.location.hash.substr(1).split('&');
   for (var i = 0; i < hashSplit.length; i++) {
@@ -778,31 +963,43 @@ PageState.prototype.getHashData = function() {
  * session history so the back button cycles through hash states, which
  * are then picked up by our listener.
  * @param {string} term The current search string.
- * @param {string} page The page currently being viewed.
+ * @param {number} page The page currently being viewed.
+ * @param {boolean} grouped Whether the results are grouped or not.
  */
-PageState.prototype.setUIState = function(term, page) {
+PageState.prototype.setUIState = function(term, page, grouped) {
   // Make sure the form looks pretty.
   $('search-field').value = term;
-  var currentHash = this.getHashData();
-  if (currentHash.q != term || currentHash.p != page) {
-    window.location.hash = PageState.getHashString(term, page);
+  if (grouped) {
+    $('display-filter-sites').checked = true;
+  } else {
+    $('display-filter-sites').checked = false;
+  }
+  var hash = this.getHashData();
+  if (hash.q != term || hash.p != page || hash.g != grouped) {
+    window.location.hash = PageState.getHashString(
+        term, page, grouped);
   }
 };
 
 /**
  * Static method to get the hash string for a specified state
  * @param {string} term The current search string.
- * @param {string} page The page currently being viewed.
+ * @param {number} page The page currently being viewed.
+ * @param {boolean} grouped Whether the results are grouped or not.
  * @return {string} The string to be used in a hash.
  */
-PageState.getHashString = function(term, page) {
+PageState.getHashString = function(term, page, grouped) {
+  // Omit elements that are empty.
   var newHash = [];
-  if (term) {
+
+  if (term)
     newHash.push('q=' + encodeURIComponent(term));
-  }
-  if (page != undefined) {
+
+  if (page)
     newHash.push('p=' + page);
-  }
+
+  if (grouped)
+    newHash.push('g=' + grouped);
 
   return newHash.join('&');
 };
@@ -839,6 +1036,11 @@ function load() {
     activeVisit.showMoreFromSite_();
     activeVisit = null;
   });
+
+  // Only show the controls if the command line switch is activated.
+  if (loadTimeData.getBoolean('groupByDomain')) {
+    $('filter-controls').hidden = false;
+  }
 
   var title = loadTimeData.getString('title');
   uber.invokeMethodOnParent('setTitle', {title: title});
@@ -912,7 +1114,7 @@ function reloadHistory() {
  * Collect IDs from the checked checkboxes and send to Chrome for deletion.
  */
 function removeItems() {
-  var checked = document.querySelectorAll(
+  var checked = $('results-display').querySelectorAll(
       'input[type=checkbox]:checked:not([disabled])');
   var urls = [];
   var disabledItems = [];
@@ -1026,6 +1228,31 @@ function removeEntryFromView(entry) {
   if (nextEntry && nextEntry.className == 'gap' &&
       previousEntry && previousEntry.className == 'gap') {
     removeNode(nextEntry);
+  }
+}
+
+/**
+ * Toggles an element in the grouped history.
+ * @param {Element} e The element which was clicked on.
+ */
+function toggleHandler(e) {
+  var innerResultList = e.currentTarget.parentElement.querySelector(
+      '.site-results');
+  var innerArrow = e.currentTarget.parentElement.querySelector(
+      '.site-domain-arrow');
+  if (innerArrow.classList.contains('collapse')) {
+    innerResultList.style.height = 'auto';
+    // -webkit-transition does not work on height:auto elements so first set
+    // the height to auto so that it is computed and then set it to the
+    // computed value in pixels so the transition works properly.
+    var height = innerResultList.clientHeight;
+    innerResultList.style.height = height + 'px';
+    innerArrow.classList.remove('collapse');
+    innerArrow.classList.add('expand');
+  } else {
+    innerResultList.style.height = 0;
+    innerArrow.classList.remove('expand');
+    innerArrow.classList.add('collapse');
   }
 }
 

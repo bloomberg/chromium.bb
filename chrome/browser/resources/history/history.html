@@ -47,11 +47,20 @@
     </form>
   </header>
 
+  <div id="filter-controls" hidden>
+    <div id="display-filter-controls">
+      <label>
+        <span i18n-content="displayfiltersites"></span>
+        <input type="checkbox" id="display-filter-sites" name="display-filter">
+      </label>
+    </div>
+  </div>
   <div id="editing-controls">
     <button id="clear-browsing-data" i18n-content="clearallhistory"></button>
     <button id="remove-selected" disabled="disabled"
         i18n-content="removeselected"></button>
   </div>
+
   <div id="results-display"></div>
   <div id="loading-spinner" hidden>
     <span id="loading">

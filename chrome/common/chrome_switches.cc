@@ -715,11 +715,14 @@ const char kHelpShort[]                     = "h";
 // it.
 const char kHideIcons[]                     = "hide-icons";
 
+// Disables full history sync.
+const char kHistoryDisableFullHistorySync[]      = "disable-full-history-sync";
+
 // Enables full history sync (not just typed URLs) for signed-in users.
 const char kHistoryEnableFullHistorySync[]       = "enable-full-history-sync";
 
-// Disables full history sync.
-const char kHistoryDisableFullHistorySync[]      = "disable-full-history-sync";
+// Enables grouping websites by domain and filtering them by period.
+const char kHistoryEnableGroupByDomain[]          = "enable-grouped-history";
 
 // Specifies which page will be displayed in newly-opened tabs. We need this
 // for testing purposes so that the UI tests don't depend on what comes up for

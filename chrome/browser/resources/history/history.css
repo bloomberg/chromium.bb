@@ -15,6 +15,10 @@ body:not(.uber-frame) {
 </if>
 }
 
+#search-button {
+  margin: 0;
+}
+
 #loading-spinner[hidden] {
   display: inline-block;
 }
@@ -24,13 +28,26 @@ body:not(.uber-frame) {
   top: 3px;
 }
 
+#editing-controls,
+#filter-controls,
+#results-display {
+  max-width: 718px;
+}
+
 #editing-controls button:first-of-type {
   -webkit-margin-start: 0;
 }
 
+#filter-controls div {
+  display: inline-block;
+}
+
+#display-filter-controls {
+  float: right;
+}
+
 #results-display {
   margin: 16px 0 0 0;
-  max-width: 740px;
 }
 
 .edit-button {
@@ -45,9 +62,10 @@ body:not(.uber-frame) {
   text-decoration: underline;
 }
 
-.gap,
 .entry,
-.no-entries {
+.gap,
+.no-entries,
+.site-entry {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -64,7 +82,8 @@ body:not(.uber-frame) {
   overflow: auto; /* Make sure it's at least as large as its children. */
 }
 
-.entry-box {
+.entry-box,
+.site-domain-wrapper {
   -webkit-box-orient: horizontal;
   cursor: default;
   display: -webkit-box;
@@ -76,6 +95,10 @@ body:not(.uber-frame) {
   max-width: 100%;
   overflow: hidden;
   padding-bottom: 1px;
+}
+
+.site-domain-wrapper {
+  cursor: pointer;
 }
 
 html[dir=rtl] .entry-box {
@@ -90,6 +113,18 @@ html[dir=rtl] .entry-box {
 .day-results {
   margin: 0 0 24px 0;
   padding: 0;
+}
+
+.site-results {
+  -webkit-transition: height 350ms ease-in-out;
+  clear: left;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+h2.timeframe {
+  font-size: 1.5em;
 }
 
 .snippet {
@@ -109,6 +144,14 @@ html[dir=rtl] .entry-box {
   color: rgb(151, 156, 160);
   padding-left: 6px;
   padding-right: 6px;
+}
+
+.site-results .domain {
+  display: none;
+}
+
+.number-visits {
+  color: rgb(151, 156, 160);
 }
 
 .drop-down {
@@ -192,13 +235,33 @@ html[dir='rtl'] .entry .title {
   white-space: nowrap;
 }
 
-.entry .title {
+.day-results > .entry .title,
+.search-results > .entry .title,
+.site-domain {
   /* Make room for the favicon. */
   -webkit-padding-start: 20px;
 
   /* Control the favicon appearance. */
   background-position-y: 3px;
   background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+.site-domain-arrow {
+  -webkit-transition: -webkit-transform 300ms linear;
+  color: #8F8F8F;
+  height: 21px;
+  margin-right: 2px;
+  text-align: center;
+  width: 21px;
+}
+
+.site-domain-arrow.collapse {
+  -webkit-transform: rotate(0);
+}
+
+.site-domain-arrow.expand {
+  -webkit-transform: rotate(90deg);
 }
 
 .entry .starred {

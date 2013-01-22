@@ -423,8 +423,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_DATE_WITH_RELATIVE_TIME" desc="In the history view, some dates are formatted as 'Today - Wednesday, Nov 7, 2007">
         <ph name="RELATIVE_DATE">$1<ex>Today</ex></ph> - <ph name="FULL_DATE">$2<ex>Wednesday, Nov 7, 2007</ex></ph>
       </message>
-      <message name="IDS_HISTORY_NO_RESULTS" desc="Text shown when no history search results have been found">
+      <message name="IDS_HISTORY_NO_SEARCH_RESULTS" desc="Text shown when no history search results have been found">
         No search results found.
+      </message>
+      <message name="IDS_HISTORY_NO_RESULTS" desc="Text shown when no history entries are found.">
+        No history entries found.
       </message>
       <message name="IDS_HISTORY_NO_ITEMS" desc="Text shown when the user has no history">
         All the pages you visit will appear here unless you open them in an incognito window. You can use the Search button on this page to search all the pages in your history.
@@ -458,6 +461,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_HISTORY_MORE_FROM_SITE" desc="Command in the history entry drop-down menu. Shows more history entries from the same site.">
         More from this site
+      </message>
+      <message name="IDS_GROUP_BY_DOMAIN_LABEL" desc="Label for the checkbox that toggles the mode to group history visits by domain.">
+        Group domains
+      </message>
+      <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
+        (<ph name="NUMBER_VISITS">$1</ph>)
       </message>
 
       <!-- Generic terms -->
