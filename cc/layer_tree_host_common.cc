@@ -132,7 +132,7 @@ static bool isSurfaceBackFaceVisible(LayerType* layer, const gfx::Transform& dra
 template<typename LayerType>
 static inline bool layerClipsSubtree(LayerType* layer)
 {
-    return layer->masksToBounds() || layer->maskLayer() || layer->hasDelegatedContent();
+    return layer->masksToBounds() || layer->maskLayer();
 }
 
 template<typename LayerType>
@@ -291,7 +291,8 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
     }
 
     // If the layer clips its descendants but it is not axis-aligned with respect to its parent.
-    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && !layer->drawProperties().descendants_can_clip_selves)
+    bool layerClipsExternalContent = layerClipsSubtree(layer) || layer->hasDelegatedContent();
+    if (layerClipsExternalContent && !axisAlignedWithRespectToParent && !layer->drawProperties().descendants_can_clip_selves)
     {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostCommon::requireSurface clipping");
         return true;

@@ -142,13 +142,8 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
         if (quad->shared_quad_state != currentSharedQuadState) {
             currentSharedQuadState = quad->shared_quad_state;
             copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->Copy());
-            bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layer_id == id();
-            if (!targetIsFromDelegatedRendererLayer) {
-              // Should be the root render pass.
-              DCHECK(delegatedRenderPass == m_renderPassesInDrawOrder.back());
-              // This layer must be drawing to a renderTarget other than itself.
-              DCHECK(renderTarget() != this);
-
+            bool isRootDelegatedRenderPass = delegatedRenderPass == m_renderPassesInDrawOrder.back();
+            if (isRootDelegatedRenderPass) {
               // Don't allow areas inside the bounds that are empty.
               DCHECK(m_displaySize.IsEmpty() || gfx::Rect(m_displaySize).Contains(gfx::Rect(bounds())));
               gfx::Size displaySize = m_displaySize.IsEmpty() ? bounds() : m_displaySize;
@@ -159,7 +154,24 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
                   static_cast<double>(displaySize.height()) / frameSize.height());
 
               copiedSharedQuadState->content_to_target_transform = drawTransform() * delegatedFrameToLayerSpaceTransform * copiedSharedQuadState->content_to_target_transform;
-              copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(drawTransform() * delegatedFrameToLayerSpaceTransform, copiedSharedQuadState->clip_rect);
+
+              if (renderTarget() == this) {
+                  DCHECK(!isClipped());
+                  DCHECK(renderSurface());
+                  copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(
+                      drawTransform() * delegatedFrameToLayerSpaceTransform,
+                      copiedSharedQuadState->clip_rect);
+              } else {
+                  gfx::Rect clip_rect = drawableContentRect();
+                  if (copiedSharedQuadState->is_clipped) {
+                      clip_rect.Intersect(MathUtil::mapClippedRect(
+                          drawTransform() * delegatedFrameToLayerSpaceTransform,
+                          copiedSharedQuadState->clip_rect));
+                  }
+                  copiedSharedQuadState->clip_rect = clip_rect;
+                  copiedSharedQuadState->is_clipped = true;
+              }
+
               copiedSharedQuadState->opacity *= drawOpacity();
             }
         }
