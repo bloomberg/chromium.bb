@@ -154,7 +154,7 @@ class TestTableView : public TableView {
  public:
   TestTableView(ui::TableModel* model,
                 const std::vector<ui::TableColumn>& columns)
-      : TableView(model, columns, TEXT_ONLY, true, true, true) {
+      : TableView(model, columns, TEXT_ONLY, false, true, true) {
   }
 
   // View overrides:
@@ -186,6 +186,14 @@ class TableViewTest : public testing::Test {
     parent_->SetBounds(0, 0, 10000, 10000);
     parent_->Layout();
     helper_.reset(new TableViewTestHelper(table_));
+  }
+
+  void ClickOnRow(int row, int flags) {
+    const int y = row * table_->row_height();
+    const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(0, y),
+                                 gfx::Point(0, y),
+                                 ui::EF_LEFT_MOUSE_BUTTON | flags);
+    table_->OnMousePressed(pressed);
   }
 
   // Returns the state of the selection model as a string. The format is:
@@ -628,4 +636,106 @@ TEST_F(TableViewTest, HomeEnd) {
 
   table_->SetObserver(NULL);
 }
+
+// Verifies multiple selection gestures work (control-click, shift-click ...).
+TEST_F(TableViewTest, Multiselection) {
+  // Configure the grouper so that there are three groups:
+  // A 0
+  //   1
+  // B 5
+  // C 2
+  //   3
+  model_->AddRow(2, 5, 0);
+  TableGrouperImpl grouper;
+  std::vector<int> ranges;
+  ranges.push_back(2);
+  ranges.push_back(1);
+  ranges.push_back(2);
+  grouper.SetRanges(ranges);
+  table_->SetGrouper(&grouper);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+
+  // Click on the first row, should select it and the second row.
+  ClickOnRow(0, 0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
+  // Click on the last row, should select it and the row before it.
+  ClickOnRow(4, 0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  // Shift click on the third row, should extend selection to it.
+  ClickOnRow(2, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=3 selection=2 3 4", SelectionStateAsString());
+
+  // Control click on third row, should toggle it.
+  ClickOnRow(2, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=3 4", SelectionStateAsString());
+
+  // Control-shift click on second row, should extend selection to it.
+  ClickOnRow(1, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=2 selection=0 1 2 3 4", SelectionStateAsString());
+
+  // Click on last row again.
+  ClickOnRow(4, 0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  table_->SetObserver(NULL);
+}
+
+// Verifies multiple selection gestures work when sorted.
+TEST_F(TableViewTest, MultiselectionWithSort) {
+  // Configure the grouper so that there are three groups:
+  // A 0
+  //   1
+  // B 5
+  // C 2
+  //   3
+  model_->AddRow(2, 5, 0);
+  TableGrouperImpl grouper;
+  std::vector<int> ranges;
+  ranges.push_back(2);
+  ranges.push_back(1);
+  ranges.push_back(2);
+  grouper.SetRanges(ranges);
+  table_->SetGrouper(&grouper);
+
+  // Sort the table descending by column 1, view now looks like:
+  // B 5   model: 2
+  // C 2          3
+  //   3          4
+  // A 0          0
+  //   1          1
+  table_->ToggleSortOrder(0);
+  table_->ToggleSortOrder(0);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+
+  // Click on the third row, should select it and the second row.
+  ClickOnRow(2, 0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3 4", SelectionStateAsString());
+
+  // Extend selection to first row.
+  ClickOnRow(0, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=3 selection=2 3 4", SelectionStateAsString());
+
+  table_->SetObserver(NULL);
+}
+
 }  // namespace views

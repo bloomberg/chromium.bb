@@ -126,6 +126,7 @@ TableView::TableView(ui::TableModel* model,
       columns_(columns),
       header_(NULL),
       table_type_(table_type),
+      single_selection_(single_selection),
       table_view_observer_(NULL),
       row_height_(font_.GetHeight() + kTextVerticalPadding * 2),
       last_parent_width_(0),
@@ -360,19 +361,23 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
 
 bool TableView::OnMousePressed(const ui::MouseEvent& event) {
   RequestFocus();
-  int row = event.y() / row_height_;
-  if (row >= 0 && row < RowCount()) {
-    SelectByViewIndex(row);
-    if (table_view_observer_ && event.flags() & ui::EF_IS_DOUBLE_CLICK)
-      table_view_observer_->OnDoubleClick();
-  }
-  return true;
-}
+  if (!event.IsOnlyLeftMouseButton())
+    return true;
 
-bool TableView::OnMouseDragged(const ui::MouseEvent& event) {
-  int row = event.y() / row_height_;
-  if (row >= 0 && row < RowCount())
+  const int row = event.y() / row_height_;
+  if (row < 0 || row >= RowCount())
+    return true;
+
+  if (event.GetClickCount() == 2) {
     SelectByViewIndex(row);
+    if (table_view_observer_)
+      table_view_observer_->OnDoubleClick();
+  } else if (event.GetClickCount() == 1) {
+    ui::ListSelectionModel new_model;
+    ConfigureSelectionModelForEvent(event, &new_model);
+    SetSelectionModel(new_model);
+  }
+
   return true;
 }
 
@@ -706,10 +711,9 @@ ui::TableColumn TableView::FindColumnByID(int id) const {
 void TableView::SelectByViewIndex(int view_index) {
   ui::ListSelectionModel new_selection;
   if (view_index != -1) {
-    const GroupRange range(GetGroupRange(ViewToModel(view_index)));
-    new_selection.SetSelectedIndex(range.start);
-    for (int i = 1; i < range.length; ++i)
-      new_selection.AddIndexToSelection(range.start + i);
+    SelectRowsInRangeFrom(view_index, true, &new_selection);
+    new_selection.set_anchor(new_selection.selected_indices()[0]);
+    new_selection.set_active(new_selection.selected_indices()[0]);
   }
 
   SetSelectionModel(new_selection);
@@ -756,6 +760,60 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
                                range.length));
   }
   SelectByViewIndex(view_index);
+}
+
+void TableView::ConfigureSelectionModelForEvent(
+    const ui::MouseEvent& event,
+    ui::ListSelectionModel* model) const {
+  int view_index = event.y() / row_height_;
+  DCHECK(view_index >= 0 && view_index < RowCount());
+
+  if (selection_model_.anchor() == -1 ||
+      single_selection_ ||
+      (!event.IsControlDown() && !event.IsShiftDown())) {
+    SelectRowsInRangeFrom(view_index, true, model);
+    model->set_anchor(model->selected_indices()[0]);
+    model->set_active(model->selected_indices()[0]);
+    return;
+  }
+  if ((event.IsControlDown() && event.IsShiftDown()) || event.IsShiftDown()) {
+    // control-shift: copy existing model and make sure rows between anchor and
+    // |view_index| are selected.
+    // shift: reset selection so that only rows between anchor and |view_index|
+    // are selected.
+    if (event.IsControlDown() && event.IsShiftDown())
+      model->Copy(selection_model_);
+    else
+      model->set_anchor(selection_model_.anchor());
+    for (int i = std::min(view_index, ModelToView(model->anchor())),
+             end = std::max(view_index, ModelToView(model->anchor()));
+         i <= end; ++i) {
+      SelectRowsInRangeFrom(i, true, model);
+    }
+    model->set_active(ViewToModel(view_index));
+  } else {
+    DCHECK(event.IsControlDown());
+    // Toggle the selection state of |view_index| and set the anchor/active to
+    // it and don't change the state of any other rows.
+    model->Copy(selection_model_);
+    model->set_anchor(ViewToModel(view_index));
+    model->set_active(ViewToModel(view_index));
+    SelectRowsInRangeFrom(view_index,
+                          !model->IsSelected(ViewToModel(view_index)),
+                          model);
+  }
+}
+
+void TableView::SelectRowsInRangeFrom(int view_index,
+                                      bool select,
+                                      ui::ListSelectionModel* model) const {
+  const GroupRange range(GetGroupRange(ViewToModel(view_index)));
+  for (int i = 0; i < range.length; ++i) {
+    if (select)
+      model->AddIndexToSelection(range.start + i);
+    else
+      model->RemoveIndexFromSelection(range.start + i);
+  }
 }
 
 GroupRange TableView::GetGroupRange(int model_index) const {

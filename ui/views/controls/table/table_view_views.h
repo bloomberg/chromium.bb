@@ -175,12 +175,13 @@ class VIEWS_EXPORT TableView
   // Maps from the index in terms of the view to that of the model.
   int ViewToModel(int view_index) const;
 
+  int row_height() const { return row_height_; }
+
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
 
   // ui::TableModelObserver overrides:
   virtual void OnModelChanged() OVERRIDE;
@@ -272,6 +273,17 @@ class VIEWS_EXPORT TableView
   // Advances the selection (from the active index) in the specified direction.
   void AdvanceSelection(AdvanceDirection direction);
 
+  // Sets |model| appropriately based on a mouse event.
+  void ConfigureSelectionModelForEvent(const ui::MouseEvent& event,
+                                       ui::ListSelectionModel* model) const;
+
+  // Set the selection state of row at |view_index| to |select|, additionally
+  // any other rows in the GroupRange containing |view_index| are updated as
+  // well. This does not change the anchor or active index of |model|.
+  void SelectRowsInRangeFrom(int view_index,
+                             bool select,
+                             ui::ListSelectionModel* model) const;
+
   // Returns the range of the specified model index. If a TableGrouper has not
   // been set this returns a group with a start of |model_index| and length of
   // 1.
@@ -290,6 +302,8 @@ class VIEWS_EXPORT TableView
   TableHeader* header_;
 
   const TableTypes table_type_;
+
+  const bool single_selection_;
 
   // TODO(sky): rename to observer_.
   TableViewObserver* table_view_observer_;
