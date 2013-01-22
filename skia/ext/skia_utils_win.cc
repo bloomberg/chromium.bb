@@ -54,23 +54,12 @@ SkColor COLORREFToSkColor(COLORREF color) {
 }
 
 COLORREF SkColorToCOLORREF(SkColor color) {
-  int alpha = SkColorGetA(color);
-  if (alpha == 0)
-    return 0;
-
-  if (alpha == 0xFF) {
-    // Fast path.
 #ifndef _MSC_VER
-    return RGB(SkColorGetR(color), SkColorGetG(color), SkColorGetB(color));
+  return RGB(SkColorGetR(color), SkColorGetG(color), SkColorGetB(color));
 #else
-    // 0BGR = ((ARGB -> BGRA) >> 8)
-    return (_byteswap_ulong(color) >> 8);
+  // 0BGR = ((ARGB -> BGRA) >> 8)
+  return (_byteswap_ulong(color) >> 8);
 #endif
-  }
-
-  return RGB(SkColorGetR(color) * 255 / alpha,
-             SkColorGetG(color) * 255 / alpha,
-             SkColorGetB(color) * 255 / alpha);
 }
 
 }  // namespace skia
