@@ -13,6 +13,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "ui/base/work_area_watcher_observer.h"
 
 class BookmarkMenuBridge;
@@ -72,6 +73,9 @@ class WorkAreaWatcherObserver;
 
   // Observers that listen to the work area changes.
   ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;
+
+  scoped_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
+  PrefChangeRegistrar localPrefRegistrar_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
@@ -86,11 +90,11 @@ class WorkAreaWatcherObserver;
 // window closure from causing the application to quit.
 - (void)stopTryingToTerminateApplication:(NSApplication*)app;
 
-// Returns true if there is not a modal window (either window- or application-
+// Returns true if there is a modal window (either window- or application-
 // modal) blocking the active browser. Note that tab modal dialogs (HTTP auth
 // sheets) will not count as blocking the browser. But things like open/save
 // dialogs that are window modal will block the browser.
-- (BOOL)keyWindowIsNotModal;
+- (BOOL)keyWindowIsModal;
 
 // Show the preferences window, or bring it to the front if it's already
 // visible.

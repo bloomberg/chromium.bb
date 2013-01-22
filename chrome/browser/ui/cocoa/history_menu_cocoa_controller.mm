@@ -34,7 +34,7 @@ using content::Referrer;
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
   AppController* controller = [NSApp delegate];
-  return [controller keyWindowIsNotModal];
+  return ![controller keyWindowIsModal];
 }
 
 // Open the URL of the given history item in the current tab.

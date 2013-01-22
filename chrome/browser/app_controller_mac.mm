@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -522,6 +523,18 @@ void RecordLastRunAppBundlePath() {
 
   historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));
   historyMenuBridge_->BuildMenu();
+
+  chrome::BrowserCommandController::
+      UpdateSharedCommandsForIncognitoAvailability(
+          menuState_.get(), lastProfile_);
+  profilePrefRegistrar_.reset(new PrefChangeRegistrar());
+  profilePrefRegistrar_->Init(lastProfile_->GetPrefs());
+  profilePrefRegistrar_->Add(
+      prefs::kIncognitoModeAvailability,
+      base::Bind(&chrome::BrowserCommandController::
+                     UpdateSharedCommandsForIncognitoAvailability,
+                 menuState_.get(),
+                 lastProfile_));
 }
 
 - (void)checkForAnyKeyWindows {
@@ -597,6 +610,15 @@ void RecordLastRunAppBundlePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
     [tabposeMenuItem_ setHidden:YES];
+  }
+
+  PrefService* localState = g_browser_process->local_state();
+  if (localState) {
+    localPrefRegistrar_.Init(localState);
+    localPrefRegistrar_.Add(
+        prefs::kAllowFileSelectionDialogs,
+        base::Bind(&chrome::BrowserCommandController::UpdateOpenFileState,
+                   menuState_.get()));
   }
 }
 
@@ -692,15 +714,18 @@ void RecordLastRunAppBundlePath() {
   return service && !service->entries().empty();
 }
 
-// Returns true if there is not a modal window (either window- or application-
+// Returns true if there is a modal window (either window- or application-
 // modal) blocking the active browser. Note that tab modal dialogs (HTTP auth
 // sheets) will not count as blocking the browser. But things like open/save
 // dialogs that are window modal will block the browser.
-- (BOOL)keyWindowIsNotModal {
+- (BOOL)keyWindowIsModal {
+  if ([NSApp modalWindow])
+    return YES;
+
   Browser* browser = chrome::GetLastActiveBrowser();
-  return [NSApp modalWindow] == nil && (!browser ||
-         ![[browser->window()->GetNativeWindow() attachedSheet]
-             isKindOfClass:[NSWindow class]]);
+  return browser &&
+         [[browser->window()->GetNativeWindow() attachedSheet]
+             isKindOfClass:[NSWindow class]];
 }
 
 // Called to validate menu items when there are no key windows. All the
@@ -712,9 +737,11 @@ void RecordLastRunAppBundlePath() {
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
   BOOL enable = NO;
-  if (action == @selector(commandDispatch:)) {
+  if (action == @selector(commandDispatch:) ||
+      action == @selector(commandFromDock:)) {
     NSInteger tag = [item tag];
-    if (menuState_->SupportsCommand(tag)) {
+    if (menuState_ &&  // NULL in tests.
+        menuState_->SupportsCommand(tag)) {
       switch (tag) {
         // The File Menu commands are not automatically disabled by Cocoa when a
         // dialog sheet obscures the browser window, so we disable several of
@@ -722,7 +749,7 @@ void RecordLastRunAppBundlePath() {
         // app_controller is only activated when there are no key windows (see
         // function comment).
         case IDC_RESTORE_TAB:
-          enable = [self keyWindowIsNotModal] && [self canRestoreTab];
+          enable = ![self keyWindowIsModal] && [self canRestoreTab];
           break;
         // Browser-level items that open in new tabs should not open if there's
         // a window- or app-modal dialog.
@@ -730,14 +757,13 @@ void RecordLastRunAppBundlePath() {
         case IDC_NEW_TAB:
         case IDC_SHOW_HISTORY:
         case IDC_SHOW_BOOKMARK_MANAGER:
-          enable = [self keyWindowIsNotModal];
+          enable = ![self keyWindowIsModal];
           break;
         // Browser-level items that open in new windows.
-        case IDC_NEW_WINDOW:
         case IDC_TASK_MANAGER:
           // Allow the user to open a new window if there's a window-modal
           // dialog.
-          enable = [self keyWindowIsNotModal] || ([NSApp modalWindow] == nil);
+          enable = ![self keyWindowIsModal];
           break;
         case IDC_SHOW_SYNC_SETUP: {
           Profile* lastProfile = [self lastProfile];
@@ -753,7 +779,7 @@ void RecordLastRunAppBundlePath() {
             break;
           }
           enable = lastProfile->IsSyncAccessible() &&
-              [self keyWindowIsNotModal];
+              ![self keyWindowIsModal];
           [BrowserWindowController updateSigninItem:item
                                          shouldShow:enable
                                      currentProfile:lastProfile];
@@ -764,7 +790,7 @@ void RecordLastRunAppBundlePath() {
           break;
         default:
           enable = menuState_->IsCommandEnabled(tag) ?
-                   [self keyWindowIsNotModal] : NO;
+                   ![self keyWindowIsModal] : NO;
       }
     }
   } else if (action == @selector(terminate:)) {
@@ -1235,6 +1261,7 @@ void RecordLastRunAppBundlePath() {
                           keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_WINDOW];
+  [item setEnabled:[self validateUserInterfaceItem:item]];
   [dockMenu addItem:item];
 
   titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
@@ -1244,6 +1271,7 @@ void RecordLastRunAppBundlePath() {
                           keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_INCOGNITO_WINDOW];
+  [item setEnabled:[self validateUserInterfaceItem:item]];
   [dockMenu addItem:item];
 
   // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit

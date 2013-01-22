@@ -49,7 +49,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
     return [NSString stringWithFormat:@"%@\n%@", title, url];
 }
 
-- (id)initWithBridge:(BookmarkMenuBridge *)bridge
+- (id)initWithBridge:(BookmarkMenuBridge*)bridge
              andMenu:(NSMenu*)menu {
   if ((self = [super init])) {
     bridge_ = bridge;
@@ -72,7 +72,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
   AppController* controller = [NSApp delegate];
-  return [controller keyWindowIsNotModal];
+  return ![controller keyWindowIsModal];
 }
 
 // NSMenu delegate method: called just before menu is displayed.

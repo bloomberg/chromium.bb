@@ -878,7 +878,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, true);
 
   // Show various bits of UI
-  UpdateOpenFileState();
+  UpdateOpenFileState(&command_updater_);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, CanOpenTaskManager());
@@ -953,13 +953,16 @@ void BrowserCommandController::InitCommandState() {
   UpdateCommandsForIncognitoAvailability();
 }
 
-void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
+// static
+void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
+    CommandUpdater* command_updater,
+    Profile* profile) {
   IncognitoModePrefs::Availability incognito_availability =
-      IncognitoModePrefs::GetAvailability(profile()->GetPrefs());
-  command_updater_.UpdateCommandEnabled(
+      IncognitoModePrefs::GetAvailability(profile->GetPrefs());
+  command_updater->UpdateCommandEnabled(
       IDC_NEW_WINDOW,
       incognito_availability != IncognitoModePrefs::FORCED);
-  command_updater_.UpdateCommandEnabled(
+  command_updater->UpdateCommandEnabled(
       IDC_NEW_INCOGNITO_WINDOW,
       incognito_availability != IncognitoModePrefs::DISABLED);
 
@@ -967,21 +970,28 @@ void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
   // mode. For this reason we disable these commands when incognito is forced.
   const bool command_enabled =
       incognito_availability != IncognitoModePrefs::FORCED;
-  command_updater_.UpdateCommandEnabled(
+  command_updater->UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_MANAGER,
       browser_defaults::bookmarks_enabled && command_enabled);
-  ExtensionService* extension_service = profile()->GetExtensionService();
+  ExtensionService* extension_service = profile->GetExtensionService();
   bool enable_extensions =
       extension_service && extension_service->extensions_enabled();
-  command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
+  command_updater->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
                                         enable_extensions && command_enabled);
+
+  command_updater->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, command_enabled);
+  command_updater->UpdateCommandEnabled(IDC_OPTIONS, command_enabled);
+}
+
+void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
+  UpdateSharedCommandsForIncognitoAvailability(&command_updater_, profile());
 
   const bool show_main_ui =
       IsShowingMainUI(window() && window()->IsFullscreen());
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS,
-                                        show_main_ui && command_enabled);
-  command_updater_.UpdateCommandEnabled(IDC_OPTIONS,
-                                        show_main_ui && command_enabled);
+  if (!show_main_ui) {
+    command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, false);
+    command_updater_.UpdateCommandEnabled(IDC_OPTIONS, false);
+  }
 }
 
 void BrowserCommandController::UpdateCommandsForTabState() {
@@ -1084,7 +1094,7 @@ void BrowserCommandController::UpdateCommandsForBookmarkBar() {
 
 void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
   UpdateSaveAsState();
-  UpdateOpenFileState();
+  UpdateOpenFileState(&command_updater_);
 }
 
 void BrowserCommandController::UpdateCommandsForFullscreenMode(
@@ -1193,13 +1203,15 @@ void BrowserCommandController::UpdateSaveAsState() {
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
 }
 
-void BrowserCommandController::UpdateOpenFileState() {
+// static
+void BrowserCommandController::UpdateOpenFileState(
+    CommandUpdater* command_updater) {
   bool enabled = true;
   PrefService* local_state = g_browser_process->local_state();
   if (local_state)
     enabled = local_state->GetBoolean(prefs::kAllowFileSelectionDialogs);
 
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, enabled);
+  command_updater->UpdateCommandEnabled(IDC_OPEN_FILE, enabled);
 }
 
 void BrowserCommandController::UpdateReloadStopState(bool is_loading,
