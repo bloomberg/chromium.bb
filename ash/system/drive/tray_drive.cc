@@ -44,7 +44,7 @@ const int kVerticalPadding = 6;
 const int kTopPadding = 6;
 const int kBottomPadding = 10;
 const int kProgressBarWidth = 100;
-const int kProgressBarHeight = 8;
+const int kProgressBarHeight = 11;
 const int64 kHideDelayInMs = 1000;
 
 string16 GetTrayLabel(const ash::DriveOperationStatusList& list) {
