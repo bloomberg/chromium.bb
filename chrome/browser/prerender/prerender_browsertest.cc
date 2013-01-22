@@ -1945,8 +1945,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
   NavigateToDestURL();
 }
 
+#if defined(OS_CHROMEOS)
+// Flakily times out: http://crbug.com/171546
+#define MAYBE_PrerenderRendererCrash DISABLED_PrerenderRendererCrash
+#else
+#define MAYBE_PrerenderRendererCrash PrerenderRendererCrash
+#endif
+
 // Checks that prerenderers will terminate when the RenderView crashes.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderRendererCrash) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_RENDERER_CRASHED,
                    1);
