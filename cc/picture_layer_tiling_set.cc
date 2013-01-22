@@ -263,10 +263,9 @@ void PictureLayerTilingSet::UpdateTilePriorities(
   }
 }
 
-void PictureLayerTilingSet::MoveTilePriorities(WhichTree src_tree,
-                                               WhichTree dst_tree) {
+void PictureLayerTilingSet::DidBecomeActive() {
   for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->MoveTilePriorities(src_tree, dst_tree);
+    tilings_[i]->DidBecomeActive();
 }
 
 }  // namespace cc

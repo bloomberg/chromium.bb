@@ -44,6 +44,7 @@ public:
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*,
                                          gfx::Rect) OVERRIDE;
+  virtual void UpdatePile(Tile* tile) OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree
   void SyncFromActiveLayer();

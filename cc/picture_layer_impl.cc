@@ -179,7 +179,7 @@ void PictureLayerImpl::didUpdateTransforms() {
 }
 
 void PictureLayerImpl::didBecomeActive() {
-  tilings_.MoveTilePriorities(PENDING_TREE, ACTIVE_TREE);
+  tilings_.DidBecomeActive();
 }
 
 void PictureLayerImpl::didLoseOutputSurface() {
@@ -234,6 +234,10 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       GL_RGBA,
       rect,
       tiling->contents_scale()));
+}
+
+void PictureLayerImpl::UpdatePile(Tile* tile) {
+  tile->set_picture_pile(pile_);
 }
 
 void PictureLayerImpl::SyncFromActiveLayer() {

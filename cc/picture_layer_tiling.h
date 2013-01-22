@@ -23,6 +23,7 @@ class PictureLayerTiling;
 class PictureLayerTilingClient {
   public:
    virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*, gfx::Rect) = 0;
+   virtual void UpdatePile(Tile* tile) = 0;
 };
 
 class CC_EXPORT PictureLayerTiling {
@@ -101,7 +102,10 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Transform& current_screen_transform,
       double time_delta);
 
-  void MoveTilePriorities(WhichTree src_tree, WhichTree dst_tree);
+  // Copies the src_tree priority into the dst_tree priority for all tiles.
+  // The src_tree priority is reset to the lowest priority possible.  This
+  // also updates the pile on each tile to be the current client's pile.
+  void DidBecomeActive();
 
  protected:
   typedef std::pair<int, int> TileMapKey;

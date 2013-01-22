@@ -54,6 +54,10 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }
 
+  void set_picture_pile(scoped_refptr<PicturePileImpl> pile) {
+   picture_pile_ = pile;
+  }
+
  private:
   // Methods called by by tile manager.
   friend class TileManager;

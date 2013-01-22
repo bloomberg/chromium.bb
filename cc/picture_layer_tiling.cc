@@ -320,12 +320,18 @@ void PictureLayerTiling::UpdateTilePriorities(
   }
 }
 
-void PictureLayerTiling::MoveTilePriorities(WhichTree src_tree,
-                                            WhichTree dst_tree) {
-  DCHECK(src_tree != dst_tree);
+void PictureLayerTiling::DidBecomeActive() {
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    it->second->set_priority(dst_tree, it->second->priority(src_tree));
-    it->second->set_priority(src_tree, TilePriority());
+    it->second->set_priority(ACTIVE_TREE, it->second->priority(PENDING_TREE));
+    it->second->set_priority(PENDING_TREE, TilePriority());
+
+    // Tile holds a ref onto a picture pile. If the tile never gets invalidated
+    // and recreated, then that picture pile ref could exist indefinitely.  To
+    // prevent this, ask the client to update the pile to its own ref.  This
+    // will cause PicturePileImpls and their clones to get deleted once the
+    // corresponding PictureLayerImpl and any in flight raster jobs go out of
+    // scope.
+    client_->UpdatePile(it->second);
   }
 }
 

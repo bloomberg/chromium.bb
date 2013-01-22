@@ -53,9 +53,7 @@ class CC_EXPORT PictureLayerTilingSet {
       const gfx::Transform& current_screen_transform,
       double time_delta);
 
-  // Copies the src_tree priority into the dst_tree priority for all tiles.
-  // The src_tree priority is reset to the lowest priority possible.
-  void MoveTilePriorities(WhichTree src_tree, WhichTree dst_tree);
+  void DidBecomeActive();
 
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate
