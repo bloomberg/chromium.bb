@@ -3709,6 +3709,10 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
                                      unsigned identifier,
                                      WebURLRequest& request,
                                      const WebURLResponse& redirect_response) {
+  // The request my be empty during tests.
+  if (request.url().isEmpty())
+    return;
+
   WebFrame* top_frame = frame->top();
   if (!top_frame)
     top_frame = frame;
