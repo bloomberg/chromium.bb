@@ -47,7 +47,6 @@
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 #include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
-#include "native_client/src/trusted/plugin/utility.h"
 
 #include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
@@ -407,7 +406,7 @@ void PluginReverseInterface::BitcodeTranslate_MainThreadContinuation(
             "setting desc -1\n");
     *p->out_desc = -1;
     // Error should have been reported by pnacl coordinator.
-    PLUGIN_PRINTF(("PluginReverseInterface::BitcodeTranslate error.\n"));
+    NaClLog(LOG_ERROR, "PluginReverseInterface::BitcodeTranslate error.\n");
   }
   *p->op_complete_ptr = true;
   NaClXCondVarBroadcast(&cv_);
@@ -607,8 +606,8 @@ void PluginReverseInterface::AddQuotaManagedFile(const nacl::string& file_id,
 
 void PluginReverseInterface::AddTempQuotaManagedFile(
     const nacl::string& file_id) {
-  PLUGIN_PRINTF(("PluginReverseInterface::AddTempQuotaManagedFile: "
-                 "(file_id='%s')\n", file_id.c_str()));
+  NaClLog(4, "PluginReverseInterface::AddTempQuotaManagedFile: "
+          "(file_id='%s')\n", file_id.c_str());
   nacl::MutexLocker take(&mu_);
   uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
   QuotaData data(plugin::TempQuotaType, 0);
@@ -636,10 +635,10 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
 
 bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
                                        ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
-                 " (this=%p, subprocess=%p)\n",
-                 static_cast<void*>(this),
-                 static_cast<void*>(subprocess_.get())));
+  NaClLog(4, "ServiceRuntime::InitCommunication"
+          " (this=%p, subprocess=%p)\n",
+          static_cast<void*>(this),
+          static_cast<void*>(subprocess_.get()));
   // Create the command channel to the sel_ldr and load the nexe from nacl_desc.
   if (!subprocess_->SetupCommandAndLoad(&command_channel_, nacl_desc)) {
     error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
@@ -661,8 +660,8 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   }
   //  Get connection capability to service runtime where the IMC
   //  server/SRPC client is waiting for a rendezvous.
-  PLUGIN_PRINTF(("ServiceRuntime: got 0x%"NACL_PRIxPTR"\n",
-                 (uintptr_t) out_conn_cap));
+  NaClLog(4, "ServiceRuntime: got 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) out_conn_cap);
   nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
       out_conn_cap);
   if (conn_cap == NULL) {
@@ -671,8 +670,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
-                 " starting reverse service\n"));
+  NaClLog(4, "ServiceRuntime::InitCommunication: starting reverse service\n");
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
     error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
@@ -694,8 +692,8 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
                           "ServiceRuntime: could not start nacl module");
     return false;
   }
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (load_status=%d)\n",
-                 load_status));
+  NaClLog(4, "ServiceRuntime::InitCommunication (load_status=%d)\n",
+          load_status);
   if (should_report_uma_) {
     plugin_->ReportSelLdrLoadStatus(load_status);
   }
@@ -715,13 +713,13 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                            bool uses_ppapi,
                            bool enable_ppapi_dev,
                            pp::CompletionCallback crash_cb) {
-  PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
-                 reinterpret_cast<void*>(nacl_desc)));
+  NaClLog(4, "ServiceRuntime::Start (nacl_desc=%p)\n",
+          reinterpret_cast<void*>(nacl_desc));
 
   nacl::scoped_ptr<SelLdrLauncherChrome>
       tmp_subprocess(new SelLdrLauncherChrome());
   if (NULL == tmp_subprocess.get()) {
-    PLUGIN_PRINTF(("ServiceRuntime::Start (subprocess create failed)\n"));
+    NaClLog(LOG_ERROR, "ServiceRuntime::Start (subprocess create failed)\n");
     error_info->SetReport(ERROR_SEL_LDR_CREATE_LAUNCHER,
                           "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
@@ -732,7 +730,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                                        uses_ppapi,
                                        enable_ppapi_dev);
   if (!started) {
-    PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));
+    NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
                           "ServiceRuntime: failed to start");
     return false;
@@ -750,32 +748,32 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
     Log(LOG_FATAL, "reap logs");
     if (NULL == reverse_service_) {
       // No crash detector thread.
-      PLUGIN_PRINTF(("scheduling to get crash log\n"));
+      NaClLog(LOG_ERROR, "scheduling to get crash log\n");
       pp::Module::Get()->core()->CallOnMainThread(0, crash_cb, PP_OK);
-      PLUGIN_PRINTF(("should fire soon\n"));
+      NaClLog(LOG_ERROR, "should fire soon\n");
     } else {
-      PLUGIN_PRINTF(("Reverse service thread will pick up crash log\n"));
+      NaClLog(LOG_ERROR, "Reverse service thread will pick up crash log\n");
     }
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
+  NaClLog(4, "ServiceRuntime::Start (return 1)\n");
   return true;
 }
 
 SrpcClient* ServiceRuntime::SetupAppChannel() {
-  PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (subprocess_=%p)\n",
-                 reinterpret_cast<void*>(subprocess_.get())));
+  NaClLog(4, "ServiceRuntime::SetupAppChannel (subprocess_=%p)\n",
+          reinterpret_cast<void*>(subprocess_.get()));
   nacl::DescWrapper* connect_desc = subprocess_->socket_addr()->Connect();
   if (NULL == connect_desc) {
-    PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (connect failed)\n"));
+    NaClLog(LOG_ERROR, "ServiceRuntime::SetupAppChannel (connect failed)\n");
     return NULL;
   } else {
-    PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (conect_desc=%p)\n",
-                   static_cast<void*>(connect_desc)));
+    NaClLog(4, "ServiceRuntime::SetupAppChannel (conect_desc=%p)\n",
+            static_cast<void*>(connect_desc));
     SrpcClient* srpc_client = SrpcClient::New(connect_desc);
-    PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
-                   static_cast<void*>(srpc_client)));
+    NaClLog(4, "ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
+            static_cast<void*>(srpc_client));
     delete connect_desc;
     return srpc_client;
   }
@@ -818,8 +816,8 @@ void ServiceRuntime::Shutdown() {
 }
 
 ServiceRuntime::~ServiceRuntime() {
-  PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime (this=%p)\n",
-                 static_cast<void*>(this)));
+  NaClLog(4, "ServiceRuntime::~ServiceRuntime (this=%p)\n",
+          static_cast<void*>(this));
   // We do this just in case Shutdown() was not called.
   subprocess_.reset(NULL);
   if (reverse_service_ != NULL) {
