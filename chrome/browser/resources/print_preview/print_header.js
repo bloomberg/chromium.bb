@@ -38,6 +38,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isEnabled_ = true;
+
+    /**
+     * Whether the print button is enabled.
+     * @type {boolean}
+     * @private
+     */
+    this.isPrintButtonEnabled_ = true;
   };
 
   /**
@@ -65,8 +72,13 @@ cr.define('print_preview', function() {
 
     set isEnabled(isEnabled) {
       this.isEnabled_ = isEnabled;
-      this.printButton_.disabled = !isEnabled;
+      this.updatePrintButtonEnabledState_();
       this.cancelButton_.disabled = !isEnabled;
+    },
+
+    set isPrintButtonEnabled(isEnabled) {
+      this.isPrintButtonEnabled_ = isEnabled;
+      this.updatePrintButtonEnabledState_();
     },
 
     /** @param {string} message Error message to display in the print header. */
@@ -122,6 +134,16 @@ cr.define('print_preview', function() {
     get cancelButton_() {
       return this.getElement().getElementsByClassName(
           PrintHeader.Classes_.CANCEL_BUTTON)[0];
+    },
+
+    /**
+     * Updates Print Button state.
+     * @private
+     */
+    updatePrintButtonEnabledState_: function() {
+      this.printButton_.disabled = !this.isEnabled_ ||
+                                   !this.isPrintButtonEnabled_ ||
+                                   !this.printTicketStore_.isTicketValid();
     },
 
     /**
@@ -229,9 +251,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onTicketChange_: function() {
-      this.printButton_.disabled =
-          !this.printTicketStore_.isTicketValid() ||
-          !this.isEnabled_;
+      this.updatePrintButtonEnabledState_();
       this.updateSummary_();
       if (document.activeElement == null ||
           document.activeElement == document.body) {

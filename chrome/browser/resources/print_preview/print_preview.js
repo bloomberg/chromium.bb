@@ -622,6 +622,7 @@ cr.define('print_preview', function() {
      */
     onPreviewGenerationDone_: function() {
       this.isPreviewGenerationInProgress_ = false;
+      this.printHeader_.isPrintButtonEnabled = true;
       this.printIfReady_();
     },
 
@@ -631,6 +632,7 @@ cr.define('print_preview', function() {
      */
     onPreviewGenerationFail_: function() {
       this.isPreviewGenerationInProgress_ = false;
+      this.printHeader_.isPrintButtonEnabled = false;
       if (this.uiState_ == PrintPreview.UiState_.PRINTING) {
         this.nativeLayer_.startCancelPendingPrint();
       }
