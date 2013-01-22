@@ -25,7 +25,7 @@
   [self removeButtons];
 
   AlternateNavInfoBarDelegate* delegate =
-      delegate_->AsAlternateNavInfoBarDelegate();
+      static_cast<AlternateNavInfoBarDelegate*>(delegate_);
   DCHECK(delegate);
   size_t offset = string16::npos;
   string16 message = delegate->GetMessageTextWithOffset(&offset);
@@ -49,7 +49,9 @@
     return;
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_->AsAlternateNavInfoBarDelegate()->LinkClicked(disposition))
+  AlternateNavInfoBarDelegate* delegate =
+      static_cast<AlternateNavInfoBarDelegate*>(delegate_);
+  if (delegate->LinkClicked(disposition))
     [self removeSelf];
 }
 

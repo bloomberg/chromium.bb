@@ -36,5 +36,5 @@ void AlternateNavInfoBarGtk::OnLinkClicked(GtkWidget* button) {
 }
 
 AlternateNavInfoBarDelegate* AlternateNavInfoBarGtk::GetDelegate() {
-  return delegate()->AsAlternateNavInfoBarDelegate();
+  return static_cast<AlternateNavInfoBarDelegate*>(delegate());
 }

@@ -29,7 +29,6 @@ class AlternateNavInfoBarDelegate : public InfoBarDelegate {
   virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
-  virtual AlternateNavInfoBarDelegate* AsAlternateNavInfoBarDelegate() OVERRIDE;
 
   GURL alternate_nav_url_;
 

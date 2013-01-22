@@ -86,5 +86,5 @@ void AlternateNavInfoBarView::LinkClicked(views::Link* source,
 }
 
 AlternateNavInfoBarDelegate* AlternateNavInfoBarView::GetDelegate() {
-  return delegate()->AsAlternateNavInfoBarDelegate();
+  return static_cast<AlternateNavInfoBarDelegate*>(delegate());
 }

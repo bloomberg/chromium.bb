@@ -56,11 +56,6 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   return true;
 }
 
-AlternateNavInfoBarDelegate*
-    AlternateNavInfoBarDelegate::AsAlternateNavInfoBarDelegate() {
-  return this;
-}
-
 gfx::Image* AlternateNavInfoBarDelegate::GetIcon() const {
   return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_ALT_NAV_URL);

@@ -93,7 +93,6 @@ class InfoBarDelegate {
   virtual Type GetInfoBarType() const;
 
   // Type-checking downcast routines:
-  virtual AlternateNavInfoBarDelegate* AsAlternateNavInfoBarDelegate();
   virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate();
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
