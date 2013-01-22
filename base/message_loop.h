@@ -384,7 +384,6 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
 
   //----------------------------------------------------------------------------
  protected:
-  friend class base::RunLoop;
 
 #if defined(OS_WIN)
   base::MessagePumpWin* pump_win() {
@@ -395,6 +394,11 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
     return static_cast<base::MessagePumpLibevent*>(pump_.get());
   }
 #endif
+
+  scoped_refptr<base::MessagePump> pump_;
+
+ private:
+  friend class base::RunLoop;
 
   // A function to encapsulate all the exception handling capability in the
   // stacks around the running of a main message loop.  It will run the message
@@ -476,8 +480,6 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
   // once we're out of nested message loops.
   base::TaskQueue deferred_non_nestable_work_queue_;
 
-  scoped_refptr<base::MessagePump> pump_;
-
   ObserverList<DestructionObserver> destruction_observers_;
 
   // A recursion block that prevents accidentally running additional tasks when
@@ -516,7 +518,6 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
- private:
   template <class T, class R> friend class base::subtle::DeleteHelperInternal;
   template <class T, class R> friend class base::subtle::ReleaseHelperInternal;
 
