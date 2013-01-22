@@ -290,7 +290,7 @@
             ],
           },
           'dependencies': [
-            '../ppapi_ipc_proxy_untrusted.gyp:ppapi_proxy_untrusted',
+            '../ppapi_proxy_untrusted.gyp:ppapi_proxy_untrusted',
             '../ppapi_ipc_untrusted.gyp:ppapi_ipc_untrusted',
             '../ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../../gpu/command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
