@@ -20,6 +20,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_()
   , Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1_instance_()
   , Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_()
+  , Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_instance_()
   , Binary2RegisterBitRangeMsbGeLsb_instance_()
   , Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_()
   , Binary2RegisterImmediateOp_instance_()
@@ -82,7 +83,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreVectorRegisterList_instance_()
   , Unary1RegisterBitRangeMsbGeLsb_instance_()
   , Unary1RegisterImmediateOp12DynCodeReplace_instance_()
-  , Unary1RegisterImmediateOpDynCodeReplace_instance_()
   , Unary1RegisterImmediateOpPc_instance_()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
@@ -711,7 +711,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_and_miscellaneous_
           0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01B00000)  ==
           0x01000000 /* op1(24:20)=10x00 */) {
-    return Unary1RegisterImmediateOpDynCodeReplace_instance_;
+    return Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
