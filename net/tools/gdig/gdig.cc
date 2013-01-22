@@ -132,7 +132,7 @@ bool LoadReplayLog(const FilePath& file_path, ReplayLog* replay_log) {
   base::SplitString(replay_log_contents, '\n', &lines);
   base::TimeDelta previous_delta;
   bool bad_parse = false;
-  for (size_t i = 0; i < lines.size(); ++i) {
+  for (unsigned i = 0; i < lines.size(); ++i) {
     if (lines[i].empty())
       continue;
     std::vector<std::string> time_and_name;
@@ -140,7 +140,7 @@ bool LoadReplayLog(const FilePath& file_path, ReplayLog* replay_log) {
     if (time_and_name.size() != 2) {
       fprintf(
           stderr,
-          "[%s %zu] replay log should have format 'timestamp domain_name\\n'\n",
+          "[%s %u] replay log should have format 'timestamp domain_name\\n'\n",
           file_path.MaybeAsASCII().c_str(),
           i + 1);
       bad_parse = true;
@@ -151,7 +151,7 @@ bool LoadReplayLog(const FilePath& file_path, ReplayLog* replay_log) {
     if (!base::StringToInt64(time_and_name[0], &delta_in_milliseconds)) {
       fprintf(
           stderr,
-          "[%s %zu] replay log should have format 'timestamp domain_name\\n'\n",
+          "[%s %u] replay log should have format 'timestamp domain_name\\n'\n",
           file_path.MaybeAsASCII().c_str(),
           i + 1);
       bad_parse = true;
@@ -163,7 +163,7 @@ bool LoadReplayLog(const FilePath& file_path, ReplayLog* replay_log) {
     if (delta < previous_delta) {
       fprintf(
           stderr,
-          "[%s %zu] replay log should be sorted by time\n",
+          "[%s %u] replay log should be sorted by time\n",
           file_path.MaybeAsASCII().c_str(),
           i + 1);
       bad_parse = true;
@@ -200,7 +200,7 @@ class GDig {
   void Finish(Result);
 
   void OnDnsConfig(const DnsConfig& dns_config_const);
-  void OnResolveComplete(size_t index, AddressList* address_list,
+  void OnResolveComplete(unsigned index, AddressList* address_list,
                          base::TimeDelta time_since_start, int val);
   void OnTimeout();
   void ReplayNextEntry();
@@ -212,7 +212,7 @@ class GDig {
   base::TimeDelta timeout_;
   int parallellism_;
   ReplayLog replay_log_;
-  size_t replay_log_index_;
+  unsigned replay_log_index_;
   base::Time start_time_;
   int active_resolves_;
   Result result_;
@@ -442,7 +442,7 @@ void GDig::ReplayNextEntry() {
 
     HostResolver::RequestInfo info(HostPortPair(entry.domain_name.c_str(), 80));
     AddressList* addrlist = new AddressList();
-    size_t current_index = replay_log_index_;
+    unsigned current_index = replay_log_index_;
     CompletionCallback callback = base::Bind(&GDig::OnResolveComplete,
                                              base::Unretained(this),
                                              current_index,
@@ -458,7 +458,7 @@ void GDig::ReplayNextEntry() {
   }
 }
 
-void GDig::OnResolveComplete(size_t entry_index,
+void GDig::OnResolveComplete(unsigned entry_index,
                              AddressList* address_list,
                              base::TimeDelta resolve_start_time,
                              int val) {
@@ -468,7 +468,7 @@ void GDig::OnResolveComplete(size_t entry_index,
   --active_resolves_;
   base::TimeDelta resolve_end_time = base::Time::Now() - start_time_;
   base::TimeDelta resolve_time = resolve_end_time - resolve_start_time;
-  printf("%zu %d %d %s %d ",
+  printf("%u %d %d %s %d ",
          entry_index,
          static_cast<int>(resolve_end_time.InMilliseconds()),
          static_cast<int>(resolve_time.InMilliseconds()),
