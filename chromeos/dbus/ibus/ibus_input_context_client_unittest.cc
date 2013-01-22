@@ -36,10 +36,6 @@ const int32 kCursorHeight = 33;
 const uint32 kKeyval = 34;
 const uint32 kKeycode = 35;
 const uint32 kState = 36;
-const int32 kCompositionX = 37;
-const int32 kCompositionY = 38;
-const int32 kCompositionWidth = 39;
-const int32 kCompositionHeight = 40;
 const bool kIsKeyHandled = false;
 const char kSurroundingText[] = "Surrounding Text";
 const uint32 kCursorPos = 2;
@@ -78,9 +74,7 @@ MATCHER_P(IBusTextEq, expected_text, "The expected IBusText does not match") {
 
 class IBusInputContextClientTest : public testing::Test {
  public:
-  IBusInputContextClientTest()
-      : response_(NULL),
-        on_set_cursor_location_call_count_(0) {}
+  IBusInputContextClientTest() : response_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     // Create a mock bus.
@@ -186,9 +180,24 @@ class IBusInputContextClientTest : public testing::Test {
   }
 
   // Handles SetCursorLocation method call.
-  void OnSetCursorLocation(const ibus::Rect& cursor_location,
-                           const ibus::Rect& composition_head) {
-    ++on_set_cursor_location_call_count_;
+  void OnSetCursorLocation(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    EXPECT_EQ(ibus::input_context::kServiceInterface,
+              method_call->GetInterface());
+    EXPECT_EQ(ibus::input_context::kSetCursorLocationMethod,
+              method_call->GetMember());
+    dbus::MessageReader reader(method_call);
+    int32 x, y, width, height;
+    EXPECT_TRUE(reader.PopInt32(&x));
+    EXPECT_TRUE(reader.PopInt32(&y));
+    EXPECT_TRUE(reader.PopInt32(&width));
+    EXPECT_TRUE(reader.PopInt32(&height));
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
   }
 
   // Handles SetCapabilities method call.
@@ -315,8 +324,6 @@ class IBusInputContextClientTest : public testing::Test {
   MessageLoop message_loop_;
   // The map from signal to signal handler.
   std::map<std::string, dbus::ObjectProxy::SignalCallback> signal_callback_map_;
-  // Call count of OnSetCursorLocation.
-  int on_set_cursor_location_call_count_;
 
  private:
   // Used to implement the mock proxy.
@@ -519,23 +526,18 @@ TEST_F(IBusInputContextClientTest, SetCapabilitiesTest) {
 }
 
 TEST_F(IBusInputContextClientTest, SetCursorLocationTest) {
-  on_set_cursor_location_call_count_ = 0;
-  client_->SetSetCursorLocationHandler(
-      base::Bind(&IBusInputContextClientTest::OnSetCursorLocation,
-                 base::Unretained(this)));
-  const ibus::Rect cursor_location(kCursorX,
-                                   kCursorY,
-                                   kCursorWidth,
-                                   kCursorHeight);
-  const ibus::Rect composition_location(kCompositionX,
-                                        kCompositionY,
-                                        kCompositionWidth,
-                                        kCompositionHeight);
-  // Call SetCursorLocation.
-  client_->SetCursorLocation(cursor_location, composition_location);
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this,
+                       &IBusInputContextClientTest::OnSetCursorLocation));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
 
-  EXPECT_EQ(1, on_set_cursor_location_call_count_);
-  client_->UnsetSetCursorLocationHandler();
+  // Call SetCursorLocation.
+  client_->SetCursorLocation(kCursorX, kCursorY, kCursorWidth, kCursorHeight);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusInputContextClientTest, OnProcessKeyEvent) {

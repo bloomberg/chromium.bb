@@ -28,17 +28,13 @@ class MockIBusInputContextClient : public IBusInputContextClient {
                           const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) OVERRIDE;
-  virtual void SetSetCursorLocationHandler(
-      const SetCursorLocationHandler& set_cursor_location_handler) OVERRIDE;
-  virtual void UnsetSetCursorLocationHandler() OVERRIDE;
   virtual void ResetObjectProxy() OVERRIDE;
   virtual bool IsObjectProxyReady() const OVERRIDE;
   virtual void SetCapabilities(uint32 capabilities) OVERRIDE;
   virtual void FocusIn() OVERRIDE;
   virtual void FocusOut() OVERRIDE;
   virtual void Reset() OVERRIDE;
-  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
-                                 const ibus::Rect& composition_head) OVERRIDE;
+  virtual void SetCursorLocation(int32 x, int32 y, int32 w, int32 h) OVERRIDE;
   virtual void ProcessKeyEvent(uint32 keyval,
                                uint32 keycode,
                                uint32 state,
@@ -49,8 +45,6 @@ class MockIBusInputContextClient : public IBusInputContextClient {
                                   uint32 anchor_pos) OVERRIDE;
   virtual void PropertyActivate(const std::string& key,
                                 ibus::IBusPropertyState state) OVERRIDE;
-  virtual bool IsXKBLayout() OVERRIDE;
-  virtual void SetIsXKBLayout(bool is_xkb_layout) OVERRIDE;
 
   // Call count of Initialize().
   int initialize_call_count() const { return initialize_call_count_; }

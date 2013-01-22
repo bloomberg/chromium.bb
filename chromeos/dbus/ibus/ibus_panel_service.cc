@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
-#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
@@ -24,8 +23,7 @@ namespace ibus {
 
 class IBusPanelServiceImpl : public IBusPanelService {
  public:
-  explicit IBusPanelServiceImpl(dbus::Bus* bus,
-                                IBusInputContextClient* input_context)
+  explicit IBusPanelServiceImpl(dbus::Bus* bus)
       : bus_(bus),
         candidate_window_handler_(NULL),
         property_handler_(NULL),
@@ -125,10 +123,6 @@ class IBusPanelServiceImpl : public IBusPanelService {
     bus->RequestOwnership(
         ibus::panel::kServiceName,
         base::Bind(&IBusPanelServiceImpl::OnRequestOwnership,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    input_context->SetSetCursorLocationHandler(
-        base::Bind(&IBusPanelServiceImpl::SetCursorLocation,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -344,11 +338,6 @@ class IBusPanelServiceImpl : public IBusPanelService {
     response_sender.Run(response);
   }
 
-  void SetCursorLocation(const ibus::Rect& cursor_location,
-                         const ibus::Rect& composition_head) {
-    // TODO(nona): implement this function.
-  }
-
   // Handles FocusIn, FocusOut, StateChanged method calls from IBus, and ignores
   // them.
   void NoOperation(dbus::MethodCall* method_call,
@@ -417,12 +406,10 @@ IBusPanelService::~IBusPanelService() {
 }
 
 // static
-IBusPanelService* IBusPanelService::Create(
-    DBusClientImplementationType type,
-    dbus::Bus* bus,
-    IBusInputContextClient* input_context) {
+IBusPanelService* IBusPanelService::Create(DBusClientImplementationType type,
+                                           dbus::Bus* bus) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new IBusPanelServiceImpl(bus, input_context);
+    return new IBusPanelServiceImpl(bus);
   } else {
     return new IBusPanelServiceStubImpl();
   }

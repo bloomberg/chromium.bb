@@ -124,20 +124,6 @@ const char kServiceInterface[] = "org.freedesktop.IBus.Config";
 const char kSetValueMethod[] = "SetValue";
 }  // namespace config
 
-// We can't use ui/gfx/rect.h in chromeos/, so we should use ibus::Rect instead.
-struct Rect {
- Rect() : x(0), y(0), width(0), height(0) {}
- Rect(int x, int y, int width, int height)
-     : x(x),
-       y(y),
-       width(width),
-       height(height) {}
- int x;
- int y;
- int width;
- int height;
-};
-
 }  // namespace ibus
 }  // namespace chromeos
 

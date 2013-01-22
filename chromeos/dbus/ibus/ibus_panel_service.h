@@ -19,7 +19,6 @@ class ObjectPath;
 }  // namespace dbus
 
 namespace chromeos {
-class IBusInputContextClient;
 
 // TODO(nona): Remove ibus namespace after complete libibus removal.
 namespace ibus {
@@ -54,8 +53,6 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
 
   // Called when the IME hides the preedit text.
   virtual void HidePreeditText() = 0;
-
-  // TODO(nona): Introduce SetCursorLocation function.
 
  protected:
   IBusPanelCandidateWindowHandlerInterface() {}
@@ -115,12 +112,9 @@ class CHROMEOS_EXPORT IBusPanelService {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  // IBusPanelService does not take an ownership of |input_context|, so caller
-  // should release it.
   static CHROMEOS_EXPORT IBusPanelService* Create(
       DBusClientImplementationType type,
-      dbus::Bus* bus,
-      IBusInputContextClient* input_context);
+      dbus::Bus* bus);
 
  protected:
   // Create() should be used instead.
