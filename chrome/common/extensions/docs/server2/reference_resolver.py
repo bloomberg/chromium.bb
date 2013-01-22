@@ -67,6 +67,7 @@ class ReferenceResolver(object):
     self._object_store = object_store
 
   def _GetRefLink(self, ref, api_list, namespace, title):
+    # Check nodes within each API the ref might refer to.
     parts = ref.split('.')
     for i, part in enumerate(parts):
       api_name = '.'.join(parts[:i])
@@ -104,6 +105,17 @@ class ReferenceResolver(object):
         'text': title if title else text,
         'name': node_name
       }
+
+    # If it's not a reference to an API node it might just be a reference to an
+    # API. Check this last so that links within APIs take precedence over links
+    # to other APIs.
+    if ref in api_list:
+      return {
+        'href': '%s.html' % ref,
+        'text': title if title else ref,
+        'name': ref
+      }
+
     return None
 
   def GetLink(self, ref, namespace=None, title=None):
