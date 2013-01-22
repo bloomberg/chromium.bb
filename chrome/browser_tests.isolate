@@ -411,10 +411,7 @@
           '../third_party/python_26/python.exe',
           '../third_party/python_26/python26.dll',
           '<(PRODUCT_DIR)/D3DCompiler_43.dll',
-          '<(PRODUCT_DIR)/d3dx9_43.dll',
-          '<(PRODUCT_DIR)/environment.x86',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/gyp-win-tool',
           '<(PRODUCT_DIR)/icudt.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
@@ -423,7 +420,6 @@
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
           '<(PRODUCT_DIR)/security_tests.dll',
-          'third_party/jstemplate/jstemplate_compiled.js',
           'tools/build/repack_locales.py',
         ],
         'isolate_dependency_untracked': [
