@@ -2413,7 +2413,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_multiply_and_multiply_ac
 
   if ((inst.Bits() & 0x00D00000)  ==
           0x00500000 /* op(23:20)=01x1 */) {
-    return UndefinedCondDecoder_None_instance_;
+    return Undefined_None_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==

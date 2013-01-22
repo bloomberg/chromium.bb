@@ -25,22 +25,26 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_()
   , Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1_instance_()
   , Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_()
+  , Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1_instance_()
+  , Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_instance_()
   , Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_instance_()
   , Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1_instance_()
+  , Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1_instance_()
   , Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_instance_()
+  , Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_instance_()
+  , Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_()
+  , Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
+  , Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_instance_()
   , Binary2RegisterBitRangeMsbGeLsb_instance_()
   , Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_()
   , Binary3RegisterOpAltA_instance_()
   , Binary3RegisterOpAltANoCondsUpdate_instance_()
   , Binary3RegisterOpAltBNoCondUpdates_instance_()
   , Binary4RegisterDualOp_instance_()
-  , Binary4RegisterDualOpLtV6RdNotRn_instance_()
   , Binary4RegisterDualOpNoCondsUpdate_instance_()
   , Binary4RegisterDualResult_instance_()
-  , Binary4RegisterDualResultLtV6RdHiLoNotRn_instance_()
   , Binary4RegisterDualResultNoCondsUpdate_instance_()
-  , Binary4RegisterDualResultUsesRnRm_instance_()
   , BranchImmediate24_instance_()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
@@ -1885,39 +1889,39 @@ const ClassDecoder& Arm32DecoderState::decode_multiply_and_multiply_accumulate(
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00F00000)  ==
           0x00400000 /* op(23:20)=0100 */) {
-    return Binary4RegisterDualResult_instance_;
+    return Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00600000 /* op(23:20)=0110 */) {
-    return Binary4RegisterDualOp_instance_;
+    return Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00D00000)  ==
           0x00500000 /* op(23:20)=01x1 */) {
-    return Undefined_instance_;
+    return Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00000000 /* op(23:20)=000x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltA_instance_;
+    return Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00200000 /* op(23:20)=001x */) {
-    return Binary4RegisterDualOpLtV6RdNotRn_instance_;
+    return Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00A00000)  ==
           0x00800000 /* op(23:20)=1x0x */) {
-    return Binary4RegisterDualResultUsesRnRm_instance_;
+    return Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00A00000)  ==
           0x00A00000 /* op(23:20)=1x1x */) {
-    return Binary4RegisterDualResultLtV6RdHiLoNotRn_instance_;
+    return Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

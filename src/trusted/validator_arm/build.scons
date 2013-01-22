@@ -88,6 +88,7 @@ AUTO_GEN_TABLES = ["ARMv7",
                    "data_processing_register",
                    "data_processing_register_shifted_register",
                    "data_processing_immediate",
+                   "multiply_and_multiply_accumulate",
                    ]
 
 # The separators to use for splitting up automatically generated baseline

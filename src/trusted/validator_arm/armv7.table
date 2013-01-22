@@ -163,6 +163,7 @@ class Binary4RegisterDualResultNoCondsUpdate : Binary4RegisterDualResult
 class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
 class Deprecated : UnsafeCondDecoder
 class Forbidden : UnsafeCondDecoder
+class Undefined : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
 class ForbiddenUncondDecoder : UnsafeUncondDecoder
 class LdrImmediateOp : Load2RegisterImm12Op
@@ -659,6 +660,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              RdHi == RdLo => UNPREDICTABLE &
              (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
    uses := {RdLo, RdHi, Rn, Rm};
+*Undefined
+  baseline := Undefined;
+  defs := {};
+  safety := true => UNDEFINED;
 +--
 | op(23:20)
 | 000x      = *MUL
@@ -670,12 +675,12 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 0100      = *UMAAL
               pattern := cccc00000100hhhhllllmmmm1001nnnn;
               rule := UMAAL_A1;
-| 0101      = UndefinedCondDecoder => Undefined # No rule defined in table.
+| 0101      = *Undefined  # No rule defined in table.
               pattern := cccc00000101xxxxxxxxxxxx1001xxxx;
 | 0110      = *MLS
               pattern := cccc00000110ddddaaaammmm1001nnnn;
               rule := MLS_A1;
-| 0111      = UndefinedCondDecoder => Undefined # No rule defined in table.
+| 0111      = *Undefined  # No rule defined in table.
               pattern := cccc00000111xxxxxxxxxxxx1001xxxx;
 | 100x      = *MULL
               pattern := cccc0000100shhhhllllmmmm1001nnnn;

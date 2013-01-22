@@ -115,13 +115,18 @@ bool Binary4RegisterDualResultTesterCase0
 
 // Neutral case:
 // inst(23:20)=0101
-//    = {baseline: 'UndefinedCondDecoder',
-//       constraints: }
+//    = {baseline: 'Undefined',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED]}
 //
 // Representative case:
 // op(23:20)=0101
-//    = {baseline: UndefinedCondDecoder,
-//       constraints: }
+//    = {baseline: Undefined,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED],
+//       true: true}
 class UnsafeCondDecoderTesterCase1
     : public UnsafeCondDecoderTester {
  public:
@@ -130,6 +135,8 @@ class UnsafeCondDecoderTesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase1
@@ -145,6 +152,21 @@ bool UnsafeCondDecoderTesterCase1
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool UnsafeCondDecoderTesterCase1
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => UNDEFINED
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
@@ -221,13 +243,18 @@ bool Binary4RegisterDualOpTesterCase2
 
 // Neutral case:
 // inst(23:20)=0111
-//    = {baseline: 'UndefinedCondDecoder',
-//       constraints: }
+//    = {baseline: 'Undefined',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED]}
 //
 // Representative case:
 // op(23:20)=0111
-//    = {baseline: UndefinedCondDecoder,
-//       constraints: }
+//    = {baseline: Undefined,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED],
+//       true: true}
 class UnsafeCondDecoderTesterCase3
     : public UnsafeCondDecoderTester {
  public:
@@ -236,6 +263,8 @@ class UnsafeCondDecoderTesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase3
@@ -251,6 +280,21 @@ bool UnsafeCondDecoderTesterCase3
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool UnsafeCondDecoderTesterCase3
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => UNDEFINED
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
@@ -970,19 +1014,24 @@ class Binary4RegisterDualResultTester_Case0
 
 // Neutral case:
 // inst(23:20)=0101
-//    = {baseline: 'UndefinedCondDecoder',
-//       constraints: }
+//    = {baseline: 'Undefined',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED]}
 //
 // Representative case:
 // op(23:20)=0101
-//    = {baseline: UndefinedCondDecoder,
-//       constraints: }
-class UndefinedCondDecoderTester_Case1
+//    = {baseline: Undefined,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED],
+//       true: true}
+class UndefinedTester_Case1
     : public UnsafeCondDecoderTesterCase1 {
  public:
-  UndefinedCondDecoderTester_Case1()
+  UndefinedTester_Case1()
     : UnsafeCondDecoderTesterCase1(
-      state_.UndefinedCondDecoder_None_instance_)
+      state_.Undefined_None_instance_)
   {}
 };
 
@@ -1025,19 +1074,24 @@ class Binary4RegisterDualOpTester_Case2
 
 // Neutral case:
 // inst(23:20)=0111
-//    = {baseline: 'UndefinedCondDecoder',
-//       constraints: }
+//    = {baseline: 'Undefined',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED]}
 //
 // Representative case:
 // op(23:20)=0111
-//    = {baseline: UndefinedCondDecoder,
-//       constraints: }
-class UndefinedCondDecoderTester_Case3
+//    = {baseline: Undefined,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => UNDEFINED],
+//       true: true}
+class UndefinedTester_Case3
     : public UnsafeCondDecoderTesterCase3 {
  public:
-  UndefinedCondDecoderTester_Case3()
+  UndefinedTester_Case3()
     : UnsafeCondDecoderTesterCase3(
-      state_.UndefinedCondDecoder_None_instance_)
+      state_.Undefined_None_instance_)
   {}
 };
 
@@ -1399,7 +1453,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(23:20)=0100
-//    = {actual: 'Binary4RegisterDualResult',
+//    = {actual: 'Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1',
 //       baseline: 'Binary4RegisterDualResult',
 //       constraints: ,
 //       defs: {inst(15:12), inst(19:16)},
@@ -1423,7 +1477,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResult,
+//       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: Binary4RegisterDualResult,
 //       constraints: ,
 //       defs: {RdLo, RdHi},
@@ -1435,34 +1489,41 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //               RdLo => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultTester_Case0_TestCase0) {
-  Binary4RegisterDualResultTester_Case0 tester;
-  tester.Test("cccc00000100hhhhllllmmmm1001nnnn");
+  Binary4RegisterDualResultTester_Case0 baseline_tester;
+  NamedActual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_UMAAL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00000100hhhhllllmmmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=0101
-//    = {actual: 'Undefined',
-//       baseline: 'UndefinedCondDecoder',
+//    = {actual: 'Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1',
+//       baseline: 'Undefined',
 //       constraints: ,
-//       pattern: 'cccc00000101xxxxxxxxxxxx1001xxxx'}
+//       defs: {},
+//       pattern: 'cccc00000101xxxxxxxxxxxx1001xxxx',
+//       safety: [true => UNDEFINED]}
 //
 // Representative case:
 // op(23:20)=0101
-//    = {actual: Undefined,
-//       baseline: UndefinedCondDecoder,
+//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//       baseline: Undefined,
 //       constraints: ,
-//       pattern: cccc00000101xxxxxxxxxxxx1001xxxx}
+//       defs: {},
+//       pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
+//       safety: [true => UNDEFINED],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       UndefinedCondDecoderTester_Case1_TestCase1) {
-  UndefinedCondDecoderTester_Case1 baseline_tester;
-  NamedUndefined_None actual;
+       UndefinedTester_Case1_TestCase1) {
+  UndefinedTester_Case1 baseline_tester;
+  NamedActual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_None actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00000101xxxxxxxxxxxx1001xxxx");
 }
 
 // Neutral case:
 // inst(23:20)=0110
-//    = {actual: 'Binary4RegisterDualOp',
+//    = {actual: 'Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1',
 //       baseline: 'Binary4RegisterDualOp',
 //       constraints: ,
 //       defs: {inst(19:16)},
@@ -1484,7 +1545,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -1494,34 +1555,41 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case2_TestCase2) {
-  Binary4RegisterDualOpTester_Case2 tester;
-  tester.Test("cccc00000110ddddaaaammmm1001nnnn");
+  Binary4RegisterDualOpTester_Case2 baseline_tester;
+  NamedActual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_MLS_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00000110ddddaaaammmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=0111
-//    = {actual: 'Undefined',
-//       baseline: 'UndefinedCondDecoder',
+//    = {actual: 'Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1',
+//       baseline: 'Undefined',
 //       constraints: ,
-//       pattern: 'cccc00000111xxxxxxxxxxxx1001xxxx'}
+//       defs: {},
+//       pattern: 'cccc00000111xxxxxxxxxxxx1001xxxx',
+//       safety: [true => UNDEFINED]}
 //
 // Representative case:
 // op(23:20)=0111
-//    = {actual: Undefined,
-//       baseline: UndefinedCondDecoder,
+//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//       baseline: Undefined,
 //       constraints: ,
-//       pattern: cccc00000111xxxxxxxxxxxx1001xxxx}
+//       defs: {},
+//       pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
+//       safety: [true => UNDEFINED],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       UndefinedCondDecoderTester_Case3_TestCase3) {
-  UndefinedCondDecoderTester_Case3 baseline_tester;
-  NamedUndefined_None actual;
+       UndefinedTester_Case3_TestCase3) {
+  UndefinedTester_Case3 baseline_tester;
+  NamedActual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_None actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00000111xxxxxxxxxxxx1001xxxx");
 }
 
 // Neutral case:
 // inst(23:20)=000x & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'Binary3RegisterOpAltA',
+//    = {actual: 'Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1',
 //       baseline: 'Binary3RegisterOpAltA',
 //       constraints: ,
 //       defs: {inst(19:16), 16
@@ -1549,7 +1617,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
 //       S: S(20),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -1566,13 +1634,15 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case4_TestCase4) {
-  Binary3RegisterOpAltATester_Case4 tester;
-  tester.Test("cccc0000000sdddd0000mmmm1001nnnn");
+  Binary3RegisterOpAltATester_Case4 baseline_tester;
+  NamedActual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1_MUL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000000sdddd0000mmmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=001x
-//    = {actual: 'Binary4RegisterDualOpLtV6RdNotRn',
+//    = {actual: 'Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1',
 //       baseline: 'Binary4RegisterDualOpLtV6RdNotRn',
 //       constraints: ,
 //       defs: {inst(19:16), 16
@@ -1603,7 +1673,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
 //       S: S(20),
-//       actual: Binary4RegisterDualOpLtV6RdNotRn,
+//       actual: Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOpLtV6RdNotRn,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -1620,13 +1690,15 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpLtV6RdNotRnTester_Case5_TestCase5) {
-  Binary4RegisterDualOpLtV6RdNotRnTester_Case5 tester;
-  tester.Test("cccc0000001sddddaaaammmm1001nnnn");
+  Binary4RegisterDualOpLtV6RdNotRnTester_Case5 baseline_tester;
+  NamedActual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1_MLA_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000001sddddaaaammmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=100x
-//    = {actual: 'Binary4RegisterDualResultUsesRnRm',
+//    = {actual: 'Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1',
 //       baseline: 'Binary4RegisterDualResultUsesRnRm',
 //       constraints: ,
 //       defs: {inst(15:12), inst(19:16), 16
@@ -1661,7 +1733,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
 //       S: S(20),
-//       actual: Binary4RegisterDualResultUsesRnRm,
+//       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualResultUsesRnRm,
 //       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
@@ -1682,13 +1754,15 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultUsesRnRmTester_Case6_TestCase6) {
-  Binary4RegisterDualResultUsesRnRmTester_Case6 tester;
-  tester.Test("cccc0000100shhhhllllmmmm1001nnnn");
+  Binary4RegisterDualResultUsesRnRmTester_Case6 baseline_tester;
+  NamedActual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_UMULL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000100shhhhllllmmmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=101x
-//    = {actual: 'Binary4RegisterDualResultLtV6RdHiLoNotRn',
+//    = {actual: 'Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1',
 //       baseline: 'Binary4RegisterDualResultLtV6RdHiLoNotRn',
 //       constraints: ,
 //       defs: {inst(15:12), inst(19:16), 16
@@ -1723,7 +1797,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
 //       S: S(20),
-//       actual: Binary4RegisterDualResultLtV6RdHiLoNotRn,
+//       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualResultLtV6RdHiLoNotRn,
 //       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
@@ -1744,13 +1818,15 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultLtV6RdHiLoNotRnTester_Case7_TestCase7) {
-  Binary4RegisterDualResultLtV6RdHiLoNotRnTester_Case7 tester;
-  tester.Test("cccc0000101shhhhllllmmmm1001nnnn");
+  Binary4RegisterDualResultLtV6RdHiLoNotRnTester_Case7 baseline_tester;
+  NamedActual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_UMLAL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000101shhhhllllmmmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=110x
-//    = {actual: 'Binary4RegisterDualResultUsesRnRm',
+//    = {actual: 'Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1',
 //       baseline: 'Binary4RegisterDualResultUsesRnRm',
 //       constraints: ,
 //       defs: {inst(15:12), inst(19:16), 16
@@ -1785,7 +1861,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
 //       S: S(20),
-//       actual: Binary4RegisterDualResultUsesRnRm,
+//       actual: Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualResultUsesRnRm,
 //       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
@@ -1806,13 +1882,15 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultUsesRnRmTester_Case8_TestCase8) {
-  Binary4RegisterDualResultUsesRnRmTester_Case8 tester;
-  tester.Test("cccc0000110shhhhllllmmmm1001nnnn");
+  Binary4RegisterDualResultUsesRnRmTester_Case8 baseline_tester;
+  NamedActual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_SMULL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000110shhhhllllmmmm1001nnnn");
 }
 
 // Neutral case:
 // inst(23:20)=111x
-//    = {actual: 'Binary4RegisterDualResultLtV6RdHiLoNotRn',
+//    = {actual: 'Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1',
 //       baseline: 'Binary4RegisterDualResultLtV6RdHiLoNotRn',
 //       constraints: ,
 //       defs: {inst(15:12), inst(19:16), 16
@@ -1847,7 +1925,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
 //       S: S(20),
-//       actual: Binary4RegisterDualResultLtV6RdHiLoNotRn,
+//       actual: Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualResultLtV6RdHiLoNotRn,
 //       constraints: ,
 //       defs: {RdLo, RdHi, NZCV
@@ -1868,8 +1946,10 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultLtV6RdHiLoNotRnTester_Case9_TestCase9) {
-  Binary4RegisterDualResultLtV6RdHiLoNotRnTester_Case9 tester;
-  tester.Test("cccc0000111shhhhllllmmmm1001nnnn");
+  Binary4RegisterDualResultLtV6RdHiLoNotRnTester_Case9 baseline_tester;
+  NamedActual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_SMLAL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000111shhhhllllmmmm1001nnnn");
 }
 
 }  // namespace nacl_arm_test

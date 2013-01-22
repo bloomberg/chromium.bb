@@ -7041,6 +7041,39 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
       Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1);
 };
 
+// Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => UNDEFINED]}
+//
+// Baseline:
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
+//    safety: [true => UNDEFINED],
+//    true: true}
+//
+// Baseline:
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
+//    safety: [true => UNDEFINED],
+//    true: true}
+class Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1
+     : public ClassDecoder {
+ public:
+  Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1);
+};
+
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //
 // Actual:
