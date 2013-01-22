@@ -374,6 +374,14 @@
             4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
             4116, 4307, 4273
           ],
+          # TODO(wolenetz): We should fix this.  http://crbug.com/171009
+          'conditions': [
+            ['target_arch == "x64"', {
+              'msvs_disabled_warnings' : [
+                4267
+              ],
+            }],
+          ],
           'msvs_settings': {
             # This magical incantation is necessary because VC++ will compile
             # object files to same directory... even if they have the same name!
