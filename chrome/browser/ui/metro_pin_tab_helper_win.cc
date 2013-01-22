@@ -31,7 +31,6 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -68,7 +67,7 @@ FilePath GetTileImagesDir() {
 // For the given |image| and |tile_id|, try to create a site specific logo in
 // |logo_dir|. The path of any created logo is returned in |logo_path|. Return
 // value indicates whether a site specific logo was created.
-bool CreateSiteSpecificLogo(const gfx::ImageSkia& image,
+bool CreateSiteSpecificLogo(const SkBitmap& bitmap,
                             const string16& tile_id,
                             const FilePath& logo_dir,
                             FilePath* logo_path) {
@@ -79,12 +78,11 @@ bool CreateSiteSpecificLogo(const gfx::ImageSkia& image,
   const int kCaptionHeight = 20;
   const double kBoxFade = 0.75;
 
-  if (image.isNull())
+  if (bitmap.isNull())
     return false;
 
   // Fill the tile logo with the dominant color of the favicon bitmap.
-  SkColor dominant_color = color_utils::CalculateKMeanColorOfBitmap(
-      image.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap());
+  SkColor dominant_color = color_utils::CalculateKMeanColorOfBitmap(bitmap);
   SkPaint paint;
   paint.setColor(dominant_color);
   gfx::Canvas canvas(gfx::Size(kLogoWidth, kLogoHeight), ui::SCALE_FACTOR_100P,
@@ -100,9 +98,9 @@ bool CreateSiteSpecificLogo(const gfx::ImageSkia& image,
 
   // Now paint the favicon into the tile, leaving some room at the bottom for
   // the caption.
-  int left = (kLogoWidth - image.width()) / 2;
-  int top = (kLogoHeight - kCaptionHeight - image.height()) / 2;
-  canvas.DrawImageInt(image, left, top);
+  int left = (kLogoWidth - bitmap.width()) / 2;
+  int top = (kLogoHeight - kCaptionHeight - bitmap.height()) / 2;
+  canvas.DrawImageInt(gfx::ImageSkia(bitmap), left, top);
 
   SkBitmap logo_bitmap = canvas.ExtractImageRep().sk_bitmap();
   std::vector<unsigned char> logo_png;
@@ -156,7 +154,7 @@ class PinPageTaskRunner : public base::RefCountedThreadSafe<PinPageTaskRunner> {
   // which case the backup tile image will be used.
   PinPageTaskRunner(const string16& title,
                     const string16& url,
-                    const gfx::ImageSkia& favicon);
+                    const SkBitmap& favicon);
 
   void Run();
   void RunOnFileThread();
@@ -167,7 +165,7 @@ class PinPageTaskRunner : public base::RefCountedThreadSafe<PinPageTaskRunner> {
   // Details of the page being pinned.
   const string16 title_;
   const string16 url_;
-  gfx::ImageSkia favicon_;
+  SkBitmap favicon_;
 
   friend class base::RefCountedThreadSafe<PinPageTaskRunner>;
   DISALLOW_COPY_AND_ASSIGN(PinPageTaskRunner);
@@ -175,7 +173,7 @@ class PinPageTaskRunner : public base::RefCountedThreadSafe<PinPageTaskRunner> {
 
 PinPageTaskRunner::PinPageTaskRunner(const string16& title,
                                      const string16& url,
-                                     const gfx::ImageSkia& favicon)
+                                     const SkBitmap& favicon)
     : title_(title),
       url_(url),
       favicon_(favicon) {}
@@ -236,7 +234,7 @@ class MetroPinTabHelper::FaviconChooser {
   FaviconChooser(MetroPinTabHelper* helper,
                  const string16& title,
                  const string16& url,
-                 const gfx::ImageSkia& history_image);
+                 const SkBitmap& history_bitmap);
 
   ~FaviconChooser() {}
 
@@ -261,7 +259,7 @@ class MetroPinTabHelper::FaviconChooser {
   const string16 url_;
 
   // The best candidate we have so far for the current pin operation.
-  gfx::ImageSkia best_candidate_;
+  SkBitmap best_candidate_;
 
   // Outstanding favicon download requests.
   std::set<int> in_progress_requests_;
@@ -273,11 +271,11 @@ MetroPinTabHelper::FaviconChooser::FaviconChooser(
     MetroPinTabHelper* helper,
     const string16& title,
     const string16& url,
-    const gfx::ImageSkia& history_image)
+    const SkBitmap& history_bitmap)
         : helper_(helper),
           title_(title),
           url_(url),
-          best_candidate_(history_image) {}
+          best_candidate_(history_bitmap) {}
 
 void MetroPinTabHelper::FaviconChooser::UseChosenCandidate() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -314,7 +312,7 @@ void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
 
     // If we don't have a best candidate yet, this is better so just grab it.
     if (best_candidate_.isNull()) {
-      best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
+      best_candidate_ = *iter;
       continue;
     }
 
@@ -325,7 +323,7 @@ void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
     }
 
     // Othewise it is our new best candidate.
-    best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
+    best_candidate_ = *iter;
   }
 
   // If there are no more outstanding requests, pin the page on the FILE thread.
@@ -379,11 +377,14 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
   string16 url_str = UTF8ToUTF16(url.spec());
   string16 title = web_contents()->GetTitle();
   // TODO(oshima): Use scoped_ptr::Pass to pass it to other thread.
-  gfx::ImageSkia favicon;
+  SkBitmap favicon;
   FaviconTabHelper* favicon_tab_helper = FaviconTabHelper::FromWebContents(
       web_contents());
-  if (favicon_tab_helper->FaviconIsValid())
-    favicon = *favicon_tab_helper->GetFavicon().AsImageSkia().DeepCopy().get();
+  if (favicon_tab_helper->FaviconIsValid()) {
+    // Only the 1x bitmap data is needed.
+    favicon = favicon_tab_helper->GetFavicon().AsImageSkia().GetRepresentation(
+        ui::SCALE_FACTOR_100P).sk_bitmap();
+  }
 
   favicon_chooser_.reset(new FaviconChooser(this, title, url_str, favicon));
 
