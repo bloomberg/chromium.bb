@@ -34,8 +34,11 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
   void Initialize(content::DownloadManager* download_manager,
                   const FilePath& drive_tmp_download_path);
 
+  // Callback used to return results from SubstituteDriveDownloadPath.
+  // TODO(hashimoto): Report error with a DriveFileError. crbug.com/171345
   typedef base::Callback<void(const FilePath&)>
       SubstituteDriveDownloadPathCallback;
+
   static void SubstituteDriveDownloadPath(
       Profile* profile,
       const FilePath& drive_path,

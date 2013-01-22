@@ -28,12 +28,15 @@ void ContinueSettingUpDriveDownload(
     const content::SavePackagePathPickedCallback& callback,
     const FilePath& drive_path,
     const FilePath& drive_tmp_download_path) {
+  if (drive_tmp_download_path.empty())  // Substitution failed.
+    return;
+
   callback.Run(drive_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
                base::Bind(&drive::DriveDownloadObserver::SetDownloadParams,
                           drive_path));
 }
 
-}  // anonymous namespace
+}  // namespace
 
 SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
     content::WebContents* web_contents,

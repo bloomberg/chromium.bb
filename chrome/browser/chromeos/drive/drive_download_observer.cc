@@ -96,8 +96,8 @@ void OnCreateDirectory(
   if (error == DRIVE_FILE_OK) {
     SubstituteDriveDownloadPathInternal(profile, callback);
   } else {
-    // TODO(achuith): Handle this.
-    NOTREACHED();
+    LOG(WARNING) << "Failed to create directory, error = " << error;
+    callback.Run(FilePath());
   }
 }
 
@@ -118,8 +118,9 @@ void OnEntryFound(
   } else if (error == DRIVE_FILE_OK) {
     SubstituteDriveDownloadPathInternal(profile, callback);
   } else {
-    // TODO(achuith): Handle this.
-    NOTREACHED();
+    LOG(WARNING) << "Failed to get entry info for path: "
+                 << drive_dir_path.value() << ", error = " << error;
+    callback.Run(FilePath());
   }
 }
 

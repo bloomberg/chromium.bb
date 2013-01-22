@@ -806,6 +806,15 @@ void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
   if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
+  if (suggested_path.empty()) {
+    // Substitution failed.
+    callback.Run(FilePath(),
+                 DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                 danger_type,
+                 FilePath());
+    return;
+  }
+
   GetReservedPath(
       *download, suggested_path, download_prefs_->DownloadPath(),
       !is_forced_path,
