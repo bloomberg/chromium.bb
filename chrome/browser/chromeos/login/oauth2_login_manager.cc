@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -135,6 +136,9 @@ void OAuth2LoginManager::OnOAuth2TokensFetchFailed() {
   UserManager::Get()->SaveUserOAuthStatus(
       UserManager::Get()->GetLoggedInUser()->email(),
       User::OAUTH2_TOKEN_STATUS_INVALID);
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
+                            SESSION_RESTORE_TOKEN_FETCH_FAILED,
+                            SESSION_RESTORE_COUNT);
 }
 
 void OAuth2LoginManager::Observe(
@@ -146,7 +150,6 @@ void OAuth2LoginManager::Observe(
   switch (type) {
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
       refresh_token_ = token_service->GetOAuth2LoginRefreshToken();
-      gaia_token_.clear();
       // TODO(zelidrag): Figure out why just getting GaiaConstants::kGaiaService
       // token does not do the trick here.
       RestoreSessionCookies();
@@ -165,7 +168,6 @@ void OAuth2LoginManager::Observe(
               GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
         DCHECK(!login_verifier_.get());
         refresh_token_ = token_details->token();
-        gaia_token_.clear();
         RestoreSessionCookies();
       }
       break;
@@ -183,6 +185,9 @@ void OAuth2LoginManager::RestoreSessionCookies() {
     UserManager::Get()->SaveUserOAuthStatus(
         UserManager::Get()->GetLoggedInUser()->email(),
         User::OAUTH2_TOKEN_STATUS_INVALID);
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
+                              SESSION_RESTORE_NO_REFRESH_TOKEN_FAILED,
+                              SESSION_RESTORE_COUNT);
     return;
   }
 
@@ -191,7 +196,7 @@ void OAuth2LoginManager::RestoreSessionCookies() {
       new OAuth2LoginVerifier(this,
                               g_browser_process->system_request_context(),
                               user_profile_->GetRequestContext()));
-  login_verifier_->VerifyTokens(refresh_token_, gaia_token_);
+  login_verifier_->VerifyOAuth2RefreshToken(refresh_token_);
   FetchPolicyTokens();
 }
 
@@ -217,6 +222,9 @@ void OAuth2LoginManager::OnOAuthLoginFailure() {
   UserManager::Get()->SaveUserOAuthStatus(
       UserManager::Get()->GetLoggedInUser()->email(),
       User::OAUTH2_TOKEN_STATUS_INVALID);
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
+                            SESSION_RESTORE_OAUTHLOGIN_FAILED,
+                            SESSION_RESTORE_COUNT);
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
@@ -225,6 +233,9 @@ void OAuth2LoginManager::OnSessionMergeSuccess() {
   UserManager::Get()->SaveUserOAuthStatus(
       UserManager::Get()->GetLoggedInUser()->email(),
       User::OAUTH2_TOKEN_STATUS_VALID);
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
+                            SESSION_RESTORE_SUCCESS,
+                            SESSION_RESTORE_COUNT);
 }
 
 void OAuth2LoginManager::OnSessionMergeFailure() {
@@ -233,6 +244,9 @@ void OAuth2LoginManager::OnSessionMergeFailure() {
   UserManager::Get()->SaveUserOAuthStatus(
       UserManager::Get()->GetLoggedInUser()->email(),
       User::OAUTH2_TOKEN_STATUS_INVALID);
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
+                            SESSION_RESTORE_MERGE_SESSION_FAILED,
+                            SESSION_RESTORE_COUNT);
 }
 
 void OAuth2LoginManager::StartTokenService(

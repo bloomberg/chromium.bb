@@ -42,6 +42,16 @@ class OAuth2LoginManager : public OAuthLoginManager,
   virtual void Stop() OVERRIDE;
 
  private:
+  // Session restore outcomes (for UMA).
+  enum {
+    SESSION_RESTORE_UNDEFINED = 0,
+    SESSION_RESTORE_SUCCESS = 1,
+    SESSION_RESTORE_TOKEN_FETCH_FAILED = 2,
+    SESSION_RESTORE_NO_REFRESH_TOKEN_FAILED = 3,
+    SESSION_RESTORE_OAUTHLOGIN_FAILED = 4,
+    SESSION_RESTORE_MERGE_SESSION_FAILED = 5,
+    SESSION_RESTORE_COUNT = SESSION_RESTORE_MERGE_SESSION_FAILED,
+  };
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -100,8 +110,6 @@ class OAuth2LoginManager : public OAuthLoginManager,
   scoped_ptr<OAuth2PolicyFetcher> oauth2_policy_fetcher_;
   // OAuth2 refresh token.
   std::string refresh_token_;
-  // GAIA service token.
-  std::string gaia_token_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManager);
 };

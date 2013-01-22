@@ -47,11 +47,9 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
                       net::URLRequestContextGetter* user_request_context);
   virtual ~OAuth2LoginVerifier();
 
-  // Starts reconstruction of client session cookies by first trying to
-  // use stored |gaia_token|. If that fails, it will try to mint a new GAIA
-  // token through OAuthLogin from the provided |oauth2_refresh_token|.
-  void VerifyTokens(const std::string& oauth2_refresh_token,
-                    const std::string& gaia_token);
+  // Attempts to restore session from OAuth2 refresh token minting all necesarry
+  // tokens along the way (OAuth2 access token, SID/LSID, GAIA service token).
+  void VerifyOAuth2RefreshToken(const std::string& oauth2_refresh_token);
 
  private:
   enum SessionRestoreType {
@@ -74,13 +72,6 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   virtual void OnGetTokenSuccess(const std::string& access_token,
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Attempts to restore session from OAuth2 refresh token minting all necesarry
-  // tokens along the way (OAuth2 access token, SID/LSID, GAIA service token).
-  void RestoreSessionFromOAuth2RefreshToken();
-
-  // Attempts to restore session directly from GAIA service token.
-  void RestoreSessionFromGaiaToken();
 
   // Starts fetching OAuth1 access token for OAuthLogin call.
   void StartFetchingOAuthLoginAccessToken();
@@ -111,7 +102,6 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   std::string gaia_token_;
   // The retry counter. Increment this only when failure happened.
   int retry_count_;
-  SessionRestoreType type_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginVerifier);
 };
