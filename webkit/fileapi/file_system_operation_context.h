@@ -24,6 +24,13 @@ namespace fileapi {
 
 class MediaPathFilter;
 
+// A context class which is carried around by FileSystemOperation and
+// its delegated tasks. It is ok to reuse the same instance for multiple
+// file system operations as far as they're supposed to share one operation
+// context.
+//
+// This class should only have simple copyable fields and basic
+// setter/getters for them.
 class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);
@@ -98,6 +105,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
   // Initialized on IO thread and used on |task_runner_|.
   std::string mtp_device_delegate_url_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationContext);
 };
 
 }  // namespace fileapi

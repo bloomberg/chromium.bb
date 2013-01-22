@@ -213,8 +213,9 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
   FileSystemFileUtil* file_util =
       file_system_context->GetFileUtil(kFileSystemTypeSyncable);
   DCHECK(file_util);
-  FileSystemOperationContext context =
-      FileSystemOperationContext(file_system_context);
+  scoped_ptr<FileSystemOperationContext> context(
+      new FileSystemOperationContext(file_system_context));
+
   base::PlatformFileInfo file_info;
   FilePath platform_path;
 
@@ -223,7 +224,8 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
     dirty_files.pop();
     DCHECK_EQ(url.type(), kFileSystemTypeSyncable);
 
-    switch (file_util->GetFileInfo(&context, url, &file_info, &platform_path)) {
+    switch (file_util->GetFileInfo(context.get(), url,
+                                   &file_info, &platform_path)) {
       case base::PLATFORM_FILE_OK: {
         if (!file_info.is_directory) {
           RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -236,7 +238,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 
         // Push files and directories in this directory into |dirty_files|.
         scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-            file_util->CreateFileEnumerator(&context,
+            file_util->CreateFileEnumerator(context.get(),
                                             url,
                                             false /* recursive */));
         FilePath path_each;
