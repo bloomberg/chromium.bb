@@ -30,6 +30,9 @@
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
+// TODO(jochen): Remove this include again after the next WebKit roll. We need
+// it to check for the TEST_RUNNER_MOVED_PRINTING define.
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 
 // Content area size for newly created windows.
 static const int kTestWindowWidth = 800;
@@ -283,11 +286,13 @@ bool Shell::AddMessageToConsole(WebContents* source,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return false;
 
+#if !defined(TEST_RUNNER_MOVED_PRINTING)
   std::string buffer("CONSOLE MESSAGE: ");
   if (line_no)
     buffer += base::StringPrintf("line %d: ", line_no);
   buffer += UTF16ToUTF8(message);
   WebKitTestController::Get()->printer()->AddMessage(buffer);
+#endif
   return true;
 }
 
