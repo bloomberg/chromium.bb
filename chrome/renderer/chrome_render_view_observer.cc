@@ -170,13 +170,12 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
     ContentSettingsObserver* content_settings,
     ChromeRenderProcessObserver* chrome_render_process_observer,
-    extensions::Dispatcher* extension_dispatcher,
-    TranslateHelper* translate_helper)
+    extensions::Dispatcher* extension_dispatcher)
     : content::RenderViewObserver(render_view),
       chrome_render_process_observer_(chrome_render_process_observer),
       extension_dispatcher_(extension_dispatcher),
       content_settings_(content_settings),
-      translate_helper_(translate_helper),
+      translate_helper_(new TranslateHelper(render_view)),
       phishing_classifier_(NULL),
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),

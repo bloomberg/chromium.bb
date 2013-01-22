@@ -66,7 +66,6 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
-#include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"
@@ -312,10 +311,9 @@ void ChromeContentRendererClient::RenderViewCreated(
   page_click_tracker->AddListener(password_autofill_manager);
   page_click_tracker->AddListener(autofill_agent);
 
-  TranslateHelper* translate = new TranslateHelper(render_view);
   new ChromeRenderViewObserver(
       render_view, content_settings, chrome_observer_.get(),
-      extension_dispatcher_.get(), translate);
+      extension_dispatcher_.get());
 
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_view);

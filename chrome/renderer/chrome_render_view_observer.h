@@ -48,8 +48,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
       content::RenderView* render_view,
       ContentSettingsObserver* content_settings,
       ChromeRenderProcessObserver* chrome_render_process_observer,
-      extensions::Dispatcher* extension_dispatcher,
-      TranslateHelper* translate_helper);
+      extensions::Dispatcher* extension_dispatcher);
   virtual ~ChromeRenderViewObserver();
 
  private:
