@@ -156,7 +156,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstBMWithFavicon) {
 // In particular, the synced 16x16 favicon bitmap should overwrite 16x16
 // favicon bitmaps on all clients. (Though non-16x16 favicon bitmaps
 // are unchanged).
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
+// TODO(pkotwicz): Reenable test. http://crbug.com/171465
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+                       DISABLED_SC_SetFaviconHiDPI) {
   // Set the supported scale factors to include 2x such that CreateFavicon()
   // creates a favicon with hidpi representations and that methods in the
   // FaviconService request hidpi favicons.

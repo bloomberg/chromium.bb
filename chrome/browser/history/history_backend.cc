@@ -2041,9 +2041,13 @@ void HistoryBackend::MergeFavicon(
     SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
   }
 
-  // Send notification to the UI as at least a favicon bitmap was added or
-  // replaced.
-  SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  // Sync currently does not properly deal with notifications as a result of
+  // replacing a favicon bitmap. For M25, do not send any notifications if a
+  // bitmap was replaced and no bitmaps were added or deleted. This is a
+  // temporary fix for http://crbug.com/169460.
+  if (migrated_bitmaps || !replaced_bitmap)
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+
   ScheduleCommit();
 }
 
