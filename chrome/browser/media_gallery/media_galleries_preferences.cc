@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 
-#include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -17,12 +17,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
 
 namespace chrome {
 
@@ -140,13 +138,13 @@ FilePath MediaGalleryPrefInfo::AbsolutePath() const {
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
-  MaybeAddDefaultGalleries();
+  AddDefaultGalleriesIfFreshProfile();
   InitFromPrefs();
 }
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
 
-void MediaGalleriesPreferences::MaybeAddDefaultGalleries() {
+void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
   // Only add defaults the first time.
   if (APIHasBeenUsed(profile_))
     return;
@@ -189,10 +187,11 @@ void MediaGalleriesPreferences::InitFromPrefs() {
       continue;
 
     MediaGalleryPrefInfo gallery_info;
-    if (PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info)) {
-      known_galleries_[gallery_info.pref_id] = gallery_info;
-      device_map_[gallery_info.device_id].insert(gallery_info.pref_id);
-    }
+    if (!PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info))
+      continue;
+
+    known_galleries_[gallery_info.pref_id] = gallery_info;
+    device_map_[gallery_info.device_id].insert(gallery_info.pref_id);
   }
 }
 
@@ -241,11 +240,8 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
 MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
     const std::string& device_id) const {
   DeviceIdPrefIdsMap::const_iterator found = device_map_.find(device_id);
-  if (found == device_map_.end()) {
-    MediaGalleryPrefIdSet result;
-    return result;
-  }
-
+  if (found == device_map_.end())
+    return MediaGalleryPrefIdSet();
   return found->second;
 }
 
@@ -259,10 +255,10 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
   for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
        it != galleries_on_device.end();
        ++it) {
-    if (known_galleries_[*it].path != normalized_relative_path)
+    const MediaGalleryPrefInfo& existing = known_galleries_.find(*it)->second;
+    if (existing.path != normalized_relative_path)
       continue;
 
-    const MediaGalleryPrefInfo& existing = known_galleries_[*it];
     bool update_gallery_type =
         existing.type == MediaGalleryPrefInfo::kBlackListed;
     bool update_gallery_name = existing.display_name != display_name;
@@ -329,7 +325,7 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
   ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
   ListValue* list = update.Get();
 
-  if (known_galleries_.find(pref_id) == known_galleries_.end())
+  if (!ContainsKey(known_galleries_, pref_id))
     return;
 
   for (ListValue::iterator iter = list->begin(); iter != list->end(); ++iter) {
@@ -391,7 +387,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     bool has_permission) {
   // The gallery may not exist anymore if the user opened a second config
   // surface concurrently and removed it. Drop the permission update if so.
-  MediaGalleriesPrefInfoMap::iterator gallery_info =
+  MediaGalleriesPrefInfoMap::const_iterator gallery_info =
       known_galleries_.find(pref_id);
   if (gallery_info == known_galleries_.end())
     return;

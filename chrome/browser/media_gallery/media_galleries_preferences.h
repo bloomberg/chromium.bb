@@ -127,9 +127,9 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
       DeviceIdPrefIdsMap;
 
   // Populates the default galleries if this is a fresh profile.
-  void MaybeAddDefaultGalleries();
+  void AddDefaultGalleriesIfFreshProfile();
 
-  // Builds |remembered_galleries_| from the persistent store.
+  // Builds |known_galleries_| from the persistent store.
   void InitFromPrefs();
 
   // The profile that owns |this|.
@@ -139,6 +139,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   MediaGalleriesPrefInfoMap known_galleries_;
 
   // A mapping from device id to the set of gallery pref ids on that device.
+  // All pref ids in |device_map_| are also in |known_galleries_|.
   DeviceIdPrefIdsMap device_map_;
 
   extensions::ExtensionPrefs* GetExtensionPrefs() const;
