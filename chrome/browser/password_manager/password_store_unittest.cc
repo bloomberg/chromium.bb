@@ -105,9 +105,9 @@ class PasswordStoreTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
-    db_thread_.Stop();
   }
 
   MessageLoopForUI message_loop_;
