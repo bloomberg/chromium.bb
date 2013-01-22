@@ -238,8 +238,6 @@
         'controls/tree/tree_view_controller.h',
         'controls/tree/tree_view_views.cc',
         'controls/tree/tree_view_views.h',
-        'controls/tree/tree_view_win.cc',
-        'controls/tree/tree_view_win.h',
         'corewm/base_focus_rules.cc',
         'corewm/base_focus_rules.h',
         'corewm/compound_event_filter.cc',
@@ -511,8 +509,6 @@
             'controls/table/table_view_row_background_painter.h',
             'controls/table/table_view_views.cc',
             'controls/table/table_view_views.h',
-            'controls/tree/tree_view_views.cc',
-            'controls/tree/tree_view_views.h',
           ],
         }],
         ['use_aura==1 and OS=="win"', {
