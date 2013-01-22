@@ -53,10 +53,9 @@ void UdevLinux::OnFileCanReadWithoutBlocking(int fd) {
   // representing the device which changed and what type of change occured.
   DCHECK_EQ(monitor_fd_, fd);
   udev_device* dev = udev_monitor_receive_device(monitor_);
-  if (!dev) {
-    NOTREACHED();
+  if (!dev)
     return;
-  }
+
   callback_.Run(dev);
   udev_device_unref(dev);
 }
