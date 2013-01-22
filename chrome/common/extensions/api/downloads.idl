@@ -403,7 +403,7 @@ namespace downloads {
     // dangerous or the danger has been accepted, then the temporary file is
     // renamed to the target filename, the |state| changes to 'complete', and
     // $ref:onChanged fires.
-    // |downloadId|: The identifier for the $ref.DownloadItem.
+    // |downloadId|: The identifier for the $ref:DownloadItem.
     static void acceptDanger(long downloadId);
 
     // Initiate dragging the downloaded file to another application.
