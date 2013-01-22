@@ -178,7 +178,7 @@ static bool ShouldRedirect(const char* hostname) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   return state.GetDomainState(hostname, true /* SNI ok */, &domain_state) &&
-         domain_state.ShouldRedirectHTTPToHTTPS();
+         domain_state.ShouldUpgradeToSSL();
 }
 
 static bool HasState(const char* hostname) {
@@ -187,17 +187,17 @@ static bool HasState(const char* hostname) {
   return state.GetDomainState(hostname, true /* SNI ok */, &domain_state);
 }
 
-static bool HasPins(const char* hostname, bool sni_enabled) {
+static bool HasPublicKeyPins(const char* hostname, bool sni_enabled) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   if (!state.GetDomainState(hostname, sni_enabled, &domain_state))
     return false;
 
-  return domain_state.HasPins();
+  return domain_state.HasPublicKeyPins();
 }
 
-static bool HasPins(const char* hostname) {
-  return HasPins(hostname, true);
+static bool HasPublicKeyPins(const char* hostname) {
+  return HasPublicKeyPins(hostname, true);
 }
 
 static bool OnlyPinning(const char *hostname) {
@@ -209,7 +209,7 @@ static bool OnlyPinning(const char *hostname) {
   return (domain_state.static_spki_hashes.size() > 0 ||
           domain_state.bad_static_spki_hashes.size() > 0 ||
           domain_state.dynamic_spki_hashes.size() > 0) &&
-         !domain_state.ShouldRedirectHTTPToHTTPS();
+         !domain_state.ShouldUpgradeToSSL();
 }
 
 TEST_F(TransportSecurityStateTest, Preloaded) {
@@ -395,10 +395,10 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(ShouldRedirect("epoxate.com"));
   EXPECT_FALSE(HasState("foo.epoxate.com"));
 
-  EXPECT_TRUE(HasPins("torproject.org"));
-  EXPECT_TRUE(HasPins("www.torproject.org"));
-  EXPECT_TRUE(HasPins("check.torproject.org"));
-  EXPECT_TRUE(HasPins("blog.torproject.org"));
+  EXPECT_TRUE(HasPublicKeyPins("torproject.org"));
+  EXPECT_TRUE(HasPublicKeyPins("www.torproject.org"));
+  EXPECT_TRUE(HasPublicKeyPins("check.torproject.org"));
+  EXPECT_TRUE(HasPublicKeyPins("blog.torproject.org"));
   EXPECT_FALSE(HasState("foo.torproject.org"));
 
   EXPECT_TRUE(ShouldRedirect("www.moneybookers.com"));
@@ -453,7 +453,7 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(ShouldRedirect("crate.io"));
   EXPECT_TRUE(ShouldRedirect("foo.crate.io"));
 
-  EXPECT_TRUE(HasPins("www.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("www.twitter.com"));
 }
 
 TEST_F(TransportSecurityStateTest, LongNames) {
@@ -471,51 +471,51 @@ TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   TransportSecurityState::DomainState domain_state;
 
   EXPECT_TRUE(state.GetDomainState("chrome.google.com", true, &domain_state));
-  EXPECT_TRUE(HasPins("chrome.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("chrome.google.com"));
 
   HashValueVector hashes;
   // Checks that a built-in list does exist.
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(hashes));
-  EXPECT_FALSE(HasPins("www.paypal.com"));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
+  EXPECT_FALSE(HasPublicKeyPins("www.paypal.com"));
 
-  EXPECT_TRUE(HasPins("docs.google.com"));
-  EXPECT_TRUE(HasPins("1.docs.google.com"));
-  EXPECT_TRUE(HasPins("sites.google.com"));
-  EXPECT_TRUE(HasPins("drive.google.com"));
-  EXPECT_TRUE(HasPins("spreadsheets.google.com"));
-  EXPECT_TRUE(HasPins("health.google.com"));
-  EXPECT_TRUE(HasPins("checkout.google.com"));
-  EXPECT_TRUE(HasPins("appengine.google.com"));
-  EXPECT_TRUE(HasPins("market.android.com"));
-  EXPECT_TRUE(HasPins("encrypted.google.com"));
-  EXPECT_TRUE(HasPins("accounts.google.com"));
-  EXPECT_TRUE(HasPins("profiles.google.com"));
-  EXPECT_TRUE(HasPins("mail.google.com"));
-  EXPECT_TRUE(HasPins("chatenabled.mail.google.com"));
-  EXPECT_TRUE(HasPins("talkgadget.google.com"));
-  EXPECT_TRUE(HasPins("hostedtalkgadget.google.com"));
-  EXPECT_TRUE(HasPins("talk.google.com"));
-  EXPECT_TRUE(HasPins("plus.google.com"));
-  EXPECT_TRUE(HasPins("groups.google.com"));
-  EXPECT_TRUE(HasPins("apis.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("docs.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("1.docs.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("sites.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("drive.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("spreadsheets.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("health.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("checkout.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("appengine.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("market.android.com"));
+  EXPECT_TRUE(HasPublicKeyPins("encrypted.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("accounts.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("profiles.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("mail.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("chatenabled.mail.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("talkgadget.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("hostedtalkgadget.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("talk.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("plus.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("groups.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("apis.google.com"));
 
-  EXPECT_TRUE(HasPins("ssl.gstatic.com"));
-  EXPECT_FALSE(HasPins("www.gstatic.com"));
-  EXPECT_TRUE(HasPins("ssl.google-analytics.com"));
-  EXPECT_TRUE(HasPins("www.googleplex.com"));
+  EXPECT_TRUE(HasPublicKeyPins("ssl.gstatic.com"));
+  EXPECT_FALSE(HasPublicKeyPins("www.gstatic.com"));
+  EXPECT_TRUE(HasPublicKeyPins("ssl.google-analytics.com"));
+  EXPECT_TRUE(HasPublicKeyPins("www.googleplex.com"));
 
   // Disabled in order to help track down pinning failures --agl
-  EXPECT_TRUE(HasPins("twitter.com"));
-  EXPECT_FALSE(HasPins("foo.twitter.com"));
-  EXPECT_TRUE(HasPins("www.twitter.com"));
-  EXPECT_TRUE(HasPins("api.twitter.com"));
-  EXPECT_TRUE(HasPins("oauth.twitter.com"));
-  EXPECT_TRUE(HasPins("mobile.twitter.com"));
-  EXPECT_TRUE(HasPins("dev.twitter.com"));
-  EXPECT_TRUE(HasPins("business.twitter.com"));
-  EXPECT_TRUE(HasPins("platform.twitter.com"));
-  EXPECT_TRUE(HasPins("si0.twimg.com"));
-  EXPECT_TRUE(HasPins("twimg0-a.akamaihd.net"));
+  EXPECT_TRUE(HasPublicKeyPins("twitter.com"));
+  EXPECT_FALSE(HasPublicKeyPins("foo.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("www.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("api.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("oauth.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("mobile.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("dev.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("business.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("platform.twitter.com"));
+  EXPECT_TRUE(HasPublicKeyPins("si0.twimg.com"));
+  EXPECT_TRUE(HasPublicKeyPins("twimg0-a.akamaihd.net"));
 }
 
 static bool AddHash(const std::string& type_and_base64,
@@ -559,10 +559,10 @@ TEST_F(TransportSecurityStateTest, PinValidationWithRejectedCerts) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(state.GetDomainState("plus.google.com", true, &domain_state));
-  EXPECT_TRUE(domain_state.HasPins());
+  EXPECT_TRUE(domain_state.HasPublicKeyPins());
 
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(good_hashes));
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(bad_hashes));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(good_hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(bad_hashes));
 }
 
 TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
@@ -595,10 +595,10 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(state.GetDomainState("blog.torproject.org", true, &domain_state));
-  EXPECT_TRUE(domain_state.HasPins());
+  EXPECT_TRUE(domain_state.HasPublicKeyPins());
 
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(good_hashes));
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(bad_hashes));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(good_hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(bad_hashes));
 }
 
 TEST_F(TransportSecurityStateTest, PinValidationWithRejectedCertsMixedHashes) {
@@ -624,7 +624,7 @@ TEST_F(TransportSecurityStateTest, PinValidationWithRejectedCertsMixedHashes) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(state.GetDomainState("plus.google.com", true, &domain_state));
-  EXPECT_TRUE(domain_state.HasPins());
+  EXPECT_TRUE(domain_state.HasPublicKeyPins());
 
   // The statically-defined pins are all SHA-1, so we add some SHA-256 pins
   // manually:
@@ -637,42 +637,42 @@ TEST_F(TransportSecurityStateTest, PinValidationWithRejectedCertsMixedHashes) {
   EXPECT_TRUE(AddHash(ee_sha1, &validated_chain));
   EXPECT_TRUE(AddHash(google_1024_sha1, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha1, &validated_chain));
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try an all-bad SHA1 chain.
   validated_chain.clear();
   EXPECT_TRUE(AddHash(ee_sha1, &validated_chain));
   EXPECT_TRUE(AddHash(trustcenter_sha1, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha1, &validated_chain));
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try an all-good SHA-256 chain.
   validated_chain.clear();
   EXPECT_TRUE(AddHash(ee_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(google_1024_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha256, &validated_chain));
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try an all-bad SHA-256 chain.
   validated_chain.clear();
   EXPECT_TRUE(AddHash(ee_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(trustcenter_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha256, &validated_chain));
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try a mixed-hash good chain.
   validated_chain.clear();
   EXPECT_TRUE(AddHash(ee_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(google_1024_sha1, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha256, &validated_chain));
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try a mixed-hash bad chain.
   validated_chain.clear();
   EXPECT_TRUE(AddHash(ee_sha1, &validated_chain));
   EXPECT_TRUE(AddHash(trustcenter_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha1, &validated_chain));
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try a chain with all good hashes.
   validated_chain.clear();
@@ -682,7 +682,7 @@ TEST_F(TransportSecurityStateTest, PinValidationWithRejectedCertsMixedHashes) {
   EXPECT_TRUE(AddHash(ee_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(google_1024_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha256, &validated_chain));
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(validated_chain));
 
   // Try a chain with all bad hashes.
   validated_chain.clear();
@@ -692,7 +692,7 @@ TEST_F(TransportSecurityStateTest, PinValidationWithRejectedCertsMixedHashes) {
   EXPECT_TRUE(AddHash(ee_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(trustcenter_sha256, &validated_chain));
   EXPECT_TRUE(AddHash(equifax_sha256, &validated_chain));
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(validated_chain));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(validated_chain));
 }
 
 TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {
@@ -701,30 +701,30 @@ TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {
 
   EXPECT_FALSE(ShouldRedirect("www.google-analytics.com"));
 
-  EXPECT_FALSE(HasPins("www.google-analytics.com", false));
-  EXPECT_TRUE(HasPins("www.google-analytics.com"));
-  EXPECT_TRUE(HasPins("google.com"));
-  EXPECT_TRUE(HasPins("www.google.com"));
-  EXPECT_TRUE(HasPins("mail-attachment.googleusercontent.com"));
-  EXPECT_TRUE(HasPins("www.youtube.com"));
-  EXPECT_TRUE(HasPins("i.ytimg.com"));
-  EXPECT_TRUE(HasPins("googleapis.com"));
-  EXPECT_TRUE(HasPins("ajax.googleapis.com"));
-  EXPECT_TRUE(HasPins("googleadservices.com"));
-  EXPECT_TRUE(HasPins("pagead2.googleadservices.com"));
-  EXPECT_TRUE(HasPins("googlecode.com"));
-  EXPECT_TRUE(HasPins("kibbles.googlecode.com"));
-  EXPECT_TRUE(HasPins("appspot.com"));
-  EXPECT_TRUE(HasPins("googlesyndication.com"));
-  EXPECT_TRUE(HasPins("doubleclick.net"));
-  EXPECT_TRUE(HasPins("ad.doubleclick.net"));
-  EXPECT_FALSE(HasPins("learn.doubleclick.net"));
-  EXPECT_TRUE(HasPins("a.googlegroups.com"));
-  EXPECT_FALSE(HasPins("a.googlegroups.com", false));
+  EXPECT_FALSE(HasPublicKeyPins("www.google-analytics.com", false));
+  EXPECT_TRUE(HasPublicKeyPins("www.google-analytics.com"));
+  EXPECT_TRUE(HasPublicKeyPins("google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("www.google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("mail-attachment.googleusercontent.com"));
+  EXPECT_TRUE(HasPublicKeyPins("www.youtube.com"));
+  EXPECT_TRUE(HasPublicKeyPins("i.ytimg.com"));
+  EXPECT_TRUE(HasPublicKeyPins("googleapis.com"));
+  EXPECT_TRUE(HasPublicKeyPins("ajax.googleapis.com"));
+  EXPECT_TRUE(HasPublicKeyPins("googleadservices.com"));
+  EXPECT_TRUE(HasPublicKeyPins("pagead2.googleadservices.com"));
+  EXPECT_TRUE(HasPublicKeyPins("googlecode.com"));
+  EXPECT_TRUE(HasPublicKeyPins("kibbles.googlecode.com"));
+  EXPECT_TRUE(HasPublicKeyPins("appspot.com"));
+  EXPECT_TRUE(HasPublicKeyPins("googlesyndication.com"));
+  EXPECT_TRUE(HasPublicKeyPins("doubleclick.net"));
+  EXPECT_TRUE(HasPublicKeyPins("ad.doubleclick.net"));
+  EXPECT_FALSE(HasPublicKeyPins("learn.doubleclick.net"));
+  EXPECT_TRUE(HasPublicKeyPins("a.googlegroups.com"));
+  EXPECT_FALSE(HasPublicKeyPins("a.googlegroups.com", false));
 }
 
 TEST_F(TransportSecurityStateTest, OverrideBuiltins) {
-  EXPECT_TRUE(HasPins("google.com"));
+  EXPECT_TRUE(HasPublicKeyPins("google.com"));
   EXPECT_FALSE(ShouldRedirect("google.com"));
   EXPECT_FALSE(ShouldRedirect("www.google.com"));
 

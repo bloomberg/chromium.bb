@@ -385,8 +385,9 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       net::TransportSecurityState::DomainState domain_state;
       bool has_sni = net::SSLConfigService::IsSNIAvailable(
           context->ssl_config_service());
-      if (state->GetDomainState(
-              request->url().host(), has_sni, &domain_state)) {
+      if (state->GetDomainState(request->url().host(), has_sni,
+                                &domain_state) &&
+          domain_state.ShouldUpgradeToSSL()) {
         sender->Send(new ChromeViewMsg_AddStrictSecurityHost(
             info->GetRouteID(), request->url().host()));
       }

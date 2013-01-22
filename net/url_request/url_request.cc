@@ -840,7 +840,7 @@ bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {
           url.host(),
           SSLConfigService::IsSNIAvailable(context()->ssl_config_service()),
           &domain_state) &&
-      domain_state.ShouldRedirectHTTPToHTTPS()) {
+      domain_state.ShouldUpgradeToSSL()) {
     url_canon::Replacements<char> replacements;
     const char kNewScheme[] = "https";
     replacements.SetScheme(kNewScheme,

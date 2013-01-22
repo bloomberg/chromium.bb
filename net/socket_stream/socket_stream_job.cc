@@ -29,7 +29,7 @@ SocketStreamJob* SocketStreamJob::CreateSocketStreamJob(
   TransportSecurityState::DomainState domain_state;
   if (url.scheme() == "ws" && sts && sts->GetDomainState(
           url.host(), SSLConfigService::IsSNIAvailable(ssl), &domain_state) &&
-      domain_state.ShouldRedirectHTTPToHTTPS()) {
+      domain_state.ShouldUpgradeToSSL()) {
     url_canon::Replacements<char> replacements;
     static const char kNewScheme[] = "wss";
     replacements.SetScheme(kNewScheme,

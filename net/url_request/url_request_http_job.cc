@@ -793,12 +793,12 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
 
     TransportSecurityState::DomainState domain_state;
     const URLRequestContext* context = request_->context();
-    const bool fatal =
-        context->transport_security_state() &&
+    const bool fatal = context->transport_security_state() &&
         context->transport_security_state()->GetDomainState(
             request_info_.url.host(),
             SSLConfigService::IsSNIAvailable(context->ssl_config_service()),
-            &domain_state);
+            &domain_state) &&
+        domain_state.ShouldSSLErrorsBeFatal();
     NotifySSLCertificateError(transaction_->GetResponseInfo()->ssl_info, fatal);
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     NotifyCertificateRequested(

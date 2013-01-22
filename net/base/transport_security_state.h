@@ -77,16 +77,21 @@ class NET_EXPORT TransportSecurityState
     //
     // |bad_static_spki_hashes| contains public keys that we don't want to
     // trust.
-    bool IsChainOfPublicKeysPermitted(const HashValueVector& hashes) const;
+    bool CheckPublicKeyPins(const HashValueVector& hashes) const;
 
     // Returns true if any of the HashValueVectors |static_spki_hashes|,
     // |bad_static_spki_hashes|, or |dynamic_spki_hashes| contains any
     // items.
-    bool HasPins() const;
+    bool HasPublicKeyPins() const;
 
-    // ShouldRedirectHTTPToHTTPS returns true iff, given the |mode| of this
-    // DomainState, HTTP requests should be internally redirected to HTTPS.
-    bool ShouldRedirectHTTPToHTTPS() const;
+    // ShouldUpgradeToSSL returns true iff, given the |mode| of this
+    // DomainState, HTTP requests should be internally redirected to HTTPS
+    // (also if the "ws" WebSocket request should be upgraded to "wss")
+    bool ShouldUpgradeToSSL() const;
+
+    // ShouldSSLErrorsBeFatal returns true iff HTTPS errors should cause
+    // hard-fail behavior (e.g. if HSTS is set for the domain)
+    bool ShouldSSLErrorsBeFatal() const;
 
     bool Equals(const DomainState& other) const;
 

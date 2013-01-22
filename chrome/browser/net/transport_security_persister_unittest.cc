@@ -183,19 +183,19 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   static const char kTestDomain[] = "example.com";
   EXPECT_FALSE(state_.GetDomainState(kTestDomain, false, &domain_state));
   net::HashValueVector hashes;
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
 
   net::HashValue sha1(net::HASH_VALUE_SHA1);
   memset(sha1.data(), '1', sha1.size());
   domain_state.static_spki_hashes.push_back(sha1);
 
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
 
   hashes.push_back(sha1);
-  EXPECT_TRUE(domain_state.IsChainOfPublicKeysPermitted(hashes));
+  EXPECT_TRUE(domain_state.CheckPublicKeyPins(hashes));
 
   hashes[0].data()[0] = '2';
-  EXPECT_FALSE(domain_state.IsChainOfPublicKeysPermitted(hashes));
+  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
 
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
@@ -230,6 +230,6 @@ TEST_F(TransportSecurityPersisterTest, ForcePreloads) {
 
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(state_.GetDomainState("docs.google.com", true, &domain_state));
-  EXPECT_FALSE(domain_state.HasPins());
-  EXPECT_FALSE(domain_state.ShouldRedirectHTTPToHTTPS());
+  EXPECT_FALSE(domain_state.HasPublicKeyPins());
+  EXPECT_FALSE(domain_state.ShouldUpgradeToSSL());
 }

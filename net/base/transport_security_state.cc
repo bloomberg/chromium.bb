@@ -750,7 +750,7 @@ TransportSecurityState::DomainState::DomainState()
 TransportSecurityState::DomainState::~DomainState() {
 }
 
-bool TransportSecurityState::DomainState::IsChainOfPublicKeysPermitted(
+bool TransportSecurityState::DomainState::CheckPublicKeyPins(
     const HashValueVector& hashes) const {
   // Validate that hashes is not empty. By the time this code is called (in
   // production), that should never happen, but it's good to be defensive.
@@ -785,8 +785,12 @@ bool TransportSecurityState::DomainState::IsChainOfPublicKeysPermitted(
   return false;
 }
 
-bool TransportSecurityState::DomainState::ShouldRedirectHTTPToHTTPS() const {
+bool TransportSecurityState::DomainState::ShouldUpgradeToSSL() const {
   return upgrade_mode == MODE_FORCE_HTTPS;
+}
+
+bool TransportSecurityState::DomainState::ShouldSSLErrorsBeFatal() const {
+  return true;
 }
 
 bool TransportSecurityState::DomainState::Equals(
@@ -796,7 +800,7 @@ bool TransportSecurityState::DomainState::Equals(
   return true;
 }
 
-bool TransportSecurityState::DomainState::HasPins() const {
+bool TransportSecurityState::DomainState::HasPublicKeyPins() const {
   return static_spki_hashes.size() > 0 ||
          bad_static_spki_hashes.size() > 0 ||
          dynamic_spki_hashes.size() > 0;
