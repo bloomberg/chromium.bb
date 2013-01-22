@@ -91,7 +91,7 @@ def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
     with api.get_tracer(logname) as tracer:
       function = Tracer(tracer, cmd, cwd_dir, pool.tasks.progress).map
       for test_case in test_cases:
-        pool.add_task(function, test_case)
+        pool.add_task(0, function, test_case)
 
       results = pool.join()
   print('')

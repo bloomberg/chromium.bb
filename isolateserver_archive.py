@@ -277,7 +277,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   def zip_and_upload(query):
     relfile, metadata = query
     infile = os.path.join(indir, relfile)
-    zipping_pool.add_task(zip_and_trigger_upload, infile, metadata,
+    zipping_pool.add_task(0, zip_and_trigger_upload, infile, metadata,
                           remote_uploader.add_item)
     uploaded.append(query)
 

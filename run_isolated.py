@@ -353,13 +353,13 @@ class ThreadPool(object):
     worker.daemon = True
     worker.start()
 
-  def add_task(self, func, *args, **kwargs):
+  def add_task(self, priority, func, *args, **kwargs):
     """Adds a task, a function to be executed by a worker.
 
-    The function's return value will be stored in the the worker's thread local
-    outputs list.
+    priority can adjust the priority of the task versus others. Lower priority
+    takes precedence.
     """
-    priority = 0
+    assert isinstance(priority, int)
     with self._ready_lock:
       start_new_worker = not self._ready
     with self._num_of_added_tasks_lock:

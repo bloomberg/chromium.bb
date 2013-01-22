@@ -184,7 +184,7 @@ class WorkerPoolTest(unittest.TestCase):
     with run_test_cases.ThreadPool(8, 8, 0) as pool:
       pool.tasks.progress = FakeProgress()
       for i in range(32):
-        pool.add_task(mapper, i)
+        pool.add_task(0, mapper, i)
       results = pool.join()
     self.assertEquals(range(-31, 1), sorted(results))
 
@@ -197,7 +197,7 @@ class WorkerPoolTest(unittest.TestCase):
     try:
       with run_test_cases.ThreadPool(8, 8, 0) as pool:
         pool.tasks.progress = FakeProgress()
-        pool.add_task(mapper, 0)
+        pool.add_task(0, mapper, 0)
         task_added = True
         pool.join()
         self.fail()

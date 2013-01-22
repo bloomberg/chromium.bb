@@ -272,6 +272,7 @@ class Progress(object):
     |index| notes that the index should be incremented.
     |size| note that the total size should be incremented.
     """
+    # This code doesn't need lock because it's only using self.queued_lines.
     self.queued_lines.put((name, index, size))
 
   def print_update(self):
@@ -571,7 +572,7 @@ class Runner(object):
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
 
-  def map(self, test_case, try_count):
+  def map(self, priority, test_case, try_count):
     """Traces a single test case and returns its output.
 
     try_count is 0 based, the original try is 0.
@@ -614,8 +615,10 @@ class Runner(object):
     self.progress.update_item(line, True, need_to_retry)
 
     if need_to_retry:
-      # The test failed and needs to be retried..
-      self.add_task(self.map, test_case, try_count + 1)
+      # The test failed and needs to be retried.
+      # Leave a buffer of ~40 test cases before retrying.
+      priority += 40
+      self.add_task(priority, self.map, priority, test_case, try_count + 1)
     return [data]
 
 
@@ -753,8 +756,8 @@ def run_test_cases(
       function = runner.map
       logging.debug('Adding tests to ThreadPool')
       pool.tasks.progress.use_cr_only = not no_cr
-      for test_case in test_cases:
-        pool.add_task(function, test_case, 0)
+      for i, test_case in enumerate(test_cases):
+        pool.add_task(i, function, i, test_case, 0)
       logging.debug('All tests added to the ThreadPool')
       results = pool.join()
       duration = time.time() - pool.tasks.progress.start

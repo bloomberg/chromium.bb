@@ -458,22 +458,22 @@ class TraceInputsImport(TraceInputsBase):
       api = self.trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(
-            trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace1')
+            0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace1')
         pool.add_task(
-            trace, tracer, self.get_child_command(True), self.cwd, 'trace2')
+            0, trace, tracer, self.get_child_command(True), self.cwd, 'trace2')
         pool.add_task(
-            trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace3')
+            0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace3')
         pool.add_task(
-            trace, tracer, self.get_child_command(True), self.cwd, 'trace4')
+            0, trace, tracer, self.get_child_command(True), self.cwd, 'trace4')
         # Have this one fail since it's started from the wrong directory.
         pool.add_task(
-            trace, tracer, self.get_child_command(False), self.cwd, 'trace5')
+            0, trace, tracer, self.get_child_command(False), self.cwd, 'trace5')
         pool.add_task(
-            trace, tracer, self.get_child_command(True), self.cwd, 'trace6')
+            0, trace, tracer, self.get_child_command(True), self.cwd, 'trace6')
         pool.add_task(
-            trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace7')
+            0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace7')
         pool.add_task(
-            trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
+            0, trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
         trace_results = pool.join()
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
