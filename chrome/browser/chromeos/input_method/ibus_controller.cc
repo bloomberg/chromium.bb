@@ -4,11 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
-#if defined(HAVE_IBUS)
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_impl.h"
-#else
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
-#endif
 
 namespace chromeos {
 namespace input_method {
@@ -18,11 +16,10 @@ IBusController::~IBusController() {
 
 // static
 IBusController* IBusController::Create() {
-#if defined(HAVE_IBUS)
-  return new IBusControllerImpl;
-#else
-  return new MockIBusController;
-#endif
+  if (base::chromeos::IsRunningOnChromeOS())
+    return new IBusControllerImpl;
+  else
+    return new MockIBusController;
 }
 
 }  // namespace input_method
