@@ -58,6 +58,9 @@ class TestUserShare {
   // on the user share's directory.
   void TearDown();
 
+  // Save and reload Directory to clear out temporary data in memory.
+  bool Reload();
+
   // Non-NULL iff called between a call to SetUp() and TearDown().
   UserShare* user_share();
 
@@ -72,6 +75,8 @@ class TestUserShare {
   // A helper function to pretend to download this type's root node.
   static bool CreateRoot(syncer::ModelType model_type,
                          syncer::UserShare* service);
+
+  size_t GetDeleteJournalSize() const;
 
  private:
   scoped_ptr<TestDirectorySetterUpper> dir_maker_;

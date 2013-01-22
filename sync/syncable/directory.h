@@ -23,6 +23,7 @@
 namespace syncer {
 
 class Cryptographer;
+class TestUserShare;
 class UnrecoverableErrorHandler;
 
 namespace syncable {
@@ -130,6 +131,7 @@ class SYNC_EXPORT Directory {
   friend class ScopedKernelUnlock;
   friend class WriteTransaction;
   friend class SyncableDirectoryTest;
+  friend class syncer::TestUserShare;
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsAllDirtyHandlesTest);
@@ -307,6 +309,8 @@ class SYNC_EXPORT Directory {
                             const tracked_objects::Location& location,
                             const std::string & message);
 
+  DeleteJournal* delete_journal();
+
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
   virtual EntryKernel* GetEntryByHandle(int64 metahandle,
@@ -332,8 +336,6 @@ class SYNC_EXPORT Directory {
       const std::string& name,
       DirectoryChangeDelegate* delegate,
       const WeakHandle<TransactionObserver>& transaction_observer);
-
-  DeleteJournal* delete_journal();
 
  private:
   // These private versions expect the kernel lock to already be held

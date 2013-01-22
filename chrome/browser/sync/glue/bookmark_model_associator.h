@@ -22,6 +22,7 @@ class BookmarkNode;
 
 namespace syncer {
 class BaseNode;
+class BaseTransaction;
 struct UserShare;
 }
 
@@ -117,6 +118,10 @@ class BookmarkModelAssociator
   syncer::SyncError BuildAssociations(
       syncer::SyncMergeResult* local_merge_result,
       syncer::SyncMergeResult* syncer_merge_result);
+
+  // Removes bookmark nodes whose corresponding sync nodes have been deleted
+  // according to sync delete journals. Return number of deleted bookmarks.
+  int64 ApplyDeletesFromSyncJournal(syncer::BaseTransaction* trans);
 
   // Associate a top-level node of the bookmark model with a permanent node in
   // the sync domain.  Such permanent nodes are identified by a tag that is

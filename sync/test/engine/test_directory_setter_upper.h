@@ -42,8 +42,9 @@
 namespace syncer {
 
 namespace syncable {
-  class Directory;
-  class TestTransactionObserver;
+class Directory;
+class DirectoryBackingStore;
+class TestTransactionObserver;
 }
 
 class TestDirectorySetterUpper {
@@ -53,6 +54,11 @@ class TestDirectorySetterUpper {
 
   // Create a Directory instance open it.
   virtual void SetUp();
+
+  // Create a Directory instance using |directory_store| as backend storage.
+  // Takes ownership of |directory_store|.
+  virtual void SetUpWith(
+      syncer::syncable::DirectoryBackingStore* directory_store);
 
   // Undo everything done by SetUp(): close the directory and delete the
   // backing files. Before closing the directory, this will run the directory

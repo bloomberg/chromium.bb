@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
+#include "sync/internal_api/public/delete_journal.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
@@ -84,10 +85,12 @@ class BookmarkNodeFinder {
   // Creates an instance with the given parent bookmark node.
   explicit BookmarkNodeFinder(const BookmarkNode* parent_node);
 
-  // Finds best matching node for the given sync node.
-  // Returns the matching node if one exists; NULL otherwise. If a matching
-  // node is found, it's removed for further matches.
-  const BookmarkNode* FindBookmarkNode(const syncer::BaseNode& sync_node);
+  // Finds the bookmark node that matches the given url, title and folder
+  // attribute. Returns the matching node if one exists; NULL otherwise. If a
+  // matching node is found, it's removed for further matches.
+  const BookmarkNode* FindBookmarkNode(const GURL& url,
+                                       const std::string& title,
+                                       bool is_folder);
 
  private:
   typedef std::multiset<const BookmarkNode*, BookmarkComparer> BookmarkNodesSet;
@@ -123,11 +126,11 @@ BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
 }
 
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
-    const syncer::BaseNode& sync_node) {
-  // Create a bookmark node from the given sync node.
-  BookmarkNode temp_node(GURL(sync_node.GetBookmarkSpecifics().url()));
-  temp_node.SetTitle(UTF8ToUTF16(sync_node.GetTitle()));
-  if (sync_node.GetIsFolder())
+    const GURL& url, const std::string& title, bool is_folder) {
+  // Create a bookmark node from the given bookmark attributes.
+  BookmarkNode temp_node(url);
+  temp_node.SetTitle(UTF8ToUTF16(title));
+  if (is_folder)
     temp_node.set_type(BookmarkNode::FOLDER);
   else
     temp_node.set_type(BookmarkNode::URL);
@@ -447,6 +450,10 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
   local_merge_result->set_num_items_before_association(
       bookmark_model_->root_node()->GetTotalNodeCount());
 
+  // Remove obsolete bookmarks according to sync delete journal.
+  local_merge_result->set_num_items_deleted(
+      ApplyDeletesFromSyncJournal(&trans));
+
   while (!dfs_stack.empty()) {
     int64 sync_parent_id = dfs_stack.top();
     dfs_stack.pop();
@@ -480,7 +487,10 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       }
 
       const BookmarkNode* child_node = NULL;
-      child_node = node_finder.FindBookmarkNode(sync_child_node);
+      child_node = node_finder.FindBookmarkNode(
+          GURL(sync_child_node.GetBookmarkSpecifics().url()),
+          sync_child_node.GetTitle(),
+          sync_child_node.GetIsFolder());
       if (child_node)
         Associate(child_node, sync_child_id);
       // All bookmarks are currently modified at association time (even if
@@ -534,6 +544,98 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       bm_root.GetTotalNodeCount());
 
   return syncer::SyncError();
+}
+
+struct FolderInfo {
+  FolderInfo(const BookmarkNode* f, const BookmarkNode* p, int64 id)
+      : folder(f), parent(p), sync_id(id) {}
+  const BookmarkNode* folder;
+  const BookmarkNode* parent;
+  int64 sync_id;
+};
+typedef std::vector<FolderInfo> FolderInfoList;
+
+int64 BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
+    syncer::BaseTransaction* trans) {
+  int64 num_bookmark_deleted = 0;
+
+  syncer::BookmarkDeleteJournalList bk_delete_journals;
+  syncer::DeleteJournal::GetBookmarkDeleteJournals(trans, &bk_delete_journals);
+  if (bk_delete_journals.empty())
+    return 0;
+  size_t num_journals_unmatched = bk_delete_journals.size();
+
+  // Check bookmark model from top to bottom.
+  std::stack<const BookmarkNode*> dfs_stack;
+  dfs_stack.push(bookmark_model_->bookmark_bar_node());
+  dfs_stack.push(bookmark_model_->other_node());
+  if (expect_mobile_bookmarks_folder_)
+    dfs_stack.push(bookmark_model_->mobile_node());
+
+  // Remember folders that match delete journals in first pass but don't delete
+  // them in case there are bookmarks left under them. After non-folder
+  // bookmarks are removed in first pass, recheck the folders in reverse order
+  // to remove empty ones.
+  FolderInfoList folders_matched;
+  while (!dfs_stack.empty()) {
+    const BookmarkNode* parent = dfs_stack.top();
+    dfs_stack.pop();
+
+    BookmarkNodeFinder finder(parent);
+    // Iterate through journals from back to front. Remove matched journal by
+    // moving an unmatched journal at the tail to its position so that we can
+    // read unmatched journals off the head in next loop.
+    for (int i = num_journals_unmatched - 1; i >= 0; --i) {
+      const BookmarkNode* child = finder.FindBookmarkNode(
+          GURL(bk_delete_journals[i].specifics.bookmark().url()),
+          bk_delete_journals[i].specifics.bookmark().title(),
+          bk_delete_journals[i].is_folder);
+      if (child) {
+        if (child->is_folder()) {
+          // Remember matched folder without removing and delete only empty
+          // ones later.
+          folders_matched.push_back(FolderInfo(child, parent,
+                                               bk_delete_journals[i].id));
+        } else {
+          bookmark_model_->Remove(parent, parent->GetIndexOf(child));
+          ++num_bookmark_deleted;
+        }
+        // Move unmatched journal here and decrement counter.
+        bk_delete_journals[i] = bk_delete_journals[--num_journals_unmatched];
+      }
+    }
+    if (num_journals_unmatched == 0)
+      break;
+
+    for (int i = 0; i < parent->child_count(); ++i) {
+      if (parent->GetChild(i)->is_folder())
+        dfs_stack.push(parent->GetChild(i));
+    }
+  }
+
+  // Ids of sync nodes not found in bookmark model, meaning the deletions are
+  // persisted and correponding delete journals can be dropped.
+  std::set<int64> journals_to_purge;
+
+  // Remove empty folders from bottom to top.
+  for (FolderInfoList::reverse_iterator it = folders_matched.rbegin();
+      it != folders_matched.rend(); ++it) {
+    if (it->folder->child_count() == 0) {
+      bookmark_model_->Remove(it->parent, it->parent->GetIndexOf(it->folder));
+      ++num_bookmark_deleted;
+    } else {
+      // Keep non-empty folder and remove its journal so that it won't match
+      // again in the future.
+      journals_to_purge.insert(it->sync_id);
+    }
+  }
+
+  // Purge unmatched journals.
+  for (size_t i = 0; i < num_journals_unmatched; ++i)
+    journals_to_purge.insert(bk_delete_journals[i].id);
+  syncer::DeleteJournal::PurgeDeleteJournals(trans, journals_to_purge);
+
+  return num_bookmark_deleted;
 }
 
 void BookmarkModelAssociator::PostPersistAssociationsTask() {

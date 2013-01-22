@@ -27,13 +27,31 @@ void TestDirectorySetterUpper::SetUp() {
   WeakHandle<syncable::TransactionObserver> transaction_observer =
       MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
 
-  directory_.reset(new syncable::Directory(
-      new syncable::InMemoryDirectoryBackingStore(name_),
-      &handler_,
-      NULL,
-      &encryption_handler_,
-      encryption_handler_.cryptographer()));
+  directory_.reset(
+      new syncable::Directory(
+          new syncable::InMemoryDirectoryBackingStore(name_),
+          &handler_,
+          NULL,
+          &encryption_handler_,
+          encryption_handler_.cryptographer()));
   ASSERT_EQ(syncable::OPENED, directory_->Open(
+          name_, &delegate_, transaction_observer));
+}
+
+void TestDirectorySetterUpper::SetUpWith(
+    syncer::syncable::DirectoryBackingStore* directory_store) {
+  CHECK(directory_store);
+  test_transaction_observer_.reset(new syncable::TestTransactionObserver());
+  WeakHandle<syncable::TransactionObserver> transaction_observer =
+      MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
+
+  directory_.reset(
+      new syncable::Directory(directory_store,
+                              &handler_,
+                              NULL,
+                              &encryption_handler_,
+                              encryption_handler_.cryptographer()));
+    ASSERT_EQ(syncable::OPENED, directory_->Open(
           name_, &delegate_, transaction_observer));
 }
 

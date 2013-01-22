@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/syncable_read_transaction.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/engine/test_id_factory.h"
@@ -39,6 +40,21 @@ void TestUserShare::TearDown() {
   dir_maker_->TearDown();
 }
 
+bool TestUserShare::Reload() {
+  if (!user_share_->directory->SaveChanges())
+    return false;
+
+  syncer::syncable::DirectoryBackingStore* saved_store =
+      user_share_->directory->store_.release();
+
+  // Ensure the scoped_ptr doesn't delete the memory we don't own.
+  ignore_result(user_share_->directory.release());
+  user_share_.reset(new UserShare());
+  dir_maker_->SetUpWith(saved_store);
+  user_share_->directory.reset(dir_maker_->directory());
+  return true;
+}
+
 UserShare* TestUserShare::user_share() {
   return user_share_.get();
 }
@@ -57,6 +73,11 @@ bool TestUserShare::CreateRoot(ModelType model_type, UserShare* user_share) {
   syncable::WriteTransaction wtrans(FROM_HERE, syncable::UNITTEST, directory);
   CreateTypeRoot(&wtrans, directory, model_type);
   return true;
+}
+
+size_t TestUserShare::GetDeleteJournalSize() const {
+  syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
+  return user_share_->directory->delete_journal()->GetDeleteJournalSize(&trans);
 }
 
 }  // namespace syncer

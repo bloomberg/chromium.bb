@@ -126,6 +126,8 @@ class FakeServerChange {
       syncer::WriteNode node(trans_);
       EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
       EXPECT_FALSE(node.GetFirstChildId());
+      node.GetMutableEntryForTest()->Put(syncer::syncable::SERVER_IS_DEL,
+                                         true);
       node.Remove();
     }
     {
@@ -373,6 +375,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   }
 
   void StartSync() {
+    test_user_share_.Reload();
+
     ASSERT_TRUE(CreatePermanentBookmarkNodes());
 
     // Set up model associator.
@@ -421,8 +425,10 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   void StopSync() {
     change_processor_.reset();
-    syncer::SyncError error = model_associator_->DisassociateModels();
-    EXPECT_FALSE(error.IsSet());
+    if (model_associator_.get()) {
+      syncer::SyncError error = model_associator_->DisassociateModels();
+      EXPECT_FALSE(error.IsSet());
+    }
     model_associator_.reset();
 
     message_loop_.RunUntilIdle();
@@ -1006,6 +1012,87 @@ TEST_F(ProfileSyncServiceBookmarkTest, MergeDuplicates) {
 
   EXPECT_EQ(2, model_->other_node()->child_count());
   ExpectModelMatch();
+}
+
+TEST_F(ProfileSyncServiceBookmarkTest, ApplySyncDeletesFromJournal) {
+  // Initialize sync model and bookmark model as:
+  // URL 0
+  // Folder 1
+  //   |-- URL 1
+  //   +-- Folder 2
+  //         +-- URL 2
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, SAVE_TO_STORAGE);
+  int64 u0 = 0;
+  int64 f1 = 0;
+  int64 u1 = 0;
+  int64 f2 = 0;
+  int64 u2 = 0;
+  StartSync();
+  int fixed_sync_bk_count = GetSyncBookmarkCount();
+  {
+    syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    FakeServerChange adds(&trans);
+    u0 = adds.AddURL(L"URL 0", "http://plus.google.com/", bookmark_bar_id(), 0);
+    f1 = adds.AddFolder(L"Folder 1", bookmark_bar_id(), u0);
+    u1 = adds.AddURL(L"URL 1", "http://www.google.com/", f1, 0);
+    f2 = adds.AddFolder(L"Folder 2", f1, u1);
+    u2 = adds.AddURL(L"URL 2", "http://mail.google.com/", f2, 0);
+    adds.ApplyPendingChanges(change_processor_.get());
+  }
+  StopSync();
+
+  // Reload bookmark model and disable model saving to make sync changes not
+  // persisted.
+  LoadBookmarkModel(LOAD_FROM_STORAGE, DONT_SAVE_TO_STORAGE);
+  EXPECT_EQ(6, model_->bookmark_bar_node()->GetTotalNodeCount());
+  EXPECT_EQ(fixed_sync_bk_count + 5, GetSyncBookmarkCount());
+  StartSync();
+  {
+    // Remove all folders/bookmarks except u3 added above.
+    syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    FakeServerChange dels(&trans);
+    dels.Delete(u2);
+    dels.Delete(f2);
+    dels.Delete(u1);
+    dels.Delete(f1);
+    dels.ApplyPendingChanges(change_processor_.get());
+  }
+  StopSync();
+  // Bookmark bar itself and u0 remain.
+  EXPECT_EQ(2, model_->bookmark_bar_node()->GetTotalNodeCount());
+
+  // Reload bookmarks including ones deleted in sync model from storage.
+  LoadBookmarkModel(LOAD_FROM_STORAGE, DONT_SAVE_TO_STORAGE);
+  EXPECT_EQ(6, model_->bookmark_bar_node()->GetTotalNodeCount());
+  // Add a bookmark under f1 when sync is off so that f1 will not be
+  // deleted even when f1 matches delete journal because it's not empty.
+  model_->AddURL(model_->bookmark_bar_node()->GetChild(1),
+                 0, UTF8ToUTF16("local"), GURL("http://www.youtube.com"));
+  // Sync model has fixed bookmarks nodes and u3.
+  EXPECT_EQ(fixed_sync_bk_count + 1, GetSyncBookmarkCount());
+  StartSync();
+  // Expect 4 bookmarks after model association because u2, f2, u1 are removed
+  // by delete journal, f1 is not removed by delete journal because it's
+  // not empty due to www.youtube.com added above.
+  EXPECT_EQ(4, model_->bookmark_bar_node()->GetTotalNodeCount());
+  EXPECT_EQ(UTF8ToUTF16("URL 0"),
+            model_->bookmark_bar_node()->GetChild(0)->GetTitle());
+  EXPECT_EQ(UTF8ToUTF16("Folder 1"),
+            model_->bookmark_bar_node()->GetChild(1)->GetTitle());
+  EXPECT_EQ(UTF8ToUTF16("local"),
+            model_->bookmark_bar_node()->GetChild(1)->GetChild(0)->GetTitle());
+  StopSync();
+
+  // Verify purging of delete journals.
+  // Delete journals for u2, f2, u1 remains because they are used in last
+  // association.
+  EXPECT_EQ(3u, test_user_share_.GetDeleteJournalSize());
+  StartSync();
+  StopSync();
+  // Reload again and all delete journals should be gone because none is used
+  // in last association.
+  ASSERT_TRUE(test_user_share_.Reload());
+  EXPECT_EQ(0u, test_user_share_.GetDeleteJournalSize());
 }
 
 struct TestData {

@@ -68,7 +68,6 @@ void DeleteJournal::GetDeleteJournals(BaseTransaction* trans,
                                       ModelType type,
                                       EntryKernelSet* deleted_entries) {
   DCHECK(trans);
-  DCHECK(!passive_delete_journal_types_.Has(type));
   for (JournalIndex::const_iterator it = delete_journals_.begin();
       it != delete_journals_.end(); ++it) {
     if ((*it)->GetServerModelType() == type ||
