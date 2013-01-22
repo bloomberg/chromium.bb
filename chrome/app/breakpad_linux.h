@@ -11,7 +11,7 @@
 
 extern void InitCrashReporter();
 #if defined(OS_ANDROID)
-extern void InitNonBrowserCrashReporterForAndroid(int minidump_fd);
+extern void InitNonBrowserCrashReporterForAndroid();
 #endif
 bool IsCrashReporterEnabled();
 

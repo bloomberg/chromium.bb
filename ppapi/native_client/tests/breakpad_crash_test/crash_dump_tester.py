@@ -141,8 +141,7 @@ def Main(cleanup_funcs):
     # dumps to a temporary directory.
     home_dir = temp_dir
     os.environ['HOME'] = home_dir
-    # On Linux, we also need to set CHROME_ENABLE_BREAKPAD.
-    os.environ['CHROME_ENABLE_BREAKPAD'] = '1'
+    options.enable_crash_reporter = True
 
   result = browser_tester.Run(options.url, options)
 

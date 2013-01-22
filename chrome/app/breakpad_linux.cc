@@ -27,6 +27,7 @@
 #include "base/file_path.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
+#include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process_util.h"
@@ -50,6 +51,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/path_utils.h"
+#include "chrome/common/descriptors_android.h"
 #include "third_party/lss/linux_syscall_support.h"
 #else
 #include "sandbox/linux/seccomp-legacy/linux_syscall_support.h"
@@ -1468,10 +1470,20 @@ void InitCrashReporter() {
 }
 
 #if defined(OS_ANDROID)
-void InitNonBrowserCrashReporterForAndroid(int minidump_fd) {
+void InitNonBrowserCrashReporterForAndroid() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableCrashReporter))
-    EnableNonBrowserCrashDumping(minidump_fd);
+  if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
+    // On Android we need to provide a FD to the file where the minidump is
+    // generated as the renderer and browser run with different UIDs
+    // (preventing the browser from inspecting the renderer process).
+    int minidump_fd = base::GlobalDescriptors::GetInstance()->
+        MaybeGet(kAndroidMinidumpDescriptor);
+    if (minidump_fd == base::kInvalidPlatformFileValue) {
+      NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
+    } else {
+      EnableNonBrowserCrashDumping(minidump_fd);
+    }
+  }
 }
 #endif  // OS_ANDROID
 

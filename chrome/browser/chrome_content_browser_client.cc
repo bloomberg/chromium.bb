@@ -1840,13 +1840,15 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                                          FileDescriptor(f, true)));
 
 #if defined(USE_LINUX_BREAKPAD)
-  f = CrashDumpManager::GetInstance()->CreateMinidumpFile(child_process_id);
-  if (f == base::kInvalidPlatformFileValue) {
-    LOG(ERROR) << "Failed to create file for minidump, crash reporting will be "
-        "disabled for this process.";
-  } else {
-    mappings->push_back(FileDescriptorInfo(kAndroidMinidumpDescriptor,
-                                           FileDescriptor(f, true)));
+  if (IsCrashReporterEnabled()) {
+    f = CrashDumpManager::GetInstance()->CreateMinidumpFile(child_process_id);
+    if (f == base::kInvalidPlatformFileValue) {
+      LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
+                 "be disabled for this process.";
+    } else {
+      mappings->push_back(FileDescriptorInfo(kAndroidMinidumpDescriptor,
+                                             FileDescriptor(f, true)));
+    }
   }
 #endif  // defined(USE_LINUX_BREAKPAD)
 

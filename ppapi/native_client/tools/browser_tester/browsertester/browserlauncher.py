@@ -305,6 +305,8 @@ class ChromeLauncher(BrowserLauncher):
       cmd.append('--load-extension=%s' %
                  ','.join(self.options.browser_extensions))
       cmd.append('--enable-experimental-extension-apis')
+    if self.options.enable_crash_reporter:
+      cmd.append('--enable-crash-reporter-for-testing')
     if self.options.tool == 'memcheck':
       cmd = ['src/third_party/valgrind/memcheck.sh',
              '-v',

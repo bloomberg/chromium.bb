@@ -136,6 +136,9 @@ def BuildArgParser():
                     action='store_true',
                     help='Do not signal a failure if the browser process '
                     'crashes')
+  parser.add_option('--enable_crash_reporter', dest='enable_crash_reporter',
+                    action='store_true', default=False,
+                    help='Force crash reporting on.')
 
   return parser
 

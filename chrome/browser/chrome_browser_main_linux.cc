@@ -14,9 +14,11 @@
 #if defined(USE_LINUX_BREAKPAD)
 #include <stdlib.h>
 
+#include "base/command_line.h"
 #include "base/linux_util.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,10 +45,10 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
   // Check whether we should initialize the crash reporter. It may be disabled
   // through configuration policy or user preference. It must be disabled for
   // Guest mode on Chrome OS in Stable channel.
-  // Environment variables may override the decision, but only if the
+  // Also allow crash reporting to be enabled with a command-line flag if the
   // crash service is under control of the user. It is used by QA
   // testing infrastructure to switch on generation of crash reports.
-  bool use_env_var = true;
+  bool use_switch = true;
 
   // Convert #define to a variable so that we can use if() rather than
   // #if below and so at least compile-test the Chrome code in
@@ -78,23 +80,24 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
         local_state->FindPreference(prefs::kMetricsReportingEnabled);
     CHECK(metrics_reporting_enabled);
     breakpad_enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-    use_env_var = metrics_reporting_enabled->IsUserModifiable();
+    use_switch = metrics_reporting_enabled->IsUserModifiable();
 #endif  // defined(OS_CHROMEOS)
   }
 
-  if (use_env_var) {
+  if (use_switch) {
     // Linux Breakpad interferes with the debug stack traces produced
     // by EnableInProcessStackDumping(), used in browser_tests, so we
     // do not allow CHROME_HEADLESS=1 to enable Breakpad in Chromium
     // because the buildbots have CHROME_HEADLESS set.  However, we
     // allow CHROME_HEADLESS to enable Breakpad in Chrome for
     // compatibility with Breakpad/Chrome tests that may rely on this.
-    // TODO(mseaborn): Change tests to use CHROME_ENABLE_BREAKPAD
+    // TODO(mseaborn): Change tests to use --enable-crash-reporter-for-testing
     // instead.
     if (is_chrome_build && !breakpad_enabled)
       breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
     if (!breakpad_enabled)
-      breakpad_enabled = getenv(env_vars::kEnableBreakpad) != NULL;
+      breakpad_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableCrashReporterForTesting);
   }
 
   return breakpad_enabled;

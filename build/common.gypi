@@ -1181,16 +1181,6 @@
         # Always use the chromium skia.
         'use_system_skia%': '0',
 
-        # Configure crash reporting and build options based on release type.
-        'conditions': [
-          ['buildtype=="Official"', {
-            # Only report crash dumps for Official builds.
-            'linux_breakpad%': 1,
-          }, {
-            'linux_breakpad%': 0,
-          }],
-        ],
-
         # When building as part of the Android system, use system libraries
         # where possible to reduce ROM size.
         # TODO(steveblock): Investigate using the system version of sqlite.

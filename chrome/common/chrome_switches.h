@@ -431,6 +431,7 @@ extern const char kOobeSkipPostLogin[];
 
 #if defined(OS_POSIX)
 extern const char kEnableCrashReporter[];
+extern const char kEnableCrashReporterForTesting[];
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 extern const char kPasswordStore[];
 #endif
