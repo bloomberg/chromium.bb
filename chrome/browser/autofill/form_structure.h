@@ -135,6 +135,7 @@ class FormStructure {
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;
+  size_t checkable_field_count() const;
 
   // Returns the number of fields that are able to be autofilled.
   size_t autofill_count() const { return autofill_count_; }
@@ -200,6 +201,9 @@ class FormStructure {
   // A vector of all the input fields in the form.
   ScopedVector<AutofillField> fields_;
 
+  // The number of fields able to be checked.
+  size_t checkable_field_count_;
+
   // The names of the form input elements, that are part of the form signature.
   // The string starts with "&" and the names are also separated by the "&"
   // character. E.g.: "&form_input1_name&form_input2_name&...&form_inputN_name"
@@ -227,6 +231,9 @@ class FormStructure {
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_;
+
+  // State of the kEnableExperimentalFormFilling flag.
+  bool experimental_form_filling_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

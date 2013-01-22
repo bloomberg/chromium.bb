@@ -4,10 +4,12 @@
 
 #include "chrome/browser/autofill/form_structure.h"
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "googleurl/src/gurl.h"
@@ -256,6 +258,16 @@ TEST(FormStructureTest, ShouldBeParsed) {
   field.name = ASCIIToUTF16("username");
   field.form_control_type = "text";
   form.fields.push_back(field);
+
+  FormFieldData checkable_field;
+  checkable_field.is_checkable = true;
+  checkable_field.name = ASCIIToUTF16("radiobtn");
+  checkable_field.form_control_type = "radio";
+  form.fields.push_back(checkable_field);
+
+  checkable_field.name = ASCIIToUTF16("checkbox");
+  checkable_field.form_control_type = "checkbox";
+  form.fields.push_back(checkable_field);
 
   form_structure.reset(new FormStructure(form));
   EXPECT_FALSE(form_structure->ShouldBeParsed(true));
@@ -1472,6 +1484,13 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   field.name = ASCIIToUTF16("expiration_year");
   form.fields.push_back(field);
 
+  // Add checkable field.
+  FormFieldData checkable_field;
+  checkable_field.is_checkable = true;
+  checkable_field.label = ASCIIToUTF16("Checkable1");
+  checkable_field.name = ASCIIToUTF16("Checkable1");
+  form.fields.push_back(checkable_field);
+
   ScopedVector<FormStructure> forms;
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
@@ -1529,15 +1548,16 @@ TEST(FormStructureTest, EncodeQueryRequest) {
       "signature=\"509334676\"/></form></autofillquery>";
   EXPECT_EQ(kResponse2, encoded_xml);
 
+  FormData malformed_form(form);
   // Add 50 address fields - the form is not valid anymore, but previous ones
   // are. The result should be the same as in previous test.
   for (size_t i = 0; i < 50; ++i) {
     field.label = ASCIIToUTF16("Address");
     field.name = ASCIIToUTF16("address");
-    form.fields.push_back(field);
+    malformed_form.fields.push_back(field);
   }
 
-  forms.push_back(new FormStructure(form));
+  forms.push_back(new FormStructure(malformed_form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
                                                 &encoded_signatures,
                                                 &encoded_xml));
@@ -1548,12 +1568,37 @@ TEST(FormStructureTest, EncodeQueryRequest) {
 
   // Check that we fail if there are only bad form(s).
   ScopedVector<FormStructure> bad_forms;
-  bad_forms.push_back(new FormStructure(form));
+  bad_forms.push_back(new FormStructure(malformed_form));
   EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms.get(),
                                                  &encoded_signatures,
                                                  &encoded_xml));
   EXPECT_EQ(0U, encoded_signatures.size());
   EXPECT_EQ("", encoded_xml);
+
+  // Check the behaviour with kEnableExperimentalFormFilling switch on.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalFormFilling);
+  // Add the previous form but with flag set.
+  ScopedVector<FormStructure> checkable_forms;
+  checkable_forms.push_back(new FormStructure(form));
+
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(checkable_forms.get(),
+                                                &encoded_signatures,
+                                                &encoded_xml));
+  const char * const kSignature3 = "7747357776717901584";
+  const char * const kResponse3 =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?><autofillquery "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\">"
+      "<form signature=\"7747357776717901584\"><field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/><field"
+      " signature=\"747221617\"/><field signature=\"4108155786\"/><field "
+      "signature=\"3410250678\"/><field signature=\"509334676\"/><field "
+      "signature=\"509334676\"/><field signature=\"509334676\"/><field "
+      "signature=\"509334676\"/><field signature=\"509334676\"/></form>"
+      "</autofillquery>";
+  ASSERT_EQ(1U, encoded_signatures.size());
+  EXPECT_EQ(kSignature3, encoded_signatures[0]);
+  EXPECT_EQ(kResponse3, encoded_xml);
 }
 
 TEST(FormStructureTest, EncodeUploadRequest) {
@@ -1599,6 +1644,16 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   form.fields.push_back(field);
   possible_field_types.push_back(FieldTypeSet());
   possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
+
+  // Add checkable field.
+  FormFieldData checkable_field;
+  checkable_field.is_checkable = true;
+  checkable_field.label = ASCIIToUTF16("Checkable1");
+  checkable_field.name = ASCIIToUTF16("Checkable1");
+  form.fields.push_back(checkable_field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
+
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());

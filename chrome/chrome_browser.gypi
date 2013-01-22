@@ -208,6 +208,7 @@
         'browser/autofill/autofill_regexes.h',
         'browser/autofill/autofill_scanner.cc',
         'browser/autofill/autofill_scanner.h',
+        'browser/autofill/autofill_server_field_info.h',
         'browser/autofill/autofill_type.cc',
         'browser/autofill/autofill_type.h',
         'browser/autofill/autofill_xml_parser.cc',

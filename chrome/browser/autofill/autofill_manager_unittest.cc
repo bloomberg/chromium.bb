@@ -677,6 +677,10 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
   }
 
+  void LoadServerPredictions(const std::string& response_xml) {
+    autofill_manager_->OnLoadedServerPredictions(response_xml);
+  }
+
   void FormSubmitted(const FormData& form) {
     if (autofill_manager_->OnFormSubmitted(form, base::TimeTicks::Now()))
       autofill_manager_->WaitForAsyncFormSubmit();
@@ -1824,6 +1828,56 @@ TEST_F(AutofillManagerTest, FillCreditCardForm) {
   FormData results;
   EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
   ExpectFilledCreditCardFormElvis(page_id, results, kDefaultPageID, false);
+}
+
+TEST_F(AutofillManagerTest, FillCheckableElements) {
+  FormData form;
+  CreateTestAddressFormData(&form);
+
+  // Add a checkbox field.
+  FormFieldData field;
+  autofill_test::CreateTestFormField(
+      "Checkbox", "checkbx", "fill-me", "checkbox", &field);
+  field.is_checkable = true;
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Checkbox", "checkbx", "fill-me", "checkbox", &field);
+  field.is_checkable = true;
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Replicate server response with XML.
+  const std::string response_xml =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"0\"/>"
+      "<field autofilltype=\"61\" defaultvalue=\"fill-me\"/>"
+      "<field autofilltype=\"61\" defaultvalue=\"dont-fill-me\"/>"
+      "</autofillqueryresponse>";
+  LoadServerPredictions(response_xml);
+
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
+  FillAutofillFormData(kDefaultPageID, form, form.fields[0],
+                       PackGUIDs(empty, guid));
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  // Second to last field should be checked.
+  EXPECT_TRUE(results.fields[results.fields.size()-2].is_checked);
+  // Last field shouldn't be checked as values are not same.
+  EXPECT_FALSE(results.fields[results.fields.size()-1].is_checked);
 }
 
 // Test that we correctly fill a credit card form with month input type.
