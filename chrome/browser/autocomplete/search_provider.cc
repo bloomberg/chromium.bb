@@ -209,6 +209,12 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
 
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
+  // Do our best to load the model as early as possible.  This will reduce
+  // odds of having the model not ready when really needed (a non-empty input).
+  TemplateURLService* model = providers_.template_url_service();
+  DCHECK(model);
+  model->Load();
+
   matches_.clear();
   field_trial_triggered_ = false;
 
@@ -228,9 +234,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
   if (keyword_input_text_.empty())
     keyword_provider = NULL;
 
-  TemplateURLService* model = providers_.template_url_service();
-  DCHECK(model);
-  model->Load();
   const TemplateURL* default_provider = model->GetDefaultSearchProvider();
   if (default_provider && !default_provider->SupportsReplacement())
     default_provider = NULL;
