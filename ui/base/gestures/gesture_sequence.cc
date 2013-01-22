@@ -537,9 +537,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
 void GestureSequence::RecreateBoundingBox() {
   // TODO(sad): Recreating the bounding box at every touch-event is not very
   // efficient. This should be made better.
-  if (point_count_ == 0) {
-    bounding_box_.SetRect(0, 0, 0, 0);
-  } else if (point_count_ == 1) {
+  if (point_count_ == 1) {
     bounding_box_ = GetPointByPointId(0)->enclosing_rectangle();
   } else {
     int left = INT_MAX / 20, top = INT_MAX / 20;

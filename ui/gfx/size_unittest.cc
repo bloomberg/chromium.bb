@@ -43,6 +43,12 @@ TEST(SizeTest, ToFlooredSize) {
   EXPECT_EQ(Size(10, 10), ToFlooredSize(SizeF(10.4999f, 10.4999f)));
   EXPECT_EQ(Size(10, 10), ToFlooredSize(SizeF(10.5f, 10.5f)));
   EXPECT_EQ(Size(10, 10), ToFlooredSize(SizeF(10.9999f, 10.9999f)));
+
+  EXPECT_EQ(Size(-10, -10), ToFlooredSize(SizeF(-10, -10)));
+  EXPECT_EQ(Size(-11, -11), ToFlooredSize(SizeF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(Size(-11, -11), ToFlooredSize(SizeF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(Size(-11, -11), ToFlooredSize(SizeF(-10.5f, -10.5f)));
+  EXPECT_EQ(Size(-11, -11), ToFlooredSize(SizeF(-10.9999f, -10.9999f)));
 }
 
 TEST(SizeTest, ToCeiledSize) {
@@ -57,6 +63,12 @@ TEST(SizeTest, ToCeiledSize) {
   EXPECT_EQ(Size(11, 11), ToCeiledSize(SizeF(10.4999f, 10.4999f)));
   EXPECT_EQ(Size(11, 11), ToCeiledSize(SizeF(10.5f, 10.5f)));
   EXPECT_EQ(Size(11, 11), ToCeiledSize(SizeF(10.9999f, 10.9999f)));
+
+  EXPECT_EQ(Size(-10, -10), ToCeiledSize(SizeF(-10, -10)));
+  EXPECT_EQ(Size(-10, -10), ToCeiledSize(SizeF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(Size(-10, -10), ToCeiledSize(SizeF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(Size(-10, -10), ToCeiledSize(SizeF(-10.5f, -10.5f)));
+  EXPECT_EQ(Size(-10, -10), ToCeiledSize(SizeF(-10.9999f, -10.9999f)));
 }
 
 TEST(SizeTest, ToRoundedSize) {
@@ -71,6 +83,12 @@ TEST(SizeTest, ToRoundedSize) {
   EXPECT_EQ(Size(10, 10), ToRoundedSize(SizeF(10.4999f, 10.4999f)));
   EXPECT_EQ(Size(11, 11), ToRoundedSize(SizeF(10.5f, 10.5f)));
   EXPECT_EQ(Size(11, 11), ToRoundedSize(SizeF(10.9999f, 10.9999f)));
+
+  EXPECT_EQ(Size(-10, -10), ToRoundedSize(SizeF(-10, -10)));
+  EXPECT_EQ(Size(-10, -10), ToRoundedSize(SizeF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(Size(-10, -10), ToRoundedSize(SizeF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(Size(-11, -11), ToRoundedSize(SizeF(-10.5f, -10.5f)));
+  EXPECT_EQ(Size(-11, -11), ToRoundedSize(SizeF(-10.9999f, -10.9999f)));
 }
 
 TEST(SizeTest, ClampSize) {

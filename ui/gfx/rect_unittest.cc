@@ -441,7 +441,10 @@ TEST(RectTest, ScaleRect) {
       std::numeric_limits<float>::max(),
       std::numeric_limits<float>::max(),
       std::numeric_limits<float>::max(),
-      std::numeric_limits<float>::max() }
+      std::numeric_limits<float>::max() },
+    { 3, 3, 3, 3,
+      -1.0f,
+      -3.0f, -3.0f, 0.0f, 0.0f }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
