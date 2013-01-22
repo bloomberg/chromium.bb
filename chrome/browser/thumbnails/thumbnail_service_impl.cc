@@ -6,6 +6,16 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
+#include "chrome/browser/thumbnails/thumbnailing_context.h"
+
+namespace {
+
+// The thumbnail size in DIP.
+const int kThumbnailWidth = 212;
+const int kThumbnailHeight = 132;
+
+}
 
 namespace thumbnails {
 
@@ -16,14 +26,13 @@ ThumbnailServiceImpl::ThumbnailServiceImpl(Profile* profile)
 ThumbnailServiceImpl::~ThumbnailServiceImpl() {
 }
 
-bool ThumbnailServiceImpl::SetPageThumbnail(const GURL& url,
-                                            const gfx::Image& thumbnail,
-                                            const ThumbnailScore& score) {
+bool ThumbnailServiceImpl::SetPageThumbnail(const ThumbnailingContext& context,
+                                            const gfx::Image& thumbnail) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
   if (local_ptr == NULL)
     return false;
 
-  return local_ptr->SetPageThumbnail(url, thumbnail, score);
+  return local_ptr->SetPageThumbnail(context.url, thumbnail, context.score);
 }
 
 bool ThumbnailServiceImpl::GetPageThumbnail(
@@ -34,6 +43,11 @@ bool ThumbnailServiceImpl::GetPageThumbnail(
     return false;
 
   return local_ptr->GetPageThumbnail(url, bytes);
+}
+
+ThumbnailingAlgorithm* ThumbnailServiceImpl::GetThumbnailingAlgorithm()
+    const {
+  return new SimpleThumbnailCrop(gfx::Size(kThumbnailWidth, kThumbnailHeight));
 }
 
 bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(const GURL& url) {

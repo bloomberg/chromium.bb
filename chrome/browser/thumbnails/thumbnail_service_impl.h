@@ -23,9 +23,9 @@ class ThumbnailServiceImpl : public ThumbnailService {
   explicit ThumbnailServiceImpl(Profile* profile);
 
   // Implementation of ThumbnailService.
-  virtual bool SetPageThumbnail(const GURL& url,
-                                const gfx::Image& thumbnail,
-                                const ThumbnailScore& score) OVERRIDE;
+  virtual bool SetPageThumbnail(const ThumbnailingContext& context,
+                                const gfx::Image& thumbnail) OVERRIDE;
+  virtual ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const OVERRIDE;
   virtual bool GetPageThumbnail(
       const GURL& url,
       scoped_refptr<base::RefCountedMemory>* bytes) OVERRIDE;
