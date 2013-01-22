@@ -1428,7 +1428,6 @@ lib_LIBRARIES = $(am__append_5) $(am__append_7)
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map-inl.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map.h \
-@DISABLE_PROCESSOR_FALSE@	src/processor/scoped_ptr.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_serializer-inl.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_serializer.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.cc \
