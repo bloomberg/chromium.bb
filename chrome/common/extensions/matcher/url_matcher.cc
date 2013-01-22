@@ -254,7 +254,7 @@ URLMatcherConditionFactory::~URLMatcherConditionFactory() {
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
-    const GURL& url) {
+    const GURL& url) const {
   return kBeginningOfURL + CanonicalizeHostname(url.host()) + kEndOfDomain +
       url.path() + kEndOfPath + (url.has_query() ? "?" + url.query() : "") +
       kEndOfURL;
@@ -363,7 +363,7 @@ URLMatcherConditionFactory::CreateHostEqualsPathPrefixCondition(
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForFullSearches(
-    const GURL& url) {
+    const GURL& url) const {
   GURL::Replacements replacements;
   replacements.ClearPassword();
   replacements.ClearUsername();
@@ -381,7 +381,7 @@ std::string URLMatcherConditionFactory::CanonicalizeURLForFullSearches(
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForRegexSearches(
-    const GURL& url) {
+    const GURL& url) const {
   GURL::Replacements replacements;
   replacements.ClearPassword();
   replacements.ClearUsername();
@@ -612,7 +612,8 @@ void URLMatcher::ClearUnusedConditionSets() {
   UpdateConditionFactory();
 }
 
-std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(const GURL& url) {
+std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(
+    const GURL& url) const {
   // Find all IDs of StringPatterns that match |url|.
   // See URLMatcherConditionFactory for the canonicalization of URLs and the
   // distinction between full url searches and url component searches.
@@ -633,11 +634,18 @@ std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(const GURL& url) {
     // registered in substring_match_triggers_. This means that the following
     // logic tests each URLMatcherConditionSet exactly once if it can be
     // completely fulfilled.
-    std::set<URLMatcherConditionSet::ID>& condition_sets =
-        substring_match_triggers_[*i];
+    StringPatternTriggers::const_iterator triggered_condition_sets_iter =
+        substring_match_triggers_.find(*i);
+    if (triggered_condition_sets_iter == substring_match_triggers_.end())
+      continue;  // Not all substring matches are triggers for a condition set.
+    const std::set<URLMatcherConditionSet::ID>& condition_sets =
+        triggered_condition_sets_iter->second;
     for (std::set<URLMatcherConditionSet::ID>::const_iterator j =
          condition_sets.begin(); j != condition_sets.end(); ++j) {
-      if (url_matcher_condition_sets_[*j]->IsMatch(matches, url))
+      URLMatcherConditionSets::const_iterator condition_set_iter =
+          url_matcher_condition_sets_.find(*j);
+      DCHECK(condition_set_iter != url_matcher_condition_sets_.end());
+      if (condition_set_iter->second->IsMatch(matches, url))
         result.insert(*j);
     }
   }

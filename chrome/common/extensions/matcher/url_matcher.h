@@ -117,7 +117,7 @@ class URLMatcherConditionFactory {
   ~URLMatcherConditionFactory();
 
   // Canonicalizes a URL for "Create{Host,Path,Query}*Condition" searches.
-  std::string CanonicalizeURLForComponentSearches(const GURL& url);
+  std::string CanonicalizeURLForComponentSearches(const GURL& url) const;
 
   // Factory methods for various condition types.
   //
@@ -151,10 +151,10 @@ class URLMatcherConditionFactory {
       const std::string& path_prefix);
 
   // Canonicalizes a URL for "CreateURL*Condition" searches.
-  std::string CanonicalizeURLForFullSearches(const GURL& url);
+  std::string CanonicalizeURLForFullSearches(const GURL& url) const;
 
   // Canonicalizes a URL for "CreateURLMatchesCondition" searches.
-  std::string CanonicalizeURLForRegexSearches(const GURL& url);
+  std::string CanonicalizeURLForRegexSearches(const GURL& url) const;
 
   URLMatcherCondition CreateURLPrefixCondition(const std::string& prefix);
   URLMatcherCondition CreateURLSuffixCondition(const std::string& suffix);
@@ -296,7 +296,7 @@ class URLMatcher {
   void ClearUnusedConditionSets();
 
   // Returns the IDs of all URLMatcherConditionSet that match to this |url|.
-  std::set<URLMatcherConditionSet::ID> MatchURL(const GURL& url);
+  std::set<URLMatcherConditionSet::ID> MatchURL(const GURL& url) const;
 
   // Returns the URLMatcherConditionFactory that must be used to create
   // URLMatcherConditionSets for this URLMatcher.
@@ -325,8 +325,9 @@ class URLMatcher {
 
   // Maps a StringPattern ID to the URLMatcherConditions that need to
   // be triggered in case of a StringPattern match.
-  std::map<StringPattern::ID, std::set<URLMatcherConditionSet::ID> >
-      substring_match_triggers_;
+  typedef std::map<StringPattern::ID, std::set<URLMatcherConditionSet::ID> >
+      StringPatternTriggers;
+  StringPatternTriggers substring_match_triggers_;
 
   SubstringSetMatcher full_url_matcher_;
   SubstringSetMatcher url_component_matcher_;
