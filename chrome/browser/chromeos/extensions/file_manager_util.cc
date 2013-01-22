@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -54,6 +55,8 @@
 #include "ui/gfx/screen.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -522,6 +525,54 @@ void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
       base::Bind(OpenNewTab, GURL(edit_url_string), (Profile*)NULL));
 }
 
+// Used to implement ViewItem().
+void ContinueViewItem(Profile* profile,
+                      const FilePath& path,
+                      base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    // A directory exists at |path|. Open it with FileBrowser.
+    OpenFileBrowser(path, REUSE_SAME_PATH, "open");
+  } else {
+    if (!ExecuteDefaultHandler(profile, path))
+      ShowWarningMessageBox(profile, path);
+  }
+}
+
+// Used to implement CheckIfDirectoryExists().
+void CheckIfDirectoryExistsOnIOThread(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const GURL& url,
+    const fileapi::FileSystemOperation::StatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  fileapi::FileSystemURL file_system_url(url);
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  fileapi::FileSystemOperation* operation =
+      file_system_context->CreateFileSystemOperation(file_system_url, &error);
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+  operation->DirectoryExists(file_system_url, callback);
+}
+
+// Checks if a directory exists at |url|.
+void CheckIfDirectoryExists(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const GURL& url,
+    const fileapi::FileSystemOperation::StatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CheckIfDirectoryExistsOnIOThread,
+                 file_system_context,
+                 url,
+                 google_apis::CreateRelayCallback(callback)));
+}
+
 }  // namespace
 
 GURL GetFileBrowserExtensionUrl() {
@@ -715,14 +766,24 @@ void OpenActionChoiceDialog(const FilePath& path) {
   browser->window()->Show();
 }
 
-void ViewFolder(const FilePath& path) {
-  OpenFileBrowser(path, REUSE_SAME_PATH, "open");
-}
+void ViewItem(const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-void ViewFile(const FilePath& path) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  if (!ExecuteDefaultHandler(profile, path))
+  GURL url;
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url)) {
     ShowWarningMessageBox(profile, path);
+    return;
+  }
+
+  GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
+      GetSiteForExtensionId(kFileBrowserDomain);
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartitionForSite(profile, site)->
+      GetFileSystemContext();
+
+  CheckIfDirectoryExists(file_system_context, url,
+                         base::Bind(&ContinueViewItem, profile, path));
 }
 
 void ShowFileInFolder(const FilePath& path) {

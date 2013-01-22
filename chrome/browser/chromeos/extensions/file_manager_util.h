@@ -71,12 +71,8 @@ void ViewRemovableDrive(const FilePath& path);
 // One of the actions is opening the File Manager.
 void OpenActionChoiceDialog(const FilePath& path);
 
-// Opens file browser UI in its own tab on file system location defined with
-// |dir|.
-void ViewFolder(const FilePath& dir);
-
-// Opens file with the default File Browser handler.
-void ViewFile(const FilePath& path);
+// Opens item with the default File Browser handler.
+void ViewItem(const FilePath& path);
 
 // Opens file browser on the folder containing the file, with the file selected.
 void ShowFileInFolder(const FilePath& path);

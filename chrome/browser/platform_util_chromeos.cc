@@ -5,9 +5,6 @@
 #include "chrome/browser/platform_util.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
-#include "base/file_util.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,22 +16,10 @@
 
 using content::BrowserThread;
 
-class Profile;
-
 namespace {
 
 const char kGmailComposeUrl[] =
     "https://mail.google.com/mail/?extsrc=mailto&url=";
-
-void OpenItemOnFileThread(const FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::Closure callback;
-  if (file_util::DirectoryExists(full_path))
-    callback = base::Bind(&file_manager_util::ViewFolder, full_path);
-  else
-    callback = base::Bind(&file_manager_util::ViewFile, full_path);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
 
 void OpenURL(const std::string& url) {
   // TODO(beng): improve this to locate context from call stack.
@@ -58,8 +43,7 @@ void ShowItemInFolder(const FilePath& full_path) {
 
 void OpenItem(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&OpenItemOnFileThread, full_path));
+  file_manager_util::ViewItem(full_path);
 }
 
 void OpenExternal(const GURL& url) {
