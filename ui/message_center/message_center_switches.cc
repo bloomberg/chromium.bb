@@ -7,7 +7,8 @@
 namespace message_center {
 namespace switches {
 
-const char kEnableNewMessageCenterBubble[] = "enable-new-message-center-bubble";
+const char kDisableNewMessageCenterBubble[] =
+    "disable-new-message-center-bubble";
 
 }  // namespace switches
 }  // namespace message_center

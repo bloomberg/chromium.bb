@@ -59,8 +59,8 @@ bool MessageBubbleBase::IsVisible() const {
 
 void MessageBubbleBase::SetMaxHeight(int height) {
   // Maximum height makes sense only for the new design.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewMessageCenterBubble)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewMessageCenterBubble)) {
     return;
   }
 

@@ -47,8 +47,8 @@ const SkColor kButtonTextHoverColor = SkColorSetRGB(0x32, 0x32, 0x32);
 const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
 
 bool UseNewDesign() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewMessageCenterBubble);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNewMessageCenterBubble);
 }
 
 class WebNotificationButtonViewBase : public views::View {

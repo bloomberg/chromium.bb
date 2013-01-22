@@ -10,7 +10,7 @@
 namespace message_center {
 namespace switches {
 
-// Enables the new design of message center, which shows each notification as a
+// Disables the new design of message center, which shows each notification as a
 // card.
 // TODO(mukai): Remove this flag when we don't need to provide both of designs
 // anymore (i.e. the new design becomes default and no one complains about it).
@@ -19,7 +19,7 @@ namespace switches {
 // Affected class list:
 //  - WebNotificationButtonView2: remove '2' suffix and replace the old one.
 //  - WebNotificationButtonViewBase: merge into WebNotificationButtonView.
-MESSAGE_CENTER_EXPORT extern const char kEnableNewMessageCenterBubble[];
+MESSAGE_CENTER_EXPORT extern const char kDisableNewMessageCenterBubble[];
 
 }  // namespace switches
 }  // namespace message_center
