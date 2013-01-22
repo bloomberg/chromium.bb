@@ -106,20 +106,29 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
   DISALLOW_COPY_AND_ASSIGN(IBusEngineFactoryServiceImpl);
 };
 
-class IBusEngineFactoryServiceStubImpl : public IBusEngineFactoryService {
+// An implementation of IBusEngineFactoryService without ibus-daemon
+// interaction. Currently this class is used only on linux desktop.
+// TODO(nona): Use this on ChromeOS device once crbug.com/171351 is fixed.
+class IBusEngineFactoryServiceDaemonlessImpl : public IBusEngineFactoryService {
  public:
-  IBusEngineFactoryServiceStubImpl() {}
-  virtual ~IBusEngineFactoryServiceStubImpl() {}
+  IBusEngineFactoryServiceDaemonlessImpl() {}
+  virtual ~IBusEngineFactoryServiceDaemonlessImpl() {}
 
-  // IBusEngineFactoryService overrides.
+  // IBusEngineFactoryService override.
   virtual void SetCreateEngineHandler(
       const std::string& engine_id,
-      const CreateEngineHandler& create_engine_handler) OVERRIDE {}
+      const CreateEngineHandler& create_engine_handler) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineFactoryService override.
   virtual void UnsetCreateEngineHandler(
-      const std::string& engine_id) OVERRIDE {}
+      const std::string& engine_id) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IBusEngineFactoryServiceStubImpl);
+  DISALLOW_COPY_AND_ASSIGN(IBusEngineFactoryServiceDaemonlessImpl);
 };
 
 IBusEngineFactoryService::IBusEngineFactoryService() {
@@ -135,7 +144,7 @@ IBusEngineFactoryService* IBusEngineFactoryService::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new IBusEngineFactoryServiceImpl(bus);
   else
-    return new IBusEngineFactoryServiceStubImpl();
+    return new IBusEngineFactoryServiceDaemonlessImpl();
 }
 
 }  // namespace chromeos

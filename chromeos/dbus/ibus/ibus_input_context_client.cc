@@ -336,47 +336,77 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientImpl);
 };
 
-// A stub implementation of IBusInputContextClient.
-class IBusInputContextClientStubImpl : public IBusInputContextClient {
+// An implementation of IBusInputContextClient without ibus-daemon interaction.
+// Currently this class is used only on linux desktop.
+// TODO(nona): Use this on ChromeOS device once crbug.com/171351 is fixed.
+class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
  public:
-  IBusInputContextClientStubImpl() {}
+  IBusInputContextClientDaemonlessImpl() {}
+  virtual ~IBusInputContextClientDaemonlessImpl() {}
 
-  virtual ~IBusInputContextClientStubImpl() {}
-
- public:
   // IBusInputContextClient override.
   virtual void Initialize(dbus::Bus* bus,
-                          const dbus::ObjectPath& object_path) OVERRIDE {}
+                          const dbus::ObjectPath& object_path) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
   virtual void SetInputContextHandler(
-      IBusInputContextHandlerInterface* handler) OVERRIDE {}
-  // IBusInputContextClient override.
-  virtual void ResetObjectProxy() OVERRIDE {}
-  // IBusInputContextClient override.
+      IBusInputContextHandlerInterface* handler) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void ResetObjectProxy() OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
   virtual bool IsObjectProxyReady() const OVERRIDE {
+    // Always true on daemon-less implementation.
     return true;
   }
-  // IBusInputContextClient overrides.
-  virtual void SetCapabilities(uint32 capability) OVERRIDE {}
-  virtual void FocusIn() OVERRIDE {}
-  virtual void FocusOut() OVERRIDE {}
-  virtual void Reset() OVERRIDE {}
-  virtual void SetCursorLocation(int32 x, int32 y, int32 w, int32 h) OVERRIDE {}
+
+  virtual void SetCapabilities(uint32 capability) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void FocusIn() OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void FocusOut() OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void Reset() OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void SetCursorLocation(int32 x, int32 y, int32 w, int32 h) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
   virtual void ProcessKeyEvent(
       uint32 keyval,
       uint32 keycode,
       uint32 state,
       const ProcessKeyEventCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
+    // TODO(nona): Implement this.
     callback.Run(false);
   }
+
   virtual void SetSurroundingText(const std::string& text,
                                   uint32 start_index,
-                                  uint32 end_index) OVERRIDE {}
+                                  uint32 end_index) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
   virtual void PropertyActivate(const std::string& key,
-                                ibus::IBusPropertyState state) OVERRIDE {}
+                                ibus::IBusPropertyState state) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientStubImpl);
+  DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientDaemonlessImpl);
 };
 
 }  // namespace
@@ -395,6 +425,6 @@ IBusInputContextClient* IBusInputContextClient::Create(
     return new IBusInputContextClientImpl();
   }
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new IBusInputContextClientStubImpl();
+  return new IBusInputContextClientDaemonlessImpl();
 }
 }  // namespace chromeos

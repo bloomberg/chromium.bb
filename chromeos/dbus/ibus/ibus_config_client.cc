@@ -267,6 +267,8 @@ class IBusConfigClientImpl : public IBusConfigClient {
 };
 
 // A stub implementation of IBusConfigClient.
+// A configuration framework based on ibus will not be used after Extension IME
+// migration.
 class IBusConfigClientStubImpl : public IBusConfigClient {
  public:
   IBusConfigClientStubImpl() {}

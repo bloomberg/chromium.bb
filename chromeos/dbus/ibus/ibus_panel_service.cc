@@ -378,25 +378,55 @@ class IBusPanelServiceImpl : public IBusPanelService {
   DISALLOW_COPY_AND_ASSIGN(IBusPanelServiceImpl);
 };
 
-class IBusPanelServiceStubImpl : public IBusPanelService {
+// An implementation of IBusPanelService without ibus-daemon interaction.
+// Currently this class is used only on linux desktop.
+// TODO(nona): Use this on ChromeOS device once crbug.com/171351 is fixed.
+class IBusPanelServiceDaemonlessImpl : public IBusPanelService {
  public:
-  IBusPanelServiceStubImpl() {}
-  virtual ~IBusPanelServiceStubImpl() {}
-  // IBusPanelService overrides.
+  IBusPanelServiceDaemonlessImpl() {}
+  virtual ~IBusPanelServiceDaemonlessImpl() {}
+
+  // IBusPanelService override.
   virtual void SetUpCandidateWindowHandler(
-      IBusPanelCandidateWindowHandlerInterface* handler) {}
+      IBusPanelCandidateWindowHandlerInterface* handler) {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusPanelService override.
   virtual void SetUpPropertyHandler(
-      IBusPanelPropertyHandlerInterface* handler) {}
+      IBusPanelPropertyHandlerInterface* handler) {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusPanelService override.
   virtual void CandidateClicked(uint32 index,
                                 ibus::IBusMouseButton button,
-                                uint32 state) OVERRIDE {}
-  virtual void CursorUp() OVERRIDE {}
-  virtual void CursorDown() OVERRIDE {}
-  virtual void PageUp() OVERRIDE {}
-  virtual void PageDown() OVERRIDE {}
+                                uint32 state) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusPanelService override.
+  virtual void CursorUp() OVERRIDE {
+    // Cursor Up is not supported on Chrome OS.
+  }
+
+  // IBusPanelService override.
+  virtual void CursorDown() OVERRIDE {
+    // Cursor Down is not supported on Chrome OS.
+  }
+
+  // IBusPanelService override.
+  virtual void PageUp() OVERRIDE {
+    // Page Up is not supported on Chrome OS.
+  }
+
+  // IBusPanelService override.
+  virtual void PageDown() OVERRIDE {
+    // Page Down is not supported on Chrome OS.
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IBusPanelServiceStubImpl);
+  DISALLOW_COPY_AND_ASSIGN(IBusPanelServiceDaemonlessImpl);
 };
 
 IBusPanelService::IBusPanelService() {
@@ -411,7 +441,7 @@ IBusPanelService* IBusPanelService::Create(DBusClientImplementationType type,
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
     return new IBusPanelServiceImpl(bus);
   } else {
-    return new IBusPanelServiceStubImpl();
+    return new IBusPanelServiceDaemonlessImpl();
   }
 }
 

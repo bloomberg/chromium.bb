@@ -480,31 +480,73 @@ class IBusEngineServiceImpl : public IBusEngineService {
   DISALLOW_COPY_AND_ASSIGN(IBusEngineServiceImpl);
 };
 
-class IBusEngineServiceStubImpl : public IBusEngineService {
+// An implementation of IBusEngineService without ibus-daemon interaction.
+// Currently this class is used only on linux desktop.
+// TODO(nona): Use this on ChromeOS device once crbug.com/171351 is fixed.
+class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
  public:
-  IBusEngineServiceStubImpl() {}
-  virtual ~IBusEngineServiceStubImpl() {}
-  // IBusEngineService overrides.
-  virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE {}
-  virtual void UnsetEngine() OVERRIDE {}
+  IBusEngineServiceDaemonlessImpl() {}
+  virtual ~IBusEngineServiceDaemonlessImpl() {}
+
+  // IBusEngineService override.
+  virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
+  virtual void UnsetEngine() OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
   virtual void RegisterProperties(
-      const ibus::IBusPropertyList& property_list) OVERRIDE {}
+      const ibus::IBusPropertyList& property_list) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
   virtual void UpdatePreedit(const ibus::IBusText& ibus_text,
                              uint32 cursor_pos,
                              bool is_visible,
-                             IBusEnginePreeditFocusOutMode mode) OVERRIDE {}
+                             IBusEnginePreeditFocusOutMode mode) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
   virtual void UpdateAuxiliaryText(const ibus::IBusText& ibus_text,
-                                   bool is_visible) OVERRIDE {}
+                                   bool is_visible) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
   virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
-                                 bool is_visible) OVERRIDE {}
-  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE {}
+                                 bool is_visible) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
+  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
-                               uint32 state) OVERRIDE {}
-  virtual void RequireSurroundingText() OVERRIDE {}
-  virtual void CommitText(const std::string& text) OVERRIDE {}
+                               uint32 state) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
+  virtual void RequireSurroundingText() OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  // IBusEngineService override.
+  virtual void CommitText(const std::string& text) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IBusEngineServiceStubImpl);
+  DISALLOW_COPY_AND_ASSIGN(IBusEngineServiceDaemonlessImpl);
 };
 
 IBusEngineService::IBusEngineService() {
@@ -521,7 +563,7 @@ IBusEngineService* IBusEngineService::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new IBusEngineServiceImpl(bus, object_path);
   else
-    return new IBusEngineServiceStubImpl();
+    return new IBusEngineServiceDaemonlessImpl();
 }
 
 }  // namespace chromeos
