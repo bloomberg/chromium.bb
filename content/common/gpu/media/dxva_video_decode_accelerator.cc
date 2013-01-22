@@ -26,8 +26,6 @@
 #include "base/shared_memory.h"
 #include "base/threading/worker_pool.h"
 #include "media/video/video_decode_accelerator.h"
-#include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"

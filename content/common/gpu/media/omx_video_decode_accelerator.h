@@ -19,11 +19,10 @@
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
-#include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
 class Gles2TextureToEglImageTranslator;

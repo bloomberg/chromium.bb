@@ -8,8 +8,6 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 
-#include <GL/glx.h>
-
 #include <queue>
 #include <utility>
 #include <vector>
@@ -28,6 +26,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
 

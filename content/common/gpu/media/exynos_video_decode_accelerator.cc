@@ -20,7 +20,6 @@
 #include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
 #include "content/common/gpu/media/h264_parser.h"
-#include "third_party/angle/include/GLES2/gl2.h"
 
 namespace content {
 
@@ -49,44 +48,18 @@ namespace content {
     }                                                                 \
   } while (0)
 
-#define POSTSANDBOX_DLSYM(lib, func, type, name)                      \
-  func = reinterpret_cast<type>(dlsym(lib, name));                    \
-  if (func == NULL) {                                                 \
-    DPLOG(ERROR) << "PostSandboxInitialization(): failed to dlsym() " \
-                 << name << ": " << dlerror();                        \
-    return false;                                                     \
-  }
-
 namespace {
 
 const char kExynosMfcDevice[] = "/dev/mfc-dec";
 const char kExynosGscDevice[] = "/dev/gsc1";
 const char kMaliDriver[] = "libmali.so";
 
-// TODO(sheu): fix OpenGL ES header includes, remove unnecessary redefinitions.
-// http://crbug.com/169433
-typedef void* GLeglImageOES;
 typedef EGLBoolean (*MaliEglImageGetBufferExtPhandleFunc)(EGLImageKHR, EGLint*,
                                                           void*);
-typedef EGLImageKHR (*EglCreateImageKhrFunc)(EGLDisplay, EGLContext, EGLenum,
-                                             EGLClientBuffer, const EGLint*);
-typedef EGLBoolean (*EglDestroyImageKhrFunc)(EGLDisplay, EGLImageKHR);
-typedef EGLSyncKHR (*EglCreateSyncKhrFunc)(EGLDisplay, EGLenum, const EGLint*);
-typedef EGLBoolean (*EglDestroySyncKhrFunc)(EGLDisplay, EGLSyncKHR);
-typedef EGLint (*EglClientWaitSyncKhrFunc)(EGLDisplay, EGLSyncKHR, EGLint,
-                                           EGLTimeKHR);
-typedef void (*GlEglImageTargetTexture2dOesFunc)(GLenum, GLeglImageOES);
 
 void* libmali_handle = NULL;
 MaliEglImageGetBufferExtPhandleFunc
     mali_egl_image_get_buffer_ext_phandle = NULL;
-EglCreateImageKhrFunc egl_create_image_khr = NULL;
-EglDestroyImageKhrFunc egl_destroy_image_khr = NULL;
-EglCreateSyncKhrFunc egl_create_sync_khr = NULL;
-EglDestroySyncKhrFunc egl_destroy_sync_khr = NULL;
-EglClientWaitSyncKhrFunc egl_client_wait_sync_khr = NULL;
-GlEglImageTargetTexture2dOesFunc gl_egl_image_target_texture_2d_oes = NULL;
-
 }  // anonymous namespace
 
 struct ExynosVideoDecodeAccelerator::BitstreamBufferRef {
@@ -161,7 +134,7 @@ ExynosVideoDecodeAccelerator::PictureBufferArrayRef::~PictureBufferArrayRef() {
   for (size_t i = 0; i < picture_buffers.size(); ++i) {
     PictureBufferRef& buffer = picture_buffers[i];
     if (buffer.egl_image != EGL_NO_IMAGE_KHR)
-      egl_destroy_image_khr(egl_display, buffer.egl_image);
+      eglDestroyImageKHR(egl_display, buffer.egl_image);
     if (buffer.egl_image_fd != -1)
       HANDLE_EINTR(close(buffer.egl_image_fd));
   }
@@ -175,7 +148,7 @@ ExynosVideoDecodeAccelerator::EGLSyncKHRRef::EGLSyncKHRRef(
 
 ExynosVideoDecodeAccelerator::EGLSyncKHRRef::~EGLSyncKHRRef() {
   if (egl_sync != EGL_NO_SYNC_KHR)
-    egl_destroy_sync_khr(egl_display, egl_sync);
+    eglDestroySyncKHR(egl_display, egl_sync);
 }
 
 ExynosVideoDecodeAccelerator::MfcInputRecord::MfcInputRecord()
@@ -336,6 +309,19 @@ bool ExynosVideoDecodeAccelerator::Initialize(
     return false;
   }
 
+  // We need the context to be initialized to query extensions.
+  if (!make_context_current_.Run()) {
+    DLOG(ERROR) << "Initialize(): could not make context current";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return false;
+  }
+
+  if (!gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+    DLOG(ERROR) << "Initialize(): context does not have EGL_KHR_fence_sync";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return false;
+  }
+
   // Open the video devices.
   DVLOG(2) << "Initialize(): opening MFC device: " << kExynosMfcDevice;
   mfc_fd_ = HANDLE_EINTR(open(kExynosMfcDevice,
@@ -392,12 +378,6 @@ bool ExynosVideoDecodeAccelerator::Initialize(
   control.id = V4L2_CID_MPEG_MFC51_VIDEO_DECODER_H264_DISPLAY_DELAY; // also VP8
   control.value = 8; // Magic number from Samsung folks.
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_S_CTRL, &control);
-
-  if (!make_context_current_.Run()) {
-    DLOG(ERROR) << "Initialize(): could not make context current";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
 
   if (!CreateMfcInputBuffers())
     return false;
@@ -490,7 +470,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
       return;
     }
     glBindTexture(GL_TEXTURE_2D, buffers[i].texture_id());
-    EGLImageKHR egl_image = egl_create_image_khr(
+    EGLImageKHR egl_image = eglCreateImageKHR(
         egl_display_, EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
         (EGLClientBuffer)pixmap, kImageAttrs);
     // We can free the X pixmap immediately -- according to the
@@ -511,7 +491,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
       return;
     }
     buffer.egl_image_fd = fd;
-    gl_egl_image_target_texture_2d_oes(GL_TEXTURE_2D, egl_image);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image);
     buffer.client_id = buffers[i].id();
   }
   decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
@@ -531,7 +511,7 @@ void ExynosVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   }
 
   EGLSyncKHR egl_sync =
-      egl_create_sync_khr(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
+      eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
   if (egl_sync == EGL_NO_SYNC_KHR) {
     DLOG(ERROR) << "ReusePictureBuffer(): eglCreateSyncKHR() failed";
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -604,41 +584,14 @@ bool ExynosVideoDecodeAccelerator::PostSandboxInitialization() {
   }
 
   dlerror();
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    mali_egl_image_get_buffer_ext_phandle,
-                    MaliEglImageGetBufferExtPhandleFunc,
-                    "mali_egl_image_get_buffer_ext_phandle");
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    egl_create_image_khr,
-                    EglCreateImageKhrFunc,
-                    "eglCreateImageKHR");
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    egl_destroy_image_khr,
-                    EglDestroyImageKhrFunc,
-                    "eglDestroyImageKHR");
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    egl_create_sync_khr,
-                    EglCreateSyncKhrFunc,
-                    "eglCreateSyncKHR");
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    egl_destroy_sync_khr,
-                    EglDestroySyncKhrFunc,
-                    "eglDestroySyncKHR");
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    egl_client_wait_sync_khr,
-                    EglClientWaitSyncKhrFunc,
-                    "eglClientWaitSyncKHR");
-
-  POSTSANDBOX_DLSYM(libmali_handle,
-                    gl_egl_image_target_texture_2d_oes,
-                    GlEglImageTargetTexture2dOesFunc,
-                    "glEGLImageTargetTexture2DOES");
+  mali_egl_image_get_buffer_ext_phandle =
+      reinterpret_cast<MaliEglImageGetBufferExtPhandleFunc>(
+          dlsym(libmali_handle, "mali_egl_image_get_buffer_ext_phandle"));
+  if (mali_egl_image_get_buffer_ext_phandle == NULL) {
+    DPLOG(ERROR) << "PostSandboxInitialization(): failed to dlsym() "
+                 << "mali_egl_image_get_buffer_ext_phandle: " << dlerror();
+    return false;
+  }
 
   return true;
 }
@@ -1513,9 +1466,9 @@ bool ExynosVideoDecodeAccelerator::EnqueueGscOutputRecord() {
     // If we have to wait for completion, wait.  Note that
     // gsc_free_output_buffers_ is a FIFO queue, so we always wait on the
     // buffer that has been in the queue the longest.
-    egl_client_wait_sync_khr(egl_display_, output_record.egl_sync, 0,
+    eglClientWaitSyncKHR(egl_display_, output_record.egl_sync, 0,
         EGL_FOREVER_KHR);
-    egl_destroy_sync_khr(egl_display_, output_record.egl_sync);
+    eglDestroySyncKHR(egl_display_, output_record.egl_sync);
     output_record.egl_sync = EGL_NO_SYNC_KHR;
   }
   struct v4l2_buffer qbuf;
@@ -2229,9 +2182,9 @@ void ExynosVideoDecodeAccelerator::DestroyGscOutputBuffers() {
       if (output_record.fd != -1)
         HANDLE_EINTR(close(output_record.fd));
       if (output_record.egl_image != EGL_NO_IMAGE_KHR)
-        egl_destroy_image_khr(egl_display_, output_record.egl_image);
+        eglDestroyImageKHR(egl_display_, output_record.egl_image);
       if (output_record.egl_sync != EGL_NO_SYNC_KHR)
-        egl_destroy_sync_khr(egl_display_, output_record.egl_sync);
+        eglDestroySyncKHR(egl_display_, output_record.egl_sync);
       if (client_)
         client_->DismissPictureBuffer(output_record.picture_id);
       ++i;

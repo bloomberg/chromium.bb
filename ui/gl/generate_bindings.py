@@ -913,6 +913,11 @@ EGL_FUNCTIONS = [
       'EGLTimeKHR timeout',
   'other_extensions': ['EGL_KHR_fence_sync'] },
 { 'return_type': 'EGLBoolean',
+  'names': ['eglGetSyncAttribKHR'],
+  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, '
+      'EGLint* value',
+  'other_extensions': ['EGL_KHR_fence_sync'] },
+{ 'return_type': 'EGLBoolean',
   'names': ['eglDestroySyncKHR'],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync',
   'other_extensions': ['EGL_KHR_fence_sync'] },
@@ -1172,7 +1177,7 @@ FUNCTION_SETS = [
 ]
 
 def GenerateHeader(file, functions, set_name, used_extension_functions):
-  """Generates gl_binding_autogen_x.h"""
+  """Generates gl_bindings_autogen_x.h"""
 
   # Write file header.
   file.write(
@@ -1258,7 +1263,7 @@ class GLContext;
 
 
 def GenerateAPIHeader(file, functions, set_name, used_extension_functions):
-  """Generates gl_binding_api_autogen_x.h"""
+  """Generates gl_bindings_api_autogen_x.h"""
 
   # Write file header.
   file.write(
@@ -1331,7 +1336,7 @@ def GenerateInterfaceHeader(
 
 
 def GenerateSource(file, functions, set_name, used_extension_functions):
-  """Generates gl_binding_autogen_x.cc"""
+  """Generates gl_bindings_autogen_x.cc"""
 
   # Write file header.
   file.write(

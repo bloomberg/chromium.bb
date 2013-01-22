@@ -18,9 +18,8 @@
 #include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/video_decode_accelerator.h"
-#include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace base {
 class MessageLoopProxy;

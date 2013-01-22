@@ -5,7 +5,6 @@
 #include "content/common/gpu/media/rendering_helper.h"
 
 #import <Cocoa/Cocoa.h>
-#import <OpenGL/gl.h>
 #import <OpenGL/CGLMacro.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"

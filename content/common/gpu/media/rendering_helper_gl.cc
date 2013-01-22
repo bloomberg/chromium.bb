@@ -6,23 +6,16 @@
 
 #include <map>
 
-#if defined(OS_WIN) || defined(ARCH_CPU_ARMEL)
-#include "third_party/angle/include/EGL/egl.h"  // Must precede ui/gl headers!
-#endif
-
 #include "base/bind.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
-#if !defined(ARCH_CPU_ARMEL)
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-#else
-#include "third_party/angle/include/GLES2/gl2.h"
-#endif
 
 #if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
 #define GL_VARIANT_GLX 1
@@ -58,6 +51,42 @@ static void CreateShader(GLuint program,
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
+namespace {
+
+// Lightweight GLContext stub implementation that returns a constructed
+// extensions string.  We use this to create a context that we can use to
+// initialize GL extensions with, without actually creating a platform context.
+class GLContextStubWithExtensions : public gfx::GLContextStub {
+ public:
+  GLContextStubWithExtensions() {}
+  virtual std::string GetExtensions() OVERRIDE;
+
+  void AddExtensionsString(const char* extensions);
+
+ protected:
+  virtual ~GLContextStubWithExtensions() {}
+
+ private:
+  std::string extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLContextStubWithExtensions);
+};
+
+void GLContextStubWithExtensions::AddExtensionsString(const char* extensions) {
+  if (extensions == NULL)
+    return;
+
+  if (extensions_.size() != 0)
+    extensions_ += ' ';
+  extensions_ += extensions;
+}
+
+std::string GLContextStubWithExtensions::GetExtensions() {
+  return extensions_;
+}
+
+}  // anonymous
+
 namespace content {
 
 class RenderingHelperGL : public RenderingHelper {
@@ -81,12 +110,15 @@ class RenderingHelperGL : public RenderingHelper {
   virtual void* GetGLContext() OVERRIDE;
   virtual void* GetGLDisplay() OVERRIDE;
 
+  static const gfx::GLImplementation kGLImplementation;
+
  private:
   void Clear();
 
   // Make window_id's surface current w/ the GL context, or release the context
   // if |window_id < 0|.
   void MakeCurrent(int window_id);
+
 
   MessageLoop* message_loop_;
   int width_;
@@ -112,25 +144,24 @@ class RenderingHelperGL : public RenderingHelper {
 };
 
 // static
+const gfx::GLImplementation RenderingHelperGL::kGLImplementation =
+#if defined(GL_VARIANT_GLX)
+    gfx::kGLImplementationDesktopGL;
+#elif defined(GL_VARIANT_EGL)
+    gfx::kGLImplementationEGLGLES2;
+#else
+    -1;
+#error "Unknown GL implementation."
+#endif
+
+// static
 RenderingHelper* RenderingHelper::Create() {
   return new RenderingHelperGL;
 }
 
 // static
 void RenderingHelper::InitializePlatform() {
-#if defined(OS_WIN)
-  gfx::InitializeGLBindings(gfx::kGLImplementationEGLGLES2);
-  gfx::GLSurface::InitializeOneOff();
-  {
-    // Hack to ensure that EGL extension function pointers are initialized.
-    scoped_refptr<gfx::GLSurface> surface(
-        gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
-    scoped_refptr<gfx::GLContext> context(
-        gfx::GLContext::CreateGLContext(NULL, surface.get(),
-                                        gfx::PreferIntegratedGpu));
-    context->MakeCurrent(surface.get());
-  }
-#endif  // OS_WIN
+  gfx::InitializeGLBindings(RenderingHelperGL::kGLImplementation);
 }
 
 RenderingHelperGL::RenderingHelperGL() {
@@ -175,6 +206,8 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
     done.Wait();
   }
 
+  scoped_refptr<GLContextStubWithExtensions> stub_context(
+      new GLContextStubWithExtensions());
   suppress_swap_to_display_ = suppress_swap_to_display;
   CHECK_GT(width, 0);
   CHECK_GT(height, 0);
@@ -186,7 +219,6 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
 #if GL_VARIANT_GLX
   x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
   CHECK(x_display_);
-  gfx::InitializeGLBindings(gfx::kGLImplementationDesktopGL);
   CHECK(glXQueryVersion(x_display_, NULL, NULL));
   const int fbconfig_attr[] = {
     GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
@@ -206,19 +238,24 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
   CHECK(x_visual_);
   gl_context_ = glXCreateContext(x_display_, x_visual_, 0, true);
   CHECK(gl_context_);
+  stub_context->AddExtensionsString(
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
 #else // EGL
+  EGLNativeDisplayType native_display;
+
 #if defined(OS_WIN)
-  gl_display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  CHECK(gl_display_);
-  CHECK(eglInitialize(gl_display_, NULL, NULL)) << glGetError();
+  native_display = EGL_DEFAULT_DISPLAY;
 #else
   x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
   CHECK(x_display_);
-  gl_display_ = eglGetDisplay(x_display_);
+  native_display = x_display_;
+#endif
+
+  gl_display_ = eglGetDisplay(native_display);
   CHECK(gl_display_);
   CHECK(eglInitialize(gl_display_, NULL, NULL)) << glGetError();
-#endif
+
   static EGLint rgba8888[] = {
     EGL_RED_SIZE, 8,
     EGL_GREEN_SIZE, 8,
@@ -236,6 +273,10 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
   gl_context_ = eglCreateContext(
       gl_display_, egl_config, EGL_NO_CONTEXT, context_attribs);
   CHECK_NE(gl_context_, EGL_NO_CONTEXT) << eglGetError();
+  stub_context->AddExtensionsString(
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+  stub_context->AddExtensionsString(
+      eglQueryString(gl_display_, EGL_EXTENSIONS));
 #endif
 
   // Per-window/surface X11 & EGL initialization.
@@ -284,6 +325,9 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
 #endif
     MakeCurrent(i);
   }
+
+  // Must be done after a context is made current.
+  gfx::InitializeGLExtensionBindings(kGLImplementation, stub_context.get());
 
   static const float kVertices[] =
       { -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f, -1.f, };
