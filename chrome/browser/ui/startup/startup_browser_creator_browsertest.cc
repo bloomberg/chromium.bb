@@ -914,6 +914,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
       Profile::EXIT_CRASHED;
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
+  dummy.AppendSwitchASCII(switches::kTestType, "browser");
   int return_code;
   StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;

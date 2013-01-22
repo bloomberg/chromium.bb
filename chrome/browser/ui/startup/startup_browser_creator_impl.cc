@@ -866,8 +866,13 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   // focused tabs here.
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
     chrome::ShowBadFlagsPrompt(browser);
-    chrome::ObsoleteOSInfoBar::Create(
-        InfoBarService::FromWebContents(chrome::GetActiveWebContents(browser)));
+    // TODO(phajdan.jr): Always enable after migrating bots:
+    // http://crbug.com/170262 .
+    if (!command_line_.HasSwitch(switches::kTestType)) {
+      chrome::ObsoleteOSInfoBar::Create(
+          InfoBarService::FromWebContents(
+              chrome::GetActiveWebContents(browser)));
+    }
 
     if (browser_defaults::kOSSupportsOtherBrowsers &&
         !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {

@@ -22,15 +22,17 @@ namespace chrome {
 // static
 void ObsoleteOSInfoBar::Create(InfoBarService* infobar_service) {
 #if defined(TOOLKIT_GTK)
-  // We've deprecated support for Ubuntu Hardy.  Rather than attempting to
+  // We've deprecated support for Ubuntu Lucid.  Rather than attempting to
   // determine whether you're using that, we instead key off the GTK version;
   // this will also deprecate other distributions (including variants of Ubuntu)
   // that are of a similar age.
   // Version key:
-  //   Ubuntu Hardy: GTK 2.12
-  //   RHEL 6:       GTK 2.18
-  //   Ubuntu Lucid: GTK 2.20
-  if (!gtk_check_version(2, 18, 0))
+  //   RHEL 6:             GTK 2.18
+  //   Debian 6 (Squeeze): GTK 2.20
+  //   Ubuntu Lucid:       GTK 2.20
+  //   openSUSE 12.2       GTK 2.24
+  //   Ubuntu Precise:     GTK 2.24
+  if (!gtk_check_version(2, 24, 0))
     return;
 #else
   // No other platforms currently show this infobar.
