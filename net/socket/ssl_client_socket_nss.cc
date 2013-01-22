@@ -3157,8 +3157,7 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
 #endif  // SSL_ENABLE_RENEGOTIATION
 
 #ifdef SSL_CBC_RANDOM_IV
-  rv = SSL_OptionSet(nss_fd_, SSL_CBC_RANDOM_IV,
-                     ssl_config_.false_start_enabled);
+  rv = SSL_OptionSet(nss_fd_, SSL_CBC_RANDOM_IV, PR_TRUE);
   if (rv != SECSuccess)
     LogFailedNSSFunction(net_log_, "SSL_OptionSet", "SSL_CBC_RANDOM_IV");
 #endif
