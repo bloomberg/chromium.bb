@@ -1799,9 +1799,10 @@ def CMDtrace(args):
   api = trace_inputs.get_api()
   logfile = complete_state.isolated_filepath + '.log'
   api.clean_trace(logfile)
+  out = None
   try:
     with api.get_tracer(logfile) as tracer:
-      result, _ = tracer.trace(
+      result, out = tracer.trace(
           cmd,
           cwd,
           'default',
@@ -1810,8 +1811,10 @@ def CMDtrace(args):
     raise ExecutionError('Tracing failed for: %s\n%s' % (' '.join(cmd), str(e)))
 
   if result:
-    logging.error('Tracer exited with %d, which means the tests probably '
-                  'failed so the trace is probably incomplete.', result)
+    logging.error(
+        'Tracer exited with %d, which means the tests probably failed so the '
+        'trace is probably incomplete.', result)
+    logging.info(out)
 
   complete_state.save_files()
 
