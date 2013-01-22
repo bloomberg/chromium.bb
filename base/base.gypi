@@ -248,6 +248,8 @@
           'mach_ipc_mac.mm',
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
+          'memory/discardable_memory_android.cc',
+          'memory/discardable_memory.h',
           'memory/linked_ptr.h',
           'memory/manual_constructor.h',
           'memory/raw_scoped_refptr_mismatch_checker.h',
