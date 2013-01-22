@@ -541,7 +541,7 @@ main(int argc, char *argv[])
 				sleep_fork = 10;
 			break;
 		case 'h':
-			help("weston");
+			help("weston-launch");
 			exit(1);
 		}
 	}
