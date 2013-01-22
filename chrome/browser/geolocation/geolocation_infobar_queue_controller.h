@@ -78,6 +78,9 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
   void RegisterForInfoBarNotifications(InfoBarService* infobar_service);
   void UnregisterForInfoBarNotifications(InfoBarService* infobar_service);
 
+  void UpdateContentSetting(
+      const GURL& requesting_frame, const GURL& embedder, bool allowed);
+
   content::NotificationRegistrar registrar_;
 
   Profile* const profile_;

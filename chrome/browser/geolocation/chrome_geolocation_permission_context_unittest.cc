@@ -434,6 +434,29 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
           std::string()));
 }
 
+TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
+  GURL requesting_frame("file://example/geolocation.html");
+  NavigateAndCommit(requesting_frame);
+  EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
+  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  EXPECT_EQ(1U, infobar_service()->GetInfoBarCount());
+  ConfirmInfoBarDelegate* infobar_0 =
+      infobar_service()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(infobar_0);
+  // Accept the frame
+  infobar_0->Accept();
+  CheckTabContentsState(requesting_frame, CONTENT_SETTING_ALLOW);
+  CheckPermissionMessageSent(0, true);
+
+  // Make sure the setting is not stored.
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+      profile()->GetHostContentSettingsMap()->GetContentSetting(
+          requesting_frame,
+          requesting_frame,
+          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+          std::string()));
+}
+
 TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
