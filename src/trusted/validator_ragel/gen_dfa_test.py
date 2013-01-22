@@ -86,6 +86,38 @@ class TestInstruction(unittest.TestCase):
     assert not instr.HasModRM()
 
 
+class TestPrinter(unittest.TestCase):
+
+  def test_nop(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        '"nopw   0x0(%eax,%eax,1)", 0x66 0x0f 0x1f 0x44 0x00 0x00, ia32 norex')
+
+    printer.PrintSignature(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        @instruction_nopw___0x0__eax__eax_1_
+        @operands_count_is_0
+        """.split())
+
+  def test_simple_mov(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse('mov =Ob !ab, 0xa0, ia32')
+
+    printer.PrintSignature(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        @instruction_mov
+        @operands_count_is_2
+        @operand0_8bit
+        @operand1_8bit
+        """.split())
+
+
 class TestParser(unittest.TestCase):
 
   def test_instruction_definitions(self):
