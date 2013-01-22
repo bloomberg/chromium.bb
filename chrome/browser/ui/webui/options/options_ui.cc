@@ -142,9 +142,9 @@ void OptionsUIHTMLSource::StartDataRequest(
 
   if (path == kLocalizedStringsFile) {
     // Return dynamically-generated strings from memory.
-    jstemplate_builder::UseVersion2 version;
+    webui::UseVersion2 version;
     std::string strings_js;
-    jstemplate_builder::AppendJsonJS(localized_strings_.get(), &strings_js);
+    webui::AppendJsonJS(localized_strings_.get(), &strings_js);
     response_bytes = base::RefCountedString::TakeString(&strings_js);
   } else if (path == kOptionsBundleJsFile) {
     // Return (and cache) the options javascript code.

@@ -22,7 +22,7 @@ int g_version2 = 0;
 
 }  // namespace
 
-namespace jstemplate_builder {
+namespace webui {
 
 UseVersion2::UseVersion2() {
   g_version2++;
@@ -65,7 +65,7 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
 
 void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
   std::string javascript_string;
-  jstemplate_builder::AppendJsonJS(json, &javascript_string);
+  AppendJsonJS(json, &javascript_string);
 
   // </ confuses the HTML parser because it could be a </script> tag.  So we
   // replace </ with <\/.  The extra \ will be ignored by the JS engine.
@@ -153,4 +153,4 @@ void AppendI18nTemplateProcessHtml(std::string* output) {
   output->append("</script>");
 }
 
-}  // namespace jstemplate_builder
+}  // namespace webui

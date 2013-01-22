@@ -111,8 +111,8 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML));
 
-  jstemplate_builder::UseVersion2 version;
-  return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+  webui::UseVersion2 version;
+  return webui::GetI18nTemplateHtml(html, &strings);
 }
 
 void ManagedModeInterstitial::CommandReceived(const std::string& command) {

@@ -75,7 +75,7 @@ void CloudPrintSetupSource::StartDataRequest(
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_LOGIN_HTML));
     web_ui_util::SetFontAndTextDirection(dict);
-    response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
+    response = webui::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintGaiaLoginPath) {
     // Start by setting the per-locale URLs we show on the setup wizard.
     dict->SetString("invalidpasswordhelpurl",
@@ -111,7 +111,7 @@ void CloudPrintSetupSource::StartDataRequest(
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
     web_ui_util::SetFontAndTextDirection(dict);
-    response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
+    response = webui::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupDonePath) {
     AddString(dict, "testpage", IDS_CLOUD_PRINT_SETUP_TEST_PAGE);
     AddString(dict, "success", IDS_SYNC_SUCCESS);
@@ -119,7 +119,7 @@ void CloudPrintSetupSource::StartDataRequest(
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_DONE_HTML));
     web_ui_util::SetFontAndTextDirection(dict);
-    response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
+    response = webui::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupFlowPath) {
     static const base::StringPiece html(
         ResourceBundle::GetSharedInstance()

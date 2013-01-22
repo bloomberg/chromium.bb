@@ -22,7 +22,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace jstemplate_builder {
+namespace webui {
 
 // While an object of this class is in scope, the template builder will output
 // version 2 html. Version 2 uses load_time_data.js and i18n_template2.js, and
@@ -86,5 +86,6 @@ UI_EXPORT void AppendI18nTemplateSourceHtml(std::string* output);
 // this.
 UI_EXPORT void AppendI18nTemplateProcessHtml(std::string* output);
 
-}  // namespace jstemplate_builder
+}  // namespace webui
+
 #endif  // UI_WEBUI_JSTEMPLATE_BUILDER_H_

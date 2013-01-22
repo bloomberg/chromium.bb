@@ -123,7 +123,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // Inject the template data into the HTML so that it is available before any
   // layout is needed.
   std::string json_html;
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
+  webui::AppendJsonHtml(&localized_strings, &json_html);
 
   static const base::StringPiece template_data_placeholder(
       "<!-- template data placeholder -->");

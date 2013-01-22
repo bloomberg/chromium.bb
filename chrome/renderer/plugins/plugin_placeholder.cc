@@ -116,8 +116,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
       l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
 #endif
 
-  std::string html_data =
-      jstemplate_builder::GetI18nTemplateHtml(template_html, &values);
+  std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
   PluginPlaceholder* missing_plugin = new PluginPlaceholder(
@@ -141,8 +140,7 @@ PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_BLOCKED_PLUGIN_HTML));
-  std::string html_data =
-      jstemplate_builder::GetI18nTemplateHtml(template_html, &values);
+  std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   WebPluginParams params;
   // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
@@ -176,8 +174,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
 
   DCHECK(!template_html.empty()) << "unable to load template. ID: "
                                  << template_id;
-  std::string html_data = jstemplate_builder::GetI18nTemplateHtml(
-      template_html, &values);
+  std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   // |blocked_plugin| will destroy itself when its WebViewPlugin is going away.
   PluginPlaceholder* blocked_plugin = new PluginPlaceholder(
@@ -199,8 +196,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMobileYoutubePlugin(
 
   DictionaryValue values;
   values.SetString("video_id", GetYoutubeVideoId(params));
-  std::string html_data = jstemplate_builder::GetI18nTemplateHtml(
-      template_html, &values);
+  std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   // |youtube_plugin| will destroy itself when its WebViewPlugin is going away.
   PluginPlaceholder* youtube_plugin = new PluginPlaceholder(

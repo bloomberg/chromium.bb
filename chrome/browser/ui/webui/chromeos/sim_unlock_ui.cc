@@ -317,8 +317,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SIM_UNLOCK_HTML));
 
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(html,
-                                                                  &strings);
+  std::string full_html = webui::GetI18nTemplateHtml(html, &strings);
 
   callback.Run(base::RefCountedString::TakeString(&full_html));
 }

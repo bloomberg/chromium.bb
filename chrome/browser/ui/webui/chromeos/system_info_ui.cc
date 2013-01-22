@@ -153,7 +153,7 @@ void SystemInfoUIHTMLSource::RequestComplete() {
   static const base::StringPiece systeminfo_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_SYS_HTML));
-  std::string full_html = jstemplate_builder::GetTemplatesHtml(
+  std::string full_html = webui::GetTemplatesHtml(
       systeminfo_html, &strings, "t" /* template root node id */);
   callback_.Run(base::RefCountedString::TakeString(&full_html));
 }

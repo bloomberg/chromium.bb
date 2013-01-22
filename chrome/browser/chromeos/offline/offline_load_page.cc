@@ -115,7 +115,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_OFFLINE_LOAD_HTML));
-  return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+  return webui::GetI18nTemplateHtml(html, &strings);
 }
 
  void OfflineLoadPage::OverrideRendererPrefs(
@@ -123,7 +123,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
- }
+}
 
 void OfflineLoadPage::OnProceed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

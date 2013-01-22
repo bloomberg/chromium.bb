@@ -940,9 +940,9 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   web_ui_util::SetFontAndTextDirection(&load_time_data);
   load_time_data.Set("jstemplateData", root.release());
 
-  jstemplate_builder::UseVersion2 version2;
+  webui::UseVersion2 version2;
   std::string data;
-  jstemplate_builder::AppendJsonJS(&load_time_data, &data);
+  webui::AppendJsonJS(&load_time_data, &data);
   callback_.Run(base::RefCountedString::TakeString(&data));
 }
 

@@ -69,7 +69,7 @@ void ProxySettingsHTMLSource::StartDataRequest(
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PROXY_SETTINGS_HTML));
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+  std::string full_html = webui::GetI18nTemplateHtml(
       html, localized_strings_.get());
 
   callback.Run(base::RefCountedString::TakeString(&full_html));

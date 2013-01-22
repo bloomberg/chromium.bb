@@ -194,7 +194,7 @@ class PDFUnsupportedFeatureInterstitial
     base::StringPiece html(ResourceBundle::GetSharedInstance().
                            GetRawDataResource(IDR_READER_OUT_OF_DATE_HTML));
 
-    return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+    return webui::GetI18nTemplateHtml(html, &strings);
   }
 
   virtual void CommandReceived(const std::string& command) OVERRIDE {

@@ -120,8 +120,7 @@ std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
   const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           resource_id));
-  return jstemplate_builder::GetI18nTemplateHtml(html,
-                                                 localized_strings_.get());
+  return webui::GetI18nTemplateHtml(html, localized_strings_.get());
 }
 
 // OobeUI ----------------------------------------------------------------------

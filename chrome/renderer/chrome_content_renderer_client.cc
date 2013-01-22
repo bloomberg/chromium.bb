@@ -773,8 +773,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
       NOTREACHED() << "unable to load template. ID: " << resource_id;
     } else {
       // "t" is the id of the templates root node.
-      *error_html = jstemplate_builder::GetTemplatesHtml(
-          template_html, &error_strings, "t");
+      *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
     }
   }
 

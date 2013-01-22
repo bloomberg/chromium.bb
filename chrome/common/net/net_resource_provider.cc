@@ -39,7 +39,7 @@ struct LazyDirectoryListerCacher {
     value.SetString("listingParsingErrorBoxText",
         l10n_util::GetStringFUTF16(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-    html_data = jstemplate_builder::GetI18nTemplateHtml(
+    html_data = webui::GetI18nTemplateHtml(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_DIR_HEADER_HTML),
         &value);

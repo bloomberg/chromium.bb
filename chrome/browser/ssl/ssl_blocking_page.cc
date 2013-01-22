@@ -314,7 +314,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           resource_id));
 
-  return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+  return webui::GetI18nTemplateHtml(html, &strings);
 }
 
 void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {

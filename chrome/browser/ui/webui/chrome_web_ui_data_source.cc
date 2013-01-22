@@ -151,11 +151,11 @@ void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(
   std::string template_data;
   web_ui_util::SetFontAndTextDirection(&localized_strings_);
 
-  scoped_ptr<jstemplate_builder::UseVersion2> version2;
+  scoped_ptr<webui::UseVersion2> version2;
   if (json_js_format_v2_)
-    version2.reset(new jstemplate_builder::UseVersion2);
+    version2.reset(new webui::UseVersion2);
 
-  jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
+  webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 
