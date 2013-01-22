@@ -369,13 +369,15 @@
         "type": "object",
         "description": "Information about changed file or directory",
         "properties": {
-          "type": "string",
-          "enum": ["added", "deleted", "updated"],
-          "description": "Specifies type of the change."
-        },
-        "fileUrl": {
-          "type": "string",
-          "description": "URL of the changed file."
+          "changeType": {
+            "type": "string",
+            "enum": ["added", "deleted", "updated"],
+            "description": "Specifies type of the change."
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL of the changed file."
+          }
         }
       }
     ],
