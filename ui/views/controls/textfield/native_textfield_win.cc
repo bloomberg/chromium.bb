@@ -124,6 +124,11 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
     SetEditStyle(SES_LOWERCASE, SES_LOWERCASE);
   }
 
+  // Disable auto font changing. Otherwise, characters can be rendered with
+  // multiple fonts. See http://crbug.com/168480 for details.
+  const LRESULT lang_option = SendMessage(m_hWnd, EM_GETLANGOPTIONS, 0, 0);
+  SendMessage(EM_SETLANGOPTIONS, 0, lang_option & ~IMF_AUTOFONT);
+
   // Set up the text_object_model_.
   base::win::ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
   ole_interface.Attach(GetOleInterface());
