@@ -1029,13 +1029,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "disable-website-settings",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_NAME,
-    IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableWebsiteSettings),
-  },
-  {
     "enable-webaudio-input",
     IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_NAME,
     IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_DESCRIPTION,

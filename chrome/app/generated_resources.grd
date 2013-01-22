@@ -6671,12 +6671,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_DESCRIPTION" desc="Title for the flag to enable the webaudio input feature.">
         Enables live audio input using getUserMedia() and the Web Audio API.
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_NAME" desc="Title for the flag to enable the website settings feature.">
-        Disable the Website Settings UI
-      </message>
-      <message name="IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_DESCRIPTION" desc="Title for the flag to enable the website settings feature.">
-        Disables the Website Settings UI that replaces the page info bubble and provides an easy way to configure site-specific settings.
-      </message>
 
       <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable advanced gestures

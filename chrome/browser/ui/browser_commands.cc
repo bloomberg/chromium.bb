@@ -695,6 +695,7 @@ void ShowFindBar(Browser* browser) {
   browser->GetFindBarController()->Show();
 }
 
+// TODO(markusheintz): Rename the method to something more appropriate.
 void ShowPageInfo(Browser* browser,
                   content::WebContents* web_contents,
                   const GURL& url,
@@ -702,13 +703,9 @@ void ShowPageInfo(Browser* browser,
                   bool show_history) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableWebsiteSettings)) {
-    browser->window()->ShowPageInfo(web_contents, url, ssl, show_history);
-  } else {
-    browser->window()->ShowWebsiteSettings(
-        profile, web_contents, url, ssl, show_history);
-  }
+
+  browser->window()->ShowWebsiteSettings(
+      profile, web_contents, url, ssl, show_history);
 }
 
 void ShowChromeToMobileBubble(Browser* browser) {

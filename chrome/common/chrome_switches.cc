@@ -418,9 +418,6 @@ const char kDisableTLSChannelID[]           = "disable-tls-channel-id";
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
-// Disables the website settings UI.
-const char kDisableWebsiteSettings[]         = "disable-website-settings";
-
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".

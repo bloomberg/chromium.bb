@@ -122,7 +122,6 @@ extern const char kDisableSyncTypedUrls[];
 extern const char kDisableTranslate[];
 extern const char kDisableTLSChannelID[];
 extern const char kDisableWebResources[];
-extern const char kDisableWebsiteSettings[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
