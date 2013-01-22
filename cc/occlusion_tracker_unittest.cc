@@ -478,9 +478,11 @@ protected:
 
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
+        typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(30, 30), gfx::Size(500, 500), true);
-        this->calcDrawEtc(parent);
+        parent->setMasksToBounds(true);
+        this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
@@ -570,9 +572,11 @@ protected:
         layerTransform.Rotate(90);
         layerTransform.Translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::Point(0, 0), gfx::Size(200, 200));
+        typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
-        this->calcDrawEtc(parent);
+        parent->setMasksToBounds(true);
+        this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
@@ -620,9 +624,11 @@ protected:
         gfx::Transform layerTransform;
         layerTransform.Translate(20, 20);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
+        typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
-        this->calcDrawEtc(parent);
+        parent->setMasksToBounds(true);
+        this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
@@ -692,7 +698,6 @@ protected:
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
-        occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
 
         this->visitLayer(layer, occlusion);
         this->enterContributingSurface(child, occlusion);
@@ -709,17 +714,8 @@ protected:
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 40, 70, 60)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 40, 70, 60)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(30, 39, 70, 60)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(31, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(30, 41, 70, 60)));
-
-        occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(30, 39, 70, 60)));
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(31, 40, 70, 60)));
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 41, 70, 60)));
-        occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
-
 
         /* Justification for the above occlusion from |layer|:
                    100
@@ -798,7 +794,8 @@ protected:
         childTransform.Rotate(90);
         childTransform.Translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
+        typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         parent->setMasksToBounds(true);
         typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
         child->setMasksToBounds(true);
@@ -806,7 +803,7 @@ protected:
         // |child2| makes |parent|'s surface get considered by OcclusionTracker first, instead of |child|'s. This exercises different code in
         // leaveToTargetRenderSurface, as the target surface has already been seen.
         typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(30, 30), gfx::Size(60, 20), true);
-        this->calcDrawEtc(parent);
+        this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(gfx::Rect(-10, -10, 1000, 1000));
@@ -906,11 +903,12 @@ protected:
         gfx::Transform layerTransform;
         layerTransform.Translate(10, 10);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(1000, 1000));
+        typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
         child->setMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, layerTransform, gfx::PointF(0, 0), gfx::Size(500, 500), true);
-        this->calcDrawEtc(parent);
+        this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
@@ -922,25 +920,6 @@ protected:
 
         EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
         EXPECT_EQ(clippedLayerInChild.ToString(), occlusion.occlusionFromInsideTarget().ToString());
-
-        EXPECT_TRUE(occlusion.occludedLayer(child, clippedLayerInChild));
-        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild += gfx::Vector2d(-1, 0);
-        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild += gfx::Vector2d(1, 0);
-        clippedLayerInChild += gfx::Vector2d(1, 0);
-        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild += gfx::Vector2d(-1, 0);
-        clippedLayerInChild += gfx::Vector2d(0, -1);
-        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild += gfx::Vector2d(0, 1);
-        clippedLayerInChild += gfx::Vector2d(0, 1);
-        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild += gfx::Vector2d(0, -1);
 
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
@@ -966,19 +945,21 @@ protected:
         childTransform.Rotate(90);
         childTransform.Translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(1000, 1000));
+        typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         parent->setMasksToBounds(true);
-        typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
+        typename Types::ContentLayerType* child = this->createDrawingLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500), false);
         child->setMasksToBounds(true);
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child, this->identityMatrix, gfx::PointF(10, 10), gfx::Size(500, 500), true);
         typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child, this->identityMatrix, gfx::PointF(10, 450), gfx::Size(500, 60), true);
-        this->calcDrawEtc(parent);
+        this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
 
         this->visitLayer(layer2, occlusion);
         this->visitLayer(layer1, occlusion);
+        this->visitLayer(child, occlusion);
         this->enterContributingSurface(child, occlusion);
 
         EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
@@ -986,15 +967,17 @@ protected:
 
         EXPECT_TRUE(occlusion.occludedLayer(child, gfx::Rect(10, 430, 60, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(child, gfx::Rect(9, 430, 60, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child, gfx::Rect(10, 429, 60, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child, gfx::Rect(11, 430, 60, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child, gfx::Rect(10, 431, 60, 70)));
+        // These rects are occluded except for the part outside the bounds of the target surface.
+        EXPECT_TRUE(occlusion.occludedLayer(child, gfx::Rect(10, 429, 60, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(child, gfx::Rect(11, 430, 60, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(child, gfx::Rect(10, 431, 60, 70)));
 
         EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, gfx::Rect(10, 430, 60, 70)).IsEmpty());
         EXPECT_RECT_EQ(gfx::Rect(9, 430, 1, 70), occlusion.unoccludedLayerContentRect(child, gfx::Rect(9, 430, 60, 70)));
-        EXPECT_RECT_EQ(gfx::Rect(10, 429, 60, 1), occlusion.unoccludedLayerContentRect(child, gfx::Rect(10, 429, 60, 70)));
-        EXPECT_RECT_EQ(gfx::Rect(70, 430, 1, 70), occlusion.unoccludedLayerContentRect(child, gfx::Rect(11, 430, 60, 70)));
-        EXPECT_RECT_EQ(gfx::Rect(10, 500, 60, 1), occlusion.unoccludedLayerContentRect(child, gfx::Rect(10, 431, 60, 70)));
+        // These rects are occluded except for the part outside the bounds of the target surface.
+        EXPECT_RECT_EQ(gfx::Rect(), occlusion.unoccludedLayerContentRect(child, gfx::Rect(10, 429, 60, 70)));
+        EXPECT_RECT_EQ(gfx::Rect(), occlusion.unoccludedLayerContentRect(child, gfx::Rect(11, 430, 60, 70)));
+        EXPECT_RECT_EQ(gfx::Rect(), occlusion.unoccludedLayerContentRect(child, gfx::Rect(10, 431, 60, 70)));
 
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
@@ -1061,7 +1044,6 @@ protected:
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
-        occlusion.setLayerClipRect(gfx::Rect(-20, -20, 1000, 1000));
 
         this->visitLayer(layer2, occlusion);
         this->enterContributingSurface(child2, occlusion);
@@ -1070,18 +1052,10 @@ protected:
         EXPECT_EQ(gfx::Rect(-10, 420, 70, 80).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-10, 419, 70, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 71, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 81)));
-
-        occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 419, 70, 80)));
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 71, 80)));
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 81)));
-        occlusion.setLayerClipRect(gfx::Rect(-20, -20, 1000, 1000));
 
         // There is nothing above child2's surface in the z-order.
         EXPECT_RECT_EQ(gfx::Rect(-10, 420, 70, 80), occlusion.unoccludedContributingSurfaceContentRect(child2, false, gfx::Rect(-10, 420, 70, 80)));
@@ -1092,12 +1066,6 @@ protected:
 
         EXPECT_EQ(gfx::Rect(0, 430, 70, 80).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
         EXPECT_EQ(gfx::Rect(-10, 430, 80, 70).ToString(), occlusion.occlusionFromInsideTarget().ToString());
-
-        EXPECT_TRUE(occlusion.occludedLayer(child1, gfx::Rect(-10, 430, 80, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(-11, 430, 80, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(-10, 429, 80, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(-10, 430, 81, 70)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(-10, 430, 80, 71)));
 
         // child2's contents will occlude child1 below it.
         EXPECT_RECT_EQ(gfx::Rect(-10, 430, 10, 70), occlusion.unoccludedContributingSurfaceContentRect(child1, false, gfx::Rect(-10, 430, 80, 70)));
@@ -1179,12 +1147,6 @@ protected:
         EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
         EXPECT_EQ(gfx::Rect(-10, 420, 70, 80).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
-        EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-10, 419, 70, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 71, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 81)));
-
         this->leaveLayer(child2, occlusion);
         this->enterContributingSurface(child2, occlusion);
 
@@ -1198,12 +1160,6 @@ protected:
         EXPECT_EQ(gfx::Rect(420, -10, 70, 80).ToString(), occlusion.occlusionFromOutsideTarget().ToString());
         EXPECT_EQ(gfx::Rect(420, -20, 80, 90).ToString(), occlusion.occlusionFromInsideTarget().ToString());
 
-        EXPECT_TRUE(occlusion.occludedLayer(child1, gfx::Rect(420, -20, 80, 90)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(419, -20, 80, 90)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(420, -21, 80, 90)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(420, -19, 80, 90)));
-        EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(421, -20, 80, 90)));
-
         // child2's contents will occlude child1 below it.
         EXPECT_RECT_EQ(gfx::Rect(420, -20, 80, 90), occlusion.unoccludedContributingSurfaceContentRect(child1, false, gfx::Rect(420, -20, 80, 90)));
         EXPECT_RECT_EQ(gfx::Rect(490, -10, 10, 80), occlusion.unoccludedContributingSurfaceContentRect(child1, false, gfx::Rect(420, -10, 80, 90)));
@@ -1214,12 +1170,6 @@ protected:
 
         EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
         EXPECT_EQ(gfx::Rect(10, 20, 90, 80).ToString(), occlusion.occlusionFromInsideTarget().ToString());
-
-        EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(10, 20, 90, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(9, 20, 90, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(10, 19, 90, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(11, 20, 90, 80)));
-        EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(10, 21, 90, 80)));
 
         /* Justification for the above occlusion:
                       100
@@ -1421,7 +1371,7 @@ protected:
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200), true);
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1440,7 +1390,6 @@ protected:
         occlusion.setLayerClipRect(gfx::Rect(200, 100, 100, 100));
 
         this->leaveLayer(layer, occlusion);
-        this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(0, 0, 100, 100)));
@@ -1470,7 +1419,6 @@ protected:
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(200, 100, 100, 100));
-        occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
 
         this->enterLayer(layer, occlusion);
 
@@ -1478,11 +1426,7 @@ protected:
         EXPECT_TRUE(occlusion.occludedLayer(layer, gfx::Rect(100, 0, 100, 100)));
         EXPECT_TRUE(occlusion.occludedLayer(layer, gfx::Rect(0, 100, 100, 100)));
         EXPECT_TRUE(occlusion.occludedLayer(layer, gfx::Rect(100, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occludedLayer(layer, gfx::Rect(200, 100, 100, 100)));
-
-        occlusion.useDefaultLayerClipRect();
         EXPECT_TRUE(occlusion.occludedLayer(layer, gfx::Rect(200, 100, 100, 100)));
-        occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
@@ -1805,11 +1749,6 @@ protected:
 
         // Occluded since its outside the surface bounds.
         EXPECT_TRUE(occlusion.occludedLayer(layer, gfx::Rect(200, 100, 100, 100)));
-
-        // Test without any clip rect.
-        occlusion.setLayerClipRect(gfx::Rect(0, 0, 1000, 1000));
-        EXPECT_FALSE(occlusion.occludedLayer(layer, gfx::Rect(200, 100, 100, 100)));
-        occlusion.useDefaultLayerClipRect();
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
@@ -2630,18 +2569,7 @@ protected:
         EXPECT_EQ(expectedOcclusion.ToString(), occlusion.occlusionFromInsideTarget().ToString());
         EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
 
-        // Everything outside the surface/replica is occluded but the surface/replica itself is not.
-        this->enterLayer(filteredSurface, occlusion);
-        EXPECT_RECT_EQ(gfx::Rect(1, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(1, 0, 100, 100)));
-        EXPECT_RECT_EQ(gfx::Rect(0, 1, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(0, 1, 100, 100)));
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(-1, 0, 100, 100)));
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(0, -1, 100, 100)));
-
-        EXPECT_RECT_EQ(gfx::Rect(300 + 1, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(300 + 1, 0, 100, 100)));
-        EXPECT_RECT_EQ(gfx::Rect(300 + 0, 1, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(300 + 0, 1, 100, 100)));
-        EXPECT_RECT_EQ(gfx::Rect(300 + 0, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(300 - 1, 0, 100, 100)));
-        EXPECT_RECT_EQ(gfx::Rect(300 + 0, 0, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(300 + 0, -1, 100, 100)));
-        this->leaveLayer(filteredSurface, occlusion);
+        this->visitLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
         Region expectedOcclusionOutsideSurface;
@@ -2777,7 +2705,7 @@ protected:
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 150));
         // We stick the filtered surface inside a clipping surface so that we can make sure the clip is honored when exposing pixels for
         // the background filter.
-        typename Types::LayerType* clippingSurface = this->createSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 70));
+        typename Types::LayerType* clippingSurface = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 70), false);
         clippingSurface->setMasksToBounds(true);
         typename Types::LayerType* filteredSurface = this->createDrawingLayer(clippingSurface, this->identityMatrix, gfx::PointF(50, 50), gfx::Size(50, 50), false);
         this->createReplicaLayer(filteredSurface, this->identityMatrix, gfx::PointF(150, 0), gfx::Size());
@@ -2820,17 +2748,7 @@ protected:
         EXPECT_EQ(gfx::Rect().ToString(), occlusion.occlusionFromOutsideTarget().ToString());
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
-        this->enterLayer(filteredSurface, occlusion);
-        EXPECT_RECT_EQ(gfx::Rect(1, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(1, 0, 50, 50)));
-        EXPECT_RECT_EQ(gfx::Rect(0, 1, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(0, 1, 50, 50)));
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(-1, 0, 50, 50)));
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(0, -1, 50, 50)));
-
-        EXPECT_RECT_EQ(gfx::Rect(150 + 1, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(150 + 1, 0, 50, 50)));
-        EXPECT_RECT_EQ(gfx::Rect(150 + 0, 1, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(150 + 0, 1, 50, 50)));
-        EXPECT_RECT_EQ(gfx::Rect(150 + 0, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(150 - 1, 0, 50, 50)));
-        EXPECT_RECT_EQ(gfx::Rect(150 + 0, 0, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, gfx::Rect(150 + 0, -1, 50, 50)));
-        this->leaveLayer(filteredSurface, occlusion);
+        this->visitLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
         Region expectedOcclusionOutsideSurface;
@@ -2847,6 +2765,7 @@ protected:
         // it needs should be removed some the occluded area so that when we get to the parent they are drawn.
         this->visitContributingSurface(filteredSurface, occlusion);
 
+        this->visitLayer(clippingSurface, occlusion);
         this->enterContributingSurface(clippingSurface, occlusion);
 
         Region expectedBlurredOcclusion;
@@ -2865,7 +2784,9 @@ protected:
 
         // Nothing in the (clipped) blur outsets for the filteredSurface is occluded.
         outsetRect = gfx::Rect(50 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
-        clippedOutsetRect = gfx::IntersectRects(outsetRect, gfx::Rect(0 - outsetLeft, 0 - outsetTop, 300 + outsetLeft + outsetRight, 70 + outsetTop + outsetBottom));
+        clippedOutsetRect = outsetRect;
+        clippedOutsetRect.Intersect(gfx::Rect(0 - outsetLeft, 0 - outsetTop, 300 + outsetLeft + outsetRight, 70 + outsetTop + outsetBottom));
+        clippedOutsetRect.Intersect(gfx::Rect(0, 0, 300, 70));
         testRect = outsetRect;
         EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
 
@@ -2885,7 +2806,9 @@ protected:
 
         // Nothing in the (clipped) blur outsets for the filteredSurface's replica is occluded.
         outsetRect = gfx::Rect(200 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
-        clippedOutsetRect = gfx::IntersectRects(outsetRect, gfx::Rect(0 - outsetLeft, 0 - outsetTop, 300 + outsetLeft + outsetRight, 70 + outsetTop + outsetBottom));
+        clippedOutsetRect = outsetRect;
+        clippedOutsetRect.Intersect(gfx::Rect(0 - outsetLeft, 0 - outsetTop, 300 + outsetLeft + outsetRight, 70 + outsetTop + outsetBottom));
+        clippedOutsetRect.Intersect(gfx::Rect(0, 0, 300, 70));
         testRect = outsetRect;
         EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
 
@@ -3187,27 +3110,26 @@ protected:
 
         this->enterLayer(large, occlusion);
 
-        // Clipping from the smaller layer doesn't cross the surface boundary. The layer is clipped by its target surface which is not outside its target.
-        // TODO(danakj): This will change if we clip the layer to its target surface's contentRect.
+        // Clipping from the smaller layer is from outside the target surface.
         bool hasOcclusionFromOutsideTargetSurface = false;
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), occlusion.unoccludedLayerContentRect(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
-        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.unoccludedLayerContentRect(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
 
         hasOcclusionFromOutsideTargetSurface = false;
         EXPECT_FALSE(occlusion.occludedLayer(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
-        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
 
         this->leaveLayer(large, occlusion);
         this->visitLayer(small, occlusion);
 
-        // Clipping from the smaller layer doesn't cross the surface boundary.
+        // Clipping from the smaller layer is from outside the target surface.
         hasOcclusionFromOutsideTargetSurface = false;
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), occlusion.unoccludedLayerContentRect(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
-        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.unoccludedLayerContentRect(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
 
         hasOcclusionFromOutsideTargetSurface = false;
         EXPECT_FALSE(occlusion.occludedLayer(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
-        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
 
         this->enterContributingSurface(small, occlusion);
 

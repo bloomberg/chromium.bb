@@ -370,7 +370,7 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerTyp
     unoccludedRegionInTargetSurface.Subtract(m_stack.back().occlusionFromOutsideTarget);
 
     // Treat other clipping as occlusion from outside the surface.
-    // TODO(danakj): We can clip to the target surface's contentRect() here, but tests will need some love.
+    unoccludedRegionInTargetSurface.Intersect(renderTarget->renderSurface()->contentRect());
     unoccludedRegionInTargetSurface.Intersect(screenSpaceClipRectInTargetSurface(renderTarget->renderSurface(), m_screenSpaceClipRect));
 
     gfx::RectF unoccludedRectInTargetSurface = unoccludedRegionInTargetSurface.bounds();
@@ -419,7 +419,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentR
     unoccludedRegionInTargetSurface.Subtract(m_stack.back().occlusionFromOutsideTarget);
 
     // Treat other clipping as occlusion from outside the surface.
-    // TODO(danakj): We can clip to the target surface's contentRect() here, but tests will need some love.
+    unoccludedRegionInTargetSurface.Intersect(renderTarget->renderSurface()->contentRect());
     unoccludedRegionInTargetSurface.Intersect(screenSpaceClipRectInTargetSurface(renderTarget->renderSurface(), m_screenSpaceClipRect));
 
     gfx::RectF unoccludedRectInTargetSurface = unoccludedRegionInTargetSurface.bounds();
