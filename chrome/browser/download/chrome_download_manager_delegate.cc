@@ -556,10 +556,6 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
     bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Anything loaded directly from the address bar is OK.
-  if (download.GetTransitionType() & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
-    return false;
-
   // Extensions that are not from the gallery are considered dangerous.
   // When off-store install is disabled we skip this, since in this case, we
   // will not offer to install the extension.
@@ -578,8 +574,13 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   // page has been visited before today.
   download_util::DownloadDangerLevel danger_level =
       download_util::GetFileDangerLevel(suggested_path.BaseName());
-  if (danger_level == download_util::AllowOnUserGesture)
+  if (danger_level == download_util::AllowOnUserGesture) {
+    if (download.GetTransitionType() &
+            content::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
+      return false;
+    }
     return !download.HasUserGesture() || !visited_referrer_before;
+  }
 
   return danger_level == download_util::Dangerous;
 }
