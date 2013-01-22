@@ -128,8 +128,15 @@ handle_global(void *data, struct wl_registry *registry,
 	}
 }
 
+static void
+handle_global_remove(void *data, struct wl_registry *registry, uint32_t name)
+{
+	/* XXX: unimplemented */
+}
+
 static const struct wl_registry_listener registry_listener = {
-	handle_global
+	handle_global,
+	handle_global_remove
 };
 
 static struct wl_buffer *

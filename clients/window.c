@@ -4079,6 +4079,27 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 		d->global_handler(d, id, interface, version, d->user_data);
 }
 
+static void
+registry_handle_global_remove(void *data, struct wl_registry *registry,
+			      uint32_t name)
+{
+	struct display *d = data;
+	struct global *global;
+	struct global *tmp;
+
+	wl_list_for_each_safe(global, tmp, &d->global_list, link) {
+		if (global->name != name)
+			continue;
+
+		/* XXX: Should destroy bound globals, and call
+		 * the counterpart of display::global_handler
+		 */
+		wl_list_remove(&global->link);
+		free(global->interface);
+		free(global);
+	}
+}
+
 void *
 display_bind(struct display *display, uint32_t name,
 	     const struct wl_interface *interface, uint32_t version)
@@ -4087,7 +4108,8 @@ display_bind(struct display *display, uint32_t name,
 }
 
 static const struct wl_registry_listener registry_listener = {
-	registry_handle_global
+	registry_handle_global,
+	registry_handle_global_remove
 };
 
 #ifdef HAVE_CAIRO_EGL

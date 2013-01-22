@@ -387,8 +387,14 @@ global_handler(void *data, struct wl_registry *registry, uint32_t id,
 		add_global_info(info, id, interface, version);
 }
 
+static void
+global_remove_handler(void *data, struct wl_registry *registry, uint32_t name)
+{
+}
+
 static const struct wl_registry_listener registry_listener = {
-	global_handler
+	global_handler,
+	global_remove_handler
 };
 
 static void
