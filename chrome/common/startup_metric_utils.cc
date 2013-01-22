@@ -7,6 +7,8 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/time.h"
@@ -90,6 +92,16 @@ void OnBrowserStartupComplete() {
   const base::TimeDelta kTenSeconds = base::TimeDelta::FromSeconds(10);
   if (startup_time_from_main_entry < kTenSeconds)
     return;
+
+  // Set UMA flag for histograms outside chrome/ that can't use the
+  // ScopedSlowStartupUMA class.
+  base::Histogram* histogram =
+      base::StatisticsRecorder::FindHistogram("Startup.SlowStartupNSSInit");
+  if (histogram)
+    histogram->SetFlags(base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  // Iterate over the stats recorded by ScopedSlowStartupUMA and create
+  // histograms for them.
   {
     base::AutoLock locker(*GetSubsystemStartupTimeHashLock());
     SubsystemStartupTimeHash* time_hash = GetSubsystemStartupTimeHash();

@@ -31,6 +31,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/native_library.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -428,6 +429,7 @@ class NSSInitSingleton {
         tpm_slot_(NULL),
         root_(NULL),
         chromeos_user_logged_in_(false) {
+    base::TimeTicks start_time = base::TimeTicks::Now();
     EnsureNSPRInit();
 
     // We *must* have NSS >= 3.12.3.  See bug 26448.
@@ -524,6 +526,14 @@ class NSSInitSingleton {
     NSS_SetAlgorithmPolicy(SEC_OID_MD5, 0, NSS_USE_ALG_IN_CERT_SIGNATURE);
     NSS_SetAlgorithmPolicy(SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION,
                            0, NSS_USE_ALG_IN_CERT_SIGNATURE);
+
+    // The UMA bit is conditionally set for this histogram in
+    // chrome/common/startup_metric_utils.cc .
+    HISTOGRAM_CUSTOM_TIMES("Startup.SlowStartupNSSInit",
+                           base::TimeTicks::Now() - start_time,
+                           base::TimeDelta::FromMilliseconds(10),
+                           base::TimeDelta::FromHours(1),
+                           50);
   }
 
   // NOTE(willchan): We don't actually execute this code since we leak NSS to
