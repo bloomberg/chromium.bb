@@ -26,6 +26,9 @@ namespace {
 // Measured in seconds.
 const double contextRecreationTickRate = 0.03;
 
+// Measured in seconds.
+const double smoothnessTakesPriorityExpirationDelay = 0.5;
+
 }  // namespace
 
 namespace cc {
@@ -58,6 +61,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_insideDraw(false)
     , m_totalCommitCount(0)
     , m_deferCommits(false)
+    , m_renewTreePriorityOnImplThreadPending(false)
 {
     TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
     DCHECK(isMainThread());
@@ -1103,8 +1107,23 @@ void ThreadProxy::capturePictureOnImplThread(CompletionEvent* completion, skia::
 
 void ThreadProxy::renewTreePriority()
 {
+    bool smoothnessTakesPriority =
+        m_layerTreeHostImpl->pinchGestureActive() ||
+        m_layerTreeHostImpl->currentlyScrollingLayer();
+
+    // Update expiration time if smoothness currently takes priority.
+    if (smoothnessTakesPriority) {
+        m_smoothnessTakesPriorityExpirationTime = base::TimeTicks::Now() +
+            base::TimeDelta::FromMilliseconds(
+                smoothnessTakesPriorityExpirationDelay * 1000);
+    }
+
     // We use the same priority for both trees by default.
     TreePriority priority = SAME_PRIORITY_FOR_BOTH_TREES;
+
+    // Smoothness takes priority if expiration time is in the future.
+    if (m_smoothnessTakesPriorityExpirationTime > base::TimeTicks::Now())
+        priority = SMOOTHNESS_TAKES_PRIORITY;
 
     // New content always takes priority when we have an active tree with
     // evicted resources.
@@ -1112,6 +1131,31 @@ void ThreadProxy::renewTreePriority()
         priority = NEW_CONTENT_TAKES_PRIORITY;
 
     m_layerTreeHostImpl->setTreePriority(priority);
+
+    // Need to make sure a delayed task is posted when we have smoothness
+    // takes priority expiration time in the future.
+    if (m_smoothnessTakesPriorityExpirationTime <= base::TimeTicks::Now())
+        return;
+    if (m_renewTreePriorityOnImplThreadPending)
+        return;
+
+    base::TimeDelta delay = m_smoothnessTakesPriorityExpirationTime -
+        base::TimeTicks::Now();
+
+    Proxy::implThread()->postDelayedTask(
+        base::Bind(&ThreadProxy::renewTreePriorityOnImplThread,
+                   m_weakFactoryOnImplThread.GetWeakPtr()),
+        delay.InMilliseconds());
+
+    m_renewTreePriorityOnImplThreadPending = true;
+}
+
+void ThreadProxy::renewTreePriorityOnImplThread()
+{
+    DCHECK(m_renewTreePriorityOnImplThreadPending);
+    m_renewTreePriorityOnImplThreadPending = false;
+
+    renewTreePriority();
 }
 
 }  // namespace cc

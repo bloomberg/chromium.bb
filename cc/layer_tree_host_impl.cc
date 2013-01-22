@@ -1187,6 +1187,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
         // events are already in local layer coordinates so we can just apply them directly.
         m_scrollDeltaIsInViewportSpace = (type == Gesture);
         m_numImplThreadScrolls++;
+        m_client->renewTreePriority();
         setNeedsUpdateDrawProperties();
         return ScrollStarted;
     }
@@ -1310,6 +1311,7 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
     if (didScroll) {
         m_client->setNeedsCommitOnImplThread();
         m_client->setNeedsRedrawOnImplThread();
+        m_client->renewTreePriority();
         setNeedsUpdateDrawProperties();
     }
     return didScroll;
@@ -1331,6 +1333,7 @@ void LayerTreeHostImpl::pinchGestureBegin()
 {
     m_pinchGestureActive = true;
     m_previousPinchAnchor = gfx::Point();
+    m_client->renewTreePriority();
 }
 
 void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor)
@@ -1364,6 +1367,7 @@ void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor
 
     m_client->setNeedsCommitOnImplThread();
     m_client->setNeedsRedrawOnImplThread();
+    m_client->renewTreePriority();
     setNeedsUpdateDrawProperties();
 }
 

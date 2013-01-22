@@ -204,6 +204,9 @@ private:
 
     bool m_deferCommits;
     scoped_ptr<BeginFrameAndCommitState> m_pendingDeferredCommit;
+
+    base::TimeTicks m_smoothnessTakesPriorityExpirationTime;
+    bool m_renewTreePriorityOnImplThreadPending;
 };
 
 }  // namespace cc
