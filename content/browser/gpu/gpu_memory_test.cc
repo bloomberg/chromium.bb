@@ -15,6 +15,7 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "content/test/gpu/gpu_test_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/base/net_util.h"
 
@@ -232,6 +233,10 @@ class GpuMemoryTest : public content::ContentBrowserTest {
 // limit, we shouldn't exceed that limit.
 IN_PROC_BROWSER_TEST_F(GpuMemoryTest, SingleWindowDoesNotExceedLimit) {
   if (!AllowTestsToRun())
+    return;
+
+  // crbug.com/171512, timeout on Win Debug.
+  if (GPUTestBotConfig::CurrentConfigMatches("WIN DEBUG"))
     return;
 
   content::Shell* tab = CreateNewTab();
