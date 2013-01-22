@@ -93,10 +93,6 @@ common_vars_defines() {
     export OFFICIAL_BUILD=1
     export CHROMIUM_BUILD="_google_chrome"
     export CHROME_BUILD_TYPE="_official"
-
-    # Used by chrome_version_info_posix.cc to display the channel name.
-    # Valid values: "unstable", "stable", "dev", "beta".
-    export CHROME_VERSION_EXTRA="beta"
   fi
 
   # The order file specifies the order of symbols in the .text section of the
