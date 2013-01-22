@@ -31,6 +31,8 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
     return;
 
   WebContents* tab = location_bar_->GetWebContents();
+  if (!tab)
+    return;
   const NavigationController& controller = tab->GetController();
   NavigationEntry* nav_entry = controller.GetActiveEntry();
   if (!nav_entry) {

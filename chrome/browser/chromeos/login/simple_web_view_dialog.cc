@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/reload_button.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -294,19 +293,8 @@ void SimpleWebViewDialog::ShowPageInfo(content::WebContents* web_contents,
                                        const GURL& url,
                                        const content::SSLStatus& ssl,
                                        bool show_history) {
-  PageInfoBubbleView* page_info_bubble =
-      new PageInfoBubbleView(
-          location_bar_->location_icon_view(),
-          web_contents,
-          url, ssl,
-          true,
-          this);
-  page_info_bubble->set_parent_window(
-      ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(),
-          ash::internal::kShellWindowId_LockSystemModalContainer));
-  CreateViewsBubble(page_info_bubble);
-  page_info_bubble->Show();
+  NOTIMPLEMENTED();
+  // TODO (ygorshenin@,markusheintz@): implement this
 }
 
 PageActionImageView* SimpleWebViewDialog::CreatePageActionImageView(
