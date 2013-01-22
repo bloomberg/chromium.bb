@@ -228,6 +228,9 @@
         # it ever gets used the processes that use it need to call
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
+
+        'SK_IGNORE_1XN_BITMAP_OPT',
+        'SK_IGNORE_CLIP_BUG_FIX',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
