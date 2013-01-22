@@ -820,7 +820,7 @@ bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
   if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))
     return false;
 
-  HISTOGRAM_TIMES("Renderer4.Snapshot",
+  UMA_HISTOGRAM_TIMES("Renderer4.Snapshot",
                   base::TimeTicks::Now() - beginning_time);
   return true;
 }
