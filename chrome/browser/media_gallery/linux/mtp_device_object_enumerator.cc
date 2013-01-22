@@ -9,46 +9,59 @@
 namespace chrome {
 
 MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
-    const MtpFileEntries& entries)
+    const std::vector<MtpFileEntry>& entries)
     : file_entries_(entries),
-      file_entry_iter_(file_entries_.begin()) {
+      index_(0U),
+      is_index_ready_(false) {
 }
 
 MTPDeviceObjectEnumerator::~MTPDeviceObjectEnumerator() {
 }
 
 FilePath MTPDeviceObjectEnumerator::Next() {
-  if (file_entry_iter_ == file_entries_.end())
-    return FilePath();
+  if (IsIndexReadyAndInRange())
+    ++index_;  // Normal traversal.
+  else if (!is_index_ready_)
+    is_index_ready_ = true;  // First time calling Next().
 
-  current_file_info_ = *file_entry_iter_;
-  ++file_entry_iter_;
-  return FilePath(current_file_info_.file_name());
+  if (!HasMoreEntries())
+    return FilePath();
+  return FilePath(file_entries_[index_].file_name());
 }
 
 int64 MTPDeviceObjectEnumerator::Size() {
-  return current_file_info_.file_size();
+  if (!IsIndexReadyAndInRange())
+    return 0;
+  return file_entries_[index_].file_size();
 }
 
 bool MTPDeviceObjectEnumerator::IsDirectory() {
-  return current_file_info_.file_type() == MtpFileEntry::FILE_TYPE_FOLDER;
+  if (!IsIndexReadyAndInRange())
+    return false;
+  return file_entries_[index_].file_type() == MtpFileEntry::FILE_TYPE_FOLDER;
 }
 
 base::Time MTPDeviceObjectEnumerator::LastModifiedTime() {
-  return base::Time::FromTimeT(current_file_info_.modification_time());
+  if (!IsIndexReadyAndInRange())
+    return base::Time();
+  return base::Time::FromTimeT(file_entries_[index_].modification_time());
 }
 
 bool MTPDeviceObjectEnumerator::GetEntryId(uint32_t* entry_id) const {
   DCHECK(entry_id);
-  if (file_entry_iter_ == file_entries_.end())
+  if (!IsIndexReadyAndInRange())
     return false;
 
-  *entry_id = file_entry_iter_->item_id();
+  *entry_id = file_entries_[index_].item_id();
   return true;
 }
 
 bool MTPDeviceObjectEnumerator::HasMoreEntries() const {
-  return file_entry_iter_ != file_entries_.end();
+  return index_ < file_entries_.size();
+}
+
+bool MTPDeviceObjectEnumerator::IsIndexReadyAndInRange() const {
+  return is_index_ready_ && HasMoreEntries();
 }
 
 }  // namespace chrome

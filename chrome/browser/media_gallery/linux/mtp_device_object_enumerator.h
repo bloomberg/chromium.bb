@@ -14,13 +14,11 @@
 
 namespace chrome {
 
-typedef std::vector<MtpFileEntry> MtpFileEntries;
-
 // Used to enumerate top-level files of an media file system.
 class MTPDeviceObjectEnumerator
     : public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  explicit MTPDeviceObjectEnumerator(const MtpFileEntries& entries);
+  explicit MTPDeviceObjectEnumerator(const std::vector<MtpFileEntry>& entries);
 
   virtual ~MTPDeviceObjectEnumerator();
 
@@ -39,14 +37,19 @@ class MTPDeviceObjectEnumerator
   bool HasMoreEntries() const;
 
  private:
+  // Returns true if Next() has been called at least once, and the enumerator
+  // has more entries to traverse.
+  bool IsIndexReadyAndInRange() const;
+
   // List of directory file entries information.
-  const MtpFileEntries file_entries_;
+  const std::vector<MtpFileEntry> file_entries_;
 
-  // Iterator to access the individual file entries.
-  MtpFileEntries::const_iterator file_entry_iter_;
+  // Index into |file_entries_|.
+  // Should only be used when |is_index_ready_| is true.
+  size_t index_;
 
-  // Stores the current file information.
-  MtpFileEntry current_file_info_;
+  // Initially false. Set to true after Next() has been called.
+  bool is_index_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceObjectEnumerator);
 };
