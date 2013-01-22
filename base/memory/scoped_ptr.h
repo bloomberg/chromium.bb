@@ -389,8 +389,8 @@ class scoped_ptr {
   // Comparison operators.
   // These return whether two scoped_ptr refer to the same object, not just to
   // two different but equal objects.
-  bool operator==(element_type* p) const { return impl_.get() == p; }
-  bool operator!=(element_type* p) const { return impl_.get() != p; }
+  bool operator==(const element_type* p) const { return impl_.get() == p; }
+  bool operator!=(const element_type* p) const { return impl_.get() != p; }
 
   // Swap two scoped pointers.
   void swap(scoped_ptr& p2) {
