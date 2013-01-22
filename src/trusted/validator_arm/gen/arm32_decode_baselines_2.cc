@@ -3099,7 +3099,7 @@ uses(Instruction inst) const {
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110011nnnn0000iiiiiiiiiiii,
 //    rule: TEQ_immediate,
 //    uses: {Rn}}
@@ -3246,11 +3246,14 @@ uses(Instruction inst) const {
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110001nnnn0000iiiiiiiiiiii,
 //    rule: TST_immediate,
-//    sets_Z_if_bits_clear: true,
-//    true: true,
+//    sets_Z_if_clear_bits: Rn  ==
+//            RegIndex(test_register()) &&
+//         (imm32 &&
+//         clears_mask())  ==
+//            clears_mask(),
 //    uses: {Rn}}
 RegisterList TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
 defs(Instruction inst) const {
@@ -3267,6 +3270,20 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+bool TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
+sets_Z_if_bits_clear(
+      Instruction inst, Register test_register,
+      uint32_t clears_mask) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // sets_Z_if_clear_bits: 'RegIndex(test_register())  ==
+  //          inst(19:16) &&
+  //       (ARMExpandImm_C(inst(11:0)) &&
+  //       clears_mask())  ==
+  //          clears_mask()'
+  return (((((inst.Bits() & 0x000F0000) >> 16)) == (nacl_arm_dec::RegIndex(test_register)))) &&
+       (((((nacl_arm_dec::ARMExpandImm_C((inst.Bits() & 0x00000FFF)) & clears_mask))) == (clears_mask)));
+}
 
 RegisterList TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
 uses(Instruction inst) const {

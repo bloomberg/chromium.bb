@@ -16,6 +16,7 @@
  */
 
 #include "native_client/src/trusted/validator_arm/validator_tests.h"
+#include "native_client/src/trusted/validator_arm/arm_helpers.h"
 
 using nacl_val_arm_test::ProblemRecord;
 using nacl_val_arm_test::ProblemSpy;
@@ -26,17 +27,9 @@ using nacl_val_arm_test::kDataRegionSize;
 using nacl_val_arm_test::kAbiReadOnlyRegisters;
 using nacl_val_arm_test::kAbiDataAddrRegisters;
 using nacl_val_arm_test::arm_inst;
+using nacl_arm_dec::ARMExpandImm;
 
 namespace {
-
-uint32_t ARMExpandImm(uint32_t imm12) {
-  uint32_t unrotated_value = imm12 & 0xFF;
-  uint32_t ror_amount = ((imm12 >> 8) & 0xF) << 1;
-  return (ror_amount == 0) ?
-      unrotated_value :
-      ((unrotated_value >> ror_amount) |
-       (unrotated_value << (32 - ror_amount)));
-}
 
 TEST_F(ValidatorTests, SupervisorCall) {
   arm_inst svc = 0xEF000000;  // SVC #0

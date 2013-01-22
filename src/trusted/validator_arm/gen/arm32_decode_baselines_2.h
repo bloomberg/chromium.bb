@@ -1616,7 +1616,7 @@ class SXTH_cccc011010111111ddddrr000111mmmm_case_0
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110011nnnn0000iiiiiiiiiiii,
 //    rule: TEQ_immediate,
 //    uses: {Rn}}
@@ -1712,11 +1712,14 @@ class TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110001nnnn0000iiiiiiiiiiii,
 //    rule: TST_immediate,
-//    sets_Z_if_bits_clear: true,
-//    true: true,
+//    sets_Z_if_clear_bits: Rn  ==
+//            RegIndex(test_register()) &&
+//         (imm32 &&
+//         clears_mask())  ==
+//            clears_mask(),
 //    uses: {Rn}}
 class TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0
      : public ClassDecoder {
@@ -1725,6 +1728,9 @@ class TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual bool sets_Z_if_bits_clear(Instruction i,
+                                    Register test_register,
+                                    uint32_t clears_mask) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(

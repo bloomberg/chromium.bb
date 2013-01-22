@@ -486,6 +486,72 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+// Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1
+//
+// Actual:
+//   {clears_bits: (ARMExpandImm(inst(11:0)) &&
+//         clears_mask())  ==
+//            clears_mask(),
+//    defs: {inst(15:12), 16
+//         if inst(20)=1
+//         else 32},
+//    safety: [(inst(15:12)=1111 &&
+//         inst(20)=1) => DECODER_ERROR,
+//      inst(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    uses: {inst(19:16)}}
+
+bool Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1::
+clears_bits(Instruction inst, uint32_t clears_mask) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // clears_bits: '(ARMExpandImm(inst(11:0)) &&
+  //       clears_mask())  ==
+  //          clears_mask()'
+  return ((((nacl_arm_dec::ARMExpandImm((inst.Bits() & 0x00000FFF)) & clears_mask))) == (clears_mask));
+}
+
+RegisterList Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
 // Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Actual:
@@ -4563,6 +4629,55 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
+//
+// Actual:
+//   {defs: {16},
+//    sets_Z_if_clear_bits: RegIndex(test_register())  ==
+//            inst(19:16) &&
+//         (ARMExpandImm_C(inst(11:0)) &&
+//         clears_mask())  ==
+//            clears_mask(),
+//    uses: {inst(19:16)}}
+
+RegisterList Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16}'
+  return RegisterList().
+   Add(Register(16));
+}
+
+SafetyLevel Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1::
+sets_Z_if_bits_clear(
+      Instruction inst, Register test_register,
+      uint32_t clears_mask) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // sets_Z_if_clear_bits: 'RegIndex(test_register())  ==
+  //          inst(19:16) &&
+  //       (ARMExpandImm_C(inst(11:0)) &&
+  //       clears_mask())  ==
+  //          clears_mask()'
+  return (((((inst.Bits() & 0x000F0000) >> 16)) == (nacl_arm_dec::RegIndex(test_register)))) &&
+       (((((nacl_arm_dec::ARMExpandImm_C((inst.Bits() & 0x00000FFF)) & clears_mask))) == (clears_mask)));
+}
+
+RegisterList Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1

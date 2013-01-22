@@ -159,25 +159,27 @@ def _DefineBase(out, base, values):
 
 _METHODS_MAP['base'] = [_DeclareBase, _DefineBase]
 
-DECODER_CLEAR_BITS_HEADER="""
-  virtual bool clears_bits(Instruction i, uint32_t mask) const;"""
+DECODER_CLEARS_BITS_HEADER="""
+  virtual bool clears_bits(Instruction i, uint32_t clears_mask) const;"""
 
-DECODER_CLEAR_BITS_DEF="""
+DECODER_CLEARS_BITS_DEF="""
 bool %(decoder_name)s::
-clears_bits(Instruction inst, uint32_t mask) const {
+clears_bits(Instruction inst, uint32_t clears_mask) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // %(neutral_rep)s
   return %(method_exp)s;
 }
 """
 
-def _DeclareClearBits(out, values):
-  out.write(DECODER_CLEAR_BITS_HEADER % values)
+def _DeclareClearsBits(out, values):
+  out.write(DECODER_CLEARS_BITS_HEADER % values)
 
-def _DefineClearBits(out, clear_bits, values):
-  _DefineMethod(out, DECODER_CLEAR_BITS_DEF, values, clear_bits.to_bool())
+def _DefineClearsBits(out, clear_bits, values):
+  dgen_core.InstallParameter('clears_mask', 'uint32')
+  _DefineMethod(out, DECODER_CLEARS_BITS_DEF, values, clear_bits.to_bool())
+  dgen_core.UninstallParameter('clears_mask')
 
-_METHODS_MAP['clear_bits'] = [_DeclareClearBits, _DefineClearBits]
+_METHODS_MAP['clears_bits'] = [_DeclareClearsBits, _DefineClearsBits]
 
 DECODER_DEFS_HEADER="""
   virtual RegisterList defs(Instruction inst) const;"""
@@ -380,13 +382,14 @@ _OPTIONAL_METHODS_MAP['safety'] = []
 
 DECODER_SETS_Z_IF_CLEAR_HEADER="""
   virtual bool sets_Z_if_bits_clear(Instruction i,
-                                    Register r,
-                                    uint32_t mask) const;"""
+                                    Register test_register,
+                                    uint32_t clears_mask) const;"""
 
 DECODER_SETS_Z_IF_CLEAR_DEF="""
 bool %(decoder_name)s::
 sets_Z_if_bits_clear(
-      Instruction inst, Register r, uint32_t mask) const {
+      Instruction inst, Register test_register,
+      uint32_t clears_mask) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // %(neutral_rep)s
   return %(method_exp)s;
@@ -397,7 +400,11 @@ def _DeclareSetsZIfClearBits(out, values):
   out.write(DECODER_SETS_Z_IF_CLEAR_HEADER)
 
 def _DefineSetsZIfClearBits(out, sets_z, values):
+  dgen_core.InstallParameter('clears_mask', 'uint32')
+  dgen_core.InstallParameter('test_register', 'uint32')
   _DefineMethod(out, DECODER_SETS_Z_IF_CLEAR_DEF, values, sets_z.to_bool())
+  dgen_core.UninstallParameter('clears_mask')
+  dgen_core.UninstallParameter('test_register')
 
 _METHODS_MAP['sets_Z_if_clear_bits'] = [
     _DeclareSetsZIfClearBits, _DefineSetsZIfClearBits]

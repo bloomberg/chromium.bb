@@ -1010,7 +1010,9 @@ uses(Instruction inst) const {
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    baseline: MaskedBinary2RegisterImmediateOp,
-//    clears_bits: true,
+//    clears_bits: (imm32 &&
+//         clears_mask())  ==
+//            clears_mask(),
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rd, NZCV
@@ -1025,8 +1027,16 @@ uses(Instruction inst) const {
 //         S(20)=1) => DECODER_ERROR,
 //      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //    setflags: S(20)=1,
-//    true: true,
 //    uses: {Rn}}
+bool BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
+clears_bits(Instruction inst, uint32_t clears_mask) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // clears_bits: '(ARMExpandImm(inst(11:0)) &&
+  //       clears_mask())  ==
+  //          clears_mask()'
+  return ((((nacl_arm_dec::ARMExpandImm((inst.Bits() & 0x00000FFF)) & clears_mask))) == (clears_mask));
+}
+
 RegisterList BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -1561,7 +1571,7 @@ uses(Instruction inst) const {
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110111nnnn0000iiiiiiiiiiii,
 //    rule: CMN_immediate,
 //    uses: {Rn}}
@@ -1708,7 +1718,7 @@ uses(Instruction inst) const {
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110101nnnn0000iiiiiiiiiiii,
 //    rule: CMP_immediate,
 //    uses: {Rn}}

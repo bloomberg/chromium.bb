@@ -98,8 +98,10 @@
 #
 # base: The register used as the base for the effective address
 #       for reads and writes.
-# clear_bits: True implies that the masked bits are cleared.
-#       (defaults to false). Corresponds to virtual clear_bits.
+# clears_bits: True implies that the masked bits are cleared.
+#       (defaults to false). Corresponds to virtual
+#       clears_bits. Assumes clears_mask() returns the mask to
+#       check against.
 # defs: The set of registers defined. (missing implies {}).
 # dynamic_code_replace_immediates: The set of immediate fields that
 #      should be zeroed out, when generating the dynamic code
@@ -118,9 +120,11 @@
 # relative_offset: Defines the constant offset used in a direct
 #       relative branch.
 # safety: How safety is defined for the class (missing implies true).
-# sets_Z_if_clear_bits: True implies that it sets the Z (condition)
-#       bit if mask bits are cleared. (defaults to false).
-#       Corresponds to defining virtual sets_Z_if_clear_bits.
+# sets_Z_if_clear_bits: Defines the register that is tested if bits
+#       have been cleared. Corresponds to defining virtual
+#       sets_Z_if_clear_bits. Assumes clears_mask() returns the mask
+#       to check against, and test_register() returns the expected
+#       register that was used to set the Z bits.
 # target: The register use to compute an indirect branch,
 #       if defined (defaults to None).
 # uses: The set of registers  used. (missing implies {})
@@ -516,7 +520,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    uses := {Rn};
 *B2R_MASK *B2R
    baseline := MaskedBinary2RegisterImmediateOp;
-   clears_bits := true;
+   clears_bits := (imm32 & clears_mask()) == clears_mask();
 *B2R_DCR *B2R
    baseline := Binary2RegisterImmediateOpDynCodeReplace;
    dynamic_code_replace_immediates := {imm12};
@@ -531,12 +535,14 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *TEST 
    { cond(31:28), Rn(19:16), imm12(11:0) }
    baseline := BinaryRegisterImmediateTest;
-   imm32 := AMRExpandImm_C(imm12);
+   imm32 := ARMExpandImm_C(imm12);
    defs := {NZCV};
    uses := {Rn};
 *TEST_MASK *TEST
    baseline := MaskedBinaryRegisterImmediateTest;
-   sets_Z_if_bits_clear := true;
+   sets_Z_if_clear_bits :=
+     Rn == RegIndex(test_register()) &
+     (imm32 & clears_mask()) == clears_mask();
 *U1R_PC
    { cond(31:28), Rd(15:12), imm12(11:0) }
    baseline := Unary1RegisterImmediateOpPc;
