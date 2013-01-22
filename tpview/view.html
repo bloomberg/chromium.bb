@@ -11,6 +11,9 @@
 <script src="finger_view_controller.js"></script>
 <script src="graph_controller.js"></script>
 <script src="secret_entries.js"></script>
+<script src="bzip2.js"></script>
+<script src="base64-binary.js"></script>
+<script src="jsxcompressor.js"></script>
 
 <link rel="stylesheet" href="style.css" type="text/css" media="all" />
 <script type="text/javascript" charset="utf-8">
@@ -189,6 +192,17 @@ function convertEventStreamToEntries(data) {
   return obj;
 }
 
+function loadLog(obj) {
+    if (!obj) {
+      alert('Unrecognized input file');
+      return;
+    }
+    json_obj = obj;
+    generateRadioButtons(obj);
+    current_layer = 0;
+    loadLogObj(obj, true);
+}
+
 function handleFileSelect(evt) {
   $('#text_box').removeClass('text_box_hilight');
   evt.stopPropagation();
@@ -205,15 +219,7 @@ function handleFileSelect(evt) {
       obj = convertEventStreamToEntries(e.target.result);
     else if (e.target.result[0] == '{')
       obj = jQuery.parseJSON(e.target.result);
-
-    if (!obj) {
-      alert('Unrecognized input file');
-      return;
-    }
-    json_obj = obj;
-    generateRadioButtons(obj);
-    current_layer = 0;
-    loadLogObj(obj, true);
+    loadLog(obj);
   };
   reader.readAsText(file);
 }
@@ -399,6 +405,66 @@ function radioChange(e) {
   }
 }
 
+function extractActivityLog(tar) {
+  // a tar file is a sequence of 512 byte blocks. Starting with a header block
+  // followed by the contents of that file, repeated for as many files
+  // as are in the archive. The file contents are padded if zeros to fill up
+  // multiples of 512 byte blocks.
+
+  // extracts name from tar file header
+  function getName(header_offset) {
+    name_array = new Uint8Array(tar.slice(header_offset, header_offset + 100));
+    if (name_array[0] == 0) {
+      return undefined;
+    }
+    return String.fromCharCode.apply(null, name_array);
+  }
+
+  // extracts length from tar file header
+  function getLength(header_offset) {
+    start = header_offset + 124;
+    length_array = new Uint8Array(tar.slice(start, start + 12));
+    length_string = String.fromCharCode.apply(null, length_array);
+    return parseInt(length_string, 8);
+  }
+
+
+  // iterate over all files and collect all activity logs
+  var header_offset = 0;
+  var log_list = new Array();
+  var name_pattern = /touchpad_activity_([0-9\-]+)/;
+  while (header_offset + 512 < tar.byteLength) {
+
+    // cannot read a name from the header? -> End of archive.
+    var name = getName(header_offset);
+    if (name == undefined)
+      break;
+
+    var length = getLength(header_offset);
+
+    if (name_pattern.test(name)) {
+      // store file info in list
+      result = new Object();
+      result.name = name;
+      result.timestamp = name_pattern.exec(name)[1];
+      result.offset = header_offset + 512
+      result.length = length;
+      log_list.push(result)
+    }
+
+    // Next header starts after the file on the next 512 byte aligned
+    // block.
+    header_offset = Math.ceil((header_offset+length) / 512 + 1) * 512;
+  }
+
+  // sort by descending timestamps to find latest file
+  log_list.sort(function(a, b) {
+    return a.timestamp < b.timestamp;
+  });
+  log = log_list[0];
+  return tar.slice(log.offset, log.offset + log.length);
+}
+
 $(document).ready(function() {
   setup();
   $("#playpause").button({
@@ -412,7 +478,6 @@ $(document).ready(function() {
   gc.setLineSegments([{'start': {'xPos': 0.1, 'yPos': 0.1},
                        'end': {'xPos': 0.9, 'yPos': 0.5}}]);
   var inGc = new GraphController($('#fview'));
-  
   finger_view_controller = new FingerViewController(inGc, gc, $('#intext'),
                                                     $('#out-lock-head'));
   $("#out-resetzoom").button({
@@ -513,8 +578,37 @@ $(document).ready(function() {
     }
   });
 
-  generateRadioButtons(secret_obj);
-  loadLogObj(secret_obj, true);
+  $('#bzipupload').change(function () {
+    // read selected file
+    reader = new FileReader();
+    reader.onload = function (event) {
+
+      // extract feedback.bz2
+      var feedback_bz2 = new Uint8Array(event.target.result);
+      var feedback = bzip2.simple(bzip2.array(feedback_bz2));
+
+      // extract touchpad_activity_log.tar' from feedback
+      var start_key = 'hack-33025-touchpad_activity="""\nbegin-base64 644 touchpad_activity_log.tar';
+      var start_idx = feedback.indexOf(start_key) + start_key.length + 1;
+      var end_idx = feedback.indexOf('====', start_idx) -1;
+      var touchpad_tar_base64 = feedback.substring(start_idx, end_idx);
+
+      // decode base64
+      var touchpad_tar = Base64Binary.decodeArrayBuffer(touchpad_tar_base64);
+
+      // extract log.gz from touchpad.tar
+      var log_gz = extractActivityLog(touchpad_tar);
+
+      // extract log.gz
+      var log = (new JXG.Util.Unzip(new Uint8Array(log_gz))).unzip()[0][0];
+
+      // parse as json and load
+      var log_obj = jQuery.parseJSON(log);
+      loadLog(log_obj);
+    };
+    reader.readAsArrayBuffer(document.getElementById('bzipupload').files[0]);
+  });
+  loadLog(secret_obj);
 });
 
 </script>
@@ -557,6 +651,7 @@ Set end time: <input type='text' id='input_end_time'
 </div>
 <div id="textdiv">
 <textarea rows="24" cols="80" id="text_box">Drag and drop a touchpad log file here.</textarea></div>
+Load from Feedback Report: <input type="file" id="bzipupload"></input>
 <div id="unittest_div">
 <input id="unittest_interpreter" value="InterpreterName"/>
 <input id="unittest_testname" value="TestName"/>
