@@ -299,6 +299,9 @@
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
         'chrome/browser/nacl_host/|chrome/common/nacl',
     },
+    'native_client_sdk': {
+      'filepath': '^native_client_sdk/',
+    },
     'net': {
       'filepath': 'net/',
     },
@@ -613,6 +616,7 @@
                 'mad@chromium.org'],
     'mouse_lock': ['scheib+watch@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
+    'native_client_sdk': ['sbc@chromium.org', 'binji@chromium.org'],
     'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
