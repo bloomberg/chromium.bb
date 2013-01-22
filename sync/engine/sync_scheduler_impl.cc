@@ -654,8 +654,8 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     // was previously unscheduled and giving it wings, so take care to reset
     // unscheduled nudge storage.
     job = pending_nudge_->CloneAndAbandon();
-    unscheduled_nudge_storage_.reset();
     pending_nudge_ = NULL;
+    unscheduled_nudge_storage_.reset();
     // It's also possible we took a canary job, since we allow one nudge
     // per backoff interval.
     DCHECK(!wait_interval_ || !wait_interval_->had_nudge);
@@ -1010,8 +1010,8 @@ void SyncSchedulerImpl::StopImpl(const base::Closure& callback) {
   weak_ptr_factory_.InvalidateWeakPtrs();
   wait_interval_.reset();
   poll_timer_.Stop();
-  unscheduled_nudge_storage_.reset();
   pending_nudge_ = NULL;
+  unscheduled_nudge_storage_.reset();
   if (started_) {
     started_ = false;
   }
