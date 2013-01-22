@@ -32,8 +32,11 @@ void ContentLayerPainter::paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::Re
     m_client->paintContents(canvas, contentRect, opaque);
     base::TimeTicks paintEnd = base::TimeTicks::HighResNow();
     double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart).InSecondsF();
-    HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS", (paintEnd - paintStart).InMilliseconds(), 0, 120, 30);
-    HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS",
+                                (paintEnd - paintStart).InMilliseconds(),
+                                0, 120, 30);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond",
+                                pixelsPerSec / 1000000, 10, 210, 30);
 }
 
 const int ContentLayer::kLCDTextMaxChangeCount = 1;
