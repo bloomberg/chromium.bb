@@ -151,5 +151,17 @@ class APIDataSourceTest(unittest.TestCase):
         'Ref <a href="bar.html#type-bon">Bon</a>',
         resolver.ResolveAllLinks('Ref $ref:[bar.bon Bon]', namespace='bar'))
 
+    # Different kinds of whitespace can be significant inside <pre> tags.
+    self.assertEqual(
+        '<pre><a href="bar.html#type-bon">bar.bon</a>({\nkey: value})',
+        resolver.ResolveAllLinks('<pre>$ref:[bar.bon]({\nkey: value})',
+                                 namespace='baz'))
+
+    # Allow bare "$ref:foo.bar." at the end of a string.
+    self.assertEqual(
+        '<a href="bar.html#type-bon">bar.bon</a>.',
+        resolver.ResolveAllLinks('$ref:bar.bon.',
+                                 namespace='baz'))
+
 if __name__ == '__main__':
   unittest.main()

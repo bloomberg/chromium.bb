@@ -5,6 +5,7 @@
 from file_system import FileNotFoundError
 import logging
 import object_store
+import re
 import string
 
 def _ClassifySchemaNode(node_name, api):
@@ -44,7 +45,9 @@ class ReferenceResolver(object):
     $ref:[api.node The Title] - Same as the previous form but title is set to
                                 "The Title".
   """
-  _valid_chars = '%s%s._' % (string.digits, string.ascii_letters)
+
+  # Matches after a $ref: that doesn't have []s.
+  _bare_ref = re.compile('\w+(\.\w+)*')
 
   class Factory(object):
     def __init__(self,
@@ -166,35 +169,32 @@ class ReferenceResolver(object):
     """
     if text is None or '$ref:' not in text:
       return text
-    refs = text.split('$ref:')
-    formatted_text = [refs[0]]
-    for ref in refs[1:]:
+    split_text = text.split('$ref:')
+    # |split_text| is an array of text chunks that all start with the
+    # argument to '$ref:'.
+    formatted_text = [split_text[0]]
+    for ref_and_rest in split_text[1:]:
       title = None
-      if ref and ref[0] == '[' and ']' in ref:
-        ref_with_title = ref[1:ref.find(']')].split(None, 1)
+      if ref_and_rest.startswith('[') and ']' in ref_and_rest:
+        # Text was '$ref:[foo.bar maybe title] other stuff'.
+        ref_with_title, rest = ref_and_rest[1:].split(']', 1)
+        ref_with_title = ref_with_title.split(None, 1)
         if len(ref_with_title) == 1:
-          link = ref_with_title[0]
+          # Text was '$ref:[foo.bar] other stuff'.
+          ref = ref_with_title[0]
         else:
-          link, title = ref_with_title
-        ref = '%s%s' % (link, ref[ref.find(']') + 1:])
-      parts = ref.split(None, 1)
-      if len(parts) == 1:
-        if ref[-1].isspace():
-          rest = ref[-1]
-        else:
-          rest = ''
-        ref = parts[0]
+          # Text was '$ref:[foo.bar title] other stuff'.
+          ref, title = ref_with_title
       else:
-        ref, rest = parts
-        rest = ' %s' % rest
-      index = 0
-      while index < len(ref) and ref[index] in self._valid_chars:
-        index += 1
-      rest = '%s%s' % (ref[index:], rest)
-      ref = ref[:index]
-      while not ref[-1].isalnum():
-        rest = '%s%s' % (ref[-1], rest)
-        ref = ref[:-1]
+        # Text was '$ref:foo.bar other stuff'.
+        match = self._bare_ref.match(ref_and_rest)
+        if match is None:
+          ref = ''
+          rest = ref_and_rest
+        else:
+          ref = match.group()
+          rest = ref_and_rest[match.end():]
+
       ref_dict = self.SafeGetLink(ref, namespace=namespace, title=title)
       formatted_text.append('<a href="%(href)s">%(text)s</a>%(rest)s' %
           { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
