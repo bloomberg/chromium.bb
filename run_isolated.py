@@ -593,6 +593,9 @@ class Remote(object):
           # Ensure that all the data was properly decompressed.
           uncompressed_data = decompressor.flush()
           assert not uncompressed_data
+        except IOError:
+          logging.error('Encountered an exception with (%s, %s)' % (item, dest))
+          raise
         except httplib.HTTPException as e:
           raise IOError('Encountered an HTTPException.\n%s' % e)
         except zlib.error as e:
