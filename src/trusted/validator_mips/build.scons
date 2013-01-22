@@ -77,7 +77,7 @@ if env.Bit('linux'):
 
   address_exe = gtest_env.ComponentProgram('mips_address_set_test_binary',
                        ['address_set_test.cc'],
-                       EXTRA_LIBS=['mips_validator_core', 'gtest', 'pthread',
+                       EXTRA_LIBS=['mips_validator_core', 'gtest',
                                    '${OPTIONAL_COVERAGE_LIBS}'])
 
   address_set_test = gtest_env.CommandTest('mips_address_set_test.out',

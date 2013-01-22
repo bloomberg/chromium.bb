@@ -2350,25 +2350,40 @@ def SetupAndroidEnv(env):
   env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
   ndk = os.environ.get('ANDROID_NDK_ROOT')
   sdk = os.environ.get('ANDROID_SDK_ROOT')
-  tc = os.environ.get('ANDROID_TOOLCHAIN')
-  ndk_target = 'arm-linux-androideabi'
-  ndk_version = '4.4.3'
+  arch_cflags = []
+  if env.Bit('build_arm'):
+    ndk_target = 'arm-linux-androideabi'
+    ndk_tctarget = ndk_target
+    arch = 'arm'
+    libarch = 'armeabi-v7a'
+    arch_cflags += ['-mfloat-abi=softfp']
+  elif env.Bit('build_mips32'):
+    ndk_target = 'mipsel-linux-android'
+    ndk_tctarget = ndk_target
+    arch = 'mips'
+    libarch = 'mips'
+  else:
+    ndk_target = 'i686-linux-android'
+    # x86 toolchain has strange location, not using GNU triplet
+    ndk_tctarget = 'x86'
+    arch = 'x86'
+    libarch = 'x86'
+  ndk_version = '4.6'
   if not ndk or not sdk:
     print 'Please define ANDROID_NDK_ROOT and ANDROID_SDK_ROOT'
     sys.exit(-1)
-  if not tc:
-    tc = '%s/toolchains/%s-%s/prebuilt/linux-x86/bin/' \
-            % (ndk, ndk_target, ndk_version)
+  tc = '%s/toolchains/%s-%s/prebuilt/linux-x86/bin/' \
+      % (ndk, ndk_tctarget, ndk_version)
   tc_prefix = '%s/%s-' % (tc, ndk_target)
-  platform_prefix = ndk + '/platforms/android-14/arch-arm'
-  stl_path =  ndk + '/sources/cxx-stl/gnu-libstdc++'
+  platform_prefix = '%s/platforms/android-14/arch-%s' % (ndk, arch)
+  stl_path =  '%s/sources/cxx-stl/gnu-libstdc++/%s' % (ndk, ndk_version)
   env.Replace(CC=tc_prefix + 'gcc',
               CXX=tc_prefix + 'g++',
               LD=tc_prefix + 'g++',
               EMULATOR=sdk + '/tools/emulator',
               LIBPATH=['${LIB_DIR}',
-                       stl_path + '/libs/armeabi-v7a',
-                       platform_prefix + '/usr/lib',
+                       '%s/libs/%s' % (stl_path, libarch),
+                       '%s/usr/lib' % (platform_prefix),
                        ],
               LIBS=['gnustl_static', # Yes, that stdc++.
                     'supc++',
@@ -2383,12 +2398,11 @@ def SetupAndroidEnv(env):
                       '-isystem='+ platform_prefix + '/usr/include',
                       '-DANDROID',
                       '-D__ANDROID__',
-                      '-mfloat-abi=softfp',
                       # Due to bogus warnings on uintptr_t formats.
                       '-Wno-format',
-                      ],
-             CXXFLAGS=['-I' + stl_path + '/include',
-                       '-I' + stl_path + '/libs/armeabi/include',
+                      ] + arch_cflags,
+             CXXFLAGS=['-I%s/include' % (stl_path),
+                       '-I%s/libs/%s/include' % (stl_path, libarch),
                        '-std=gnu++0x',
                        '-fno-exceptions',
                        ],

@@ -10,11 +10,20 @@
 
 #include <asm/ldt.h>
 #include <stdio.h>
+#if NACL_ANDROID
+#include <sys/syscall.h>
+#endif
 
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
+#if NACL_ANDROID
+/* Android doesn't have standard modify_ldt() function. */
+int modify_ldt(int func, void *ptr, unsigned long bytecount) {
+  return syscall(__NR_modify_ldt, func, ptr, bytecount);
+}
+#endif
 
 /*
  * struct LdtEntry is a structure that is laid out exactly as the segment
