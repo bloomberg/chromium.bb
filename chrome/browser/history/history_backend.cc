@@ -2066,31 +2066,51 @@ void HistoryBackend::SetFavicons(
     grouped_by_icon_url[icon_url].push_back(favicon_bitmap_data[i]);
   }
 
+  // Track whether the method modifies or creates any favicon bitmaps, favicons
+  // or icon mappings.
+  bool data_modified = false;
+
   std::vector<FaviconID> icon_ids;
   for (IconURLSizesMap::const_iterator it = icon_url_sizes.begin();
        it != icon_url_sizes.end(); ++it) {
     const GURL& icon_url = it->first;
     FaviconID icon_id =
         thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
-    if (icon_id)
-      SetFaviconSizes(icon_id, it->second);
-    else
+    if (icon_id) {
+      bool favicon_bitmaps_deleted = false;
+      SetFaviconSizes(icon_id, it->second, &favicon_bitmaps_deleted);
+      data_modified |= favicon_bitmaps_deleted;
+    } else {
       icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type, it->second);
+      data_modified = true;
+    }
     icon_ids.push_back(icon_id);
 
     BitmapDataByIconURL::iterator grouped_by_icon_url_it =
         grouped_by_icon_url.find(icon_url);
-    if (grouped_by_icon_url_it != grouped_by_icon_url.end())
-      SetFaviconBitmaps(icon_id, grouped_by_icon_url_it->second);
+    if (grouped_by_icon_url_it != grouped_by_icon_url.end()) {
+      if (!data_modified) {
+        bool favicon_bitmaps_changed = false;
+        SetFaviconBitmaps(icon_id,
+                          grouped_by_icon_url_it->second,
+                          &favicon_bitmaps_changed);
+        data_modified |= favicon_bitmaps_changed;
+      } else {
+        SetFaviconBitmaps(icon_id,
+                          grouped_by_icon_url_it->second,
+                          NULL);
+      }
+    }
   }
 
-  SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
+  data_modified |=
+    SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
 
-  // Send notification to the UI as an icon mapping, favicon, or favicon bitmap
-  // almost certainly was changed by this function. The situations where no
-  // data was changed, notably when |favicon_bitmap_data| is empty do not occur
-  // in practice.
-  SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  if (data_modified) {
+    // Send notification to the UI as an icon mapping, favicon, or favicon
+    // bitmap was changed by this function.
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  }
   ScheduleCommit();
 }
 
@@ -2250,7 +2270,11 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
 
 void HistoryBackend::SetFaviconBitmaps(
     FaviconID icon_id,
-    const std::vector<FaviconBitmapData>& favicon_bitmap_data) {
+    const std::vector<FaviconBitmapData>& favicon_bitmap_data,
+    bool* favicon_bitmaps_changed) {
+  if (favicon_bitmaps_changed)
+    *favicon_bitmaps_changed = false;
+
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
@@ -2266,11 +2290,23 @@ void HistoryBackend::SetFaviconBitmaps(
       }
     }
     if (bitmap_id) {
-      thumbnail_db_->SetFaviconBitmap(bitmap_id,
-          bitmap_data_element.bitmap_data, base::Time::Now());
+      if (favicon_bitmaps_changed &&
+          !*favicon_bitmaps_changed &&
+          IsFaviconBitmapDataEqual(bitmap_id,
+                                   bitmap_data_element.bitmap_data)) {
+        thumbnail_db_->SetFaviconBitmapLastUpdateTime(
+            bitmap_id, base::Time::Now());
+      } else {
+        thumbnail_db_->SetFaviconBitmap(bitmap_id,
+            bitmap_data_element.bitmap_data, base::Time::Now());
+        if (favicon_bitmaps_changed)
+          *favicon_bitmaps_changed = true;
+      }
     } else {
       thumbnail_db_->AddFaviconBitmap(icon_id, bitmap_data_element.bitmap_data,
           base::Time::Now(), bitmap_data_element.pixel_size);
+      if (favicon_bitmaps_changed)
+        *favicon_bitmaps_changed = true;
     }
   }
 }
@@ -2306,7 +2342,10 @@ bool HistoryBackend::ValidateSetFaviconsParams(
 }
 
 void HistoryBackend::SetFaviconSizes(FaviconID icon_id,
-                                     const FaviconSizes& favicon_sizes) {
+                                     const FaviconSizes& favicon_sizes,
+                                     bool* favicon_bitmaps_deleted) {
+  *favicon_bitmaps_deleted = false;
+
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
@@ -2315,8 +2354,10 @@ void HistoryBackend::SetFaviconSizes(FaviconID icon_id,
     const gfx::Size& pixel_size = bitmap_id_sizes[i].pixel_size;
     FaviconSizes::const_iterator sizes_it = std::find(favicon_sizes.begin(),
         favicon_sizes.end(), pixel_size);
-    if (sizes_it == favicon_sizes.end())
+    if (sizes_it == favicon_sizes.end()) {
       thumbnail_db_->DeleteFaviconBitmap(bitmap_id_sizes[i].bitmap_id);
+      *favicon_bitmaps_deleted = true;
+    }
   }
 
   thumbnail_db_->SetFaviconSizes(icon_id, favicon_sizes);

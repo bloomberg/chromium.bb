@@ -677,9 +677,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // For each entry in |favicon_bitmap_data|, if a favicon bitmap already
   // exists at the entry's pixel size, replace the favicon bitmap's data with
   // the entry's bitmap data. Otherwise add a new favicon bitmap.
+  // If not NULL, |favicon_bitmaps_changed| is set to whether any of the bitmap
+  // data at |icon_id| is changed as a result of calling this method.
+  // Computing |favicon_bitmaps_changed| requires additional database queries
+  // so should be avoided if unnecessary.
   void SetFaviconBitmaps(
       FaviconID icon_id,
-      const std::vector<FaviconBitmapData>& favicon_bitmap_data);
+      const std::vector<FaviconBitmapData>& favicon_bitmap_data,
+      bool* favicon_bitmaps_changed);
 
   // Returns true if |favicon_bitmap_data| and |icon_url_sizes| passed to
   // SetFavicons() are valid.
@@ -701,8 +706,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // detailed description of FaviconSizes.
   // Deletes any favicon bitmaps currently mapped to |icon_id| whose pixel
   // sizes are not contained in |favicon_sizes|.
+  // |favicon_bitmaps_deleted| is set to true if at least one favicon bitmap
+  // is deleted.
   void SetFaviconSizes(FaviconID icon_id,
-                       const FaviconSizes& favicon_sizes);
+                       const FaviconSizes& favicon_sizes,
+                       bool* favicon_bitmaps_deleted);
 
   // Returns true if the bitmap data at |bitmap_id| equals |new_bitmap_data|.
   bool IsFaviconBitmapDataEqual(
