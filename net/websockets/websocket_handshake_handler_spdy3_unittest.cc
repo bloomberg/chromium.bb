@@ -5,16 +5,10 @@
 #include "net/websockets/websocket_handshake_handler.h"
 
 #include <string>
-#include <vector>
 
-#include "base/basictypes.h"
-#include "base/string_util.h"
 #include "googleurl/src/gurl.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
 namespace net {
 

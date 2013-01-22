@@ -21,7 +21,7 @@
 // handshake headers.
 //
 // While we are working on updating WebSocket implementation in WebKit to
-// conform to the latest procotol draft, we need to accept both styles of
+// conform to the latest protocol draft, we need to accept both styles of
 // handshake. After we land the protocol changes in WebKit, we will be able to
 // drop codes handling old-style handshake.
 
@@ -31,11 +31,9 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
-#include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 
 namespace net {
@@ -61,7 +59,7 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeRequestHandler {
                      size_t headers_to_remove_len);
 
   // Gets request info to open WebSocket connection.
-  // Fills challange data (concatenation of key1, 2 and 3 for hybi-03 and
+  // Fills challenge data (concatenation of key1, 2 and 3 for hybi-03 and
   // earlier, or Sec-WebSocket-Key header value for hybi-04 and later)
   // in |challenge|.
   HttpRequestInfo GetRequestInfo(const GURL& url, std::string* challenge);
@@ -74,7 +72,7 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeRequestHandler {
   // Gets WebSocket handshake raw request message to open WebSocket
   // connection.
   std::string GetRawRequest();
-  // Calling raw_length is valid only after GetRawRquest() call.
+  // Calling raw_length is valid only after GetRawRequest() call.
   size_t raw_length() const;
 
   // Returns the value of Sec-WebSocket-Version or Sec-WebSocket-Draft header
