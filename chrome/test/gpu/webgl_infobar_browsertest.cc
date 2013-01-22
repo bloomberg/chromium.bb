@@ -64,8 +64,8 @@ class WebGLInfobarTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
-  // crbug.com/162982, flaky on Mac Retina Release.
-  if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
+  // crbug.com/162982, flaky on Mac Retina Release, timeout on Debug.
+  if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5"))
     return;
 
   // Load page and wait for it to load.
