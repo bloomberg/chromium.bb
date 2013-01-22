@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
+#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
@@ -85,6 +86,9 @@ CopyOperation::CopyOperation(
     uploader_(uploader),
     blocking_task_runner_(blocking_task_runner),
     observer_(observer),
+    move_operation_(new MoveOperation(drive_scheduler,
+                                      metadata,
+                                      observer)),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -235,7 +239,6 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
                  callback));
 }
 
-// TODO(mtomasz): Share with the file_system::MoveOperation class.
 void CopyOperation::MoveEntryFromRootDirectory(
     const FilePath& directory_path,
     const FileOperationCallback& callback,
@@ -252,80 +255,9 @@ void CopyOperation::MoveEntryFromRootDirectory(
     return;
   }
 
-  metadata_->GetEntryInfoPairByPaths(
-      file_path,
-      directory_path,
-      base::Bind(
-          &CopyOperation::MoveEntryFromRootDirectoryAfterGetEntryInfoPair,
-          weak_ptr_factory_.GetWeakPtr(),
-          callback));
-}
-
-// TODO(mtomasz): Share with the file_system::MoveOperation class.
-void CopyOperation::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(result.get());
-
-  if (result->first.error != DRIVE_FILE_OK) {
-    callback.Run(result->first.error);
-    return;
-  } else if (result->second.error != DRIVE_FILE_OK) {
-    callback.Run(result->second.error);
-    return;
-  }
-
-  scoped_ptr<DriveEntryProto> src_proto = result->first.proto.Pass();
-  scoped_ptr<DriveEntryProto> dir_proto = result->second.proto.Pass();
-
-  if (!dir_proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  const FilePath& file_path = result->first.path;
-  const FilePath& dir_path = result->second.path;
-  drive_scheduler_->AddResourceToDirectory(
-      GURL(dir_proto->content_url()),
-      GURL(src_proto->edit_url()),
-      base::Bind(&CopyOperation::MoveEntryToDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 dir_path,
-                 base::Bind(&CopyOperation::NotifyAndRunFileOperationCallback,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            callback)));
-}
-void CopyOperation::MoveEntryToDirectory(
-    const FilePath& file_path,
-    const FilePath& directory_path,
-    const FileMoveCallback& callback,
-    GDataErrorCode status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  const DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error, FilePath());
-    return;
-  }
-
-  metadata_->MoveEntryToDirectory(file_path, directory_path, callback);
-}
-
-void CopyOperation::NotifyAndRunFileOperationCallback(
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    const FilePath& moved_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error == DRIVE_FILE_OK)
-    observer_->OnDirectoryChangedByOperation(moved_file_path.DirName());
-
-  callback.Run(error);
+  move_operation_->Move(file_path,
+                        directory_path.Append(file_path.BaseName()),
+                        callback);
 }
 
 void CopyOperation::CopyAfterGetEntryInfoPair(

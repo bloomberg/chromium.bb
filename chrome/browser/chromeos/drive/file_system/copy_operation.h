@@ -30,6 +30,7 @@ class DriveScheduler;
 
 namespace file_system {
 
+class MoveOperation;
 class OperationObserver;
 
 // This class encapsulates the drive Copy function.  It is responsible for
@@ -133,28 +134,6 @@ class CopyOperation {
                                   DriveFileError error,
                                   const FilePath& file_path);
 
-  // Part of MoveEntryFromRootDirectory(). Called after
-  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
-  void MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
-      const FileOperationCallback& callback,
-      scoped_ptr<EntryInfoPairResult> result);
-
-  // Moves entry specified by |file_path| to the directory specified by
-  // |dir_path| and calls |callback| asynchronously.
-  // |callback| must not be null.
-  void MoveEntryToDirectory(const FilePath& file_path,
-                            const FilePath& directory_path,
-                            const FileMoveCallback& callback,
-                            google_apis::GDataErrorCode status);
-
-  // Callback when an entry is moved to another directory on the client side.
-  // Notifies the directory change and runs |callback|.
-  // |callback| must not be null.
-  void NotifyAndRunFileOperationCallback(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const FilePath& moved_file_path);
-
   // Part of Copy(). Called after GetEntryInfoPairByPaths() is
   // complete. |callback| must not be null.
   void CopyAfterGetEntryInfoPair(const FilePath& dest_file_path,
@@ -224,6 +203,9 @@ class CopyOperation {
   google_apis::DriveUploaderInterface* uploader_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
+
+  // Copying a hosted document is internally implemented by using a move.
+  scoped_ptr<MoveOperation> move_operation_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
