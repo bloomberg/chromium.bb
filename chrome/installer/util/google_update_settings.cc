@@ -676,15 +676,26 @@ bool GoogleUpdateSettings::ReadExperimentLabels(
 
   // If this distribution does not set the experiment labels, don't bother
   // reading.
-  bool success = false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (dist->ShouldSetExperimentLabels()) {
-    string16 client_state_path(
-        system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
-    RegKey client_state(reg_root, client_state_path.c_str(), KEY_QUERY_VALUE);
-    success = client_state.ReadValue(google_update::kExperimentLabels,
-                                     experiment_labels) == ERROR_SUCCESS;
+  if (!dist->ShouldSetExperimentLabels())
+    return false;
+
+  string16 client_state_path(
+      system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
+
+  RegKey client_state;
+  LONG result =
+      client_state.Open(reg_root, client_state_path.c_str(), KEY_QUERY_VALUE);
+  if (result == ERROR_SUCCESS) {
+    result = client_state.ReadValue(google_update::kExperimentLabels,
+                                    experiment_labels);
   }
 
-  return success;
+  // If the key or value was not present, return the empty string.
+  if (result == ERROR_FILE_NOT_FOUND || result == ERROR_PATH_NOT_FOUND) {
+    experiment_labels->clear();
+    return true;
+  }
+
+  return result == ERROR_SUCCESS;
 }

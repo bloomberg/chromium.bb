@@ -123,6 +123,12 @@ class GoogleUpdateSettingsTest : public testing::Test {
 #if defined(GOOGLE_CHROME_BUILD)
     EXPECT_TRUE(chrome->ShouldSetExperimentLabels());
 
+    // Before anything is set, ReadExperimentLabels should succeed but return
+    // an empty string.
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
+        install == SYSTEM_INSTALL, &value));
+    EXPECT_EQ(string16(), value);
+
     EXPECT_TRUE(GoogleUpdateSettings::SetExperimentLabels(
         install == SYSTEM_INSTALL, kTestExperimentLabel));
 
@@ -151,8 +157,9 @@ class GoogleUpdateSettingsTest : public testing::Test {
               key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
     EXPECT_EQ(ERROR_FILE_NOT_FOUND,
         key.ReadValue(google_update::kExperimentLabels, &value));
-    EXPECT_FALSE(GoogleUpdateSettings::ReadExperimentLabels(
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
         install == SYSTEM_INSTALL, &value));
+    EXPECT_EQ(string16(), value);
     key.Close();
 #else
     EXPECT_FALSE(chrome->ShouldSetExperimentLabels());

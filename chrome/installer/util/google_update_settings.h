@@ -258,10 +258,11 @@ class GoogleUpdateSettings {
                                   const string16& experiment_labels);
 
   // Reads the Omaha experiment_labels value in the ClientState key for this
-  // Chrome product and writes it into |experiment_labels|. If this distribution
-  // of Chrome does not set the experiment_labels value, this will do nothing to
-  // |experiment_labels|. This will return true if the label was successfully
-  // read.
+  // Chrome product and writes it into |experiment_labels|. If the key or value
+  // does not exist, |experiment_labels| will be set to the empty string.
+  // If this distribution of Chrome does not set the experiment_labels value,
+  // this will do nothing to |experiment_labels|. This will return true if the
+  // label did not exist, or was successfully read.
   static bool ReadExperimentLabels(bool system_install,
                                    string16* experiment_labels);
 
