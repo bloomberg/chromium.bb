@@ -10,15 +10,14 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
+#include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
 
@@ -93,9 +92,11 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
                     const base::Closure& error_handler);
 
   OAuth2LoginVerifier::Delegate* delegate_;
-  OAuth2AccessTokenFetcher token_fetcher_;
-  GaiaAuthFetcher gaia_system_fetcher_;
-  GaiaAuthFetcher gaia_fetcher_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> user_request_context_;
+  scoped_ptr<OAuth2AccessTokenFetcher> token_fetcher_;
+  scoped_ptr<GaiaAuthFetcher> gaia_system_fetcher_;
+  scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   ClientLoginResult gaia_credentials_;
   std::string access_token_;
   std::string refresh_token_;
