@@ -277,6 +277,15 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
   EXPECT_EQ(2, num_changes_);
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// Flaky: http://crbug.com/171487
+#define MAYBE_LocalChangeObserverMultipleContexts\
+    FLAKY_LocalChangeObserverMultipleContexts
+#else
+#define MAYBE_LocalChangeObserverMultipleContexts\
+    LocalChangeObserverMultipleContexts
+#endif
+
 TEST_F(LocalFileSyncServiceTest, LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   fileapi::CannedSyncableFileSystem file_system2(
