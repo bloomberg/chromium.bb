@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autofill/autocheckout_status.h"
 #include "chrome/common/autofill/web_element_descriptor.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -24,6 +25,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
@@ -57,6 +59,8 @@ const size_t kMaximumTextSizeForAutofill = 1000;
 // The maximum number of data list elements to send to the browser process
 // via IPC (to prevent long IPC messages).
 const size_t kMaximumDataListSizeForAutofill = 30;
+
+const int kAutocheckoutClickTimeout = 3;
 
 void AppendDataListSuggestions(const WebKit::WebInputElement& element,
                                std::vector<string16>* values,
@@ -130,10 +134,12 @@ AutofillAgent::AutofillAgent(
       password_autofill_manager_(password_autofill_manager),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
+      topmost_frame_(NULL),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
+      autocheckout_click_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
 }
@@ -176,18 +182,51 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   std::vector<FormData> forms;
   form_cache_.ExtractForms(*frame, &forms);
 
+  if (!frame->parent())
+    topmost_frame_ = frame;
+
   if (!forms.empty()) {
     Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
                                        base::TimeTicks::Now()));
   }
 }
 
-void AutofillAgent::FrameDetached(WebFrame* frame) {
-  form_cache_.ResetFrame(*frame);
+void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
+  if (!frame->parent()) {
+    topmost_frame_ = NULL;
+    WebKit::WebURL provisional_url =
+        frame->provisionalDataSource()->request().url();
+    WebKit::WebURL current_url = frame->dataSource()->request().url();
+    // If the URL of the topmost frame is changing and the current page is part
+    // of an Autocheckout flow, the click was successful as long as the
+    // provisional load is committed.
+    if (provisional_url != current_url && click_timer_.IsRunning()) {
+      click_timer_.Stop();
+      autocheckout_click_in_progress_ = true;
+    }
+  }
 }
 
-void AutofillAgent::FrameWillClose(WebFrame* frame) {
+void AutofillAgent::DidFailProvisionalLoad(WebFrame* frame,
+                                           const WebKit::WebURLError& error) {
+  if (autocheckout_click_in_progress_) {
+    autocheckout_click_in_progress_ = false;
+    ClickFailed();
+  }
+}
+
+void AutofillAgent::DidCommitProvisionalLoad(WebFrame* frame,
+                                             bool is_new_navigation) {
+  autocheckout_click_in_progress_ = false;
+}
+
+void AutofillAgent::FrameDetached(WebFrame* frame) {
   form_cache_.ResetFrame(*frame);
+  if (!frame->parent()) {
+    // |frame| is about to be destroyed so we need to clear |top_most_frame_|.
+    topmost_frame_ = NULL;
+    click_timer_.Stop();
+  }
 }
 
 void AutofillAgent::WillSubmitForm(WebFrame* frame,
@@ -618,7 +657,27 @@ void AutofillAgent::OnFillFormsAndClick(
     const WebElementDescriptor& click_element_descriptor) {
   // TODO(ramankk): Implement form filling.
 
-  // TODO(ahutter): Implement element clicking.
+  // It's possible that clicking the element to proceed in an Autocheckout
+  // flow will not actually proceed to the next step in the flow, e.g. there
+  // is a new required field that Autocheckout does not know how to fill.  In
+  // order to capture this case and present the user with an error a timer is
+  // set that informs the browser of the error. |click_timer_| has to be started
+  // before clicking so it can start before DidStartProvisionalLoad started.
+  click_timer_.Start(FROM_HERE,
+                     base::TimeDelta::FromSeconds(kAutocheckoutClickTimeout),
+                     this,
+                     &AutofillAgent::ClickFailed);
+  if (!ClickElement(topmost_frame_->document(),
+                    click_element_descriptor)) {
+    click_timer_.Stop();
+    Send(new AutofillHostMsg_ClickFailed(routing_id(),
+                                         MISSING_ADVANCE));
+  }
+}
+
+void AutofillAgent::ClickFailed() {
+  Send(new AutofillHostMsg_ClickFailed(routing_id(),
+                                       CANNOT_PROCEED));
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,
