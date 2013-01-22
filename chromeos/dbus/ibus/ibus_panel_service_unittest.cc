@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
@@ -44,6 +45,8 @@ class MockIBusPanelCandidateWindowHandler
                                        uint32 cursor_pos,
                                        bool visible) );
   MOCK_METHOD0(HidePreeditText, void());
+  MOCK_METHOD2(SetCursorLocation, void(const ibus::Rect& cursor_location,
+                                       const ibus::Rect& composition_head));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIBusPanelCandidateWindowHandler);
@@ -290,10 +293,14 @@ class IBusPanelServiceTest : public testing::Test {
                 AssertOnOriginThread())
         .WillRepeatedly(Return());
 
+    stub_input_context_client_.reset(IBusInputContextClient::Create(
+        STUB_DBUS_CLIENT_IMPLEMENTATION));
+
     // Create a service
     service_.reset(IBusPanelService::Create(
         REAL_DBUS_CLIENT_IMPLEMENTATION,
-        mock_bus_.get()));
+        mock_bus_.get(),
+        stub_input_context_client_.get()));
 
     // Set panel handler.
     candidate_window_handler_.reset(new MockIBusPanelCandidateWindowHandler());
@@ -310,6 +317,8 @@ class IBusPanelServiceTest : public testing::Test {
   scoped_ptr<MockIBusPanelCandidateWindowHandler> candidate_window_handler_;
   // The mock property handler. Do not free, this is owned by IBusPanelService.
   scoped_ptr<MockIBusPanelPropertyHandler> property_handler_;
+  // The stub input context client.
+  scoped_ptr<IBusInputContextClient> stub_input_context_client_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock exported object.

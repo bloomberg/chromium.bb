@@ -24,13 +24,8 @@ IBusClient::InputMethodType IBusClient::GetInputMethodType() {
 
 void IBusClient::SetCursorLocation(const gfx::Rect& cursor_location,
                                    const gfx::Rect& composition_head) {
-  chromeos::IBusInputContextClient* input_context =
-      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
-  DCHECK(input_context->IsObjectProxyReady());
-  input_context->SetCursorLocation(cursor_location.x(),
-                                   cursor_location.y(),
-                                   cursor_location.width(),
-                                   cursor_location.height());
+  // Do nothing, because this function will be overridden with
+  // IBusChromeOSClientImpl.
 }
 
 }  // namespace internal

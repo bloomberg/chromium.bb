@@ -43,7 +43,6 @@ class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
 
   // Called when the engine request hiding preedit string.
   virtual void HidePreeditText() = 0;
-
 };
 
 // A class to make the actual DBus calls for IBusInputContext service.
@@ -54,6 +53,9 @@ class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
 // one input context but it is enough for ChromeOS.
 class CHROMEOS_EXPORT IBusInputContextClient {
  public:
+  typedef base::Callback<void(const ibus::Rect& cursor_location,
+                              const ibus::Rect& composition_head)>
+      SetCursorLocationHandler;
   typedef base::Callback<void(bool is_keyevent_used)> ProcessKeyEventCallback;
   typedef base::Callback<void()> ErrorCallback;
 
@@ -67,6 +69,13 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   // also can be passed |handler| as NULL. Caller must release |handler|.
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) = 0;
+
+  // Sets SetCursorLocation handler.
+  virtual void SetSetCursorLocationHandler(
+      const SetCursorLocationHandler& set_cursor_location_handler) = 0;
+
+  // Unset SetCursorLocation handler.
+  virtual void UnsetSetCursorLocationHandler() = 0;
 
   // Resets object proxy. If you want to use InputContext again, should call
   // Initialize function again.
@@ -85,8 +94,8 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   // Invokes Reset method call.
   virtual void Reset() = 0;
   // Invokes SetCursorLocation method call.
-  virtual void SetCursorLocation(int32 x, int32 y, int32 width,
-                                 int32 height) = 0;
+  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
+                                 const ibus::Rect& composition_head) = 0;
   // Invokes ProcessKeyEvent method call. |callback| should not be null.
   virtual void ProcessKeyEvent(uint32 keyval,
                                uint32 keycode,
@@ -104,6 +113,12 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   // original IBus spec is not supported in Chrome.
   virtual void PropertyActivate(const std::string& key,
                                 ibus::IBusPropertyState state) = 0;
+
+  // Returns true if the current input method is XKB layout.
+  virtual bool IsXKBLayout() = 0;
+
+  // Sets current input method is XKB layout or not.
+  virtual void SetIsXKBLayout(bool is_xkb_layout) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
