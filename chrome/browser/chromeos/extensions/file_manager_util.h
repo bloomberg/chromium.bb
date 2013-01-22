@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_UTIL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "googleurl/src/gurl.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -88,8 +87,6 @@ bool ExecuteBuiltinHandler(
     Browser* browser,
     const FilePath& path,
     const std::string& internal_task_id);
-
-void InstallCRX(Browser* browser, const FilePath& path);
 
 bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
 
