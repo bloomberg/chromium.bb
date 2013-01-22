@@ -80,10 +80,10 @@ class LayerTreeHostPerfTest : public ThreadedTest {
   }
 
   scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height) {
-    return CreateDecorationLayer(x, y, width, height, gfx::Rect(0, 0, width, height));
+    return CreateDecorationLayer(x, y, width, height, gfx::Size(width + 1, height + 1), gfx::Rect(0, 0, width, height));
   }
 
-  scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height, gfx::Rect aperture, bool drawable=true) {
+  scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height, gfx::Size image_size, gfx::Rect aperture, bool drawable=true) {
     scoped_refptr<NinePatchLayer> layer = NinePatchLayer::create();
     layer->setAnchorPoint(gfx::Point());
     layer->setPosition(gfx::PointF(x, y));
@@ -91,7 +91,8 @@ class LayerTreeHostPerfTest : public ThreadedTest {
     layer->setIsDrawable(drawable);
 
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+    bitmap.setConfig(
+        SkBitmap::kARGB_8888_Config, image_size.width(), image_size.height());
     bitmap.allocPixels(NULL, NULL);
     layer->setBitmap(bitmap, aperture);
 
@@ -282,8 +283,14 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
       success &= list->GetInteger(2, &aperture_width);
       success &= list->GetInteger(3, &aperture_height);
 
+      success &= dict->GetList("ImageBounds", &list);
+      int image_width, image_height;
+      success &= list->GetInteger(0, &image_width);
+      success &= list->GetInteger(1, &image_height);
+
       new_layer = CreateDecorationLayer(
           position_x, position_y, width, height,
+          gfx::Size(image_width, image_height),
           gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height),
           draws_content);
 

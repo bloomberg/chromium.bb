@@ -162,6 +162,7 @@ void NinePatchLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
     str->append(indentString(indent));
     base::StringAppendF(str, "imageAperture: %s\n", m_imageAperture.ToString().c_str());
+    base::StringAppendF(str, "imageBounds: %s\n", m_imageBounds.ToString().c_str());
     LayerImpl::dumpLayerProperties(str, indent);
 }
 
@@ -175,6 +176,11 @@ base::DictionaryValue* NinePatchLayerImpl::layerTreeAsJson() const
     list->AppendInteger(m_imageAperture.size().width());
     list->AppendInteger(m_imageAperture.size().height());
     result->Set("ImageAperture", list);
+
+    list = new base::ListValue;
+    list->AppendInteger(m_imageBounds.width());
+    list->AppendInteger(m_imageBounds.height());
+    result->Set("ImageBounds", list);
 
     return result;
 }
