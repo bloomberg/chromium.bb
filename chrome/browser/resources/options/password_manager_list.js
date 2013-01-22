@@ -44,8 +44,8 @@ cr.define('options.passwordManager', function() {
       // http) is being used. This ensures that the favicon returned is the
       // default favicon for the domain and that the URL has a scheme if none
       // is present in the password manager.
-      urlLabel.style.backgroundImage =
-          url('chrome://favicon/origin/' + this.url);
+      urlLabel.style.backgroundImage = getFaviconImageSet(
+          'origin/' + this.url, 16);
       this.contentElement.appendChild(urlLabel);
 
       // The stored username.
@@ -185,8 +185,8 @@ cr.define('options.passwordManager', function() {
       // http) is being used. This ensures that the favicon returned is the
       // default favicon for the domain and that the URL has a scheme if none
       // is present in the password manager.
-      urlLabel.style.backgroundImage =
-          url('chrome://favicon/origin/' + this.url);
+      urlLabel.style.backgroundImage = getFaviconImageSet(
+          'origin/' + this.url, 16);
       this.contentElement.appendChild(urlLabel);
     },
 

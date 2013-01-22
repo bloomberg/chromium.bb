@@ -95,7 +95,7 @@ cr.define('ntp', function() {
       this.classList.add('focusable');
 
       var faviconDiv = this.querySelector('.favicon');
-      var faviconUrl = 'chrome://favicon/size/16/' + data.url;
+      var faviconUrl = 'chrome://favicon/size/16@1x/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
       chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
 

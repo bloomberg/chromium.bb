@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,30 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+// Parameters which can be used in chrome://favicon path. See .h file for a
+// description of what each does.
+const char kSizeParameter[] = "size/";
+const char kIconURLParameter[] = "iconurl/";
+const char kOriginParameter[] = "origin/";
+
+// Returns true if |search| is a substring of |path| which starts at
+// |start_index|.
+bool HasSubstringAt(const std::string& path,
+                    size_t start_index,
+                    const std::string& search) {
+  if (search.empty())
+    return false;
+
+  if (start_index + search.size() >= path.size())
+    return false;
+
+  return (path.compare(start_index, search.size(), search) == 0);
+}
+
+}  // namespace
 
 FaviconSource::IconRequest::IconRequest()
     : size_in_dip(gfx::kFaviconSize),
@@ -58,81 +83,94 @@ void FaviconSource::StartDataRequest(
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty()) {
-    SendDefaultResponse(IconRequest(callback,
-                                    "",
-                                    16,
-                                    ui::SCALE_FACTOR_100P));
+    SendDefaultResponse(callback);
     return;
   }
 
-  int size_in_dip = gfx::kFaviconSize;
+  DCHECK_EQ(16, gfx::kFaviconSize);
+  int size_in_dip = 16;
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
 
-  if (path.size() > 8 &&
-      (path.substr(0, 8) == "iconurl/" || path.substr(0, 8) == "iconurl@")) {
-    size_t prefix_length = 8;
-    // Optional scale factor appended to iconurl, which may be @1x or @2x.
-    if (path.at(7) == '@') {
-        size_t slash = path.find("/");
-        std::string scale_str = path.substr(8, slash - 8);
-        web_ui_util::ParseScaleFactor(scale_str, &scale_factor);
-        prefix_length = slash + 1;
+  size_t parsed_index = 0;
+  if (HasSubstringAt(path, parsed_index, kSizeParameter)) {
+    parsed_index += strlen(kSizeParameter);
+
+    size_t scale_delimiter = path.find("@", parsed_index);
+    if (scale_delimiter == std::string::npos) {
+      SendDefaultResponse(callback);
+      return;
     }
+
+    std::string size = path.substr(parsed_index,
+                                   scale_delimiter - parsed_index);
+    if (!base::StringToInt(size, &size_in_dip)) {
+      SendDefaultResponse(callback);
+      return;
+    }
+
+    if (size_in_dip != 64 && size_in_dip != 32) {
+      // Only 64x64, 32x32 and 16x16 icons are supported.
+      size_in_dip = 16;
+    }
+
+    size_t slash = path.find("/", scale_delimiter);
+    if (slash == std::string::npos) {
+      SendDefaultResponse(callback);
+      return;
+    }
+
+    std::string scale_str = path.substr(scale_delimiter + 1,
+                                        slash - scale_delimiter - 1);
+    web_ui_util::ParseScaleFactor(scale_str, &scale_factor);
+
+    if (scale_factor != ui::SCALE_FACTOR_100P && size_in_dip != 16) {
+      SendDefaultResponse(callback);
+      return;
+    }
+
+    parsed_index = slash + 1;
+  }
+
+  if (HasSubstringAt(path, parsed_index, kIconURLParameter)) {
+    parsed_index += strlen(kIconURLParameter);
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
     favicon_service->GetRawFavicon(
-        GURL(path.substr(prefix_length)),
+        GURL(path.substr(parsed_index)),
         history::FAVICON,
         size_in_dip,
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
                    IconRequest(callback,
-                               path.substr(prefix_length),
+                               path.substr(parsed_index),
                                size_in_dip,
                                scale_factor)),
         &cancelable_task_tracker_);
   } else {
-    GURL url;
-    if (path.size() > 5 && path.substr(0, 5) == "size/") {
-      size_t slash = path.find("/", 5);
-      size_t scale_delimiter = path.find("@", 5);
-      std::string size = path.substr(5, slash - 5);
-      size_in_dip = atoi(size.c_str());
-      if (size_in_dip != 64 && size_in_dip != 32 && size_in_dip != 16) {
-        // Only 64x64, 32x32 and 16x16 icons are supported.
-        size_in_dip = 16;
-      }
-      // Optional scale factor.
-      if (scale_delimiter != std::string::npos && scale_delimiter < slash) {
-        DCHECK(size_in_dip == 16);
-        std::string scale_str = path.substr(scale_delimiter + 1,
-                                            slash - scale_delimiter - 1);
-        web_ui_util::ParseScaleFactor(scale_str, &scale_factor);
-      }
-      url = GURL(path.substr(slash + 1));
+    std::string url;
+
+    // URL requests prefixed with "origin/" are converted to a form with an
+    // empty path and a valid scheme. (e.g., example.com -->
+    // http://example.com/ or http://example.com/a --> http://example.com/)
+    if (HasSubstringAt(path, parsed_index, kOriginParameter)) {
+      parsed_index += strlen(kOriginParameter);
+      url = path.substr(parsed_index);
+
+      // If the URL does not specify a scheme (e.g., example.com instead of
+      // http://example.com), add "http://" as a default.
+      if (!GURL(url).has_scheme())
+        url = "http://" + url;
+
+      // Strip the path beyond the top-level domain.
+      url = GURL(url).GetOrigin().spec();
     } else {
-      // URL requests prefixed with "origin/" are converted to a form with an
-      // empty path and a valid scheme. (e.g., example.com -->
-      // http://example.com/ or http://example.com/a --> http://example.com/)
-      if (path.size() > 7 && path.substr(0, 7) == "origin/") {
-        std::string originalUrl = path.substr(7);
-
-        // If the original URL does not specify a scheme (e.g., example.com
-        // instead of http://example.com), add "http://" as a default.
-        if (!GURL(originalUrl).has_scheme())
-          originalUrl = "http://" + originalUrl;
-
-        // Strip the path beyond the top-level domain.
-        url = GURL(originalUrl).GetOrigin();
-      } else {
-        url = GURL(path);
-      }
+      url = path.substr(parsed_index);
     }
 
     // Intercept requests for prepopulated pages.
     for (size_t i = 0; i < arraysize(history::kPrepopulatedPages); i++) {
-      if (url.spec() ==
+      if (url ==
           l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
         callback.Run(
             ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
@@ -144,12 +182,12 @@ void FaviconSource::StartDataRequest(
 
     favicon_service->GetRawFaviconForURL(
         FaviconService::FaviconForURLParams(
-            profile_, url, icon_types_, size_in_dip),
+            profile_, GURL(url), icon_types_, size_in_dip),
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
                    IconRequest(callback,
-                               url.spec(),
+                               url,
                                size_in_dip,
                                scale_factor)),
         &cancelable_task_tracker_);
@@ -183,6 +221,14 @@ void FaviconSource::OnFaviconDataAvailable(
   } else if (!HandleMissingResource(request)) {
     SendDefaultResponse(request);
   }
+}
+
+void FaviconSource::SendDefaultResponse(
+    const content::URLDataSource::GotDataCallback& callback) {
+  SendDefaultResponse(IconRequest(callback,
+                                  "",
+                                  16,
+                                  ui::SCALE_FACTOR_100P));
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {

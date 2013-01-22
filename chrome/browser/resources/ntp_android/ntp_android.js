@@ -705,7 +705,7 @@ cr.define('ntp', function() {
           faviconBox.appendChild(foldContainer);
 
           chrome.send('getFaviconDominantColor',
-              [('chrome://favicon/size/16/' + item.url), '' + faviconIndex]);
+              [('chrome://favicon/size/16@1x/' + item.url), '' + faviconIndex]);
           faviconIndex++;
         } else if ((w == 57 && h == 57) || (w == 114 && h == 114)) {
           // it's a touch icon

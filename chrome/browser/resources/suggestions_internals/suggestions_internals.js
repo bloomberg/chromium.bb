@@ -164,7 +164,7 @@ cr.define('suggestionsInternals', function() {
           img.onerror = function() { setBooleanColumn(column, false); }
           img.src = thumbnailUrl;
         } else if (column_name == 'favicon') {
-          var faviconUrl = 'chrome://favicon/size/16/' + entry.url;
+          var faviconUrl = 'chrome://favicon/size/16@1x/' + entry.url;
           column.style.backgroundImage = url(faviconUrl);
           column.style.backgroundRepeat = 'no-repeat';
           column.style.backgroundPosition = 'center center';
