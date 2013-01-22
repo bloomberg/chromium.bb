@@ -65,6 +65,9 @@ WebContentsView* CreateWebContentsView(
 
 namespace {
 
+const float kBrightnessMin = -.5f;
+const float kBrightnessMax = -.01f;
+
 // The window delegate for the overscroll window. This redirects trackpad events
 // to the web-contents window. The delegate destroys itself when the window is
 // destroyed.
@@ -90,6 +93,8 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
           ui::GetScaleFactorForNativeView(web_contents_window())));
     image_ = gfx::Image(image_reps);
   }
+
+  bool has_screenshot() const { return !image_.IsEmpty(); }
 
  private:
   virtual ~OverscrollWindowDelegate() {}
@@ -558,6 +563,7 @@ WebContentsViewAura::WebContentsViewAura(
       current_drag_op_(WebKit::WebDragOperationNone),
       drag_dest_delegate_(NULL),
       current_rvh_for_drag_(NULL),
+      overscroll_change_brightness_(false),
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE) {
 }
@@ -608,14 +614,19 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
     scoped_ptr<aura::Window> reset_window(overscroll_window_.release());
   }
 
-  overscroll_window_.reset(new aura::Window(new OverscrollWindowDelegate(
+  OverscrollWindowDelegate* overscroll_delegate = new OverscrollWindowDelegate(
       web_contents_,
-      current_overscroll_gesture_)));
+      current_overscroll_gesture_);
+  overscroll_window_.reset(new aura::Window(overscroll_delegate));
   overscroll_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   overscroll_window_->SetTransparent(false);
   overscroll_window_->Init(ui::LAYER_TEXTURED);
   overscroll_window_->layer()->SetMasksToBounds(true);
   overscroll_window_->SetName("OverscrollOverlay");
+
+  overscroll_change_brightness_ = overscroll_delegate->has_screenshot();
+  if (overscroll_change_brightness_)
+    SetOverscrollWindowBrightness(kBrightnessMin, false);
 
   window_->AddChild(overscroll_window_.get());
 
@@ -654,6 +665,10 @@ void WebContentsViewAura::ResetOverscrollTransform() {
   settings.SetPreemptionStrategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.AddObserver(this);
+  if (overscroll_change_brightness_) {
+    SetOverscrollWindowBrightness(kBrightnessMin,
+                                  target != overscroll_window_.get());
+  }
   target->SetTransform(gfx::Transform());
 }
 
@@ -678,6 +693,10 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   transform.Translate(mode == OVERSCROLL_WEST ? -content_width : content_width,
                       0);
   target->SetTransform(transform);
+  if (overscroll_change_brightness_) {
+    SetOverscrollWindowBrightness(kBrightnessMax,
+        target != overscroll_window_.get());
+  }
 }
 
 aura::Window* WebContentsViewAura::GetWindowToAnimateForOverscroll() {
@@ -725,6 +744,20 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass());
   navigation_overlay_->StartObservingView(static_cast<
       RenderWidgetHostViewAura*>(web_contents_->GetRenderWidgetHostView()));
+}
+
+void WebContentsViewAura::SetOverscrollWindowBrightness(float brightness,
+                                                        bool animate) {
+  if (animate) {
+    ui::ScopedLayerAnimationSettings settings(
+        overscroll_window_->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+    settings.SetTweenType(ui::Tween::EASE_OUT);
+    overscroll_window_->layer()->SetLayerBrightness(brightness);
+  } else {
+    overscroll_window_->layer()->SetLayerBrightness(brightness);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -998,6 +1031,14 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   gfx::Transform transform;
   transform.Translate(translate.x(), translate.y());
   target->SetTransform(transform);
+
+  if (overscroll_change_brightness_) {
+    float ratio = fabs(delta_x) / GetViewBounds().width();
+    float brightness = kBrightnessMin + ratio * (kBrightnessMax -
+        kBrightnessMin);
+    SetOverscrollWindowBrightness(brightness,
+        target != overscroll_window_.get());
+  }
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {

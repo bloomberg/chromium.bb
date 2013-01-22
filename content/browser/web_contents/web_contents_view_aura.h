@@ -82,6 +82,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // by overscroll. This function sets this up.
   void PrepareOverscrollNavigationOverlay();
 
+  void SetOverscrollWindowBrightness(float brightness, bool animate);
+
   // Overridden from WebContentsView:
   virtual void CreateView(
       const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
@@ -188,6 +190,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // this pointer should never be dereferenced.  We only use it for comparing
   // pointers.
   void* current_rvh_for_drag_;
+
+  bool overscroll_change_brightness_;
 
   // The overscroll gesture currently in progress.
   OverscrollMode current_overscroll_gesture_;
