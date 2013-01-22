@@ -290,12 +290,10 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   logging.info('All files zipped.')
 
   logging.info('Waiting for all files to finish uploading')
+  # Will raise if any exception occurred.
   remote_uploader.join()
   logging.info('All files are uploaded')
 
-  exception = remote_uploader.next_exception()
-  if exception:
-    raise exception[0], exception[1], exception[2]
   total = len(infiles)
   total_size = sum(metadata.get('s', 0) for metadata in infiles.itervalues())
   logging.info(

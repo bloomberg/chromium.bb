@@ -102,26 +102,26 @@ class RunIsolatedTest(unittest.TestCase):
     remote = RemoteTest('')
 
     for i in range(files_to_handle):
-      remote.add_item(run_isolated.Remote.MED, i, i,
-                      run_isolated.UNKNOWN_FILE_SIZE)
+      remote.add_item(
+          run_isolated.Remote.MED,
+          'obj%d' % i,
+          'dest%d' % i,
+          run_isolated.UNKNOWN_FILE_SIZE)
 
-    for i in range(files_to_handle):
-      self.assertNotEqual(-1, remote.get_result())
-    self.assertEqual(None, remote.next_exception())
-    remote.join()
+    items = sorted(remote.join())
+    expected = sorted('obj%d' % i for i in range(files_to_handle))
+    self.assertEqual(expected, items)
 
   def test_remote_with_errors(self):
     remote = RemoteTest('')
 
-    remote.add_item(run_isolated.Remote.MED, IOError, '',
+    def RaiseIOError(*_):
+      raise IOError()
+    remote._do_item = RaiseIOError
+    remote.add_item(run_isolated.Remote.MED, 'ignored', '',
                     run_isolated.UNKNOWN_FILE_SIZE)
-    remote.add_item(run_isolated.Remote.MED, Exception, '',
-                    run_isolated.UNKNOWN_FILE_SIZE)
-    remote.join()
-
-    self.assertNotEqual(None, remote.next_exception())
-    self.assertNotEqual(None, remote.next_exception())
-    self.assertEqual(None, remote.next_exception())
+    self.assertRaises(IOError, remote.join)
+    self.assertEqual([], remote.join())
 
   def test_zip_header_error(self):
     old_urlopen = run_isolated.urllib2.urlopen
@@ -134,11 +134,10 @@ class RunIsolatedTest(unittest.TestCase):
       remote.add_item(run_isolated.Remote.MED, 'zipped_A', 'A',
                       run_isolated.UNKNOWN_FILE_SIZE)
       remote.add_item(run_isolated.Remote.MED, 'zipped_B', 'B', 5)
-      remote.join()
-
-      self.assertNotEqual(None, remote.next_exception())
-      self.assertNotEqual(None, remote.next_exception())
-      self.assertEqual(None, remote.next_exception())
+      self.assertRaises(IOError, remote.get_one_result)
+      self.assertRaises(IOError, remote.get_one_result)
+      # Need to use join here, since get_one_result will hang.
+      self.assertEqual([], remote.join())
     finally:
       run_isolated.urllib2.urlopen = old_urlopen
 

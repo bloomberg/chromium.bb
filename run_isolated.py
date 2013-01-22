@@ -311,6 +311,14 @@ def fix_python_path(cmd):
 class ThreadPool(object):
   """Implements a multithreaded worker pool oriented for mapping jobs with
   thread-local result storage.
+
+  Arguments:
+  - initial_threads: Number of threads to start immediately. Can be 0 if it is
+    uncertain that threads will be needed.
+  - max_threads: Maximum number of threads that will be started when all the
+                 threads are busy working. Often the number of CPU cores.
+  - queue_size: Maximum number of tasks to buffer in the queue. 0 for unlimited
+                queue. A non-zero value may make add_task() blocking.
   """
   QUEUE_CLASS = Queue.PriorityQueue
 
@@ -327,9 +335,8 @@ class ThreadPool(object):
     # Mutables.
     self._num_of_added_tasks_lock = threading.Lock()
     self._num_of_added_tasks = 0
-    self._outputs_lock = threading.Lock()
+    self._outputs_exceptions_cond = threading.Condition()
     self._outputs = []
-    self._exceptions_lock = threading.Lock()
     self._exceptions = []
     # Number of threads in wait state.
     self._ready_lock = threading.Lock()
@@ -356,10 +363,14 @@ class ThreadPool(object):
   def add_task(self, priority, func, *args, **kwargs):
     """Adds a task, a function to be executed by a worker.
 
-    priority can adjust the priority of the task versus others. Lower priority
+    |priority| can adjust the priority of the task versus others. Lower priority
     takes precedence.
+
+    Returns the index of the item added, e.g. the total number of enqueued items
+    up to now.
     """
     assert isinstance(priority, int)
+    assert callable(func)
     with self._ready_lock:
       start_new_worker = not self._ready
     with self._num_of_added_tasks_lock:
@@ -368,6 +379,7 @@ class ThreadPool(object):
     self.tasks.put((priority, index, func, args, kwargs))
     if start_new_worker:
       self._add_worker()
+    return index
 
   def _run(self):
     """Worker thread loop. Runs until a None task is queued."""
@@ -385,13 +397,22 @@ class ThreadPool(object):
           return
         _priority, _index, func, args, kwargs = task
         out = func(*args, **kwargs)
-        with self._outputs_lock:
-          self._outputs.append(out)
+        if out is not None:
+          self._outputs_exceptions_cond.acquire()
+          try:
+            self._outputs.append(out)
+            self._outputs_exceptions_cond.notifyAll()
+          finally:
+            self._outputs_exceptions_cond.release()
       except Exception as e:
+        logging.warning('Caught exception: %s', e)
         exc_info = sys.exc_info()
-        with self._exceptions_lock:
+        self._outputs_exceptions_cond.acquire()
+        try:
           self._exceptions.append(exc_info)
-        logging.error('Caught exception! %s' % e)
+          self._outputs_exceptions_cond.notifyAll()
+        finally:
+          self._outputs_exceptions_cond.release()
       finally:
         self.tasks.task_done()
 
@@ -399,17 +420,41 @@ class ThreadPool(object):
     """Extracts all the results from each threads unordered.
 
     Call repeatedly to extract all the exceptions if desired.
+
+    Note: will wait for all work items to be done before returning an exception.
+    To get an exception early, use get_one_result().
     """
     # TODO(maruel): Stop waiting as soon as an exception is caught.
     self.tasks.join()
-    with self._exceptions_lock:
+    self._outputs_exceptions_cond.acquire()
+    try:
       if self._exceptions:
         e = self._exceptions.pop(0)
         raise e[0], e[1], e[2]
-    with self._outputs_lock:
       out = self._outputs
       self._outputs = []
+    finally:
+      self._outputs_exceptions_cond.release()
     return out
+
+  def get_one_result(self):
+    """Returns the next item that was generated or raises an exception if one
+    occured.
+
+    Warning: this function will hang if there is no work item left. Use join
+    instead.
+    """
+    self._outputs_exceptions_cond.acquire()
+    try:
+      while True:
+        if self._exceptions:
+          e = self._exceptions.pop(0)
+          raise e[0], e[1], e[2]
+        if self._outputs:
+          return self._outputs.pop(0)
+        self._outputs_exceptions_cond.wait()
+    finally:
+      self._outputs_exceptions_cond.release()
 
   def close(self):
     """Closes all the threads."""
@@ -478,40 +523,13 @@ class Remote(object):
   def __init__(self, destination_root):
     # Function to fetch a remote object or upload to a remote location..
     self._do_item = self.get_file_handler(destination_root)
-    # Contains tuple(priority, index, obj, destination).
-    self._queue = Queue.PriorityQueue()
-    # Contains tuple(priority, index, obj).
+    # Contains tuple(priority, obj).
     self._done = Queue.PriorityQueue()
-
-    # Contains generated exceptions that haven't been handled yet.
-    self._exceptions = Queue.Queue()
-
-    # To keep FIFO ordering in self._queue. It is assumed xrange's iterator is
-    # thread-safe.
-    self._next_index = xrange(0, 1<<30).__iter__().next
-
-    # Control access to the following member.
-    self._ready_lock = threading.Lock()
-    # Number of threads in wait state.
-    self._ready = 0
-
-    # Control access to the following member.
-    self._workers_lock = threading.Lock()
-    self._workers = []
-    for _ in range(self.INITIAL_WORKERS):
-      self._add_worker()
+    self._pool = ThreadPool(self.INITIAL_WORKERS, self.MAX_WORKERS, 0)
 
   def join(self):
     """Blocks until the queue is empty."""
-    self._queue.join()
-
-  def next_exception(self):
-    """Returns the next unhandled exception, or None if there is
-    no exception."""
-    try:
-      return self._exceptions.get_nowait()
-    except Queue.Empty:
-      return None
+    return self._pool.join()
 
   def add_item(self, priority, obj, dest, size):
     """Retrieves an object from the remote data store.
@@ -521,73 +539,37 @@ class Remote(object):
     Thread-safe.
     """
     assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
-    self._add_to_queue(priority, obj, dest, size)
+    return self._add_item(priority, obj, dest, size)
 
-  def get_result(self):
-    """Returns the next file that was successfully fetched."""
-    r = self._done.get()
-    if r[0] == -1:
-      # It's an exception.
-      raise r[2][0], r[2][1], r[2][2]
-    return r[2]
+  def _add_item(self, priority, obj, dest, size):
+    assert isinstance(obj, basestring), obj
+    assert isinstance(dest, basestring), dest
+    assert size is None or isinstance(size, int), size
+    return self._pool.add_task(
+        priority, self._task_executer, priority, obj, dest, size)
 
-  def _add_to_queue(self, priority, obj, dest, size):
-    with self._ready_lock:
-      start_new_worker = not self._ready
-    self._queue.put((priority, self._next_index(), obj, dest, size))
-    if start_new_worker:
-      self._add_worker()
+  def get_one_result(self):
+    return self._pool.get_one_result()
 
-  def _add_worker(self):
-    """Add one worker thread if there isn't too many. Thread-safe."""
-    with self._workers_lock:
-      if len(self._workers) >= self.MAX_WORKERS:
-        return False
-      worker = threading.Thread(target=self._run)
-      self._workers.append(worker)
-    worker.daemon = True
-    worker.start()
-
-  def _step_done(self, result):
-    """Worker helper function"""
-    self._done.put(result)
-    self._queue.task_done()
-    if result[0] == -1:
-      self._exceptions.put(sys.exc_info())
-
-  def _run(self):
-    """Worker thread loop."""
-    while True:
-      try:
-        with self._ready_lock:
-          self._ready += 1
-        item = self._queue.get()
-      finally:
-        with self._ready_lock:
-          self._ready -= 1
-      if not item:
+  def _task_executer(self, priority, obj, dest, size):
+    """Wraps self._do_item to trap and retry on IOError exceptions."""
+    try:
+      self._do_item(obj, dest)
+      if size and not valid_file(dest, size):
+        download_size = os.stat(dest).st_size
+        os.remove(dest)
+        raise IOError('File incorrect size after download of %s. Got %s and '
+                      'expected %s' % (obj, download_size, size))
+      # TODO(maruel): Technically, we'd want to have an output queue to be a
+      # PriorityQueue.
+      return obj
+    except IOError as e:
+      logging.debug('Caught IOError: %s', e)
+      # Retry a few times, lowering the priority.
+      if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
+        self._add_item(priority + 1, obj, dest, size)
         return
-      priority, index, obj, dest, size = item
-      try:
-        self._do_item(obj, dest)
-        if size and not valid_file(dest, size):
-          download_size = os.stat(dest).st_size
-          os.remove(dest)
-          raise IOError('File incorrect size after download of %s. Got %s and '
-                        'expected %s' % (obj, download_size, size))
-      except IOError:
-        # Retry a few times, lowering the priority.
-        if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
-          self._add_to_queue(priority + 1, obj, dest, size)
-          self._queue.task_done()
-          continue
-        # Transfers the exception back. It has maximum priority.
-        self._step_done((-1, 0, sys.exc_info()))
-      except:
-        # Transfers the exception back. It has maximum priority.
-        self._step_done((-1, 0, sys.exc_info()))
-      else:
-        self._step_done((priority, index, obj))
+      raise
 
   def get_file_handler(self, file_or_url):  # pylint: disable=R0201
     """Returns a object to retrieve objects from a remote."""
@@ -661,7 +643,7 @@ class NoCache(object):
   def retrieve(self, priority, item, size):
     """Get the request file."""
     self.remote.add_item(priority, item, self.path(item), size)
-    self.remote.get_result()
+    self.remote.get_one_result()
 
   def wait_for(self, items):
     """Download the first item of the given list if it is missing."""
@@ -669,7 +651,7 @@ class NoCache(object):
 
     if not os.path.exists(self.path(item)):
       self.remote.add_item(Remote.MED, item, self.path(item), UNKNOWN_FILE_SIZE)
-      downloaded = self.remote.get_result()
+      downloaded = self.remote.get_one_result()
       assert downloaded == item
 
     return item
@@ -894,7 +876,7 @@ class Cache(object):
     #     len(self._remote._queue) + len(self._remote.done))
     # There is no lock-free way to verify that.
     while self._pending_queue:
-      item = self.remote.get_result()
+      item = self.remote.get_one_result()
       self._pending_queue.remove(item)
       self._add(item, True)
       if item in items:
