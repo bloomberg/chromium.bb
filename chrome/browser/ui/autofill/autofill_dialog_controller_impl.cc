@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -252,6 +253,10 @@ string16 AutofillDialogControllerImpl::SignInText() const {
 string16 AutofillDialogControllerImpl::CancelSignInText() const {
   // TODO(abodenha): real strings and l10n.
   return string16(ASCIIToUTF16("Don't sign in."));
+}
+
+string16 AutofillDialogControllerImpl::SaveLocallyText() const {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -673,7 +678,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     if (section == SECTION_CC) {
       CreditCard card;
       FillFormGroupFromOutputs(output, &card);
-      manager->SaveImportedCreditCard(card);
+      if (view_->SaveDetailsLocally())
+        manager->SaveImportedCreditCard(card);
       FillFormStructureForSection(card, 0, section, compare);
 
       // CVC needs special-casing because the CreditCard class doesn't store
@@ -697,7 +703,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       // TODO(estade): we should probably edit the existing profile in the cases
       // where the input data is based on an existing profile (user clicked
       // "Edit" or autofill popup filled in the form).
-      manager->SaveImportedProfile(profile);
+      if (view_->SaveDetailsLocally())
+        manager->SaveImportedProfile(profile);
       FillFormStructureForSection(profile, 0, section, compare);
     }
   }

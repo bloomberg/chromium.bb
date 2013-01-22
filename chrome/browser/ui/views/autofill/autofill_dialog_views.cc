@@ -257,6 +257,8 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
       main_container_(NULL),
+      button_strip_extra_view_(NULL),
+      save_in_chrome_checkbox_(NULL),
       focus_manager_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
@@ -313,6 +315,10 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
 
 bool AutofillDialogViews::UseBillingForShipping() {
   return use_billing_for_shipping_->checked();
+}
+
+bool AutofillDialogViews::SaveDetailsLocally() {
+  return save_in_chrome_checkbox_->checked();
 }
 
 const content::NavigationController& AutofillDialogViews::ShowSignIn() {
@@ -372,6 +378,10 @@ bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
+views::View* AutofillDialogViews::GetExtraView() {
+  return button_strip_extra_view_;
+}
+
 bool AutofillDialogViews::Cancel() {
   return true;
 }
@@ -388,7 +398,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == use_billing_for_shipping_) {
     UpdateDetailsGroupState(*GroupForSection(SECTION_SHIPPING));
-  } else  if (sender == cancel_sign_in_) {
+  } else if (sender == cancel_sign_in_) {
     controller_->EndSignInFlow();
   } else {
     // TODO(estade): Should the menu be shown on mouse down?
@@ -467,6 +477,16 @@ void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void AutofillDialogViews::InitChildViews() {
+  button_strip_extra_view_ = new views::View();
+  button_strip_extra_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+
+  // TODO(estade): i18n.
+  save_in_chrome_checkbox_ =
+      new views::Checkbox(controller_->SaveLocallyText());
+  button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);
+  // TODO(estade): add other views, like the Autocheckout progress bar.
+
   contents_ = new views::View();
   contents_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
@@ -714,11 +734,25 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
     group.manual_input->SetVisible(!show_suggestions);
   }
 
+  // Show or hide the "Save in chrome" checkbox. If nothing is in editing mode,
+  // hide.
+  save_in_chrome_checkbox_->SetVisible(AtLeastOneSectionIsEditing());
+
   if (group.container)
     group.container->SetForwardMouseEvents(show_suggestions);
 
   if (GetWidget())
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
+bool AutofillDialogViews::AtLeastOneSectionIsEditing() {
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (iter->second.manual_input && iter->second.manual_input->visible())
+      return true;
+  }
+
+  return false;
 }
 
 bool AutofillDialogViews::ValidateForm() {

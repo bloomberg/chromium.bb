@@ -62,6 +62,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual bool UseBillingForShipping() OVERRIDE;
+  virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController& ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
 
@@ -74,6 +75,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual views::View* GetExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
@@ -239,6 +241,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // Updates the visual state of the given group as per the model.
   void UpdateDetailsGroupState(const DetailsGroup& group);
 
+  // Returns true if at least one of the details sections is in manual input
+  // mode.
+  bool AtLeastOneSectionIsEditing();
+
   // Gets a pointer to the DetailsGroup that's associated with the given section
   // of the dialog.
   DetailsGroup* GroupForSection(DialogSection section);
@@ -295,6 +301,13 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // View to host everything that isn't related to sign-in.
   views::View* main_container_;
+
+  // The "Extra view" is on the same row as the dialog buttons.
+  views::View* button_strip_extra_view_;
+
+  // This checkbox controls whether new details are saved to the Autofill
+  // database. It lives in |extra_view_|.
+  views::Checkbox* save_in_chrome_checkbox_;
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;

@@ -845,6 +845,9 @@ For Chromium, processes used to display diagnostics information (such as this "a
       <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
         Chromium Autofill settings
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX" desc="Checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
+        Save details in Chromium
+      </message>
 
       <!-- Web Intents -->
       <message name="IDS_INTENT_PICKER_INSTALL_EXTENSION" desc="Text on the button in the web intent picker that installs an extension then uses the extension as an intent service.">

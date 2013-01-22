@@ -34,6 +34,9 @@ class AutofillDialogView {
   // Returns the state of the "use billing address for shipping" checkbox.
   virtual bool UseBillingForShipping() = 0;
 
+  // Returns true if new or edited autofill details should be saved.
+  virtual bool SaveDetailsLocally() = 0;
+
   // Triggers dialog to sign in to Google.
   // Returns a NotificationSource to be used to monitor for sign-in completion.
   virtual const content::NavigationController& ShowSignIn() = 0;

@@ -61,6 +61,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 SignInText() const OVERRIDE;
+  virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 CancelSignInText() const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;

@@ -44,6 +44,7 @@ class AutofillDialogController {
   virtual string16 ConfirmButtonText() const = 0;
   virtual string16 SignInText() const = 0;
   virtual string16 CancelSignInText() const = 0;
+  virtual string16 SaveLocallyText() const = 0;
 
   // Detail inputs -------------------------------------------------------------
 
