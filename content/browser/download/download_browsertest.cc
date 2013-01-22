@@ -9,10 +9,12 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/content_switches.h"
@@ -367,6 +369,11 @@ bool DownloadResumptionFilter(bool* state_flag, DownloadItem* download) {
 // Filter for waiting for intermediate file rename.
 bool IntermediateFileRenameFilter(DownloadItem* download) {
   return !download->GetFullPath().empty();
+}
+
+// Filter for waiting for a certain number of bytes.
+bool DataReceivedFilter(int number_of_bytes, DownloadItem* download) {
+  return download->GetReceivedBytes() >= number_of_bytes;
 }
 
 }  // namespace
@@ -760,22 +767,20 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   DownloadManagerForShell(shell())->Shutdown();
 }
 
-#if defined(OS_WIN)
-// Disabled because of flakiness on Windows. http://crbug.com/169882
-#define MAYBE_ResumeInterruptedDownload DISABLED_ResumeInterruptedDownload
-#else
-#define MAYBE_ResumeInterruptedDownload ResumeInterruptedDownload
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ResumeInterruptedDownload) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
-  // Default behavior is a 15K file with a RST at 10K.  We request
-  // a hold on the response so that we can get the target name determined
-  // before handling the RST.
-  // TODO(rdsmith): Figure out how to handle the races needed
-  // so that we don't have to wait for the target name determination.
-  GURL url = test_server()->GetURL("rangereset?hold");
+
+  // Figure out the size of the first chunk to send so that it makes it
+  // through the buffering between DownloadResourceHandler and
+  // DownloadFileImpl.
+  int initial_chunk = (DownloadResourceHandler::kDownloadByteStreamSize /
+                       ByteStreamWriter::kFractionBufferBeforeSending) + 1;
+
+  GURL url = test_server()->GetURL(
+      StringPrintf("rangereset?size=%d&rst_boundary=%d",
+                   initial_chunk * 2, initial_chunk));
 
   // Download and wait for file determination.
   scoped_ptr<DownloadTestObserver> observer(CreateInProgressWaiter(shell(), 1));
@@ -786,11 +791,20 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ResumeInterruptedDownload) {
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   DownloadItem* download(downloads[0]);
-  if (download->GetFullPath().empty()) {
-    DownloadUpdatedObserver intermediate_observer(
-        download, base::Bind(&IntermediateFileRenameFilter));
-    intermediate_observer.WaitForEvent();
-  }
+
+  // Wait for intermediate name, then for all expected data to arrive.
+  // TODO(rdsmith): Figure out how to handle the races needed
+  // so that we don't have to wait for the target name determination.
+  DownloadUpdatedObserver intermediate_observer(
+      download, base::Bind(&IntermediateFileRenameFilter));
+  intermediate_observer.WaitForEvent();
+
+  DownloadUpdatedObserver data_observer(
+      download, base::Bind(&DataReceivedFilter, initial_chunk));
+  data_observer.WaitForEvent();
+
+  // Shouldn't have received any extra data.
+  ASSERT_EQ(initial_chunk, download->GetReceivedBytes());
 
   // Unleash the RST!
   scoped_ptr<DownloadTestObserver> rst_observer(CreateWaiter(shell(), 1));
@@ -798,18 +812,18 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ResumeInterruptedDownload) {
   NavigateToURL(shell(), release_url);
   rst_observer->WaitForFinished();
   EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  EXPECT_EQ(4000u, download->GetReceivedBytes());
-  EXPECT_EQ(8000u, download->GetTotalBytes());
+  EXPECT_EQ(initial_chunk, download->GetReceivedBytes());
+  EXPECT_EQ(initial_chunk * 2, download->GetTotalBytes());
   EXPECT_EQ(FILE_PATH_LITERAL("rangereset.crdownload"),
             download->GetFullPath().BaseName().value());
 
   {
     std::string file_contents;
-    std::string expected_contents(4000, 'X');
+    std::string expected_contents(initial_chunk, 'X');
     ASSERT_TRUE(file_util::ReadFileToString(
         download->GetFullPath(), &file_contents));
-    EXPECT_EQ(4000u, file_contents.size());
-    // In conditional to avoid spamming the console with two 4000 char strings.
+    EXPECT_EQ(static_cast<size_t>(initial_chunk), file_contents.size());
+    // In conditional to avoid spamming the console with two very long strings.
     if (expected_contents != file_contents)
       EXPECT_TRUE(false) << "File contents do not have expected value.";
   }
@@ -823,18 +837,18 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ResumeInterruptedDownload) {
   NavigateToURL(shell(), release_url);  // Needed to get past hold.
   complete_observer.WaitForEvent();
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
-  EXPECT_EQ(8000u, download->GetReceivedBytes());
-  EXPECT_EQ(8000u, download->GetTotalBytes());
+  EXPECT_EQ(initial_chunk * 2, download->GetReceivedBytes());
+  EXPECT_EQ(initial_chunk * 2, download->GetTotalBytes());
   EXPECT_EQ(FILE_PATH_LITERAL("rangereset"),
             download->GetFullPath().BaseName().value())
       << "Target path name: " << download->GetTargetFilePath().value();
 
   {
     std::string file_contents;
-    std::string expected_contents(8000, 'X');
+    std::string expected_contents(initial_chunk * 2, 'X');
     ASSERT_TRUE(file_util::ReadFileToString(
         download->GetFullPath(), &file_contents));
-    EXPECT_EQ(8000u, file_contents.size());
+    EXPECT_EQ(static_cast<size_t>(initial_chunk * 2), file_contents.size());
     // In conditional to avoid spamming the console with two 800 char strings.
     if (expected_contents != file_contents)
       EXPECT_TRUE(false) << "File contents do not have expected value.";

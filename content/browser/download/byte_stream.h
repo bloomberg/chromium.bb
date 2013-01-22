@@ -122,6 +122,10 @@ namespace content {
 //    }
 class CONTENT_EXPORT ByteStreamWriter {
 public:
+  // Inverse of the fraction of the stream buffer that must be full before
+  // a notification is sent to paired Reader that there's more data.
+  static const int kFractionBufferBeforeSending;
+
   virtual ~ByteStreamWriter() = 0;
 
   // Always adds the data passed into the ByteStream.  Returns true
@@ -150,6 +154,10 @@ public:
 
 class CONTENT_EXPORT ByteStreamReader {
  public:
+  // Inverse of the fraction of the stream buffer that must be empty before
+  // a notification is send to paired Writer that there's more room.
+  static const int kFractionReadBeforeWindowUpdate;
+
   enum StreamState { STREAM_EMPTY, STREAM_HAS_DATA, STREAM_COMPLETE };
 
   virtual ~ByteStreamReader() = 0;

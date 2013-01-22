@@ -34,8 +34,6 @@
 namespace content {
 namespace {
 
-static const int kDownloadByteStreamSize = 100 * 1024;
-
 void CallStartedCBOnUIThread(
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     DownloadItem* item,
@@ -72,6 +70,8 @@ static void StartOnUIThread(
 }
 
 }  // namespace
+
+const int DownloadResourceHandler::kDownloadByteStreamSize = 100 * 1024;
 
 DownloadResourceHandler::DownloadResourceHandler(
     DownloadId id,

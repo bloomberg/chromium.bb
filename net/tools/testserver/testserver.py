@@ -686,8 +686,8 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.wfile.flush()
 
     # handle requests until one of them clears this flag.
-    self.server.waitForDownload = True
-    while self.server.waitForDownload:
+    self.server.wait_for_download = True
+    while self.server.wait_for_download:
       self.server.handle_request()
 
     # Second chunk of data:
@@ -700,7 +700,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
     if not self._ShouldHandleRequest("/download-finish"):
       return False
 
-    self.server.waitForDownload = False
+    self.server.wait_for_download = False
     self.send_response(200)
     self.send_header('Content-Type', 'text/html')
     self.send_header('Cache-Control', 'max-age=0')
@@ -1437,9 +1437,9 @@ class TestPageHandler(testserver_base.BasePageHandler):
     # Parse the query
     qdict = urlparse.parse_qs(query, True)
     if 'size' in qdict:
-      size = int(qdict['size'])
+      size = int(qdict['size'][0])
     if 'rst_boundary' in qdict:
-      rst_boundary = int(qdict['rst_boundary'])
+      rst_boundary = int(qdict['rst_boundary'][0])
     if 'bounce_range' in qdict:
       respond_to_range = False
     if 'hold' in qdict:
@@ -1486,8 +1486,8 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.wfile.write('X')
       first_byte = first_byte + 1
       # handle requests until one of them clears this flag.
-      self.server.waitForDownload = True
-      while self.server.waitForDownload:
+      self.server.wait_for_download = True
+      while self.server.wait_for_download:
         self.server.handle_request()
 
     possible_rst = ((first_byte / rst_boundary) + 1) * rst_boundary
@@ -1501,14 +1501,15 @@ class TestPageHandler(testserver_base.BasePageHandler):
 
     # We're resetting the connection part way in; go to the RST
     # boundary and then send an RST.
-    # WINDOWS WARNING: On windows, if the amount of data sent before the
-    # reset is > 4096, only 4096 bytes will make it across before the RST
-    # despite the flush.  This is hypothesized to be due to an underlying
-    # asynchronous sending implementation, which the 0 second linger
-    # forcibly terminates.  The amount of data pre-RST should be kept below
-    # 4096 for this reason.
+    # Because socket semantics do not guarantee that all the data will be
+    # sent when using the linger semantics to hard close a socket,
+    # we send the data and then wait for our peer to release us
+    # before sending the reset.
     self.wfile.write('X' * (possible_rst - first_byte))
     self.wfile.flush()
+    self.server.wait_for_download = True
+    while self.server.wait_for_download:
+      self.server.handle_request()
     l_onoff = 1  # Linger is active.
     l_linger = 0  # Seconds to linger for.
     self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
