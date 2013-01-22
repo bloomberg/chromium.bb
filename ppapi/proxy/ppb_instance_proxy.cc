@@ -1200,6 +1200,9 @@ void PPB_Instance_Proxy::OnHostMsgUpdateSurroundingText(
 
 void PPB_Instance_Proxy::OnPluginMsgMouseLockComplete(PP_Instance instance,
                                                       int32_t result) {
+  if (!dispatcher()->IsPlugin())
+    return;
+
   // Save the mouse callback on the instance data.
   InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
       GetInstanceData(instance);

@@ -85,6 +85,9 @@ const InterfaceProxy::Info* PPP_InputEvent_Proxy::GetInfo() {
 }
 
 bool PPP_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_InputEvent_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInputEvent_HandleInputEvent,

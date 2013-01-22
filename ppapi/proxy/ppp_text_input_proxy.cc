@@ -57,6 +57,9 @@ PPP_TextInput_Proxy::~PPP_TextInput_Proxy() {
 }
 
 bool PPP_TextInput_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_TextInput_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPTextInput_RequestSurroundingText,

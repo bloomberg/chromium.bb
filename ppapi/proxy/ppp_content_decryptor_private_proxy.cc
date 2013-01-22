@@ -386,6 +386,10 @@ const PPP_ContentDecryptor_Private*
 
 bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
     const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;  // These are only valid from host->plugin.
+                   // Don't allow the plugin to send these to the host.
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_ContentDecryptor_Private_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,

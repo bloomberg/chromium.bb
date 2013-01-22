@@ -127,6 +127,9 @@ const PPP_Printing_Dev* PPP_Printing_Proxy::GetProxyInterface() {
 }
 
 bool PPP_Printing_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Printing_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPrinting_QuerySupportedFormats,

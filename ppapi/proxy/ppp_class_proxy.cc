@@ -246,6 +246,9 @@ PP_Bool PPP_Class_Proxy::IsInstanceOf(const PPB_Var_Deprecated* ppb_var_impl,
 }
 
 bool PPP_Class_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;  // These messages are only valid from host->plugin.
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Class_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPClass_HasProperty,

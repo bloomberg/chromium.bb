@@ -102,6 +102,9 @@ const InterfaceProxy::Info* PPP_VideoDecoder_Proxy::GetInfo() {
 }
 
 bool PPP_VideoDecoder_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_VideoDecoder_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers,

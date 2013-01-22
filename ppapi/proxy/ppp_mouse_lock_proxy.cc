@@ -66,6 +66,9 @@ const InterfaceProxy::Info* PPP_MouseLock_Proxy::GetInfo() {
 }
 
 bool PPP_MouseLock_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_MouseLock_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPMouseLock_MouseLockLost,

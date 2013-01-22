@@ -65,6 +65,9 @@ const InterfaceProxy::Info* PPP_Instance_Private_Proxy::GetInfo() {
 }
 
 bool PPP_Instance_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Instance_Private_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstancePrivate_GetInstanceObject,

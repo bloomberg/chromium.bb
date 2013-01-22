@@ -154,6 +154,9 @@ const PPP_Instance* PPP_Instance_Proxy::GetInstanceInterface() {
 #endif  // !defined(OS_NACL)
 
 bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->IsPlugin())
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Instance_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidCreate,
