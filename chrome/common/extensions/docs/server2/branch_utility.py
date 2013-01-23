@@ -9,43 +9,36 @@ import object_store
 import operator
 
 class BranchUtility(object):
-  def __init__(self, base_path, default_branches, fetcher, object_store):
+  def __init__(self, base_path, fetcher, object_store):
     self._base_path = base_path
-    self._default_branches = default_branches
     self._fetcher = fetcher
     self._object_store = object_store
 
   def GetAllBranchNames(self):
-    # TODO(aa): Do we need to include 'local'?
-    return ['dev', 'beta', 'stable', 'trunk', 'local']
+    return ['dev', 'beta', 'stable', 'trunk']
 
   def GetAllBranchNumbers(self):
     return [(branch, self.GetBranchNumberForChannelName(branch))
             for branch in self.GetAllBranchNames()]
 
   def SplitChannelNameFromPath(self, path):
-    try:
+    """Splits the channel name out of |path|, returning the tuple
+    (channel_name, real_path). If the channel cannot be determined then returns
+    (None, path).
+    """
+    if '/' in path:
       first, second = path.split('/', 1)
-    except ValueError:
-      first = path
-      second = ''
-    if first in ['trunk', 'dev', 'beta', 'stable']:
-      return (first, second, False)
     else:
-      doc_type = path.split('/')[0]
-      if doc_type in self._default_branches:
-        return (self._default_branches[doc_type], path, False)
-      return (self._default_branches['extensions'], path, True)
+      first, second = (path, '')
+    if first in ['trunk', 'dev', 'beta', 'stable']:
+      return (first, second)
+    return (None, path)
 
   def GetBranchNumberForChannelName(self, channel_name):
-    """Returns the branch number for a channel name. If the |channel_name| is
-    'trunk' or 'local', then |channel_name| will be returned unchanged. These
-    are returned unchanged because 'trunk' has a separate URL from the other
-    branches and should be handled differently. 'local' is also a special branch
-    for development that should be handled differently.
+    """Returns the branch number for a channel name.
     """
-    if channel_name in ['trunk', 'local']:
-      return channel_name
+    if channel_name == 'trunk':
+      return 'trunk'
 
     branch_number = self._object_store.Get(channel_name + '.' + self._base_path,
                                            object_store.BRANCH_UTILITY).Get()

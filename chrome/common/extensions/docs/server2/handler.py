@@ -34,21 +34,15 @@ from template_data_source import TemplateDataSource
 from third_party.json_schema_compiler.model import UnixName
 import url_constants
 
-# The branch that the server will default to when no branch is specified in the
-# URL. This is necessary because it is not possible to pass flags to the script
-# handler.
-# Production settings:
-DEFAULT_BRANCHES = { 'extensions': 'stable', 'apps': 'trunk' }
-# Dev settings:
-# DEFAULT_BRANCHES = { 'extensions': 'local', 'apps': 'local' }
-
 # Increment this version to force the server to reload all pages in the first
 # cron job that is run.
 _VERSION = 1
 
+# The default channel to serve docs for if no channel is specified.
+_DEFAULT_CHANNEL = 'stable'
+
 BRANCH_UTILITY_MEMCACHE = InMemoryObjectStore('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
-                               DEFAULT_BRANCHES,
                                AppEngineUrlFetcher(None),
                                BRANCH_UTILITY_MEMCACHE)
 
@@ -90,18 +84,15 @@ def _CreateMemcacheFileSystem(branch, branch_memcache):
   return MemcacheFileSystem(SubversionFileSystem(fetcher, stat_fetcher),
                             branch_memcache)
 
-APPS_BRANCH = BRANCH_UTILITY.GetBranchNumberForChannelName(
-    DEFAULT_BRANCHES['apps'])
-APPS_MEMCACHE = InMemoryObjectStore(APPS_BRANCH)
-APPS_FILE_SYSTEM = _CreateMemcacheFileSystem(APPS_BRANCH, APPS_MEMCACHE)
+_default_branch = BRANCH_UTILITY.GetBranchNumberForChannelName(_DEFAULT_CHANNEL)
+APPS_MEMCACHE = InMemoryObjectStore(_default_branch)
+APPS_FILE_SYSTEM = _CreateMemcacheFileSystem(_default_branch, APPS_MEMCACHE)
 APPS_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(
     APPS_FILE_SYSTEM,
     APPS_MEMCACHE).Create(_SplitFilenameUnix, compiled_fs.APPS_FS)
 
-EXTENSIONS_BRANCH = BRANCH_UTILITY.GetBranchNumberForChannelName(
-    DEFAULT_BRANCHES['extensions'])
-EXTENSIONS_MEMCACHE = InMemoryObjectStore(EXTENSIONS_BRANCH)
-EXTENSIONS_FILE_SYSTEM = _CreateMemcacheFileSystem(EXTENSIONS_BRANCH,
+EXTENSIONS_MEMCACHE = InMemoryObjectStore(_default_branch)
+EXTENSIONS_FILE_SYSTEM = _CreateMemcacheFileSystem(_default_branch,
                                                    EXTENSIONS_MEMCACHE)
 EXTENSIONS_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(
     EXTENSIONS_FILE_SYSTEM,
@@ -125,11 +116,7 @@ def _GetInstanceForBranch(channel_name, local_path):
     return instance
 
   branch_memcache = InMemoryObjectStore(branch)
-  if branch == 'local':
-    file_system = LocalFileSystem(local_path)
-  else:
-    file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
-
+  file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
   cache_factory = CompiledFileSystem.Factory(file_system, branch_memcache)
   api_list_data_source_factory = APIListDataSource.Factory(cache_factory,
                                                            file_system,
@@ -212,8 +199,8 @@ class Handler(webapp.RequestHandler):
     super(Handler, self).__init__(request, response)
 
   def _HandleGet(self, path):
-    channel_name, real_path, default = BRANCH_UTILITY.SplitChannelNameFromPath(
-        path)
+    channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
+
     # TODO: Detect that these are directories and serve index.html out of them.
     if real_path.strip('/') == 'apps':
       real_path = 'apps/index.html'
@@ -223,10 +210,15 @@ class Handler(webapp.RequestHandler):
     if (not real_path.startswith('extensions/') and
         not real_path.startswith('apps/') and
         not real_path.startswith('static/')):
-      if self._RedirectBadPaths(real_path, channel_name, default):
+      if self._RedirectBadPaths(real_path, channel_name):
         return
 
     _CleanBranches()
+
+    # Yes, do this after it's passed to RedirectBadPaths. That needs to know
+    # whether or not a branch was specified.
+    if channel_name is None:
+      channel_name = _DEFAULT_CHANNEL
     _GetInstanceForBranch(channel_name, self._local_path).Get(real_path,
                                                               self.request,
                                                               self.response)
@@ -315,7 +307,7 @@ class Handler(webapp.RequestHandler):
 
     return False
 
-  def _RedirectBadPaths(self, path, channel_name, default):
+  def _RedirectBadPaths(self, path, channel_name):
     if '/' in path or path == '404.html':
       return False
     apps_templates = APPS_COMPILED_FILE_SYSTEM.GetFromFileListing(
@@ -323,7 +315,7 @@ class Handler(webapp.RequestHandler):
     extensions_templates = EXTENSIONS_COMPILED_FILE_SYSTEM.GetFromFileListing(
         PUBLIC_TEMPLATE_PATH + '/extensions')
     unix_path = UnixName(os.path.splitext(path)[0])
-    if default:
+    if channel_name is None:
       apps_path = '/apps/%s' % path
       extensions_path = '/extensions/%s' % path
     else:

@@ -36,8 +36,7 @@ class SamplesDataSource(object):
                  samples_path):
       self._file_system = file_system
       self._github_file_system = github_file_system
-      self._static_path = ((('/' + channel) if channel != 'local' else '') +
-                           '/static')
+      self._static_path = '/%s/static' % channel
       self._extensions_cache = cache_factory.Create(self._MakeSamplesList,
                                                     compiled_fs.EXTENSIONS,
                                                     version=_VERSION)

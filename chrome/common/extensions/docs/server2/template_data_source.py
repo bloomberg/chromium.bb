@@ -68,8 +68,7 @@ class TemplateDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
-      self._static_resources = (
-          (('/' + channel_name) if channel_name != 'local' else '') + '/static')
+      self._static_resources = '/%s/static' % channel_name
 
     def _CreateTemplate(self, template_name, text):
       return Handlebar(self._ref_resolver.ResolveAllLinks(text))

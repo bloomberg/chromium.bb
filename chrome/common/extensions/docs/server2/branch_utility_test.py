@@ -15,30 +15,32 @@ class BranchUtilityTest(unittest.TestCase):
   def setUp(self):
     self._branch_util = BranchUtility(
         os.path.join('branch_utility', 'first.json'),
-        { 'extensions': 'stable', 'apps': 'trunk' },
         FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
         InMemoryObjectStore(''))
 
   def testSplitChannelNameFromPath(self):
-    self.assertEquals(('dev', 'extensions/stuff.html', False),
+    self.assertEquals(('stable', 'extensions/stuff.html'),
+                      self._branch_util.SplitChannelNameFromPath(
+                      'stable/extensions/stuff.html'))
+    self.assertEquals(('dev', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'dev/extensions/stuff.html'))
-    self.assertEquals(('beta', 'extensions/stuff.html', False),
+    self.assertEquals(('beta', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'beta/extensions/stuff.html'))
-    self.assertEquals(('trunk', 'extensions/stuff.html', False),
+    self.assertEquals(('trunk', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'trunk/extensions/stuff.html'))
-    self.assertEquals(('stable', 'extensions/stuff.html', False),
+    self.assertEquals((None, 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'extensions/stuff.html'))
-    self.assertEquals(('trunk', 'apps/stuff.html', False),
+    self.assertEquals((None, 'apps/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'apps/stuff.html'))
-    self.assertEquals(('stable', 'extensions/dev/stuff.html', False),
+    self.assertEquals((None, 'extensions/dev/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'extensions/dev/stuff.html'))
-    self.assertEquals(('stable', 'stuff.html', True),
+    self.assertEquals((None, 'stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
                       'stuff.html'))
 
