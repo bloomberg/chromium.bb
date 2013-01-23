@@ -50,11 +50,14 @@ const GUID kChromeTraceProviderName = {
         { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 
 }
+
+#if !defined(COMPONENT_BUILD)
 // Required for base initialization.
 // TODO(siggi): This should be handled better, as this way our at exit
 //     registrations will run under the loader's lock. However,
 //     once metro_driver is merged into Chrome.dll, this will go away anyhow.
 base::AtExitManager at_exit;
+#endif
 
 namespace Hacks {
 
