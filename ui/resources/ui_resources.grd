@@ -161,6 +161,8 @@
       <if expr="pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_OAK" file="oak.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_LEFT_CORNER" file="panel_top_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_RIGHT_CORNER" file="panel_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" />
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
