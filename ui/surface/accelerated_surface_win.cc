@@ -4,7 +4,6 @@
 
 #include "ui/surface/accelerated_surface_win.h"
 
-#include <dwmapi.h>
 #include <windows.h>
 #include <algorithm>
 
@@ -18,13 +17,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_native_library.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "base/tracked_objects.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/rect.h"
@@ -36,17 +33,11 @@ namespace d3d_utils = ui_surface_d3d9_utils;
 
 namespace {
 
-const char kUseOcclusionQuery[] = "use-occlusion-query";
-
 UINT GetPresentationInterval() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
     return D3DPRESENT_INTERVAL_IMMEDIATE;
   else
     return D3DPRESENT_INTERVAL_ONE;
-}
-
-bool UsingOcclusionQuery() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kUseOcclusionQuery);
 }
 
 }  // namespace
@@ -154,18 +145,10 @@ void PresentThread::ResetDevice() {
     return;
   }
 
-  if (UsingOcclusionQuery()) {
-    HRESULT hr = device_->CreateQuery(D3DQUERYTYPE_OCCLUSION, query_.Receive());
-    if (FAILED(hr)) {
-      device_ = NULL;
-      return;
-    }
-  } else {
-    HRESULT hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
-    if (FAILED(hr)) {
-      device_ = NULL;
-      return;
-    }
+  HRESULT hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
+  if (FAILED(hr)) {
+    device_ = NULL;
+    return;
   }
 
   if (!surface_transformer_.Init(device_)) {
@@ -456,16 +439,6 @@ void AcceleratedPresenter::SetNewTargetWindow(gfx::PluginWindowHandle window) {
 AcceleratedPresenter::~AcceleratedPresenter() {
 }
 
-static base::TimeDelta GetSwapDelay() {
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  int delay = 0;
-  if (cmd_line->HasSwitch(switches::kGpuSwapDelay)) {
-    base::StringToInt(cmd_line->GetSwitchValueNative(
-        switches::kGpuSwapDelay).c_str(), &delay);
-  }
-  return base::TimeDelta::FromMilliseconds(delay);
-}
-
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
@@ -579,10 +552,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("gpu", "Copy");
 
-    if (UsingOcclusionQuery()) {
-      present_thread_->query()->Issue(D3DISSUE_BEGIN);
-    }
-
     // Copy while flipping the source texture on the vertical axis.
     bool result = present_thread_->surface_transformer()->CopyInverted(
         source_texture_, dest_surface, size);
@@ -595,10 +564,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     return;
 
   present_size_ = size;
-
-  static const base::TimeDelta swap_delay = GetSwapDelay();
-  if (swap_delay.ToInternalValue())
-    base::PlatformThread::Sleep(swap_delay);
 
   // If it is expected that Direct3D cannot be used reliably because the window
   // is resizing, fall back to presenting with GDI.
