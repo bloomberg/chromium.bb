@@ -84,7 +84,6 @@ extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBundledPpapiFlash[];
 extern const char kDisableBookmarkAutocompleteProvider[];
 extern const char kDisableClientSidePhishingDetection[];
-extern const char kDisableCloudPolicyService[];
 extern const char kDisableComponentUpdate[];
 extern const char kDisableCRLSets[];
 extern const char kDisableCustomJumpList[];

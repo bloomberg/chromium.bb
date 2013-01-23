@@ -1443,15 +1443,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void DisconnectFromPrivateNetwork(base::DictionaryValue* args,
                                     IPC::Message* reply_message);
 
-  // Enterprise policy.
-  void IsEnterpriseDevice(DictionaryValue* args, IPC::Message* reply_message);
-
-  void EnrollEnterpriseDevice(DictionaryValue* args,
-                              IPC::Message* reply_message);
-
-  void GetEnterprisePolicyInfo(DictionaryValue* args,
-                               IPC::Message* reply_message);
-
   // Accessibility.
   void EnableSpokenFeedback(DictionaryValue* args, IPC::Message* reply_message);
 

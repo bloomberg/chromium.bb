@@ -141,8 +141,6 @@ void OAuth2PolicyFetcher::SetPolicyToken(const std::string& token) {
 
   policy::BrowserPolicyConnector* browser_policy_connector =
       g_browser_process->browser_policy_connector();
-  browser_policy_connector->RegisterForUserPolicy(token);
-
   policy::UserCloudPolicyManagerChromeOS* cloud_policy_manager =
       browser_policy_connector->GetUserCloudPolicyManager();
   if (cloud_policy_manager) {

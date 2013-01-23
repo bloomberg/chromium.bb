@@ -74,7 +74,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -554,17 +553,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-
   if (parsed_command_line().HasSwitch(::switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(::switches::kLoginPassword)) {
-    // Pass the TokenService pointer to the policy connector so user policy can
-    // grab a token and register with the policy server.
-    // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
-    connector->SetUserPolicyTokenService(
-        TokenServiceFactory::GetForProfile(profile()));
-
     // Make sure we flip every profile to not share proxies if the user hasn't
     // specified so explicitly.
     const PrefService::Preference* use_shared_proxies_pref =
@@ -578,6 +568,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Make sure the NetworkConfigurationUpdater is ready so that it pushes ONC
   // configuration before login.
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
   connector->GetNetworkConfigurationUpdater();
 
   // Make sure that wallpaper boot transition and other delays in OOBE

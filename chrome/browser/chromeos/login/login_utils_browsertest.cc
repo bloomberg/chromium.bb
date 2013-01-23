@@ -25,6 +25,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile_manager.h"

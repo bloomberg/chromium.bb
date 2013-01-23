@@ -29,21 +29,6 @@ class EnterpriseEnrollmentScreenActor {
     UI_ERROR_FATAL,
   };
 
-  // TODO(mnissler): Remove this enum once enrollment has been switched to
-  // DeviceCloudPolicyManagerChromeOS (http://crbug.com/108928) for good.
-  enum EnrollmentError {
-    DOMAIN_MISMATCH_ERROR,
-    FATAL_ERROR,
-    ACCOUNT_ERROR,
-    SERIAL_NUMBER_ERROR,
-    ENROLLMENT_MODE_ERROR,
-    FATAL_AUTH_ERROR,
-    AUTO_ENROLLMENT_ERROR,
-    NETWORK_ERROR,
-    LOCKBOX_TIMEOUT_ERROR,
-    MISSING_LICENSES_ERROR,
-  };
-
   // This defines the interface for controllers which will be called back when
   // something happens on the UI.
   class Controller {

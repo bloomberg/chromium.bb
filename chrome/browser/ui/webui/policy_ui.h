@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
-#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "content/public/browser/web_ui_controller.h"

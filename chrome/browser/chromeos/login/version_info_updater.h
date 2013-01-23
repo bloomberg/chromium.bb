@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
-#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace chromeos {
@@ -20,8 +19,7 @@ class CrosSettings;
 
 // Fetches all info we want to show on OOBE/Login screens about system
 // version, boot times and cloud policy.
-class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
-                           public policy::CloudPolicyStore::Observer,
+class VersionInfoUpdater : public policy::CloudPolicyStore::Observer,
                            public content::NotificationObserver {
  public:
   class Delegate {
@@ -52,11 +50,6 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   void StartUpdate(bool is_official_build);
 
  private:
-  // policy::CloudPolicySubsystem::Observer methods:
-  virtual void OnPolicyStateChanged(
-      policy::CloudPolicySubsystem::PolicySubsystemState state,
-      policy::CloudPolicySubsystem::ErrorDetails error_details) OVERRIDE;
-
   // policy::CloudPolicyStore::Observer interface:
   virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
@@ -92,14 +85,9 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
 
   // Information pieces for version label.
   std::string version_text_;
-  std::string enterprise_domain_text_;
 
   // Full text for the OS version label.
   std::string os_version_label_text_;
-
-  // CloudPolicySubsysterm observer registrar
-  scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar>
-      cloud_policy_registrar_;
 
   chromeos::CrosSettings* cros_settings_;
 

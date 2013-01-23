@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
-#include "chrome/browser/policy/cloud_policy_subsystem.h"
 
 namespace chromeos {
 
@@ -24,8 +23,7 @@ class ScreenObserver;
 // OOBE wizard.
 class EnterpriseEnrollmentScreen
     : public WizardScreen,
-      public EnterpriseEnrollmentScreenActor::Controller,
-      public policy::CloudPolicySubsystem::Observer {
+      public EnterpriseEnrollmentScreenActor::Controller {
  public:
   // Used in PyAuto testing.
   class TestingObserver {
@@ -56,11 +54,6 @@ class EnterpriseEnrollmentScreen
   virtual void OnRetry() OVERRIDE;
   virtual void OnCancel() OVERRIDE;
   virtual void OnConfirmationClosed() OVERRIDE;
-
-  // CloudPolicySubsystem::Observer implementation:
-  virtual void OnPolicyStateChanged(
-      policy::CloudPolicySubsystem::PolicySubsystemState state,
-      policy::CloudPolicySubsystem::ErrorDetails error_details) OVERRIDE;
 
   // Used for testing.
   EnterpriseEnrollmentScreenActor* GetActor() {
@@ -98,7 +91,6 @@ class EnterpriseEnrollmentScreen
   bool enrollment_failed_once_;
   std::string user_;
   int lockbox_init_duration_;
-  scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar> registrar_;
   base::WeakPtrFactory<EnterpriseEnrollmentScreen> weak_ptr_factory_;
 
   // Observers.

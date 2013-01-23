@@ -38,11 +38,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud_policy_cache_base.h"
-#include "chrome/browser/policy/cloud_policy_data_store.h"
-#include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -174,50 +169,6 @@ const std::string VPNProviderTypeToString(
     default:
       return std::string("UNSUPPORTED_PROVIDER_TYPE");
   }
-}
-
-const char* EnterpriseStatusToString(
-    policy::CloudPolicySubsystem::PolicySubsystemState state) {
-  switch (state) {
-    case policy::CloudPolicySubsystem::UNENROLLED:
-      return "UNENROLLED";
-    case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
-      return "BAD_GAIA_TOKEN";
-    case policy::CloudPolicySubsystem::UNMANAGED:
-      return "UNMANAGED";
-    case policy::CloudPolicySubsystem::NETWORK_ERROR:
-      return "NETWORK_ERROR";
-    case policy::CloudPolicySubsystem::LOCAL_ERROR:
-      return "LOCAL_ERROR";
-    case policy::CloudPolicySubsystem::TOKEN_FETCHED:
-      return "TOKEN_FETCHED";
-    case policy::CloudPolicySubsystem::SUCCESS:
-      return "SUCCESS";
-    default:
-      return "UNKNOWN_STATE";
-  }
-}
-
-// Fills the supplied DictionaryValue with all policy settings held by the
-// given CloudPolicySubsystem (Device or User subsystems) at the given
-// PolicyLevel (Mandatory or Recommended policies).
-DictionaryValue* CreateDictionaryWithPolicies(
-    policy::CloudPolicySubsystem* policy_subsystem,
-    policy::PolicyLevel policy_level) {
-  DictionaryValue* dict = new DictionaryValue;
-  policy::CloudPolicyCacheBase* policy_cache =
-      policy_subsystem->GetCloudPolicyCacheBase();
-  if (policy_cache) {
-    const policy::PolicyMap* policy_map = policy_cache->policy();
-    if (policy_map) {
-      policy::PolicyMap::const_iterator i;
-      for (i = policy_map->begin(); i != policy_map->end(); i++) {
-        if (i->second.level == policy_level)
-          dict->Set(i->first, i->second.value->DeepCopy());
-      }
-    }
-  }
-  return dict;
 }
 
 // Last reported power status.
@@ -1172,57 +1123,6 @@ void TestingAutomationProvider::DisconnectFromPrivateNetwork(
   reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::IsEnterpriseDevice(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  if (!connector) {
-    reply.SendError("Unable to access BrowserPolicyConnector");
-    return;
-  }
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->SetBoolean("enterprise", connector->IsEnterpriseManaged());
-  reply.SendSuccess(return_value.get());
-}
-
-void TestingAutomationProvider::EnrollEnterpriseDevice(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  std::string user, password;
-  if (!args->GetString("user", &user) ||
-      !args->GetString("password", &password)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Invalid or missing args.");
-    return;
-  }
-  ExistingUserController* user_controller =
-      ExistingUserController::current_controller();
-  if (!user_controller) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Unable to access ExistingUserController");
-    return;
-  }
-  user_controller->login_display_host()->StartWizard(
-      chromeos::WizardController::kEnterpriseEnrollmentScreenName,
-      NULL);
-  WizardController* wizard_controller = WizardController::default_controller();
-  if (!wizard_controller) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Unable to access WizardController");
-    return;
-  }
-  chromeos::EnterpriseEnrollmentScreen* enroll_screen =
-      wizard_controller->GetEnterpriseEnrollmentScreen();
-  if (!enroll_screen) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Unable to access EnterpriseEnrollmentScreen");
-    return;
-  }
-  // Set up an observer (it will delete itself).
-  new EnrollmentObserver(this, reply_message, enroll_screen);
-  enroll_screen->GetActor()->SubmitTestCredentials(user, password);
-}
-
 void TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI(
     DictionaryValue* args, IPC::Message* reply_message) {
   std::string javascript, frame_xpath;
@@ -1265,67 +1165,6 @@ void TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI(
                                      ASCIIToUTF16(javascript),
                                      reply_message,
                                      web_contents->GetRenderViewHost());
-}
-
-void TestingAutomationProvider::GetEnterprisePolicyInfo(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  if (!connector) {
-    reply.SendError("Unable to access BrowserPolicyConnector");
-    return;
-  }
-  policy::CloudPolicySubsystem* user_cloud_policy =
-      connector->user_cloud_policy_subsystem();
-  policy::CloudPolicySubsystem* device_cloud_policy =
-      connector->device_cloud_policy_subsystem();
-  const policy::CloudPolicyDataStore* user_data_store =
-      connector->GetUserCloudPolicyDataStore();
-  const policy::CloudPolicyDataStore* device_data_store =
-      connector->GetDeviceCloudPolicyDataStore();
-  if (!user_cloud_policy || !device_cloud_policy) {
-    reply.SendError("Unable to access a CloudPolicySubsystem");
-    return;
-  }
-  if (!user_data_store || !device_data_store) {
-    reply.SendError("Unable to access a CloudPolicyDataStore");
-    return;
-  }
-
-  // Get various policy related fields.
-  return_value->SetString("enterprise_domain",
-                          connector->GetEnterpriseDomain());
-  return_value->SetString("user_cloud_policy",
-      EnterpriseStatusToString(user_cloud_policy->state()));
-  return_value->SetString("device_cloud_policy",
-      EnterpriseStatusToString(device_cloud_policy->state()));
-  return_value->SetString("device_id", device_data_store->device_id());
-  return_value->SetString("device_token", device_data_store->device_token());
-  return_value->SetString("gaia_token", device_data_store->gaia_token());
-  return_value->SetString("machine_id", device_data_store->machine_id());
-  return_value->SetString("machine_model", device_data_store->machine_model());
-  return_value->SetString("user_name", device_data_store->user_name());
-  return_value->SetBoolean("device_token_cache_loaded",
-                           device_data_store->token_cache_loaded());
-  return_value->SetBoolean("user_token_cache_loaded",
-                           user_data_store->token_cache_loaded());
-  // Get PolicyMaps.
-  return_value->Set("device_mandatory_policies",
-                    CreateDictionaryWithPolicies(device_cloud_policy,
-                        policy::POLICY_LEVEL_MANDATORY));
-  return_value->Set("user_mandatory_policies",
-                    CreateDictionaryWithPolicies(user_cloud_policy,
-                        policy::POLICY_LEVEL_MANDATORY));
-  return_value->Set("device_recommended_policies",
-      CreateDictionaryWithPolicies(device_cloud_policy,
-          policy::POLICY_LEVEL_RECOMMENDED));
-  return_value->Set("user_recommended_policies",
-      CreateDictionaryWithPolicies(user_cloud_policy,
-          policy::POLICY_LEVEL_RECOMMENDED));
-  reply.SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::EnableSpokenFeedback(

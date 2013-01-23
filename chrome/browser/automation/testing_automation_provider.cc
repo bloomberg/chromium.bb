@@ -178,8 +178,8 @@ using content::InterstitialPage;
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
-using content::PluginService;
 using content::OpenURLParams;
+using content::PluginService;
 using content::Referrer;
 using content::RenderViewHost;
 using content::SSLStatus;
@@ -1797,13 +1797,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::ConnectToPrivateNetwork;
   handler_map_["DisconnectFromPrivateNetwork"] =
       &TestingAutomationProvider::DisconnectFromPrivateNetwork;
-
-  handler_map_["IsEnterpriseDevice"] =
-      &TestingAutomationProvider::IsEnterpriseDevice;
-  handler_map_["GetEnterprisePolicyInfo"] =
-      &TestingAutomationProvider::GetEnterprisePolicyInfo;
-  handler_map_["EnrollEnterpriseDevice"] =
-      &TestingAutomationProvider::EnrollEnterpriseDevice;
 
   handler_map_["EnableSpokenFeedback"] =
       &TestingAutomationProvider::EnableSpokenFeedback;

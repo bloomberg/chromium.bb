@@ -280,9 +280,6 @@ const char kDisableBookmarkAutocompleteProvider[] =
 const char kDisableClientSidePhishingDetection[] =
     "disable-client-side-phishing-detection";
 
-// Disables the new cloud policy stack.
-const char kDisableCloudPolicyService[]     = "disable-cloud-policy-service";
-
 const char kDisableComponentUpdate[]        = "disable-component-update";
 
 // Disables establishing certificate revocation information by downloading a

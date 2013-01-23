@@ -14,7 +14,7 @@
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
-#include "chrome/browser/policy/user_policy_token_cache.h"
+#include "chrome/browser/policy/user_policy_token_loader.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -34,7 +34,7 @@ const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
 
 
 // Helper class for loading legacy policy caches.
-class LegacyPolicyCacheLoader : public UserPolicyTokenCache::Delegate,
+class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
                                 public UserPolicyDiskCache::Delegate {
  public:
   typedef base::Callback<void(const std::string&,

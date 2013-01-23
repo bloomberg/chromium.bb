@@ -80,7 +80,7 @@
 #include "content/public/browser/render_process_host.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #endif
@@ -111,6 +111,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
+#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/device_status_collector.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
@@ -177,7 +178,7 @@ void RegisterLocalState(PrefServiceSimple* local_state) {
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::CloudPolicySubsystem::RegisterPrefs(local_state);
+  policy::BrowserPolicyConnector::RegisterPrefs(local_state);
   policy::PolicyStatisticsCollector::RegisterPrefs(local_state);
 #endif
 

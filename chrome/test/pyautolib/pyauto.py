@@ -5291,48 +5291,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def IsEnterpriseDevice(self):
-    """Check whether the device is managed by an enterprise.
-
-    Returns:
-      True if the device is managed by an enterprise, False otherwise.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-        'command': 'IsEnterpriseDevice',
-    }
-    result = self._GetResultFromJSONRequest(cmd_dict, windex=None)
-    return result.get('enterprise')
-
-  def GetEnterprisePolicyInfo(self):
-    """Get details about enterprise policy on chromeos.
-
-    Returns:
-      A dictionary including information about the enterprise policy.
-      Sample:
-        {u'device_token_cache_loaded': True,
-         u'device_cloud_policy_state': u'success',
-         u'device_id': u'11111-222222222-33333333-4444444',
-         u'device_mandatory_policies': {},
-         u'device_recommended_policies': {},
-         u'device_token': u'ABjmT7nqGWTHRLO',
-         u'enterprise_domain': u'example.com',
-         u'gaia_token': u'',
-         u'machine_id': u'123456789',
-         u'machine_model': u'COMPUTER',
-         u'user_cache_loaded': True,
-         u'user_cloud_policy_state': u'success',
-         u'user_mandatory_policies': {u'AuthSchemes': u'',
-                                      u'AutoFillEnabled': True,
-                                      u'ChromeOsLockOnIdleSuspend': True}
-         u'user_recommended_policies': {},
-         u'user_name': u'user@example.com'}
-    """
-    cmd_dict = { 'command': 'GetEnterprisePolicyInfo' }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
   def EnableSpokenFeedback(self, enabled):
     """Enables or disables spoken feedback accessibility mode.
 
@@ -5402,29 +5360,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'timezone': timezone,
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def EnrollEnterpriseDevice(self, user, password):
-    """Enrolls an unenrolled device as an enterprise device.
-
-    Expects the device to be unenrolled with the TPM unlocked. This is
-    equivalent to pressing Ctrl-Alt-e to enroll the device from the login
-    screen.
-
-    Returns:
-      An error string if the enrollment fails.
-      None otherwise.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-        'command': 'EnrollEnterpriseDevice',
-        'user': user,
-        'password': password,
-    }
-    time.sleep(5) # TODO(craigdh): Block until Install Attributes is ready.
-    result = self._GetResultFromJSONRequest(cmd_dict, windex=None)
-    return result.get('error_string')
 
   def GetUpdateInfo(self):
     """Gets the status of the ChromeOS updater.

@@ -75,23 +75,6 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
     UpdateVersionLabel();
   }
 
-  policy::CloudPolicySubsystem* cloud_policy =
-      g_browser_process->browser_policy_connector()->
-          device_cloud_policy_subsystem();
-  if (cloud_policy) {
-    // Two-step reset because we want to construct new ObserverRegistrar after
-    // destruction of old ObserverRegistrar to avoid DCHECK violation because
-    // of adding existing observer.
-    cloud_policy_registrar_.reset();
-    cloud_policy_registrar_.reset(
-        new policy::CloudPolicySubsystem::ObserverRegistrar(
-            cloud_policy, this));
-
-    // Ensure that we have up-to-date enterprise info in case enterprise policy
-    // is already fetched and has finished initialization.
-    UpdateEnterpriseInfo();
-  }
-
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       g_browser_process->browser_policy_connector()->
           GetDeviceCloudPolicyManager();
@@ -133,20 +116,13 @@ void VersionInfoUpdater::UpdateEnterpriseInfo() {
 }
 
 void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name) {
-  if (domain_name != enterprise_domain_text_) {
-    enterprise_domain_text_ = domain_name;
-    UpdateVersionLabel();
-
-    // Update the notification about device status reporting.
-    if (delegate_) {
-      std::string enterprise_info;
-      if (!domain_name.empty()) {
-        enterprise_info = l10n_util::GetStringFUTF8(
-            IDS_DEVICE_OWNED_BY_NOTICE,
-            UTF8ToUTF16(domain_name));
-        delegate_->OnEnterpriseInfoUpdated(enterprise_info);
-      }
-    }
+  // Update the notification about device status reporting.
+  if (delegate_ && !domain_name.empty()) {
+    std::string enterprise_info;
+    enterprise_info = l10n_util::GetStringFUTF8(
+        IDS_DEVICE_OWNED_BY_NOTICE,
+        UTF8ToUTF16(domain_name));
+    delegate_->OnEnterpriseInfoUpdated(enterprise_info);
   }
 }
 
@@ -186,12 +162,6 @@ void VersionInfoUpdater::OnBootTimes(
   // Use UTF8ToWide once this string is localized.
   if (delegate_)
     delegate_->OnBootTimesLabelTextUpdated(boot_times_text);
-}
-
-void VersionInfoUpdater::OnPolicyStateChanged(
-    policy::CloudPolicySubsystem::PolicySubsystemState state,
-    policy::CloudPolicySubsystem::ErrorDetails error_details) {
-  UpdateEnterpriseInfo();
 }
 
 void VersionInfoUpdater::OnStoreLoaded(policy::CloudPolicyStore* store) {

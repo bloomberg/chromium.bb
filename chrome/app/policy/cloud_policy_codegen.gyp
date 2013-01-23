@@ -109,7 +109,6 @@
         '<(proto_rel_path)/device_management_backend.proto',
         '<(proto_rel_path)/device_management_local.proto',
         '<(proto_rel_path)/install_attributes.proto',
-        '<(proto_rel_path)/old_generic_format.proto',
       ],
       'variables': {
         'proto_in_dir': '<(proto_rel_path)',
