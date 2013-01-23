@@ -423,6 +423,7 @@
           'tools/build/repack_locales.py',
         ],
         'isolate_dependency_untracked': [
+          '../third_party/accessibility-developer-tools/gen/',
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/python_26/Lib/xml/parsers/',
         ],
