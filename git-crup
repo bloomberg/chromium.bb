@@ -139,7 +139,15 @@ fi
 
 status=$?
 
-if [ "$hooks" = "yes" -a "$status" -eq 0 ]; then
+if [ "$status" -ne 0 ]; then
+  cat 1>&2 <<EOF
+Please check the preceding terminal output for error messages.
+Run 'git submodule status' to see the current state of submodule checkouts.
+EOF
+  exit $status
+fi
+
+if [ "$hooks" = "yes" ]; then
   "$runhooks"
   status=$?
 fi
