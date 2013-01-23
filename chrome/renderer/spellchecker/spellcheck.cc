@@ -6,20 +6,17 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "base/time.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
-#include "chrome/renderer/spellchecker/hunspell_engine.h"
+#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
-#include "chrome/renderer/spellchecker/spelling_engine.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
-using base::TimeTicks;
 using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebTextCheckingType;
@@ -87,7 +84,6 @@ class SpellCheck::SpellcheckRequest {
 SpellCheck::SpellCheck()
     : auto_spell_correct_turned_on_(false),
       spellcheck_enabled_(true) {
-  platform_spelling_engine_.reset(CreateNativeSpellingEngine());
 }
 
 SpellCheck::~SpellCheck() {
@@ -123,9 +119,7 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
 void SpellCheck::OnCustomDictionaryChanged(
     const std::vector<std::string>& words_added,
     const std::vector<std::string>& words_removed) {
-  if (platform_spelling_engine_.get())
-    platform_spelling_engine_->OnCustomDictionaryChanged(words_added,
-                                                         words_removed);
+  spellcheck_.OnCustomDictionaryChanged(words_added, words_removed);
 }
 
 void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
@@ -143,11 +137,7 @@ void SpellCheck::OnEnableSpellCheck(bool enable) {
 void SpellCheck::Init(base::PlatformFile file,
                       const std::vector<std::string>& custom_words,
                       const std::string& language) {
-  platform_spelling_engine_->Init(file, custom_words);
-
-  character_attributes_.SetDefaultLanguage(language);
-  text_iterator_.Reset();
-  contraction_iterator_.Reset();
+  spellcheck_.Init(file, custom_words, language);
 }
 
 bool SpellCheck::SpellCheckWord(
@@ -165,46 +155,10 @@ bool SpellCheck::SpellCheckWord(
   if (InitializeIfNeeded())
     return true;
 
-  // Do nothing if spell checking is disabled.
-  if (!platform_spelling_engine_.get() ||
-      !platform_spelling_engine_->IsEnabled())
-    return true;
-
-  *misspelling_start = 0;
-  *misspelling_len = 0;
-  if (in_word_len == 0)
-    return true;  // No input means always spelled correctly.
-
-  string16 word;
-  int word_start;
-  int word_length;
-  if (!text_iterator_.IsInitialized() &&
-      !text_iterator_.Initialize(&character_attributes_, true)) {
-      // We failed to initialize text_iterator_, return as spelled correctly.
-      VLOG(1) << "Failed to initialize SpellcheckWordIterator";
-      return true;
-  }
-
-  text_iterator_.SetText(in_word, in_word_len);
-  while (text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
-    // Found a word (or a contraction) that the spellchecker can check the
-    // spelling of.
-    if (CheckSpelling(word, tag))
-      continue;
-
-    // If the given word is a concatenated word of two or more valid words
-    // (e.g. "hello:hello"), we should treat it as a valid word.
-    if (IsValidContraction(word, tag))
-      continue;
-
-    *misspelling_start = word_start;
-    *misspelling_len = word_length;
-
-    // Get the list of suggested words.
-    if (optional_suggestions)
-      FillSuggestionList(word, optional_suggestions);
-    return false;
-  }
+  return spellcheck_.SpellCheckWord(in_word, in_word_len,
+                                    tag,
+                                    misspelling_start, misspelling_len,
+                                    optional_suggestions);
 
   return true;
 }
@@ -324,17 +278,7 @@ void SpellCheck::RequestTextChecking(
 #endif
 
 bool SpellCheck::InitializeIfNeeded() {
-  DCHECK(platform_spelling_engine_.get());
-  return platform_spelling_engine_->InitializeIfNeeded();
-}
-
-// When called, relays the request to check the spelling to the proper
-// backend, either hunspell or a platform-specific backend.
-bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
-  if (platform_spelling_engine_.get())
-    return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
-  else
-    return true;
+  return spellcheck_.InitializeIfNeeded();
 }
 
 #if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
@@ -353,8 +297,7 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 
-  if (!platform_spelling_engine_.get() ||
-      !platform_spelling_engine_->IsEnabled()) {
+  if (!spellcheck_.IsEnabled()) {
     param->completion()->didCancelCheckingText();
   } else {
     WebKit::WebVector<WebKit::WebTextCheckingResult> results;
@@ -363,38 +306,6 @@ void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   }
 }
 #endif
-
-void SpellCheck::FillSuggestionList(
-    const string16& wrong_word,
-    std::vector<string16>* optional_suggestions) {
-  if (platform_spelling_engine_.get())
-    platform_spelling_engine_->FillSuggestionList(wrong_word,
-                                                  optional_suggestions);
-}
-
-// Returns whether or not the given string is a valid contraction.
-// This function is a fall-back when the SpellcheckWordIterator class
-// returns a concatenated word which is not in the selected dictionary
-// (e.g. "in'n'out") but each word is valid.
-bool SpellCheck::IsValidContraction(const string16& contraction, int tag) {
-  if (!contraction_iterator_.IsInitialized() &&
-      !contraction_iterator_.Initialize(&character_attributes_, false)) {
-    // We failed to initialize the word iterator, return as spelled correctly.
-    VLOG(1) << "Failed to initialize contraction_iterator_";
-    return true;
-  }
-
-  contraction_iterator_.SetText(contraction.c_str(), contraction.length());
-
-  string16 word;
-  int word_start;
-  int word_length;
-  while (contraction_iterator_.GetNextWord(&word, &word_start, &word_length)) {
-    if (!CheckSpelling(word, tag))
-      return false;
-  }
-  return true;
-}
 
 void SpellCheck::CreateTextCheckingResults(
     ResultFilter filter,
@@ -428,3 +339,4 @@ void SpellCheck::CreateTextCheckingResults(
   }
   textcheck_results->swap(list);
 }
+

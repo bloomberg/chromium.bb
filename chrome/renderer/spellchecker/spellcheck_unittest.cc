@@ -59,10 +59,15 @@ class SpellCheckTest : public testing::Test {
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
-    spell_check_->platform_spelling_engine_.reset(new HunspellEngine);
+    spell_check_->spellcheck_.platform_spelling_engine_.reset(
+        new HunspellEngine);
 #endif
     spell_check_->Init(
         file, std::vector<std::string>(), language);
+  }
+
+  void EnableAutoCorrect(bool enable_autocorrect) {
+    spell_check_->OnEnableAutoSpellCorrect(enable_autocorrect);
   }
 
   virtual ~SpellCheckTest() {
@@ -818,7 +823,8 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
     {"noen", ""},
     {"what", ""},
   };
-  spell_check()->OnEnableAutoSpellCorrect(true);
+
+  EnableAutoCorrect(true);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     string16 misspelled_word(UTF8ToUTF16(kTestCases[i].input));

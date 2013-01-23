@@ -5,7 +5,6 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 
-#include <queue>
 #include <string>
 #include <vector>
 
@@ -14,13 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
-#include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
+#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
-#include "third_party/icu/public/common/unicode/uscript.h"
 
-class SpellingEngine;
 struct SpellCheckResult;
 
 namespace file_util {
@@ -34,9 +31,13 @@ struct WebTextCheckingResult;
 
 // TODO(morrita): Needs reorg with SpellCheckProvider.
 // See http://crbug.com/73699.
+// Shared spellchecking logic/data for a RenderProcess. All RenderViews use
+// this object to perform spellchecking tasks.
 class SpellCheck : public content::RenderProcessObserver,
                    public base::SupportsWeakPtr<SpellCheck> {
  public:
+  // TODO(groby): I wonder if this can be private, non-mac only.
+  class SpellcheckRequest;
   enum ResultFilter {
     DO_NOT_MODIFY = 1,  // Do not modify results.
     USE_NATIVE_CHECKER,  // Use native checker to double-check.
@@ -45,9 +46,18 @@ class SpellCheck : public content::RenderProcessObserver,
   SpellCheck();
   virtual ~SpellCheck();
 
+  // TODO: Try to move that all to SpellcheckLanguage.
   void Init(base::PlatformFile file,
             const std::vector<std::string>& custom_words,
             const std::string& language);
+
+  // If there is no dictionary file, then this requests one from the browser
+  // and does not block. In this case it returns true.
+  // If there is a dictionary file, but Hunspell has not been loaded, then
+  // this loads Hunspell.
+  // If Hunspell is already loaded, this does nothing. In both the latter cases
+  // it returns false, meaning that it is OK to continue spellchecking.
+  bool InitializeIfNeeded();
 
   // SpellCheck a word.
   // Returns true if spelled correctly, false otherwise.
@@ -103,12 +113,10 @@ class SpellCheck : public content::RenderProcessObserver,
   bool is_spellcheck_enabled() { return spellcheck_enabled_; }
 
  private:
-  friend class SpellCheckTest;
-  FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
-  FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
-      RequestSpellCheckMultipleTimesWithoutInitialization);
-
-  class SpellcheckRequest;
+   friend class SpellCheckTest;
+   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
+   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
+       RequestSpellCheckMultipleTimesWithoutInitialization);
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -124,17 +132,6 @@ class SpellCheck : public content::RenderProcessObserver,
   void OnEnableAutoSpellCorrect(bool enable);
   void OnEnableSpellCheck(bool enable);
 
-  // If there is no dictionary file, then this requests one from the browser
-  // and does not block. In this case it returns true.
-  // If there is a dictionary file, but Hunspell has not been loaded, then
-  // this loads Hunspell.
-  // If Hunspell is already loaded, this does nothing. In both the latter cases
-  // it returns false, meaning that it is OK to continue spellchecking.
-  bool InitializeIfNeeded();
-
-  // When called, relays the request to check the spelling to the proper
-  // backend, either hunspell or a platform-specific backend.
-  bool CheckSpelling(const string16& word_to_check, int tag);
 
 #if !defined (OS_MACOSX)
   // Posts delayed spellcheck task and clear it if any.
@@ -143,47 +140,23 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Performs spell checking from the request queue.
   void PerformSpellCheck(SpellcheckRequest* request);
-#endif
-
-  // When called, relays the request to fill the list with suggestions to
-  // the proper backend, either hunspell or a platform-specific backend.
-  void FillSuggestionList(const string16& wrong_word,
-                          std::vector<string16>* optional_suggestions);
-
-  // Returns whether or not the given word is a contraction of valid words
-  // (e.g. "word:word").
-  bool IsValidContraction(const string16& word, int tag);
-
-  // Represents character attributes used for filtering out characters which
-  // are not supported by this SpellCheck object.
-  SpellcheckCharAttribute character_attributes_;
-
-  // Represents word iterators used in this spellchecker. The |text_iterator_|
-  // splits text provided by WebKit into words, contractions, or concatenated
-  // words. The |contraction_iterator_| splits a concatenated word extracted by
-  // |text_iterator_| into word components so we can treat a concatenated word
-  // consisting only of correct words as a correct word.
-  SpellcheckWordIterator text_iterator_;
-  SpellcheckWordIterator contraction_iterator_;
-
-  // Remember state for auto spell correct.
-  bool auto_spell_correct_turned_on_;
-
-  // Remember state for spellchecking.
-  bool spellcheck_enabled_;
-
-  // Pointer to a platform-specific spelling engine, if it is in use. This
-  // should only be set if hunspell is not used. (I.e. on OSX, for now)
-  scoped_ptr<SpellingEngine> platform_spelling_engine_;
 
   // The parameters of a pending background-spellchecking request. When WebKit
   // sends a background-spellchecking request before initializing hunspell,
   // we save its parameters and start spellchecking after we finish initializing
   // hunspell. (When WebKit sends two or more requests, we cancel the previous
   // requests so we do not have to use vectors.)
-#if !defined (OS_MACOSX)
   scoped_ptr<SpellcheckRequest> pending_request_param_;
 #endif
+
+ private:
+  SpellcheckLanguage spellcheck_;  // Language-specific spellchecking code.
+
+  // Remember state for auto spell correct.
+  bool auto_spell_correct_turned_on_;
+
+  // Remember state for spellchecking.
+  bool spellcheck_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheck);
 };

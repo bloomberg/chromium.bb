@@ -264,6 +264,8 @@
         'renderer/spellchecker/spellcheck_provider.h',
         'renderer/spellchecker/spellcheck.cc',
         'renderer/spellchecker/spellcheck.h',
+        'renderer/spellchecker/spellcheck_language.cc',
+        'renderer/spellchecker/spellcheck_language.h',
         'renderer/spellchecker/spellcheck_worditerator.cc',
         'renderer/spellchecker/spellcheck_worditerator.h',
         'renderer/spellchecker/spelling_engine.h',
