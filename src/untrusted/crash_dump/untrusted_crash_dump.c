@@ -66,6 +66,7 @@ static void WriteJsonString(const char *str, FILE *file) {
 static int PrintSegmentsOne(
     struct dl_phdr_info *info, size_t size, void *data) {
   int i;
+  int print_comma = 0;
   struct ProgramTableData *ptd = (struct ProgramTableData*) data;
 
   if (ptd->first) {
@@ -85,8 +86,10 @@ static int PrintSegmentsOne(
     if (info->dlpi_phdr[i].p_type != PT_LOAD) {
       continue;
     }
-    if (i != 0) {
+    if (print_comma) {
       fprintf(ptd->core, ",\n");
+    } else {
+      print_comma = 1;
     }
     fprintf(ptd->core, "{\n");
     fprintf(ptd->core, "\"p_vaddr\": %"NACL_PRIuPTR",\n",

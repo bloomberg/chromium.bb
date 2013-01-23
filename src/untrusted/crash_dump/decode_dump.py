@@ -52,7 +52,7 @@ class CoreDecoder(object):
     # For some names try the main nexe.
     # NaClMain is the argv[0] setup in sel_main.c
     # (null) shows up in chrome.
-    if self.main_nexe is not None and filename in ['NaClMain', '(null)']:
+    if self.main_nexe is not None and filename in ['NaClMain', '', '(null)']:
       return self.main_nexe
     filepart = posixpath.basename(filename)
     nmf_entry = self.nmf_data.get('files', {}).get(filepart, {})
