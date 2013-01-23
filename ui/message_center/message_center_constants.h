@@ -12,6 +12,7 @@ namespace message_center {
 
 MESSAGE_CENTER_EXPORT extern const int kNotificationIconWidth;
 MESSAGE_CENTER_EXPORT extern const int kNotificationPreferredImageSize;
+MESSAGE_CENTER_EXPORT extern const int kSettingsIconSize;
 
 extern const int kNotificationMaximumImageHeight;
 extern const size_t kNotificationMaximumItems;

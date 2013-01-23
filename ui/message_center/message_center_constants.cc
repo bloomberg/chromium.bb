@@ -8,6 +8,7 @@ namespace message_center {
 
 const int kNotificationIconWidth = 80;
 const int kNotificationPreferredImageSize = 300;
+const int kSettingsIconSize = 16;
 
 const int kNotificationMaximumImageHeight = 300;
 const size_t kNotificationMaximumItems = 8;

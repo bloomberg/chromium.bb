@@ -50,6 +50,8 @@
         'notification_list.h',
         'notification_view.cc',
         'notification_view.h',
+        'notifier_settings.cc',
+        'notifier_settings.h',
         'quiet_mode_bubble.cc',
         'quiet_mode_bubble.h',
       ],

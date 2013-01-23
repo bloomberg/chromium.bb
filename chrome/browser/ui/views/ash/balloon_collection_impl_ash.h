@@ -10,12 +10,14 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notifier_settings.h"
 
 // Wrapper on top of ::BalloonCollectionImpl to provide integration between
 // the Chrome notification UI and Ash notifications (ash::WebNotificationTray).
 class BalloonCollectionImplAsh
     : public BalloonCollectionImpl,
-      public message_center::MessageCenter::Delegate {
+      public message_center::MessageCenter::Delegate,
+      public message_center::NotifierSettingsView::Delegate {
  public:
   BalloonCollectionImplAsh();
   virtual ~BalloonCollectionImplAsh();
@@ -25,7 +27,7 @@ class BalloonCollectionImplAsh
                    Profile* profile) OVERRIDE;
   virtual bool HasSpace() const OVERRIDE;
 
-  // Overridden from MessageCenter::Delegate.
+  // Overridden from message_center::MessageCenter::Delegate.
   virtual void NotificationRemoved(const std::string& notification_id) OVERRIDE;
   virtual void DisableExtension(const std::string& notification_id) OVERRIDE;
   virtual void DisableNotificationsFromSource(
@@ -34,6 +36,14 @@ class BalloonCollectionImplAsh
   virtual void OnClicked(const std::string& notification_id) OVERRIDE;
   virtual void OnButtonClicked(const std::string& notification_id,
                                int button_index) OVERRIDE;
+
+  // Overridden from message_center::NotifierSettingsView::Delegate.
+  virtual void GetNotifierList(
+      std::vector<message_center::NotifierSettingsView::Notifier>* notifiers)
+      OVERRIDE;
+  virtual void SetNotifierEnabled(const std::string& id, bool enabled) OVERRIDE;
+  virtual void OnNotifierSettingsClosing(
+      message_center::NotifierSettingsView* view) OVERRIDE;
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
@@ -64,6 +74,10 @@ class BalloonCollectionImplAsh
   const extensions::Extension* GetBalloonExtension(Balloon* balloon);
 
  private:
+  // The view displaying notifier settings. NULL if the settings are not
+  // visible.
+  message_center::NotifierSettingsView* settings_view_;
+
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImplAsh);
 };
 
