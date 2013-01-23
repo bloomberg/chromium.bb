@@ -296,10 +296,7 @@ div.root-eject:hover {
   -webkit-box-orient: horizontal;
   -webkit-transition: all 180ms ease;
   display: -webkit-box;
-  margin-bottom: 7px;
-  margin-left: 0;
-  margin-right: 10px;
-  margin-top: 5px;
+  margin: 7px 7px 7px 0;
 }
 
 [maximized] .dialog-header {
@@ -921,7 +918,7 @@ input.rename {
   display: -webkit-box;
   height: 61px;
   opacity: 1;
-  padding: 0 14px;
+  padding: 0 16px 0 7px;
   position: relative;
   z-index: 3;
 }
@@ -1158,8 +1155,8 @@ input.rename {
 .preview-summary {
   color: #666;
   overflow: hidden;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;

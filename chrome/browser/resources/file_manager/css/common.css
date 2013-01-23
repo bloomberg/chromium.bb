@@ -120,7 +120,6 @@ input.common[type='checkbox']::after {
 
 .buttonbar.right {
   float: right;
-  margin-right: 12px;
 }
 
 .buttonbar button:first-child {
