@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 
 #include "base/sequenced_task_runner.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 
 namespace fileapi {

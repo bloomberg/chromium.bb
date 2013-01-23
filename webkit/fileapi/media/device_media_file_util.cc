@@ -11,6 +11,7 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
 #include "webkit/fileapi/media/media_path_filter.h"
+#include "webkit/fileapi/media/mtp_device_delegate.h"
 #include "webkit/fileapi/media/mtp_device_map_service.h"
 
 using base::PlatformFile;

@@ -115,7 +115,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
       scoped_ptr<FileSystemOperationContext> operation_context);
 
   FileSystemContext* file_system_context() const {
-    return operation_context_->file_system_context();
+    return file_system_context_;
   }
 
   FileSystemOperationContext* operation_context() const {
@@ -229,6 +229,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);
+
+  scoped_refptr<FileSystemContext> file_system_context_;
 
   scoped_ptr<FileSystemOperationContext> operation_context_;
   FileSystemFileUtil* src_util_;  // Not owned.

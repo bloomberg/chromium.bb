@@ -453,7 +453,8 @@ void LocalFileSystemOperation::CopyInForeignFile(
 LocalFileSystemOperation::LocalFileSystemOperation(
     FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
-    : operation_context_(operation_context.Pass()),
+    : file_system_context_(file_system_context),
+      operation_context_(operation_context.Pass()),
       src_util_(NULL),
       dest_util_(NULL),
       is_cross_operation_(false),
