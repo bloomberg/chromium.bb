@@ -9,17 +9,15 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(ENABLE_MESSAGE_CENTER)
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #endif
 
 // static
 bool NotificationUIManager::DelegatesToMessageCenter() {
-#if defined(ENABLE_MESSAGE_CENTER)
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableRichNotifications);
-#else
   return false;
-#endif
 }
 
 #if !defined(OS_MACOSX)
@@ -27,7 +25,8 @@ bool NotificationUIManager::DelegatesToMessageCenter() {
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
 #if defined(ENABLE_MESSAGE_CENTER)
   if (DelegatesToMessageCenter())
-    return new MessageCenterNotificationManager();
+    return new MessageCenterNotificationManager(
+        g_browser_process->message_center());
 #endif
   BalloonNotificationUIManager* balloon_manager =
       new BalloonNotificationUIManager(local_state);

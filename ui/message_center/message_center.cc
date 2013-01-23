@@ -11,10 +11,9 @@
 namespace message_center {
 
 //------------------------------------------------------------------------------
-
-// static
-MessageCenter* MessageCenter::GetInstance() {
-  return Singleton<MessageCenter>::get();
+MessageCenter::MessageCenter()
+    : delegate_(NULL) {
+  notification_list_.reset(new NotificationList(this));
 }
 
 MessageCenter::~MessageCenter() {
@@ -177,11 +176,6 @@ void MessageCenter::Delegate::OnButtonClicked(const std::string& id,
 
 //------------------------------------------------------------------------------
 // Private.
-
-MessageCenter::MessageCenter()
-    : delegate_(NULL) {
-  notification_list_.reset(new NotificationList(this));
-}
 
 void MessageCenter::NotifyMessageCenterChanged(bool new_notification) {
   FOR_EACH_OBSERVER(Observer,

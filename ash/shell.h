@@ -63,6 +63,10 @@ class WindowModalityController;
 }
 }
 
+namespace message_center {
+class MessageCenter;
+}
+
 namespace ash {
 
 class AcceleratorController;
@@ -431,9 +435,12 @@ class ASH_EXPORT Shell
   }
 #endif  // defined(OS_CHROMEOS)
 
- RootWindowHostFactory* root_window_host_factory() {
-   return root_window_host_factory_.get();
- }
+  RootWindowHostFactory* root_window_host_factory() {
+    return root_window_host_factory_.get();
+  }
+
+  // MessageCenter is a global list of currently displayed notifications.
+  message_center::MessageCenter* message_center();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
@@ -575,6 +582,8 @@ class ASH_EXPORT Shell
   // Receives output change events and udpates the display manager.
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;
 #endif  // defined(OS_CHROMEOS)
+
+  scoped_ptr<message_center::MessageCenter> message_center_;
 
   CursorManager cursor_manager_;
 

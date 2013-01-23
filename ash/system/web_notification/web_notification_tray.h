@@ -155,7 +155,7 @@ class ASH_EXPORT WebNotificationTray
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
   message_center::MessagePopupBubble* GetPopupBubbleForTest();
 
-  message_center::MessageCenter* message_center_;
+  message_center::MessageCenter* message_center_; // Weak, owned by ash::Shell
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> popup_bubble_;
   scoped_ptr<message_center::QuietModeBubble> quiet_mode_bubble_;

@@ -83,7 +83,7 @@ WebNotificationTray::WebNotificationTray(
     : internal::TrayBackgroundView(status_area_widget),
       button_(NULL),
       show_message_center_on_unlock_(false) {
-  message_center_ = message_center::MessageCenter::GetInstance();
+  message_center_ = ash::Shell::GetInstance()->message_center();
   message_center_->AddObserver(this);
   button_ = new views::ImageButton(this);
   button_->set_triggerable_event_flags(
@@ -94,7 +94,7 @@ WebNotificationTray::WebNotificationTray(
 }
 
 WebNotificationTray::~WebNotificationTray() {
-  // Ensure the message center doesn't notify a destroyed object.
+  // Ensure the message center doesn't notify an object under destruction.
   message_center_->RemoveObserver(this);
   // Release any child views that might have back pointers before ~View().
   message_center_bubble_.reset();
@@ -171,8 +171,7 @@ void WebNotificationTray::ShowPopupBubble() {
   } else if (message_center_->HasPopupNotifications()) {
     popup_bubble_.reset(
         new internal::WebNotificationBubbleWrapper(
-            this, new message_center::MessagePopupBubble(
-                message_center_)));
+            this, new message_center::MessagePopupBubble(message_center_)));
   }
 }
 

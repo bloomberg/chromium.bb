@@ -73,6 +73,9 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual extensions::EventRouterForwarder*
       extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
+#if defined(ENABLE_MESSAGE_CENTER)
+  virtual message_center::MessageCenter* message_center() OVERRIDE;
+#endif
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
@@ -131,6 +134,9 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
+#if defined(ENABLE_MESSAGE_CENTER) && !defined(USE_ASH)
+  scoped_ptr<message_center::MessageCenter> message_center_;
+#endif
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
   scoped_refptr<printing::PrintPreviewDialogController>
       print_preview_dialog_controller_;

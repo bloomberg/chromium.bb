@@ -44,6 +44,7 @@ class Notification {
   // Initializes a notification with a given type. Takes ownership of
   // optional_fields.
   Notification(ui::notifications::NotificationType type,
+               const GURL& origin_url,
                const GURL& icon_url,
                const string16& title,
                const string16& body,

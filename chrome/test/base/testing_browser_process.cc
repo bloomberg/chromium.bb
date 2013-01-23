@@ -30,6 +30,14 @@
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
+#if defined(ENABLE_MESSAGE_CENTER) && defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center.h"
+#endif
+
 // static
 TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
   return static_cast<TestingBrowserProcess*>(g_browser_process);
@@ -187,6 +195,18 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
   return NULL;
 #endif
 }
+
+#if defined(ENABLE_MESSAGE_CENTER)
+message_center::MessageCenter* TestingBrowserProcess::message_center() {
+#if defined(USE_ASH)
+    return ash::Shell::GetInstance()->message_center();
+#else
+  if (!message_center_.get())
+    message_center_.reset(new message_center::MessageCenter());
+  return message_center_.get();
+#endif
+}
+#endif
 
 IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return NULL;

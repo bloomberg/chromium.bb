@@ -52,7 +52,8 @@ class NotificationUIManagerImpl
 
  // Replace an existing notification of the same id with this one if applicable;
  // subclass returns 'true' if the replacement happened.
- virtual bool UpdateNotification(const Notification& notification) = 0;
+ virtual bool UpdateNotification(const Notification& notification,
+                                 Profile* profile) = 0;
 
  // Attempts to display notifications from the show_queue. Invoked by subclasses
  // if they previously returned 'false' from ShowNotifications, which may happen
@@ -72,7 +73,7 @@ class NotificationUIManagerImpl
 
   // Replace an existing notification with this one if applicable;
   // returns true if the replacement happened.
-  bool TryReplacement(const Notification& notification);
+  bool TryReplacement(const Notification& notification, Profile* profile);
 
   // Checks the user state to decide if we want to show the notification.
   void CheckUserState();

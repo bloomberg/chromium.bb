@@ -43,6 +43,7 @@ Notification::Notification(const GURL& origin_url,
 }
 
 Notification::Notification(ui::notifications::NotificationType type,
+                           const GURL& origin_url,
                            const GURL& icon_url,
                            const string16& title,
                            const string16& body,
@@ -52,7 +53,7 @@ Notification::Notification(ui::notifications::NotificationType type,
                            const DictionaryValue* optional_fields,
                            NotificationDelegate* delegate)
     : type_(type),
-      origin_url_(GURL()),
+      origin_url_(origin_url),
       icon_url_(icon_url),
       is_html_(false),
       title_(title),

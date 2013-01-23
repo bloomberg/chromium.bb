@@ -83,6 +83,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/focus_controller.h"
@@ -828,6 +829,12 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
 void Shell::DoInitialWorkspaceAnimation() {
   return GetPrimaryRootWindowController()->workspace_controller()->
       DoInitialAnimation();
+}
+
+message_center::MessageCenter* Shell::message_center() {
+  if (!message_center_.get())
+    message_center_.reset(new message_center::MessageCenter());
+  return message_center_.get();
 }
 
 void Shell::InitRootWindowController(

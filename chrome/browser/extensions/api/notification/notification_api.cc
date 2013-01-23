@@ -186,7 +186,7 @@ bool NotificationShowFunction::RunImpl() {
 
   string16 replace_id(UTF8ToUTF16(options->replace_id));
 
-  Notification notification(type, icon_url, title, message,
+  Notification notification(type, extension_->url(), icon_url, title, message,
                             WebKit::WebTextDirectionDefault,
                             string16(), replace_id,
                             optional_fields.get(),

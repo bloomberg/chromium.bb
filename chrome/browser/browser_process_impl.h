@@ -85,6 +85,9 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual extensions::EventRouterForwarder*
         extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
+#if defined(ENABLE_MESSAGE_CENTER)
+  virtual message_center::MessageCenter* message_center() OVERRIDE;
+#endif
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
@@ -141,6 +144,9 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateIconManager();
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
+#if defined(ENABLE_MESSAGE_CENTER) && !defined(USE_ASH)
+  void CreateMessageCenter();
+#endif
   void CreateStatusTrayManager();
   void CreatePrintPreviewDialogController();
   void CreateBackgroundPrintingManager();
@@ -205,6 +211,12 @@ class BrowserProcessImpl : public BrowserProcess,
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
+
+#if defined(ENABLE_MESSAGE_CENTER) && !defined(USE_ASH)
+  // MessageCenter keeps currently displayed UI notifications.
+  scoped_ptr<message_center::MessageCenter> message_center_;
+  bool created_message_center_;
+#endif
 
 #if defined(ENABLE_AUTOMATION)
   scoped_ptr<AutomationProviderList> automation_provider_list_;

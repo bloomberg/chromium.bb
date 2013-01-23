@@ -74,8 +74,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
     virtual ~Delegate() {}
   };
 
-  static MessageCenter* GetInstance();
-
+  MessageCenter();
   virtual ~MessageCenter();
 
   // Called to set the delegate.  Generally called only once, except in tests.
@@ -148,9 +147,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   virtual NotificationList* GetNotificationList() OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<MessageCenter>;
-  MessageCenter();
-
   // Calls OnMessageCenterChanged on each observer.
   void NotifyMessageCenterChanged(bool new_notification);
 

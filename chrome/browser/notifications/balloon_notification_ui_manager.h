@@ -42,7 +42,8 @@ class BalloonNotificationUIManager
   // NotificationUIManagerImpl:
   virtual bool ShowNotification(const Notification& notification,
                                 Profile* profile) OVERRIDE;
-  virtual bool UpdateNotification(const Notification& notification) OVERRIDE;
+  virtual bool UpdateNotification(const Notification& notification,
+                                  Profile* profile) OVERRIDE;
 
   // NotificationPrefsManager:
   virtual BalloonCollection::PositionPreference
