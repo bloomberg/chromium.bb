@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/matcher/url_matcher_factory.h"
 
+#include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -101,6 +102,52 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   EXPECT_EQ(0u, matcher.MatchURL(GURL("http://mail.example.com:81")).size());
 }
 
+// Using upper case letters for scheme and host values is currently an error.
+// See more context at http://crbug.com/160702#c6 .
+TEST(URLMatcherFactoryTest, UpperCase) {
+  URLMatcher matcher;
+  std::string error;
+  scoped_refptr<URLMatcherConditionSet> result;
+
+  // {"hostContains": "exaMple"}
+  DictionaryValue invalid_condition1;
+  invalid_condition1.SetString(keys::kHostContainsKey, "exaMple");
+
+  // {"hostSuffix": ".Com"}
+  DictionaryValue invalid_condition2;
+  invalid_condition2.SetString(keys::kHostSuffixKey, ".Com");
+
+  // {"hostPrefix": "WWw."}
+  DictionaryValue invalid_condition3;
+  invalid_condition3.SetString(keys::kHostPrefixKey, "WWw.");
+
+  // {"hostEquals": "WWW.example.Com"}
+  DictionaryValue invalid_condition4;
+  invalid_condition4.SetString(keys::kHostEqualsKey, "WWW.example.Com");
+
+  // {"scheme": ["HTTP"]}
+  ListValue* scheme_list = new ListValue();
+  scheme_list->Append(Value::CreateStringValue("HTTP"));
+  DictionaryValue invalid_condition5;
+  invalid_condition5.Set(keys::kSchemesKey, scheme_list);
+
+  const DictionaryValue* invalid_conditions[] = {
+    &invalid_condition1,
+    &invalid_condition2,
+    &invalid_condition3,
+    &invalid_condition4,
+    &invalid_condition5
+  };
+
+  for (size_t i = 0; i < arraysize(invalid_conditions); ++i) {
+    error.clear();
+    result = URLMatcherFactory::CreateFromURLFilterDictionary(
+        matcher.condition_factory(), invalid_conditions[i], 1, &error);
+    EXPECT_FALSE(error.empty()) << "in iteration " << i;
+    EXPECT_FALSE(result.get()) << "in iteration " << i;
+  }
+}
+
 // This class wraps a case sensitivity test for a single UrlFilter condition.
 class UrlConditionCaseTest {
  public:
@@ -109,16 +156,18 @@ class UrlConditionCaseTest {
   // if the key is associated with list-of-string values, then
   // |use_list_of_strings| should be true. In |url| is the URL to test against.
   UrlConditionCaseTest(const char* condition_key,
-                       const bool use_list_of_strings,
+                       bool use_list_of_strings,
                        const std::string& expected_value,
                        const std::string& incorrect_case_value,
-                       const bool case_sensitive,
+                       bool case_sensitive,
+                       bool lower_case_enforced,
                        const GURL& url)
       : condition_key_(condition_key),
         use_list_of_strings_(use_list_of_strings),
         expected_value_(expected_value),
         incorrect_case_value_(incorrect_case_value),
-        case_sensitive_(case_sensitive),
+        expected_result_for_wrong_case_(ExpectedResult(case_sensitive,
+                                                       lower_case_enforced)),
         url_(url) {}
 
   ~UrlConditionCaseTest() {}
@@ -129,16 +178,31 @@ class UrlConditionCaseTest {
   void Test() const;
 
  private:
-  // Check, via EXPECT_* macros, that the the condition |condition_key_|=|value|
-  // fails against |url_| iff |should_fail| is true. This check is expensive,
-  // its value should be cached if needed multiple times.
-  void CheckCondition(const std::string& value, bool should_fail) const;
+  enum ResultType { OK, NOT_FULFILLED, CREATE_FAILURE };
+
+  // What is the expected result of |CheckCondition| if a wrong-case |value|
+  // containing upper case letters is supplied.
+  static ResultType ExpectedResult(bool case_sensitive,
+                                   bool lower_case_enforced) {
+    if (lower_case_enforced)
+      return CREATE_FAILURE;
+    if (case_sensitive)
+      return NOT_FULFILLED;
+    return OK;
+  }
+
+  // Test the condition |condition_key_| = |value| against |url_|.
+  // Check, via EXPECT_* macros, that either the condition cannot be constructed
+  // at all, or that the condition is not fulfilled, or that it is fulfilled,
+  // depending on the value of |expected_result|.
+  void CheckCondition(const std::string& value,
+                      ResultType expected_result) const;
 
   const char* condition_key_;
   const bool use_list_of_strings_;
   const std::string& expected_value_;
   const std::string& incorrect_case_value_;
-  const bool case_sensitive_;
+  const ResultType expected_result_for_wrong_case_;
   const GURL& url_;
 
   // Allow implicit copy and assign, because a public copy constructor is
@@ -146,12 +210,13 @@ class UrlConditionCaseTest {
 };
 
 void UrlConditionCaseTest::Test() const {
-  CheckCondition(expected_value_, false);
-  CheckCondition(incorrect_case_value_, case_sensitive_);
+  CheckCondition(expected_value_, OK);
+  CheckCondition(incorrect_case_value_, expected_result_for_wrong_case_);
 }
 
-void UrlConditionCaseTest::CheckCondition(const std::string& value,
-                                          bool should_fail) const {
+void UrlConditionCaseTest::CheckCondition(
+    const std::string& value,
+    UrlConditionCaseTest::ResultType expected_result) const {
   DictionaryValue condition;
   if (use_list_of_strings_) {
     ListValue* list = new ListValue();
@@ -167,13 +232,18 @@ void UrlConditionCaseTest::CheckCondition(const std::string& value,
 
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
       matcher.condition_factory(), &condition, 1, &error);
+  if (expected_result == CREATE_FAILURE) {
+    EXPECT_FALSE(error.empty());
+    EXPECT_FALSE(result);
+    return;
+  }
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 
   URLMatcherConditionSet::Vector conditions;
   conditions.push_back(result);
   matcher.AddConditionSets(conditions);
-  EXPECT_EQ((should_fail ? 0u : 1u), matcher.MatchURL(url_).size())
+  EXPECT_EQ((expected_result == OK ? 1u : 0u), matcher.MatchURL(url_).size())
       << "while matching condition " << condition_key_ << " with value "
       << value  << " against url " << url_;
 }
@@ -194,52 +264,60 @@ TEST(URLMatcherFactoryTest, CaseSensitivity) {
       kSchemeUpper + "://" + kHostUpper + ":1234" + kPathUpper + kQueryUpper);
   const GURL url(kUrl);
   // Note: according to RFC 3986, and RFC 1034, schema and host, respectively
-  // should be case insensitive. See crbug.com/160702, comments 6 and 7, for why
-  // we still require them to be case sensitive in UrlFilter.
+  // should be case insensitive. See crbug.com/160702#6 for why we still
+  // require them to be case sensitive in UrlFilter, and enforce lower case.
+  const bool kIsSchemeLowerCaseEnforced = true;
+  const bool kIsHostLowerCaseEnforced = true;
+  const bool kIsPathLowerCaseEnforced = false;
+  const bool kIsQueryLowerCaseEnforced = false;
+  const bool kIsUrlLowerCaseEnforced = false;
   const bool kIsSchemeCaseSensitive = true;
   const bool kIsHostCaseSensitive = true;
   const bool kIsPathCaseSensitive = true;
   const bool kIsQueryCaseSensitive = true;
   const bool kIsUrlCaseSensitive = kIsSchemeCaseSensitive ||
-      kIsHostCaseSensitive || kIsPathCaseSensitive || kIsQueryCaseSensitive;
+                                   kIsHostCaseSensitive ||
+                                   kIsPathCaseSensitive ||
+                                   kIsQueryCaseSensitive;
 
   const UrlConditionCaseTest case_tests[] = {
     UrlConditionCaseTest(keys::kSchemesKey, true, kScheme, kSchemeUpper,
-                         kIsSchemeCaseSensitive, url),
+                         kIsSchemeCaseSensitive, kIsSchemeLowerCaseEnforced,
+                         url),
     UrlConditionCaseTest(keys::kHostContainsKey, false, kHost, kHostUpper,
-                         kIsHostCaseSensitive, url),
+                         kIsHostCaseSensitive, kIsHostLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kHostEqualsKey, false, kHost, kHostUpper,
-                         kIsHostCaseSensitive, url),
+                         kIsHostCaseSensitive, kIsHostLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kHostPrefixKey, false, kHost, kHostUpper,
-                         kIsHostCaseSensitive, url),
+                         kIsHostCaseSensitive, kIsHostLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kHostSuffixKey, false, kHost, kHostUpper,
-                         kIsHostCaseSensitive, url),
+                         kIsHostCaseSensitive, kIsHostLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kPathContainsKey, false, kPath, kPathUpper,
-                         kIsPathCaseSensitive, url),
+                         kIsPathCaseSensitive, kIsPathLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kPathEqualsKey, false, kPath, kPathUpper,
-                         kIsPathCaseSensitive, url),
+                         kIsPathCaseSensitive, kIsPathLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kPathPrefixKey, false, kPath, kPathUpper,
-                         kIsPathCaseSensitive, url),
+                         kIsPathCaseSensitive, kIsPathLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kPathSuffixKey, false, kPath, kPathUpper,
-                         kIsPathCaseSensitive, url),
+                         kIsPathCaseSensitive, kIsPathLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kQueryContainsKey, false, kQuery, kQueryUpper,
-                         kIsQueryCaseSensitive, url),
+                         kIsQueryCaseSensitive, kIsQueryLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kQueryEqualsKey, false, kQuery, kQueryUpper,
-                         kIsQueryCaseSensitive, url),
+                         kIsQueryCaseSensitive, kIsQueryLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kQueryPrefixKey, false, kQuery, kQueryUpper,
-                         kIsQueryCaseSensitive, url),
+                         kIsQueryCaseSensitive, kIsQueryLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kQuerySuffixKey, false, kQuery, kQueryUpper,
-                         kIsQueryCaseSensitive, url),
+                         kIsQueryCaseSensitive, kIsQueryLowerCaseEnforced, url),
     // Excluding kURLMatchesKey because case sensitivity can be specified in the
     // RE2 expression.
     UrlConditionCaseTest(keys::kURLContainsKey, false, kUrl, kUrlUpper,
-                         kIsUrlCaseSensitive, url),
+                         kIsUrlCaseSensitive, kIsUrlLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kURLEqualsKey, false, kUrl, kUrlUpper,
-                         kIsUrlCaseSensitive, url),
+                         kIsUrlCaseSensitive, kIsUrlLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kURLPrefixKey, false, kUrl, kUrlUpper,
-                         kIsUrlCaseSensitive, url),
+                         kIsUrlCaseSensitive, kIsUrlLowerCaseEnforced, url),
     UrlConditionCaseTest(keys::kURLSuffixKey, false, kUrl, kUrlUpper,
-                         kIsUrlCaseSensitive, url),
+                         kIsUrlCaseSensitive, kIsUrlLowerCaseEnforced, url),
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(case_tests); ++i) {
