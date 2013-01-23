@@ -58,6 +58,18 @@ if (!chrome.searchBox) {
     native function StartCapturingKeyStrokes();
     native function StopCapturingKeyStrokes();
 
+    function escapeHTML(text) {
+      return text.replace(/[<>&"']/g, function(match) {
+        switch (match) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '"': return '&quot;';
+          case "'": return '&apos;';
+        }
+      });
+    }
+
     // Returns the |restrictedText| wrapped in a ShadowDOM.
     function SafeWrap(restrictedText) {
       var node = document.createElement('div');
@@ -84,8 +96,8 @@ if (!chrome.searchBox) {
           GetAutocompleteResults());
       var userInput = GetQuery();
       for (var i = 0, result; result = autocompleteResults[i]; ++i) {
-        var title = result.contents;
-        var url = CleanUrl(result.destination_url, userInput);
+        var title = escapeHTML(result.contents);
+        var url = escapeHTML(CleanUrl(result.destination_url, userInput));
         var combinedHtml = '<span class=chrome_url>' + url + '</span>';
         if (title) {
           result.titleNode = SafeWrap(title);
