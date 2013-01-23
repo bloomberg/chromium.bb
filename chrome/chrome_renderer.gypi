@@ -324,6 +324,11 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
+	['enable_automation==0', {
+	  'sources/': [
+            ['exclude', '^renderer/automation/']
+	  ]
+	}],
         ['OS=="android"', {
           'sources!': [
             'renderer/prerender/prerender_webmediaplayer.cc',

@@ -34,7 +34,6 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/autofill/password_generation_manager.h"
-#include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
@@ -94,6 +93,10 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
+
+#if defined(ENABLE_AUTOMATION)
+#include "chrome/renderer/automation/automation_renderer_helper.h"
+#endif
 
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillManager;
@@ -319,11 +322,13 @@ void ChromeContentRendererClient::RenderViewCreated(
   new PepperHelper(render_view);
 #endif
 
+#if defined(ENABLE_AUTOMATION)
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {
     new AutomationRendererHelper(render_view);
   }
+#endif
 }
 
 void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {

@@ -381,7 +381,6 @@
           ],
         }, {  # OS == ios
           'sources/': [
-            ['exclude', '^common/automation_'],
             ['exclude', '^common/child_process_'],
             ['exclude', '^common/chrome_content_client\\.cc$'],
             ['exclude', '^common/chrome_version_info_posix\\.cc$'],
@@ -480,6 +479,11 @@
             '../remoting/remoting.gyp:remoting_client_plugin',
           ],
         }],
+        ['enable_automation==0', {
+          'sources/': [
+            ['exclude', '^common/automation_']
+	  ]
+        }]
       ],
       'target_conditions': [
         ['OS == "ios"', {

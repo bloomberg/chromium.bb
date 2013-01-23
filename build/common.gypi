@@ -487,6 +487,7 @@
         }],
 
         ['OS=="android"', {
+          'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'enable_language_detection%': 0,
