@@ -20,6 +20,10 @@ public:
     static scoped_ptr<ScrollbarLayerImpl> create(LayerTreeImpl* treeImpl, int id);
     virtual ~ScrollbarLayerImpl();
 
+    virtual ScrollbarLayerImpl* toScrollbarLayer() OVERRIDE;
+    int scrollLayerId() const { return m_scrollLayerId; }
+    void setScrollLayerId(int id) { m_scrollLayerId = id; }
+
     ScrollbarGeometryFixedThumb* scrollbarGeometry() const { return m_geometry.get(); }
     void setScrollbarGeometry(scoped_ptr<ScrollbarGeometryFixedThumb>);
     void setScrollbarData(WebKit::WebScrollbar*);
@@ -28,7 +32,6 @@ public:
     void setForeTrackResourceId(ResourceProvider::ResourceId id) { m_foreTrackResourceId = id; }
     void setThumbResourceId(ResourceProvider::ResourceId id) { m_thumbResourceId = id; }
 
-    void setOwningLayer(LayerImpl* owningLayer);
 
     // ScrollbarLayerImplBase implementation.
     virtual float currentPos() const OVERRIDE;
@@ -40,6 +43,9 @@ public:
     void setMaximum(int maximum) { m_maximum = maximum; }
 
     virtual WebKit::WebScrollbar::Orientation orientation() const OVERRIDE;
+
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
@@ -92,6 +98,8 @@ private:
     float m_currentPos;
     int m_totalSize;
     int m_maximum;
+
+    int m_scrollLayerId;
 
     // Data to implement Scrollbar
     WebKit::WebScrollbar::ScrollbarOverlayStyle m_scrollbarOverlayStyle;

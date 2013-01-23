@@ -28,6 +28,7 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
     , m_currentPos(0)
     , m_totalSize(0)
     , m_maximum(0)
+    , m_scrollLayerId(-1)
     , m_scrollbarOverlayStyle(WebScrollbar::ScrollbarOverlayStyleDefault)
     , m_orientation(WebScrollbar::Horizontal)
     , m_controlSize(WebScrollbar::RegularScrollbar)
@@ -43,6 +44,11 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
 
 ScrollbarLayerImpl::~ScrollbarLayerImpl()
 {
+}
+
+ScrollbarLayerImpl* ScrollbarLayerImpl::toScrollbarLayer()
+{
+    return this;
 }
 
 void ScrollbarLayerImpl::setScrollbarGeometry(scoped_ptr<ScrollbarGeometryFixedThumb> geometry)
@@ -99,6 +105,27 @@ gfx::Rect ScrollbarLayerImpl::scrollbarLayerRectToContentRect(const gfx::Rect& l
     // layerRect here might be in coordinates of the containing layer.
     gfx::RectF contentRect = gfx::ScaleRect(layerRect, contentsScaleX(), contentsScaleY());
     return gfx::ToEnclosingRect(contentRect);
+}
+
+scoped_ptr<LayerImpl> ScrollbarLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return ScrollbarLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
+void ScrollbarLayerImpl::pushPropertiesTo(LayerImpl* layer)
+{
+    LayerImpl::pushPropertiesTo(layer);
+
+    ScrollbarLayerImpl* scrollbarLayer = static_cast<ScrollbarLayerImpl*>(layer);
+
+    if (!scrollbarLayer->scrollbarGeometry())
+        scrollbarLayer->setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone())));
+
+    scrollbarLayer->setScrollbarData(&m_scrollbar);
+
+    scrollbarLayer->setBackTrackResourceId(m_backTrackResourceId);
+    scrollbarLayer->setForeTrackResourceId(m_foreTrackResourceId);
+    scrollbarLayer->setThumbResourceId(m_thumbResourceId);
 }
 
 void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)

@@ -67,17 +67,23 @@ public:
     LayerImpl* parent() { return m_parent; }
     const LayerImpl* parent() const { return m_parent; }
     const LayerList& children() const { return m_children; }
+    LayerList& children() { return m_children; }
+    LayerImpl* childAt(size_t index) const;
     void addChild(scoped_ptr<LayerImpl>);
     scoped_ptr<LayerImpl> removeChild(LayerImpl* child);
     void removeAllChildren();
+    void setParent(LayerImpl* parent) { m_parent = parent; }
+    void clearChildList(); // Warning: This does not preserve tree structure invariants.
 
     void setMaskLayer(scoped_ptr<LayerImpl>);
     LayerImpl* maskLayer() { return m_maskLayer.get(); }
     const LayerImpl* maskLayer() const { return m_maskLayer.get(); }
+    scoped_ptr<LayerImpl> takeMaskLayer();
 
     void setReplicaLayer(scoped_ptr<LayerImpl>);
     LayerImpl* replicaLayer() { return m_replicaLayer.get(); }
     const LayerImpl* replicaLayer() const { return m_replicaLayer.get(); }
+    scoped_ptr<LayerImpl> takeReplicaLayer();
 
     bool hasMask() const { return m_maskLayer; }
     bool hasReplica() const { return m_replicaLayer; }
@@ -100,6 +106,8 @@ public:
     virtual bool hasContributingDelegatedRenderPasses() const;
     virtual RenderPass::Id firstContributingRenderPassId() const;
     virtual RenderPass::Id nextContributingRenderPassId(RenderPass::Id) const;
+
+    virtual ScrollbarLayerImpl* toScrollbarLayer();
 
     // Returns true if this layer has content to draw.
     void setDrawsContent(bool);
@@ -296,6 +304,9 @@ public:
 
     virtual bool areVisibleResourcesReady() const;
 
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*);
+    virtual void pushPropertiesTo(LayerImpl*);
+
 protected:
     LayerImpl(LayerTreeImpl* layerImpl, int);
 
@@ -308,13 +319,6 @@ protected:
     static std::string indentString(int indent);
 
 private:
-    scoped_ptr<LayerImpl> takeMaskLayer();
-    scoped_ptr<LayerImpl> takeReplicaLayer();
-
-    void setParent(LayerImpl* parent) { m_parent = parent; }
-    friend class TreeSynchronizer;
-    void clearChildList(); // Warning: This does not preserve tree structure invariants and so is only exposed to the tree synchronizer.
-
     void updateScrollbarPositions();
 
     void noteLayerSurfacePropertyChanged();
@@ -350,6 +354,7 @@ private:
     Region m_nonFastScrollableRegion;
     Region m_touchEventHandlerRegion;
     SkColor m_backgroundColor;
+    bool m_stackingOrderChanged;
 
     // Whether the "back" of this layer should draw.
     bool m_doubleSided;

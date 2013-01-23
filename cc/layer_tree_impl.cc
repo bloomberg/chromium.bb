@@ -234,6 +234,10 @@ void LayerTreeImpl::ResetContentsTexturesPurged() {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
 }
 
+Proxy* LayerTreeImpl::proxy() const {
+  return layer_tree_host_impl_->proxy();
+}
+
 const LayerTreeSettings& LayerTreeImpl::settings() const {
   return layer_tree_host_impl_->settings();
 }
@@ -264,6 +268,10 @@ bool LayerTreeImpl::IsActiveTree() const {
 
 bool LayerTreeImpl::IsPendingTree() const {
   return layer_tree_host_impl_->pendingTree() == this;
+}
+
+bool LayerTreeImpl::IsRecycleTree() const {
+  return layer_tree_host_impl_->recycleTree() == this;
 }
 
 LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {

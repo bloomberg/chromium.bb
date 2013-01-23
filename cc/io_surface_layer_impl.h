@@ -21,6 +21,9 @@ public:
 
     void setIOSurfaceProperties(unsigned ioSurfaceId, const gfx::Size&);
 
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
     virtual void willDraw(ResourceProvider*) OVERRIDE;

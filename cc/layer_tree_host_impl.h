@@ -169,6 +169,7 @@ public:
     const LayerTreeImpl* activeTree() const { return m_activeTree.get(); }
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
+    const LayerTreeImpl* recycleTree() const { return m_recycleTree.get(); }
     void createPendingTree();
     void checkForCompletedTileUploads();
     virtual void activatePendingTreeIfNeeded();
@@ -315,8 +316,16 @@ private:
     scoped_ptr<Renderer> m_renderer;
     scoped_ptr<TileManager> m_tileManager;
 
-    scoped_ptr<LayerTreeImpl> m_pendingTree;
+    // Tree currently being drawn.
     scoped_ptr<LayerTreeImpl> m_activeTree;
+
+    // In impl-side painting mode, tree with possibly incomplete rasterized
+    // content. May be promoted to active by activatePendingTreeIfNeeded().
+    scoped_ptr<LayerTreeImpl> m_pendingTree;
+
+    // In impl-side painting mode, inert tree with layers that can be recycled
+    // by the next sync from the main thread.
+    scoped_ptr<LayerTreeImpl> m_recycleTree;
 
     bool m_scrollDeltaIsInViewportSpace;
     LayerTreeSettings m_settings;

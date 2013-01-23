@@ -1521,9 +1521,9 @@ TEST_P(LayerTreeHostImplTest, scrollEventBubbling)
     child->setScrollable(false);
     root->addChild(child.Pass());
 
+    m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     m_hostImpl->activeTree()->SetRootLayer(root.Pass());
     m_hostImpl->activeTree()->DidBecomeActive();
-    m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     initializeRendererAndDrawFrame();
     {
         gfx::Vector2d scrollDelta(0, 4);

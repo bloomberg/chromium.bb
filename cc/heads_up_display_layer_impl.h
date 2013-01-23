@@ -33,6 +33,9 @@ public:
 
     void setFontAtlas(scoped_ptr<FontAtlas>);
 
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+
     virtual void willDraw(ResourceProvider*) OVERRIDE;
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
     void updateHudTexture(ResourceProvider*);

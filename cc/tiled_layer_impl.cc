@@ -113,6 +113,29 @@ void TiledLayerImpl::getDebugBorderProperties(SkColor* color, float* width) cons
     *width = DebugColors::TiledContentLayerBorderWidth(layerTreeImpl());
 }
 
+scoped_ptr<LayerImpl> TiledLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return TiledLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
+void TiledLayerImpl::pushPropertiesTo(LayerImpl* layer)
+{
+    LayerImpl::pushPropertiesTo(layer);
+
+    TiledLayerImpl* tiledLayer = static_cast<TiledLayerImpl*>(layer);
+
+    tiledLayer->setSkipsDraw(m_skipsDraw);
+    tiledLayer->setTilingData(*m_tiler);
+
+    for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
+        int i = iter->first.first;
+        int j = iter->first.second;
+        DrawableTile* tile = static_cast<DrawableTile*>(iter->second);
+
+        tiledLayer->pushTileProperties(i, j, tile->resourceId(), tile->opaqueRect(), tile->contentsSwizzled());
+    }
+}
+
 void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
     const gfx::Rect& contentRect = visibleContentRect();

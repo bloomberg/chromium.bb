@@ -14,29 +14,15 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl* treeImpl)
-{
-    DCHECK(treeImpl);
+typedef ScopedPtrHashMap<int, LayerImpl> ScopedPtrLayerImplMap;
+typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
 
-    TRACE_EVENT0("cc", "TreeSynchronizer::synchronizeTrees");
-    ScopedPtrLayerImplMap oldLayers;
-    RawPtrLayerImplMap newLayers;
-
-    collectExistingLayerImplRecursive(oldLayers, oldLayerImplRoot.Pass());
-
-    scoped_ptr<LayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerRoot, treeImpl);
-
-    updateScrollbarLayerPointersRecursive(newLayers, layerRoot);
-
-    return newTree.Pass();
-}
-
-void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_ptr<LayerImpl> layerImpl)
+void collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_ptr<LayerImpl> layerImpl)
 {
     if (!layerImpl)
         return;
 
-    ScopedPtrVector<LayerImpl>& children = layerImpl->m_children;
+    ScopedPtrVector<LayerImpl>& children = layerImpl->children();
     for (ScopedPtrVector<LayerImpl>::iterator it = children.begin(); it != children.end(); ++it)
         collectExistingLayerImplRecursive(oldLayers, children.take(it));
 
@@ -47,7 +33,36 @@ void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& 
     oldLayers.set(id, layerImpl.Pass());
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeImpl* treeImpl)
+template <typename LayerType>
+scoped_ptr<LayerImpl> synchronizeTreesInternal(LayerType* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl* treeImpl)
+{
+    DCHECK(treeImpl);
+
+    TRACE_EVENT0("cc", "TreeSynchronizer::synchronizeTrees");
+    ScopedPtrLayerImplMap oldLayers;
+    RawPtrLayerImplMap newLayers;
+
+    collectExistingLayerImplRecursive(oldLayers, oldLayerImplRoot.Pass());
+
+    scoped_ptr<LayerImpl> newTree = synchronizeTreesRecursive(newLayers, oldLayers, layerRoot, treeImpl);
+
+    updateScrollbarLayerPointersRecursive(newLayers, layerRoot);
+
+    return newTree.Pass();
+}
+
+scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl* treeImpl)
+{
+    return synchronizeTreesInternal(layerRoot, oldLayerImplRoot.Pass(), treeImpl);
+}
+
+scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(LayerImpl* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl* treeImpl)
+{
+    return synchronizeTreesInternal(layerRoot, oldLayerImplRoot.Pass(), treeImpl);
+}
+
+template <typename LayerType>
+scoped_ptr<LayerImpl> reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, LayerType* layer, LayerTreeImpl* treeImpl)
 {
     scoped_ptr<LayerImpl> layerImpl = oldLayers.take(layer->id());
 
@@ -58,7 +73,8 @@ scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMa
     return layerImpl.Pass();
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeImpl* treeImpl)
+template <typename LayerType>
+scoped_ptr<LayerImpl> synchronizeTreesRecursiveInternal(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, LayerType* layer, LayerTreeImpl* treeImpl)
 {
     if (!layer)
         return scoped_ptr<LayerImpl>();
@@ -66,12 +82,11 @@ scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImpl
     scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer, treeImpl);
 
     layerImpl->clearChildList();
-    const std::vector<scoped_refptr<Layer> >& children = layer->children();
-    for (size_t i = 0; i < children.size(); ++i)
-        layerImpl->addChild(synchronizeTreeRecursive(newLayers, oldLayers, children[i].get(), treeImpl));
+    for (size_t i = 0; i < layer->children().size(); ++i)
+        layerImpl->addChild(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->childAt(i), treeImpl));
 
-    layerImpl->setMaskLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->maskLayer(), treeImpl));
-    layerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), treeImpl));
+    layerImpl->setMaskLayer(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->maskLayer(), treeImpl));
+    layerImpl->setReplicaLayer(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->replicaLayer(), treeImpl));
 
     // Remove all dangling pointers. The pointers will be setup later in updateScrollbarLayerPointersRecursive phase
     layerImpl->setHorizontalScrollbarLayer(0);
@@ -80,16 +95,26 @@ scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImpl
     return layerImpl.Pass();
 }
 
-void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer* layer)
+scoped_ptr<LayerImpl> synchronizeTreesRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeImpl* treeImpl)
+{
+    return synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer, treeImpl);
+}
+
+scoped_ptr<LayerImpl> synchronizeTreesRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, LayerImpl* layer, LayerTreeImpl* treeImpl)
+{
+    return synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer, treeImpl);
+}
+
+template <typename LayerType, typename ScrollbarLayerType>
+void updateScrollbarLayerPointersRecursiveInternal(const RawPtrLayerImplMap& newLayers, LayerType* layer)
 {
     if (!layer)
         return;
 
-    const std::vector<scoped_refptr<Layer> >& children = layer->children();
-    for (size_t i = 0; i < children.size(); ++i)
-        updateScrollbarLayerPointersRecursive(newLayers, children[i].get());
+    for (size_t i = 0; i < layer->children().size(); ++i)
+        updateScrollbarLayerPointersRecursiveInternal<LayerType, ScrollbarLayerType>(newLayers, layer->childAt(i));
 
-    ScrollbarLayer* scrollbarLayer = layer->toScrollbarLayer();
+    ScrollbarLayerType* scrollbarLayer = layer->toScrollbarLayer();
     if (!scrollbarLayer)
         return;
 
@@ -107,7 +132,18 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrLayerIm
         scrollLayerImpl->setVerticalScrollbarLayer(scrollbarLayerImpl);
 }
 
-void TreeSynchronizer::pushProperties(Layer* layer, LayerImpl* layerImpl)
+void updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer* layer)
+{
+    updateScrollbarLayerPointersRecursiveInternal<Layer, ScrollbarLayer>(newLayers, layer);
+}
+
+void updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, LayerImpl* layer)
+{
+    updateScrollbarLayerPointersRecursiveInternal<LayerImpl, ScrollbarLayerImpl>(newLayers, layer);
+}
+
+template <typename LayerType>
+void pushPropertiesInternal(LayerType* layer, LayerImpl* layerImpl)
 {
     if (!layer) {
         DCHECK(!layerImpl);
@@ -117,16 +153,26 @@ void TreeSynchronizer::pushProperties(Layer* layer, LayerImpl* layerImpl)
     DCHECK_EQ(layer->id(), layerImpl->id());
     layer->pushPropertiesTo(layerImpl);
 
-    pushProperties(layer->maskLayer(), layerImpl->maskLayer());
-    pushProperties(layer->replicaLayer(), layerImpl->replicaLayer());
+    pushPropertiesInternal(layer->maskLayer(), layerImpl->maskLayer());
+    pushPropertiesInternal(layer->replicaLayer(), layerImpl->replicaLayer());
 
-    const std::vector<scoped_refptr<Layer> >& children = layer->children();
     const ScopedPtrVector<LayerImpl>& implChildren = layerImpl->children();
-    DCHECK_EQ(children.size(), implChildren.size());
+    DCHECK_EQ(layer->children().size(), implChildren.size());
 
-    for (size_t i = 0; i < children.size(); ++i) {
-        pushProperties(children[i].get(), implChildren[i]);
+    for (size_t i = 0; i < layer->children().size(); ++i) {
+        pushPropertiesInternal(layer->childAt(i), implChildren[i]);
     }
 }
+
+void TreeSynchronizer::pushProperties(Layer* layer, LayerImpl* layerImpl)
+{
+    pushPropertiesInternal(layer, layerImpl);
+}
+
+void TreeSynchronizer::pushProperties(LayerImpl* layer, LayerImpl* layerImpl)
+{
+    pushPropertiesInternal(layer, layerImpl);
+}
+
 
 }  // namespace cc

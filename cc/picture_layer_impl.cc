@@ -25,7 +25,6 @@ namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
     : LayerImpl(treeImpl, id),
-      tilings_(this),
       pile_(PicturePileImpl::Create()),
       last_update_time_(0),
       last_content_scale_(0),
@@ -39,6 +38,36 @@ PictureLayerImpl::~PictureLayerImpl() {
 const char* PictureLayerImpl::layerTypeAsString() const {
   return "PictureLayer";
 }
+
+scoped_ptr<LayerImpl> PictureLayerImpl::createLayerImpl(
+    LayerTreeImpl* treeImpl) {
+  return PictureLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
+void PictureLayerImpl::CreateTilingSet() {
+  DCHECK(layerTreeImpl()->IsPendingTree());
+  DCHECK(!tilings_);
+  tilings_.reset(new PictureLayerTilingSet(this));
+  tilings_->SetLayerBounds(bounds());
+}
+
+void PictureLayerImpl::TransferTilingSet(scoped_ptr<PictureLayerTilingSet> tilings) {
+  DCHECK(layerTreeImpl()->IsActiveTree());
+  tilings->SetClient(this);
+  tilings_ = tilings.Pass();
+}
+
+void PictureLayerImpl::pushPropertiesTo(LayerImpl* base_layer) {
+  LayerImpl::pushPropertiesTo(base_layer);
+
+  PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+
+  layer_impl->SetIsMask(is_mask_);
+  layer_impl->TransferTilingSet(tilings_.Pass());
+  layer_impl->pile_ = pile_;
+  pile_ = PicturePileImpl::Create();
+}
+
 
 void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                                    AppendQuadsData& appendQuadsData) {
@@ -56,7 +85,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   bool useAA = !isAxisAlignedInTarget;
 
   if (showDebugBorders()) {
-    for (PictureLayerTilingSet::Iterator iter(&tilings_,
+    for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                               contentsScaleX(),
                                               rect,
                                               ideal_contents_scale_);
@@ -84,7 +113,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   // unused can be considered for removal.
   std::vector<PictureLayerTiling*> seen_tilings;
 
-  for (PictureLayerTilingSet::Iterator iter(&tilings_,
+  for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                             contentsScaleX(),
                                             rect,
                                             ideal_contents_scale_);
@@ -162,7 +191,7 @@ void PictureLayerImpl::didUpdateTransforms() {
     time_delta = current_time - last_update_time_;
   }
   WhichTree tree = layerTreeImpl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-  tilings_.UpdateTilePriorities(
+  tilings_->UpdateTilePriorities(
       tree,
       layerTreeImpl()->device_viewport_size(),
       last_content_scale_,
@@ -179,11 +208,13 @@ void PictureLayerImpl::didUpdateTransforms() {
 }
 
 void PictureLayerImpl::didBecomeActive() {
-  tilings_.DidBecomeActive();
+  LayerImpl::didBecomeActive();
+  tilings_->DidBecomeActive();
 }
 
 void PictureLayerImpl::didLoseOutputSurface() {
-  tilings_.RemoveAllTilings();
+  if (tilings_)
+    tilings_->RemoveAllTilings();
 }
 
 void PictureLayerImpl::calculateContentsScale(
@@ -192,7 +223,7 @@ void PictureLayerImpl::calculateContentsScale(
     float* contents_scale_y,
     gfx::Size* content_bounds) {
   if (!drawsContent()) {
-    DCHECK(!tilings_.num_tilings());
+    DCHECK(!tilings_->num_tilings());
     return;
   }
 
@@ -208,8 +239,8 @@ void PictureLayerImpl::calculateContentsScale(
   // tilings (and then map back to floating point texture coordinates), the
   // contents scale must be at least as large as the largest of the tilings.
   float max_contents_scale = min_contents_scale;
-  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
-    const PictureLayerTiling* tiling = tilings_.tiling_at(i);
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    const PictureLayerTiling* tiling = tilings_->tiling_at(i);
     max_contents_scale = std::max(max_contents_scale, tiling->contents_scale());
   }
 
@@ -256,26 +287,26 @@ void PictureLayerImpl::SyncFromActiveLayer() {
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
-  tilings_.CloneAll(other->tilings_, invalidation_);
-  DCHECK(bounds() == tilings_.LayerBounds());
+  tilings_->CloneAll(*other->tilings_, invalidation_);
+  DCHECK(bounds() == tilings_->LayerBounds());
 }
 
 void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling) {
-  tilings_.Clone(tiling, invalidation_);
+  tilings_->Clone(tiling, invalidation_);
 }
 
 void PictureLayerImpl::SetIsMask(bool is_mask) {
   if (is_mask_ == is_mask)
     return;
   is_mask_ = is_mask;
-  tilings_.RemoveAllTiles();
+  tilings_->RemoveAllTiles();
 }
 
 ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
   gfx::Rect content_rect(gfx::Point(), contentBounds());
   float scale = contentsScaleX();
-  for (PictureLayerTilingSet::Iterator iter(&tilings_,
+  for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                             scale,
                                             content_rect,
                                             ideal_contents_scale_);
@@ -295,8 +326,8 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
 bool PictureLayerImpl::areVisibleResourcesReady() const {
   const gfx::Rect& rect = visibleContentRect();
 
-  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
-    const PictureLayerTiling* tiling = tilings_.tiling_at(i);
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    const PictureLayerTiling* tiling = tilings_->tiling_at(i);
 
     // Ignore non-high resolution tilings.
     if (tiling->resolution() != HIGH_RESOLUTION)
@@ -320,7 +351,7 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   if (contents_scale < layerTreeImpl()->settings().minimumContentsScale)
     return NULL;
 
-  PictureLayerTiling* tiling = tilings_.AddTiling(
+  PictureLayerTiling* tiling = tilings_->AddTiling(
       contents_scale,
       TileSize());
 
@@ -381,8 +412,8 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
   if (layerTreeImpl()->IsPendingTree() &&
       !layerTreeImpl()->PinchGestureActive()) {
     std::vector<PictureLayerTiling*> remove_list;
-    for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
-      PictureLayerTiling* tiling = tilings_.tiling_at(i);
+    for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+      PictureLayerTiling* tiling = tilings_->tiling_at(i);
       if (tiling->contents_scale() == ideal_contents_scale)
         continue;
       if (tiling->contents_scale() == low_res_contents_scale)
@@ -391,14 +422,14 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
     }
 
     for (size_t i = 0; i < remove_list.size(); ++i)
-      tilings_.Remove(remove_list[i]);
+      tilings_->Remove(remove_list[i]);
   }
 
   // Find existing tilings closest to ideal high / low res.
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
-  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
-    PictureLayerTiling* tiling = tilings_.tiling_at(i);
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
     if (!high_res || IsCloserToThan(tiling, high_res, ideal_contents_scale))
       high_res = tiling;
     if (!low_res || IsCloserToThan(tiling, low_res, low_res_contents_scale))
@@ -442,8 +473,8 @@ void PictureLayerImpl::CleanUpUnusedTilings(
     std::vector<PictureLayerTiling*> used_tilings) {
   std::vector<PictureLayerTiling*> to_remove;
 
-  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
-    PictureLayerTiling* tiling = tilings_.tiling_at(i);
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
     // Don't remove the current high or low res tilinig.
     if (tiling->resolution() != NON_IDEAL_RESOLUTION)
       continue;
@@ -453,7 +484,7 @@ void PictureLayerImpl::CleanUpUnusedTilings(
   }
 
   for (size_t i = 0; i < to_remove.size(); ++i)
-    tilings_.Remove(to_remove[i]);
+    tilings_->Remove(to_remove[i]);
 }
 
 }  // namespace cc

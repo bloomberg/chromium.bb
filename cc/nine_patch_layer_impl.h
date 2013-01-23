@@ -28,6 +28,9 @@ public:
     void setResourceId(unsigned id) { m_resourceId = id; }
     void setLayout(const gfx::Size& imageBounds, const gfx::Rect& aperture);
 
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+
     virtual void willDraw(ResourceProvider*) OVERRIDE;
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
     virtual void didDraw(ResourceProvider*) OVERRIDE;

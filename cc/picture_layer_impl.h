@@ -29,6 +29,9 @@ public:
 
   // LayerImpl overrides.
   virtual const char* layerTypeAsString() const OVERRIDE;
+  virtual scoped_ptr<LayerImpl> createLayerImpl(
+      LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
   virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
   virtual void didUpdateTransforms() OVERRIDE;
@@ -50,6 +53,9 @@ public:
   void SyncFromActiveLayer();
   void SyncTiling(const PictureLayerTiling* tiling);
 
+  void CreateTilingSet();
+  void TransferTilingSet(scoped_ptr<PictureLayerTilingSet> tilings);
+
   // Mask-related functions
   void SetIsMask(bool is_mask);
   virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
@@ -64,7 +70,7 @@ protected:
   void ManageTilings(float ideal_contents_scale);
   void CleanUpUnusedTilings(std::vector<PictureLayerTiling*> used_tilings);
 
-  PictureLayerTilingSet tilings_;
+  scoped_ptr<PictureLayerTilingSet> tilings_;
   scoped_refptr<PicturePileImpl> pile_;
   Region invalidation_;
 

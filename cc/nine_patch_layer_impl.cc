@@ -27,6 +27,23 @@ ResourceProvider::ResourceId NinePatchLayerImpl::contentsResourceId() const
     return 0;
 }
 
+scoped_ptr<LayerImpl> NinePatchLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return NinePatchLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
+void NinePatchLayerImpl::pushPropertiesTo(LayerImpl* layer)
+{
+    LayerImpl::pushPropertiesTo(layer);
+    NinePatchLayerImpl* layerImpl = static_cast<NinePatchLayerImpl*>(layer);
+
+    if (!m_resourceId)
+        return;
+
+    layerImpl->setResourceId(m_resourceId);
+    layerImpl->setLayout(m_imageBounds, m_imageAperture);
+}
+
 void NinePatchLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
 }

@@ -301,6 +301,8 @@
       'tree_synchronizer.h',
       'util.h',
       'video_frame_provider.h',
+      'video_frame_provider_client_impl.cc',
+      'video_frame_provider_client_impl.h',
       'video_layer.cc',
       'video_layer.h',
       'video_layer_impl.cc',

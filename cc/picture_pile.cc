@@ -38,6 +38,7 @@ void PicturePile::Update(
     if (!(*i)->HasRecording())
       (*i)->Record(painter, stats);
   }
+  DCHECK(!pile_.empty());
 }
 
 class FullyContainedPredicate {

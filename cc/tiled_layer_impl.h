@@ -21,6 +21,9 @@ public:
     }
     virtual ~TiledLayerImpl();
 
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
     virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;

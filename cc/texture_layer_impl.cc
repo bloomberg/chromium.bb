@@ -54,6 +54,29 @@ void TextureLayerImpl::setTextureMailbox(const TextureMailbox& mailbox)
     m_hasPendingMailbox = true;
 }
 
+scoped_ptr<LayerImpl> TextureLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return TextureLayerImpl::create(treeImpl, id(), m_usesMailbox).PassAs<LayerImpl>();
+}
+
+void TextureLayerImpl::pushPropertiesTo(LayerImpl* layer)
+{
+    LayerImpl::pushPropertiesTo(layer);
+
+    TextureLayerImpl* textureLayer = static_cast<TextureLayerImpl*>(layer);
+    textureLayer->setFlipped(m_flipped);
+    textureLayer->setUVTopLeft(m_uvTopLeft);
+    textureLayer->setUVBottomRight(m_uvBottomRight);
+    textureLayer->setVertexOpacity(m_vertexOpacity);
+    textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
+    if (m_usesMailbox) {
+        textureLayer->setTextureMailbox(m_pendingTextureMailbox);
+    } else {
+        textureLayer->setTextureId(m_textureId);
+    }
+}
+
+
 void TextureLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
     if (!m_usesMailbox) {

@@ -26,6 +26,12 @@ PictureLayerTilingSet::PictureLayerTilingSet(
 PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
 
+void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
+  client_ = client;
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->SetClient(client_);
+}
+
 void PictureLayerTilingSet::CloneAll(
     const PictureLayerTilingSet& other,
     const Region& invalidation) {

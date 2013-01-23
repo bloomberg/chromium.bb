@@ -37,6 +37,19 @@ IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
         context3d->deleteTexture(m_ioSurfaceTextureId);
 }
 
+scoped_ptr<LayerImpl> IOSurfaceLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return IOSurfaceLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
+void IOSurfaceLayerImpl::pushPropertiesTo(LayerImpl* layer)
+{
+    LayerImpl::pushPropertiesTo(layer);
+
+    IOSurfaceLayerImpl* ioSurfaceLayer = static_cast<IOSurfaceLayerImpl*>(layer);
+    ioSurfaceLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
+}
+
 void IOSurfaceLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
     LayerImpl::willDraw(resourceProvider);

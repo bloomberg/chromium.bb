@@ -36,7 +36,7 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->tilings_.SetLayerBounds(bounds());
+  layer_impl->CreateTilingSet();
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(pile_invalidation_);
   pile_->PushPropertiesTo(layer_impl->pile_);

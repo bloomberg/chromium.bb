@@ -60,6 +60,11 @@ void DelegatedRendererLayerImpl::ClearRenderPasses() {
   render_passes_in_draw_order_.clear();
 }
 
+scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return DelegatedRendererLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
 void DelegatedRendererLayerImpl::didLoseOutputSurface() {
   ClearRenderPasses();
 }

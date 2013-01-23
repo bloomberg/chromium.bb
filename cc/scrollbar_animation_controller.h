@@ -21,7 +21,6 @@ public:
     virtual void didPinchGestureUpdate(base::TimeTicks) = 0;
     virtual void didPinchGestureEnd(base::TimeTicks) = 0;
     virtual void didUpdateScrollOffset(base::TimeTicks) = 0;
-
 };
 
 } // namespace cc

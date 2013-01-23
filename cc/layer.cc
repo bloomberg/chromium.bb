@@ -284,6 +284,12 @@ void Layer::setChildren(const LayerList& children)
         addChild(children[i]);
 }
 
+Layer* Layer::childAt(size_t index)
+{
+  DCHECK_LT(index, m_children.size());
+  return m_children[index].get();
+}
+
 void Layer::setAnchorPoint(const gfx::PointF& anchorPoint)
 {
     if (m_anchorPoint == anchorPoint)

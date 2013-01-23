@@ -13,6 +13,7 @@
 #include "cc/resource_provider.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
+#include "cc/video_frame_provider_client_impl.h"
 #include "cc/yuv_video_draw_quad.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/filters/skcanvas_video_renderer.h"
@@ -21,34 +22,36 @@
 
 namespace cc {
 
-VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
+// static
+scoped_ptr<VideoLayerImpl> VideoLayerImpl::create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
+{
+    scoped_ptr<VideoLayerImpl> layer(new VideoLayerImpl(treeImpl, id));
+    layer->setProviderClientImpl(VideoFrameProviderClientImpl::Create(provider));
+    DCHECK(treeImpl->proxy()->isImplThread());
+    DCHECK(treeImpl->proxy()->isMainThreadBlocked());
+    return layer.Pass();
+}
+
+VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* treeImpl, int id)
     : LayerImpl(treeImpl, id)
-    , m_provider(provider)
     , m_frame(0)
     , m_format(GL_INVALID_VALUE)
     , m_convertYUV(false)
     , m_externalTextureResource(0)
 {
-    // This matrix is the default transformation for stream textures, and flips on the Y axis.
-    m_streamTextureMatrix = gfx::Transform(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, -1.0, 0.0, 1.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0);
-
-    // This only happens during a commit on the compositor thread while the main
-    // thread is blocked. That makes this a thread-safe call to set the video
-    // frame provider client that does not require a lock. The same is true of
-    // the call in the destructor.
-    m_provider->SetVideoFrameProviderClient(this);
 }
 
 VideoLayerImpl::~VideoLayerImpl()
 {
-    // See comment in constructor for why this doesn't need a lock.
-    if (m_provider) {
-        m_provider->SetVideoFrameProviderClient(0);
-        m_provider = 0;
+    if (!m_providerClientImpl->Stopped()) {
+        // In impl side painting, we may have a pending and active layer
+        // associated with the video provider at the same time. Both have a ref
+        // on the VideoFrameProviderClientImpl, but we stop when the first
+        // LayerImpl (the one on the pending tree) is destroyed since we know
+        // the main thread is blocked for this commit.
+        DCHECK(layerTreeImpl()->proxy()->isImplThread());
+        DCHECK(layerTreeImpl()->proxy()->isMainThreadBlocked());
+        m_providerClientImpl->Stop();
     }
     freePlaneData(layerTreeImpl()->resource_provider());
 
@@ -59,13 +62,22 @@ VideoLayerImpl::~VideoLayerImpl()
 #endif
 }
 
-void VideoLayerImpl::StopUsingProvider()
+scoped_ptr<LayerImpl> VideoLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    // Block the provider from shutting down until this client is done
-    // using the frame.
-    base::AutoLock locker(m_providerLock);
-    DCHECK(!m_frame);
-    m_provider = 0;
+    return scoped_ptr<LayerImpl>(new VideoLayerImpl(treeImpl, id()));
+}
+
+void VideoLayerImpl::pushPropertiesTo(LayerImpl* layer)
+{
+    LayerImpl::pushPropertiesTo(layer);
+
+    VideoLayerImpl* other = static_cast<VideoLayerImpl*>(layer);
+    other->setProviderClientImpl(m_providerClientImpl);
+}
+
+void VideoLayerImpl::didBecomeActive()
+{
+    m_providerClientImpl->set_active_video_layer(this);
 }
 
 // Convert media::VideoFrame::Format to OpenGL enum values.
@@ -116,6 +128,7 @@ void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
     LayerImpl::willDraw(resourceProvider);
 
+
     // Explicitly acquire and release the provider mutex so it can be held from
     // willDraw to didDraw. Since the compositor thread is in the middle of
     // drawing, the layer will not be destroyed before didDraw is called.
@@ -123,25 +136,18 @@ void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
     // is the GPU process locking it. As the GPU process can't cause the
     // destruction of the provider (calling stopUsingProvider), holding this
     // lock should not cause a deadlock.
-    m_providerLock.Acquire();
+    m_frame = m_providerClientImpl->AcquireLockAndCurrentFrame();
 
     willDrawInternal(resourceProvider);
     freeUnusedPlaneData(resourceProvider);
 
     if (!m_frame)
-        m_providerLock.Release();
+        m_providerClientImpl->ReleaseLock();
 }
 
 void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
 {
     DCHECK(!m_externalTextureResource);
-
-    if (!m_provider) {
-        m_frame = 0;
-        return;
-    }
-
-    m_frame = m_provider->GetCurrentFrame();
 
     if (!m_frame)
         return;
@@ -155,7 +161,7 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
     DCHECK_EQ(m_frame->visible_rect().y(), 0);
 
     if (m_format == GL_INVALID_VALUE) {
-        m_provider->PutCurrentFrame(m_frame);
+        m_providerClientImpl->PutCurrentFrame(m_frame);
         m_frame = 0;
         return;
     }
@@ -172,13 +178,13 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
         m_format = GL_RGBA;
 
     if (!allocatePlaneData(resourceProvider)) {
-        m_provider->PutCurrentFrame(m_frame);
+        m_providerClientImpl->PutCurrentFrame(m_frame);
         m_frame = 0;
         return;
     }
 
     if (!copyPlaneData(resourceProvider)) {
-        m_provider->PutCurrentFrame(m_frame);
+        m_providerClientImpl->PutCurrentFrame(m_frame);
         m_frame = 0;
         return;
     }
@@ -255,7 +261,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     }
     case GL_TEXTURE_EXTERNAL_OES: {
         // StreamTexture hardware decoder.
-        gfx::Transform transform(m_streamTextureMatrix);
+        gfx::Transform transform(m_providerClientImpl->stream_texture_matrix());
         transform.Scale(texWidthScale, texHeightScale);
         scoped_ptr<StreamVideoDrawQuad> streamVideoQuad = StreamVideoDrawQuad::Create();
         streamVideoQuad->SetNew(sharedQuadState, quadRect, opaqueRect, m_frame->texture_id(), transform);
@@ -285,10 +291,10 @@ void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
         m_externalTextureResource = 0;
     }
 
-    m_provider->PutCurrentFrame(m_frame);
+    m_providerClientImpl->PutCurrentFrame(m_frame);
     m_frame = 0;
 
-    m_providerLock.Release();
+    m_providerClientImpl->ReleaseLock();
 }
 
 static gfx::Size videoFrameDimension(media::VideoFrame* frame, int plane) {
@@ -397,21 +403,6 @@ void VideoLayerImpl::freeUnusedPlaneData(ResourceProvider* resourceProvider)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
-void VideoLayerImpl::DidReceiveFrame()
-{
-    setNeedsRedraw();
-}
-
-void VideoLayerImpl::DidUpdateMatrix(const float matrix[16])
-{
-    m_streamTextureMatrix = gfx::Transform(
-        matrix[0], matrix[4], matrix[8], matrix[12],
-        matrix[1], matrix[5], matrix[9], matrix[13],
-        matrix[2], matrix[6], matrix[10], matrix[14],
-        matrix[3], matrix[7], matrix[11], matrix[15]);
-    setNeedsRedraw();
-}
-
 void VideoLayerImpl::didLoseOutputSurface()
 {
     freePlaneData(layerTreeImpl()->resource_provider());
@@ -420,6 +411,11 @@ void VideoLayerImpl::didLoseOutputSurface()
 void VideoLayerImpl::setNeedsRedraw()
 {
     layerTreeImpl()->SetNeedsRedraw();
+}
+
+void VideoLayerImpl::setProviderClientImpl(scoped_refptr<VideoFrameProviderClientImpl> providerClientImpl)
+{
+    m_providerClientImpl = providerClientImpl;
 }
 
 const char* VideoLayerImpl::layerTypeAsString() const

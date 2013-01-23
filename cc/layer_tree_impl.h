@@ -55,6 +55,7 @@ class CC_EXPORT LayerTreeImpl {
   PaintTimeCounter* paint_time_counter() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
+  bool IsRecycleTree() const;
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
   int MaxTextureSize() const;
@@ -138,6 +139,9 @@ class CC_EXPORT LayerTreeImpl {
   bool ContentsTexturesPurged() const;
   void SetContentsTexturesPurged();
   void ResetContentsTexturesPurged();
+
+  // Useful for debug assertions, probably shouldn't be used for anything else.
+  Proxy* proxy() const;
 
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);

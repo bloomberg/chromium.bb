@@ -5,6 +5,7 @@
 #ifndef CC_DELEGATED_RENDERER_LAYER_IMPL_H_
 #define CC_DELEGATED_RENDERER_LAYER_IMPL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "cc/scoped_ptr_vector.h"
@@ -20,6 +21,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual ~DelegatedRendererLayerImpl();
 
   // LayerImpl overrides.
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
   virtual bool hasDelegatedContent() const OVERRIDE;
   virtual bool hasContributingDelegatedRenderPasses() const OVERRIDE;
   virtual RenderPass::Id firstContributingRenderPassId() const OVERRIDE;

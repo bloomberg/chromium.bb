@@ -5,6 +5,7 @@
 #ifndef CC_SOLID_COLOR_LAYER_IMPL_H_
 #define CC_SOLID_COLOR_LAYER_IMPL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 
@@ -18,6 +19,8 @@ public:
     }
     virtual ~SolidColorLayerImpl();
 
+    // LayerImpl overrides.
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
 protected:

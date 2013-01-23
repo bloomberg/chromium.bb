@@ -99,6 +99,11 @@ void PicturePileImpl::GatherPixelRefs(
   }
 }
 
+void PicturePileImpl::PushPropertiesTo(PicturePileImpl* other) {
+  PicturePileBase::PushPropertiesTo(other);
+  other->clones_ = clones_;
+}
+
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 

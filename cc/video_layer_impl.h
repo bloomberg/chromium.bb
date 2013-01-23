@@ -21,28 +21,25 @@ class SkCanvasVideoRenderer;
 
 namespace cc {
 class LayerTreeHostImpl;
+class VideoFrameProviderClientImpl;
 
-class CC_EXPORT VideoLayerImpl : public LayerImpl
-                               , public VideoFrameProvider::Client {
+class CC_EXPORT VideoLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<VideoLayerImpl> create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
-    {
-        return make_scoped_ptr(new VideoLayerImpl(treeImpl, id, provider));
-    }
+    static scoped_ptr<VideoLayerImpl> create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider);
     virtual ~VideoLayerImpl();
 
+    // LayerImpl implementation.
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual void willDraw(ResourceProvider*) OVERRIDE;
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
     virtual void didDraw(ResourceProvider*) OVERRIDE;
-
-    // VideoFrameProvider::Client implementation.
-    virtual void StopUsingProvider() OVERRIDE; // Callable on any thread.
-    virtual void DidReceiveFrame() OVERRIDE; // Callable on impl thread.
-    virtual void DidUpdateMatrix(const float*) OVERRIDE; // Callable on impl thread.
-
+    virtual void didBecomeActive() OVERRIDE;
     virtual void didLoseOutputSurface() OVERRIDE;
 
     void setNeedsRedraw();
+
+    void setProviderClientImpl(scoped_refptr<VideoFrameProviderClientImpl>);
 
     struct FramePlane {
         ResourceProvider::ResourceId resourceId;
@@ -56,7 +53,7 @@ public:
     };
 
 private:
-    VideoLayerImpl(LayerTreeImpl*, int, VideoFrameProvider*);
+    VideoLayerImpl(LayerTreeImpl*, int);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
@@ -67,11 +64,7 @@ private:
     void freeUnusedPlaneData(ResourceProvider*);
     size_t numPlanes() const;
 
-    // Guards the destruction of m_provider and the frame that it provides
-    base::Lock m_providerLock;
-    VideoFrameProvider* m_provider;
-
-    gfx::Transform m_streamTextureMatrix;
+    scoped_refptr<VideoFrameProviderClientImpl> m_providerClientImpl;
 
     media::VideoFrame* m_frame;
     GLenum m_format;

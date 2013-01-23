@@ -21,22 +21,15 @@ public:
     // Accepts a Layer tree and returns a reference to a LayerImpl tree that duplicates the structure
     // of the Layer tree, reusing the LayerImpls in the tree provided by oldLayerImplRoot if possible.
     static scoped_ptr<LayerImpl> synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl*);
+    static scoped_ptr<LayerImpl> synchronizeTrees(LayerImpl* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl*);
 
-    // Pushes properties from a Layer tree to a structurally equivalent
+    // Pushes properties from a Layer or LayerImpl tree to a structurally equivalent
     // LayerImpl tree.
     static void pushProperties(Layer* layerRoot, LayerImpl* layerImplRoot);
+    static void pushProperties(LayerImpl* layerRoot, LayerImpl* layerImplRoot);
 
 private:
     TreeSynchronizer(); // Not instantiable.
-
-    typedef ScopedPtrHashMap<int, LayerImpl> ScopedPtrLayerImplMap;
-    typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
-
-    // Declared as static member functions so they can access functions on Layer as a friend class.
-    static scoped_ptr<LayerImpl> reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*, LayerTreeImpl*);
-    static void collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_ptr<LayerImpl>);
-    static scoped_ptr<LayerImpl> synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*, LayerTreeImpl*);
-    static void updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer*);
 
     DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };

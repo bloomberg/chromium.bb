@@ -67,6 +67,7 @@ public:
     void setChildren(const LayerList&);
 
     const LayerList& children() const { return m_children; }
+    Layer* childAt(size_t index);
 
     void setAnchorPoint(const gfx::PointF&);
     gfx::PointF anchorPoint() const { return m_anchorPoint; }
@@ -291,6 +292,9 @@ public:
 
     virtual bool canClipSelf() const;
 
+    // Constructs a LayerImpl of the correct runtime type for this Layer type.
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl);
+
 protected:
     friend class LayerImpl;
     friend class TreeSynchronizer;
@@ -315,8 +319,6 @@ protected:
 
     scoped_refptr<Layer> m_maskLayer;
 
-    // Constructs a LayerImpl of the correct runtime type for this Layer type.
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl);
     int m_layerId;
 
     // When true, the layer is about to perform an update. Any commit requests

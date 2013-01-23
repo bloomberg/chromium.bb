@@ -38,6 +38,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   void GatherPixelRefs(const gfx::Rect&, std::list<skia::LazyPixelRef*>&);
 
+  void PushPropertiesTo(PicturePileImpl* other);
+
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
  private:

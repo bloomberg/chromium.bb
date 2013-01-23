@@ -19,6 +19,11 @@ SolidColorLayerImpl::~SolidColorLayerImpl()
 {
 }
 
+scoped_ptr<LayerImpl> SolidColorLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+{
+    return SolidColorLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
 void SolidColorLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
