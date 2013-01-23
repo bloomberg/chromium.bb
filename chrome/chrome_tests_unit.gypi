@@ -849,6 +849,7 @@
         'browser/media_gallery/media_galleries_dialog_controller_mock.h',
         'browser/media_gallery/media_galleries_preferences_unittest.cc',
         'browser/media_gallery/media_gallery_database_unittest.cc',
+        'browser/media/chrome_webrtc_internals_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',

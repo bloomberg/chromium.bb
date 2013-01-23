@@ -968,8 +968,6 @@
     }],
     ['enable_webrtc==1', {
       'sources': [
-        'browser/media/webrtc_internals.cc',
-        'browser/media/webrtc_internals.h',
         'browser/renderer_host/media/peer_connection_tracker_host.cc',
         'browser/renderer_host/media/peer_connection_tracker_host.h',
         'browser/renderer_host/p2p/socket_host.cc',

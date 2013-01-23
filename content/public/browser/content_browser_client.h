@@ -70,6 +70,7 @@ class SpeechRecognitionManagerDelegate;
 class WebContents;
 class WebContentsView;
 class WebContentsViewDelegate;
+class WebRTCInternals;
 class WebUIControllerFactory;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
@@ -324,9 +325,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_process_id,
       int render_view_id) {}
 
-  // Returns a a class to get notifications about media event. The embedder can
+  // Returns a class to get notifications about media event. The embedder can
   // return NULL if they're not interested.
   virtual MediaObserver* GetMediaObserver();
+
+  // Returns a class to get WebRTC updates. The embedder can return NULL if they
+  // are not interested.
+  virtual WebRTCInternals* GetWebRTCInternals();
 
   // Asks permission to show desktop notifications.
   virtual void RequestDesktopNotificationPermission(

@@ -150,6 +150,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id,
       int render_view_id) OVERRIDE;
   virtual content::MediaObserver* GetMediaObserver() OVERRIDE;
+  virtual content::WebRTCInternals* GetWebRTCInternals() OVERRIDE;
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       int callback_context,

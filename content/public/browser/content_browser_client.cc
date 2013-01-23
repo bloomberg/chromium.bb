@@ -177,6 +177,10 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return NULL;
 }
 
+WebRTCInternals* ContentBrowserClient::GetWebRTCInternals() {
+  return NULL;
+}
+
 WebKit::WebNotificationPresenter::Permission
     ContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_origin,

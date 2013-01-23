@@ -1065,6 +1065,8 @@
         'browser/media_gallery/win/mtp_device_operations_util.h',
         'browser/media_gallery/win/recursive_mtp_device_object_enumerator.cc',
         'browser/media_gallery/win/recursive_mtp_device_object_enumerator.h',
+        'browser/media/chrome_webrtc_internals.cc',
+        'browser/media/chrome_webrtc_internals.h',
         'browser/memory_details.cc',
         'browser/memory_details.h',
         'browser/memory_details_android.cc',

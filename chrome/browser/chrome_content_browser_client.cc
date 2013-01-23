@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/media/chrome_webrtc_internals.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -1305,6 +1306,10 @@ void ChromeContentBrowserClient::AddCertificate(
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
   return MediaInternals::GetInstance();
+}
+
+content::WebRTCInternals* ChromeContentBrowserClient::GetWebRTCInternals() {
+  return ChromeWebRTCInternals::GetInstance();
 }
 
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(

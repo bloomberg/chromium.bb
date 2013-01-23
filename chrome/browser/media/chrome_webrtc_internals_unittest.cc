@@ -5,14 +5,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "content/browser/media/webrtc_internals.h"
-#include "content/browser/media/webrtc_internals_ui_observer.h"
-#include "content/common/media/peer_connection_tracker_messages.h"
+#include "chrome/browser/media/chrome_webrtc_internals.h"
+#include "chrome/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
-class MockWebRTCInternalsProxy : public content::WebRTCInternalsUIObserver {
+static const std::string kContraints = "c";
+static const std::string kServers = "s";
+static const std::string kUrl = "u";
+
+class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
  public:
   void OnUpdate(const std::string& command, const Value* value) OVERRIDE {
     data_ = command;
@@ -29,21 +31,13 @@ class MockWebRTCInternalsProxy : public content::WebRTCInternalsUIObserver {
 class WebRTCInternalsTest : public testing::Test {
  public:
   WebRTCInternalsTest()
-      : io_thread_(content::BrowserThread::IO, &io_loop_) {}
+      : io_thread_(content::BrowserThread::UI, &io_loop_) {}
 
  protected:
   virtual void SetUp() {
-    webrtc_internals_ = WebRTCInternals::GetInstance();
+    webrtc_internals_ = ChromeWebRTCInternals::GetInstance();
   }
 
-  PeerConnectionInfo GetPeerConnectionInfo(uintptr_t lid) {
-    PeerConnectionInfo info;
-    info.lid = lid;
-    info.servers = "s";
-    info.constraints = "c";
-    info.url = "u";
-    return info;
-  }
   std::string ExpectedInfo(std::string prefix,
                            std::string id,
                            std::string suffix) {
@@ -56,7 +50,7 @@ class WebRTCInternalsTest : public testing::Test {
 
   MessageLoop io_loop_;
   content::TestBrowserThread io_thread_;
-  WebRTCInternals *webrtc_internals_;
+  ChromeWebRTCInternals *webrtc_internals_;
 };
 
 TEST_F(WebRTCInternalsTest, GetInstance) {
@@ -68,7 +62,7 @@ TEST_F(WebRTCInternalsTest, AddRemoveObserver) {
       new MockWebRTCInternalsProxy());
   webrtc_internals_->AddObserver(observer.get());
   webrtc_internals_->RemoveObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(3, GetPeerConnectionInfo(4));
+  webrtc_internals_->AddPeerConnection(3, 4, kUrl, kServers, kContraints);
   EXPECT_EQ("", observer->data());
 
   webrtc_internals_->RemovePeerConnection(3, 4);
@@ -78,8 +72,8 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(
       new MockWebRTCInternalsProxy());
   webrtc_internals_->AddObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(1, GetPeerConnectionInfo(2));
-  EXPECT_EQ("updatePeerConnectionAdded", observer->data());
+  webrtc_internals_->AddPeerConnection(1, 2, kUrl, kServers, kContraints);
+  EXPECT_EQ("addPeerConnection", observer->data());
 
   webrtc_internals_->RemoveObserver(observer.get());
   webrtc_internals_->RemovePeerConnection(1, 2);
@@ -89,11 +83,9 @@ TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(
       new MockWebRTCInternalsProxy());
   webrtc_internals_->AddObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(1, GetPeerConnectionInfo(2));
+  webrtc_internals_->AddPeerConnection(1, 2, kUrl, kServers, kContraints);
   webrtc_internals_->RemovePeerConnection(1, 2);
-  EXPECT_EQ("updatePeerConnectionRemoved", observer->data());
+  EXPECT_EQ("removePeerConnection", observer->data());
 
   webrtc_internals_->RemoveObserver(observer.get());
 }
-
-}  // namespace content
