@@ -4692,18 +4692,6 @@
    fun:_ZN13sync_notifier12_GLOBAL__N_124InvalidationNotifierTest5SetUpEv
 }
 {
-   bug_120146
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN5media21AudioOutputController5CloseERKN4base8CallbackIFvvEEE
-   fun:_ZN17AudioRendererHost20CloseAndDeleteStreamEPNS_10AudioEntryE
-   fun:_ZN17AudioRendererHost13DeleteEntriesEv
-   fun:_ZN17AudioRendererHost16OnChannelClosingEv
-   fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
-}
-{
    bug_121729
    Memcheck:Leak
    fun:malloc
