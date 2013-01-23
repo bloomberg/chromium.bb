@@ -1096,8 +1096,9 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
   // Check and see if this is an encrypted ONC file. If so, decrypt it.
   std::string onc_type;
-  root_dict->GetStringWithoutPathExpansion(onc::kType, &onc_type);
-  if (onc_type == onc::kEncryptedConfiguration) {
+  root_dict->GetStringWithoutPathExpansion(onc::network_config::kType,
+                                           &onc_type);
+  if (onc_type == onc::toplevel_config::kEncryptedConfiguration) {
     root_dict = onc::Decrypt(passphrase, *root_dict);
     if (root_dict.get() == NULL) {
       LOG(ERROR) << "Couldn't decrypt the ONC from "
@@ -1139,11 +1140,13 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
   const base::ListValue* certificates;
   bool has_certificates =
-      root_dict->GetListWithoutPathExpansion(onc::kCertificates, &certificates);
+      root_dict->GetListWithoutPathExpansion(
+          onc::toplevel_config::kCertificates,
+          &certificates);
 
   const base::ListValue* network_configs;
   bool has_network_configurations = root_dict->GetListWithoutPathExpansion(
-      onc::kNetworkConfigurations,
+      onc::toplevel_config::kNetworkConfigurations,
       &network_configs);
 
   if (has_certificates) {
@@ -1173,10 +1176,10 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                               &marked_for_removal);
 
       std::string type;
-      network->GetStringWithoutPathExpansion(onc::kType, &type);
+      network->GetStringWithoutPathExpansion(onc::network_config::kType, &type);
 
       std::string guid;
-      network->GetStringWithoutPathExpansion(onc::kGUID, &guid);
+      network->GetStringWithoutPathExpansion(onc::network_config::kGUID, &guid);
 
       if (source == onc::ONC_SOURCE_USER_IMPORT && marked_for_removal) {
         // User import supports the removal of networks by ID.
@@ -1217,7 +1220,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       // Set the ProxyConfig.
       const base::DictionaryValue* proxy_settings;
       if (normalized_network->GetDictionaryWithoutPathExpansion(
-              onc::kProxySettings,
+              onc::network_config::kProxySettings,
               &proxy_settings)) {
         scoped_ptr<base::DictionaryValue> proxy_config =
             onc::ConvertOncProxySettingsToProxyConfig(*proxy_settings);
@@ -1245,7 +1248,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       }
 
       // For Ethernet networks, apply them to the current Ethernet service.
-      if (type == onc::kEthernet) {
+      if (type == onc::network_type::kEthernet) {
         const EthernetNetwork* ethernet = ethernet_network();
         if (ethernet) {
           CallConfigureService(ethernet->unique_id(), shill_dict.get());

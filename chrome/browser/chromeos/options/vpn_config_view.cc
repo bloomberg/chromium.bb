@@ -914,7 +914,10 @@ void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
 
   property_ui_data->ParseOncProperty(
       network->ui_data(), onc,
-      base::StringPrintf("%s.%s.%s", onc::kVPN, dict_key.c_str(), key.c_str()));
+      base::StringPrintf("%s.%s.%s",
+                         onc::network_config::kVPN,
+                         dict_key.c_str(),
+                         key.c_str()));
 }
 
 }  // namespace chromeos

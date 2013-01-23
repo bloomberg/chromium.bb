@@ -74,7 +74,7 @@ bool CertificateImporter::ParseAndStoreCertificate(
     const base::DictionaryValue& certificate) {
   // Get out the attributes of the given certificate.
   std::string guid;
-  if (!certificate.GetString(kGUID, &guid) || guid.empty()) {
+  if (!certificate.GetString(certificate::kGUID, &guid) || guid.empty()) {
     ONC_LOG_ERROR("Certificate missing GUID identifier");
     return false;
   }

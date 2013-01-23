@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include "base/logging.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -13,10 +14,10 @@ namespace chromeos {
 namespace onc {
 
 const StringTranslationEntry kNetworkTypeTable[] = {
-  { kEthernet, flimflam::kTypeEthernet },
-  { kWiFi, flimflam::kTypeWifi },
-  { kCellular, flimflam::kTypeCellular },
-  { kVPN, flimflam::kTypeVPN },
+  { network_type::kEthernet, flimflam::kTypeEthernet },
+  { network_type::kWiFi, flimflam::kTypeWifi },
+  { network_type::kCellular, flimflam::kTypeCellular },
+  { network_type::kVPN, flimflam::kTypeVPN },
   { NULL }
 };
 
@@ -57,6 +58,31 @@ const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
   { NULL }
 };
 
+bool TranslateStringToShill(const StringTranslationEntry table[],
+                            const std::string& onc_value,
+                            std::string* shill_value) {
+  for (int i = 0; table[i].onc_value != NULL; ++i) {
+    if (onc_value != table[i].onc_value)
+      continue;
+    *shill_value = table[i].shill_value;
+    return true;
+  }
+  LOG(ERROR) << "Value '" << onc_value << "cannot be translated to Shill";
+  return false;
+}
+
+bool TranslateStringToONC(const StringTranslationEntry table[],
+                          const std::string& shill_value,
+                          std::string* onc_value) {
+  for (int i = 0; table[i].shill_value != NULL; ++i) {
+    if (shill_value != table[i].shill_value)
+      continue;
+    *onc_value = table[i].onc_value;
+    return true;
+  }
+  LOG(ERROR) << "Value '" << shill_value << "cannot be translated to ONC";
+  return false;
+}
 
 }  // namespace onc
 }  // namespace chromeos

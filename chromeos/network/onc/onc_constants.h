@@ -19,12 +19,6 @@ enum ONCSource {
   ONC_SOURCE_USER_POLICY,
 };
 
-// Top Level ONC.
-CHROMEOS_EXPORT extern const char kCertificates[];
-CHROMEOS_EXPORT extern const char kEncryptedConfiguration[];
-CHROMEOS_EXPORT extern const char kNetworkConfigurations[];
-CHROMEOS_EXPORT extern const char kUnencryptedConfiguration[];
-
 // This is no ONC key or value but used for logging only.
 // TODO(pneubeck): Remove.
 CHROMEOS_EXPORT extern const char kNetworkConfiguration[];
@@ -33,8 +27,17 @@ CHROMEOS_EXPORT extern const char kNetworkConfiguration[];
 CHROMEOS_EXPORT extern const char kRecommended[];
 CHROMEOS_EXPORT extern const char kRemove[];
 
+// Top Level Configuration
+namespace toplevel_config {
+CHROMEOS_EXPORT extern const char kCertificates[];
+CHROMEOS_EXPORT extern const char kEncryptedConfiguration[];
+CHROMEOS_EXPORT extern const char kNetworkConfigurations[];
+CHROMEOS_EXPORT extern const char kType[];
+CHROMEOS_EXPORT extern const char kUnencryptedConfiguration[];
+}  // namespace toplevel_config
+
 // NetworkConfiguration.
-// TODO(pneubeck): Put into namespace.
+namespace network_config {
 CHROMEOS_EXPORT extern const char kCellular[];
 CHROMEOS_EXPORT extern const char kEthernet[];
 CHROMEOS_EXPORT extern const char kGUID[];
@@ -43,9 +46,60 @@ CHROMEOS_EXPORT extern const char kName[];
 CHROMEOS_EXPORT extern const char kNameServers[];
 CHROMEOS_EXPORT extern const char kProxySettings[];
 CHROMEOS_EXPORT extern const char kSearchDomains[];
+CHROMEOS_EXPORT extern const char kServicePath[];
+CHROMEOS_EXPORT extern const char kConnectionState[];
 CHROMEOS_EXPORT extern const char kType[];
 CHROMEOS_EXPORT extern const char kVPN[];
 CHROMEOS_EXPORT extern const char kWiFi[];
+}  // namespace network_config
+
+namespace network_type {
+CHROMEOS_EXPORT extern const char kAllTypes[];
+CHROMEOS_EXPORT extern const char kCellular[];
+CHROMEOS_EXPORT extern const char kEthernet[];
+CHROMEOS_EXPORT extern const char kVPN[];
+CHROMEOS_EXPORT extern const char kWiFi[];
+}  // namespace network_type
+
+namespace cellular {
+CHROMEOS_EXPORT extern const char kActivateOverNonCellularNetwork[];
+CHROMEOS_EXPORT extern const char kActivationState[];
+CHROMEOS_EXPORT extern const char kAllowRoaming[];
+CHROMEOS_EXPORT extern const char kAPN[];
+CHROMEOS_EXPORT extern const char kCarrier[];
+CHROMEOS_EXPORT extern const char kESN[];
+CHROMEOS_EXPORT extern const char kFamily[];
+CHROMEOS_EXPORT extern const char kFirmwareRevision[];
+CHROMEOS_EXPORT extern const char kFoundNetworks[];
+CHROMEOS_EXPORT extern const char kHardwareRevision[];
+CHROMEOS_EXPORT extern const char kHomeProvider[];
+CHROMEOS_EXPORT extern const char kICCID[];
+CHROMEOS_EXPORT extern const char kIMEI[];
+CHROMEOS_EXPORT extern const char kIMSI[];
+CHROMEOS_EXPORT extern const char kManufacturer[];
+CHROMEOS_EXPORT extern const char kMDN[];
+CHROMEOS_EXPORT extern const char kMEID[];
+CHROMEOS_EXPORT extern const char kMIN[];
+CHROMEOS_EXPORT extern const char kModelID[];
+CHROMEOS_EXPORT extern const char kNetworkTechnology[];
+CHROMEOS_EXPORT extern const char kOperatorCode[];
+CHROMEOS_EXPORT extern const char kOperatorName[];
+CHROMEOS_EXPORT extern const char kPRLVersion[];
+CHROMEOS_EXPORT extern const char kProviderRequiresRoaming[];
+CHROMEOS_EXPORT extern const char kRoamingState[];
+CHROMEOS_EXPORT extern const char kSelectedNetwork[];
+CHROMEOS_EXPORT extern const char kServingOperator[];
+CHROMEOS_EXPORT extern const char kSIMLockStatus[];
+CHROMEOS_EXPORT extern const char kSIMPresent[];
+CHROMEOS_EXPORT extern const char kSupportedCarriers[];
+CHROMEOS_EXPORT extern const char kSupportNetworkScan[];
+}  // namespace cellular
+
+namespace connection_state {
+CHROMEOS_EXPORT extern const char kConnected[];
+CHROMEOS_EXPORT extern const char kConnecting[];
+CHROMEOS_EXPORT extern const char kNotConnected[];
+}  // namespace connection_state
 
 namespace ipconfig {
 CHROMEOS_EXPORT extern const char kGateway[];
@@ -65,6 +119,7 @@ CHROMEOS_EXPORT extern const char k8021X[];
 
 namespace wifi {
 CHROMEOS_EXPORT extern const char kAutoConnect[];
+CHROMEOS_EXPORT extern const char kBSSID[];
 CHROMEOS_EXPORT extern const char kEAP[];
 CHROMEOS_EXPORT extern const char kHiddenSSID[];
 CHROMEOS_EXPORT extern const char kNone[];
@@ -84,6 +139,7 @@ CHROMEOS_EXPORT extern const char kClient[];
 CHROMEOS_EXPORT extern const char kCommonName[];
 CHROMEOS_EXPORT extern const char kEmailAddress[];
 CHROMEOS_EXPORT extern const char kEnrollmentURI[];
+CHROMEOS_EXPORT extern const char kGUID[];
 CHROMEOS_EXPORT extern const char kIssuerCARef[];
 CHROMEOS_EXPORT extern const char kIssuer[];
 CHROMEOS_EXPORT extern const char kLocality[];
@@ -113,7 +169,6 @@ CHROMEOS_EXPORT extern const char kPBKDF2[];
 CHROMEOS_EXPORT extern const char kSHA1[];
 CHROMEOS_EXPORT extern const char kSalt[];
 CHROMEOS_EXPORT extern const char kStretch[];
-CHROMEOS_EXPORT extern const char kType[];
 }  // namespace encrypted
 
 namespace eap {

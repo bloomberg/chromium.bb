@@ -1257,7 +1257,7 @@ void WifiConfigView::ParseWiFiUIProperty(
   property_ui_data->ParseOncProperty(
       network->ui_data(),
       network_library->FindOncForNetwork(network->unique_id()),
-      base::StringPrintf("%s.%s", onc::kWiFi, key.c_str()));
+      base::StringPrintf("%s.%s", onc::network_config::kWiFi, key.c_str()));
 }
 
 // static

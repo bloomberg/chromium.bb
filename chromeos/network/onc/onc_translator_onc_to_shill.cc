@@ -122,7 +122,7 @@ void LocalTranslator::TranslateOpenVPN() {
 
 void LocalTranslator::TranslateVPN() {
   std::string type;
-  onc_object_->GetStringWithoutPathExpansion(kType, &type);
+  onc_object_->GetStringWithoutPathExpansion(vpn::kType, &type);
   TranslateWithTableAndSet(type, kVPNTypeTable,
                            flimflam::kProviderTypeProperty);
 
@@ -162,13 +162,13 @@ void LocalTranslator::TranslateEAP() {
 
 void LocalTranslator::TranslateNetworkConfiguration() {
   std::string type;
-  onc_object_->GetStringWithoutPathExpansion(kType, &type);
+  onc_object_->GetStringWithoutPathExpansion(network_config::kType, &type);
   TranslateWithTableAndSet(type, kNetworkTypeTable, flimflam::kTypeProperty);
 
   // Shill doesn't allow setting the name for non-VPN networks.
-  if (type == kVPN) {
+  if (type == network_type::kVPN) {
     std::string name;
-    onc_object_->GetStringWithoutPathExpansion(kName, &name);
+    onc_object_->GetStringWithoutPathExpansion(network_config::kName, &name);
     shill_dictionary_->SetStringWithoutPathExpansion(
         flimflam::kNameProperty, name);
   }
@@ -203,17 +203,18 @@ void LocalTranslator::TranslateWithTableAndSet(
     const std::string& onc_value,
     const StringTranslationEntry table[],
     const std::string& shill_property_name) {
-  for (int i = 0; table[i].onc_value != NULL; ++i) {
-    if (onc_value != table[i].onc_value)
-      continue;
+  std::string shill_value;
+  if (TranslateStringToShill(table, onc_value, &shill_value)) {
     shill_dictionary_->SetStringWithoutPathExpansion(shill_property_name,
-                                                     table[i].shill_value);
+                                                     shill_value);
     return;
   }
   // As we previously validate ONC, this case should never occur. If it still
   // occurs, we should check here. Otherwise the failure will only show up much
   // later in Shill.
-  LOG(ERROR) << "Value '" << onc_value << "cannot be translated to Shill";
+  LOG(ERROR) << "Value '" << onc_value
+             << " cannot be translated to Shill property "
+             << shill_property_name;
 }
 
 // Iterates recursively over |onc_object| and its |signature|. At each object

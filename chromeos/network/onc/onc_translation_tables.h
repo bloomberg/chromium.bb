@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_NETWORK_ONC_ONC_TRANSLATION_TABLES_H_
 #define CHROMEOS_NETWORK_ONC_ONC_TRANSLATION_TABLES_H_
 
+#include <string>
+
 namespace chromeos {
 namespace onc {
 
@@ -21,6 +23,16 @@ extern const StringTranslationEntry kWiFiSecurityTable[];
 extern const StringTranslationEntry kEAPOuterTable[];
 extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
 extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
+
+// Translate individual strings to Shill using the above tables.
+bool TranslateStringToShill(const StringTranslationEntry table[],
+                            const std::string& onc_value,
+                            std::string* shill_value);
+
+// Translate individual strings to ONC using the above tables.
+bool TranslateStringToONC(const StringTranslationEntry table[],
+                          const std::string& shill_value,
+                          std::string* onc_value);
 
 }  // namespace onc
 }  // namespace chromeos

@@ -145,13 +145,15 @@ void NetworkConfigurationPolicyHandler::MaskSensitiveValues(
   // specifies dictionary key paths.
   static const int kMaxComponents = 3;
   static const char* kFilteredSettings[][kMaxComponents] = {
-    { onc::kEthernet, onc::ethernet::kEAP, onc::eap::kPassword },
-    { onc::kVPN, onc::vpn::kIPsec, onc::vpn::kPSK },
-    { onc::kVPN, onc::vpn::kL2TP, onc::vpn::kPassword },
-    { onc::kVPN, onc::vpn::kOpenVPN, onc::vpn::kPassword },
-    { onc::kVPN, onc::vpn::kOpenVPN, onc::vpn::kTLSAuthContents },
-    { onc::kWiFi, onc::wifi::kEAP, onc::eap::kPassword },
-    { onc::kWiFi, onc::wifi::kPassphrase },
+    { onc::network_config::kEthernet, onc::ethernet::kEAP,
+      onc::eap::kPassword },
+    { onc::network_config::kVPN, onc::vpn::kIPsec, onc::vpn::kPSK },
+    { onc::network_config::kVPN, onc::vpn::kL2TP, onc::vpn::kPassword },
+    { onc::network_config::kVPN, onc::vpn::kOpenVPN, onc::vpn::kPassword },
+    { onc::network_config::kVPN, onc::vpn::kOpenVPN,
+      onc::vpn::kTLSAuthContents },
+    { onc::network_config::kWiFi, onc::wifi::kEAP, onc::eap::kPassword },
+    { onc::network_config::kWiFi, onc::wifi::kPassphrase },
   };
 
   // Placeholder to insert in place of the filtered setting.

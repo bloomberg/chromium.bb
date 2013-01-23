@@ -521,7 +521,7 @@ void PopulateVPNDetails(
   hostname_ui_data.ParseOncProperty(
       vpn->ui_data(), &onc,
       base::StringPrintf("%s.%s",
-                         chromeos::onc::kVPN,
+                         chromeos::onc::network_config::kVPN,
                          chromeos::onc::vpn::kHost));
   SetValueDictionary(dictionary, kTagServerHostname,
                      new base::StringValue(vpn->server_hostname()),
@@ -1355,7 +1355,7 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
     auto_connect_ui_data.ParseOncProperty(
         ui_data, onc,
         base::StringPrintf("%s.%s",
-                           chromeos::onc::kWiFi,
+                           chromeos::onc::network_config::kWiFi,
                            chromeos::onc::wifi::kAutoConnect));
   }
   SetValueDictionary(&dictionary, kTagAutoConnect,

@@ -103,7 +103,7 @@ bool IsNetworkProxySettingsEditable(const Network* network) {
   proxy_settings_ui_data.ParseOncProperty(
       network->ui_data(),
       onc,
-      onc::kProxySettings);
+      onc::network_config::kProxySettings);
   return proxy_settings_ui_data.editable();
 }
 

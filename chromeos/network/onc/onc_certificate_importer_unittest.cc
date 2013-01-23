@@ -83,11 +83,12 @@ class ONCCertificateImporterTest : public testing::Test {
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
     base::ListValue* certificates;
-    onc->GetListWithoutPathExpansion(kCertificates, &certificates);
+    onc->GetListWithoutPathExpansion(toplevel_config::kCertificates,
+                                     &certificates);
 
     base::DictionaryValue* certificate;
     certificates->GetDictionary(0, &certificate);
-    certificate->GetStringWithoutPathExpansion(kGUID, guid);
+    certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
 
     CertificateImporter importer(ONC_SOURCE_USER_IMPORT,
                                  false /* don't allow web trust */);

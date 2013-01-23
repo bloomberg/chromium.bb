@@ -145,20 +145,22 @@ void Normalizer::NormalizeNetworkConfiguration(base::DictionaryValue* network) {
   bool remove = false;
   network->GetBooleanWithoutPathExpansion(kRemove, &remove);
   if (remove) {
-    network->RemoveWithoutPathExpansion(kIPConfigs, NULL);
-    network->RemoveWithoutPathExpansion(kName, NULL);
-    network->RemoveWithoutPathExpansion(kNameServers, NULL);
-    network->RemoveWithoutPathExpansion(kProxySettings, NULL);
-    network->RemoveWithoutPathExpansion(kSearchDomains, NULL);
-    network->RemoveWithoutPathExpansion(kType, NULL);
+    network->RemoveWithoutPathExpansion(network_config::kIPConfigs, NULL);
+    network->RemoveWithoutPathExpansion(network_config::kName, NULL);
+    network->RemoveWithoutPathExpansion(network_config::kNameServers, NULL);
+    network->RemoveWithoutPathExpansion(network_config::kProxySettings, NULL);
+    network->RemoveWithoutPathExpansion(network_config::kSearchDomains, NULL);
+    network->RemoveWithoutPathExpansion(network_config::kType, NULL);
     // Fields dependent on kType are removed afterwards, too.
   }
 
   std::string type;
-  network->GetStringWithoutPathExpansion(kType, &type);
-  RemoveEntryUnless(network, kEthernet, type == kEthernet);
-  RemoveEntryUnless(network, kVPN, type == kVPN);
-  RemoveEntryUnless(network, kWiFi, type == kWiFi);
+  network->GetStringWithoutPathExpansion(network_config::kType, &type);
+  RemoveEntryUnless(network, network_config::kEthernet,
+                    type == network_type::kEthernet);
+  RemoveEntryUnless(network, network_config::kVPN, type == network_type::kVPN);
+  RemoveEntryUnless(network, network_config::kWiFi,
+                    type == network_type::kWiFi);
 }
 
 void Normalizer::NormalizeOpenVPN(base::DictionaryValue* openvpn) {
