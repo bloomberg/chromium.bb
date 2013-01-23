@@ -11,7 +11,6 @@
   <translations />
   <release seq="1">
     <includes>
-      <include name="IDR_DOM_AUTOMATION_JS" file="renderer/dom_automation.js" type="BINDATA" />
       <include name="IDR_GPU_BLACKLIST" file="browser/gpu/software_rendering_list.json" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_GPU_SANDBOX_PROFILE" file="browser/gpu.sb" type="BINDATA" />

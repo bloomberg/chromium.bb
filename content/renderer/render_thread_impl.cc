@@ -622,13 +622,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   webkit_glue::EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
-  if (command_line.HasSwitch(switches::kDomAutomationController)) {
-    base::StringPiece extension = GetContentClient()->GetDataResource(
-        IDR_DOM_AUTOMATION_JS, ui::SCALE_FACTOR_NONE);
-    RegisterExtension(new v8::Extension(
-        "dom_automation.js", extension.data(), 0, NULL, extension.size()));
-  }
-
   web_database_observer_impl_.reset(
       new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
