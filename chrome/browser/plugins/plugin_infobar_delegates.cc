@@ -542,8 +542,8 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   OpenURLParams params(
       GURL((mode_ == MISSING_PLUGIN) ?
-          "https://support.google.com/chrome/?ib_display_in_desktop" :
-          "https://support.google.com/chrome/?ib_redirect_to_desktop"),
+          "https://support.google.com/chrome/?p=ib_display_in_desktop" :
+          "https://support.google.com/chrome/?p=ib_redirect_to_desktop"),
       Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
