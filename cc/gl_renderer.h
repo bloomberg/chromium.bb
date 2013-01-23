@@ -60,10 +60,10 @@ public:
 
     virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE;
 
+    static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
+
 protected:
     GLRenderer(RendererClient*, OutputSurface*, ResourceProvider*);
-
-    static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
 
     bool isBackbufferDiscarded() const { return m_isBackbufferDiscarded; }
     bool initialize();
