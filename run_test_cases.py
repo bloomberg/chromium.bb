@@ -735,6 +735,20 @@ def append_gtest_output_to_xml(final_xml, filepath):
   return final_xml
 
 
+def running_serial_warning():
+  return ['*****************************************************',
+          '*****************************************************',
+          '*****************************************************',
+          'WARNING: The remaining tests are going to be retried',
+          'serially. All tests should be isolated and be able to pass',
+          'regardless of what else is running.',
+          'If you see a test that can only pass serially, that test is',
+          'probably broken and should be fixed.',
+          '*****************************************************',
+          '*****************************************************',
+          '*****************************************************']
+
+
 def run_test_cases(
     cmd, cwd, test_cases, jobs, timeout, retries, run_all, max_failures,
     no_cr, gtest_output, result_file, verbose):
@@ -790,13 +804,17 @@ def run_test_cases(
       results = pool.join()
 
       # Retry any failed tests serially.
-      while not serial_tasks.empty():
-        _priority, func, args, kwargs = serial_tasks.get()
-        results.append(func(*args, **kwargs))
-        serial_tasks.task_done()
+      if not serial_tasks.empty():
+        progress.update_item('\n'.join(running_serial_warning()), index=False,
+                                       size=False)
 
-      # Call join since that is a standard call once a queue has been emptied.
-      serial_tasks.join()
+        while not serial_tasks.empty():
+          _priority, func, args, kwargs = serial_tasks.get()
+          results.append(func(*args, **kwargs))
+          serial_tasks.task_done()
+
+        # Call join since that is a standard call once a queue has been emptied.
+        serial_tasks.join()
 
       duration = time.time() - pool.tasks.progress.start
 

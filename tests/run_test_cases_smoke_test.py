@@ -19,6 +19,7 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.append(os.path.join(ROOT_DIR, 'tests', 'gtest_fake'))
 
 import gtest_fake_base
+import run_test_cases
 
 
 def RunTest(arguments):
@@ -248,6 +249,8 @@ class RunTestCases(unittest.TestCase):
       # Retries
       r'\[5/\d\]   \d\.\d\ds .+ retry \#1',
     ] + test_failure_output + [
+        re.escape(l) for l in run_test_cases.running_serial_warning()
+    ] + [
       r'\[6/\d\]   \d\.\d\ds .+ retry \#2',
     ] + test_failure_output + [
       re.escape('Failed tests:'),
@@ -296,6 +299,11 @@ class RunTestCases(unittest.TestCase):
     )
 
     for index, name in enumerate(test_cases):
+      if index + 1 == len(test_cases):
+        # We are about to retry the test serially, so check for the warning.
+        expected_out_re.extend(
+            re.escape(l) for l in run_test_cases.running_serial_warning())
+
       expected_out_re.append(
           r'\[%d/\d\]   \d\.\d\ds ' % (index + 1) + re.escape(name) + ' .+')
       expected_out_re.append(re.escape('Note: Google Test filter = ' + name))
