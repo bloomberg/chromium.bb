@@ -81,6 +81,7 @@
   drawDropShadow_ = drawDropShadow;
 
   // Add the preview contents.
+  [[[self view] window] disableScreenUpdatesUntilFlush];
   previewContents_->GetView()->SetAllowOverlappingViews(true);
   [[self view] addSubview:previewContents_->GetNativeView()];
 

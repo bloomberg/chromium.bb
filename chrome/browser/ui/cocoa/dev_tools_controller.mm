@@ -148,6 +148,7 @@ using content::WebContents;
         NSHeight([splitView_ frame]) - ([splitView_ dividerThickness] + size);
   }
 
+  [[splitView_ window] disableScreenUpdatesUntilFlush];
   [webView setFrame:webFrame];
   [devToolsView setFrame:devToolsFrame];
 
