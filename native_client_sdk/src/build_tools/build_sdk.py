@@ -99,7 +99,7 @@ def GetArchName(arch, xarch=None):
   return arch
 
 
-def GetToolchainNaClInclude(tcname, tcpath, arch, xarch=None):
+def GetToolchainNaClInclude(tcname, tcpath, arch):
   if arch == 'x86':
     if tcname == 'pnacl':
       return os.path.join(tcpath, 'newlib', 'sdk', 'include')
@@ -149,7 +149,7 @@ def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
   return args
 
 
-def BuildStepDownloadToolchains(platform):
+def BuildStepDownloadToolchains():
   buildbot_common.BuildStep('Running download_toolchains.py')
   download_script = os.path.join('build', 'download_toolchains.py')
   buildbot_common.Run([sys.executable, download_script,
@@ -282,6 +282,7 @@ HEADER_MAP = {
   },
 }
 
+
 def InstallCommonHeaders(inc_path):
   # Clean out per toolchain ppapi directory
   ppapi = os.path.join(inc_path, 'ppapi')
@@ -346,7 +347,7 @@ def InstallCommonHeaders(inc_path):
           os.path.join(inc_path, 'ppapi'))
 
 
-def InstallNaClHeaders(tc_dst_inc, pepper_ver, tc_name):
+def InstallNaClHeaders(tc_dst_inc, tc_name):
   """Copies NaCl headers to expected locations in the toolchain."""
   if tc_name == 'arm':
     # arm toolchain header should be the same as the x86 newlib
@@ -524,7 +525,7 @@ def NinjaBuild(targets, out_dir):
   buildbot_common.Run(['ninja', '-C', out_config_dir] + targets, cwd=SRC_DIR)
 
 
-def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
+def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   buildbot_common.BuildStep('SDK Items')
 
   GypNinjaBuild_NaCl(platform, 'gypbuild')
@@ -545,19 +546,17 @@ def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
 
   if 'newlib' in toolchains:
     InstallNaClHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
-                       pepper_ver,
                        'newlib')
 
   if 'glibc' in toolchains:
     InstallNaClHeaders(GetToolchainNaClInclude('glibc', glibcdir, 'x86'),
-                       pepper_ver,
                        'glibc')
 
   if 'arm' in toolchains:
     tcname = platform + '_arm_newlib'
     armdir = os.path.join(pepperdir, 'toolchain', tcname)
     InstallNaClHeaders(GetToolchainNaClInclude('newlib', armdir, 'arm'),
-                       pepper_ver, 'arm')
+                       'arm')
 
   if 'pnacl' in toolchains:
     shell = platform == 'win'
@@ -572,7 +571,7 @@ def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
       # Fill in the latest native pnacl shim library from the chrome build.
       build_dir = 'gypbuild-pnacl-' + arch
       GypNinjaBuild_Pnacl(build_dir, arch)
-      pnacl_libdir_map = { 'ia32': 'x86-64', 'arm': 'arm' }
+      pnacl_libdir_map = {'ia32': 'x86-64', 'arm': 'arm'}
       release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
                                        'gen', 'tc_pnacl_translate',
                                        'lib-' + pnacl_libdir_map[arch])
@@ -582,7 +581,6 @@ def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
           GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
 
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
-                       pepper_ver,
                        'newlib')
 
 
@@ -739,7 +737,7 @@ def GetWindowsEnvironment():
 
 
 def BuildStepMakeAll(pepperdir, platform, directory, step_name,
-					 clean=False, deps=True):
+                     clean=False, deps=True):
   buildbot_common.BuildStep(step_name)
   make_dir = os.path.join(pepperdir, directory)
   makefile = os.path.join(make_dir, 'Makefile')
@@ -829,8 +827,8 @@ def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
   return bundle
 
 
-def BuildStepArchiveBundle(pepper_ver, revision, tarfile):
-  buildbot_common.BuildStep('Archive build')
+def BuildStepArchiveBundle(name, pepper_ver, revision, tarfile):
+  buildbot_common.BuildStep('Archive %s' % name)
   bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % (
       build_utils.ChromeVersion(),)
   tarname = os.path.basename(tarfile)
@@ -913,7 +911,6 @@ def BuildStepTarNaClPorts(pepper_ver, tarfile):
   buildbot_common.Run(cmd, cwd=NACL_DIR)
 
 
-
 def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--run-tests',
@@ -972,7 +969,6 @@ def main(args):
   tarname = 'naclsdk_' + platform + '.tar.bz2'
   tarfile = os.path.join(OUT_DIR, tarname)
 
-
   if options.release:
     pepper_ver = options.release
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
@@ -989,11 +985,11 @@ def main(args):
   BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
 
   if not options.skip_toolchain:
-    BuildStepDownloadToolchains(platform)
+    BuildStepDownloadToolchains()
     BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
 
   BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
-  BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains)
+  BuildStepBuildToolchains(pepperdir, platform, toolchains)
   InstallCommonHeaders(os.path.join(pepperdir, 'include'))
   BuildStepCopyBuildHelpers(pepperdir, platform)
   BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental, True)
@@ -1017,10 +1013,10 @@ def main(args):
 
   # Archive on non-trybots.
   if options.archive:
-    BuildStepArchiveBundle(pepper_ver, clnumber, tarfile)
-    BuildStepArchiveSDKTools()
+    BuildStepArchiveBundle('build', pepper_ver, clnumber, tarfile)
     if platform == 'linux':
-      BuildStepArchiveBundle(pepper_ver, clnumber, ports_tarfile)
+      BuildStepArchiveBundle('naclports', pepper_ver, clnumber, ports_tarfile)
+    BuildStepArchiveSDKTools()
 
   return 0
 
