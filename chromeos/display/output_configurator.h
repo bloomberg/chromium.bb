@@ -101,6 +101,11 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Tells if the output specified by |name| is for internal display.
   static bool IsInternalOutputName(const std::string& name);
 
+  // Set all the displays into pre-suspend mode; usually this means configure
+  // them for their resume state. This allows faster resume on machines where
+  // display configuration is slow.
+  void SuspendDisplays();
+
  private:
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
