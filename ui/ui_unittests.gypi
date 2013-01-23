@@ -135,6 +135,7 @@
         'gfx/transform_util_unittest.cc',
         'gfx/video_decode_acceleration_support_mac_unittest.mm',
         'shell_dialogs/select_file_dialog_win_unittest.cc',
+        'webui/web_ui_util_unittest.cc',
       ],
       'include_dirs': [
         '../',

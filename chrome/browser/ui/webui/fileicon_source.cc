@@ -13,7 +13,6 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/time_format.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -22,6 +21,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace {
 
@@ -84,7 +84,7 @@ void ParseQueryParams(const std::string& query,
     if (icon_size && iter->first == kIconSize)
       *icon_size = SizeStringToIconSize(iter->second);
     else if (scale_factor && iter->first == kScaleFactor)
-      web_ui_util::ParseScaleFactor(iter->second, scale_factor);
+      webui::ParseScaleFactor(iter->second, scale_factor);
   }
 }
 

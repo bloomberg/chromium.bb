@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -314,7 +314,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(
   strings.SetString("oldPin", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN));
 
-  web_ui_util::SetFontAndTextDirection(&strings);
+  webui::SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

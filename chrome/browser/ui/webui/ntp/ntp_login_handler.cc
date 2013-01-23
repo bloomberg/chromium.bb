@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -46,6 +45,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -212,8 +212,7 @@ void NTPLoginHandler::UpdateLogin() {
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
-          icon_url = web_ui_util::GetBitmapDataUrl(
-              GetGAIAPictureForNTP(*image));
+          icon_url = webui::GetBitmapDataUrl(GetGAIAPictureForNTP(*image));
       }
       if (header.empty())
         header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");

@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/web_ui_util.h"
 
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
@@ -378,7 +378,7 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
 
-  web_ui_util::SetFontAndTextDirection(localized_strings);
+  webui::SetFontAndTextDirection(localized_strings);
 
   SetResult(localized_strings);
 

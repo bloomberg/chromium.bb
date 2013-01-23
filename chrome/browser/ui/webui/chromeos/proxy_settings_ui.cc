@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -22,6 +21,7 @@
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -67,7 +67,7 @@ void ProxySettingsHTMLSource::StartDataRequest(
     const std::string& path,
     bool is_incognito,
     const content::URLDataSource::GotDataCallback& callback) {
-  web_ui_util::SetFontAndTextDirection(localized_strings_.get());
+  webui::SetFontAndTextDirection(localized_strings_.get());
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

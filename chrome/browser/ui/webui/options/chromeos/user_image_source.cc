@@ -9,12 +9,12 @@
 #include "base/string_split.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_parse.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace {
 
@@ -31,7 +31,7 @@ void ParseRequest(const GURL& url,
                   bool* is_image_animated,
                   ui::ScaleFactor* scale_factor) {
   DCHECK(url.is_valid());
-  web_ui_util::ParsePathAndScale(url, email, scale_factor);
+  webui::ParsePathAndScale(url, email, scale_factor);
   std::string url_spec = url.possibly_invalid_spec();
   url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
   url_parse::Component key, value;

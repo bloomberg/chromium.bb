@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/web_ui_util.h"
+#include "ui/webui/web_ui_util.h"
 
 #include <vector>
 
@@ -19,11 +19,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined (TOOLKIT_GTK)
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
-#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -43,7 +39,7 @@ const ScaleFactorMap kScaleFactorMap[] = {
 
 }  // namespace
 
-namespace web_ui_util {
+namespace webui {
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
   TRACE_EVENT2("oobe", "GetImageDataUrl",
@@ -158,4 +154,4 @@ void SetFontAndTextDirection(DictionaryValue* localized_strings) {
       base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
-}  // namespace web_ui_util
+}  // namespace webui

@@ -23,7 +23,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -43,6 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -288,7 +288,7 @@ std::string DesktopNotificationService::AddIconNotification(
 #else
   GURL icon_url;
   if (!icon.isNull())
-    icon_url = GURL(web_ui_util::GetBitmapDataUrl(*icon.bitmap()));
+    icon_url = GURL(webui::GetBitmapDataUrl(*icon.bitmap()));
   return AddNotification(
       origin_url, title, message, icon_url, replace_id, delegate, profile);
 #endif

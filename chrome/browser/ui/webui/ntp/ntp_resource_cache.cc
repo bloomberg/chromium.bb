@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,6 +53,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/platform_util.h"
@@ -291,7 +291,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
 
-  web_ui_util::SetFontAndTextDirection(&localized_strings);
+  webui::SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -408,7 +408,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
   NTPLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
-  web_ui_util::SetFontAndTextDirection(&load_time_data);
+  webui::SetFontAndTextDirection(&load_time_data);
 
   // Control fade and resize animations.
   load_time_data.SetBoolean("anim", ui::Animation::ShouldRenderRichAnimation());

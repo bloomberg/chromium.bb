@@ -11,12 +11,12 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace {
 
@@ -89,7 +89,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     if (model->GetIconAt(i, &icon)) {
       SkBitmap icon_bitmap = icon.ToImageSkia()->GetRepresentation(
           web_ui_->GetDeviceScaleFactor()).sk_bitmap();
-      item->SetString("icon", web_ui_util::GetBitmapDataUrl(icon_bitmap));
+      item->SetString("icon", webui::GetBitmapDataUrl(icon_bitmap));
     }
     if (id >= 0) {
       item->SetBoolean("enabled", model->IsEnabledAt(i));
@@ -166,7 +166,7 @@ void NetworkDropdown::SetNetworkIconAndText() {
       web_ui_->GetDeviceScaleFactor()).sk_bitmap();
   std::string icon_str =
       icon_image.isNull() ?
-          std::string() : web_ui_util::GetBitmapDataUrl(icon_bitmap);
+          std::string() : webui::GetBitmapDataUrl(icon_bitmap);
   base::StringValue title(text);
   base::StringValue icon(icon_str);
   web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",

@@ -9,7 +9,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -20,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 // Define the values of standard URLs.
 const char CloudPrintSetupSource::kInvalidPasswordHelpUrl[] =
@@ -74,7 +74,7 @@ void CloudPrintSetupSource::StartDataRequest(
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_LOGIN_HTML));
-    web_ui_util::SetFontAndTextDirection(dict);
+    webui::SetFontAndTextDirection(dict);
     response = webui::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintGaiaLoginPath) {
     // Start by setting the per-locale URLs we show on the setup wizard.
@@ -110,7 +110,7 @@ void CloudPrintSetupSource::StartDataRequest(
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
-    web_ui_util::SetFontAndTextDirection(dict);
+    webui::SetFontAndTextDirection(dict);
     response = webui::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupDonePath) {
     AddString(dict, "testpage", IDS_CLOUD_PRINT_SETUP_TEST_PAGE);
@@ -118,7 +118,7 @@ void CloudPrintSetupSource::StartDataRequest(
     AddString(dict, "okay", IDS_SYNC_SETUP_OK_BUTTON_LABEL);
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_DONE_HTML));
-    web_ui_util::SetFontAndTextDirection(dict);
+    webui::SetFontAndTextDirection(dict);
     response = webui::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupFlowPath) {
     static const base::StringPiece html(

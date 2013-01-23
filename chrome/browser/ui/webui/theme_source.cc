@@ -13,13 +13,13 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
 
@@ -59,9 +59,9 @@ void ThemeSource::StartDataRequest(
   // Default scale factor if not specified.
   ui::ScaleFactor scale_factor;
   std::string uncached_path;
-  web_ui_util::ParsePathAndScale(GURL(GetThemePath() + path),
-                                 &uncached_path,
-                                 &scale_factor);
+  webui::ParsePathAndScale(GURL(GetThemePath() + path),
+                           &uncached_path,
+                           &scale_factor);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
@@ -86,8 +86,7 @@ void ThemeSource::StartDataRequest(
 
 std::string ThemeSource::GetMimeType(const std::string& path) const {
   std::string uncached_path;
-  web_ui_util::ParsePathAndScale(GURL(GetThemePath() + path),
-                                 &uncached_path, NULL);
+  webui::ParsePathAndScale(GURL(GetThemePath() + path), &uncached_path, NULL);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
@@ -100,8 +99,7 @@ std::string ThemeSource::GetMimeType(const std::string& path) const {
 MessageLoop* ThemeSource::MessageLoopForRequestPath(
     const std::string& path) const {
   std::string uncached_path;
-  web_ui_util::ParsePathAndScale(GURL(GetThemePath() + path),
-                                 &uncached_path, NULL);
+  webui::ParsePathAndScale(GURL(GetThemePath() + path), &uncached_path, NULL);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {

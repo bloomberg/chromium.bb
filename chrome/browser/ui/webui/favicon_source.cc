@@ -10,13 +10,13 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace {
 
@@ -121,7 +121,7 @@ void FaviconSource::StartDataRequest(
 
     std::string scale_str = path.substr(scale_delimiter + 1,
                                         slash - scale_delimiter - 1);
-    web_ui_util::ParseScaleFactor(scale_str, &scale_factor);
+    webui::ParseScaleFactor(scale_str, &scale_factor);
 
     if (scale_factor != ui::SCALE_FACTOR_100P && size_in_dip != 16) {
       SendDefaultResponse(callback);

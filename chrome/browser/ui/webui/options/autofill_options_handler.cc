@@ -21,12 +21,12 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace {
 
@@ -427,7 +427,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
     entry->Append(new StringValue((*i)->Label()));
     int res = CreditCardTypeToResourceID((*i)->type());
     entry->Append(
-        new StringValue(web_ui_util::GetBitmapDataUrlFromResource(res)));
+        new StringValue(webui::GetBitmapDataUrlFromResource(res)));
     entry->Append(new StringValue(LocalizedCreditCardType((*i)->type())));
     credit_cards.Append(entry);
   }

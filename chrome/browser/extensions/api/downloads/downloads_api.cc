@@ -39,7 +39,6 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/downloads.h"
@@ -57,6 +56,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -275,7 +275,7 @@ void DownloadFileIconExtractorImpl::OnIconLoadComplete(gfx::Image* icon) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string url;
   if (icon)
-    url = web_ui_util::GetBitmapDataUrl(icon->AsBitmap());
+    url = webui::GetBitmapDataUrl(icon->AsBitmap());
   callback_.Run(url);
 }
 

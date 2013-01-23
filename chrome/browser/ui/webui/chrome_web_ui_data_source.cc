@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 // Internal class to hide the fact that ChromeWebUIDataSource implements
 // content::URLDataSource.
@@ -189,7 +189,7 @@ void ChromeWebUIDataSource::StartDataRequest(
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(
     const content::URLDataSource::GotDataCallback& callback) {
   std::string template_data;
-  web_ui_util::SetFontAndTextDirection(&localized_strings_);
+  webui::SetFontAndTextDirection(&localized_strings_);
 
   scoped_ptr<webui::UseVersion2> version2;
   if (json_js_format_v2_)

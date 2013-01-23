@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace chromeos {
 namespace options {
@@ -226,7 +226,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
     case User::kExternalImageIndex: {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user->image();
-      SendOldImage(web_ui_util::GetBitmapDataUrl(*previous_image_.bitmap()));
+      SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()));
       break;
     }
     case User::kProfileImageIndex: {
@@ -253,7 +253,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
 
 void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
                                                    bool should_select) {
-  base::StringValue data_url(web_ui_util::GetBitmapDataUrl(*image.bitmap()));
+  base::StringValue data_url(webui::GetBitmapDataUrl(*image.bitmap()));
   base::FundamentalValue select(should_select);
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
                                    data_url, select);

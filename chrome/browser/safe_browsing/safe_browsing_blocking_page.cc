@@ -27,7 +27,6 @@
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,6 +42,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
 using content::InterstitialPage;
@@ -947,7 +947,7 @@ void SafeBrowsingBlockingPageV2::PopulateStringDictionary(
   strings->SetString("proceed",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK));
 
-  web_ui_util::SetFontAndTextDirection(strings);
+  webui::SetFontAndTextDirection(strings);
 }
 
 void SafeBrowsingBlockingPageV2::PopulateMultipleThreatStringDictionary(

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
@@ -27,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -82,7 +82,7 @@ std::string TabModalConfirmDialogWebUI::GetDialogArgs() const {
   dict.SetString("message", delegate_->GetMessage());
   dict.SetString("accept", delegate_->GetAcceptButtonTitle());
   dict.SetString("cancel", delegate_->GetCancelButtonTitle());
-  web_ui_util::SetFontAndTextDirection(&dict);
+  webui::SetFontAndTextDirection(&dict);
   std::string json;
   base::JSONWriter::Write(&dict, &json);
   return json;

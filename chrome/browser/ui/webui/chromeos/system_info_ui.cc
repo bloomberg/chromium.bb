@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/url_data_source.h"
@@ -37,6 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -139,7 +139,7 @@ void SystemInfoUIHTMLSource::RequestComplete() {
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_EXPAND));
   strings.SetString("collapse_btn",
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
-  web_ui_util::SetFontAndTextDirection(&strings);
+  webui::SetFontAndTextDirection(&strings);
   if (response_.get()) {
     ListValue* details = new ListValue();
     strings.Set("details", details);

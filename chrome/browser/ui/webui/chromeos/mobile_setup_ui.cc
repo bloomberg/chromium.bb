@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -43,6 +42,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "ui/webui/web_ui_util.h"
 
 using chromeos::CellularNetwork;
 using chromeos::CrosLibrary;
@@ -219,7 +219,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
                     l10n_util::GetStringUTF16(IDS_CANCEL));
   strings.SetString("ok_button",
                     l10n_util::GetStringUTF16(IDS_OK));
-  web_ui_util::SetFontAndTextDirection(&strings);
+  webui::SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

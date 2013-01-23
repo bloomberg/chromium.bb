@@ -1434,7 +1434,6 @@
         'browser/ui/webui/theme_source_unittest.cc',
         'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
         'browser/ui/webui/web_ui_unittest.cc',
-        'browser/ui/webui/web_ui_util_unittest.cc',
         'browser/ui/window_sizer/window_sizer_ash_unittest.cc',
         'browser/ui/window_sizer/window_sizer_common_unittest.cc',
         'browser/ui/window_sizer/window_sizer_unittest.cc',

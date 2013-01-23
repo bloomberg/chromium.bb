@@ -2155,8 +2155,6 @@
         'browser/ui/webui/version_handler_chromeos.h',
         'browser/ui/webui/version_ui.cc',
         'browser/ui/webui/version_ui.h',
-        'browser/ui/webui/web_ui_util.cc',
-        'browser/ui/webui/web_ui_util.h',
         'browser/ui/webui/webrtc_internals_ui.cc',
         'browser/ui/webui/webrtc_internals_ui.h',
         'browser/ui/webui/welcome_ui_android.cc',

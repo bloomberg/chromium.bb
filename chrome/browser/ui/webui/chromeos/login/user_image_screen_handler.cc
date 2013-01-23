@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -23,6 +22,7 @@
 #include "net/base/data_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace chromeos {
 
@@ -142,7 +142,7 @@ void UserImageScreenHandler::RegisterMessages() {
 }
 
 void UserImageScreenHandler::AddProfileImage(const gfx::ImageSkia& image) {
-  profile_picture_data_url_ = web_ui_util::GetBitmapDataUrl(*image.bitmap());
+  profile_picture_data_url_ = webui::GetBitmapDataUrl(*image.bitmap());
   SendProfileImage(profile_picture_data_url_);
 }
 

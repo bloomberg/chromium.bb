@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -52,6 +51,7 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/webui/web_ui_util.h"
 
 using application_launch::LaunchParams;
 using application_launch::OpenApplication;
@@ -487,7 +487,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   Profile* profile = extension_service_->profile();
 
   WindowOpenDisposition disposition = args->GetSize() > 3 ?
-        web_ui_util::GetDispositionFromClick(args, 3) : CURRENT_TAB;
+        webui::GetDispositionFromClick(args, 3) : CURRENT_TAB;
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunchByID(launch_bucket);
   } else {

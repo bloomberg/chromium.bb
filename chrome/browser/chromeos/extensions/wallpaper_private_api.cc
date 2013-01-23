@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
@@ -36,6 +35,7 @@
 #include "grit/platform_locale_settings.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/web_ui_util.h"
 
 using base::BinaryValue;
 using content::BrowserThread;
@@ -208,7 +208,7 @@ bool WallpaperStringsFunction::RunImpl() {
   SET_STRING("learnMore", IDS_LEARN_MORE);
 #undef SET_STRING
 
-  web_ui_util::SetFontAndTextDirection(dict);
+  webui::SetFontAndTextDirection(dict);
 
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();

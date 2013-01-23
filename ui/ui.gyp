@@ -513,6 +513,8 @@
         'notifications/notification_types.cc',
         'webui/jstemplate_builder.cc',
         'webui/jstemplate_builder.h',
+        'webui/web_ui_util.cc',
+        'webui/web_ui_util.h',
       ],
       'target_conditions': [
         ['OS == "ios"', {

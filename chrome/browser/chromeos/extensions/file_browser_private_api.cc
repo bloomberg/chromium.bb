@@ -56,7 +56,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -84,6 +83,7 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/web_intent_service_data.h"
+#include "ui/webui/web_ui_util.h"
 
 using extensions::app_file_handler_util::FindFileHandlersForMimeTypes;
 using chromeos::disks::DiskMountManager;
@@ -2211,7 +2211,7 @@ bool FileDialogStringsFunction::RunImpl() {
   dict->SetBoolean("PDF_VIEW_ENABLED",
       file_manager_util::ShouldBeOpenedWithPdfPlugin(profile(), ".pdf"));
 
-  web_ui_util::SetFontAndTextDirection(dict);
+  webui::SetFontAndTextDirection(dict);
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
