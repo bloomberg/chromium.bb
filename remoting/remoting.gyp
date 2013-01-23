@@ -267,8 +267,6 @@
             'capturer/differ_block.h',
             'capturer/linux/x_server_pixel_buffer.cc',
             'capturer/linux/x_server_pixel_buffer.h',
-            'capturer/mac/desktop_configuration.mm',
-            'capturer/mac/desktop_configuration.h',
             'capturer/mac/scoped_pixel_buffer_object.cc',
             'capturer/mac/scoped_pixel_buffer_object.h',
             'capturer/mouse_cursor_shape.cc',

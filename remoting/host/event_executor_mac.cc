@@ -14,11 +14,9 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/capturer/mac/desktop_configuration.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
-#include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 
@@ -37,9 +35,13 @@ using protocol::MouseEvent;
 
 // skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
 SkIRect CGRectToSkIRect(const CGRect& rect) {
-  SkIRect result;
-  gfx::CGRectToSkRect(rect).round(&result);
-  return result;
+  SkIRect sk_rect = {
+    SkScalarRound(rect.origin.x),
+    SkScalarRound(rect.origin.y),
+    SkScalarRound(rect.origin.x + rect.size.width),
+    SkScalarRound(rect.origin.y + rect.size.height)
+  };
+  return sk_rect;
 }
 
 // A class to generate events on Mac.
@@ -188,24 +190,30 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     // Set the mouse position assuming single-monitor.
     mouse_pos_ = SkIPoint::Make(event.x(), event.y());
 
-    // Fetch the desktop configuration.
-    // TODO(wez): Optimize this out, or at least only enumerate displays in
-    // response to display-changed events. VideoFrameCapturer's VideoFrames
-    // could be augmented to include native cursor coordinates for use by
-    // MouseClampingFilter, removing the need for translation here.
-    MacDesktopConfiguration desktop_config
-        = MacDesktopConfiguration::GetCurrent();
+    // Determine how many active displays there are.
+    CGDisplayCount display_count;
+    CGError error = CGGetActiveDisplayList(0, NULL, &display_count);
+    CHECK_EQ(error, CGDisplayNoErr);
 
-    // Translate the mouse position into desktop coordinates.
-    mouse_pos_ += SkIPoint::Make(desktop_config.pixel_bounds.left(),
-                                 desktop_config.pixel_bounds.top());
+    if (display_count > 1) {
+      // Determine the bounding box of the displays, to get the top-left origin.
+      std::vector<CGDirectDisplayID> display_ids(display_count);
+      error = CGGetActiveDisplayList(display_count, &display_ids[0],
+                                     &display_count);
+      CHECK_EQ(error, CGDisplayNoErr);
+      CHECK_EQ(display_count, display_ids.size());
 
-    // Convert from pixel to logical coordinates.
-    mouse_pos_ = SkIPoint::Make(
-        SkScalarRound(mouse_pos_.x() / desktop_config.logical_to_pixel_scale),
-        SkScalarRound(mouse_pos_.y() / desktop_config.logical_to_pixel_scale));
+      SkIRect desktop_bounds = SkIRect::MakeEmpty();
+      for (unsigned int d = 0; d < display_count; ++d) {
+        CGRect display_bounds = CGDisplayBounds(display_ids[d]);
+        desktop_bounds.join(CGRectToSkIRect(display_bounds));
+      }
 
-    VLOG(3) << "Moving mouse to " << mouse_pos_.x() << "," << mouse_pos_.y();
+      // Adjust the injected mouse event position.
+      mouse_pos_ += SkIPoint::Make(desktop_bounds.left(), desktop_bounds.top());
+    }
+
+    VLOG(3) << "Moving mouse to " << event.x() << "," << event.y();
   }
   if (event.has_button() && event.has_button_down()) {
     if (event.button() >= 1 && event.button() <= 3) {

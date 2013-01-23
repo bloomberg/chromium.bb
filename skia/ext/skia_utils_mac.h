@@ -52,7 +52,7 @@ inline const SkPoint& CGPointToSkPoint(const CGPoint& point) {
 SK_API CGAffineTransform SkMatrixToCGAffineTransform(const SkMatrix& matrix);
 
 // Rectangle converters.
-SK_API SkRect CGRectToSkRect(const CGRect& rect);
+SkRect CGRectToSkRect(const CGRect& rect);
 
 // Converts a Skia rect to a CoreGraphics CGRect.
 CGRect SkIRectToCGRect(const SkIRect& rect);

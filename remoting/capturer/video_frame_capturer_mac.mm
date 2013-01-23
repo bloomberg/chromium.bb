@@ -22,13 +22,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "remoting/capturer/capture_data.h"
-#include "remoting/capturer/mac/desktop_configuration.h"
 #include "remoting/capturer/mac/scoped_pixel_buffer_object.h"
 #include "remoting/capturer/mouse_cursor_shape.h"
 #include "remoting/capturer/video_frame.h"
 #include "remoting/capturer/video_frame_capturer_helper.h"
 #include "remoting/capturer/video_frame_queue.h"
-#include "skia/ext/skia_utils_mac.h"
 
 namespace remoting {
 
@@ -47,9 +45,13 @@ typedef CGLError (*CGLSetFullScreenFunc)(CGLContextObj);
 
 // skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
 SkIRect CGRectToSkIRect(const CGRect& rect) {
-  SkIRect result;
-  gfx::CGRectToSkRect(rect).round(&result);
-  return result;
+  SkIRect sk_rect = {
+    SkScalarRound(rect.origin.x),
+    SkScalarRound(rect.origin.y),
+    SkScalarRound(rect.origin.x + rect.size.width),
+    SkScalarRound(rect.origin.y + rect.size.height)
+  };
+  return sk_rect;
 }
 
 // Copy pixels in the |rect| from |src_place| to |dest_plane|.
@@ -82,7 +84,7 @@ const int64 kDisplayConfigurationEventTimeoutInSeconds = 10;
 // A class representing a full-frame pixel buffer.
 class VideoFrameMac : public VideoFrame {
  public:
-  explicit VideoFrameMac(const MacDesktopConfiguration& desktop_config);
+  explicit VideoFrameMac(const SkISize& size);
   virtual ~VideoFrameMac();
 
   const SkIPoint& dpi() const { return dpi_; }
@@ -150,7 +152,8 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   VideoFrameQueue queue_;
 
   // Current display configuration.
-  MacDesktopConfiguration desktop_config_;
+  std::vector<CGDirectDisplayID> display_ids_;
+  SkIRect desktop_bounds_;
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
@@ -187,9 +190,7 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerMac);
 };
 
-VideoFrameMac::VideoFrameMac(const MacDesktopConfiguration& desktop_config) {
-  SkISize size = SkISize::Make(desktop_config.pixel_bounds.width(),
-                               desktop_config.pixel_bounds.height());
+VideoFrameMac::VideoFrameMac(const SkISize& size) {
   set_bytes_per_row(size.width() * sizeof(uint32_t));
   set_dimensions(size);
 
@@ -197,7 +198,11 @@ VideoFrameMac::VideoFrameMac(const MacDesktopConfiguration& desktop_config) {
   data_.reset(new  uint8[buffer_size]);
   set_pixels(data_.get());
 
-  dpi_ = desktop_config.dpi;
+  // TODO(wez): Move the ugly DPI code into a helper.
+  NSScreen* screen = [NSScreen mainScreen];
+  NSDictionary* attr = [screen deviceDescription];
+  NSSize resolution = [[attr objectForKey: NSDeviceResolution] sizeValue];
+  dpi_.set(resolution.width, resolution.height);
 }
 
 VideoFrameMac::~VideoFrameMac() {
@@ -323,7 +328,8 @@ void VideoFrameCapturerMac::CaptureFrame() {
   // Note that we can't reallocate other buffers at this point, since the caller
   // may still be reading from them.
   if (queue_.current_frame_needs_update()) {
-    scoped_ptr<VideoFrameMac> buffer(new VideoFrameMac(desktop_config_));
+    scoped_ptr<VideoFrameMac> buffer(new VideoFrameMac(
+        SkISize::Make(desktop_bounds_.width(), desktop_bounds_.height())));
     queue_.ReplaceCurrentFrame(buffer.PassAs<VideoFrame>());
   }
 
@@ -546,23 +552,20 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrame& buffer,
            buffer.bytes_per_row() * buffer_height);
   }
 
-  for (size_t i = 0; i < desktop_config_.displays.size(); ++i) {
-    const MacDisplayConfiguration& display_config = desktop_config_.displays[i];
-
+  for (unsigned int d = 0; d < display_ids_.size(); ++d) {
     // Use deprecated APIs to determine the display buffer layout.
     DCHECK(cg_display_base_address_ && cg_display_bytes_per_row_ &&
         cg_display_bits_per_pixel_);
     uint8* display_base_address =
-      reinterpret_cast<uint8*>((*cg_display_base_address_)(display_config.id));
+      reinterpret_cast<uint8*>((*cg_display_base_address_)(display_ids_[d]));
     CHECK(display_base_address);
-    int src_bytes_per_row = (*cg_display_bytes_per_row_)(display_config.id);
+    int src_bytes_per_row = (*cg_display_bytes_per_row_)(display_ids_[d]);
     int src_bytes_per_pixel =
-        (*cg_display_bits_per_pixel_)(display_config.id) / 8;
+        (*cg_display_bits_per_pixel_)(display_ids_[d]) / 8;
 
-    // Determine the display's position relative to the desktop, in pixels.
-    SkIRect display_bounds = display_config.pixel_bounds;
-    display_bounds.offset(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    // Determine the position of the display in the buffer.
+    SkIRect display_bounds = CGRectToSkIRect(CGDisplayBounds(display_ids_[d]));
+    display_bounds.offset(-desktop_bounds_.left(), -desktop_bounds_.top());
 
     // Determine which parts of the blit region, if any, lay within the monitor.
     SkRegion copy_region;
@@ -570,8 +573,7 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrame& buffer,
       continue;
 
     // Translate the region to be copied into display-relative coordinates.
-    copy_region.translate(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    copy_region.translate(-display_bounds.left(), -display_bounds.top());
 
     // Calculate where in the output buffer the display's origin is.
     uint8* out_ptr = buffer.pixels() +
@@ -603,13 +605,10 @@ void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrame& buffer,
            buffer.bytes_per_row() * buffer_height);
   }
 
-  for (size_t i = 0; i < desktop_config_.displays.size(); ++i) {
-    const MacDisplayConfiguration& display_config = desktop_config_.displays[i];
-
-    // Determine the display's position relative to the desktop, in pixels.
-    SkIRect display_bounds = display_config.pixel_bounds;
-    display_bounds.offset(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+  for (unsigned int d = 0; d < display_ids_.size(); ++d) {
+    // Determine the position of the display in the buffer.
+    SkIRect display_bounds = CGRectToSkIRect(CGDisplayBounds(display_ids_[d]));
+    display_bounds.offset(-desktop_bounds_.left(), -desktop_bounds_.top());
 
     // Determine which parts of the blit region, if any, lay within the monitor.
     SkRegion copy_region;
@@ -617,12 +616,11 @@ void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrame& buffer,
       continue;
 
     // Translate the region to be copied into display-relative coordinates.
-    copy_region.translate(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    copy_region.translate(-display_bounds.left(), -display_bounds.top());
 
     // Create an image containing a snapshot of the display.
     base::mac::ScopedCFTypeRef<CGImageRef> image(
-        CGDisplayCreateImage(display_config.id));
+        CGDisplayCreateImage(display_ids_[d]));
     if (image.get() == NULL)
       continue;
 
@@ -661,13 +659,26 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   // Clear the dirty region, in case the display is down-sizing.
   helper_.ClearInvalidRegion();
 
-  // Refresh the cached desktop configuration.
-  desktop_config_ = MacDesktopConfiguration::GetCurrent();
+  // Fetch the list if active displays and calculate their bounds.
+  CGDisplayCount display_count;
+  CGError error = CGGetActiveDisplayList(0, NULL, &display_count);
+  CHECK_EQ(error, CGDisplayNoErr);
+
+  display_ids_.resize(display_count);
+  error = CGGetActiveDisplayList(display_count, &display_ids_[0],
+                                 &display_count);
+  CHECK_EQ(error, CGDisplayNoErr);
+  CHECK_EQ(display_count, display_ids_.size());
+
+  desktop_bounds_ = SkIRect::MakeEmpty();
+  for (unsigned int d = 0; d < display_count; ++d) {
+    CGRect display_bounds = CGDisplayBounds(display_ids_[d]);
+    desktop_bounds_.join(CGRectToSkIRect(display_bounds));
+  }
 
   // Re-mark the entire desktop as dirty.
-  helper_.InvalidateScreen(
-      SkISize::Make(desktop_config_.pixel_bounds.width(),
-                    desktop_config_.pixel_bounds.height()));
+  helper_.InvalidateScreen(SkISize::Make(desktop_bounds_.width(),
+                                         desktop_bounds_.height()));
 
   // Make sure the frame buffers will be reallocated.
   queue_.SetAllFramesNeedUpdate();
@@ -706,7 +717,7 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   CHECK(cg_display_base_address_ && cg_display_bytes_per_row_ &&
         cg_display_bits_per_pixel_ && cgl_set_full_screen_);
 
-  if (desktop_config_.displays.size() > 1) {
+  if (display_ids_.size() > 1) {
     LOG(INFO) << "Using CgBlitPreLion (Multi-monitor).";
     return;
   }
@@ -737,36 +748,21 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   (*cgl_set_full_screen_)(cgl_context_);
   CGLSetCurrentContext(cgl_context_);
 
-  size_t buffer_size = desktop_config_.pixel_bounds.width() *
-                       desktop_config_.pixel_bounds.height() *
+  size_t buffer_size = desktop_bounds_.width() * desktop_bounds_.height() *
                        sizeof(uint32_t);
   pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
 
 void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,
                                           const CGRect* rect_array) {
-  if (desktop_config_.pixel_bounds.isEmpty()) {
+  if (desktop_bounds_.isEmpty()) {
     return;
   }
   SkIRect skirect_array[count];
-
   for (CGRectCount i = 0; i < count; ++i) {
-    // Convert from logical to pixel (device-scale) coordinates.
-    NSRect rect = NSRectFromCGRect(rect_array[i]);
-    SkRect sk_rect = {
-        rect.origin.x * desktop_config_.logical_to_pixel_scale,
-        rect.origin.y * desktop_config_.logical_to_pixel_scale,
-        (rect.origin.x + rect.size.width) *
-            desktop_config_.logical_to_pixel_scale,
-        (rect.origin.y + rect.size.height) *
-            desktop_config_.logical_to_pixel_scale
-    };
-
-    sk_rect.round(&skirect_array[i]);
-    skirect_array[i].offset(-desktop_config_.pixel_bounds.left(),
-                            -desktop_config_.pixel_bounds.top());
+    skirect_array[i] = CGRectToSkIRect(rect_array[i]);
+    skirect_array[i].offset(-desktop_bounds_.left(), -desktop_bounds_.top());
   }
-
   SkRegion region;
   region.setRects(skirect_array, count);
   InvalidateRegion(region);
@@ -775,14 +771,16 @@ void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,
 void VideoFrameCapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                                              size_t count,
                                              const CGRect* rect_array) {
-  // Translate |rect_array| to identify the move's destination.
-  CGRect refresh_rects[count];
+  SkIRect skirect_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
-    refresh_rects[i] = CGRectOffset(rect_array[i], delta.dX, delta.dY);
+    CGRect rect = rect_array[i];
+    rect = CGRectOffset(rect, delta.dX, delta.dY);
+    skirect_array[i] = CGRectToSkIRect(rect);
+    skirect_array[i].offset(-desktop_bounds_.left(), -desktop_bounds_.top());
   }
-
-  // Currently we just treat move events the same as refreshes.
-  ScreenRefresh(count, refresh_rects);
+  SkRegion region;
+  region.setRects(skirect_array, count);
+  InvalidateRegion(region);
 }
 
 void VideoFrameCapturerMac::DisplaysReconfigured(
@@ -816,7 +814,7 @@ void VideoFrameCapturerMac::ScreenRefreshCallback(CGRectCount count,
                                                   void* user_parameter) {
   VideoFrameCapturerMac* capturer = reinterpret_cast<VideoFrameCapturerMac*>(
       user_parameter);
-  if (capturer->desktop_config_.pixel_bounds.isEmpty()) {
+  if (capturer->desktop_bounds_.isEmpty()) {
     capturer->ScreenConfigurationChanged();
   }
   capturer->ScreenRefresh(count, rect_array);
