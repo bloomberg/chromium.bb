@@ -589,6 +589,54 @@
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     };
 
+  # This action calls user's callback (if needed) and cleans up validator's
+  # internal state.
+  #
+  # We call the user callback if there are validation errors or if the
+  # CALL_USER_CALLBACK_ON_EACH_INSTRUCTION option is used.
+  #
+  # After that we move instruction_start and clean all the variables which
+  # only used in the processing of a single instruction (prefixes, operand
+  # states and instruction_info_collected).
+  action end_of_instruction_cleanup {
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+  }
+
+  # This action reports fatal error detected by DFA.
+  action report_fatal_error {
+    result &= user_callback(instruction_start, current_position,
+                            UNRECOGNIZED_INSTRUCTION, callback_data);
+    /*
+     * Process the next bundle: “continue” here is for the “for” cycle in
+     * the ValidateChunkAMD64 function.
+     *
+     * It does not affect the case which we really care about (when code
+     * is validatable), but makes it possible to detect more errors in one
+     * run in tools like ncval.
+     */
+    continue;
+  }
+
   # This is main ragel machine: it does 99% of validation work. There are only
   # one thing to do with bundle if this machine accepts the bundle:
   #  • check for the state of the restricted_register at the end of the bundle.
@@ -598,49 +646,10 @@
   #  • DFA fills two arrays: valid_targets and jump_dests.
   #  • ProcessInvalidJumpTargets checks that jump_dests ⊂ valid_targets.
   # All other checks are done here.
+
   main := ((call_alignment | normal_instruction | special_instruction)
-     # Here we call the user callback if there are validation errors or if the
-     # CALL_USER_CALLBACK_ON_EACH_INSTRUCTION option is used.
-     #
-     # After that we move instruction_start and clean all the variables which
-     # only used in the processing of a single instruction (prefixes, operand
-     # states and instruction_info_collected).
-     @{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     })*
-    $err{
-        result &= user_callback(instruction_start, current_position,
-                                UNRECOGNIZED_INSTRUCTION, callback_data);
-        /*
-         * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkAMD64 function.
-         *
-         * It does not affect the case which we really care about (when code
-         * is validatable), but makes it possible to detect more errors in one
-         * run in tools like ncval.
-         */
-        continue;
-    };
+     @end_of_instruction_cleanup)*
+    $!report_fatal_error;
 
 }%%
 

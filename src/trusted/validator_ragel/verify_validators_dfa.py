@@ -57,6 +57,42 @@ def ConvertXMLToStatesList(dfa_tree):
         # if that happens.
     ]
 
+  actions = []
+  xml_actions = dfa_tree.xpath('//action')
+
+  for expected_action_id, action in enumerate(xml_actions):
+    # Ragel always dumps actions in order, but better to check that it's still
+    # true.
+    action_id = int(action.get('id'))
+    if action_id != expected_action_id:
+      raise AssertionError('action_id ({0}) != expected action_id ({1})'.format(
+          action_id, expected_action_id))
+    # If action have no name then use it's text as a name
+    action_name = action.get('name')
+    if action_name is None:
+      assert len(action) == 1
+      assert action[0].text is not None
+      action_name = action[0].text
+    actions.append(action_name)
+
+  action_tables = []
+  xml_action_tables = dfa_tree.xpath('//action_table')
+
+  for expected_action_table_id, action_table in enumerate(xml_action_tables):
+    # Ragel always dumps action tables in order, but better to check that it's
+    # still true.
+    action_table_id = int(action_table.get('id'))
+    if action_table_id != expected_action_table_id:
+      raise AssertionError(
+          'action_table_id ({0}) != expected action_table_id ({1})'.format(
+              action_table_id, expected_action_table_id))
+    action_list = [actions[int(action_id)]
+                   for action_id in action_table.text.split()]
+    action_tables.append(action_list)
+
+  # There are only one global error action and it's called "report_fatal_error"
+  assert action_tables[0] == ['report_fatal_error']
+
   xml_states = dfa_tree.xpath('//state')
 
   (error_state,) = dfa_tree.xpath('//error_state')
@@ -65,7 +101,8 @@ def ConvertXMLToStatesList(dfa_tree):
   states = [State() for _ in xml_states]
 
   for expected_state_id, xml_state in enumerate(xml_states):
-    # Ragel always dumps states in order, but better to check that it's still so
+    # Ragel always dumps states in order, but better to check that it's still
+    # true.
     state_id = int(xml_state.get('id'))
     if state_id != expected_state_id:
       raise AssertionError('state_id ({0}) != expected state_id ({1})'.format(
@@ -92,7 +129,7 @@ def ConvertXMLToStatesList(dfa_tree):
           if action_table_id == 'x':
             transition.action_table = None
           else:
-            transition.action_table = int(action_table_id)
+            transition.action_table = action_tables[int(action_table_id)]
           state.forward_transitions[byte] = transition
 
     # State actions are only ever used in validator to detect error conditions
@@ -112,6 +149,26 @@ def ConvertXMLToStatesList(dfa_tree):
         transition.to_state.back_transitions.append(transition)
 
   return states
+
+
+def CheckForProperCleanup(states):
+  """Check action lists for proper cleanup.
+
+  All transitions must trigger "end_of_instruction_cleanup" as the last action
+  if they transition to the accepting state.
+
+  Triggers an assert error if this rule is violated.
+
+  Args:
+      states: arrays of State structures (as produced by ConvertXMLToStatesList)
+  Returns:
+      None
+  """
+
+  for state in states:
+    for transition in state.forward_transitions:
+      if transition is not None and transition.to_state.is_accepting:
+        assert transition.action_table[-1] == 'end_of_instruction_cleanup'
 
 
 def CheckDFAActions(start_state, states):
@@ -181,7 +238,12 @@ def CheckPathActions(start_state,
     # If we reach accepting state, this path is not 'dangerous'.
     assert main_state.is_accepting
     return
-  if state == main_state:
+  if not state.is_accepting:
+    # If main state reaches accepting state but here we don't reach the
+    # accepting state then this means that we process some "safe" instructions
+    # as "dangerous" ones.
+    assert not main_state.is_accepting
+  if state is main_state:
     # Original path merges with parallel path, so it can't be dangerous
     # (whatever is accepted further along original path would be accepted
     # from starting state as well).
@@ -238,7 +300,7 @@ def CheckDangerousInstructionPath(start_state, state, transitions):
   """
 
   if state.is_accepting:
-    assert state == start_state
+    assert state is start_state
     CollectSandboxing(start_state, transitions)
   else:
     for transition in state.forward_transitions:
@@ -293,9 +355,9 @@ def CollectSandboxing(start_state, transitions):
         main_state = main_transition.to_state
     else:
       # Found the transition, but is it canonical one?
-      assert main_state == start_state
-      assert transitions[-1].to_state == start_state
-      if transitions[0].from_state == start_state:
+      assert main_state is start_state
+      assert transitions[-1].to_state is start_state
+      if transitions[0].from_state is start_state:
         print('.byte', ', '.join([str(t.byte) for t in transitions]))
       else:
         # This sequence was found in "shadow DFA".  Identical one should exist
@@ -348,6 +410,8 @@ def main(argv):
   assert len(error_state) == 1 and int(error_state[0].text) == 0
 
   states = ConvertXMLToStatesList(dfa_tree)
+
+  CheckForProperCleanup(states)
 
   CheckDFAActions(states[start_state], states)
 

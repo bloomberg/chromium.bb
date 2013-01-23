@@ -964,7 +964,7 @@
 %%{
   machine decoder;
 
-  action process_collected_data {
+  action end_of_instruction_cleanup {
     process_instruction(instruction_start, current_position+1, &instruction,
                         userdata);
     instruction_start = current_position + 1;
@@ -988,9 +988,12 @@
     CLEAR_SPURIOUS_REX_W();
   }
 
-  decoder = (one_instruction @process_collected_data)*
-    $!{ process_error(current_position, userdata);
-        result = FALSE;
-        goto error_detected;
-    };
+  action report_fatal_error {
+    process_error(current_position, userdata);
+    result = FALSE;
+    goto error_detected;
+  }
+
+  decoder = (one_instruction @end_of_instruction_cleanup)*
+    $!report_fatal_error;
 }%%
