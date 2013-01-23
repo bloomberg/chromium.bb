@@ -623,7 +623,7 @@ void DwarfCUToModule::WarningReporter::UnnamedFunction(uint64 offset) {
 }
 
 DwarfCUToModule::DwarfCUToModule(FileContext *file_context,
-                                 LineToModuleFunctor *line_reader,
+                                 LineToModuleHandler *line_reader,
                                  WarningReporter *reporter)
     : line_reader_(line_reader), has_source_line_info_(false) { 
   cu_context_ = new CUContext(file_context, reporter);
@@ -666,8 +666,16 @@ void DwarfCUToModule::ProcessAttributeUnsigned(enum DwarfAttribute attr,
 void DwarfCUToModule::ProcessAttributeString(enum DwarfAttribute attr,
                                              enum DwarfForm form,
                                              const string &data) {
-  if (attr == dwarf2reader::DW_AT_name)
-    cu_context_->reporter->SetCUName(data);
+  switch (attr) {
+    case dwarf2reader::DW_AT_name:
+      cu_context_->reporter->SetCUName(data);
+      break;
+    case dwarf2reader::DW_AT_comp_dir:
+      line_reader_->StartCompilationUnit(data);
+      break;
+    default:
+      break;
+  }
 }
 
 bool DwarfCUToModule::EndAttributes() {
@@ -744,8 +752,8 @@ void DwarfCUToModule::ReadSourceLines(uint64 offset) {
     cu_context_->reporter->BadLineInfoOffset(offset);
     return;
   }
-  (*line_reader_)(section_start + offset, section_length - offset,
-                  cu_context_->file_context->module, &lines_);
+  line_reader_->ReadProgram(section_start + offset, section_length - offset,
+                            cu_context_->file_context->module, &lines_);
 }
 
 namespace {

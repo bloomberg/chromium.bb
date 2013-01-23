@@ -186,18 +186,22 @@ bool LoadStabs(const typename ElfClass::Ehdr* elf_header,
 // A line-to-module loader that accepts line number info parsed by
 // dwarf2reader::LineInfo and populates a Module and a line vector
 // with the results.
-class DumperLineToModule: public DwarfCUToModule::LineToModuleFunctor {
+class DumperLineToModule: public DwarfCUToModule::LineToModuleHandler {
  public:
   // Create a line-to-module converter using BYTE_READER.
   explicit DumperLineToModule(dwarf2reader::ByteReader *byte_reader)
       : byte_reader_(byte_reader) { }
-  void operator()(const char *program, uint64 length,
-                  Module *module, std::vector<Module::Line> *lines) {
-    DwarfLineToModule handler(module, lines);
+  void StartCompilationUnit(const string& compilation_dir) {
+    compilation_dir_ = compilation_dir;
+  }
+  void ReadProgram(const char *program, uint64 length,
+                   Module *module, std::vector<Module::Line> *lines) {
+    DwarfLineToModule handler(module, compilation_dir_, lines);
     dwarf2reader::LineInfo parser(program, length, byte_reader_, &handler);
     parser.Start();
   }
  private:
+  string compilation_dir_;
   dwarf2reader::ByteReader *byte_reader_;
 };
 
