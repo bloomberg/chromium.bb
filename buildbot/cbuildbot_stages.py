@@ -1453,10 +1453,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   option_name = 'archive'
   _VERSION_NOT_SET = '_not_set_version_'
-  _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-image-archive'
   _BUILDBOT_ARCHIVE = 'buildbot_archive'
   _TRYBOT_ARCHIVE = 'trybot_archive'
-  _IMAGE_SCRIPTS_TAR = 'image_scripts.tar.xz'
   _METADATA_JSON = 'metadata.json'
 
   @classmethod
@@ -1611,10 +1609,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
   def _GetGSUtilArchiveDir(self):
     if self._options.archive_base:
       gs_base = self._options.archive_base
-    elif self._options.remote_trybot:
-      gs_base = self._REMOTE_TRYBOT_ARCHIVE_URL
-    elif self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
-      gs_base = 'gs://chromeos-image-archive'
+    elif (self._options.remote_trybot or
+          self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT):
+      gs_base = constants.DEFAULT_ARCHIVE_BUCKET
     else:
       return self._build_config['gs_path']
 
@@ -1949,11 +1946,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def ArchiveImageScripts():
       """Archive tarball of generated image manipulation scripts."""
-      target = os.path.join(archive_path, self._IMAGE_SCRIPTS_TAR)
+      target = os.path.join(archive_path, constants.IMAGE_SCRIPTS_TAR)
       files = glob.glob(os.path.join(image_dir, '*.sh'))
       files = [os.path.basename(f) for f in files]
       cros_build_lib.CreateTarball(target, image_dir, inputs=files)
-      upload_queue.put([self._IMAGE_SCRIPTS_TAR])
+      upload_queue.put([constants.IMAGE_SCRIPTS_TAR])
 
     def ArchiveStrippedChrome():
       """Generate and upload stripped Chrome package."""
@@ -1985,7 +1982,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
              board, '--package', constants.CHROME_CP]
       cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
-      filename = 'sysroot_%s.tar.xz' % constants.CHROME_CP.replace('/', '_')
+      filename = constants.CHROME_SYSROOT_TAR
       upload_queue.put([filename])
 
     def PushImage():

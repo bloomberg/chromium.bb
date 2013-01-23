@@ -106,6 +106,7 @@ CHROME_REV_LOCAL = 'local'
 VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
                           CHROME_REV_STICKY, CHROME_REV_LOCAL, CHROME_REV_SPEC]
 
+
 # Build types supported.
 
 # TODO(sosa): Deprecate PFQ type.
@@ -237,3 +238,12 @@ CHROME_LKGM_FILE = 'CHROMEOS_LKGM'
 
 # Cache constants.
 COMMON_CACHE = 'common'
+
+# Artifact constants.
+DEFAULT_ARCHIVE_BUCKET = 'gs://chromeos-image-archive'
+CHROME_SYSROOT_TAR = 'sysroot_%s.tar.xz' % CHROME_CP.replace('/', '_')
+BASE_IMAGE_NAME = 'chromiumos_base_image'
+BASE_IMAGE_TAR = '%s.tar.xz' % BASE_IMAGE_NAME
+BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
+IMAGE_SCRIPTS_NAME = 'image_scripts'
+IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME

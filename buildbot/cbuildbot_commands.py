@@ -1107,7 +1107,7 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
     image_dir: Directory containing base image.
     extra_env: Flags to be added to the environment for the new process.
   """
-  image = os.path.join(image_dir, 'chromiumos_base_image.bin')
+  image = os.path.join(image_dir, constants.BASE_IMAGE_BIN)
   cmd = ['./mod_image_for_recovery.sh',
          '--board=%s' % board,
          '--image=%s' % git.ReinterpretPathForChroot(image)]
