@@ -10,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.content.browser.MonthPicker.OnMonthChangedListener;
@@ -75,11 +74,8 @@ public class MonthPickerDialog extends AlertDialog implements OnClickListener,
         setIcon(0);
         setTitle(R.string.month_picker_dialog_title);
 
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.month_picker_dialog, null);
-        setView(view);
-        mMonthPicker = (MonthPicker) view.findViewById(R.id.date_picker);
+        mMonthPicker = new MonthPicker(context);
+        setView(mMonthPicker);
         mMonthPicker.init(year, monthOfYear, this);
     }
 

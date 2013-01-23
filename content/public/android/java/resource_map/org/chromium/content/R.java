@@ -37,7 +37,6 @@ public final class R {
     public static final class layout {
         public static int date_time_picker_dialog;
         public static int month_picker;
-        public static int month_picker_dialog;
     }
     public static final class string {
         public static int accessibility_content_view;
