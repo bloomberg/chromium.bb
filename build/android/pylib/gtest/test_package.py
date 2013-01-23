@@ -122,6 +122,8 @@ class TestPackage(object):
     failed_tests = []
     crashed_tests = []
     timed_out_tests = []
+    overall_fail = False
+    overall_timed_out = False
 
     # Test case statuses.
     re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
@@ -144,6 +146,7 @@ class TestPackage(object):
         if found == 1:  # re_passed
           break
         elif found == 2:  # re_runner_fail
+          overall_fail = True
           break
         else:  # re_run
           if self.dump_debug_info:
@@ -156,6 +159,7 @@ class TestPackage(object):
               ok_tests += [BaseTestResult(full_test_name, p.before)]
           elif found == 2:  # re_crash
             crashed_tests += [BaseTestResult(full_test_name, p.before)]
+            overall_fail = True
             break
           else:  # re_fail
             failed_tests += [BaseTestResult(full_test_name, p.before)]
@@ -165,6 +169,7 @@ class TestPackage(object):
     except pexpect.TIMEOUT:
       logging.error('Test terminated after %d second timeout.',
                     self.timeout)
+      overall_timed_out = True
       if full_test_name:
         timed_out_tests += [BaseTestResult(full_test_name, p.before)]
     finally:
@@ -175,7 +180,10 @@ class TestPackage(object):
       logging.critical(
           'gtest exit code: %d\npexpect.before: %s\npexpect.after: %s',
           ret_code, p.before, p.after)
+      overall_fail = True
 
     # Create TestResults and return
     return TestResults.FromRun(ok=ok_tests, failed=failed_tests,
-                               crashed=crashed_tests, timed_out=timed_out_tests)
+                               crashed=crashed_tests, timed_out=timed_out_tests,
+                               overall_fail=overall_fail,
+                               overall_timed_out=overall_timed_out)

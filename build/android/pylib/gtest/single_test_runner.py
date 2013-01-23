@@ -253,17 +253,17 @@ class SingleTestRunner(BaseTestRunner):
       self.test_results = self.test_package.RunTestsAndListResults()
     except errors.DeviceUnresponsiveError as e:
       # Make sure this device is not attached
-      logging.warning(e)
       if android_commands.IsDeviceAttached(self.device):
         raise e
-      self.test_results.device_exception = device_exception
-    # Calculate unknown test results.
-    finally:
-      # TODO(frankf): Do not break TestResults encapsulation.
-      all_tests = set(self._gtest_filter.split(':'))
-      all_tests_ran = set([t.name for t in self.test_results.GetAll()])
-      unknown_tests = all_tests - all_tests_ran
-      self.test_results.unknown = [BaseTestResult(t, '') for t in unknown_tests]
+
+      # TODO(frankf): We should report these as "skipped" not "failures".
+      # Wrap the results
+      logging.warning(e)
+      failed_tests = []
+      for t in self._gtest_filter.split(':'):
+        failed_tests += [BaseTestResult(t, '')]
+      self.test_results = TestResults.FromRun(
+          failed=failed_tests, device_exception=self.device)
 
     return self.test_results
 

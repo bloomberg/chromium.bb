@@ -47,13 +47,6 @@ class BaseTestSharder(object):
     self.attached_devices = attached_devices
     # Worst case scenario: a device will drop offline per run, so we need
     # to retry until we're out of devices.
-
-    # TODO(frankf): There are two sources of flakiness:
-    # 1. Device flakiness
-    # 2. Test/product flakiness
-    # We should differentiate between these. Otherwise, blindly retrying tests
-    # might mask test/product flakiness. For type 2, we should follow the
-    # general chrome best practices.
     self.retries = len(self.attached_devices)
     self.tests = []
     self.build_type = build_type
@@ -97,8 +90,6 @@ class BaseTestSharder(object):
     self._KillHostForwarder()
     for retry in xrange(self.retries):
       logging.warning('Try %d of %d', retry + 1, self.retries)
-      logging.warning('Attempting to run %d tests: %s'
-                      % (len(self.tests), self.tests))
       self.SetupSharding(self.tests)
       test_runners = []
 
@@ -137,7 +128,9 @@ class BaseTestSharder(object):
       # Retry on devices that didn't have any exception.
       self.attached_devices = list(retry_devices)
 
-      # TODO(frankf): Do not break TestResults encapsulation.
+      # TODO(frankf): Fix the retry logic:
+      # - GetAllBroken() should report all tests not ran.
+      # - Do not break TestResults encapsulation.
       if (retry == self.retries - 1 or
           len(self.attached_devices) == 0):
         all_passed = final_results.ok + test_results.ok
@@ -146,6 +139,10 @@ class BaseTestSharder(object):
         break
       else:
         final_results.ok += test_results.ok
+        final_results.overall_timed_out = (final_results.overall_timed_out or
+                                           test_results.overall_timed_out)
+        final_results.overall_fail = (final_results.overall_fail or
+                                      test_results.overall_fail)
 
         self.tests = []
         for t in test_results.GetAllBroken():
