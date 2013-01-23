@@ -337,6 +337,10 @@ Value* GetFeatureStatus() {
     ListValue* feature_status_list = new ListValue();
 
     for (size_t i = 0; i < kNumFeatures; ++i) {
+      // force_compositing_mode status is part of the compositing status.
+      if (kGpuFeatureInfo[i].name == "force_compositing_mode")
+        continue;
+
       std::string status;
       if (kGpuFeatureInfo[i].disabled) {
         status = "disabled";
