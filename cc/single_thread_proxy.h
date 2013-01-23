@@ -48,7 +48,7 @@ public:
     virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
-    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }
+    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
     virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { }

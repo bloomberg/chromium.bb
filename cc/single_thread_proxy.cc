@@ -59,12 +59,15 @@ bool SingleThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect
     if (!commitAndComposite())
         return false;
 
-    m_layerTreeHostImpl->readback(pixels, rect);
+    {
+        DebugScopedSetImplThread impl(this);
+        m_layerTreeHostImpl->readback(pixels, rect);
 
-    if (m_layerTreeHostImpl->isContextLost())
-        return false;
+        if (m_layerTreeHostImpl->isContextLost())
+            return false;
 
-    m_layerTreeHostImpl->swapBuffers();
+        m_layerTreeHostImpl->swapBuffers();
+    }
     didSwapFrame();
 
     return true;
@@ -329,6 +332,12 @@ bool SingleThreadProxy::isInsideDraw()
     return m_insideDraw;
 }
 
+void SingleThreadProxy::didLoseOutputSurfaceOnImplThread()
+{
+    // Cause a commit so we can notice the lost context.
+    setNeedsCommitOnImplThread();
+}
+
 // Called by the legacy scheduling path (e.g. where render_widget does the scheduling)
 void SingleThreadProxy::compositeImmediately()
 {
@@ -393,10 +402,10 @@ bool SingleThreadProxy::doComposite()
         m_layerTreeHostImpl->prepareToDraw(frame);
         m_layerTreeHostImpl->drawLayers(frame);
         m_layerTreeHostImpl->didDrawAllLayers(frame);
+        m_outputSurfaceLost = m_layerTreeHostImpl->isContextLost();
     }
 
-    if (m_layerTreeHostImpl->isContextLost()) {
-        m_outputSurfaceLost = true;
+    if (m_outputSurfaceLost) {
         m_layerTreeHost->didLoseOutputSurface();
         return false;
     }

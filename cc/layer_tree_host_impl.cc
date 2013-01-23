@@ -839,6 +839,7 @@ void LayerTreeHostImpl::finishAllRendering()
 
 bool LayerTreeHostImpl::isContextLost()
 {
+    DCHECK(m_proxy->isImplThread());
     return m_renderer && m_renderer->isContextLost();
 }
 

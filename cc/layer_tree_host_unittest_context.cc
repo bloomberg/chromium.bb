@@ -47,10 +47,13 @@ class LayerTreeHostContextTest : public ThreadedTest {
       : ThreadedTest(),
         context3d_(NULL),
         times_to_fail_create_(0),
-        times_to_create_and_lose_(0),
+        times_to_fail_initialize_(0),
+        times_to_lose_on_create_(0),
         times_to_lose_during_commit_(0),
-        times_to_repeat_loss_(0),
-        times_to_fail_recreate_(0) {
+        times_to_lose_during_draw_(0),
+        times_to_fail_recreate_(0),
+        times_to_fail_reinitialize_(0),
+        times_to_lose_on_recreate_(0) {
     media::InitializeMediaLibraryForTesting();
   }
 
@@ -73,17 +76,33 @@ class LayerTreeHostContextTest : public ThreadedTest {
     scoped_ptr<FakeWebGraphicsContext3D> context3d = CreateContext3d();
     context3d_ = context3d.get();
 
-    if (times_to_create_and_lose_) {
-      --times_to_create_and_lose_;
+    if (times_to_fail_initialize_) {
+      --times_to_fail_initialize_;
       // Make the context get lost during reinitialization.
       // The number of times MakeCurrent succeeds is not important, and
       // can be changed if needed to make this pass with future changes.
       context3d_->set_times_make_current_succeeds(2);
+    } else if (times_to_lose_on_create_) {
+      --times_to_lose_on_create_;
+      LoseContext();
     }
 
     return FakeOutputSurface::Create3d(
         context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
+
+    virtual bool prepareToDrawOnThread(
+        LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool result)
+        OVERRIDE {
+      EXPECT_TRUE(result);
+      if (!times_to_lose_during_draw_)
+        return result;
+
+      --times_to_lose_during_draw_;
+      if (context3d_)
+        context3d_->set_times_make_current_succeeds(0);
+      return result;
+    }
 
   virtual void commitCompleteOnThread(LayerTreeHostImpl *host_impl) OVERRIDE {
     if (!times_to_lose_during_commit_)
@@ -91,19 +110,24 @@ class LayerTreeHostContextTest : public ThreadedTest {
     --times_to_lose_during_commit_;
     LoseContext();
 
-    times_to_create_and_lose_ = times_to_repeat_loss_;
-    times_to_repeat_loss_ = 0;
     times_to_fail_create_ = times_to_fail_recreate_;
     times_to_fail_recreate_ = 0;
+    times_to_fail_initialize_ = times_to_fail_reinitialize_;
+    times_to_fail_reinitialize_ = 0;
+    times_to_lose_on_create_ = times_to_lose_on_recreate_;
+    times_to_lose_on_recreate_ = 0;
   }
 
  protected:
   FakeWebGraphicsContext3D* context3d_;
   int times_to_fail_create_;
-  int times_to_create_and_lose_;
+  int times_to_fail_initialize_;
+  int times_to_lose_on_create_;
   int times_to_lose_during_commit_;
-  int times_to_repeat_loss_;
+  int times_to_lose_during_draw_;
+  int times_to_fail_reinitialize_;
   int times_to_fail_recreate_;
+  int times_to_lose_on_recreate_;
 };
 
 class LayerTreeHostContextTestLostContextSucceeds :
@@ -112,7 +136,8 @@ class LayerTreeHostContextTestLostContextSucceeds :
   LayerTreeHostContextTestLostContextSucceeds()
       : LayerTreeHostContextTest(),
         test_case_(0),
-        num_losses_(0) {
+        num_losses_(0),
+        recovered_context_(true) {
   }
 
   virtual void beginTest() OVERRIDE {
@@ -122,27 +147,33 @@ class LayerTreeHostContextTestLostContextSucceeds :
   virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
     ++num_losses_;
+    recovered_context_ = true;
   }
 
   virtual void afterTest() OVERRIDE {
-    EXPECT_EQ(3, test_case_);
-    EXPECT_EQ(3, num_losses_);
-  }
-
-  bool SourceFrameHasContextLoss(int source_frame) const {
-    return source_frame % 2 == 1;
+    EXPECT_EQ(8, test_case_);
+    EXPECT_EQ(6 + 10 + 10, num_losses_);
   }
 
   virtual void didCommitAndDrawFrame() OVERRIDE {
     // If the last frame had a context loss, then we'll commit again to
     // recover.
-    if (SourceFrameHasContextLoss(m_layerTreeHost->commitNumber()) - 1)
+    if (!recovered_context_)
+      return;
+    if (times_to_lose_during_commit_)
+      return;
+    if (times_to_lose_during_draw_)
       return;
 
+    recovered_context_ = false;
     if (NextTestCase())
-      m_layerTreeHost->setNeedsCommit();
+      InvalidateAndSetNeedsCommit();
     else
       endTest();
+  }
+
+  virtual void InvalidateAndSetNeedsCommit() {
+    m_layerTreeHost->setNeedsCommit();
   }
 
   bool NextTestCase() {
@@ -150,16 +181,54 @@ class LayerTreeHostContextTestLostContextSucceeds :
       // Losing the context and failing to recreate it (or losing it again
       // immediately) a small number of times should succeed.
       { 1, // times_to_lose_during_commit
-        0, // times_to_repeat_loss
+        0, // times_to_lose_during_draw
+        3, // times_to_fail_reinitialize
         0, // times_to_fail_recreate
+        0, // times_to_lose_on_recreate
       },
-      { 1,
-        3, // times_to_repeat_loss
+      { 0, // times_to_lose_during_commit
+        1, // times_to_lose_during_draw
+        3, // times_to_fail_reinitialize
         0, // times_to_fail_recreate
+        0, // times_to_lose_on_recreate
       },
-      { 1,
-        0, // times_to_repeat_loss
+      { 1, // times_to_lose_during_commit
+        0, // times_to_lose_during_draw
+        0, // times_to_fail_reinitialize
         3, // times_to_fail_recreate
+        0, // times_to_lose_on_recreate
+      },
+      { 0, // times_to_lose_during_commit
+        1, // times_to_lose_during_draw
+        0, // times_to_fail_reinitialize
+        3, // times_to_fail_recreate
+        0, // times_to_lose_on_recreate
+      },
+      { 1, // times_to_lose_during_commit
+        0, // times_to_lose_during_draw
+        0, // times_to_fail_reinitialize
+        0, // times_to_fail_recreate
+        3, // times_to_lose_on_recreate
+      },
+      { 0, // times_to_lose_during_commit
+        1, // times_to_lose_during_draw
+        0, // times_to_fail_reinitialize
+        0, // times_to_fail_recreate
+        3, // times_to_lose_on_recreate
+      },
+      // Losing the context and recreating it any number of times should
+      // succeed.
+      { 10, // times_to_lose_during_commit
+        0, // times_to_lose_during_draw
+        0, // times_to_fail_reinitialize
+        0, // times_to_fail_recreate
+        0, // times_to_lose_on_recreate
+      },
+      { 0, // times_to_lose_during_commit
+        10, // times_to_lose_during_draw
+        0, // times_to_fail_reinitialize
+        0, // times_to_fail_recreate
+        0, // times_to_lose_on_recreate
       },
     };
 
@@ -168,21 +237,27 @@ class LayerTreeHostContextTestLostContextSucceeds :
 
     times_to_lose_during_commit_ =
         kTests[test_case_].times_to_lose_during_commit;
-    times_to_repeat_loss_ = kTests[test_case_].times_to_repeat_loss;
+    times_to_lose_during_draw_ =
+        kTests[test_case_].times_to_lose_during_draw;
+    times_to_fail_reinitialize_ = kTests[test_case_].times_to_fail_reinitialize;
     times_to_fail_recreate_ = kTests[test_case_].times_to_fail_recreate;
+    times_to_lose_on_recreate_ = kTests[test_case_].times_to_lose_on_recreate;
     ++test_case_;
     return true;
   }
 
   struct TestCase {
     int times_to_lose_during_commit;
-    int times_to_repeat_loss;
+    int times_to_lose_during_draw;
+    int times_to_fail_reinitialize;
     int times_to_fail_recreate;
+    int times_to_lose_on_recreate;
   };
 
  private:
   size_t test_case_;
   int num_losses_;
+  bool recovered_context_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds)
@@ -196,22 +271,33 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
   }
 
   virtual void setupTree() OVERRIDE {
-    scoped_refptr<Layer> root_ = Layer::create();
+    root_ = Layer::create();
     root_->setBounds(gfx::Size(10, 10));
     root_->setAnchorPoint(gfx::PointF());
     root_->setIsDrawable(true);
 
-    scoped_refptr<FakeContentLayer> content_ =
-        FakeContentLayer::Create(&client_);
+    content_ = FakeContentLayer::Create(&client_);
     content_->setBounds(gfx::Size(10, 10));
     content_->setAnchorPoint(gfx::PointF());
     content_->setIsDrawable(true);
-    if (use_surface_)
+    if (use_surface_) {
+      // TODO(danakj): Give the surface a filter to test more code when we can
+      // do so without crashing in the shared context creation.
       content_->setForceRenderSurface(true);
+    }
+
     root_->addChild(content_);
 
     m_layerTreeHost->setRootLayer(root_);
     LayerTreeHostContextTest::setupTree();
+  }
+
+  virtual void InvalidateAndSetNeedsCommit() OVERRIDE {
+    // Invalidate the render surface so we don't try to use a cached copy of the
+    // surface.  We want to make sure to test the drawing paths for drawing to
+    // a child surface.
+    content_->setNeedsDisplay();
+    LayerTreeHostContextTestLostContextSucceeds::InvalidateAndSetNeedsCommit();
   }
 
   virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) {
@@ -296,27 +382,45 @@ class LayerTreeHostContextTestLostContextFails :
   int num_commits_;
 };
 
-TEST_F(LayerTreeHostContextTestLostContextFails, RepeatLoss100_SingleThread) {
-  times_to_repeat_loss_ = 100;
+TEST_F(LayerTreeHostContextTestLostContextFails, FailReinitialize100_SingleThread) {
+  times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 0;
   runTest(false);
 }
 
-TEST_F(LayerTreeHostContextTestLostContextFails, RepeatLoss100_MultiThread) {
-  times_to_repeat_loss_ = 100;
+TEST_F(LayerTreeHostContextTestLostContextFails, FailReinitialize100_MultiThread) {
+  times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 0;
   runTest(true);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails, FailRecreate100_SingleThread) {
-  times_to_repeat_loss_ = 0;
+  times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
+  times_to_lose_on_recreate_ = 0;
   runTest(false);
 }
 
 TEST_F(LayerTreeHostContextTestLostContextFails, FailRecreate100_MultiThread) {
-  times_to_repeat_loss_ = 0;
+  times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
+  times_to_lose_on_recreate_ = 0;
+  runTest(true);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails, LoseOnRecreate100_SingleThread) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
+  runTest(false);
+}
+
+TEST_F(LayerTreeHostContextTestLostContextFails, LoseOnRecreate100_MultiThread) {
+  times_to_fail_reinitialize_ = 0;
+  times_to_fail_recreate_ = 0;
+  times_to_lose_on_recreate_ = 100;
   runTest(true);
 }
 
@@ -326,7 +430,7 @@ class LayerTreeHostContextTestFinishAllRenderingAfterLoss :
   virtual void beginTest() OVERRIDE {
     // Lose the context until the compositor gives up on it.
     times_to_lose_during_commit_ = 1;
-    times_to_repeat_loss_ = 10;
+    times_to_fail_reinitialize_ = 10;
     postSetNeedsCommitToMainThread();
   }
 
@@ -544,12 +648,20 @@ class LayerTreeHostContextTestLayersNotified :
         EXPECT_EQ(1u, grandchild->lost_output_surface_count());
         // Lose the context and again during recreate.
         LoseContext();
-        times_to_create_and_lose_ = 1;
+        times_to_lose_on_create_ = 1;
         break;
       case 3:
         EXPECT_EQ(3u, root->lost_output_surface_count());
         EXPECT_EQ(3u, child->lost_output_surface_count());
         EXPECT_EQ(3u, grandchild->lost_output_surface_count());
+        // Lose the context and again during reinitialization.
+        LoseContext();
+        times_to_fail_initialize_ = 1;
+        break;
+      case 4:
+        EXPECT_EQ(5u, root->lost_output_surface_count());
+        EXPECT_EQ(5u, child->lost_output_surface_count());
+        EXPECT_EQ(5u, grandchild->lost_output_surface_count());
         endTest();
         break;
       default:

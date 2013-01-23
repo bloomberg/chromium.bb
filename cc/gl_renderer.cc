@@ -643,7 +643,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         GLC(context(), context()->uniform2f(shaderTexScaleLocation,
                                             tex_scale_x, tex_scale_y));
     } else {
-      NOTREACHED();
+        DCHECK(isContextLost());
     }
 
     if (shaderMaskSamplerLocation != -1) {
@@ -1513,7 +1513,7 @@ bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResou
     unsigned textureId = m_currentFramebufferLock->textureId();
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0));
 
-    DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE || isContextLost());
 
     initializeMatrices(frame, framebufferRect, false);
     setDrawViewportSize(framebufferRect.size());

@@ -141,6 +141,7 @@ private:
     ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapInternal(bool forcedDraw);
     void forceSerializeOnSwapBuffersOnImplThread(CompletionEvent*);
     void setNeedsForcedCommitOnImplThread();
+    void checkOutputSurfaceStatusOnImplThread();
     void commitPendingOnImplThreadForTesting(CommitPendingRequest* request);
     void capturePictureOnImplThread(CompletionEvent*, skia::RefPtr<SkPicture>*);
     void renewTreePriorityOnImplThread();

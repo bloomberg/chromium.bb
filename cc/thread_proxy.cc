@@ -305,6 +305,15 @@ void ThreadProxy::didLoseOutputSurfaceOnImplThread()
 {
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::didLoseOutputSurfaceOnImplThread");
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::checkOutputSurfaceStatusOnImplThread, m_implThreadWeakPtr));
+}
+
+void ThreadProxy::checkOutputSurfaceStatusOnImplThread()
+{
+    DCHECK(isImplThread());
+    TRACE_EVENT0("cc", "ThreadProxy::checkOutputSurfaceStatusOnImplThread");
+    if (!m_layerTreeHostImpl->isContextLost())
+        return;
     m_schedulerOnImplThread->didLoseOutputSurface();
 }
 
@@ -846,6 +855,9 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
         m_nextFrameIsNewlyCommittedFrameOnImplThread = false;
         Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::didCommitAndDrawFrame, m_mainThreadWeakPtr));
     }
+
+    if (drawFrame)
+        checkOutputSurfaceStatusOnImplThread();
 
     return result;
 }
