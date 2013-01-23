@@ -53,8 +53,6 @@ using content::DownloadManager;
 using content::URLRequestMockHTTPJob;
 using content::WebContents;
 
-namespace {
-
 // Waits for an item record in the downloads database to match |filter|. See
 // DownloadStoredProperly() below for an example filter.
 class DownloadPersistedObserver : public DownloadHistory::Observer {
@@ -242,37 +240,6 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(DownloadItemCreatedObserver);
 };
 
-class SavePackageFinishedObserver : public content::DownloadManager::Observer {
- public:
-  SavePackageFinishedObserver(content::DownloadManager* manager,
-                              const base::Closure& callback)
-      : download_manager_(manager),
-        callback_(callback) {
-    download_manager_->AddObserver(this);
-  }
-
-  virtual ~SavePackageFinishedObserver() {
-    if (download_manager_)
-      download_manager_->RemoveObserver(this);
-  }
-
-  // DownloadManager::Observer:
-  virtual void OnSavePackageSuccessfullyFinished(
-      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE {
-    callback_.Run();
-  }
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE {
-    download_manager_->RemoveObserver(this);
-    download_manager_ = NULL;
-  }
-
- private:
-  content::DownloadManager* download_manager_;
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);
-};
-
 class SavePageBrowserTest : public InProcessBrowserTest {
  public:
   SavePageBrowserTest() {}
@@ -316,9 +283,14 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   // Returns true if and when there was a single download created, and its url
   // is |expected_url|.
-  bool VerifySavePackageExpectations(
+  bool WaitForSavePackageToFinish(
       Browser* browser,
       const GURL& expected_url) const {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        content::NotificationService::AllSources());
+    observer.Wait();
+
     // Generally, there should only be one download item created
     // in all of these tests.  If it's already here, grab it; if not,
     // wait for it to show up.
@@ -335,7 +307,9 @@ class SavePageBrowserTest : public InProcessBrowserTest {
       return false;
     DownloadItem* download_item(items[0]);
 
-    return (expected_url == download_item->GetOriginalUrl());
+    return ((expected_url == download_item->GetOriginalUrl()) &&
+            (expected_url == content::Details<DownloadItem>(
+                observer.details()).ptr()->GetOriginalUrl()));
   }
 
   // Note on synchronization:
@@ -384,15 +358,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 1,
       DownloadItem::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(full_file_name, dir,
                                         content::SAVE_PAGE_TYPE_AS_ONLY_HTML));
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(browser(), url));
   persisted.WaitForPersisted();
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -486,15 +454,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, actual_page_url, full_file_name, 1,
       DownloadItem::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(full_file_name, dir,
                                         content::SAVE_PAGE_TYPE_AS_ONLY_HTML));
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(browser(), actual_page_url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(browser(), actual_page_url));
   persisted.WaitForPersisted();
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
@@ -520,15 +482,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
       DownloadItem::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(
       full_file_name, dir, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(browser(), url));
   persisted.WaitForPersisted();
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
@@ -574,16 +530,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
   // Save the page before completion.
   FilePath full_file_name, dir;
   GetDestinationPaths("b", &full_file_name, &dir);
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(incognito->profile()),
-      loop_runner->QuitClosure());
   ASSERT_TRUE(GetCurrentTab(incognito)->SavePage(
       full_file_name, dir, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
 
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(incognito, url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(incognito, url));
 
   // Confirm download shelf is visible.
   EXPECT_TRUE(incognito->window()->IsDownloadShelfVisible());
@@ -616,16 +566,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
       DownloadItem::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(
       full_file_name, dir, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
 
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(browser(), url));
   persisted.WaitForPersisted();
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
@@ -657,16 +601,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 1,
       DownloadItem::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(full_file_name, dir,
                                         content::SAVE_PAGE_TYPE_AS_ONLY_HTML));
 
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(browser(), url));
   persisted.WaitForPersisted();
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
@@ -707,13 +645,11 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   SavePackageFilePicker::SetShouldPromptUser(false);
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
+  content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        content::NotificationService::AllSources());
   chrome::SavePage(browser());
-  loop_runner->Run();
+  observer.Wait();
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
 
@@ -752,14 +688,8 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, -1,
       DownloadItem::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
   chrome::SavePage(browser());
-  loop_runner->Run();
-  ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
+  ASSERT_TRUE(WaitForSavePackageToFinish(browser(), url));
   persisted.WaitForPersisted();
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -767,6 +697,3 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
 }
-
-}  // namespace
-

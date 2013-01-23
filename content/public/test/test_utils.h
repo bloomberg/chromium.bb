@@ -48,8 +48,7 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
  public:
   MessageLoopRunner();
 
-  // Run the current MessageLoop unless the quit closure
-  // has already been called.
+  // Run the current MessageLoop.
   void Run();
 
   // Quit the matching call to Run (nested MessageLoops are unaffected).
@@ -65,12 +64,6 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
  private:
   friend class base::RefCounted<MessageLoopRunner>;
   ~MessageLoopRunner();
-
-  // True when the message loop is running.
-  bool loop_running_;
-
-  // True after closure returned by |QuitClosure| has been called.
-  bool quit_closure_called_;
 
   base::RunLoop run_loop_;
 

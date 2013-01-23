@@ -1392,7 +1392,16 @@ void SavePackage::FinalizeDownloadEntry() {
   DCHECK(download_);
   DCHECK(download_manager_);
 
-  download_manager_->OnSavePackageSuccessfullyFinished(download_);
+  NotificationService::current()->Notify(
+      NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+      // We use the DownloadManager as the source as that's a
+      // central SavePackage related location that observers can
+      // get to if they want to wait for notifications for a
+      // particular BrowserContext.  Alternatively, we could make
+      // it come from the WebContents, which would be more specific
+      // but less useful to (current) customers.
+      Source<DownloadManager>(download_manager_),
+      Details<DownloadItem>(download_));
   StopObservation();
 }
 

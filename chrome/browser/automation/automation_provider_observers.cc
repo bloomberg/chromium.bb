@@ -1707,31 +1707,31 @@ void OmniboxAcceptNotificationObserver::Observe(
 }
 
 SavePackageNotificationObserver::SavePackageNotificationObserver(
-    content::DownloadManager* download_manager,
+    DownloadManager* download_manager,
     AutomationProvider* automation,
     IPC::Message* reply_message)
-    : download_manager_(download_manager),
-      automation_(automation->AsWeakPtr()),
+    : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
-  download_manager_->AddObserver(this);
+  content::Source<DownloadManager> source(download_manager);
+  registrar_.Add(this, content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+                 source);
 }
 
-SavePackageNotificationObserver::~SavePackageNotificationObserver() {
-  download_manager_->RemoveObserver(this);
-}
+SavePackageNotificationObserver::~SavePackageNotificationObserver() {}
 
-void SavePackageNotificationObserver::OnSavePackageSuccessfullyFinished(
-    content::DownloadManager* manager, content::DownloadItem* item) {
-  if (automation_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+void SavePackageNotificationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED) {
+    if (automation_) {
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
+    }
+    delete this;
+  } else {
+    NOTREACHED();
   }
-  delete this;
-}
-
-void SavePackageNotificationObserver::ManagerGoingDown(
-    content::DownloadManager* manager) {
-  delete this;
 }
 
 PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
