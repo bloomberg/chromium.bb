@@ -96,6 +96,10 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
     return launcher_view_test_.get();
   }
 
+  Launcher* LauncherForSecondaryDisplay() {
+    return Launcher::ForWindow(Shell::GetAllRootWindows()[1]);
+  }
+
  private:
   scoped_ptr<TestLauncherIconObserver> observer_;
   scoped_ptr<LauncherViewTestAPI> launcher_view_test_;
@@ -125,6 +129,39 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
   launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
+}
+
+// Make sure creating/deleting an window on one displays notifies a
+// launcher on external display as well as one on primary.
+TEST_F(LauncherViewIconObserverTest, AddRemoveWithMultipleDisplays) {
+  UpdateDisplay("400x400,400x400");
+  TestLauncherIconObserver second_observer(LauncherForSecondaryDisplay());
+
+  ash::test::TestLauncherDelegate* launcher_delegate =
+      ash::test::TestLauncherDelegate::instance();
+  ASSERT_TRUE(launcher_delegate);
+
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+
+  scoped_ptr<views::Widget> widget(new views::Widget());
+  widget->Init(params);
+  launcher_delegate->AddLauncherItem(widget->GetNativeWindow());
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(observer()->change_notified());
+  EXPECT_TRUE(second_observer.change_notified());
+  observer()->Reset();
+  second_observer.Reset();
+
+  widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(observer()->change_notified());
+  EXPECT_TRUE(second_observer.change_notified());
+
+  observer()->Reset();
+  second_observer.Reset();
 }
 
 TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
