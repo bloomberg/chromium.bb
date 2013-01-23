@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
@@ -117,7 +118,8 @@ ShellWindow::ShellWindow(Profile* profile,
       window_type_(WINDOW_TYPE_DEFAULT),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
 }
 
 void ShellWindow::Init(const GURL& url,
@@ -440,11 +442,8 @@ void ShellWindow::UpdateDraggableRegions(
   native_app_window_->UpdateDraggableRegions(regions);
 }
 
-void ShellWindow::OnImageLoaded(const gfx::Image& image,
-                                const std::string& extension_id,
-                                int index) {
+void ShellWindow::OnImageLoaded(const gfx::Image& image) {
   UpdateAppIcon(image);
-  app_icon_loader_.reset();
 }
 
 void ShellWindow::DidDownloadFavicon(int id,
@@ -475,13 +474,18 @@ void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
 }
 
 void ShellWindow::UpdateExtensionAppIcon() {
-  app_icon_loader_.reset(new ImageLoadingTracker(this));
-  app_icon_loader_->LoadImage(
+  // Ensure previously enqueued callbacks are ignored.
+  image_loader_ptr_factory_.InvalidateWeakPtrs();
+
+  // Enqueue OnImageLoaded callback.
+  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile());
+  loader->LoadImageAsync(
       extension(),
       extension()->GetIconResource(kPreferredIconSize,
                                    ExtensionIconSet::MATCH_BIGGER),
       gfx::Size(kPreferredIconSize, kPreferredIconSize),
-      ImageLoadingTracker::CACHE);
+      base::Bind(&ShellWindow::OnImageLoaded,
+                 image_loader_ptr_factory_.GetWeakPtr()));
 }
 
 void ShellWindow::CloseContents(WebContents* contents) {

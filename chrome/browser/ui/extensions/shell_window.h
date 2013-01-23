@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 #include "content/public/browser/notification_observer.h"
@@ -41,7 +40,6 @@ class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
                     public content::WebContentsObserver,
                     public ExtensionFunctionDispatcher::Delegate,
-                    public ImageLoadingTracker::Observer,
                     public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   enum WindowType {
@@ -202,10 +200,7 @@ class ShellWindow : public content::NotificationObserver,
   // Load the app's image, firing a load state change when loaded.
   void UpdateExtensionAppIcon();
 
-  // ImageLoadingTracker::Observer implementation.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
+  void OnImageLoaded(const gfx::Image& image);
 
   // extensions::ExtensionKeybindingRegistry::Delegate implementation.
   virtual extensions::ActiveTabPermissionGranter*
@@ -237,9 +232,6 @@ class ShellWindow : public content::NotificationObserver,
   // Icon shown in the task bar.
   gfx::Image app_icon_;
 
-  // Used for loading app_icon_ from the extension.
-  scoped_ptr<ImageLoadingTracker> app_icon_loader_;
-
   // Icon URL to be used for setting the app icon. If not empty, app_icon_ will
   // be fetched and set using this URL.
   GURL app_icon_url_;
@@ -247,6 +239,8 @@ class ShellWindow : public content::NotificationObserver,
   scoped_ptr<NativeAppWindow> native_app_window_;
 
   base::WeakPtrFactory<ShellWindow> weak_ptr_factory_;
+
+  base::WeakPtrFactory<ShellWindow> image_loader_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };
