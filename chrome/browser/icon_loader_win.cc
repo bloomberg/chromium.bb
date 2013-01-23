@@ -40,7 +40,7 @@ void IconLoader::ReadIcon() {
     scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(
         file_info.hIcon));
     if (bitmap.get()) {
-      gfx::ImageSkia image_skia(*bitmap);
+      gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(*bitmap);
       image_skia.MakeThreadSafe();
       image_.reset(new gfx::Image(image_skia));
       DestroyIcon(file_info.hIcon);

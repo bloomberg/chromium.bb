@@ -100,7 +100,7 @@ bool CreateSiteSpecificLogo(const SkBitmap& bitmap,
   // the caption.
   int left = (kLogoWidth - bitmap.width()) / 2;
   int top = (kLogoHeight - kCaptionHeight - bitmap.height()) / 2;
-  canvas.DrawImageInt(gfx::ImageSkia(bitmap), left, top);
+  canvas.DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), left, top);
 
   SkBitmap logo_bitmap = canvas.ExtractImageRep().sk_bitmap();
   std::vector<unsigned char> logo_png;

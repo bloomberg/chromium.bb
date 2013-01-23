@@ -17,7 +17,8 @@ class UiGfxImageTest : public CocoaTest {
 };
 
 TEST_F(UiGfxImageTest, CheckColor) {
-  gfx::Image image(gfx::test::CreateBitmap(25, 25));
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(
+      gfx::test::CreateBitmap(25, 25));
   NSImage* ns_image = image.ToNSImage();
   [ns_image lockFocus];
   NSColor* color = NSReadPixel(NSMakePoint(10, 10));
@@ -43,7 +44,8 @@ TEST_F(UiGfxImageTest, ImageView) {
   [[test_window() contentView] addSubview:image_view];
   [test_window() orderFront:nil];
 
-  gfx::Image image(gfx::test::CreateBitmap(25, 25));
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(
+      gfx::test::CreateBitmap(25, 25));
   [image_view setImage:image.ToNSImage()];
 }
 

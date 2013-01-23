@@ -18,7 +18,7 @@ Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
                                  size_t input_size) {
   scoped_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
   if (bitmap.get())
-    return Image(*bitmap);
+    return Image::CreateFrom1xBitmap(*bitmap);
 
   return Image();
 }

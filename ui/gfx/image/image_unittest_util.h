@@ -22,12 +22,17 @@ typedef NSImage* PlatformImage;
 #elif defined(TOOLKIT_GTK)
 typedef GdkPixbuf* PlatformImage;
 #else
-typedef const SkBitmap PlatformImage;
+typedef gfx::ImageSkia PlatformImage;
 #endif
 
 void SetSupportedScaleFactorsTo1xAnd2x();
 
+// Create a bitmap of |width|x|height|.
 const SkBitmap CreateBitmap(int width, int height);
+
+// Creates an ImageSkia of |width|x|height| DIP with bitmap data for an
+// arbitrary scale factor.
+gfx::ImageSkia CreateImageSkia(int width, int height);
 
 // Returns PNG encoded bytes for a bitmap of |edge_size|x|edge_size|.
 scoped_refptr<base::RefCountedMemory> CreatePNGBytes(int edge_size);

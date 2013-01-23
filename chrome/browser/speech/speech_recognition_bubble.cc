@@ -81,7 +81,7 @@ SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
   empty_spinner.allocPixels();
   empty_spinner.eraseRGB(255, 255, 255);
   // |empty_spinner| has solid color. Pixel doubling a solid color is ok.
-  warm_up_.push_back(gfx::ImageSkia(empty_spinner));
+  warm_up_.push_back(gfx::ImageSkia::CreateFrom1xBitmap(empty_spinner));
 
   for (gfx::Rect src_rect(frame_size, frame_size);
        src_rect.x() < spinner_image->width();

@@ -72,11 +72,6 @@ class UI_EXPORT Image {
   // representation.
   explicit Image(const ImageSkia& image);
 
-  // Creates a new image by copying the bitmap for use as the default
-  // representation.
-  // TODO(pkotwicz): Get rid of this constructor.
-  explicit Image(const SkBitmap& bitmap);
-
 #if defined(TOOLKIT_GTK)
   // Does not increase |pixbuf|'s reference count; expects to take ownership.
   explicit Image(GdkPixbuf* pixbuf);
@@ -99,6 +94,11 @@ class UI_EXPORT Image {
   // Deletes the image and, if the only owner of the storage, all of its cached
   // representations.
   ~Image();
+
+  // Creates an image from the passed in 1x bitmap.
+  // WARNING: The resulting image will be pixelated when painted on a high
+  // density display.
+  static Image CreateFrom1xBitmap(const SkBitmap& bitmap);
 
   // Creates an image from the PNG encoded input.
   // For example (from an std::vector):

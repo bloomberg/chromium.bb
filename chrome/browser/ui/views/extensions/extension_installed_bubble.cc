@@ -178,7 +178,7 @@ class InstalledBubbleContent : public views::View,
       size = gfx::Size(kIconSize, kIconSize);
     icon_ = new views::ImageView();
     icon_->SetImageSize(size);
-    icon_->SetImage(gfx::ImageSkia(*icon));
+    icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*icon));
     AddChildView(icon_);
 
     // Add the heading (for all flavors).

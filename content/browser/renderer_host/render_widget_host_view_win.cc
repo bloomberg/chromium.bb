@@ -1320,7 +1320,7 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
 
     gfx::Rect dc_rect(dc->m_ps.rcPaint);
     // TODO(pkotwicz): Fix |background_| such that it is an ImageSkia.
-    canvas.TileImageInt(gfx::ImageSkia(background_),
+    canvas.TileImageInt(gfx::ImageSkia::CreateFrom1xBitmap(background_),
                         0, 0, dc_rect.width(), dc_rect.height());
 
     skia::DrawToNativeContext(canvas.sk_canvas(), *dc, dirty_area.x(),

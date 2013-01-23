@@ -22,7 +22,7 @@ class TestTable : public TableRowNSImageCache::Table {
     return rows_.size();
   }
   virtual gfx::ImageSkia GetIcon(int index) const {
-    return gfx::ImageSkia(rows_[index]);
+    return gfx::ImageSkia::CreateFrom1xBitmap(rows_[index]);
   }
 
  private:

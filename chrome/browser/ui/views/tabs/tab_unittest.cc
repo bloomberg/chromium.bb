@@ -116,7 +116,7 @@ TEST_F(TabTest, IconDominantColor) {
 
   // Update the tab's renderer data with the red icon.
   TabRendererData red_data;
-  red_data.favicon = gfx::ImageSkia(red_bitmap);
+  red_data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(red_bitmap);
   tab.SetData(red_data);
 
   // Since we're not using immersive style yet, the color is not updated.
@@ -140,7 +140,7 @@ TEST_F(TabTest, IconDominantColor) {
   green_bitmap.allocPixels();
   green_bitmap.eraseColor(SK_ColorGREEN);
   TabRendererData green_data;
-  green_data.favicon = gfx::ImageSkia(green_bitmap);
+  green_data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(green_bitmap);
   tab.SetData(green_data);
 
   // Icon updates automatically since we're in immersive mode and the image

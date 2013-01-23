@@ -175,7 +175,7 @@ class TopSitesTest : public HistoryUnitTestBase {
     thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
     thumbnail.allocPixels();
     thumbnail.eraseColor(color);
-    return gfx::Image(thumbnail);  // adds ref.
+    return gfx::Image::CreateFrom1xBitmap(thumbnail);  // adds ref.
   }
 
   // Forces top sites to load top sites from history, then recreates top sites.

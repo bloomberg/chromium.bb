@@ -123,7 +123,8 @@ string16 TableExample::GetText(int row, int column_id) {
 }
 
 gfx::ImageSkia TableExample::GetIcon(int row) {
-  return row % 2 ? gfx::ImageSkia(icon1_) : gfx::ImageSkia(icon2_);
+  SkBitmap row_icon = row % 2 ? icon1_ : icon2_;
+  return gfx::ImageSkia::CreateFrom1xBitmap(row_icon);
 }
 
 void TableExample::SetObserver(ui::TableModelObserver* observer) {}

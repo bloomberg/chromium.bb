@@ -642,7 +642,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case EXTERNAL_INSTALL_PROMPT:
     case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
-      prompt_.set_icon(gfx::Image(icon_));
+      prompt_.set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
       break;
     }
     case BUNDLE_INSTALL_PROMPT: {

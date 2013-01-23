@@ -139,7 +139,7 @@ ImageSkia* GetErrorImageSkia() {
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   bitmap.allocPixels();
   bitmap.eraseRGB(0xff, 0, 0);
-  return new gfx::ImageSkia(bitmap);
+  return new gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
 }
 
 ImageSkia* ImageSkiaFromPNG(
@@ -436,15 +436,6 @@ Image::Image(const ImageSkia& image) {
   }
 }
 
-Image::Image(const SkBitmap& bitmap) {
-  if (!bitmap.empty()) {
-    storage_ = new internal::ImageStorage(Image::kImageRepSkia);
-    internal::ImageRepSkia* rep =
-        new internal::ImageRepSkia(new ImageSkia(bitmap));
-    AddRepresentation(rep);
-  }
-}
-
 #if defined(TOOLKIT_GTK)
 Image::Image(GdkPixbuf* pixbuf) {
   if (pixbuf) {
@@ -482,6 +473,11 @@ Image& Image::operator=(const Image& other) {
 }
 
 Image::~Image() {
+}
+
+// static
+Image Image::CreateFrom1xBitmap(const SkBitmap& bitmap) {
+  return gfx::Image(ImageSkia::CreateFrom1xBitmap(bitmap));
 }
 
 // static

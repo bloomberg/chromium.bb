@@ -313,7 +313,8 @@ gfx::Image* Gtk2UI::GetThemeImageNamed(int id) const {
     return it->second;
 
   if (/*use_gtk_ && */ IsOverridableImage(id)) {
-    gfx::Image* image = new gfx::Image(GenerateGtkThemeBitmap(id));
+    gfx::Image* image = new gfx::Image(
+        gfx::ImageSkia::CreateFrom1xBitmap(GenerateGtkThemeBitmap(id)));
     gtk_images_[id] = image;
     return image;
   }

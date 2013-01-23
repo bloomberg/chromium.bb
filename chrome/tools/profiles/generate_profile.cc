@@ -205,7 +205,7 @@ void InsertURLBatch(Profile* profile,
     if (types & TOP_SITES && top_sites) {
       const SkBitmap& bitmap = (RandomInt(0, 2) == 0) ? *google_bitmap :
                                                         *weewar_bitmap;
-      gfx::Image image(bitmap);
+      gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
       top_sites->SetPageThumbnail(url, image, score);
     }
 

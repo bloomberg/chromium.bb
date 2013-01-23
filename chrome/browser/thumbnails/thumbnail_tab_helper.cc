@@ -55,7 +55,7 @@ namespace {
 // Feed the constructed thumbnail to the thumbnail service.
 void UpdateThumbnail(const ThumbnailingContext& context,
                      const SkBitmap& thumbnail) {
-  gfx::Image image(thumbnail);
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(thumbnail);
   context.service->SetPageThumbnail(context, image);
   VLOG(1) << "Thumbnail taken for " << context.url << ": "
           << context.score.ToString();

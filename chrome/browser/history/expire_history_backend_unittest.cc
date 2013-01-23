@@ -231,7 +231,7 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   // Thumbnails for each URL. |thumbnail| takes ownership of decoded SkBitmap.
   scoped_ptr<SkBitmap> thumbnail_bitmap(
       gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
-  gfx::Image thumbnail(*thumbnail_bitmap);
+  gfx::Image thumbnail = gfx::Image::CreateFrom1xBitmap(*thumbnail_bitmap);
   ThumbnailScore score(0.25, true, true, Time::Now());
 
   Time time;

@@ -200,7 +200,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
       AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(
       &profile, Profile::EXPLICIT_ACCESS)->SetFavicons(
-          url1, url1_favicon, history::FAVICON, gfx::Image(bitmap));
+          url1, url1_favicon, history::FAVICON,
+          gfx::Image::CreateFrom1xBitmap(bitmap));
   message_loop.RunUntilIdle();
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
   model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);

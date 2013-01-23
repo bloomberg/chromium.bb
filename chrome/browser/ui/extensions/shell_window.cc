@@ -392,7 +392,7 @@ gfx::Image* ShellWindow::GetAppListIcon() {
         *app_icon_.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
         extension_misc::EXTENSION_ICON_SMALLISH,
         extension_misc::EXTENSION_ICON_SMALLISH);
-  return new gfx::Image(bmp);
+  return new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp));
 }
 
 NativeAppWindow* ShellWindow::GetBaseWindow() {
@@ -462,7 +462,7 @@ void ShellWindow::DidDownloadFavicon(int id,
     largest_index = i;
   }
   const SkBitmap& largest = bitmaps[largest_index];
-  UpdateAppIcon(gfx::Image(largest));
+  UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
 }
 
 void ShellWindow::UpdateAppIcon(const gfx::Image& image) {

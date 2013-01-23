@@ -277,9 +277,12 @@ void BrowserLauncherItemController::UpdateLauncher(content::WebContents* tab) {
     // Update the icon for extension panels.
     extensions::TabHelper* extensions_tab_helper =
         extensions::TabHelper::FromWebContents(tab);
-    gfx::ImageSkia new_image = gfx::ImageSkia(favicon_loader_->GetFavicon());
-    if (new_image.isNull() && extensions_tab_helper->GetExtensionAppIcon())
-      new_image = gfx::ImageSkia(*extensions_tab_helper->GetExtensionAppIcon());
+    gfx::ImageSkia new_image = gfx::ImageSkia::CreateFrom1xBitmap(
+        favicon_loader_->GetFavicon());
+    if (new_image.isNull() && extensions_tab_helper->GetExtensionAppIcon()) {
+      new_image = gfx::ImageSkia::CreateFrom1xBitmap(
+          *extensions_tab_helper->GetExtensionAppIcon());
+    }
     // Only update the icon if we have a new image, or none has been set yet.
     // This avoids flickering to an empty image when a pinned app is opened.
     if (!new_image.isNull())

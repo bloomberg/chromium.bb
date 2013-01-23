@@ -167,7 +167,7 @@ void AppShortcutManager::OnImageLoaded(const gfx::Image& image) {
     SkBitmap bmp = skia::ImageOperations::Resize(
           *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
           size, size);
-    shortcut_info_.favicon = gfx::Image(bmp);
+    shortcut_info_.favicon = gfx::Image::CreateFrom1xBitmap(bmp);
   } else {
     shortcut_info_.favicon = image;
   }

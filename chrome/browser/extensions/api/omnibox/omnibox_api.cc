@@ -213,11 +213,13 @@ void OmniboxAPI::Observe(int type,
 }
 
 gfx::Image OmniboxAPI::GetOmniboxIcon(const std::string& extension_id) {
-  return gfx::Image(omnibox_icon_manager_.GetIcon(extension_id));
+  return gfx::Image::CreateFrom1xBitmap(
+      omnibox_icon_manager_.GetIcon(extension_id));
 }
 
 gfx::Image OmniboxAPI::GetOmniboxPopupIcon(const std::string& extension_id) {
-  return gfx::Image(omnibox_popup_icon_manager_.GetIcon(extension_id));
+  return gfx::Image::CreateFrom1xBitmap(
+      omnibox_popup_icon_manager_.GetIcon(extension_id));
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {

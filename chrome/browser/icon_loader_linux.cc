@@ -48,7 +48,7 @@ void IconLoader::ReadIcon() {
     if (!bitmap.empty()) {
       DCHECK_EQ(size_pixels, bitmap.width());
       DCHECK_EQ(size_pixels, bitmap.height());
-      gfx::ImageSkia image_skia(bitmap);
+      gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
       image_skia.MakeThreadSafe();
       image_.reset(new gfx::Image(image_skia));
     } else {

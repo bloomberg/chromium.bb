@@ -16,7 +16,7 @@ gfx::ImageSkia CreateTestImage(int width, int height) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   bitmap.allocPixels();
-  return gfx::ImageSkia(bitmap);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
 }  // namespace

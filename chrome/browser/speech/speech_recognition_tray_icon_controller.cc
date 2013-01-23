@@ -129,7 +129,7 @@ void SpeechRecognitionTrayIconController::SetVUMeterVolume(float volume) {
   canvas.drawBitmap(*g_images.Get().mic_empty()->bitmap(), 0, 0);
   DrawVolume(&canvas, *g_images.Get().mic_full(), volume);
 
-  tray_icon_->SetImage(gfx::ImageSkia(*mic_image_.get()));
+  tray_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*mic_image_.get()));
 }
 
 void SpeechRecognitionTrayIconController::Initialize() {

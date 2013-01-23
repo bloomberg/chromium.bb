@@ -359,7 +359,7 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   if (!large_bitmap.empty()) {
     CHECK_EQ(256, large_bitmap.width());
     CHECK_EQ(256, large_bitmap.height());
-    png_bytes = gfx::Image(large_bitmap).As1xPNGBytes();
+    png_bytes = gfx::Image::CreateFrom1xBitmap(large_bitmap).As1xPNGBytes();
   }
 
   // We start by creating the file.

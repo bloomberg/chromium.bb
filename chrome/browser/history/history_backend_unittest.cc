@@ -510,7 +510,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   scoped_ptr<SkBitmap> google_bitmap(
       gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
 
-  gfx::Image google_image(*google_bitmap);
+  gfx::Image google_image = gfx::Image::CreateFrom1xBitmap(*google_bitmap);
 
   Time time;
   GURL gurl;
@@ -518,7 +518,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
                                             score, time);
   scoped_ptr<SkBitmap> weewar_bitmap(
      gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
-  gfx::Image weewar_image(*weewar_bitmap);
+  gfx::Image weewar_image = gfx::Image::CreateFrom1xBitmap(*weewar_bitmap);
   backend_->thumbnail_db_->SetPageThumbnail(gurl, row2_id, &weewar_image,
                                             score, time);
 

@@ -44,7 +44,8 @@ TEST(UiGfxImageTest, GtkImageView) {
   GtkWidget* fixed = gtk_fixed_new();
   gtk_container_add(GTK_CONTAINER(window), fixed);
 
-  gfx::Image image(gfx::test::CreateBitmap(25, 25));
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(
+      gfx::test::CreateBitmap(25, 25));
   GtkWidget* image_view = gtk_image_new_from_pixbuf(image.ToGdkPixbuf());
   gtk_fixed_put(GTK_FIXED(fixed), image_view, 10, 10);
   gtk_widget_set_size_request(image_view, 25, 25);

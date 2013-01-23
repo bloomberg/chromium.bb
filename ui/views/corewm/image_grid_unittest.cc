@@ -6,6 +6,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/corewm/image_grid.h"
 
 namespace views {
@@ -17,7 +18,7 @@ namespace {
 gfx::Image* CreateImage(const gfx::Size& size) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  return new gfx::Image(bitmap);
+  return new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 }
 
 }  // namespace

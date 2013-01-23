@@ -102,7 +102,7 @@ void BalloonViewAsh::ImageDownload::Downloaded(
     const std::vector<SkBitmap>& bitmaps) {
   if (bitmaps.empty())
     return;
-  gfx::ImageSkia image(bitmaps[0]);
+  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmaps[0]);
   callback_.Run(image);
 }
 

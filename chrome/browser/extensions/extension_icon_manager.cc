@@ -34,7 +34,7 @@ static SkBitmap ApplyPadding(const SkBitmap& source,
                       ui::SCALE_FACTOR_100P,
                       false));
   result->DrawImageInt(
-      gfx::ImageSkia(source),
+      gfx::ImageSkia::CreateFrom1xBitmap(source),
       0, 0, source.width(), source.height(),
       padding.left(), padding.top(), source.width(), source.height(),
       false);

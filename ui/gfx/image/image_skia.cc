@@ -204,12 +204,6 @@ ImageSkia::ImageSkia(ImageSkiaSource* source, ui::ScaleFactor scale_factor)
   DetachStorageFromThread();
 }
 
-ImageSkia::ImageSkia(const SkBitmap& bitmap) {
-  Init(ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
-  // No other thread has reference to this, so it's safe to detach the thread.
-  DetachStorageFromThread();
-}
-
 ImageSkia::ImageSkia(const ImageSkiaRep& image_rep) {
   Init(image_rep);
   // No other thread has reference to this, so it's safe to detach the thread.
@@ -225,6 +219,11 @@ ImageSkia& ImageSkia::operator=(const ImageSkia& other) {
 }
 
 ImageSkia::~ImageSkia() {
+}
+
+// static
+ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
+  return ImageSkia(ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
 }
 
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {

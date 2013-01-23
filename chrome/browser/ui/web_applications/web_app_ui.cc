@@ -179,7 +179,8 @@ void UpdateShortcutWorker::DidDownloadFavicon(
 
   if (!bitmaps.empty() && !bitmaps[closest_index].isNull()) {
     // Update icon with download image and update shortcut.
-    shortcut_info_.favicon = gfx::Image(bitmaps[closest_index]);
+    shortcut_info_.favicon =
+        gfx::Image::CreateFrom1xBitmap(bitmaps[closest_index]);
     extensions::TabHelper* extensions_tab_helper =
         extensions::TabHelper::FromWebContents(web_contents_);
     extensions_tab_helper->SetAppIcon(bitmaps[closest_index]);

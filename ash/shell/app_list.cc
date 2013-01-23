@@ -60,7 +60,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     icon.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
     icon.allocPixels();
     icon.eraseColor(kColors[static_cast<int>(type) % arraysize(kColors)]);
-    return gfx::ImageSkia(icon);
+    return gfx::ImageSkia::CreateFrom1xBitmap(icon);
   }
 
   // The text below is not localized as this is an example code.

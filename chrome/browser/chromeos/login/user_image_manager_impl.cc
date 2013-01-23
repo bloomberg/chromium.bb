@@ -656,7 +656,8 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
     return;
 
   downloaded_profile_image_data_url_ = new_image_data_url;
-  downloaded_profile_image_ = gfx::ImageSkia(downloader->GetProfilePicture());
+  downloaded_profile_image_ = gfx::ImageSkia::CreateFrom1xBitmap(
+      downloader->GetProfilePicture());
   profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
   if (user->image_index() == User::kProfileImageIndex) {

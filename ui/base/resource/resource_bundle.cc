@@ -710,7 +710,7 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 32, 32);
     bitmap.allocPixels();
     bitmap.eraseARGB(255, 255, 0, 0);
-    empty_image_ = gfx::Image(bitmap);
+    empty_image_ = gfx::Image::CreateFrom1xBitmap(bitmap);
   }
   return empty_image_;
 }

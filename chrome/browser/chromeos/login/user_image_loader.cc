@@ -93,7 +93,8 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
       final_image = cropped_image;
     }
   }
-  gfx::ImageSkia final_image_skia(final_image);
+  gfx::ImageSkia final_image_skia =
+      gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
   UserImage user_image(final_image_skia, decoder->get_image_data());
   if (image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)

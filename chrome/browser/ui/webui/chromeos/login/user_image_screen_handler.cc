@@ -284,7 +284,7 @@ void UserImageScreenHandler::OnCameraPresenceCheckDone() {
 void UserImageScreenHandler::OnImageDecoded(const ImageDecoder* decoder,
                                             const SkBitmap& decoded_image) {
   DCHECK_EQ(image_decoder_.get(), decoder);
-  user_photo_ = gfx::ImageSkia(decoded_image);
+  user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
   if (screen_ && accept_photo_after_decoding_)
     screen_->OnPhotoTaken(user_photo_);
 }

@@ -49,7 +49,7 @@ gfx::Image CreateImage(SkColor color) {
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
   bitmap.allocPixels();
   bitmap.eraseColor(color);
-  return gfx::Image(bitmap);
+  return gfx::Image::CreateFrom1xBitmap(bitmap);
 }
 
 // Returns true if images |a| and |b| have the same pixel data.

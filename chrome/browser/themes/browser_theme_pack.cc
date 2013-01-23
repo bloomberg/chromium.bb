@@ -976,7 +976,8 @@ bool BrowserThemePack::LoadRawBitmapsTo(
       SkBitmap bitmap;
       if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
                                 &bitmap)) {
-        (*image_cache)[prs_id] = new gfx::Image(bitmap);
+        (*image_cache)[prs_id] =
+            new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
       } else {
         NOTREACHED() << "Unable to decode theme image resource " << it->first;
       }

@@ -27,7 +27,7 @@ gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
   // Draw the icon centered on the canvas.
   int x = (kAvatarIconWidth - length) / 2;
   int y = (kAvatarIconHeight - length) / 2;
-  canvas.DrawImageInt(gfx::ImageSkia(bmp), x, y);
+  canvas.DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bmp), x, y);
 
   // Draw a gray border on the inside of the icon.
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
@@ -50,7 +50,7 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
   // Draw the icon centered on the canvas.
   int x = (kAvatarIconWidth - length) / 2;
   int y = (kAvatarIconHeight - length) / 2;
-  canvas.DrawImageInt(gfx::ImageSkia(bmp), x, y);
+  canvas.DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bmp), x, y);
 
   return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }
@@ -74,7 +74,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   int x2 = x1 + length;
   int y1 = dst_height - length - 1;
   int y2 = y1 + length;
-  canvas.DrawImageInt(gfx::ImageSkia(bmp), x1, y1);
+  canvas.DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bmp), x1, y1);
 
   // Give the icon an etched look by drawing a highlight on the bottom edge
   // and a shadow on the remaining edges.

@@ -146,7 +146,7 @@ views::TextButton* InfoBarView::CreateTextButton(
           icon_info.hIcon, gfx::Size(GetSystemMetrics(SM_CXSMICON),
                                      GetSystemMetrics(SM_CYSMICON))));
       if (icon.get())
-        text_button->SetIcon(gfx::ImageSkia(*icon));
+        text_button->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(*icon));
       DestroyIcon(icon_info.hIcon);
     }
   }

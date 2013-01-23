@@ -40,7 +40,8 @@ void TabIconView::InitializeIfNeeded() {
     HICON app_icon = GetAppIcon();
     scoped_ptr<SkBitmap> bitmap(
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16)));
-    g_default_favicon = new gfx::ImageSkia(*bitmap);
+    g_default_favicon = new gfx::ImageSkia(
+        gfx::ImageSkiaRep(*bitmap, ui::SCALE_FACTOR_100P));
     DestroyIcon(app_icon);
 #else
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

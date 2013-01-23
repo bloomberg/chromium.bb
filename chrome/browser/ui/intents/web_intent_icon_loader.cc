@@ -35,7 +35,7 @@ void DecodeExtensionIconAndResize(
         icon_bitmap,
         skia::ImageOperations::RESIZE_BEST,
         gfx::kFaviconSize, gfx::kFaviconSize);
-    gfx::Image icon_image(resized_icon);
+    gfx::Image icon_image = gfx::Image::CreateFrom1xBitmap(resized_icon);
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,

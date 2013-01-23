@@ -231,7 +231,7 @@ void ContextMenuMatcher::SetExtensionIcon(const std::string& extension_id) {
   DCHECK(icon.width() == gfx::kFaviconSize);
   DCHECK(icon.height() == gfx::kFaviconSize);
 
-  menu_model_->SetIcon(index, gfx::Image(icon));
+  menu_model_->SetIcon(index, gfx::Image::CreateFrom1xBitmap(icon));
 }
 
 }  // namespace extensions

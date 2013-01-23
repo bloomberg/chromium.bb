@@ -274,7 +274,7 @@ class ContactResult : public SearchBuilderResult,
   virtual void OnImageDecoded(const ImageDecoder* decoder,
                               const SkBitmap& decoded_image) OVERRIDE {
     DCHECK_EQ(decoder, photo_decoder_);
-    SetIcon(gfx::ImageSkia(decoded_image));
+    SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(decoded_image));
   }
 
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE {

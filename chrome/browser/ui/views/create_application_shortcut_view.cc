@@ -99,7 +99,7 @@ void AppInfoView::Init(const string16& title_text,
                        const string16& description_text,
                        const SkBitmap& icon) {
   icon_ = new views::ImageView();
-  icon_->SetImage(gfx::ImageSkia(icon));
+  icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(icon));
   icon_->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
 
   title_ = new views::Label(title_text);
@@ -474,7 +474,7 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
   }
 
   if (!image.isNull()) {
-    shortcut_info_.favicon = gfx::Image(image);
+    shortcut_info_.favicon = gfx::Image::CreateFrom1xBitmap(image);
     static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
   } else {
     FetchIcon();

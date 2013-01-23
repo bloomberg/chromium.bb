@@ -420,7 +420,7 @@ void ChangePictureOptionsHandler::OnImageDecoded(
     const SkBitmap& decoded_image) {
   DCHECK_EQ(image_decoder_.get(), decoder);
   image_decoder_ = NULL;
-  user_photo_ = gfx::ImageSkia(decoded_image);
+  user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
   SetImageFromCamera(user_photo_);
 }
 

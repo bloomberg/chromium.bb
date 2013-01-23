@@ -63,6 +63,10 @@ const SkBitmap CreateBitmap(int width, int height) {
   return bitmap;
 }
 
+gfx::ImageSkia CreateImageSkia(int width, int height) {
+  return gfx::ImageSkia::CreateFrom1xBitmap(CreateBitmap(width, height));
+}
+
 scoped_refptr<base::RefCountedMemory> CreatePNGBytes(int edge_size) {
   SkBitmap bitmap = CreateBitmap(edge_size, edge_size);
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes());
@@ -75,7 +79,7 @@ gfx::Image CreateImage() {
 }
 
 gfx::Image CreateImage(int width, int height) {
-  return gfx::Image(CreateBitmap(width, height));
+  return gfx::Image::CreateFrom1xBitmap(CreateBitmap(width, height));
 }
 
 bool IsEqual(const gfx::Image& img1, const gfx::Image& img2) {
@@ -195,7 +199,7 @@ PlatformImage CreatePlatformImage() {
 #elif defined(TOOLKIT_GTK)
   return gfx::GdkPixbufFromSkBitmap(bitmap);
 #else
-  return bitmap;
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 #endif
 }
 
@@ -219,7 +223,7 @@ PlatformImage ToPlatformType(const gfx::Image& image) {
 #elif defined(TOOLKIT_GTK)
   return image.ToGdkPixbuf();
 #else
-  return *image.ToSkBitmap();
+  return image.AsImageSkia();
 #endif
 }
 
@@ -231,7 +235,7 @@ PlatformImage CopyPlatformType(const gfx::Image& image) {
 #elif defined(TOOLKIT_GTK)
   return image.CopyGdkPixbuf();
 #else
-  return *image.ToSkBitmap();
+  return image.AsImageSkia();
 #endif
 }
 
@@ -249,8 +253,9 @@ SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
 }
 #else
 SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
-  SkAutoLockPixels auto_lock(image);
-  return image.getColor(x, y);
+  SkBitmap bitmap = *image.bitmap();
+  SkAutoLockPixels auto_lock(bitmap);
+  return bitmap.getColor(x, y);
 }
 #endif
 
@@ -274,7 +279,7 @@ bool PlatformImagesEqual(PlatformImage image1, PlatformImage image2) {
 #if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
   return image1 == image2;
 #else
-  return image1.getPixels() == image2.getPixels();
+  return image1.BackedBySameObjectAs(image2);
 #endif
 }
 

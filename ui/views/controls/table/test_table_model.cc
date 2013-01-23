@@ -30,7 +30,7 @@ string16 TestTableModel::GetText(int row, int column_id) {
 gfx::ImageSkia TestTableModel::GetIcon(int row) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  return gfx::ImageSkia(bitmap);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
 void TestTableModel::SetObserver(ui::TableModelObserver* observer) {

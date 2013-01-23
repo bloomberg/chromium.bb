@@ -44,7 +44,7 @@ gfx::Image EnsureImageSize(const gfx::Image& original, int size) {
   SkBitmap resized = skia::ImageOperations::Resize(
       *original.ToSkBitmap(), skia::ImageOperations::RESIZE_LANCZOS3,
       size, size);
-  return gfx::Image(resized);
+  return gfx::Image::CreateFrom1xBitmap(resized);
 }
 
 gfx::ImageSkiaRep CreateBlankRep(int size_dip, ui::ScaleFactor scale_factor) {
@@ -72,7 +72,7 @@ gfx::Image LoadIcon(const std::string& filename) {
   webkit_glue::ImageDecoder decoder;
   bitmap = decoder.Decode(data, file_contents.length());
 
-  return gfx::Image(bitmap);
+  return gfx::Image::CreateFrom1xBitmap(bitmap);
 }
 
 class ExtensionActionIconFactoryTest

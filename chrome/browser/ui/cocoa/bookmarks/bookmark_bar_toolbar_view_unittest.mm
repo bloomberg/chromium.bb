@@ -188,7 +188,7 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
   fake_bg_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 800, 800);
   fake_bg_bitmap.allocPixels();
   fake_bg_bitmap.eraseColor(SK_ColorGREEN);
-  gfx::ImageSkia fake_bg(fake_bg_bitmap);
+  gfx::ImageSkia fake_bg = gfx::ImageSkia::CreateFrom1xBitmap(fake_bg_bitmap);
   EXPECT_CALL(provider, GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND))
       .WillRepeatedly(Return(&fake_bg));
 
