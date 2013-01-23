@@ -39,11 +39,14 @@ public:
     //   outside that range will be displayed as a default rectangle glyph.
     // - gfx::Size clip is used to avoid wasting time drawing things that are outside the
     //   target canvas bounds.
-    // - Should only be called only on the impl thread.
-    void drawText(SkCanvas*, const SkPaint&, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const;
+    // - Should only be called on the impl thread.
+    void drawText(SkCanvas*, SkPaint*, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const;
 
     // Gives a text's width and height on the canvas.
     gfx::Size textSize(const std::string& text);
+
+    // Sets the text's color.
+    void setColor(const SkColor& color) { m_color = color; }
 
     // Draws the entire atlas at the specified position, just for debugging purposes.
     void drawDebugAtlas(SkCanvas*, const gfx::Point& destPosition) const;
@@ -60,6 +63,7 @@ private:
     gfx::Rect m_asciiToRectTable[128];
 
     int m_fontHeight;
+    SkColor m_color;
 
     DISALLOW_COPY_AND_ASSIGN(FontAtlas);
 };

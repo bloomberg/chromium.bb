@@ -211,7 +211,9 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 
     if (debugState.showPlatformLayerTree && m_fontAtlas) {
         std::string layerTree = layerTreeImpl()->layer_tree_as_text();
-        m_fontAtlas->drawText(canvas, createPaint(), layerTree, gfx::Point(2, top), bounds());
+        SkPaint paint = createPaint();
+        m_fontAtlas->setColor(DebugColors::PlatformLayerTreeTextColor());
+        m_fontAtlas->drawText(canvas, &paint, layerTree, gfx::Point(2, top), bounds());
     }
 
     if (debugState.showHudRects())
@@ -223,7 +225,7 @@ void HeadsUpDisplayLayerImpl::drawTextLeftAligned(SkCanvas* canvas, SkPaint* pai
     if (!m_fontAtlas)
         return;
 
-    m_fontAtlas->drawText(canvas, *paint, text, gfx::Point(bounds.left(), bounds.top()), gfx::Size(bounds.width(), bounds.height()));
+    m_fontAtlas->drawText(canvas, paint, text, gfx::Point(bounds.left(), bounds.top()), gfx::Size(bounds.width(), bounds.height()));
 }
 
 void HeadsUpDisplayLayerImpl::drawTextRightAligned(SkCanvas* canvas, SkPaint* paint, const SkRect& bounds, const std::string& text)
@@ -236,7 +238,7 @@ void HeadsUpDisplayLayerImpl::drawTextRightAligned(SkCanvas* canvas, SkPaint* pa
     gfx::Point textPosition(bounds.right() - textWidth, bounds.top());
     gfx::Size textArea(bounds.width(), bounds.height());
 
-    m_fontAtlas->drawText(canvas, *paint, text, textPosition, textArea);
+    m_fontAtlas->drawText(canvas, paint, text, textPosition, textArea);
 }
 
 void HeadsUpDisplayLayerImpl::drawGraphBackground(SkCanvas* canvas, SkPaint* paint, const SkRect& bounds)
@@ -282,6 +284,8 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
     SkRect graphBounds = SkRect::MakeXYWH(left + padding, textBounds.bottom() + 2 * padding, graphWidth, graphHeight);
     SkRect histogramBounds = SkRect::MakeXYWH(graphBounds.right() + gap, graphBounds.top(), histogramWidth, graphHeight);
 
+    if (m_fontAtlas.get())
+        m_fontAtlas->setColor(DebugColors::FPSDisplayTextAndGraphColor());
     drawTextLeftAligned(canvas, &paint, textBounds, base::StringPrintf("FPS:%5.1f", m_fpsGraph.value));
     drawTextRightAligned(canvas, &paint, textBounds, base::StringPrintf("%.0f-%.0f", m_fpsGraph.min, m_fpsGraph.max));
 
@@ -332,7 +336,7 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
     canvas->drawLine(histogramBounds.left() - 1, histogramBounds.top() - 1, histogramBounds.left() - 1, histogramBounds.bottom() + 1, paint);
     canvas->drawLine(histogramBounds.right() + 1, histogramBounds.top() - 1, histogramBounds.right() + 1, histogramBounds.bottom() + 1, paint);
 
-    paint.setColor(SK_ColorRED);
+    paint.setColor(DebugColors::FPSDisplayTextAndGraphColor());
     const double barHeight = histogramBounds.height() / histogramSize;
 
     for (int i = histogramSize - 1; i >= 0; --i) {
@@ -372,6 +376,8 @@ int HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, PaintTimeCou
     SkRect textBounds2 = SkRect::MakeXYWH(left + padding, textBounds.bottom() + padding, graphWidth, fontHeight);
     SkRect graphBounds = SkRect::MakeXYWH(left + padding, textBounds2.bottom() + 2 * padding, graphWidth, graphHeight);
 
+    if (m_fontAtlas.get())
+        m_fontAtlas->setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
     drawTextLeftAligned(canvas, &paint, textBounds, "Page paint time (ms)");
     drawTextLeftAligned(canvas, &paint, textBounds2, base::StringPrintf("%5.1f", m_paintTimeGraph.value));
     drawTextRightAligned(canvas, &paint, textBounds2, base::StringPrintf("%.1f-%.1f", m_paintTimeGraph.min, m_paintTimeGraph.max));
@@ -379,8 +385,7 @@ int HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, PaintTimeCou
     const double upperBound = Graph::updateUpperBound(&m_paintTimeGraph);
     drawGraphLines(canvas, &paint, graphBounds, m_paintTimeGraph);
 
-    // Same green as used for paint times in the WebInspector Timeline
-    paint.setColor(SkColorSetRGB(95, 160, 80));
+    paint.setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
     for (size_t i = 0; i < paintTimeCounter->HistorySize(); ++i) {
         double pt = paintTimeCounter->GetPaintTimeOfRecentFrame(i).InMillisecondsF();
 

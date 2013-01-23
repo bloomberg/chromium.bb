@@ -100,4 +100,12 @@ SkColor DebugColors::NonOccludingRectBorderColor() { return SkColorSetARGB(255, 
 int DebugColors::NonOccludingRectBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
 SkColor DebugColors::NonOccludingRectFillColor() { return SkColorSetARGB(10, 200, 0, 100); }
 
+// ======= HUD widget colors =======
+
+SkColor DebugColors::PlatformLayerTreeTextColor() { return SK_ColorRED; }
+SkColor DebugColors::FPSDisplayTextAndGraphColor() { return SK_ColorRED; }
+
+// Paint time display has the same green as used for paint time in the WebInspector
+SkColor DebugColors::PaintTimeDisplayTextAndGraphColor() { return SkColorSetRGB(95, 160, 80); }
+
 }  // namespace cc

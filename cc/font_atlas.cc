@@ -7,13 +7,79 @@
 #include <vector>
 
 #include "base/string_split.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+
+namespace {
+
+// The FontAtlas uses a bitmap with pre-rendered RED glyps to display text.
+// Therefore using SkPaint::setColor() has no effect on the font's color when text is drawn.
+// This helper class uses color filtering as a workaround to change the font's color.
+class ScopedFontColorFilter {
+public:
+    ScopedFontColorFilter()
+        : m_paint(0)
+    {
+    }
+
+    void init(SkPaint* paint, const SkColor& color)
+    {
+        if (color == SK_ColorRED)
+            return;
+
+        SkColorMatrix matrix;
+        memset(matrix.fMat, 0, sizeof(matrix.fMat));
+
+        // Set the matrix to transform the pre-rendered RED font into the provided color.
+        matrix.fMat[5 * 0] = SkColorGetR(color) / 255.0;
+        matrix.fMat[5 * 1] = SkColorGetG(color) / 255.0;
+        matrix.fMat[5 * 2] = SkColorGetB(color) / 255.0;
+        matrix.fMat[5 * 3 + 3] = SkColorGetA(color) / 255.0;
+
+        // SkPaint can only use one color filter, so the old one needs to be saved.
+        SkColorFilter* oldFilter = paint->getColorFilter();
+        if (oldFilter) {
+            // Increase the reference count, so the old filter is not released when it's replaced.
+            oldFilter->ref();
+
+            // Save the old filter for later restoring.
+            // Reference count will get decreased on destruction.
+            m_oldFilter = skia::AdoptRef(oldFilter);
+
+            // If the old filter had a color matrix, the new filter will use both.
+            SkColorMatrix oldMatrix;
+            if (oldFilter->asColorMatrix(oldMatrix.fMat))
+                matrix.setConcat(oldMatrix, matrix);
+        }
+
+        // Set the new color filter and replace the old one.
+        skia::RefPtr<SkColorMatrixFilter> filter = skia::AdoptRef(new SkColorMatrixFilter(matrix));
+        paint->setColorFilter(filter.get());
+
+        m_paint = paint;
+    }
+
+    ~ScopedFontColorFilter()
+    {
+        // Remove the color filter and restore the old one.
+        if (m_paint)
+            m_paint->setColorFilter(m_oldFilter.get());
+    }
+
+private:
+    SkPaint* m_paint;
+    skia::RefPtr<SkColorFilter> m_oldFilter;
+};
+
+}  // namespace
 
 namespace cc {
 
 FontAtlas::FontAtlas(SkBitmap bitmap, gfx::Rect asciiToRectTable[128], int fontHeight)
     : m_atlas(bitmap)
     , m_fontHeight(fontHeight)
+    , m_color(SK_ColorRED)
 {
     for (size_t i = 0; i < 128; ++i)
         m_asciiToRectTable[i] = asciiToRectTable[i];
@@ -23,14 +89,17 @@ FontAtlas::~FontAtlas()
 {
 }
 
-void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const
+void FontAtlas::drawText(SkCanvas* canvas, SkPaint* paint, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const
 {
+    ScopedFontColorFilter filter;
+    filter.init(paint, m_color);
+
     std::vector<std::string> lines;
     base::SplitString(text, '\n', &lines);
 
     gfx::Point position = destPosition;
     for (size_t i = 0; i < lines.size(); ++i) {
-        drawOneLineOfTextInternal(canvas, paint, lines[i], position);
+        drawOneLineOfTextInternal(canvas, *paint, lines[i], position);
         position.set_y(position.y() + m_fontHeight);
         if (position.y() > clip.height())
             return;
