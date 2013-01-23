@@ -85,6 +85,7 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->sans_serif_font_family_map[
       webkit_glue::WebPreferences::kCommonScript] = ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
+  prefs->asynchronous_spell_checking_enabled = false;
 }
 
 }  // namespace content
