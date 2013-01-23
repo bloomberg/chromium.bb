@@ -12,6 +12,7 @@
 
 #include <string.h>
 
+#include "base/safe_numerics.h"
 #include "../common/types.h"
 #include "../common/bitfield_helpers.h"
 #include "../common/cmd_buffer_common.h"
@@ -248,11 +249,12 @@ struct GetAttribLocationImmediate {
   typedef GLint Result;
 
   static uint32 ComputeDataSize(const char* s) {
-    return strlen(s);
+    return base::checked_numeric_cast<uint32>(strlen(s));
   }
 
   static uint32 ComputeSize(const char* s) {
-    return static_cast<uint32>(sizeof(ValueType) + ComputeDataSize(s));
+    return base::checked_numeric_cast<uint32>(sizeof(ValueType) +
+                                              ComputeDataSize(s));
   }
 
   void SetHeader(const char* s) {
@@ -428,11 +430,12 @@ struct GetUniformLocationImmediate {
   typedef GLint Result;
 
   static uint32 ComputeDataSize(const char* s) {
-    return strlen(s);
+    return base::checked_numeric_cast<uint32>(strlen(s));
   }
 
   static uint32 ComputeSize(const char* s) {
-    return static_cast<uint32>(sizeof(ValueType) + ComputeDataSize(s));
+    return base::checked_numeric_cast<uint32>(sizeof(ValueType) +
+                                              ComputeDataSize(s));
   }
 
   void SetHeader(const char* s) {
