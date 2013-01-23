@@ -89,7 +89,7 @@ TileManager::~TileManager() {
   // This should finish all pending tasks and release any uninitialized
   // resources.
   raster_worker_pool_.reset();
-  CheckForCompletedTextures();
+  CheckForCompletedTileUploads();
   DCHECK(tiles_with_pending_set_pixels_.size() == 0);
   DCHECK(tiles_.size() == 0);
 }
@@ -244,7 +244,7 @@ void TileManager::ManageTiles() {
   DispatchMoreTasks();
 }
 
-void TileManager::CheckForCompletedTextures() {
+void TileManager::CheckForCompletedTileUploads() {
   while (!tiles_with_pending_set_pixels_.empty()) {
     Tile* tile = tiles_with_pending_set_pixels_.front();
     DCHECK(tile->managed_state().resource);

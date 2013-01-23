@@ -83,7 +83,7 @@ class CC_EXPORT TileManager {
   void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
 
   void ManageTiles();
-  void CheckForCompletedTextures();
+  void CheckForCompletedTileUploads();
   void GetMemoryStats(size_t* memoryRequiredBytes,
                       size_t* memoryNiceToHaveBytes,
                       size_t* memoryUsedBytes);

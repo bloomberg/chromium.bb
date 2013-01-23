@@ -721,7 +721,7 @@ void LayerTreeHostImpl::ScheduleManageTiles()
 void LayerTreeHostImpl::DidUploadVisibleHighResolutionTile()
 {
     if (m_client)
-        m_client->didUploadVisibleHighResolutionTileOnImplTread();
+        m_client->didUploadVisibleHighResolutionTileOnImplThread();
 }
 
 bool LayerTreeHostImpl::shouldClearRootRenderPass() const
@@ -854,7 +854,7 @@ bool LayerTreeHostImpl::swapBuffers()
 
     if (m_settings.implSidePainting &&
         !activeTree()->AreVisibleResourcesReady()) {
-        m_client->didSwapUseIncompleteTextureOnImplThread();
+        m_client->didSwapUseIncompleteTileOnImplThread();
     }
 
     return result;
@@ -936,11 +936,11 @@ void LayerTreeHostImpl::createPendingTree()
     m_client->onHasPendingTreeStateChanged(pendingTree());
 }
 
-void LayerTreeHostImpl::checkForCompletedTextures()
+void LayerTreeHostImpl::checkForCompletedTileUploads()
 {
-    DCHECK(!m_client->isInsideDraw()) << "Checking for completed textures within a draw may trigger spurious redraws.";
+    DCHECK(!m_client->isInsideDraw()) << "Checking for completed uploads within a draw may trigger spurious redraws.";
     if (m_tileManager)
-        m_tileManager->CheckForCompletedTextures();
+        m_tileManager->CheckForCompletedTileUploads();
 }
 
 void LayerTreeHostImpl::activatePendingTreeIfNeeded()

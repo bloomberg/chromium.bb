@@ -50,8 +50,8 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) = 0;
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) = 0;
     virtual void setNeedsRedrawOnImplThread() = 0;
-    virtual void didSwapUseIncompleteTextureOnImplThread() = 0;
-    virtual void didUploadVisibleHighResolutionTileOnImplTread() = 0;
+    virtual void didSwapUseIncompleteTileOnImplThread() = 0;
+    virtual void didUploadVisibleHighResolutionTileOnImplThread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
     virtual void setNeedsManageTilesOnImplThread() = 0;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) = 0;
@@ -170,7 +170,7 @@ public:
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
     void createPendingTree();
-    void checkForCompletedTextures();
+    void checkForCompletedTileUploads();
     virtual void activatePendingTreeIfNeeded();
 
     // Shortcuts to layers on the active tree.

@@ -50,7 +50,7 @@ public:
     }
 
     virtual void scheduledActionCommit() OVERRIDE { m_actions.push_back("scheduledActionCommit"); }
-    virtual void scheduledActionCheckForCompletedTextures() OVERRIDE { m_actions.push_back("scheduledActionCheckForCompletedTextures"); }
+    virtual void scheduledActionCheckForCompletedTileUploads() OVERRIDE { m_actions.push_back("scheduledActionCheckForCompletedTileUploads"); }
     virtual void scheduledActionActivatePendingTreeIfNeeded() OVERRIDE { m_actions.push_back("scheduledActionActivatePendingTreeIfNeeded"); }
     virtual void scheduledActionBeginContextRecreation() OVERRIDE { m_actions.push_back("scheduledActionBeginContextRecreation"); }
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE { m_actions.push_back("scheduledActionAcquireLayerTexturesForMainThread"); }

@@ -63,8 +63,8 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE;
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
-    virtual void didSwapUseIncompleteTextureOnImplThread() OVERRIDE;
-    virtual void didUploadVisibleHighResolutionTileOnImplTread() OVERRIDE;
+    virtual void didSwapUseIncompleteTileOnImplThread() OVERRIDE;
+    virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
@@ -78,7 +78,7 @@ public:
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE;
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE;
     virtual void scheduledActionCommit() OVERRIDE;
-    virtual void scheduledActionCheckForCompletedTextures() OVERRIDE;
+    virtual void scheduledActionCheckForCompletedTileUploads() OVERRIDE;
     virtual void scheduledActionActivatePendingTreeIfNeeded() OVERRIDE;
     virtual void scheduledActionBeginContextRecreation() OVERRIDE;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;

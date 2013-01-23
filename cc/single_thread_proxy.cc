@@ -272,13 +272,13 @@ void SingleThreadProxy::setNeedsRedrawOnImplThread()
     m_layerTreeHost->scheduleComposite();
 }
 
-void SingleThreadProxy::didSwapUseIncompleteTextureOnImplThread()
+void SingleThreadProxy::didSwapUseIncompleteTileOnImplThread()
 {
     // implSidePainting only.
     NOTREACHED();
 }
 
-void SingleThreadProxy::didUploadVisibleHighResolutionTileOnImplTread()
+void SingleThreadProxy::didUploadVisibleHighResolutionTileOnImplThread()
 {
     // implSidePainting only.
     NOTREACHED();

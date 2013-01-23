@@ -15,11 +15,11 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     , m_currentFrameNumber(0)
     , m_lastFrameNumberWhereDrawWasCalled(-1)
     , m_lastFrameNumberWhereTreeActivationAttempted(-1)
-    , m_lastFrameNumberWhereCheckForCompletedTexturesCalled(-1)
+    , m_lastFrameNumberWhereCheckForCompletedTileUploadsCalled(-1)
     , m_consecutiveFailedDraws(0)
     , m_maximumNumberOfFailedDrawsBeforeDrawIsForced(3)
     , m_needsRedraw(false)
-    , m_swapUsedIncompleteTexture(false)
+    , m_swapUsedIncompleteTile(false)
     , m_needsForcedRedraw(false)
     , m_needsForcedRedrawAfterNextCommit(false)
     , m_needsCommit(false)
@@ -45,11 +45,11 @@ std::string SchedulerStateMachine::toString()
     base::StringAppendF(&str, "m_currentFrameNumber = %d; ", m_currentFrameNumber);
     base::StringAppendF(&str, "m_lastFrameNumberWhereDrawWasCalled = %d; ", m_lastFrameNumberWhereDrawWasCalled);
     base::StringAppendF(&str, "m_lastFrameNumberWhereTreeActivationAttempted = %d; ", m_lastFrameNumberWhereTreeActivationAttempted);
-    base::StringAppendF(&str, "m_lastFrameNumberWhereCheckForCompletedTexturesCalled = %d; ", m_lastFrameNumberWhereCheckForCompletedTexturesCalled);
+    base::StringAppendF(&str, "m_lastFrameNumberWhereCheckForCompletedTileUploadsCalled = %d; ", m_lastFrameNumberWhereCheckForCompletedTileUploadsCalled);
     base::StringAppendF(&str, "m_consecutiveFailedDraws = %d; ", m_consecutiveFailedDraws);
     base::StringAppendF(&str, "m_maximumNumberOfFailedDrawsBeforeDrawIsForced = %d; ", m_maximumNumberOfFailedDrawsBeforeDrawIsForced);
     base::StringAppendF(&str, "m_needsRedraw = %d; ", m_needsRedraw);
-    base::StringAppendF(&str, "m_swapUsedIncompleteTexture = %d; ", m_swapUsedIncompleteTexture);
+    base::StringAppendF(&str, "m_swapUsedIncompleteTile = %d; ", m_swapUsedIncompleteTile);
     base::StringAppendF(&str, "m_needsForcedRedraw = %d; ", m_needsForcedRedraw);
     base::StringAppendF(&str, "m_needsForcedRedrawAfterNextCommit = %d; ", m_needsForcedRedrawAfterNextCommit);
     base::StringAppendF(&str, "m_needsCommit = %d; ", m_needsCommit);
@@ -77,10 +77,10 @@ bool SchedulerStateMachine::hasAttemptedTreeActivationThisFrame() const
     return m_currentFrameNumber == m_lastFrameNumberWhereTreeActivationAttempted;
 }
 
-bool SchedulerStateMachine::hasCheckedForCompletedTexturesThisFrame() const
+bool SchedulerStateMachine::hasCheckedForCompletedTileUploadsThisFrame() const
 {
     return m_currentFrameNumber ==
-           m_lastFrameNumberWhereCheckForCompletedTexturesCalled;
+           m_lastFrameNumberWhereCheckForCompletedTileUploadsCalled;
 }
 
 bool SchedulerStateMachine::drawSuspendedUntilCommit() const
@@ -124,16 +124,16 @@ bool SchedulerStateMachine::shouldAttemptTreeActivation() const
     return m_hasPendingTree && m_insideVSync && !hasAttemptedTreeActivationThisFrame();
 }
 
-bool SchedulerStateMachine::shouldCheckForCompletedTextures() const
+bool SchedulerStateMachine::shouldCheckForCompletedTileUploads() const
 {
     if (!m_settings.implSidePainting)
         return false;
-    if (hasCheckedForCompletedTexturesThisFrame())
+    if (hasCheckedForCompletedTileUploadsThisFrame())
         return false;
 
     return shouldAttemptTreeActivation() ||
            shouldDraw() ||
-           m_swapUsedIncompleteTexture;
+           m_swapUsedIncompleteTile;
 }
 
 bool SchedulerStateMachine::shouldAcquireLayerTexturesForMainThread() const
@@ -168,8 +168,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
             return ACTION_BEGIN_OUTPUT_SURFACE_RECREATION;
         if (m_outputSurfaceState == OUTPUT_SURFACE_RECREATING)
             return ACTION_NONE;
-        if (shouldCheckForCompletedTextures())
-            return ACTION_CHECK_FOR_NEW_TEXTURES;
+        if (shouldCheckForCompletedTileUploads())
+            return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
         if (shouldAttemptTreeActivation())
             return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (shouldDraw())
@@ -180,8 +180,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         return ACTION_NONE;
 
     case COMMIT_STATE_FRAME_IN_PROGRESS:
-        if (shouldCheckForCompletedTextures())
-            return ACTION_CHECK_FOR_NEW_TEXTURES;
+        if (shouldCheckForCompletedTileUploads())
+            return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
         if (shouldAttemptTreeActivation())
             return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (shouldDraw())
@@ -192,8 +192,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         return ACTION_COMMIT;
 
     case COMMIT_STATE_WAITING_FOR_FIRST_DRAW: {
-        if (shouldCheckForCompletedTextures())
-            return ACTION_CHECK_FOR_NEW_TEXTURES;
+        if (shouldCheckForCompletedTileUploads())
+            return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
         if (shouldAttemptTreeActivation())
             return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (shouldDraw() || m_outputSurfaceState == OUTPUT_SURFACE_LOST)
@@ -207,8 +207,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
     }
 
     case COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW:
-        if (shouldCheckForCompletedTextures())
-            return ACTION_CHECK_FOR_NEW_TEXTURES;
+        if (shouldCheckForCompletedTileUploads())
+            return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
         if (shouldAttemptTreeActivation())
             return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (m_needsForcedRedraw)
@@ -225,8 +225,8 @@ void SchedulerStateMachine::updateState(Action action)
     case ACTION_NONE:
         return;
 
-    case ACTION_CHECK_FOR_NEW_TEXTURES:
-        m_lastFrameNumberWhereCheckForCompletedTexturesCalled = m_currentFrameNumber;
+    case ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS:
+        m_lastFrameNumberWhereCheckForCompletedTileUploadsCalled = m_currentFrameNumber;
         return;
 
     case ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
@@ -313,7 +313,7 @@ bool SchedulerStateMachine::vsyncCallbackNeeded() const
     if (m_needsForcedRedraw)
         return true;
 
-    if (m_visible && m_swapUsedIncompleteTexture)
+    if (m_visible && m_swapUsedIncompleteTile)
         return true;
 
     return m_needsRedraw && m_visible && m_outputSurfaceState == OUTPUT_SURFACE_ACTIVE;
@@ -340,9 +340,9 @@ void SchedulerStateMachine::setNeedsRedraw()
     m_needsRedraw = true;
 }
 
-void SchedulerStateMachine::didSwapUseIncompleteTexture()
+void SchedulerStateMachine::didSwapUseIncompleteTile()
 {
-    m_swapUsedIncompleteTexture = true;
+    m_swapUsedIncompleteTile = true;
 }
 
 void SchedulerStateMachine::setNeedsForcedRedraw()

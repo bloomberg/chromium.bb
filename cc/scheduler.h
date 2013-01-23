@@ -39,7 +39,7 @@ public:
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() = 0;
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() = 0;
     virtual void scheduledActionCommit() = 0;
-    virtual void scheduledActionCheckForCompletedTextures() = 0;
+    virtual void scheduledActionCheckForCompletedTileUploads() = 0;
     virtual void scheduledActionActivatePendingTreeIfNeeded() = 0;
     virtual void scheduledActionBeginContextRecreation() = 0;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() = 0;
@@ -78,7 +78,7 @@ public:
     // Like setNeedsRedraw(), but ensures the draw will definitely happen even if we are not visible.
     void setNeedsForcedRedraw();
 
-    void didSwapUseIncompleteTexture();
+    void didSwapUseIncompleteTile();
 
     void beginFrameComplete();
     void beginFrameAborted();

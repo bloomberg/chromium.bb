@@ -453,17 +453,17 @@ void ThreadProxy::setNeedsRedrawOnImplThread()
     m_schedulerOnImplThread->setNeedsRedraw();
 }
 
-void ThreadProxy::didSwapUseIncompleteTextureOnImplThread()
+void ThreadProxy::didSwapUseIncompleteTileOnImplThread()
 {
    DCHECK(isImplThread());
-   TRACE_EVENT0("cc", "ThreadProxy::didSwapUseIncompleteTextureOnImplThread");
-   m_schedulerOnImplThread->didSwapUseIncompleteTexture();
+   TRACE_EVENT0("cc", "ThreadProxy::didSwapUseIncompleteTileOnImplThread");
+   m_schedulerOnImplThread->didSwapUseIncompleteTile();
 }
 
-void ThreadProxy::didUploadVisibleHighResolutionTileOnImplTread()
+void ThreadProxy::didUploadVisibleHighResolutionTileOnImplThread()
 {
    DCHECK(isImplThread());
-   TRACE_EVENT0("cc", "ThreadProxy::didUploadVisibleHighResolutionTileOnImplTread");
+   TRACE_EVENT0("cc", "ThreadProxy::didUploadVisibleHighResolutionTileOnImplThread");
    m_schedulerOnImplThread->setNeedsRedraw();
 }
 
@@ -755,11 +755,11 @@ void ThreadProxy::scheduledActionCommit()
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 }
 
-void ThreadProxy::scheduledActionCheckForCompletedTextures()
+void ThreadProxy::scheduledActionCheckForCompletedTileUploads()
 {
     DCHECK(isImplThread());
-    TRACE_EVENT0("cc", "ThreadProxy::scheduledActionCheckForCompletedTextures");
-    m_layerTreeHostImpl->checkForCompletedTextures();
+    TRACE_EVENT0("cc", "ThreadProxy::scheduledActionCheckForCompletedTileUploads");
+    m_layerTreeHostImpl->checkForCompletedTileUploads();
 }
 
 void ThreadProxy::scheduledActionActivatePendingTreeIfNeeded()
