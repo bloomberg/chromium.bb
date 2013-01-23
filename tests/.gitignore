@@ -1,6 +1,10 @@
+*.log
+*.trs
+
 array-test
 client-test
 connection-test
+display-test
 event-loop-test
 exec-fd-leak-checker
 fixed-benchmark
@@ -8,5 +12,6 @@ fixed-test
 list-test
 map-test
 os-wrappers-test
+queue-test
 sanity-test
-
+socket-test
