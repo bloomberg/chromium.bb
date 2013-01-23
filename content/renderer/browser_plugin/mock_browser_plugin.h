@@ -11,11 +11,9 @@ namespace content {
 
 class MockBrowserPlugin : public BrowserPlugin {
  public:
-  MockBrowserPlugin(
-      int id,
-      RenderViewImpl* render_view,
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+  MockBrowserPlugin(RenderViewImpl* render_view,
+                    WebKit::WebFrame* frame,
+                    const WebKit::WebPluginParams& params);
 
   virtual ~MockBrowserPlugin();
 

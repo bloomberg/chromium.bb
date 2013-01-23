@@ -57,10 +57,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents,
                                        RenderViewHost* render_view_host);
 
-  // Create a guest WebContents with the provided |instance_id| and |params| and
-  // add it to this BrowserPluginEmbedder. Optionally, the new guest may be
-  // attached to a |guest_opener|, and may be attached to a pre-selected
-  // |routing_id|.
+  // Creates a guest WebContents with the provided |instance_id| and |params|
+  // and adds it to this BrowserPluginEmbedder. If params.src is present, the
+  // new guest will also be navigated to the provided URL. Optionally, the new
+  // guest may be attached to a |guest_opener|, and may be attached to a pre-
+  // selected |routing_id|.
   void CreateGuest(int instance_id,
                    int routing_id,
                    BrowserPluginGuest* guest_opener,
@@ -70,8 +71,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // in BrowserPlugin.
   BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
 
-  // Destroy the guest with the provided |instance_id|. Remove references to the
-  // guest in this BrowserPluginEmbedder.
+  // Destroys the guest with the provided |instance_id|. Removes references to
+  // the guest in this BrowserPluginEmbedder.
   void DestroyGuestByInstanceID(int instance_id);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
@@ -118,6 +119,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
 
   // Message handlers.
 
+  void OnAllocateInstanceID(int request_id);
   void OnCreateGuest(int instance_id,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
   void OnPluginAtPositionResponse(int instance_id,
@@ -148,6 +150,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   GetRenderViewHostCallbackMap pending_get_render_view_callbacks_;
   // Next request id for BrowserPluginMsg_PluginAtPositionRequest query.
   int next_get_render_view_request_id_;
+  int next_instance_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginEmbedder);
 };

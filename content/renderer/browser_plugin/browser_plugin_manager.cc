@@ -25,8 +25,7 @@ BrowserPluginManager* BrowserPluginManager::Create(
 
 BrowserPluginManager::BrowserPluginManager(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
-      render_view_(render_view->AsWeakPtr()),
-      browser_plugin_counter_(0) {
+      render_view_(render_view->AsWeakPtr()) {
 }
 
 BrowserPluginManager::~BrowserPluginManager() {

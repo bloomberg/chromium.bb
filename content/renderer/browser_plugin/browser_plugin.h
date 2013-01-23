@@ -34,6 +34,7 @@ class CONTENT_EXPORT BrowserPlugin :
     NON_EXPORTED_BASE(public WebKit::WebPlugin) {
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
+  int render_view_routing_id() const { return render_view_routing_id_; }
 
   bool OnMessageReceived(const IPC::Message& msg);
 
@@ -175,7 +176,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // with the frame within which it lives and the initial attributes assigned
   // to it on creation.
   BrowserPlugin(
-      int instance_id,
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
@@ -185,7 +185,6 @@ class CONTENT_EXPORT BrowserPlugin :
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }
   int instance_id() const { return instance_id_; }
-  int render_view_routing_id() const { return render_view_routing_id_; }
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_;
   }
@@ -240,6 +239,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // given the provided |params|.
   bool UsesPendingDamageBuffer(
       const BrowserPluginMsg_UpdateRect_Params& params);
+
+  // Sets the instance ID of the BrowserPlugin and requests a guest from the
+  // browser process.
+  void SetInstanceID(int instance_id);
 
   // IPC message handlers.
   // Please keep in alphabetical order.
@@ -313,6 +316,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   gfx::Size last_view_size_;
   bool size_changed_in_flight_;
+  bool allocate_instance_id_sent_;
 
   // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
   // store the BrowserPlugin's BrowserPluginManager in a member variable to

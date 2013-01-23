@@ -56,6 +56,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
   IPC_STRUCT_MEMBER(std::string, name)
+  IPC_STRUCT_MEMBER(std::string, src)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
@@ -120,6 +121,12 @@ IPC_STRUCT_END()
 
 // -----------------------------------------------------------------------------
 // These messages are from the embedder to the browser process.
+
+// This message is sent to the browser process to request an instance ID.
+// |request_id| is used by BrowserPluginEmbedder to route the response back
+// to its origin.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_AllocateInstanceID,
+                    int /* request_id */)
 
 // This message is sent to the browser process to enable or disable autosize
 // mode.
@@ -236,6 +243,13 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ResizeGuest,
 
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
+
+// This message is sent from the browser process to the embedder render process
+// in response to a request to allocate an instance ID. The |request_id| is used
+// to route the response to the requestor.
+IPC_MESSAGE_ROUTED2(BrowserPluginMsg_AllocateInstanceID_ACK,
+                    int /* request_id */,
+                    int /* instance_id */)
 
 // Once the swapped out guest RenderView has been created in the embedder render
 // process, the browser process informs the embedder of its routing ID.

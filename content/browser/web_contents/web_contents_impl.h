@@ -567,9 +567,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnRequestPpapiBrokerPermission(int request_id,
                                       const GURL& url,
                                       const FilePath& plugin_path);
-  void OnBrowserPluginCreateGuest(
-      int instance_id,
-      const BrowserPluginHostMsg_CreateGuest_Params& params);
+  void OnBrowserPluginAllocateInstanceID(const IPC::Message& message,
+                                         int request_id);
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             int requested_size,

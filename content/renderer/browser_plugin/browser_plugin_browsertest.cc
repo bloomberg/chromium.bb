@@ -124,18 +124,17 @@ int BrowserPluginTest::ExecuteScriptAndReturnInt(
 // satisfy its resize request.
 TEST_F(BrowserPluginTest, InitialResize) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-  // Verify that the information based on ResizeGuest is correct, and
-  // use its TransportDIB::Id to paint.
+  // Verify that the information in CreateGuest is correct.
   int instance_id = 0;
   {
     const IPC::Message* msg =
         browser_plugin_manager()->sink().GetUniqueMessageMatching(
-            BrowserPluginHostMsg_ResizeGuest::ID);
+            BrowserPluginHostMsg_CreateGuest::ID);
     ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_ResizeGuest_Params params;
-    BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
-    EXPECT_EQ(640, params.view_size.width());
-    EXPECT_EQ(480, params.view_size.height());
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
+    EXPECT_EQ(640, params.resize_guest_params.view_size.width());
+    EXPECT_EQ(480, params.resize_guest_params.view_size.height());
   }
 
   MockBrowserPlugin* browser_plugin =
@@ -166,20 +165,15 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
   // src attribute.
   {
     // Ensure we get a CreateGuest on the initial navigation.
-    const IPC::Message* create_msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_CreateGuest::ID);
-    ASSERT_TRUE(create_msg);
-
     const IPC::Message* msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_NavigateGuest::ID);
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_CreateGuest::ID);
     ASSERT_TRUE(msg);
 
     int instance_id = 0;
-    std::string src;
-    BrowserPluginHostMsg_NavigateGuest::Read(msg, &instance_id, &src);
-    EXPECT_EQ("foo", src);
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
+    EXPECT_EQ("foo", params.src);
   }
 
   browser_plugin_manager()->sink().ClearMessages();
@@ -190,13 +184,13 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
   {
     // Verify that we do not get a CreateGuest on subsequent navigations.
     const IPC::Message* create_msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_CreateGuest::ID);
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_CreateGuest::ID);
     ASSERT_FALSE(create_msg);
 
     const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetUniqueMessageMatching(
-          BrowserPluginHostMsg_NavigateGuest::ID);
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_NavigateGuest::ID);
     ASSERT_TRUE(msg);
 
     int instance_id = 0;
@@ -214,14 +208,14 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   int instance_id = 0;
   {
-    // Ensure we get a NavigateGuest on the initial navigation and grab the
+    // Ensure we get a CreateGuest on the initial navigation and grab the
     // BrowserPlugin's instance_id from there.
-    std::string src;
-    const IPC::Message* nav_msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_NavigateGuest::ID);
-    ASSERT_TRUE(nav_msg);
-    BrowserPluginHostMsg_NavigateGuest::Read(nav_msg, &instance_id, &src);
+    const IPC::Message* msg =
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_CreateGuest::ID);
+    ASSERT_TRUE(msg);
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
   }
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -309,15 +303,15 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 TEST_F(BrowserPluginTest, GuestCrash) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
 
-  // Grab the BrowserPlugin's instance ID from its resize message.
+  // Grab the BrowserPlugin's instance ID from its CreateGuest message.
   int instance_id = 0;
   {
     const IPC::Message* msg =
         browser_plugin_manager()->sink().GetFirstMessageMatching(
-            BrowserPluginHostMsg_ResizeGuest::ID);
+            BrowserPluginHostMsg_CreateGuest::ID);
     ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_ResizeGuest_Params params;
-    BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
   }
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -380,6 +374,21 @@ TEST_F(BrowserPluginTest, RemovePlugin) {
       BrowserPluginHostMsg_PluginDestroyed::ID));
 }
 
+// This test verifies that PluginDestroyed messages do not get sent from a
+// BrowserPlugin that has never navigated.
+TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
+  std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
+                                  content::kBrowserPluginMimeType);
+  LoadHTML(html.c_str());
+  EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
+      BrowserPluginHostMsg_PluginDestroyed::ID));
+  ExecuteJavaScript("x = document.getElementById('browserplugin'); "
+                    "x.parentNode.removeChild(x);");
+  ProcessPendingMessages();
+  EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
+      BrowserPluginHostMsg_PluginDestroyed::ID));
+}
+
 TEST_F(BrowserPluginTest, CustomEvents) {
   const char* kAddEventListener =
     "var url;"
@@ -403,11 +412,11 @@ TEST_F(BrowserPluginTest, CustomEvents) {
   // Grab the BrowserPlugin's instance ID from its resize message.
   const IPC::Message* msg =
       browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_ResizeGuest::ID);
+          BrowserPluginHostMsg_CreateGuest::ID);
   ASSERT_TRUE(msg);
   int instance_id = 0;
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  BrowserPluginHostMsg_CreateGuest_Params params;
+  BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
 
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -532,6 +541,7 @@ TEST_F(BrowserPluginTest, InvalidPartition) {
   ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
   EXPECT_EQ("bar", ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').src"));
+  ProcessPendingMessages();
   // Verify that the BrowserPlugin does not 'deadlock': it can recover from
   // the partition ID error state.
   {
@@ -568,6 +578,7 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   EXPECT_STREQ("", src_value.c_str());
 
   ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
+  ProcessPendingMessages();
   {
     const IPC::Message* create_msg =
     browser_plugin_manager()->sink().GetUniqueMessageMatching(
@@ -582,17 +593,7 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
         &params);
     EXPECT_STREQ("storage", params.storage_partition_id.c_str());
     EXPECT_FALSE(params.persist_storage);
-
-    const IPC::Message* msg =
-        browser_plugin_manager()->sink().GetUniqueMessageMatching(
-            BrowserPluginHostMsg_NavigateGuest::ID);
-    ASSERT_TRUE(msg);
-
-    int instance_id = 0;
-    std::string src;
-    BrowserPluginHostMsg_NavigateGuest::Read(msg, &instance_id, &src);
-    EXPECT_STREQ("bar", src.c_str());
-    EXPECT_EQ(create_instance_id, instance_id);
+    EXPECT_STREQ("bar", params.src.c_str());
   }
 
   // Setting the partition should throw an exception and the value should not
@@ -632,14 +633,14 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
-  // Grab the BrowserPlugin's instance ID from its resize message.
+  // Grab the BrowserPlugin's instance ID from its CreateGuest message.
   const IPC::Message* msg =
       browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_ResizeGuest::ID);
+          BrowserPluginHostMsg_CreateGuest::ID);
   ASSERT_TRUE(msg);
   int instance_id = 0;
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  BrowserPluginHostMsg_CreateGuest_Params params;
+  BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
 
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -689,14 +690,14 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
-  // Grab the BrowserPlugin's instance ID from its resize message.
+  // Grab the BrowserPlugin's instance ID from its CreateGuest message.
   const IPC::Message* msg =
       browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_ResizeGuest::ID);
+          BrowserPluginHostMsg_CreateGuest::ID);
   ASSERT_TRUE(msg);
   int instance_id = 0;
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  BrowserPluginHostMsg_CreateGuest_Params params;
+  BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
 
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
@@ -717,15 +718,15 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
 TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
 
-  // Grab the BrowserPlugin's instance ID from its resize message.
+  // Grab the BrowserPlugin's instance ID from its CreateGuest message.
   int instance_id = 0;
   {
     const IPC::Message* msg =
         browser_plugin_manager()->sink().GetFirstMessageMatching(
-            BrowserPluginHostMsg_ResizeGuest::ID);
+            BrowserPluginHostMsg_CreateGuest::ID);
     ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_ResizeGuest_Params params;
-    BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    BrowserPluginHostMsg_CreateGuest::Read(msg, &instance_id, &params);
   }
 
   MockBrowserPlugin* browser_plugin =

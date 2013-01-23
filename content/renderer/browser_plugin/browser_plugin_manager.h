@@ -38,7 +38,7 @@ class CONTENT_EXPORT BrowserPluginManager
     BrowserPluginManager::factory_ = factory;
   }
 
-  BrowserPluginManager(RenderViewImpl* render_view);
+  explicit BrowserPluginManager(RenderViewImpl* render_view);
 
   // Creates a new BrowserPlugin object with a unique identifier.
   // BrowserPlugin is responsible for associating itself with the
@@ -48,6 +48,7 @@ class CONTENT_EXPORT BrowserPluginManager
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params) = 0;
+  virtual void AllocateInstanceID(BrowserPlugin* browser_plugin) = 0;
 
   void AddBrowserPlugin(int instance_id, BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int instance_id);
@@ -76,7 +77,8 @@ class CONTENT_EXPORT BrowserPluginManager
   virtual ~BrowserPluginManager();
   IDMap<BrowserPlugin> instances_;
   base::WeakPtr<RenderViewImpl> render_view_;
-  int browser_plugin_counter_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginManager);
 };
 
 }  // namespace content

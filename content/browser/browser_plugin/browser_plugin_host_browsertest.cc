@@ -712,6 +712,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
     ExecuteSyncJSFunction(
         test_embedder()->web_contents()->GetRenderViewHost(),
         StringPrintf("SetSrc('%s');", kHTMLForGuest));
+    test_embedder()->WaitForGuestAdded();
 
     const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
         test_embedder()->guest_web_contents_for_testing();
@@ -720,6 +721,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
     TestBrowserPluginGuest* new_test_guest =
         static_cast<TestBrowserPluginGuest*>(
           test_guest_web_contents->GetBrowserPluginGuest());
+    ASSERT_TRUE(new_test_guest != NULL);
 
     // Wait for the guest to send an UpdateRectMsg, meaning it is ready.
     new_test_guest->WaitForUpdateRectMsg();

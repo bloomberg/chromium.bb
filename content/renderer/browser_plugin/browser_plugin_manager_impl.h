@@ -27,6 +27,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params) OVERRIDE;
+  virtual void AllocateInstanceID(BrowserPlugin* browser_plugin) OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -36,6 +37,9 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
  private:
   virtual ~BrowserPluginManagerImpl();
 
+  void OnAllocateInstanceIDACK(const IPC::Message& message,
+                               int request_id,
+                               int instance_id);
   void OnPluginAtPositionRequest(const IPC::Message& message,
                                  int request_id,
                                  const gfx::Point& position);
@@ -48,6 +52,9 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
 
   // Returns whether a message should be forwarded to BrowserPlugins.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
+
+  int request_id_counter_;
+  IDMap<BrowserPlugin> pending_allocate_instance_id_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

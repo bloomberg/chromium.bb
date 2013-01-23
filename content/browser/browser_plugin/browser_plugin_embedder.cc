@@ -31,7 +31,8 @@ BrowserPluginEmbedder::BrowserPluginEmbedder(
     : WebContentsObserver(web_contents),
       render_view_host_(render_view_host),
       visible_(true),
-      next_get_render_view_request_id_(0) {
+      next_get_render_view_request_id_(0),
+      next_instance_id_(0) {
   // Listen to visibility changes so that an embedder hides its guests
   // as well.
   registrar_.Add(this,
@@ -155,6 +156,14 @@ void BrowserPluginEmbedder::CreateGuest(
       render_view_host_->GetRoutingID(), instance_id, guest_routing_id));
 
   guest->Initialize(params, guest_web_contents->GetRenderViewHost());
+
+  if (params.src.empty())
+    return;
+
+  BrowserPluginHostMsg_NavigateGuest navigate_msg(
+      render_view_host_->GetRoutingID(), instance_id, params.src);
+  GetGuestByInstanceID(instance_id)->
+      OnMessageReceivedFromEmbedder(navigate_msg);
 }
 
 BrowserPluginGuest* BrowserPluginEmbedder::GetGuestByInstanceID(
@@ -211,6 +220,8 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
   }
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
+                        OnAllocateInstanceID)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
                         OnCreateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
@@ -292,6 +303,12 @@ bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
       break;
   }
   return false;
+}
+
+void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
+  int instance_id = ++next_instance_id_;
+  render_view_host_->Send(new BrowserPluginMsg_AllocateInstanceID_ACK(
+      render_view_host_->GetRoutingID(), request_id, instance_id));
 }
 
 void BrowserPluginEmbedder::OnCreateGuest(

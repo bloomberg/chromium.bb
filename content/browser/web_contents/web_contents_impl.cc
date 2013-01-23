@@ -745,8 +745,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
-                        OnBrowserPluginCreateGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
+                        OnBrowserPluginAllocateInstanceID)
     IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if defined(OS_ANDROID)
@@ -2372,27 +2372,22 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
                                                     result));
 }
 
-void WebContentsImpl::OnBrowserPluginCreateGuest(
-    int instance_id,
-    const BrowserPluginHostMsg_CreateGuest_Params& params) {
+void WebContentsImpl::OnBrowserPluginAllocateInstanceID(
+    const IPC::Message& message, int request_id) {
   // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
-  // specific messages for this WebContents (through its
-  // BrowserPluginEmbedderHelper). This means that any message from browser
-  // plugin renderer prior to CreateGuest will be ignored.
+  // specific messages for this WebContents. This means that any message from
+  // a BrowserPlugin prior to AllocateInstanceID will be ignored.
   // For more info, see comment above classes BrowserPluginEmbedder and
   // BrowserPluginGuest.
-  // The first BrowserPluginHostMsg_CreateGuest message from this WebContents'
-  // embedder render process is handled here. Once BrowserPluginEmbedder is
-  // created, all subsequent BrowserPluginHostMsg_CreateGuest messages are
-  // intercepted by the BrowserPluginEmbedderHelper and handled by the
-  // BrowserPluginEmbedder. Thus, this code will not be executed if a
-  // BrowserPluginEmbedder exists for this WebContents.
+  // The first BrowserPluginHostMsg_AllocateInstanceID message from this
+  // WebContents' embedder render process is handled here. Once
+  // BrowserPluginEmbedder is created, all subsequent BrowserPluginHostMsg_*
+  // messages are handled in BrowserPluginEmbedder. Thus, this code will not be
+  // executed if a BrowserPluginEmbedder exists for this WebContents.
   CHECK(!browser_plugin_embedder_.get());
   browser_plugin_embedder_.reset(
       BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
-  BrowserPluginHostMsg_CreateGuest create_guest_msg(
-      GetRenderViewHost()->GetRoutingID(), instance_id, params);
-  browser_plugin_embedder_->OnMessageReceived(create_guest_msg);
+  browser_plugin_embedder_->OnMessageReceived(message);
 }
 
 void WebContentsImpl::OnDidDownloadFavicon(

@@ -48,6 +48,8 @@ namespace content {
 
 namespace {
 
+const int INSTANCE_ID_NONE = 0;
+
 // Events.
 const char kEventExit[] = "exit";
 const char kEventLoadAbort[] = "loadabort";
@@ -105,11 +107,10 @@ static std::string GetInternalEventName(const char* event_name) {
 }
 
 BrowserPlugin::BrowserPlugin(
-    int instance_id,
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
     const WebPluginParams& params)
-    : instance_id_(instance_id),
+    : instance_id_(INSTANCE_ID_NONE),
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
@@ -130,17 +131,22 @@ BrowserPlugin::BrowserPlugin(
       plugin_focused_(false),
       visible_(true),
       size_changed_in_flight_(false),
+      allocate_instance_id_sent_(false),
       browser_plugin_manager_(render_view->browser_plugin_manager()),
       current_nav_entry_index_(0),
       nav_entry_count_(0),
       compositing_enabled_(false) {
-  browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
   ParseAttributes(params);
 }
 
 BrowserPlugin::~BrowserPlugin() {
+  // If the BrowserPlugin has never navigated then the browser process and
+  // BrowserPluginManager don't know about it and so there is nothing to do
+  // here.
+  if (!navigate_src_sent_)
+    return;
   browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(
@@ -219,23 +225,26 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
   if (src.empty() || (src == src_ && !guest_crashed_))
     return true;
 
+  src_ = src;
+
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
   // actually need it.
   if (!navigate_src_sent_) {
-    BrowserPluginHostMsg_CreateGuest_Params create_guest_params;
-    create_guest_params.storage_partition_id = storage_partition_id_;
-    create_guest_params.persist_storage = persist_storage_;
-    create_guest_params.focused = ShouldGuestBeFocused();
-    create_guest_params.visible = visible_;
-    create_guest_params.name = name_;
-    GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
-                                  &create_guest_params.resize_guest_params);
-    browser_plugin_manager()->Send(
-        new BrowserPluginHostMsg_CreateGuest(
-            render_view_routing_id_,
-            instance_id_,
-            create_guest_params));
+    // On initial navigation, we request an instance ID from the browser
+    // process. We essentially ignore all subsequent calls to SetSrcAttribute
+    // until we receive an instance ID. |allocate_instance_id_sent_|
+    // prevents BrowserPlugin from allocating more than one instance ID.
+    // Upon receiving an instance ID from the browser process, we continue
+    // the process of navigation by populating the
+    // BrowserPluginHostMsg_CreateGuest_Params with the current state of
+    // BrowserPlugin and sending a BrowserPluginHostMsg_CreateGuest to the
+    // browser process in order to create a new guest.
+    if (!allocate_instance_id_sent_) {
+      browser_plugin_manager()->AllocateInstanceID(this);
+      allocate_instance_id_sent_ = true;
+    }
+    return true;
   }
 
   browser_plugin_manager()->Send(
@@ -243,11 +252,6 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
           render_view_routing_id_,
           instance_id_,
           src));
-  // Record that we sent a NavigateGuest message to embedder.
-  // Once this instance has navigated, the storage partition cannot be changed,
-  // so this value is used for enforcing this.
-  navigate_src_sent_ = true;
-  src_ = src;
   return true;
 }
 
@@ -312,6 +316,32 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
   if (!pending_damage_buffer_.get())
     return false;
   return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
+}
+
+void BrowserPlugin::SetInstanceID(int instance_id) {
+  CHECK(instance_id != INSTANCE_ID_NONE);
+  instance_id_ = instance_id;
+  browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
+
+  BrowserPluginHostMsg_CreateGuest_Params create_guest_params;
+  create_guest_params.storage_partition_id = storage_partition_id_;
+  create_guest_params.persist_storage = persist_storage_;
+  create_guest_params.focused = ShouldGuestBeFocused();
+  create_guest_params.visible = visible_;
+  create_guest_params.name = name_;
+  create_guest_params.src = src_;
+  GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
+                                &create_guest_params.resize_guest_params);
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_CreateGuest(
+          render_view_routing_id_,
+          instance_id_,
+          create_guest_params));
+
+  // Record that we sent a navigation request to the browser process.
+  // Once this instance has navigated, the storage partition cannot be changed,
+  // so this value is used for enforcing this.
+  navigate_src_sent_ = true;
 }
 
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
