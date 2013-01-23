@@ -34,9 +34,12 @@ const char kAboutSrcDocURL[] = "about:srcdoc";
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
-const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
-const char kChromeUITcmallocHost[] = "tcmalloc";
+const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIHistogramHost[] = "histograms";
+const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
+const char kChromeUIResourcesHost[] = "resources";
+const char kChromeUITcmallocHost[] = "tcmalloc";
+
 const char kChromeUICrashURL[] = "chrome://crash";
 const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
 const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";

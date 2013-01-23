@@ -78,6 +78,11 @@ base::StringPiece ContentClient::GetDataResource(
   return base::StringPiece();
 }
 
+base::RefCountedStaticMemory* ContentClient::GetDataResourceBytes(
+    int resource_id) const {
+  return NULL;
+}
+
 gfx::Image& ContentClient::GetNativeImageNamed(int resource_id) const {
   CR_DEFINE_STATIC_LOCAL(gfx::Image, kEmptyImage, ());
   return kEmptyImage;

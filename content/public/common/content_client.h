@@ -18,6 +18,10 @@
 class CommandLine;
 class GURL;
 
+namespace base {
+class RefCountedStaticMemory;
+}
+
 namespace IPC {
 class Message;
 }
@@ -122,6 +126,10 @@ class CONTENT_EXPORT ContentClient {
   virtual base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const;
+
+  // Returns the raw bytes of a scale independent data resource.
+  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+      int resource_id) const;
 
   // Returns a native image given its id.
   virtual gfx::Image& GetNativeImageNamed(int resource_id) const;

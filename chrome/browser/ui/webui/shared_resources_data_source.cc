@@ -4,20 +4,18 @@
 
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 
-#include <string>
-
+#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "grit/webui_resources.h"
 #include "grit/webui_resources_map.h"
 #include "net/base/mime_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -51,9 +49,8 @@ void SharedResourcesDataSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   int idr = PathToIDR(path);
   DCHECK_NE(-1, idr) << " path: " << path;
-  const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(
-      rb.LoadDataResourceBytes(idr));
+      content::GetContentClient()->GetDataResourceBytes(idr));
 
   callback.Run(bytes);
 }

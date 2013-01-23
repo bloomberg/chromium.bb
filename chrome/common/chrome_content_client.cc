@@ -434,6 +434,11 @@ base::StringPiece ChromeContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
+base::RefCountedStaticMemory* ChromeContentClient::GetDataResourceBytes(
+    int resource_id) const {
+  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+}
+
 gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }

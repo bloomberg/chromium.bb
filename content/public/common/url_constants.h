@@ -40,9 +40,11 @@ CONTENT_EXPORT extern const char kAboutSrcDocURL[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
-CONTENT_EXPORT extern const char kChromeUINetworkViewCacheHost[];
-CONTENT_EXPORT extern const char kChromeUITcmallocHost[];
+CONTENT_EXPORT extern const char kChromeUIDevToolsHost[];
 CONTENT_EXPORT extern const char kChromeUIHistogramHost[];
+CONTENT_EXPORT extern const char kChromeUINetworkViewCacheHost[];
+CONTENT_EXPORT extern const char kChromeUIResourcesHost[];
+CONTENT_EXPORT extern const char kChromeUITcmallocHost[];
 
 // Full about URLs (including schemes).
 CONTENT_EXPORT extern const char kChromeUICrashURL[];
