@@ -191,7 +191,7 @@ chromeHidden.JSONSchemaValidator.prototype.isValidSchemaType =
   if (schema.optional && (type == "null" || type == "undefined"))
     return true;
 
-  schemaTypes = this.getAllTypesForSchema(schema);
+  var schemaTypes = this.getAllTypesForSchema(schema);
   for (var i = 0; i < schemaTypes.length; i++) {
     if (schemaTypes[i] == "any" || type == schemaTypes[i])
       return true;
