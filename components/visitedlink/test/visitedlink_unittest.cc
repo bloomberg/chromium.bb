@@ -53,9 +53,6 @@ std::vector<VisitedLinkSlave*> g_slaves;
 
 class TestVisitedLinkDelegate : public VisitedLinkDelegate {
  public:
-  virtual bool AreEquivalentContexts(
-      content::BrowserContext* context1,
-      content::BrowserContext* context2) OVERRIDE;
   virtual void RebuildTable(
       const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
 
@@ -65,12 +62,6 @@ class TestVisitedLinkDelegate : public VisitedLinkDelegate {
 
   URLs rebuild_urls_;
 };
-
-bool TestVisitedLinkDelegate::AreEquivalentContexts(
-    content::BrowserContext* context1, content::BrowserContext* context2) {
-  DCHECK_EQ(context1, context2);
-  return true;  // Test only has one profile.
-}
 
 void TestVisitedLinkDelegate::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
@@ -510,7 +501,8 @@ class VisitCountingProfile : public TestingProfile {
   VisitCountingProfile()
       : add_count_(0),
         add_event_count_(0),
-        reset_event_count_(0) {}
+        reset_event_count_(0),
+        new_table_count_(0) {}
 
   void CountAddEvent(int by) {
     add_count_ += by;
@@ -521,14 +513,20 @@ class VisitCountingProfile : public TestingProfile {
     reset_event_count_++;
   }
 
+  void CountNewTable() {
+    new_table_count_++;
+  }
+
   int add_count() const { return add_count_; }
   int add_event_count() const { return add_event_count_; }
   int reset_event_count() const { return reset_event_count_; }
+  int new_table_count() const { return new_table_count_; }
 
  private:
   int add_count_;
   int add_event_count_;
   int reset_event_count_;
+  int new_table_count_;
 };
 
 // Stub out as little as possible, borrowing from RenderProcessHost.
@@ -565,6 +563,8 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
       counting_profile->CountAddEvent(fingerprints.size());
     } else if (msg->type() == ChromeViewMsg_VisitedLink_Reset::ID) {
       counting_profile->CountResetEvent();
+    } else if (msg->type() == ChromeViewMsg_VisitedLink_NewTable::ID) {
+      counting_profile->CountNewTable();
     }
 
     delete msg;
@@ -758,6 +758,22 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   // We should have only one more reset event.
   EXPECT_EQ(1, profile()->add_event_count());
   EXPECT_EQ(1, profile()->reset_event_count());
+}
+
+// Tests that VisitedLink ignores renderer process creation notification for a
+// different profile.
+TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
+  VisitCountingProfile different_context;
+  VisitRelayingRenderProcessHost different_process_host(&different_context);
+
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+      content::Source<content::RenderProcessHost>(&different_process_host),
+      content::NotificationService::NoDetails());
+  WaitForCoalescense();
+
+  EXPECT_EQ(0, different_context.new_table_count());
+
 }
 
 }  // namespace components

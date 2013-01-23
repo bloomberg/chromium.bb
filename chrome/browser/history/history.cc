@@ -939,17 +939,6 @@ void HistoryService::Observe(int type,
   }
 }
 
-bool HistoryService::AreEquivalentContexts(content::BrowserContext* context1,
-                                           content::BrowserContext* context2) {
-  DCHECK(context1);
-  DCHECK(context2);
-
-  Profile* profile1 = Profile::FromBrowserContext(context1);
-  Profile* profile2 = Profile::FromBrowserContext(context2);
-
-  return profile1->IsSameProfile(profile2);
-}
-
 void HistoryService::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -18,10 +18,6 @@ namespace components {
 // Delegate class that clients of VisitedLinkMaster must implement.
 class VisitedLinkDelegate {
  public:
-  // Returns true when the two BrowserContexts are equivalent.
-  virtual bool AreEquivalentContexts(content::BrowserContext* context1,
-                                     content::BrowserContext* context2) = 0;
-
   // See RebuildTable.
   class URLEnumerator : public base::RefCountedThreadSafe<URLEnumerator> {
    public:

@@ -181,8 +181,7 @@ void VisitedLinkEventListener::Observe(
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
-      if (!master_->GetDelegate()->AreEquivalentContexts(
-          browser_context_, process->GetBrowserContext()))
+      if (browser_context_ != process->GetBrowserContext())
         return;
 
       // Happens on browser start up.

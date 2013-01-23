@@ -661,9 +661,6 @@ class HistoryService : public CancelableRequestProvider,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Implementation of components::VisitedLinkDelegate.
-  virtual bool AreEquivalentContexts(
-      content::BrowserContext* context1,
-      content::BrowserContext* context2) OVERRIDE;
   virtual void RebuildTable(
       const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
 
