@@ -162,6 +162,11 @@
             '../net/third_party/nss/ssl.gyp:*',
           ],
         }],
+        ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:*',
+          ],
+        }],
       ],
     }, # target_name: All
     {
@@ -234,6 +239,7 @@
             '../sandbox/sandbox.gyp:sbox_unittests',
             '../sandbox/sandbox.gyp:sbox_validation_tests',
             '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
+            '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../webkit/webkit.gyp:test_shell_common',
            ],
