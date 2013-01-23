@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -59,22 +60,26 @@ GetWebKitIceState(webrtc::PeerConnectionInterface::IceState ice_state) {
   }
 }
 
-static WebKit::WebRTCPeerConnectionHandlerClient::ReadyState
-GetWebKitReadyState(webrtc::PeerConnectionInterface::ReadyState ready_state) {
-  switch (ready_state) {
+static WebKit::WebRTCPeerConnectionHandlerClient::SignalingState
+GetWebKitSignalingState(webrtc::PeerConnectionInterface::SignalingState state) {
+  using WebKit::WebRTCPeerConnectionHandlerClient;
+  switch (state) {
     case webrtc::PeerConnectionInterface::kStable:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateActive;
-
+      return WebRTCPeerConnectionHandlerClient::SignalingStateStable;
     case webrtc::PeerConnectionInterface::kHaveLocalOffer:
+      return WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer;
     case webrtc::PeerConnectionInterface::kHaveLocalPrAnswer:
+      return WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer;
     case webrtc::PeerConnectionInterface::kHaveRemoteOffer:
+      return WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer;
     case webrtc::PeerConnectionInterface::kHaveRemotePrAnswer:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateOpening;
+      return
+          WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer;
     case webrtc::PeerConnectionInterface::kClosed:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateClosed;
+      return WebRTCPeerConnectionHandlerClient::SignalingStateClosed;
     default:
       NOTREACHED();
-      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateClosed;
+      return WebRTCPeerConnectionHandlerClient::SignalingStateClosed;
   }
 }
 
@@ -516,15 +521,15 @@ void RTCPeerConnectionHandler::OnError() {
 void RTCPeerConnectionHandler::OnStateChange(StateType state_changed) {
   switch (state_changed) {
     case kSignalingState: {
-      WebKit::WebRTCPeerConnectionHandlerClient::ReadyState ready_state =
-          GetWebKitReadyState(native_peer_connection_->ready_state());
-      client_->didChangeReadyState(ready_state);
+      WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state =
+          GetWebKitSignalingState(native_peer_connection_->signaling_state());
+      client_->didChangeSignalingState(state);
       break;
     }
     case kIceState: {
-      WebKit::WebRTCPeerConnectionHandlerClient::ICEState ice_state =
+      WebKit::WebRTCPeerConnectionHandlerClient::ICEState state =
           GetWebKitIceState(native_peer_connection_->ice_state());
-      client_->didChangeICEState(ice_state);
+      client_->didChangeICEState(state);
       break;
     }
     default:

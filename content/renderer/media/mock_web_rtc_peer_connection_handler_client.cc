@@ -13,7 +13,7 @@ namespace content {
 MockWebRTCPeerConnectionHandlerClient::
 MockWebRTCPeerConnectionHandlerClient()
     : renegotiate_(false),
-      ready_state_(ReadyStateNew),
+      signaling_state_(SignalingStateStable),
       ice_state_(ICEStateNew),
       candidate_mline_index_(-1) {
 }
@@ -38,9 +38,9 @@ void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidate(
   }
 }
 
-void MockWebRTCPeerConnectionHandlerClient::didChangeReadyState(
-    ReadyState state) {
-  ready_state_ = state;
+void MockWebRTCPeerConnectionHandlerClient::didChangeSignalingState(
+    SignalingState state) {
+  signaling_state_ = state;
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didChangeICEState(ICEState state) {

@@ -134,6 +134,7 @@
   function createConnections(constraints) {
     gFirstConnection = new webkitRTCPeerConnection(null, constraints);
     gFirstConnection.onicecandidate = onIceCandidateToFirst;
+    expectEquals('stable', gFirstConnection.signalingState);
   
     gSecondConnection = new webkitRTCPeerConnection(null, constraints);
     gSecondConnection.onicecandidate = onIceCandidateToSecond;
@@ -147,6 +148,7 @@
   
   function onOfferCreated(offer) {
     gFirstConnection.setLocalDescription(offer);
+    expectEquals('have-local-offer', gFirstConnection.signalingState);
     receiveOffer(offer.sdp);
   }
   
@@ -159,6 +161,7 @@
                                                   sdp: offerSdp });
     gSecondConnection.setRemoteDescription(parsedOffer);
     gSecondConnection.createAnswer(onAnswerCreated);
+    expectEquals('have-remote-offer', gSecondConnection.signalingState);
   }
   
   function removeMsidAndBundle(offerSdp) {
@@ -172,6 +175,7 @@
 
   function onAnswerCreated(answer) {
     gSecondConnection.setLocalDescription(answer);
+    expectEquals('stable', gSecondConnection.signalingState);
     handleAnswer(answer.sdp);
   }
 
@@ -179,6 +183,7 @@
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
     gFirstConnection.setRemoteDescription(parsedAnswer);
+    expectEquals('stable', gFirstConnection.signalingState);
   }
 
   function onIceCandidateToFirst(event) {

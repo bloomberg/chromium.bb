@@ -70,7 +70,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   virtual IceState ice_state() OVERRIDE;
 
   void AddRemoteStream(webrtc::MediaStreamInterface* stream);
-  void SetReadyState(ReadyState state) { signaling_state_ = state; }
+  void SetSignalingState(SignalingState state) { signaling_state_ = state; }
   void SetIceState(IceState state) { ice_state_ = state; }
 
   const std::string& stream_label() const { return stream_label_; }

@@ -110,6 +110,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
       return NULL;
     }
   }
+
  private:
   bool has_selector_;
   WebKit::WebMediaStreamDescriptor stream_;
@@ -365,60 +366,79 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
+  using WebKit::WebRTCPeerConnectionHandlerClient;
   // Signaling states.
-  webrtc::PeerConnectionObserver::StateType state =
+  webrtc::PeerConnectionObserver::StateType state_type =
       webrtc::PeerConnectionObserver::kSignalingState;
-  mock_peer_connection_->SetReadyState(
+
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateStable,
+            mock_client_->signaling_state());
+
+  mock_peer_connection_->SetSignalingState(
       webrtc::PeerConnectionInterface::kHaveRemoteOffer);
-  pc_handler_->OnStateChange(state);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateOpening,
-            mock_client_->ready_state());
-  mock_peer_connection_->SetReadyState(
-      webrtc::PeerConnectionInterface::kStable);
-  pc_handler_->OnStateChange(state);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateActive,
-            mock_client_->ready_state());
-  mock_peer_connection_->SetReadyState(
+  pc_handler_->OnStateChange(state_type);
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer,
+            mock_client_->signaling_state());
+
+  mock_peer_connection_->SetSignalingState(
+      webrtc::PeerConnectionInterface::kHaveLocalPrAnswer);
+  pc_handler_->OnStateChange(state_type);
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer,
+            mock_client_->signaling_state());
+
+  mock_peer_connection_->SetSignalingState(
+      webrtc::PeerConnectionInterface::kHaveLocalOffer);
+  pc_handler_->OnStateChange(state_type);
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer,
+            mock_client_->signaling_state());
+
+  mock_peer_connection_->SetSignalingState(
+        webrtc::PeerConnectionInterface::kHaveRemotePrAnswer);
+  pc_handler_->OnStateChange(state_type);
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer,
+            mock_client_->signaling_state());
+
+  mock_peer_connection_->SetSignalingState(
         webrtc::PeerConnectionInterface::kClosed);
-  pc_handler_->OnStateChange(state);
-  EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateClosed,
-            mock_client_->ready_state());
+  pc_handler_->OnStateChange(state_type);
+  EXPECT_EQ(WebRTCPeerConnectionHandlerClient::SignalingStateClosed,
+            mock_client_->signaling_state());
 
   // Ice states.
-  state = webrtc::PeerConnectionObserver::kIceState;
+  state_type = webrtc::PeerConnectionObserver::kIceState;
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceGathering);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateGathering,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceWaiting);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateWaiting,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceChecking);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateChecking,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceConnected);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateConnected,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceCompleted);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateCompleted,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceFailed);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateFailed,
             mock_client_->ice_state());
   mock_peer_connection_->SetIceState(
       webrtc::PeerConnectionInterface::kIceClosed);
-  pc_handler_->OnStateChange(state);
+  pc_handler_->OnStateChange(state_type);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ICEStateClosed,
             mock_client_->ice_state());
 }
