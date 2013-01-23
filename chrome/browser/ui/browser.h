@@ -19,7 +19,6 @@
 #include "base/prefs/public/pref_member.h"
 #include "base/string16.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -43,6 +42,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 

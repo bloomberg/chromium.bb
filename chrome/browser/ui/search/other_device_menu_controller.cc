@@ -137,7 +137,7 @@ void OtherDeviceMenuController::ExecuteCommand(int command_id,
 
   if (tab_id != browser_sync::ForeignSessionHandler::kInvalidId) {
     WindowOpenDisposition disposition =
-        chrome::DispositionFromEventFlags(event_flags);
+        ui::DispositionFromEventFlags(event_flags);
     browser_sync::ForeignSessionHandler::OpenForeignSessionTab(
         web_ui_, session_id_, window_id, tab_id, disposition);
   } else {

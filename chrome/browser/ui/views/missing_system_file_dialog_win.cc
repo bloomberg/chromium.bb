@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/missing_system_file_dialog_win.h"
 
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -88,7 +88,7 @@ void MissingSystemFileDialog::LinkClicked(views::Link* source,
                                 GURL(kBlankOmniboxHelpUrl),
                                 content::PAGE_TRANSITION_LINK);
   WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(event_flags);
+      ui::DispositionFromEventFlags(event_flags);
   params.disposition =
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition;
   chrome::Navigate(&params);

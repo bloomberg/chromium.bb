@@ -304,6 +304,7 @@
         'base/win/singleton_hwnd.h',
         'base/win/window_impl.cc',
         'base/win/window_impl.h',
+        'base/window_open_disposition.cc',
         'base/window_open_disposition.h',
         'base/work_area_watcher_observer.h',
         'base/x/active_window_watcher_x.cc',
@@ -736,7 +737,7 @@
             'base/dragdrop/os_exchange_data.cc',
           ],
           'sources/': [
-            ['exclude', '^base/win/*'],
+            ['exclude', '^base/win/'],
           ],
         }],
         ['OS=="mac"', {

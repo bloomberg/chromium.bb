@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -48,6 +47,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/views/controls/button/button_dropdown.h"
@@ -517,7 +517,7 @@ void ToolbarView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   int command = sender->tag();
   WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(event.flags());
+      ui::DispositionFromEventFlags(event.flags());
   if ((disposition == CURRENT_TAB) &&
       ((command == IDC_BACK) || (command == IDC_FORWARD))) {
     // Forcibly reset the location bar, since otherwise it won't discard any

@@ -724,8 +724,8 @@ void IntentRowView::ButtonPressed(views::Button* sender,
 
 void IntentRowView::LinkClicked(views::Link* source,
                                 int event_flags) {
-  delegate_->OnExtensionLinkClicked(extension_id_,
-      chrome::DispositionFromEventFlags(event_flags));
+  delegate_->OnExtensionLinkClicked(
+      extension_id_, ui::DispositionFromEventFlags(event_flags));
 }
 
 void IntentRowView::MarkBusy(const std::string& extension_id) {
@@ -1132,7 +1132,7 @@ void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(delegate_);
   if (source == more_suggestions_link_) {
     delegate_->OnSuggestionsLinkClicked(
-        chrome::DispositionFromEventFlags(event_flags));
+        ui::DispositionFromEventFlags(event_flags));
   } else if (source == choose_another_service_link_) {
     // Signal cancellation of inline disposition.
     delegate_->OnChooseAnotherService();

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/event_utils.h"
 
 #include "base/logging.h"
-#include "chrome/browser/event_disposition.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace event_utils {
 
@@ -26,7 +26,7 @@ int EventFlagsFromGdkState(guint state) {
 // TODO(shinyak) This function will be removed after refactoring.
 WindowOpenDisposition DispositionFromGdkState(guint state) {
   int event_flags = EventFlagsFromGdkState(state);
-  return chrome::DispositionFromEventFlags(event_flags);
+  return ui::DispositionFromEventFlags(event_flags);
 }
 
 WindowOpenDisposition DispositionForCurrentButtonPressEvent() {

@@ -14,7 +14,6 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -36,6 +35,7 @@
 #include "ui/app_list/search_result.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/ref_counted.h"
@@ -367,7 +367,7 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     chrome::NavigateParams params(profile_,
                                   match.destination_url,
                                   match.transition);
-    params.disposition = chrome::DispositionFromEventFlags(event_flags);
+    params.disposition = ui::DispositionFromEventFlags(event_flags);
     chrome::Navigate(&params);
   }
 }

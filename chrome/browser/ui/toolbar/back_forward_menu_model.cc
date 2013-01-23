@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/favicon_size.h"
 
 using content::NavigationController;
@@ -199,7 +199,7 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
 
   int controller_index = MenuIndexToNavEntryIndex(index);
   WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(event_flags);
+      ui::DispositionFromEventFlags(event_flags);
   if (!chrome::NavigateToIndexWithDisposition(browser_,
                                               controller_index,
                                               disposition)) {

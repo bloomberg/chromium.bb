@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/infobars/alternate_nav_infobar_view.h"
 
 #include "base/logging.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
@@ -80,8 +80,7 @@ void AlternateNavInfoBarView::LinkClicked(views::Link* source,
     return;  // We're closing; don't call anything, it might access the owner.
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
-  if (GetDelegate()->LinkClicked(
-      chrome::DispositionFromEventFlags(event_flags)))
+  if (GetDelegate()->LinkClicked(ui::DispositionFromEventFlags(event_flags)))
     RemoveSelf();
 }
 

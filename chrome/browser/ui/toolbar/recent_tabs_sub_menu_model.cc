@@ -191,7 +191,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id) {
 void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == IDC_RESTORE_TAB) {
     chrome::ExecuteCommandWithDisposition(browser_, command_id,
-        chrome::DispositionFromEventFlags(event_flags));
+        ui::DispositionFromEventFlags(event_flags));
     return;
   }
 
@@ -204,7 +204,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   DCHECK(item.tab_id > -1 && item.url.is_valid());
 
   WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(event_flags);
+      ui::DispositionFromEventFlags(event_flags);
   if (disposition == CURRENT_TAB)  // Force to open a new foreground tab.
     disposition = NEW_FOREGROUND_TAB;
 

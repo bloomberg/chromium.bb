@@ -19,7 +19,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,6 +60,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -229,7 +229,7 @@ class BookmarkFolderButton : public views::MenuButton {
       return false;
 
     if (e.IsMouseEvent())
-      return chrome::DispositionFromEventFlags(e.flags()) != CURRENT_TAB;
+      return ui::DispositionFromEventFlags(e.flags()) != CURRENT_TAB;
     return false;
   }
 
@@ -1058,7 +1058,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   DCHECK(page_navigator_);
 
   WindowOpenDisposition disposition_from_event_flags =
-      chrome::DispositionFromEventFlags(event.flags());
+      ui::DispositionFromEventFlags(event.flags());
 
   if (node->is_url()) {
     RecordAppLaunch(browser_->profile(), node->url());

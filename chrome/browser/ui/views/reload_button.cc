@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -16,6 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
 
@@ -242,7 +242,7 @@ void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
     return;
 
   WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(event_flags);
+      ui::DispositionFromEventFlags(event_flags);
   if ((disposition == CURRENT_TAB) && location_bar_) {
     // Forcibly reset the location bar, since otherwise it won't discard any
     // ongoing user edits, since it doesn't realize this is a user-initiated

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
@@ -270,7 +270,7 @@ LaunchParams::LaunchParams(Profile* profile,
     : profile(profile),
       extension(extension),
       container(extension_misc::LAUNCH_NONE),
-      disposition(chrome::DispositionFromEventFlags(event_flags)),
+      disposition(ui::DispositionFromEventFlags(event_flags)),
       override_url(),
       command_line(NULL) {
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {

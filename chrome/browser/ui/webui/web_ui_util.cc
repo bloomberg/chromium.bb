@@ -11,11 +11,11 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/disposition_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "grit/app_locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -88,9 +88,8 @@ WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
   CHECK(args->GetBoolean(start_index++, &ctrl_key));
   CHECK(args->GetBoolean(start_index++, &meta_key));
   CHECK(args->GetBoolean(start_index++, &shift_key));
-  return disposition_utils::DispositionFromClick(button == 1.0, alt_key,
-                                                 ctrl_key, meta_key, shift_key);
-
+  return ui::DispositionFromClick(
+      button == 1.0, alt_key, ctrl_key, meta_key, shift_key);
 }
 
 bool ParseScaleFactor(const base::StringPiece& identifier,

@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/event_utils.h"
 
-#include "chrome/browser/event_disposition.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace {
 
@@ -64,7 +64,7 @@ WindowOpenDisposition WindowOpenDispositionFromNSEvent(NSEvent* event) {
 WindowOpenDisposition WindowOpenDispositionFromNSEventWithFlags(
     NSEvent* event, NSUInteger modifiers) {
   int event_flags = EventFlagsFromNSEventWithModifiers(event, modifiers);
-  return chrome::DispositionFromEventFlags(event_flags);
+  return ui::DispositionFromEventFlags(event_flags);
 }
 
 }  // namespace event_utils

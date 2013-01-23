@@ -8,9 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/disposition_utils.h"
 #include "content/public/browser//web_ui.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/window_open_disposition.h"
 
 using content::OpenURLParams;
 
@@ -45,9 +45,8 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   CHECK(button == 0.0 || button == 1.0);
   bool middle_button = (button == 1.0);
 
-  WindowOpenDisposition disposition =
-      disposition_utils::DispositionFromClick(middle_button, alt_key, ctrl_key,
-                                              meta_key, shift_key);
+  WindowOpenDisposition disposition = ui::DispositionFromClick(
+      middle_button, alt_key, ctrl_key, meta_key, shift_key);
   if (disposition == CURRENT_TAB && target_string == "_blank")
     disposition = NEW_FOREGROUND_TAB;
 
