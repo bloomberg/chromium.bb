@@ -18,6 +18,29 @@ class Window;
 
 class AURA_EXPORT WindowObserver {
  public:
+  struct HierarchyChangeParams {
+    enum HierarchyChangePhase {
+      HIERARCHY_CHANGING,
+      HIERARCHY_CHANGED
+    };
+
+    Window* target;     // The window that was added or removed.
+    Window* new_parent;
+    Window* old_parent;
+    HierarchyChangePhase phase;
+    Window* receiver;   // The window receiving the notification.
+  };
+
+  // Called when a window is added or removed. Notifications are sent to the
+  // following hierarchies in this order:
+  // 1. |target|.
+  // 2. |target|'s child hierarchy.
+  // 3. |target|'s parent hierarchy in its |old_parent|.
+  // 4. |target|'s parent hierarchy in its |new_parent|.
+  // This sequence is performed before and after the change is committed, with
+  // differing values for |phase| in |params| (see above).
+  virtual void OnWindowHierarchyChange(const HierarchyChangeParams& params) {}
+
   // Invoked when |new_window| has been added as a child of this window.
   virtual void OnWindowAdded(Window* new_window) {}
 
