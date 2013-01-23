@@ -617,10 +617,12 @@ class Runner(object):
       line = '%s (%.2fs) - retry #%d' % (test_case, duration, try_count)
     else:
       line = '%s (%.2fs)' % (test_case, duration)
-    if self.verbose or returncode:
-      # Print output in one of two cases:
+    if self.verbose or returncode or try_count > 1:
+      # Print output in one of three cases:
       #   --verbose was specified.
       #   The test failed.
+      #   The wasn't the first attempt (this is needed so the test parser can
+      #       detect that a test has been successfully retried).
       line += '\n' + output
     self.progress.update_item(line, True, need_to_retry)
 
