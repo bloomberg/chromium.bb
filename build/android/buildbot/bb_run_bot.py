@@ -103,6 +103,7 @@ def GetBotStepMap():
         None),
       B('webkit-latest-webkit-tests', std_test_steps,
         T(['webkit_layout', 'webkit']), None),
+      B('webkit-latest-contentshell', compile_step, T(['webkit_layout']), None),
 
       # Generic builder config (for substring match).
       B('builder', std_build_steps, None, None),

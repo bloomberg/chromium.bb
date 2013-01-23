@@ -187,23 +187,32 @@ def RunWebkitLint(target):
 def RunWebkitLayoutTests(options):
   """Run layout tests on an actual device."""
   buildbot_report.PrintNamedStep('webkit_tests')
-  RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py',
-          '--no-show-results',
-          '--no-new-test-results',
-          '--full-results-html',
-          '--clobber-old-results',
-          '--exit-after-n-failures', '5000',
-          '--exit-after-n-crashes-or-timeouts', '100',
-          '--debug-rwt-logging',
-          '--results-directory', '..layout-test-results',
-          '--target', options.target,
-          '--builder-name', options.build_properties.get('buildername', ''),
-          '--build-number', options.build_properties.get('buildnumber', ''),
-          '--master-name', options.build_properties.get('mastername', ''),
-          '--build-name', options.build_properties.get('buildername', ''),
-          '--platform=chromium-android',
-          '--test-results-server',
-          options.factory_properties.get('test_results_server', '')])
+  cmd_args = [
+        '--no-show-results',
+        '--no-new-test-results',
+        '--full-results-html',
+        '--clobber-old-results',
+        '--exit-after-n-failures', '5000',
+        '--exit-after-n-crashes-or-timeouts', '100',
+        '--debug-rwt-logging',
+        '--results-directory', '..layout-test-results',
+        '--target', options.target,
+        '--builder-name', options.build_properties.get('buildername', ''),
+        '--build-number', options.build_properties.get('buildnumber', ''),
+        '--master-name', options.build_properties.get('mastername', ''),
+        '--build-name', options.build_properties.get('buildername', ''),
+        '--platform=chromium-android']
+
+  for flag in 'test_results_server', 'driver_name', 'additional_drt_flag':
+    if flag in options.factory_properties:
+      cmd_args.extend(['--%s' % flag.replace('_', '-'),
+                       options.factory_properties.get(flag)])
+
+  for f in options.factory_properties.get('additional_expectations_files', []):
+    cmd_args.extend(['--additional-expectations-file',
+                     os.path.join(CHROME_SRC, *f)])
+
+  RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] + cmd_args)
 
 
 def MainTestWrapper(options):
