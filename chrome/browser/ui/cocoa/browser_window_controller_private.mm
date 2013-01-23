@@ -32,7 +32,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -177,9 +176,6 @@ willPositionSheet:(NSWindow*)sheet
   if ([window respondsToSelector:@selector(setShouldHideTitle:)])
     [(id)window setShouldHideTitle:![self hasTitleBar]];
 
-  // Update z-order. The code below depends on this.
-  [self updateSubviewZOrder];
-
   BOOL inPresentationMode = [self inPresentationMode];
   CGFloat floatingBarHeight = [self floatingBarHeight];
   // In presentation mode, |yOffset| accounts for the sliding position of the
@@ -205,7 +201,6 @@ willPositionSheet:(NSWindow*)sheet
 
   // Place the toolbar at the top of the reserved area.
   maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
-  CGFloat toolbarBottomY = maxY;
 
   // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
@@ -247,25 +242,14 @@ willPositionSheet:(NSWindow*)sheet
     }
   }
 
-  // In presentation mode the content area takes up all the remaining space
-  // (from the bottom of the infobar down). In normal mode the content area
-  // takes up the space between the bottom of the toolbar down.
-  CGFloat contentAreaTop = 0;
-  if (inPresentationMode) {
-    toolbarToWebContentsOffset_ = 0;
-    contentAreaTop = maxY;
-  } else {
-    toolbarToWebContentsOffset_ = toolbarBottomY - maxY;
-    contentAreaTop = toolbarBottomY;
-  }
-  [self updateContentOffsets];
-
-  NSRect contentAreaRect = NSMakeRect(minX, minY, width, contentAreaTop - minY);
+  // Finally, the content area takes up all of the remaining space.
+  NSRect contentAreaRect = NSMakeRect(minX, minY, width, maxY - minY);
   [self layoutTabContentArea:contentAreaRect];
 
   // Normally, we don't need to tell the toolbar whether or not to show the
   // divider, but things break down during animation.
-  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
+  [toolbarController_
+      setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
 }
 
 - (CGFloat)floatingBarHeight {
@@ -441,6 +425,22 @@ willPositionSheet:(NSWindow*)sheet
     // window), there's no actual overlay. (Displaying one would result in an
     // overly sliding in only under the menu, which gives an ugly effect.)
     if (floatingBarBackingView_.get()) {
+      BOOL aboveBookmarkBar = [self placeBookmarkBarBelowInfoBar];
+
+      // Insert it into the view hierarchy if necessary.
+      if (![floatingBarBackingView_ superview] ||
+          aboveBookmarkBar != floatingBarAboveBookmarkBar_) {
+        NSView* contentView = [[self window] contentView];
+        // z-order gets messed up unless we explicitly remove the floatingbar
+        // view and re-add it.
+        [floatingBarBackingView_ removeFromSuperview];
+        [contentView addSubview:floatingBarBackingView_
+                     positioned:(aboveBookmarkBar ?
+                                     NSWindowAbove : NSWindowBelow)
+                     relativeTo:[bookmarkBarController_ view]];
+        floatingBarAboveBookmarkBar_ = aboveBookmarkBar;
+      }
+
       // Set its frame.
       [floatingBarBackingView_ setFrame:frame];
     }
@@ -728,9 +728,15 @@ willPositionSheet:(NSWindow*)sheet
                                                   NSViewMinYMargin)];
   }
 
-  // Force the bookmark bar z-order to update.
-  [[bookmarkBarController_ view] removeFromSuperview];
-  [self updateSubviewZOrder];
+  // Adjust the infobar container. In fullscreen, it needs to be below all
+  // top chrome elements so it only sits atop the web contents. When in normal
+  // mode, it needs to draw over the bookmark bar and part of the toolbar.
+  [[infoBarContainerController_ view] removeFromSuperview];
+  NSView* infoBarDest = [[self window] contentView];
+  [infoBarDest addSubview:[infoBarContainerController_ view]
+               positioned:fullscreen ? NSWindowBelow : NSWindowAbove
+               relativeTo:fullscreen ? nil
+                                     : [toolbarController_ view]];
 }
 
 - (void)showFullscreenExitBubbleIfNecessary {
@@ -865,119 +871,6 @@ willPositionSheet:(NSWindow*)sheet
 
   barVisibilityUpdatesEnabled_ = NO;
   [presentationModeController_ cancelAnimationAndTimers];
-}
-
-- (CGFloat)toolbarDividerOpacity {
-  if ([self isShowingInstantResults])
-    return 1;
-  return [bookmarkBarController_ toolbarDividerOpacity];
-}
-
-- (BOOL)isShowingInstantResults {
-  if (!browser_->search_model()->mode().is_search_suggestions())
-    return NO;
-
-  // If the search suggestions are already being displayed in the preview
-  // contents then return YES.
-  if ([previewableContentsController_ isShowingPreview])
-    return YES;
-
-  // Search suggestions might be shown directly in the web contents in some
-  // cases.
-  return browser_->search_model()->mode().origin ==
-      chrome::search::Mode::ORIGIN_SEARCH;
-}
-
-- (void)updateContentOffsets {
-  // Normally the preview contents is used to show instant results which must
-  // obscure the bookmark bar. This is achieved by setting the offset to 0
-  // so that it overlaps the bookmark bar. The only exception is when the
-  // preview contents is showing the NTP which must sit below the bookmark bar.
-  CGFloat previewOffset = 0;
-  if (browser_->search_model()->mode().is_ntp())
-    previewOffset = toolbarToWebContentsOffset_;
-  [previewableContentsController_ setPreviewOffset:previewOffset];
-
-  // Normally the tab contents sits below the bookmark bar. This is achieved by
-  // setting the offset to the height of the bookmark bar. The only exception
-  // is on the search results page where the instant results are shown inside
-  // the page and not in the preview contents as usual.
-  CGFloat tabContentsOffset = toolbarToWebContentsOffset_;
-  if (browser_->search_model()->mode().is_search_suggestions() &&
-      browser_->search_model()->mode().origin ==
-          chrome::search::Mode::ORIGIN_SEARCH) {
-    tabContentsOffset = 0;
-  }
-  [previewableContentsController_ setActiveContainerOffset:tabContentsOffset];
-
-  // Prevent the fast resize view from drawing white over the bookmark bar.
-  [[self tabContentArea] setContentOffset:toolbarToWebContentsOffset_];
-}
-
-- (void)updateSubviewZOrder {
-  NSView* contentView = [[self window] contentView];
-  NSView* toolbarView = [toolbarController_ view];
-
-  if ([self inPresentationMode]) {
-    // Toolbar is above tab contents so that it can slide down from top of
-    // screen.
-    [contentView cr_ensureSubview:toolbarView
-                     isPositioned:NSWindowAbove
-                       relativeTo:[self tabContentArea]];
-  } else {
-    // Toolbar is below tab contents so that the infobar arrow can appear above
-    // it.  Unlike other views the toolbar never overlaps the actual web
-    // content.
-    [contentView cr_ensureSubview:toolbarView
-                     isPositioned:NSWindowBelow
-                       relativeTo:[self tabContentArea]];
-  }
-
-  // The bookmark bar is always below the toolbar. In normal mode this means
-  // that it is below tab contents. This allows instant results to be above
-  // the bookmark bar.
-  [contentView cr_ensureSubview:[bookmarkBarController_ view]
-                   isPositioned:NSWindowBelow
-                     relativeTo:toolbarView];
-
-  if ([self inPresentationMode]) {
-    // In presentation mode the infobar is below all other views.
-    [contentView cr_ensureSubview:[infoBarContainerController_ view]
-                     isPositioned:NSWindowBelow
-                       relativeTo:[self tabContentArea]];
-  } else {
-    // Above the toolbar but still below tab contents. Similar to the bookmark
-    // bar, this allows instant results to be above the info bar.
-    [contentView cr_ensureSubview:[infoBarContainerController_ view]
-                     isPositioned:NSWindowAbove
-                       relativeTo:toolbarView];
-  }
-
-  // The find bar is above everything except instant search results.
-  if (findBarCocoaController_) {
-    NSView* relativeView = nil;
-    if ([self inPresentationMode])
-      relativeView =  toolbarView;
-    else if ([self isShowingInstantResults])
-      relativeView = [infoBarContainerController_ view];
-    else
-      relativeView = [self tabContentArea];
-    [contentView cr_ensureSubview:[findBarCocoaController_ view]
-                     isPositioned:NSWindowAbove
-                       relativeTo:relativeView];
-  }
-
-  if (floatingBarBackingView_) {
-    if ([self placeBookmarkBarBelowInfoBar]) {
-      [contentView cr_ensureSubview:floatingBarBackingView_
-                       isPositioned:NSWindowAbove
-                         relativeTo:[bookmarkBarController_ view]];
-    } else {
-      [contentView cr_ensureSubview:floatingBarBackingView_
-                       isPositioned:NSWindowBelow
-                         relativeTo:[bookmarkBarController_ view]];
-    }
-  }
 }
 
 @end  // @implementation BrowserWindowController(Private)

@@ -525,6 +525,9 @@ class Browser : public TabStripModelObserver,
 
     // Change is the result of window toggling in/out of fullscreen mode.
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
+
+    // Change is the result of a state change in the instant preview.
+    BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE,
   };
 
   // Overridden from content::WebContentsDelegate:

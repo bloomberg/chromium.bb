@@ -15,9 +15,6 @@
 @end
 
 @implementation FastResizeView
-
-@synthesize contentOffset = contentOffset_;
-
 - (void)setFastResizeMode:(BOOL)fastResizeMode {
   fastResizeMode_ = fastResizeMode;
 
@@ -34,17 +31,12 @@
   // If we are in fast resize mode, our subviews may not completely cover our
   // bounds, so we fill with white.  If we are not in fast resize mode, we do
   // not need to draw anything.
-  if (!fastResizeMode_)
-    return;
-
-  // Don't draw on the non-content area.
-  NSRect clipRect = [self bounds];
-  clipRect.size.height -= contentOffset_;
-  NSRectClip(clipRect);
-
-  [[NSColor whiteColor] set];
-  NSRectFill(dirtyRect);
+  if (fastResizeMode_) {
+    [[NSColor whiteColor] set];
+    NSRectFill(dirtyRect);
+  }
 }
+
 
 @end
 

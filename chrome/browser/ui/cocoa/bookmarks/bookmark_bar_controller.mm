@@ -257,7 +257,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
     innerContentAnimationsEnabled_ = YES;
-    stateAnimationsEnabled_ = YES;
+    // Disable state animations (for example, showing or hiding the bookmark
+    // bar) if the detached bookmark bar will be shown at the bottom of the new
+    // tab page.
+    stateAnimationsEnabled_ = ![self shouldShowAtBottomWhenDetached];
 
     // Register for theme changes, bookmark button pulsing, ...
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -2356,7 +2359,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (BOOL)shouldShowAtBottomWhenDetached {
-  return NO;
+  return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile());
 }
 
 #pragma mark BookmarkButtonDelegate Protocol

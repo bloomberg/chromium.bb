@@ -267,7 +267,7 @@ void CheckViewPositions(BrowserWindowController* controller) {
 
   EXPECT_EQ(NSMinY(contentView), NSMinY(download));
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
-  EXPECT_EQ(NSMaxY(contentArea), NSMinY(toolbar));
+  EXPECT_EQ(NSMaxY(contentArea), NSMinY(infobar));
 
   // Bookmark bar frame is random memory when hidden.
   if ([controller bookmarkBarVisible]) {
