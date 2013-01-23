@@ -36,6 +36,7 @@ void OAuth2LoginManager::RestoreSession(
   user_profile_ = user_profile;
   auth_request_context_ = auth_request_context;
   state_ = OAuthLoginManager::SESSION_RESTORE_IN_PROGRESS;
+  restore_from_auth_cookies_ = restore_from_auth_cookies;
 
   // TODO(zelidrag): Remove eventually the next line in some future milestone.
   RemoveLegacyTokens();
@@ -45,10 +46,11 @@ void OAuth2LoginManager::RestoreSession(
   if (oauth2_policy_fetcher_.get() &&
       oauth2_policy_fetcher_->has_oauth2_tokens()) {
     VLOG(1) << "Resuming profile creation after fetching policy token";
-    refresh_token_ = oauth2_policy_fetcher_->oauth2_tokens().refresh_token;
-    restore_from_auth_cookies = false;
+    // We already have tokens, no need to get them from the cookie jar again.
+    restore_from_auth_cookies_ = false;
+    StoreOAuth2Tokens(oauth2_policy_fetcher_->oauth2_tokens());
   }
-  restore_from_auth_cookies_ = restore_from_auth_cookies;
+
   ContinueSessionRestore();
 }
 
@@ -58,11 +60,6 @@ void OAuth2LoginManager::ContinueSessionRestore() {
     return;
   }
 
-  // Did we already fetch the refresh token (either policy or db)?
-  if (!refresh_token_.empty()) {
-    // TODO(zelidrag): Figure out where to stick that refresh_token_ into.
-    // We probalby need bit more than that.
-  }
   LoadAndVerifyOAuth2Tokens();
 }
 
@@ -107,6 +104,13 @@ void OAuth2LoginManager::RemoveLegacyTokens() {
   prefs->UnregisterPreference(prefs::kOAuth1Secret);
 }
 
+void OAuth2LoginManager::StoreOAuth2Tokens(
+    const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
+  TokenService* token_service =
+      TokenServiceFactory::GetForProfile(user_profile_);
+  token_service->UpdateCredentialsWithOAuth2(oauth2_tokens);
+}
+
 void OAuth2LoginManager::LoadAndVerifyOAuth2Tokens() {
   // If we have no cookies, try to load saved OAuth2 token from TokenService.
   TokenService* token_service = SetupTokenService();
@@ -126,8 +130,7 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
 void OAuth2LoginManager::OnOAuth2TokensAvailable(
     const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
   LOG(INFO) << "OAuth2 tokens fetched";
-  TokenService* token_service = SetupTokenService();
-  token_service->UpdateCredentialsWithOAuth2(oauth2_tokens);
+  StoreOAuth2Tokens(oauth2_tokens);
 }
 
 void OAuth2LoginManager::OnOAuth2TokensFetchFailed() {

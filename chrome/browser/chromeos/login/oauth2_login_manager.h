@@ -76,6 +76,11 @@ class OAuth2LoginManager : public OAuthLoginManager,
   // Removes legacy tokens form OAuth1 flow.
   void RemoveLegacyTokens();
 
+  // Records OAuth2 tokens fetched through either policy fetcher or cookies-to-
+  // token exchange into TokenService.
+  void StoreOAuth2Tokens(
+      const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens);
+
   // Loads previously stored OAuth2 tokens and kicks off its validation.
   void LoadAndVerifyOAuth2Tokens();
 
