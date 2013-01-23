@@ -5,10 +5,12 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace extensions {
 
 void RunPassTest(const std::string& css_string, SkColor expected_result) {
   SkColor color = 0;
@@ -46,3 +48,5 @@ TEST(ExtensionBrowserActionsApiTest, ChangeBadgeBackgroundCSSTooLong) {
 TEST(ExtensionBrowserActionsApiTest, ChangeBadgeBackgroundCSSInvalid) {
   RunFailTest("#-22128");
 }
+
+}  // namespace extensions

@@ -29,7 +29,7 @@
 
 namespace events = extensions::event_names;
 namespace tab_keys = extensions::tabs_constants;
-namespace page_action_keys = extension_page_actions_api_constants;
+namespace page_actions_keys = extension_page_actions_api_constants;
 
 using content::NavigationController;
 using content::WebContents;
@@ -534,7 +534,8 @@ void BrowserEventRouter::DispatchOldPageActionEvent(
   DictionaryValue* data = new DictionaryValue();
   data->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
   data->Set(tab_keys::kTabUrlKey, Value::CreateStringValue(url));
-  data->Set(page_action_keys::kButtonKey, Value::CreateIntegerValue(button));
+  data->Set(page_actions_keys::kButtonKey,
+            Value::CreateIntegerValue(button));
   args->Append(data);
 
   DispatchEventToExtension(profile, extension_id, "pageActions", args.Pass(),

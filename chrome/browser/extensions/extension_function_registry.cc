@@ -9,8 +9,7 @@
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
-#include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
-#include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/idle/idle_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
@@ -71,17 +70,17 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<PageActionGetPopupFunction>();
 
   // Browser Actions.
-  RegisterFunction<BrowserActionSetIconFunction>();
-  RegisterFunction<BrowserActionSetTitleFunction>();
-  RegisterFunction<BrowserActionSetBadgeTextFunction>();
-  RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
-  RegisterFunction<BrowserActionSetPopupFunction>();
-  RegisterFunction<BrowserActionGetTitleFunction>();
-  RegisterFunction<BrowserActionGetBadgeTextFunction>();
-  RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
-  RegisterFunction<BrowserActionGetPopupFunction>();
-  RegisterFunction<BrowserActionEnableFunction>();
-  RegisterFunction<BrowserActionDisableFunction>();
+  RegisterFunction<extensions::BrowserActionSetIconFunction>();
+  RegisterFunction<extensions::BrowserActionSetTitleFunction>();
+  RegisterFunction<extensions::BrowserActionSetBadgeTextFunction>();
+  RegisterFunction<extensions::BrowserActionSetBadgeBackgroundColorFunction>();
+  RegisterFunction<extensions::BrowserActionSetPopupFunction>();
+  RegisterFunction<extensions::BrowserActionGetTitleFunction>();
+  RegisterFunction<extensions::BrowserActionGetBadgeTextFunction>();
+  RegisterFunction<extensions::BrowserActionGetBadgeBackgroundColorFunction>();
+  RegisterFunction<extensions::BrowserActionGetPopupFunction>();
+  RegisterFunction<extensions::BrowserActionEnableFunction>();
+  RegisterFunction<extensions::BrowserActionDisableFunction>();
 
   // Browsing Data.
   RegisterFunction<RemoveBrowsingDataFunction>();

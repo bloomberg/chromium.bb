@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 
 #include <string>
 
 #include "base/base64.h"
+#include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -22,10 +24,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/error_utils.h"
+
+namespace extensions {
 
 namespace {
 
@@ -42,6 +49,9 @@ const char kAppearanceStorageKey[] = "appearance";
 const char kNoExtensionActionError[] =
     "This extension has no action specified.";
 const char kNoTabError[] = "No tab with id: *.";
+const char kNoPageActionError[] =
+    "This extension has no page action specified.";
+const char kUrlNotActiveError[] = "This url is no longer active: *.";
 
 struct IconRepresentationInfo {
   // Size as a string that will be used to retrieve representation value from
@@ -50,7 +60,6 @@ struct IconRepresentationInfo {
   // Scale factor for which the represantion should be used.
   ui::ScaleFactor scale;
 };
-
 
 const IconRepresentationInfo kIconSizes[] = {
     { "19", ui::SCALE_FACTOR_100P },
@@ -169,7 +178,31 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
 
 }  // namespace
 
-namespace extensions {
+//
+// ExtensionActionAPI
+//
+
+static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
+  ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
+                            new ScriptBadgeHandler);
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<ScriptBadgeGetAttentionFunction>();
+  registry->RegisterFunction<ScriptBadgeGetPopupFunction>();
+  registry->RegisterFunction<ScriptBadgeSetPopupFunction>();
+}
+
+ExtensionActionAPI::~ExtensionActionAPI() {
+}
+
+// static
+ProfileKeyedAPIFactory<ExtensionActionAPI>*
+ExtensionActionAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
 
 //
 // ExtensionActionStorageManager
@@ -198,7 +231,7 @@ void ExtensionActionStorageManager::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      if (!extensions::ExtensionActionManager::Get(profile_)->
+      if (!ExtensionActionManager::Get(profile_)->
           GetBrowserAction(*extension)) {
         break;
       }
@@ -267,9 +300,6 @@ void ExtensionActionStorageManager::ReadFromStorage(
   SetDefaultsFromValue(dict, browser_action);
 }
 
-}  // namespace extensions
-
-
 //
 // ExtensionActionFunction
 //
@@ -285,9 +315,8 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 }
 
 bool ExtensionActionFunction::RunImpl() {
-  extensions::ExtensionActionManager* manager =
-      extensions::ExtensionActionManager::Get(profile_);
-  const extensions::Extension* extension = GetExtension();
+  ExtensionActionManager* manager = ExtensionActionManager::Get(profile_);
+  const Extension* extension = GetExtension();
   if (StartsWithASCII(name(), "scriptBadge.", false)) {
     extension_action_ = manager->GetScriptBadge(*extension);
   } else if (StartsWithASCII(name(), "systemIndicator.", false)) {
@@ -314,16 +343,16 @@ bool ExtensionActionFunction::RunImpl() {
     ExtensionTabUtil::GetTabById(
         tab_id_, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
     if (!contents_) {
-      error_ = extensions::ErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           kNoTabError, base::IntToString(tab_id_));
       return false;
     }
   } else {
     // Only browser actions and system indicators have a default tabId.
-    extensions::ActionInfo::Type action_type = extension_action_->action_type();
+    ActionInfo::Type action_type = extension_action_->action_type();
     EXTENSION_FUNCTION_VALIDATE(
-        action_type == extensions::ActionInfo::TYPE_BROWSER ||
-        action_type == extensions::ActionInfo::TYPE_SYSTEM_INDICATOR);
+        action_type == ActionInfo::TYPE_BROWSER ||
+        action_type == ActionInfo::TYPE_SYSTEM_INDICATOR);
   }
   return RunExtensionAction();
 }
@@ -377,20 +406,20 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
 
 void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
-    case extensions::ActionInfo::TYPE_BROWSER:
-    case extensions::ActionInfo::TYPE_PAGE:
-      if (extensions::ExtensionActionManager::Get(profile_)->
+    case ActionInfo::TYPE_BROWSER:
+    case ActionInfo::TYPE_PAGE:
+      if (ExtensionActionManager::Get(profile_)->
           GetBrowserAction(*extension_)) {
         NotifyBrowserActionChange();
-      } else if (extensions::ExtensionActionManager::Get(profile_)->
-                 GetPageAction(*extension_)) {
+      } else if (ExtensionActionManager::Get(profile_)->
+                     GetPageAction(*extension_)) {
         NotifyLocationBarChange();
       }
       return;
-    case extensions::ActionInfo::TYPE_SCRIPT_BADGE:
+    case ActionInfo::TYPE_SCRIPT_BADGE:
       NotifyLocationBarChange();
       return;
-    case extensions::ActionInfo::TYPE_SYSTEM_INDICATOR:
+    case ActionInfo::TYPE_SYSTEM_INDICATOR:
       NotifySystemIndicatorChange();
       return;
   }
@@ -405,7 +434,7 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
 }
 
 void ExtensionActionFunction::NotifyLocationBarChange() {
-  extensions::TabHelper::FromWebContents(contents_)->
+  TabHelper::FromWebContents(contents_)->
       location_bar_controller()->NotifyChange();
 }
 
@@ -462,9 +491,9 @@ bool ExtensionActionFunction::SetVisible(bool visible) {
   return true;
 }
 
-extensions::TabHelper& ExtensionActionFunction::tab_helper() const {
+TabHelper& ExtensionActionFunction::tab_helper() const {
   CHECK(contents_);
-  return *extensions::TabHelper::FromWebContents(contents_);
+  return *TabHelper::FromWebContents(contents_);
 }
 
 bool ExtensionActionShowFunction::RunExtensionAction() {
@@ -588,4 +617,90 @@ bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   list->Append(Value::CreateIntegerValue(SkColorGetA(color)));
   SetResult(list);
   return true;
+}
+
+//
+// ScriptBadgeGetAttentionFunction
+//
+
+ScriptBadgeGetAttentionFunction::~ScriptBadgeGetAttentionFunction() {}
+
+bool ScriptBadgeGetAttentionFunction::RunExtensionAction() {
+  tab_helper().location_bar_controller()->GetAttentionFor(extension_id());
+  return true;
+}
+
+}  // namespace extensions
+
+//
+// PageActionsFunction (deprecated)
+//
+
+namespace keys = extension_page_actions_api_constants;
+
+PageActionsFunction::PageActionsFunction() {
+}
+
+PageActionsFunction::~PageActionsFunction() {
+}
+
+bool PageActionsFunction::SetPageActionEnabled(bool enable) {
+  std::string extension_action_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_action_id));
+  DictionaryValue* action = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &action));
+
+  int tab_id;
+  EXTENSION_FUNCTION_VALIDATE(action->GetInteger(keys::kTabIdKey, &tab_id));
+  std::string url;
+  EXTENSION_FUNCTION_VALIDATE(action->GetString(keys::kUrlKey, &url));
+
+  std::string title;
+  if (enable) {
+    if (action->HasKey(keys::kTitleKey))
+      EXTENSION_FUNCTION_VALIDATE(action->GetString(keys::kTitleKey, &title));
+  }
+
+  ExtensionAction* page_action =
+      extensions::ExtensionActionManager::Get(profile())->
+      GetPageAction(*GetExtension());
+  if (!page_action) {
+    error_ = extensions::kNoPageActionError;
+    return false;
+  }
+
+  // Find the WebContents that contains this tab id.
+  content::WebContents* contents = NULL;
+  bool result = ExtensionTabUtil::GetTabById(
+      tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
+  if (!result || !contents) {
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
+        extensions::kNoTabError, base::IntToString(tab_id));
+    return false;
+  }
+
+  // Make sure the URL hasn't changed.
+  content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
+  if (!entry || url != entry->GetURL().spec()) {
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
+        extensions::kUrlNotActiveError, url);
+    return false;
+  }
+
+  // Set visibility and broadcast notifications that the UI should be updated.
+  page_action->SetAppearance(
+      tab_id, enable ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  page_action->SetTitle(tab_id, title);
+  extensions::TabHelper::FromWebContents(contents)->
+      location_bar_controller()->NotifyChange();
+
+  return true;
+}
+
+bool EnablePageActionsFunction::RunImpl() {
+  return SetPageActionEnabled(true);
+}
+
+bool DisablePageActionsFunction::RunImpl() {
+  return SetPageActionEnabled(false);
 }
