@@ -810,12 +810,6 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-  bug_108411
-  ThreadSanitizer:Race
-  ...
-  fun:pa_rtpoll_run
-}
-{
   bug_108539
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::InitializeAndSetTrackingStatus
