@@ -32,14 +32,9 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(24)=0 & inst(23:19)=1x11x & inst(7:4)=xxx0
-//    = {baseline: 'VectorBinary3RegisterImmOp',
-//       constraints: }
-//
-// Representative case:
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
-//    = {baseline: VectorBinary3RegisterImmOp,
+//    = {actual: VectorBinary3RegisterImmOp,
+//       baseline: VectorBinary3RegisterImmOp,
 //       constraints: }
 class VectorBinary3RegisterImmOpTesterCase0
     : public VectorBinary3RegisterImmOpTester {
@@ -72,14 +67,9 @@ bool VectorBinary3RegisterImmOpTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(24)=1 & inst(23:19)=1x11x & inst(11:8)=1100 & inst(7:4)=0xx0
-//    = {baseline: 'VectorUnary2RegisterDup',
-//       constraints: }
-//
-// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
-//    = {baseline: VectorUnary2RegisterDup,
+//    = {actual: VectorUnary2RegisterDup,
+//       baseline: VectorUnary2RegisterDup,
 //       constraints: }
 class VectorUnary2RegisterDupTesterCase1
     : public VectorUnary2RegisterDupTester {
@@ -115,14 +105,9 @@ bool VectorUnary2RegisterDupTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(24)=1 & inst(23:19)=1x11x & inst(11:8)=10xx & inst(7:4)=xxx0
-//    = {baseline: 'VectorBinary3RegisterLookupOp',
-//       constraints: }
-//
-// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
-//    = {baseline: VectorBinary3RegisterLookupOp,
+//    = {actual: VectorBinary3RegisterLookupOp,
+//       baseline: VectorBinary3RegisterLookupOp,
 //       constraints: }
 class VectorBinary3RegisterLookupOpTesterCase2
     : public VectorBinary3RegisterLookupOpTester {
@@ -163,15 +148,9 @@ bool VectorBinary3RegisterLookupOpTesterCase2
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(24)=0 & inst(23:19)=1x11x & inst(7:4)=xxx0
-//    = {baseline: 'VectorBinary3RegisterImmOp',
-//       constraints: ,
-//       rule: 'Vext_Rule_305_A1_P598'}
-//
-// Representative case:
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
-//    = {baseline: VectorBinary3RegisterImmOp,
+//    = {actual: VectorBinary3RegisterImmOp,
+//       baseline: VectorBinary3RegisterImmOp,
 //       constraints: ,
 //       rule: Vext_Rule_305_A1_P598}
 class VectorBinary3RegisterImmOpTester_Case0
@@ -183,15 +162,9 @@ class VectorBinary3RegisterImmOpTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(24)=1 & inst(23:19)=1x11x & inst(11:8)=1100 & inst(7:4)=0xx0
-//    = {baseline: 'VectorUnary2RegisterDup',
-//       constraints: ,
-//       rule: 'Vdup_Rule_302_A1_P592'}
-//
-// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
-//    = {baseline: VectorUnary2RegisterDup,
+//    = {actual: VectorUnary2RegisterDup,
+//       baseline: VectorUnary2RegisterDup,
 //       constraints: ,
 //       rule: Vdup_Rule_302_A1_P592}
 class VectorUnary2RegisterDupTester_Case1
@@ -203,15 +176,9 @@ class VectorUnary2RegisterDupTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(24)=1 & inst(23:19)=1x11x & inst(11:8)=10xx & inst(7:4)=xxx0
-//    = {baseline: 'VectorBinary3RegisterLookupOp',
-//       constraints: ,
-//       rule: 'Vtbl_Vtbx_Rule_406_A1_P798'}
-//
-// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
-//    = {baseline: VectorBinary3RegisterLookupOp,
+//    = {actual: VectorBinary3RegisterLookupOp,
+//       baseline: VectorBinary3RegisterLookupOp,
 //       constraints: ,
 //       rule: Vtbl_Vtbx_Rule_406_A1_P798}
 class VectorBinary3RegisterLookupOpTester_Case2
@@ -232,15 +199,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(24)=0 & inst(23:19)=1x11x & inst(7:4)=xxx0
-//    = {actual: 'VectorBinary3RegisterImmOp',
-//       baseline: 'VectorBinary3RegisterImmOp',
-//       constraints: ,
-//       pattern: '111100101d11nnnnddddiiiinqm0mmmm',
-//       rule: 'Vext_Rule_305_A1_P598'}
-//
-// Representative case:
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
 //    = {actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
@@ -253,15 +211,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("111100101d11nnnnddddiiiinqm0mmmm");
 }
 
-// Neutral case:
-// inst(24)=1 & inst(23:19)=1x11x & inst(11:8)=1100 & inst(7:4)=0xx0
-//    = {actual: 'VectorUnary2RegisterDup',
-//       baseline: 'VectorUnary2RegisterDup',
-//       constraints: ,
-//       pattern: '111100111d11iiiidddd11000qm0mmmm',
-//       rule: 'Vdup_Rule_302_A1_P592'}
-//
-// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
 //    = {actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
@@ -274,15 +223,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("111100111d11iiiidddd11000qm0mmmm");
 }
 
-// Neutral case:
-// inst(24)=1 & inst(23:19)=1x11x & inst(11:8)=10xx & inst(7:4)=xxx0
-//    = {actual: 'VectorBinary3RegisterLookupOp',
-//       baseline: 'VectorBinary3RegisterLookupOp',
-//       constraints: ,
-//       pattern: '111100111d11nnnndddd10ccnpm0mmmm',
-//       rule: 'Vtbl_Vtbx_Rule_406_A1_P798'}
-//
-// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
 //    = {actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,

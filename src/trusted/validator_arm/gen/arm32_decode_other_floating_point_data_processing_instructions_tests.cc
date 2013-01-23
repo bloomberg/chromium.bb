@@ -32,14 +32,9 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(19:16)=0000 & inst(7:6)=01
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=01
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase0
     : public CondVfpOpTester {
@@ -69,14 +64,9 @@ bool CondVfpOpTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=0000 & inst(7:6)=11
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=11
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase1
     : public CondVfpOpTester {
@@ -106,14 +96,9 @@ bool CondVfpOpTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=0001 & inst(7:6)=01
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=01
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase2
     : public CondVfpOpTester {
@@ -143,14 +128,9 @@ bool CondVfpOpTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=0001 & inst(7:6)=11
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=11
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase3
     : public CondVfpOpTester {
@@ -180,14 +160,9 @@ bool CondVfpOpTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=0100 & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0100 & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase4
     : public CondVfpOpTester {
@@ -217,14 +192,9 @@ bool CondVfpOpTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=0101 & inst(7:6)=x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase5
     : public CondVfpOpTester {
@@ -257,14 +227,9 @@ bool CondVfpOpTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=0111 & inst(7:6)=11
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=0111 & opc3(7:6)=11
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase6
     : public CondVfpOpTester {
@@ -294,14 +259,9 @@ bool CondVfpOpTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=1000 & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=1000 & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase7
     : public CondVfpOpTester {
@@ -331,14 +291,9 @@ bool CondVfpOpTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=001x & inst(7:6)=x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase8
     : public CondVfpOpTester {
@@ -371,14 +326,9 @@ bool CondVfpOpTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=101x & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=101x & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase9
     : public CondVfpOpTester {
@@ -408,14 +358,9 @@ bool CondVfpOpTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=110x & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=110x & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase10
     : public CondVfpOpTester {
@@ -445,14 +390,9 @@ bool CondVfpOpTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(19:16)=111x & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc2(19:16)=111x & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase11
     : public CondVfpOpTester {
@@ -482,14 +422,9 @@ bool CondVfpOpTesterCase11
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(7:6)=x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {baseline: 'CondVfpOp',
-//       constraints: }
-//
-// Representative case:
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: }
 class CondVfpOpTesterCase12
     : public CondVfpOpTester {
@@ -524,15 +459,9 @@ bool CondVfpOpTesterCase12
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(19:16)=0000 & inst(7:6)=01
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vmov_Rule_327_A2_P642'}
-//
-// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=01
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vmov_Rule_327_A2_P642}
 class CondVfpOpTester_Case0
@@ -544,15 +473,9 @@ class CondVfpOpTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(19:16)=0000 & inst(7:6)=11
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vabs_Rule_269_A2_P532'}
-//
-// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=11
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vabs_Rule_269_A2_P532}
 class CondVfpOpTester_Case1
@@ -564,15 +487,9 @@ class CondVfpOpTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(19:16)=0001 & inst(7:6)=01
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vneg_Rule_342_A2_P672'}
-//
-// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=01
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vneg_Rule_342_A2_P672}
 class CondVfpOpTester_Case2
@@ -584,15 +501,9 @@ class CondVfpOpTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(19:16)=0001 & inst(7:6)=11
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vsqrt_Rule_388_A1_P762'}
-//
-// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=11
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vsqrt_Rule_388_A1_P762}
 class CondVfpOpTester_Case3
@@ -604,15 +515,9 @@ class CondVfpOpTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(19:16)=0100 & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcmp_Vcmpe_Rule_A1'}
-//
-// Representative case:
 // opc2(19:16)=0100 & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcmp_Vcmpe_Rule_A1}
 class CondVfpOpTester_Case4
@@ -624,15 +529,9 @@ class CondVfpOpTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(19:16)=0101 & inst(7:6)=x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcmp_Vcmpe_Rule_A2'}
-//
-// Representative case:
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcmp_Vcmpe_Rule_A2}
 class CondVfpOpTester_Case5
@@ -644,15 +543,9 @@ class CondVfpOpTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(19:16)=0111 & inst(7:6)=11
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcvt_Rule_298_A1_P584'}
-//
-// Representative case:
 // opc2(19:16)=0111 & opc3(7:6)=11
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcvt_Rule_298_A1_P584}
 class CondVfpOpTester_Case6
@@ -664,15 +557,9 @@ class CondVfpOpTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(19:16)=1000 & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcvt_Vcvtr_Rule_295_A1_P578'}
-//
-// Representative case:
 // opc2(19:16)=1000 & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcvt_Vcvtr_Rule_295_A1_P578}
 class CondVfpOpTester_Case7
@@ -684,15 +571,9 @@ class CondVfpOpTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(19:16)=001x & inst(7:6)=x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcvtb_Vcvtt_Rule_300_A1_P588'}
-//
-// Representative case:
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcvtb_Vcvtt_Rule_300_A1_P588}
 class CondVfpOpTester_Case8
@@ -704,15 +585,9 @@ class CondVfpOpTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(19:16)=101x & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcvt_Rule_297_A1_P582'}
-//
-// Representative case:
 // opc2(19:16)=101x & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcvt_Rule_297_A1_P582}
 class CondVfpOpTester_Case9
@@ -724,15 +599,9 @@ class CondVfpOpTester_Case9
   {}
 };
 
-// Neutral case:
-// inst(19:16)=110x & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcvt_Vcvtr_Rule_295_A1_P578'}
-//
-// Representative case:
 // opc2(19:16)=110x & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcvt_Vcvtr_Rule_295_A1_P578}
 class CondVfpOpTester_Case10
@@ -744,15 +613,9 @@ class CondVfpOpTester_Case10
   {}
 };
 
-// Neutral case:
-// inst(19:16)=111x & inst(7:6)=x1
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vcvt_Rule_297_A1_P582'}
-//
-// Representative case:
 // opc2(19:16)=111x & opc3(7:6)=x1
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vcvt_Rule_297_A1_P582}
 class CondVfpOpTester_Case11
@@ -764,15 +627,9 @@ class CondVfpOpTester_Case11
   {}
 };
 
-// Neutral case:
-// inst(7:6)=x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {baseline: 'CondVfpOp',
-//       constraints: ,
-//       rule: 'Vmov_Rule_326_A2_P640'}
-//
-// Representative case:
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {baseline: CondVfpOp,
+//    = {actual: VfpOp,
+//       baseline: CondVfpOp,
 //       constraints: ,
 //       rule: Vmov_Rule_326_A2_P640}
 class CondVfpOpTester_Case12
@@ -793,15 +650,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(19:16)=0000 & inst(7:6)=01
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110000dddd101s01m0mmmm',
-//       rule: 'Vmov_Rule_327_A2_P642'}
-//
-// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=01
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -816,15 +664,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110000dddd101s01m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=0000 & inst(7:6)=11
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110000dddd101s11m0mmmm',
-//       rule: 'Vabs_Rule_269_A2_P532'}
-//
-// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=11
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -839,15 +678,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110000dddd101s11m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=0001 & inst(7:6)=01
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110001dddd101s01m0mmmm',
-//       rule: 'Vneg_Rule_342_A2_P672'}
-//
-// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -862,15 +692,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110001dddd101s01m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=0001 & inst(7:6)=11
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110001dddd101s11m0mmmm',
-//       rule: 'Vsqrt_Rule_388_A1_P762'}
-//
-// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=11
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -885,15 +706,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110001dddd101s11m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=0100 & inst(7:6)=x1
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110100dddd101se1m0mmmm',
-//       rule: 'Vcmp_Vcmpe_Rule_A1'}
-//
-// Representative case:
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -908,15 +720,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110100dddd101se1m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=0101 & inst(7:6)=x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110101dddd101se1000000',
-//       rule: 'Vcmp_Vcmpe_Rule_A2'}
-//
-// Representative case:
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -931,15 +734,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110101dddd101se1000000");
 }
 
-// Neutral case:
-// inst(19:16)=0111 & inst(7:6)=11
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d110111dddd101s11m0mmmm',
-//       rule: 'Vcvt_Rule_298_A1_P584'}
-//
-// Representative case:
 // opc2(19:16)=0111 & opc3(7:6)=11
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -954,15 +748,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110111dddd101s11m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=1000 & inst(7:6)=x1
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d111000dddd101sp1m0mmmm',
-//       rule: 'Vcvt_Vcvtr_Rule_295_A1_P578'}
-//
-// Representative case:
 // opc2(19:16)=1000 & opc3(7:6)=x1
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -977,15 +762,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d111000dddd101sp1m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=001x & inst(7:6)=x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d11001odddd1010t1m0mmmm',
-//       rule: 'Vcvtb_Vcvtt_Rule_300_A1_P588'}
-//
-// Representative case:
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -1000,15 +776,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d11001odddd1010t1m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=101x & inst(7:6)=x1
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d11101udddd101fx1i0iiii',
-//       rule: 'Vcvt_Rule_297_A1_P582'}
-//
-// Representative case:
 // opc2(19:16)=101x & opc3(7:6)=x1
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -1023,15 +790,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d11101udddd101fx1i0iiii");
 }
 
-// Neutral case:
-// inst(19:16)=110x & inst(7:6)=x1
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d11110xdddd101sp1m0mmmm',
-//       rule: 'Vcvt_Vcvtr_Rule_295_A1_P578'}
-//
-// Representative case:
 // opc2(19:16)=110x & opc3(7:6)=x1
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -1046,15 +804,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d11110xdddd101sp1m0mmmm");
 }
 
-// Neutral case:
-// inst(19:16)=111x & inst(7:6)=x1
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d11111udddd101fx1i0iiii',
-//       rule: 'Vcvt_Rule_297_A1_P582'}
-//
-// Representative case:
 // opc2(19:16)=111x & opc3(7:6)=x1
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,
@@ -1069,15 +818,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d11111udddd101fx1i0iiii");
 }
 
-// Neutral case:
-// inst(7:6)=x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {actual: 'VfpOp',
-//       baseline: 'CondVfpOp',
-//       constraints: ,
-//       pattern: 'cccc11101d11iiiidddd101s0000iiii',
-//       rule: 'Vmov_Rule_326_A2_P640'}
-//
-// Representative case:
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
 //    = {actual: VfpOp,
 //       baseline: CondVfpOp,

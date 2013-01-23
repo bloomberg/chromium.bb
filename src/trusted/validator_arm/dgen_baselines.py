@@ -323,3 +323,34 @@ def FindBlockIndex(filename, format, num_blocks):
     if filename.endswith(suffix):
       return block
   raise Exception("Can't find block index: %s" % filename)
+
+def AddBaselinesToDecoder(decoder, tables=None):
+  """Adds the automatically generated baseline decoders (in files
+     "*_baselines.h" and "*_baselines.cc" into the listed tables
+     of the decoder, and returns the generated (new) decoder.
+     """
+  if tables == None:
+    tables = decoder.table_names()
+  elif tables == []:
+    return decoder
+  GetBaselineDecoders(decoder)
+  return decoder.table_filter(
+      lambda tbl: _AddBaselineToTable(tbl) if tbl.name in tables
+                  else tbl.copy())
+
+def _AddBaselineToTable(table):
+  """Generates a copy of the given table, where the 'generated_baseline'
+     field is defined by the corresponding automatically generated
+     baseline decoder (described in the table)."""
+  return table.row_filter(_AddBaselineToRow)
+
+def _AddBaselineToRow(row):
+  """Generates a copy of the given row, where (if applicable),
+     the field 'generated_baseline' is defined by the corresponding
+     (baseline) instruction decoder described by the action
+     of the row."""
+  action = row.action.copy()
+  if (isinstance(action, dgen_core.DecoderAction) and
+      dgen_decoder.ActionDefinesDecoder(action)):
+    action.define('generated_baseline', BaselineName(action))
+  return dgen_core.Row(list(row.patterns), action)

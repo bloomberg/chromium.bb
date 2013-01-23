@@ -162,7 +162,9 @@ parsed table representations.
 import dgen_core
 import dgen_opt
 import dgen_output
+import dgen_decoder
 import dgen_actuals
+import dgen_baselines
 
 """The current command line arguments to use"""
 _cl_args = {}
@@ -685,11 +687,7 @@ namespace nacl_arm_test {
 """
 
 CONSTRAINT_TESTER_CLASS_HEADER="""
-// Neutral case:
 // %(row_comment)s
-//
-// Representative case:
-// %(row_rep_comment)s
 class %(base_tester)s
     : public %(base_base_tester)s {
  public:
@@ -766,11 +764,7 @@ TESTER_CLASS_HEADER="""
 """
 
 TESTER_CLASS="""
-// Neutral case:
 // %(row_comment)s
-//
-// Representative case:
-// %(row_rep_comment)s
 class %(decoder_tester)s
     : public %(base_tester)s {
  public:
@@ -793,11 +787,7 @@ class %(decoder_name)sTests : public ::testing::Test {
 """
 
 TEST_FUNCTION_ACTUAL_VS_BASELINE="""
-// Neutral case:
 // %(row_comment)s
-//
-// Representative case:
-// %(row_rep_comment)s
 TEST_F(%(decoder_name)sTests,
        %(decoder_tester)s_Test%(test_pattern)s) {
   %(decoder_tester)s baseline_tester;
@@ -808,11 +798,7 @@ TEST_F(%(decoder_name)sTests,
 """
 
 TEST_FUNCTION_BASELINE="""
-// Neutral case:
 // %(row_comment)s
-//
-// Representative case:
-// %(row_rep_comment)s
 TEST_F(%(decoder_name)sTests,
        %(decoder_tester)s_Test%(test_pattern)s) {
   %(decoder_tester)s tester;
@@ -843,6 +829,8 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   if actuals:
     decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
+  decoder = dgen_baselines.AddBaselinesToDecoder(decoder, tables)
+
   decoder = _decoder_restricted_to_tables(decoder, tables)
 
   values = {
@@ -861,9 +849,10 @@ def _filter_test_action(action, with_patterns, with_rules):
   """Filters the actions to pull out relavant entries, based on whether we
      want to include patterns and rules.
      """
-  action_fields = ['baseline', 'constraints', 'safety', 'defs']
+  action_fields = ['actual', 'baseline', 'generated_baseline',
+                   'constraints'] + dgen_decoder.METHODS
   if with_patterns:
-    action_fields += ['actual', 'pattern' ]
+    action_fields += ['pattern' ]
   if with_rules:
     action_fields += ['rule']
   return action.action_filter(action_fields)
@@ -914,8 +903,6 @@ def _install_test_row(row, decoder, values,
      """
   action = _filter_test_action(row.action, with_patterns, with_rules)
   values['row_comment'] = dgen_output.commented_string(
-      dgen_core.neutral_repr(row.copy_with_action(action)))
-  values['row_rep_comment'] = dgen_output.commented_string(
       repr(row.copy_with_action(action)))
   _install_action(decoder, action, values)
   return action

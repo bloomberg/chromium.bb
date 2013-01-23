@@ -32,14 +32,9 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(26:20)=0010000 & inst(7:4)=0000 & inst(19:16)=xxx1 & inst(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=0000 & Rn(19:16)=xxx1 & $pattern(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase0
     : public UnsafeUncondDecoderTester {
@@ -75,14 +70,9 @@ bool UnsafeUncondDecoderTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=0010000 & inst(7:4)=xx0x & inst(19:16)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=xx0x & Rn(19:16)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase1
     : public UnsafeUncondDecoderTester {
@@ -118,14 +108,9 @@ bool UnsafeUncondDecoderTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010011
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010011
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase2
     : public UnsafeUncondDecoderTester {
@@ -152,14 +137,9 @@ bool UnsafeUncondDecoderTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0000
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0000
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase3
     : public UnsafeUncondDecoderTester {
@@ -189,14 +169,9 @@ bool UnsafeUncondDecoderTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0001 & inst(31:0)=xxxxxxxxxxxx111111110000xxxx1111
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0001 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxx1111
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase4
     : public UnsafeUncondDecoderTester {
@@ -229,14 +204,9 @@ bool UnsafeUncondDecoderTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0100 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: 'DataBarrier',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0100 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: DataBarrier,
+//    = {actual: DataBarrier,
+//       baseline: DataBarrier,
 //       constraints: }
 class DataBarrierTesterCase5
     : public DataBarrierTester {
@@ -269,14 +239,9 @@ bool DataBarrierTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0101 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: 'DataBarrier',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0101 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: DataBarrier,
+//    = {actual: DataBarrier,
+//       baseline: DataBarrier,
 //       constraints: }
 class DataBarrierTesterCase6
     : public DataBarrierTester {
@@ -309,14 +274,9 @@ bool DataBarrierTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0110 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: 'InstructionBarrier',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0110 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: InstructionBarrier,
+//    = {actual: InstructionBarrier,
+//       baseline: InstructionBarrier,
 //       constraints: }
 class InstructionBarrierTesterCase7
     : public InstructionBarrierTester {
@@ -349,14 +309,9 @@ bool InstructionBarrierTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0111
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0111
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase8
     : public UnsafeUncondDecoderTester {
@@ -386,14 +341,9 @@ bool UnsafeUncondDecoderTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=001x
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=001x
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase9
     : public UnsafeUncondDecoderTester {
@@ -423,14 +373,9 @@ bool UnsafeUncondDecoderTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=1xxx
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=1xxx
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase10
     : public UnsafeUncondDecoderTester {
@@ -460,14 +405,9 @@ bool UnsafeUncondDecoderTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=100x001
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=100x001
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase11
     : public UnsafeUncondDecoderTester {
@@ -494,14 +434,9 @@ bool UnsafeUncondDecoderTesterCase11
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=100x101 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=100x101 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: }
 class PreloadRegisterImm12OpTesterCase12
     : public PreloadRegisterImm12OpTester {
@@ -531,14 +466,9 @@ bool PreloadRegisterImm12OpTesterCase12
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
-//
-// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 class PreloadRegisterImm12OpTesterCase13
     : public PreloadRegisterImm12OpTester {
@@ -576,14 +506,9 @@ bool PreloadRegisterImm12OpTesterCase13
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=101x001 & inst(19:16)=1111
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=1111
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase14
     : public UnsafeUncondDecoderTester {
@@ -613,14 +538,9 @@ bool UnsafeUncondDecoderTesterCase14
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
-//
-// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 class PreloadRegisterImm12OpTesterCase15
     : public PreloadRegisterImm12OpTester {
@@ -658,14 +578,9 @@ bool PreloadRegisterImm12OpTesterCase15
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=101x101 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: }
 class PreloadRegisterImm12OpTesterCase16
     : public PreloadRegisterImm12OpTester {
@@ -698,14 +613,9 @@ bool PreloadRegisterImm12OpTesterCase16
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=110x001 & inst(7:4)=xxx0
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=110x001 & op2(7:4)=xxx0
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase17
     : public UnsafeUncondDecoderTester {
@@ -735,14 +645,9 @@ bool UnsafeUncondDecoderTesterCase17
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=110x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOp',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=110x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOp,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: }
 class PreloadRegisterPairOpTesterCase18
     : public PreloadRegisterPairOpTester {
@@ -775,14 +680,9 @@ bool PreloadRegisterPairOpTesterCase18
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=111x001 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOp',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOp,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: }
 class PreloadRegisterPairOpTesterCase19
     : public PreloadRegisterPairOpTester {
@@ -815,14 +715,9 @@ bool PreloadRegisterPairOpTesterCase19
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=111x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOp',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOp,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: }
 class PreloadRegisterPairOpTesterCase20
     : public PreloadRegisterPairOpTester {
@@ -855,14 +750,9 @@ bool PreloadRegisterPairOpTesterCase20
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=1011x11
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=1011x11
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase21
     : public UnsafeUncondDecoderTester {
@@ -889,14 +779,9 @@ bool UnsafeUncondDecoderTesterCase21
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=100xx11
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=100xx11
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase22
     : public UnsafeUncondDecoderTester {
@@ -923,14 +808,9 @@ bool UnsafeUncondDecoderTesterCase22
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(26:20)=11xxx11 & inst(7:4)=xxx0
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(26:20)=11xxx11 & op2(7:4)=xxx0
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: }
 class UnsafeUncondDecoderTesterCase23
     : public UnsafeUncondDecoderTester {
@@ -965,15 +845,9 @@ bool UnsafeUncondDecoderTesterCase23
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(26:20)=0010000 & inst(7:4)=0000 & inst(19:16)=xxx1 & inst(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       rule: 'Setend_Rule_157_P314'}
-//
-// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=0000 & Rn(19:16)=xxx1 & $pattern(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: ,
 //       rule: Setend_Rule_157_P314}
 class ForbiddenUncondDecoderTester_Case0
@@ -985,15 +859,9 @@ class ForbiddenUncondDecoderTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(26:20)=0010000 & inst(7:4)=xx0x & inst(19:16)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       rule: 'Cps_Rule_b6_1_1_A1_B6_3'}
-//
-// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=xx0x & Rn(19:16)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: ,
 //       rule: Cps_Rule_b6_1_1_A1_B6_3}
 class ForbiddenUncondDecoderTester_Case1
@@ -1005,15 +873,9 @@ class ForbiddenUncondDecoderTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010011
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010011
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case2
@@ -1025,15 +887,9 @@ class UnpredictableUncondDecoderTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0000
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0000
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case3
@@ -1045,15 +901,9 @@ class UnpredictableUncondDecoderTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0001 & inst(31:0)=xxxxxxxxxxxx111111110000xxxx1111
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       rule: 'Clrex_Rule_30_A1_P70'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0001 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxx1111
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: ,
 //       rule: Clrex_Rule_30_A1_P70}
 class ForbiddenUncondDecoderTester_Case4
@@ -1065,15 +915,9 @@ class ForbiddenUncondDecoderTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0100 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: 'DataBarrier',
-//       constraints: ,
-//       rule: 'Dsb_Rule_42_A1_P92'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0100 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: DataBarrier,
+//    = {actual: DataBarrier,
+//       baseline: DataBarrier,
 //       constraints: ,
 //       rule: Dsb_Rule_42_A1_P92}
 class DataBarrierTester_Case5
@@ -1085,15 +929,9 @@ class DataBarrierTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0101 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: 'DataBarrier',
-//       constraints: ,
-//       rule: 'Dmb_Rule_41_A1_P90'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0101 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: DataBarrier,
+//    = {actual: DataBarrier,
+//       baseline: DataBarrier,
 //       constraints: ,
 //       rule: Dmb_Rule_41_A1_P90}
 class DataBarrierTester_Case6
@@ -1105,15 +943,9 @@ class DataBarrierTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0110 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: 'InstructionBarrier',
-//       constraints: ,
-//       rule: 'Isb_Rule_49_A1_P102'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0110 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {baseline: InstructionBarrier,
+//    = {actual: InstructionBarrier,
+//       baseline: InstructionBarrier,
 //       constraints: ,
 //       rule: Isb_Rule_49_A1_P102}
 class InstructionBarrierTester_Case7
@@ -1125,15 +957,9 @@ class InstructionBarrierTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0111
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0111
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case8
@@ -1145,15 +971,9 @@ class UnpredictableUncondDecoderTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=001x
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=001x
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case9
@@ -1165,15 +985,9 @@ class UnpredictableUncondDecoderTester_Case9
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=1xxx
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=1xxx
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case10
@@ -1185,15 +999,9 @@ class UnpredictableUncondDecoderTester_Case10
   {}
 };
 
-// Neutral case:
-// inst(26:20)=100x001
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       rule: 'Unallocated_hints'}
-//
-// Representative case:
 // op1(26:20)=100x001
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: ,
 //       rule: Unallocated_hints}
 class ForbiddenUncondDecoderTester_Case11
@@ -1205,15 +1013,9 @@ class ForbiddenUncondDecoderTester_Case11
   {}
 };
 
-// Neutral case:
-// inst(26:20)=100x101 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: ,
-//       rule: 'Pli_Rule_120_A1_P242'}
-//
-// Representative case:
 // op1(26:20)=100x101 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: ,
 //       rule: Pli_Rule_120_A1_P242}
 class PreloadRegisterImm12OpTester_Case12
@@ -1225,15 +1027,9 @@ class PreloadRegisterImm12OpTester_Case12
   {}
 };
 
-// Neutral case:
-// inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
-//       rule: 'Pldw_Rule_117_A1_P236'}
-//
-// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //       rule: Pldw_Rule_117_A1_P236}
 class PreloadRegisterImm12OpTester_Case13
@@ -1245,15 +1041,9 @@ class PreloadRegisterImm12OpTester_Case13
   {}
 };
 
-// Neutral case:
-// inst(26:20)=101x001 & inst(19:16)=1111
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=1111
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case14
@@ -1265,15 +1055,9 @@ class UnpredictableUncondDecoderTester_Case14
   {}
 };
 
-// Neutral case:
-// inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
-//       rule: 'Pld_Rule_117_A1_P236'}
-//
-// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //       rule: Pld_Rule_117_A1_P236}
 class PreloadRegisterImm12OpTester_Case15
@@ -1285,15 +1069,9 @@ class PreloadRegisterImm12OpTester_Case15
   {}
 };
 
-// Neutral case:
-// inst(26:20)=101x101 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterImm12Op',
-//       constraints: ,
-//       rule: 'Pld_Rule_118_A1_P238'}
-//
-// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterImm12Op,
+//    = {actual: PreloadRegisterImm12Op,
+//       baseline: PreloadRegisterImm12Op,
 //       constraints: ,
 //       rule: Pld_Rule_118_A1_P238}
 class PreloadRegisterImm12OpTester_Case16
@@ -1305,15 +1083,9 @@ class PreloadRegisterImm12OpTester_Case16
   {}
 };
 
-// Neutral case:
-// inst(26:20)=110x001 & inst(7:4)=xxx0
-//    = {baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       rule: 'Unallocated_hints'}
-//
-// Representative case:
 // op1(26:20)=110x001 & op2(7:4)=xxx0
-//    = {baseline: ForbiddenUncondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
 //       constraints: ,
 //       rule: Unallocated_hints}
 class ForbiddenUncondDecoderTester_Case17
@@ -1325,15 +1097,9 @@ class ForbiddenUncondDecoderTester_Case17
   {}
 };
 
-// Neutral case:
-// inst(26:20)=110x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOp',
-//       constraints: ,
-//       rule: 'Pli_Rule_121_A1_P244'}
-//
-// Representative case:
 // op1(26:20)=110x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOp,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       rule: Pli_Rule_121_A1_P244}
 class PreloadRegisterPairOpTester_Case18
@@ -1345,15 +1111,9 @@ class PreloadRegisterPairOpTester_Case18
   {}
 };
 
-// Neutral case:
-// inst(26:20)=111x001 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOp',
-//       constraints: ,
-//       rule: 'Pldw_Rule_119_A1_P240'}
-//
-// Representative case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOp,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       rule: Pldw_Rule_119_A1_P240}
 class PreloadRegisterPairOpTester_Case19
@@ -1365,15 +1125,9 @@ class PreloadRegisterPairOpTester_Case19
   {}
 };
 
-// Neutral case:
-// inst(26:20)=111x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOp',
-//       constraints: ,
-//       rule: 'Pld_Rule_119_A1_P240'}
-//
-// Representative case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOp,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       rule: Pld_Rule_119_A1_P240}
 class PreloadRegisterPairOpTester_Case20
@@ -1385,15 +1139,9 @@ class PreloadRegisterPairOpTester_Case20
   {}
 };
 
-// Neutral case:
-// inst(26:20)=1011x11
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1011x11
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case21
@@ -1405,15 +1153,9 @@ class UnpredictableUncondDecoderTester_Case21
   {}
 };
 
-// Neutral case:
-// inst(26:20)=100xx11
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=100xx11
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case22
@@ -1425,15 +1167,9 @@ class UnpredictableUncondDecoderTester_Case22
   {}
 };
 
-// Neutral case:
-// inst(26:20)=11xxx11 & inst(7:4)=xxx0
-//    = {baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=11xxx11 & op2(7:4)=xxx0
-//    = {baseline: UnpredictableUncondDecoder,
+//    = {actual: Unpredictable,
+//       baseline: UnpredictableUncondDecoder,
 //       constraints: ,
 //       rule: Unpredictable}
 class UnpredictableUncondDecoderTester_Case23
@@ -1454,15 +1190,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(26:20)=0010000 & inst(7:4)=0000 & inst(19:16)=xxx1 & inst(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       pattern: '1111000100000001000000i000000000',
-//       rule: 'Setend_Rule_157_P314'}
-//
-// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=0000 & Rn(19:16)=xxx1 & $pattern(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
 //    = {actual: Forbidden,
 //       baseline: ForbiddenUncondDecoder,
@@ -1477,15 +1204,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("1111000100000001000000i000000000");
 }
 
-// Neutral case:
-// inst(26:20)=0010000 & inst(7:4)=xx0x & inst(19:16)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       pattern: '111100010000iii00000000iii0iiiii',
-//       rule: 'Cps_Rule_b6_1_1_A1_B6_3'}
-//
-// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=xx0x & Rn(19:16)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: ForbiddenUncondDecoder,
@@ -1500,15 +1218,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111100010000iii00000000iii0iiiii");
 }
 
-// Neutral case:
-// inst(26:20)=1010011
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '111101010011xxxxxxxxxxxxxxxxxxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010011
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1523,15 +1232,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111101010011xxxxxxxxxxxxxxxxxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0000
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '111101010111xxxxxxxxxxxx0000xxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0000
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1546,15 +1246,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111101010111xxxxxxxxxxxx0000xxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0001 & inst(31:0)=xxxxxxxxxxxx111111110000xxxx1111
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       pattern: '11110101011111111111000000011111',
-//       rule: 'Clrex_Rule_30_A1_P70'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0001 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxx1111
 //    = {actual: Forbidden,
 //       baseline: ForbiddenUncondDecoder,
@@ -1569,15 +1260,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("11110101011111111111000000011111");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0100 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {actual: 'DataBarrier',
-//       baseline: 'DataBarrier',
-//       constraints: ,
-//       pattern: '1111010101111111111100000100xxxx',
-//       rule: 'Dsb_Rule_42_A1_P92'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0100 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {actual: DataBarrier,
 //       baseline: DataBarrier,
@@ -1590,15 +1272,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("1111010101111111111100000100xxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0101 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {actual: 'DataBarrier',
-//       baseline: 'DataBarrier',
-//       constraints: ,
-//       pattern: '1111010101111111111100000101xxxx',
-//       rule: 'Dmb_Rule_41_A1_P90'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0101 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {actual: DataBarrier,
 //       baseline: DataBarrier,
@@ -1611,15 +1284,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("1111010101111111111100000101xxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0110 & inst(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
-//    = {actual: 'InstructionBarrier',
-//       baseline: 'InstructionBarrier',
-//       constraints: ,
-//       pattern: '1111010101111111111100000110xxxx',
-//       rule: 'Isb_Rule_49_A1_P102'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0110 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {actual: InstructionBarrier,
 //       baseline: InstructionBarrier,
@@ -1632,15 +1296,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("1111010101111111111100000110xxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=0111
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '111101010111xxxxxxxxxxxx0111xxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0111
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1655,15 +1310,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111101010111xxxxxxxxxxxx0111xxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=001x
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '111101010111xxxxxxxxxxxx001xxxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=001x
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1678,15 +1324,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111101010111xxxxxxxxxxxx001xxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=1010111 & inst(7:4)=1xxx
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '111101010111xxxxxxxxxxxx1xxxxxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=1xxx
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1701,15 +1338,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111101010111xxxxxxxxxxxx1xxxxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=100x001
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       pattern: '11110100x001xxxxxxxxxxxxxxxxxxxx',
-//       rule: 'Unallocated_hints'}
-//
-// Representative case:
 // op1(26:20)=100x001
 //    = {actual: Forbidden,
 //       baseline: ForbiddenUncondDecoder,
@@ -1724,15 +1352,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("11110100x001xxxxxxxxxxxxxxxxxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=100x101 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterImm12Op',
-//       baseline: 'PreloadRegisterImm12Op',
-//       constraints: ,
-//       pattern: '11110100u101nnnn1111iiiiiiiiiiii',
-//       rule: 'Pli_Rule_120_A1_P242'}
-//
-// Representative case:
 // op1(26:20)=100x101 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1745,15 +1364,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110100u101nnnn1111iiiiiiiiiiii");
 }
 
-// Neutral case:
-// inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterImm12Op',
-//       baseline: 'PreloadRegisterImm12Op',
-//       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
-//       pattern: '11110101u001nnnn1111iiiiiiiiiiii',
-//       rule: 'Pldw_Rule_117_A1_P236'}
-//
-// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1766,15 +1376,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110101u001nnnn1111iiiiiiiiiiii");
 }
 
-// Neutral case:
-// inst(26:20)=101x001 & inst(19:16)=1111
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '11110101x001xxxxxxxxxxxxxxxxxxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=1111
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1789,15 +1390,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("11110101x001xxxxxxxxxxxxxxxxxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterImm12Op',
-//       baseline: 'PreloadRegisterImm12Op',
-//       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
-//       pattern: '11110101u101nnnn1111iiiiiiiiiiii',
-//       rule: 'Pld_Rule_117_A1_P236'}
-//
-// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1810,15 +1402,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110101u101nnnn1111iiiiiiiiiiii");
 }
 
-// Neutral case:
-// inst(26:20)=101x101 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterImm12Op',
-//       baseline: 'PreloadRegisterImm12Op',
-//       constraints: ,
-//       pattern: '11110101u10111111111iiiiiiiiiiii',
-//       rule: 'Pld_Rule_118_A1_P238'}
-//
-// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1831,15 +1414,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110101u10111111111iiiiiiiiiiii");
 }
 
-// Neutral case:
-// inst(26:20)=110x001 & inst(7:4)=xxx0
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenUncondDecoder',
-//       constraints: ,
-//       pattern: '11110110x001xxxxxxxxxxxxxxx0xxxx',
-//       rule: 'Unallocated_hints'}
-//
-// Representative case:
 // op1(26:20)=110x001 & op2(7:4)=xxx0
 //    = {actual: Forbidden,
 //       baseline: ForbiddenUncondDecoder,
@@ -1854,15 +1428,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("11110110x001xxxxxxxxxxxxxxx0xxxx");
 }
 
-// Neutral case:
-// inst(26:20)=110x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterPairOp',
-//       baseline: 'PreloadRegisterPairOp',
-//       constraints: ,
-//       pattern: '11110110u101nnnn1111iiiiitt0mmmm',
-//       rule: 'Pli_Rule_121_A1_P244'}
-//
-// Representative case:
 // op1(26:20)=110x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterPairOp,
 //       baseline: PreloadRegisterPairOp,
@@ -1875,15 +1440,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110110u101nnnn1111iiiiitt0mmmm");
 }
 
-// Neutral case:
-// inst(26:20)=111x001 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterPairOp',
-//       baseline: 'PreloadRegisterPairOp',
-//       constraints: ,
-//       pattern: '11110111u001nnnn1111iiiiitt0mmmm',
-//       rule: 'Pldw_Rule_119_A1_P240'}
-//
-// Representative case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterPairOp,
 //       baseline: PreloadRegisterPairOp,
@@ -1896,15 +1452,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110111u001nnnn1111iiiiitt0mmmm");
 }
 
-// Neutral case:
-// inst(26:20)=111x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterPairOp',
-//       baseline: 'PreloadRegisterPairOp',
-//       constraints: ,
-//       pattern: '11110111u101nnnn1111iiiiitt0mmmm',
-//       rule: 'Pld_Rule_119_A1_P240'}
-//
-// Representative case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterPairOp,
 //       baseline: PreloadRegisterPairOp,
@@ -1917,15 +1464,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110111u101nnnn1111iiiiitt0mmmm");
 }
 
-// Neutral case:
-// inst(26:20)=1011x11
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '111101011x11xxxxxxxxxxxxxxxxxxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=1011x11
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1940,15 +1478,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111101011x11xxxxxxxxxxxxxxxxxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=100xx11
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '11110100xx11xxxxxxxxxxxxxxxxxxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=100xx11
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,
@@ -1963,15 +1492,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("11110100xx11xxxxxxxxxxxxxxxxxxxx");
 }
 
-// Neutral case:
-// inst(26:20)=11xxx11 & inst(7:4)=xxx0
-//    = {actual: 'Unpredictable',
-//       baseline: 'UnpredictableUncondDecoder',
-//       constraints: ,
-//       pattern: '1111011xxx11xxxxxxxxxxxxxxx0xxxx',
-//       rule: 'Unpredictable'}
-//
-// Representative case:
 // op1(26:20)=11xxx11 & op2(7:4)=xxx0
 //    = {actual: Unpredictable,
 //       baseline: UnpredictableUncondDecoder,

@@ -32,35 +32,6 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(24:20)=01x00 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x00 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -71,6 +42,8 @@ namespace nacl_arm_test {
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -84,6 +57,7 @@ namespace nacl_arm_test {
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -107,6 +81,8 @@ namespace nacl_arm_test {
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTesterCase0
     : public StoreVectorRegisterListTester {
@@ -207,40 +183,6 @@ bool StoreVectorRegisterListTesterCase0
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x00 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x00 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -251,6 +193,8 @@ bool StoreVectorRegisterListTesterCase0
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -264,6 +208,7 @@ bool StoreVectorRegisterListTesterCase0
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -292,6 +237,8 @@ bool StoreVectorRegisterListTesterCase0
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTesterCase1
     : public StoreVectorRegisterListTester {
@@ -401,35 +348,6 @@ bool StoreVectorRegisterListTesterCase1
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x01 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x01 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -440,6 +358,8 @@ bool StoreVectorRegisterListTesterCase1
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -453,6 +373,7 @@ bool StoreVectorRegisterListTesterCase1
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -476,6 +397,8 @@ bool StoreVectorRegisterListTesterCase1
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreVectorRegisterListTesterCase2
     : public LoadStoreVectorRegisterListTester {
@@ -576,40 +499,6 @@ bool LoadStoreVectorRegisterListTesterCase2
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x01 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x01 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -620,6 +509,8 @@ bool LoadStoreVectorRegisterListTesterCase2
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -633,6 +524,7 @@ bool LoadStoreVectorRegisterListTesterCase2
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -661,6 +553,8 @@ bool LoadStoreVectorRegisterListTesterCase2
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreVectorRegisterListTesterCase3
     : public LoadStoreVectorRegisterListTester {
@@ -770,35 +664,6 @@ bool LoadStoreVectorRegisterListTesterCase3
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x10 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x10 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -809,6 +674,8 @@ bool LoadStoreVectorRegisterListTesterCase3
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -822,6 +689,7 @@ bool LoadStoreVectorRegisterListTesterCase3
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -845,6 +713,8 @@ bool LoadStoreVectorRegisterListTesterCase3
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTesterCase4
     : public StoreVectorRegisterListTester {
@@ -945,40 +815,6 @@ bool StoreVectorRegisterListTesterCase4
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x10 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x10 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -989,6 +825,8 @@ bool StoreVectorRegisterListTesterCase4
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -1002,6 +840,7 @@ bool StoreVectorRegisterListTesterCase4
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -1030,6 +869,8 @@ bool StoreVectorRegisterListTesterCase4
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTesterCase5
     : public StoreVectorRegisterListTester {
@@ -1139,35 +980,6 @@ bool StoreVectorRegisterListTesterCase5
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=~1101 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -1178,6 +990,8 @@ bool StoreVectorRegisterListTesterCase5
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -1191,6 +1005,7 @@ bool StoreVectorRegisterListTesterCase5
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -1214,6 +1029,8 @@ bool StoreVectorRegisterListTesterCase5
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreVectorRegisterListTesterCase6
     : public LoadStoreVectorRegisterListTester {
@@ -1317,40 +1134,6 @@ bool LoadStoreVectorRegisterListTesterCase6
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=~1101 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -1361,6 +1144,8 @@ bool LoadStoreVectorRegisterListTesterCase6
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -1374,6 +1159,7 @@ bool LoadStoreVectorRegisterListTesterCase6
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -1402,6 +1188,8 @@ bool LoadStoreVectorRegisterListTesterCase6
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreVectorRegisterListTesterCase7
     : public LoadStoreVectorRegisterListTester {
@@ -1514,32 +1302,27 @@ bool LoadStoreVectorRegisterListTesterCase7
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=1101 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: LoadVectorRegisterList,
+//       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
-//               32 => UNPREDICTABLE]}
+//               32 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class LoadStoreVectorRegisterListTesterCase8
     : public LoadStoreVectorRegisterListTester {
  public:
@@ -1593,31 +1376,18 @@ bool LoadStoreVectorRegisterListTesterCase8
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=1101 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: LoadVectorRegisterList,
+//       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8 / 2,
 //       safety: [regs  ==
@@ -1628,7 +1398,10 @@ bool LoadStoreVectorRegisterListTesterCase8
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE]}
+//               16 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class LoadStoreVectorRegisterListTesterCase9
     : public LoadStoreVectorRegisterListTester {
  public:
@@ -1691,35 +1464,6 @@ bool LoadStoreVectorRegisterListTesterCase9
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=~1101 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -1730,6 +1474,8 @@ bool LoadStoreVectorRegisterListTesterCase9
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -1743,6 +1489,7 @@ bool LoadStoreVectorRegisterListTesterCase9
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -1766,6 +1513,8 @@ bool LoadStoreVectorRegisterListTesterCase9
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTesterCase10
     : public StoreVectorRegisterListTester {
@@ -1869,40 +1618,6 @@ bool StoreVectorRegisterListTesterCase10
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=~1101 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -1913,6 +1628,8 @@ bool StoreVectorRegisterListTesterCase10
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -1926,6 +1643,7 @@ bool StoreVectorRegisterListTesterCase10
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -1954,6 +1672,8 @@ bool StoreVectorRegisterListTesterCase10
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTesterCase11
     : public StoreVectorRegisterListTester {
@@ -2066,32 +1786,27 @@ bool StoreVectorRegisterListTesterCase11
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=1101 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: StoreVectorRegisterList,
+//       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
-//               32 => UNPREDICTABLE]}
+//               32 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class StoreVectorRegisterListTesterCase12
     : public StoreVectorRegisterListTester {
  public:
@@ -2145,31 +1860,18 @@ bool StoreVectorRegisterListTesterCase12
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=1101 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: StoreVectorRegisterList,
+//       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8 / 2,
 //       safety: [regs  ==
@@ -2180,7 +1882,10 @@ bool StoreVectorRegisterListTesterCase12
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE]}
+//               16 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class StoreVectorRegisterListTesterCase13
     : public StoreVectorRegisterListTester {
  public:
@@ -2243,35 +1948,6 @@ bool StoreVectorRegisterListTesterCase13
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=10x11 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x11 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -2282,6 +1958,8 @@ bool StoreVectorRegisterListTesterCase13
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -2295,6 +1973,7 @@ bool StoreVectorRegisterListTesterCase13
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -2318,6 +1997,8 @@ bool StoreVectorRegisterListTesterCase13
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreVectorRegisterListTesterCase14
     : public LoadStoreVectorRegisterListTester {
@@ -2418,40 +2099,6 @@ bool LoadStoreVectorRegisterListTesterCase14
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=10x11 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x11 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -2462,6 +2109,8 @@ bool LoadStoreVectorRegisterListTesterCase14
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -2475,6 +2124,7 @@ bool LoadStoreVectorRegisterListTesterCase14
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -2503,6 +2153,8 @@ bool LoadStoreVectorRegisterListTesterCase14
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreVectorRegisterListTesterCase15
     : public LoadStoreVectorRegisterListTester {
@@ -2612,25 +2264,19 @@ bool LoadStoreVectorRegisterListTesterCase15
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=1xx00 & inst(8)=0
-//    = {baseline: 'StoreVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       safety: [15  ==
-//               inst(19:16) => FORBIDDEN_OPERANDS]}
-//
-// Representative case:
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
+//       actual: StoreVectorRegister,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
+//       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
 //       safety: [n  ==
-//               Pc => FORBIDDEN_OPERANDS]}
+//               Pc => FORBIDDEN_OPERANDS],
+//       uses: {Rn}}
 class StoreVectorRegisterTesterCase16
     : public StoreVectorRegisterTester {
  public:
@@ -2677,25 +2323,19 @@ bool StoreVectorRegisterTesterCase16
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=1xx00 & inst(8)=1
-//    = {baseline: 'StoreVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       safety: [15  ==
-//               inst(19:16) => FORBIDDEN_OPERANDS]}
-//
-// Representative case:
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
+//       actual: StoreVectorRegister,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
+//       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
 //       safety: [n  ==
-//               Pc => FORBIDDEN_OPERANDS]}
+//               Pc => FORBIDDEN_OPERANDS],
+//       uses: {Rn}}
 class StoreVectorRegisterTesterCase17
     : public StoreVectorRegisterTester {
  public:
@@ -2742,17 +2382,19 @@ bool StoreVectorRegisterTesterCase17
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=1xx01 & inst(8)=0
-//    = {baseline: 'LoadVectorRegister',
-//       constraints: ,
-//       defs: {}}
-//
-// Representative case:
 // opcode(24:20)=1xx01 & S(8)=0
-//    = {baseline: LoadVectorRegister,
+//    = {Pc: 15,
+//       Rn: Rn(19:16),
+//       actual: LoadVectorRegister,
+//       base: Rn,
+//       baseline: LoadVectorRegister,
 //       constraints: ,
-//       defs: {}}
+//       defs: {},
+//       fields: [Rn(19:16)],
+//       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
+//       is_literal_load: Rn  ==
+//               Pc,
+//       uses: {Rn}}
 class LoadStoreVectorOpTesterCase18
     : public LoadStoreVectorOpTester {
  public:
@@ -2795,17 +2437,19 @@ bool LoadStoreVectorOpTesterCase18
   return true;
 }
 
-// Neutral case:
-// inst(24:20)=1xx01 & inst(8)=1
-//    = {baseline: 'LoadVectorRegister',
-//       constraints: ,
-//       defs: {}}
-//
-// Representative case:
 // opcode(24:20)=1xx01 & S(8)=1
-//    = {baseline: LoadVectorRegister,
+//    = {Pc: 15,
+//       Rn: Rn(19:16),
+//       actual: LoadVectorRegister,
+//       base: Rn,
+//       baseline: LoadVectorRegister,
 //       constraints: ,
-//       defs: {}}
+//       defs: {},
+//       fields: [Rn(19:16)],
+//       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
+//       is_literal_load: Rn  ==
+//               Pc,
+//       uses: {Rn}}
 class LoadStoreVectorOpTesterCase19
     : public LoadStoreVectorOpTester {
  public:
@@ -2853,36 +2497,6 @@ bool LoadStoreVectorOpTesterCase19
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(24:20)=01x00 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x00 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -2893,6 +2507,8 @@ bool LoadStoreVectorOpTesterCase19
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -2906,6 +2522,7 @@ bool LoadStoreVectorOpTesterCase19
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -2930,6 +2547,8 @@ bool LoadStoreVectorOpTesterCase19
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTester_Case0
     : public StoreVectorRegisterListTesterCase0 {
@@ -2940,41 +2559,6 @@ class StoreVectorRegisterListTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x00 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x00 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -2985,6 +2569,8 @@ class StoreVectorRegisterListTester_Case0
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -2998,6 +2584,7 @@ class StoreVectorRegisterListTester_Case0
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -3027,6 +2614,8 @@ class StoreVectorRegisterListTester_Case0
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTester_Case1
     : public StoreVectorRegisterListTesterCase1 {
@@ -3037,36 +2626,6 @@ class StoreVectorRegisterListTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x01 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x01 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -3077,6 +2636,8 @@ class StoreVectorRegisterListTester_Case1
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -3090,6 +2651,7 @@ class StoreVectorRegisterListTester_Case1
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -3114,6 +2676,8 @@ class StoreVectorRegisterListTester_Case1
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case2
     : public LoadStoreVectorRegisterListTesterCase2 {
@@ -3124,41 +2688,6 @@ class LoadVectorRegisterListTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x01 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x01 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -3169,6 +2698,8 @@ class LoadVectorRegisterListTester_Case2
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -3182,6 +2713,7 @@ class LoadVectorRegisterListTester_Case2
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -3211,6 +2743,8 @@ class LoadVectorRegisterListTester_Case2
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case3
     : public LoadStoreVectorRegisterListTesterCase3 {
@@ -3221,36 +2755,6 @@ class LoadVectorRegisterListTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x10 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x10 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -3261,6 +2765,8 @@ class LoadVectorRegisterListTester_Case3
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -3274,6 +2780,7 @@ class LoadVectorRegisterListTester_Case3
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -3298,6 +2805,8 @@ class LoadVectorRegisterListTester_Case3
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTester_Case4
     : public StoreVectorRegisterListTesterCase4 {
@@ -3308,41 +2817,6 @@ class StoreVectorRegisterListTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x10 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x10 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -3353,6 +2827,8 @@ class StoreVectorRegisterListTester_Case4
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -3366,6 +2842,7 @@ class StoreVectorRegisterListTester_Case4
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -3395,6 +2872,8 @@ class StoreVectorRegisterListTester_Case4
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTester_Case5
     : public StoreVectorRegisterListTesterCase5 {
@@ -3405,36 +2884,6 @@ class StoreVectorRegisterListTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=~1101 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -3445,6 +2894,8 @@ class StoreVectorRegisterListTester_Case5
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -3458,6 +2909,7 @@ class StoreVectorRegisterListTester_Case5
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -3482,6 +2934,8 @@ class StoreVectorRegisterListTester_Case5
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case6
     : public LoadStoreVectorRegisterListTesterCase6 {
@@ -3492,41 +2946,6 @@ class LoadVectorRegisterListTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=~1101 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -3537,6 +2956,8 @@ class LoadVectorRegisterListTester_Case6
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -3550,6 +2971,7 @@ class LoadVectorRegisterListTester_Case6
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -3579,6 +3001,8 @@ class LoadVectorRegisterListTester_Case6
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case7
     : public LoadStoreVectorRegisterListTesterCase7 {
@@ -3589,34 +3013,28 @@ class LoadVectorRegisterListTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=1101 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       rule: 'VPOP',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: LoadVectorRegisterList,
+//       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8,
 //       rule: VPOP,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
-//               32 => UNPREDICTABLE]}
+//               32 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class LoadVectorRegisterListTester_Case8
     : public LoadStoreVectorRegisterListTesterCase8 {
  public:
@@ -3626,32 +3044,18 @@ class LoadVectorRegisterListTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=1101 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       rule: 'VPOP',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: LoadVectorRegisterList,
+//       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8 / 2,
 //       rule: VPOP,
@@ -3663,7 +3067,10 @@ class LoadVectorRegisterListTester_Case8
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE]}
+//               16 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class LoadVectorRegisterListTester_Case9
     : public LoadStoreVectorRegisterListTesterCase9 {
  public:
@@ -3673,36 +3080,6 @@ class LoadVectorRegisterListTester_Case9
   {}
 };
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=~1101 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -3713,6 +3090,8 @@ class LoadVectorRegisterListTester_Case9
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -3726,6 +3105,7 @@ class LoadVectorRegisterListTester_Case9
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -3750,6 +3130,8 @@ class LoadVectorRegisterListTester_Case9
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTester_Case10
     : public StoreVectorRegisterListTesterCase10 {
@@ -3760,41 +3142,6 @@ class StoreVectorRegisterListTester_Case10
   {}
 };
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=~1101 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -3805,6 +3152,8 @@ class StoreVectorRegisterListTester_Case10
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -3818,6 +3167,7 @@ class StoreVectorRegisterListTester_Case10
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -3847,6 +3197,8 @@ class StoreVectorRegisterListTester_Case10
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class StoreVectorRegisterListTester_Case11
     : public StoreVectorRegisterListTesterCase11 {
@@ -3857,34 +3209,28 @@ class StoreVectorRegisterListTester_Case11
   {}
 };
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=1101 & inst(8)=0
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       rule: 'VPUSH',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: StoreVectorRegisterList,
+//       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8,
 //       rule: VPUSH,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
-//               32 => UNPREDICTABLE]}
+//               32 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class StoreVectorRegisterListTester_Case12
     : public StoreVectorRegisterListTesterCase12 {
  public:
@@ -3894,32 +3240,18 @@ class StoreVectorRegisterListTester_Case12
   {}
 };
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=1101 & inst(8)=1
-//    = {baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       rule: 'VPUSH',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
+//       actual: StoreVectorRegisterList,
+//       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       regs: imm8 / 2,
 //       rule: VPUSH,
@@ -3931,7 +3263,10 @@ class StoreVectorRegisterListTester_Case12
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE]}
+//               16 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 class StoreVectorRegisterListTester_Case13
     : public StoreVectorRegisterListTesterCase13 {
  public:
@@ -3941,36 +3276,6 @@ class StoreVectorRegisterListTester_Case13
   {}
 };
 
-// Neutral case:
-// inst(24:20)=10x11 & inst(8)=0
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x11 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -3981,6 +3286,8 @@ class StoreVectorRegisterListTester_Case13
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -3994,6 +3301,7 @@ class StoreVectorRegisterListTester_Case13
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8,
@@ -4018,6 +3326,8 @@ class StoreVectorRegisterListTester_Case13
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case14
     : public LoadStoreVectorRegisterListTesterCase14 {
@@ -4028,41 +3338,6 @@ class LoadVectorRegisterListTester_Case14
   {}
 };
 
-// Neutral case:
-// inst(24:20)=10x11 & inst(8)=1
-//    = {baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x11 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4073,6 +3348,8 @@ class LoadVectorRegisterListTester_Case14
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
+//       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -4086,6 +3363,7 @@ class LoadVectorRegisterListTester_Case14
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       regs: imm8 / 2,
@@ -4115,6 +3393,8 @@ class LoadVectorRegisterListTester_Case14
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case15
     : public LoadStoreVectorRegisterListTesterCase15 {
@@ -4125,27 +3405,20 @@ class LoadVectorRegisterListTester_Case15
   {}
 };
 
-// Neutral case:
-// inst(24:20)=1xx00 & inst(8)=0
-//    = {baseline: 'StoreVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       rule: 'VSTR',
-//       safety: [15  ==
-//               inst(19:16) => FORBIDDEN_OPERANDS]}
-//
-// Representative case:
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
+//       actual: StoreVectorRegister,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
+//       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
 //       rule: VSTR,
 //       safety: [n  ==
-//               Pc => FORBIDDEN_OPERANDS]}
+//               Pc => FORBIDDEN_OPERANDS],
+//       uses: {Rn}}
 class StoreVectorRegisterTester_Case16
     : public StoreVectorRegisterTesterCase16 {
  public:
@@ -4155,27 +3428,20 @@ class StoreVectorRegisterTester_Case16
   {}
 };
 
-// Neutral case:
-// inst(24:20)=1xx00 & inst(8)=1
-//    = {baseline: 'StoreVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       rule: 'VSTR',
-//       safety: [15  ==
-//               inst(19:16) => FORBIDDEN_OPERANDS]}
-//
-// Representative case:
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
+//       actual: StoreVectorRegister,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
+//       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
 //       rule: VSTR,
 //       safety: [n  ==
-//               Pc => FORBIDDEN_OPERANDS]}
+//               Pc => FORBIDDEN_OPERANDS],
+//       uses: {Rn}}
 class StoreVectorRegisterTester_Case17
     : public StoreVectorRegisterTesterCase17 {
  public:
@@ -4185,19 +3451,20 @@ class StoreVectorRegisterTester_Case17
   {}
 };
 
-// Neutral case:
-// inst(24:20)=1xx01 & inst(8)=0
-//    = {baseline: 'LoadVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       rule: 'VLDR'}
-//
-// Representative case:
 // opcode(24:20)=1xx01 & S(8)=0
-//    = {baseline: LoadVectorRegister,
+//    = {Pc: 15,
+//       Rn: Rn(19:16),
+//       actual: LoadVectorRegister,
+//       base: Rn,
+//       baseline: LoadVectorRegister,
 //       constraints: ,
 //       defs: {},
-//       rule: VLDR}
+//       fields: [Rn(19:16)],
+//       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
+//       is_literal_load: Rn  ==
+//               Pc,
+//       rule: VLDR,
+//       uses: {Rn}}
 class LoadVectorRegisterTester_Case18
     : public LoadStoreVectorOpTesterCase18 {
  public:
@@ -4207,19 +3474,20 @@ class LoadVectorRegisterTester_Case18
   {}
 };
 
-// Neutral case:
-// inst(24:20)=1xx01 & inst(8)=1
-//    = {baseline: 'LoadVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       rule: 'VLDR'}
-//
-// Representative case:
 // opcode(24:20)=1xx01 & S(8)=1
-//    = {baseline: LoadVectorRegister,
+//    = {Pc: 15,
+//       Rn: Rn(19:16),
+//       actual: LoadVectorRegister,
+//       base: Rn,
+//       baseline: LoadVectorRegister,
 //       constraints: ,
 //       defs: {},
-//       rule: VLDR}
+//       fields: [Rn(19:16)],
+//       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
+//       is_literal_load: Rn  ==
+//               Pc,
+//       rule: VLDR,
+//       uses: {Rn}}
 class LoadVectorRegisterTester_Case19
     : public LoadStoreVectorOpTesterCase19 {
  public:
@@ -4238,38 +3506,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(24:20)=01x00 & inst(8)=0
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw0nnnndddd1010iiiiiiii',
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x00 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4281,6 +3517,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -4294,6 +3531,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -4319,6 +3557,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case0_TestCase0) {
@@ -4326,43 +3566,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x00 & inst(8)=1
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw0nnnndddd1011iiiiiiii',
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x00 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4374,6 +3577,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -4387,6 +3591,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -4417,6 +3622,8 @@ TEST_F(Arm32DecoderStateTests,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case1_TestCase1) {
@@ -4424,38 +3631,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x01 & inst(8)=0
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw1nnnndddd1010iiiiiiii',
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x01 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4467,6 +3642,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -4480,6 +3656,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
@@ -4505,6 +3682,8 @@ TEST_F(Arm32DecoderStateTests,
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case2_TestCase2) {
@@ -4512,43 +3691,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x01 & inst(8)=1
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw1nnnndddd1011iiiiiiii',
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x01 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4560,6 +3702,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -4573,6 +3716,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
@@ -4603,6 +3747,8 @@ TEST_F(Arm32DecoderStateTests,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case3_TestCase3) {
@@ -4610,38 +3756,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x10 & inst(8)=0
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw0nnnndddd1010iiiiiiii',
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x10 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4653,6 +3767,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -4666,6 +3781,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -4691,6 +3807,8 @@ TEST_F(Arm32DecoderStateTests,
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case4_TestCase4) {
@@ -4698,43 +3816,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x10 & inst(8)=1
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw0nnnndddd1011iiiiiiii',
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x10 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4746,6 +3827,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -4759,6 +3841,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -4789,6 +3872,8 @@ TEST_F(Arm32DecoderStateTests,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case5_TestCase5) {
@@ -4796,38 +3881,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=~1101 & inst(8)=0
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw1nnnndddd1010iiiiiiii',
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4839,6 +3892,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -4852,6 +3906,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
@@ -4877,6 +3932,8 @@ TEST_F(Arm32DecoderStateTests,
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case6_TestCase6) {
@@ -4884,43 +3941,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=~1101 & inst(8)=1
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw1nnnndddd1011iiiiiiii',
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4932,6 +3952,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -4945,6 +3966,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
@@ -4975,6 +3997,8 @@ TEST_F(Arm32DecoderStateTests,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case7_TestCase7) {
@@ -4982,30 +4006,18 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=1101 & inst(8)=0
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       pattern: 'cccc11001d111101dddd1010iiiiiiii',
-//       rule: 'VPOP',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
 //       actual: LoadVectorRegisterList,
+//       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -5013,42 +4025,28 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
-//               32 => UNPREDICTABLE]}
+//               32 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case8_TestCase8) {
   LoadVectorRegisterListTester_Case8 tester;
   tester.Test("cccc11001d111101dddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=01x11 & inst(19:16)=1101 & inst(8)=1
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       pattern: 'cccc11001d111101dddd1011iiiiiiii',
-//       rule: 'VPOP',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
 //       actual: LoadVectorRegisterList,
+//       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -5061,45 +4059,16 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE]}
+//               16 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case9_TestCase9) {
   LoadVectorRegisterListTester_Case9 tester;
   tester.Test("cccc11001d111101dddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=~1101 & inst(8)=0
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw0nnnndddd1010iiiiiiii',
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -5111,6 +4080,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -5124,6 +4094,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -5149,6 +4120,8 @@ TEST_F(Arm32DecoderStateTests,
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case10_TestCase10) {
@@ -5156,43 +4129,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=~1101 & inst(8)=1
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw0nnnndddd1011iiiiiiii',
-//       rule: 'VSTM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(23)=0 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -5204,6 +4140,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: StoreVectorRegisterList,
+//       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -5217,6 +4154,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -5247,6 +4185,8 @@ TEST_F(Arm32DecoderStateTests,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case11_TestCase11) {
@@ -5254,30 +4194,18 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=1101 & inst(8)=0
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       pattern: 'cccc11010d101101dddd1010iiiiiiii',
-//       rule: 'VPUSH',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
 //       actual: StoreVectorRegisterList,
+//       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -5285,42 +4213,28 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
-//               32 => UNPREDICTABLE]}
+//               32 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case12_TestCase12) {
   StoreVectorRegisterListTester_Case12 tester;
   tester.Test("cccc11010d101101dddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=10x10 & inst(19:16)=1101 & inst(8)=1
-//    = {actual: 'StoreVectorRegisterList',
-//       baseline: 'StoreVectorRegisterList',
-//       constraints: ,
-//       defs: {13},
-//       pattern: 'cccc11010d101101dddd1011iiiiiiii',
-//       rule: 'VPUSH',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
-//
-// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
 //       actual: StoreVectorRegisterList,
+//       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
+//       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -5333,45 +4247,16 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE]}
+//               16 => UNPREDICTABLE],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case13_TestCase13) {
   StoreVectorRegisterListTester_Case13 tester;
   tester.Test("cccc11010d101101dddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=10x11 & inst(8)=0
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw1nnnndddd1010iiiiiiii',
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) ||
-//            32  <=
-//               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x11 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -5383,6 +4268,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: Vd:D,
@@ -5396,6 +4282,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
@@ -5421,6 +4308,8 @@ TEST_F(Arm32DecoderStateTests,
 //               0 ||
 //            d + regs  >
 //               32 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case14_TestCase14) {
@@ -5428,43 +4317,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=10x11 & inst(8)=1
-//    = {actual: 'LoadVectorRegisterList',
-//       baseline: 'LoadVectorRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc110pudw1nnnndddd1011iiiiiiii',
-//       rule: 'VLDM',
-//       safety: [0  ==
-//               inst(7:0) / 2 ||
-//            16  <=
-//               inst(7:0) / 2 ||
-//            32  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         15  ==
-//               inst(19:16) &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         VFPSmallRegisterBank() &&
-//            16  <=
-//               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
-//         inst(23)  ==
-//               inst(24) &&
-//            inst(21)=1 => UNDEFINED,
-//         inst(24)=0 &&
-//            inst(23)=0 &&
-//            inst(21)=0 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(23)=1 &&
-//            inst(21)=1 &&
-//            13  ==
-//               inst(19:16) => DECODER_ERROR,
-//         inst(24)=1 &&
-//            inst(21)=0 => DECODER_ERROR]}
-//
-// Representative case:
 // opcode(24:20)=10x11 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -5476,6 +4328,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       W: W(21),
 //       actual: LoadVectorRegisterList,
+//       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
 //       d: D:Vd,
@@ -5489,6 +4342,7 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
+//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
@@ -5519,6 +4373,8 @@ TEST_F(Arm32DecoderStateTests,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
 //               16 => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case15_TestCase15) {
@@ -5526,18 +4382,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=1xx00 & inst(8)=0
-//    = {actual: 'StoreVectorRegister',
-//       baseline: 'StoreVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       pattern: 'cccc1101ud00nnnndddd1010iiiiiiii',
-//       rule: 'VSTR',
-//       safety: [15  ==
-//               inst(19:16) => FORBIDDEN_OPERANDS]}
-//
-// Representative case:
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -5546,29 +4390,19 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
+//       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1010iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
-//               Pc => FORBIDDEN_OPERANDS]}
+//               Pc => FORBIDDEN_OPERANDS],
+//       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterTester_Case16_TestCase16) {
   StoreVectorRegisterTester_Case16 tester;
   tester.Test("cccc1101ud00nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=1xx00 & inst(8)=1
-//    = {actual: 'StoreVectorRegister',
-//       baseline: 'StoreVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       pattern: 'cccc1101ud00nnnndddd1011iiiiiiii',
-//       rule: 'VSTR',
-//       safety: [15  ==
-//               inst(19:16) => FORBIDDEN_OPERANDS]}
-//
-// Representative case:
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -5577,57 +4411,55 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
+//       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1011iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
-//               Pc => FORBIDDEN_OPERANDS]}
+//               Pc => FORBIDDEN_OPERANDS],
+//       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterTester_Case17_TestCase17) {
   StoreVectorRegisterTester_Case17 tester;
   tester.Test("cccc1101ud00nnnndddd1011iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=1xx01 & inst(8)=0
-//    = {actual: 'LoadVectorRegister',
-//       baseline: 'LoadVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       pattern: 'cccc1101ud01nnnndddd1010iiiiiiii',
-//       rule: 'VLDR'}
-//
-// Representative case:
 // opcode(24:20)=1xx01 & S(8)=0
-//    = {actual: LoadVectorRegister,
+//    = {Pc: 15,
+//       Rn: Rn(19:16),
+//       actual: LoadVectorRegister,
+//       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
 //       defs: {},
+//       fields: [Rn(19:16)],
+//       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
-//       rule: VLDR}
+//       rule: VLDR,
+//       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterTester_Case18_TestCase18) {
   LoadVectorRegisterTester_Case18 tester;
   tester.Test("cccc1101ud01nnnndddd1010iiiiiiii");
 }
 
-// Neutral case:
-// inst(24:20)=1xx01 & inst(8)=1
-//    = {actual: 'LoadVectorRegister',
-//       baseline: 'LoadVectorRegister',
-//       constraints: ,
-//       defs: {},
-//       pattern: 'cccc1101ud01nnnndddd1011iiiiiiii',
-//       rule: 'VLDR'}
-//
-// Representative case:
 // opcode(24:20)=1xx01 & S(8)=1
-//    = {actual: LoadVectorRegister,
+//    = {Pc: 15,
+//       Rn: Rn(19:16),
+//       actual: LoadVectorRegister,
+//       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
 //       defs: {},
+//       fields: [Rn(19:16)],
+//       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
-//       rule: VLDR}
+//       rule: VLDR,
+//       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterTester_Case19_TestCase19) {
   LoadVectorRegisterTester_Case19 tester;

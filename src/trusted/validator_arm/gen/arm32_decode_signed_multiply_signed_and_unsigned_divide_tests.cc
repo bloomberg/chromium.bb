@@ -32,34 +32,22 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=~1111
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpTesterCase0
     : public Binary4RegisterDualOpTester {
  public:
@@ -115,29 +103,19 @@ bool Binary4RegisterDualOpTesterCase0
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=1111
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       generated_baseline: SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0,
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltATesterCase1
     : public Binary3RegisterOpAltATester {
  public:
@@ -189,34 +167,22 @@ bool Binary3RegisterOpAltATesterCase1
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=~1111
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpTesterCase2
     : public Binary4RegisterDualOpTester {
  public:
@@ -272,29 +238,19 @@ bool Binary4RegisterDualOpTesterCase2
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=1111
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       generated_baseline: SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0,
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltATesterCase3
     : public Binary3RegisterOpAltATester {
  public:
@@ -346,29 +302,19 @@ bool Binary3RegisterOpAltATesterCase3
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=001 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       generated_baseline: SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0,
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltATesterCase4
     : public Binary3RegisterOpAltATester {
  public:
@@ -420,29 +366,19 @@ bool Binary3RegisterOpAltATesterCase4
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=011 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       generated_baseline: UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0,
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltATesterCase5
     : public Binary3RegisterOpAltATester {
  public:
@@ -494,36 +430,22 @@ bool Binary3RegisterOpAltATesterCase5
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=100 & inst(7:5)=00x
-//    = {baseline: 'Binary4RegisterDualResultNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16), inst(15:12)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE,
-//         inst(15:12)  ==
-//               inst(19:16) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=100 & op2(7:5)=00x
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualResultNoCondsUpdate,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
-//               RdLo => UNPREDICTABLE]}
+//               RdLo => UNPREDICTABLE],
+//       uses: {RdHi, RdLo, Rm, Rn}}
 class Binary4RegisterDualResultTesterCase6
     : public Binary4RegisterDualResultTester {
  public:
@@ -578,36 +500,22 @@ bool Binary4RegisterDualResultTesterCase6
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=100 & inst(7:5)=01x
-//    = {baseline: 'Binary4RegisterDualResultNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16), inst(15:12)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE,
-//         inst(15:12)  ==
-//               inst(19:16) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=100 & op2(7:5)=01x
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualResultNoCondsUpdate,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
-//               RdLo => UNPREDICTABLE]}
+//               RdLo => UNPREDICTABLE],
+//       uses: {RdHi, RdLo, Rm, Rn}}
 class Binary4RegisterDualResultTesterCase7
     : public Binary4RegisterDualResultTester {
  public:
@@ -662,34 +570,22 @@ bool Binary4RegisterDualResultTesterCase7
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=~1111
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpTesterCase8
     : public Binary4RegisterDualOpTester {
  public:
@@ -745,29 +641,19 @@ bool Binary4RegisterDualOpTesterCase8
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=1111
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       generated_baseline: SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0,
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltATesterCase9
     : public Binary3RegisterOpAltATester {
  public:
@@ -819,34 +705,22 @@ bool Binary3RegisterOpAltATesterCase9
   return true;
 }
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=11x
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=11x
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpTesterCase10
     : public Binary4RegisterDualOpTester {
  public:
@@ -904,36 +778,23 @@ bool Binary4RegisterDualOpTesterCase10
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=~1111
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMLAD',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0,
 //       rule: SMLAD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case0
     : public Binary4RegisterDualOpTesterCase0 {
  public:
@@ -943,31 +804,20 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=1111
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMUAD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0,
 //       rule: SMUAD,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case1
     : public Binary3RegisterOpAltATesterCase1 {
  public:
@@ -977,36 +827,23 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=~1111
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMLSD',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0,
 //       rule: SMLSD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case2
     : public Binary4RegisterDualOpTesterCase2 {
  public:
@@ -1016,31 +853,20 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=1111
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMUSD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0,
 //       rule: SMUSD,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case3
     : public Binary3RegisterOpAltATesterCase3 {
  public:
@@ -1050,31 +876,20 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(22:20)=001 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SDIV',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0,
 //       rule: SDIV,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case4
     : public Binary3RegisterOpAltATesterCase4 {
  public:
@@ -1084,31 +899,20 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(22:20)=011 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'UDIV',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0,
 //       rule: UDIV,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case5
     : public Binary3RegisterOpAltATesterCase5 {
  public:
@@ -1118,38 +922,23 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(22:20)=100 & inst(7:5)=00x
-//    = {baseline: 'Binary4RegisterDualResultNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16), inst(15:12)},
-//       rule: 'SMLALD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE,
-//         inst(15:12)  ==
-//               inst(19:16) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=100 & op2(7:5)=00x
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualResultNoCondsUpdate,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0,
 //       rule: SMLALD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
-//               RdLo => UNPREDICTABLE]}
+//               RdLo => UNPREDICTABLE],
+//       uses: {RdHi, RdLo, Rm, Rn}}
 class Binary4RegisterDualResultNoCondsUpdateTester_Case6
     : public Binary4RegisterDualResultTesterCase6 {
  public:
@@ -1159,38 +948,23 @@ class Binary4RegisterDualResultNoCondsUpdateTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(22:20)=100 & inst(7:5)=01x
-//    = {baseline: 'Binary4RegisterDualResultNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16), inst(15:12)},
-//       rule: 'SMLSLD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE,
-//         inst(15:12)  ==
-//               inst(19:16) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=100 & op2(7:5)=01x
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualResultNoCondsUpdate,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0,
 //       rule: SMLSLD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
-//               RdLo => UNPREDICTABLE]}
+//               RdLo => UNPREDICTABLE],
+//       uses: {RdHi, RdLo, Rm, Rn}}
 class Binary4RegisterDualResultNoCondsUpdateTester_Case7
     : public Binary4RegisterDualResultTesterCase7 {
  public:
@@ -1200,36 +974,23 @@ class Binary4RegisterDualResultNoCondsUpdateTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=~1111
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMMLA',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0,
 //       rule: SMMLA,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case8
     : public Binary4RegisterDualOpTesterCase8 {
  public:
@@ -1239,31 +1000,20 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=1111
-//    = {baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMMUL',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary3RegisterOpAltANoCondsUpdate,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0,
 //       rule: SMMUL,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case9
     : public Binary3RegisterOpAltATesterCase9 {
  public:
@@ -1273,36 +1023,23 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case9
   {}
 };
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=11x
-//    = {baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       rule: 'SMMLS',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=11x
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
+//       actual: Binary4RegisterDualOpNoCondsUpdate,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0,
 //       rule: SMMLS,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case10
     : public Binary4RegisterDualOpTesterCase10 {
  public:
@@ -1321,24 +1058,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=~1111
-//    = {actual: 'Binary4RegisterDualOpNoCondsUpdate',
-//       baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110000ddddaaaammmm00m1nnnn',
-//       rule: 'SMLAD',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -1350,33 +1069,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0,
 //       pattern: cccc01110000ddddaaaammmm00m1nnnn,
 //       rule: SMLAD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case0_TestCase0) {
   Binary4RegisterDualOpNoCondsUpdateTester_Case0 tester;
   tester.Test("cccc01110000ddddaaaammmm00m1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=1111
-//    = {actual: 'Binary3RegisterOpAltANoCondsUpdate',
-//       baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110000dddd1111mmmm00m1nnnn',
-//       rule: 'SMUAD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -1387,33 +1092,17 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0,
 //       pattern: cccc01110000dddd1111mmmm00m1nnnn,
 //       rule: SMUAD,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case1_TestCase1) {
   Binary3RegisterOpAltANoCondsUpdateTester_Case1 tester;
   tester.Test("cccc01110000dddd1111mmmm00m1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=~1111
-//    = {actual: 'Binary4RegisterDualOpNoCondsUpdate',
-//       baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110000ddddaaaammmm01m1nnnn',
-//       rule: 'SMLSD',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -1425,33 +1114,19 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0,
 //       pattern: cccc01110000ddddaaaammmm01m1nnnn,
 //       rule: SMLSD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case2_TestCase2) {
   Binary4RegisterDualOpNoCondsUpdateTester_Case2 tester;
   tester.Test("cccc01110000ddddaaaammmm01m1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=1111
-//    = {actual: 'Binary3RegisterOpAltANoCondsUpdate',
-//       baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110000dddd1111mmmm01m1nnnn',
-//       rule: 'SMUSD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -1462,31 +1137,17 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0,
 //       pattern: cccc01110000dddd1111mmmm01m1nnnn,
 //       rule: SMUSD,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case3_TestCase3) {
   Binary3RegisterOpAltANoCondsUpdateTester_Case3 tester;
   tester.Test("cccc01110000dddd1111mmmm01m1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=001 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'Binary3RegisterOpAltANoCondsUpdate',
-//       baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110001dddd1111mmmm0001nnnn',
-//       rule: 'SDIV',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -1497,31 +1158,17 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0,
 //       pattern: cccc01110001dddd1111mmmm0001nnnn,
 //       rule: SDIV,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case4_TestCase4) {
   Binary3RegisterOpAltANoCondsUpdateTester_Case4 tester;
   tester.Test("cccc01110001dddd1111mmmm0001nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=011 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'Binary3RegisterOpAltANoCondsUpdate',
-//       baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110011dddd1111mmmm0001nnnn',
-//       rule: 'UDIV',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -1532,35 +1179,17 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0,
 //       pattern: cccc01110011dddd1111mmmm0001nnnn,
 //       rule: UDIV,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case5_TestCase5) {
   Binary3RegisterOpAltANoCondsUpdateTester_Case5 tester;
   tester.Test("cccc01110011dddd1111mmmm0001nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=100 & inst(7:5)=00x
-//    = {actual: 'Binary4RegisterDualResultNoCondsUpdate',
-//       baseline: 'Binary4RegisterDualResultNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16), inst(15:12)},
-//       pattern: 'cccc01110100hhhhllllmmmm00m1nnnn',
-//       rule: 'SMLALD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE,
-//         inst(15:12)  ==
-//               inst(19:16) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=100 & op2(7:5)=00x
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
@@ -1572,37 +1201,19 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0,
 //       pattern: cccc01110100hhhhllllmmmm00m1nnnn,
 //       rule: SMLALD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
-//               RdLo => UNPREDICTABLE]}
+//               RdLo => UNPREDICTABLE],
+//       uses: {RdHi, RdLo, Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultNoCondsUpdateTester_Case6_TestCase6) {
   Binary4RegisterDualResultNoCondsUpdateTester_Case6 tester;
   tester.Test("cccc01110100hhhhllllmmmm00m1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=100 & inst(7:5)=01x
-//    = {actual: 'Binary4RegisterDualResultNoCondsUpdate',
-//       baseline: 'Binary4RegisterDualResultNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16), inst(15:12)},
-//       pattern: 'cccc01110100hhhhllllmmmm01m1nnnn',
-//       rule: 'SMLSLD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE,
-//         inst(15:12)  ==
-//               inst(19:16) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=100 & op2(7:5)=01x
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
@@ -1614,35 +1225,19 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0,
 //       pattern: cccc01110100hhhhllllmmmm01m1nnnn,
 //       rule: SMLSLD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
-//               RdLo => UNPREDICTABLE]}
+//               RdLo => UNPREDICTABLE],
+//       uses: {RdHi, RdLo, Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultNoCondsUpdateTester_Case7_TestCase7) {
   Binary4RegisterDualResultNoCondsUpdateTester_Case7 tester;
   tester.Test("cccc01110100hhhhllllmmmm01m1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=~1111
-//    = {actual: 'Binary4RegisterDualOpNoCondsUpdate',
-//       baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110101ddddaaaammmm00r1nnnn',
-//       rule: 'SMMLA',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -1654,33 +1249,19 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0,
 //       pattern: cccc01110101ddddaaaammmm00r1nnnn,
 //       rule: SMMLA,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case8_TestCase8) {
   Binary4RegisterDualOpNoCondsUpdateTester_Case8 tester;
   tester.Test("cccc01110101ddddaaaammmm00r1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=1111
-//    = {actual: 'Binary3RegisterOpAltANoCondsUpdate',
-//       baseline: 'Binary3RegisterOpAltANoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110101dddd1111mmmm00r1nnnn',
-//       rule: 'SMMUL',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(11:8) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -1691,33 +1272,17 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0,
 //       pattern: cccc01110101dddd1111mmmm00r1nnnn,
 //       rule: SMMUL,
-//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case9_TestCase9) {
   Binary3RegisterOpAltANoCondsUpdateTester_Case9 tester;
   tester.Test("cccc01110101dddd1111mmmm00r1nnnn");
 }
 
-// Neutral case:
-// inst(22:20)=101 & inst(7:5)=11x
-//    = {actual: 'Binary4RegisterDualOpNoCondsUpdate',
-//       baseline: 'Binary4RegisterDualOpNoCondsUpdate',
-//       constraints: ,
-//       defs: {inst(19:16)},
-//       pattern: 'cccc01110101ddddaaaammmm11r1nnnn',
-//       rule: 'SMMLS',
-//       safety: [15  ==
-//               inst(15:12) => DECODER_ERROR,
-//         15  ==
-//               inst(19:16) ||
-//            15  ==
-//               inst(3:0) ||
-//            15  ==
-//               inst(11:8) => UNPREDICTABLE]}
-//
-// Representative case:
 // op1(22:20)=101 & op2(7:5)=11x
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -1729,11 +1294,13 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//       generated_baseline: SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0,
 //       pattern: cccc01110101ddddaaaammmm11r1nnnn,
 //       rule: SMMLS,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
-//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case10_TestCase10) {
   Binary4RegisterDualOpNoCondsUpdateTester_Case10 tester;

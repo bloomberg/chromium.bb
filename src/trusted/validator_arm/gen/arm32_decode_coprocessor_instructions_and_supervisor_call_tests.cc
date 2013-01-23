@@ -32,14 +32,9 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=000100
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000100
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase0
     : public UnsafeCondDecoderTester {
@@ -69,14 +64,9 @@ bool UnsafeCondDecoderTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=000101
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000101
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase1
     : public UnsafeCondDecoderTester {
@@ -106,14 +96,9 @@ bool UnsafeCondDecoderTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxx0 & inst(4)=1
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase2
     : public UnsafeCondDecoderTester {
@@ -146,14 +131,9 @@ bool UnsafeCondDecoderTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxx1 & inst(4)=1
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase3
     : public UnsafeCondDecoderTester {
@@ -186,14 +166,9 @@ bool UnsafeCondDecoderTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx0 & inst(25:20)=~000x00
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase4
     : public UnsafeCondDecoderTester {
@@ -226,14 +201,9 @@ bool UnsafeCondDecoderTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx1 & inst(19:16)=~1111 & inst(25:20)=~000x01
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase5
     : public UnsafeCondDecoderTester {
@@ -269,14 +239,9 @@ bool UnsafeCondDecoderTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx1 & inst(19:16)=1111 & inst(25:20)=~000x01
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase6
     : public UnsafeCondDecoderTester {
@@ -312,14 +277,9 @@ bool UnsafeCondDecoderTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxxx & inst(4)=0
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase7
     : public UnsafeCondDecoderTester {
@@ -352,14 +312,9 @@ bool UnsafeCondDecoderTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(25:20)=00000x
-//    = {baseline: 'UndefinedCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(25:20)=00000x
-//    = {baseline: UndefinedCondDecoder,
+//    = {actual: Undefined,
+//       baseline: UndefinedCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase8
     : public UnsafeCondDecoderTester {
@@ -386,14 +341,9 @@ bool UnsafeCondDecoderTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(25:20)=11xxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op1(25:20)=11xxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase9
     : public UnsafeCondDecoderTester {
@@ -425,15 +375,9 @@ bool UnsafeCondDecoderTesterCase9
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=000100
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Mcrr_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000100
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Mcrr_Rule_A1}
 class ForbiddenCondDecoderTester_Case0
@@ -445,15 +389,9 @@ class ForbiddenCondDecoderTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=000101
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Mrrc_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000101
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Mrrc_Rule_A1}
 class ForbiddenCondDecoderTester_Case1
@@ -465,15 +403,9 @@ class ForbiddenCondDecoderTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxx0 & inst(4)=1
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Mcr_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Mcr_Rule_A1}
 class ForbiddenCondDecoderTester_Case2
@@ -485,15 +417,9 @@ class ForbiddenCondDecoderTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxx1 & inst(4)=1
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Mrc_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Mrc_Rule_A1}
 class ForbiddenCondDecoderTester_Case3
@@ -505,15 +431,9 @@ class ForbiddenCondDecoderTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx0 & inst(25:20)=~000x00
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Stc_Rule_A2'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Stc_Rule_A2}
 class ForbiddenCondDecoderTester_Case4
@@ -525,15 +445,9 @@ class ForbiddenCondDecoderTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx1 & inst(19:16)=~1111 & inst(25:20)=~000x01
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Ldc_immediate_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Ldc_immediate_Rule_A1}
 class ForbiddenCondDecoderTester_Case5
@@ -545,15 +459,9 @@ class ForbiddenCondDecoderTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx1 & inst(19:16)=1111 & inst(25:20)=~000x01
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Ldc_literal_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Ldc_literal_Rule_A1}
 class ForbiddenCondDecoderTester_Case6
@@ -565,15 +473,9 @@ class ForbiddenCondDecoderTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxxx & inst(4)=0
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Cdp_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Cdp_Rule_A1}
 class ForbiddenCondDecoderTester_Case7
@@ -585,15 +487,9 @@ class ForbiddenCondDecoderTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(25:20)=00000x
-//    = {baseline: 'UndefinedCondDecoder',
-//       constraints: ,
-//       rule: 'Undefined_A5_6'}
-//
-// Representative case:
 // op1(25:20)=00000x
-//    = {baseline: UndefinedCondDecoder,
+//    = {actual: Undefined,
+//       baseline: UndefinedCondDecoder,
 //       constraints: ,
 //       rule: Undefined_A5_6}
 class UndefinedCondDecoderTester_Case8
@@ -605,15 +501,9 @@ class UndefinedCondDecoderTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(25:20)=11xxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'Svc_Rule_A1'}
-//
-// Representative case:
 // op1(25:20)=11xxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: Svc_Rule_A1}
 class ForbiddenCondDecoderTester_Case9
@@ -634,15 +524,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=000100
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc11000100ttttttttccccoooommmm',
-//       rule: 'Mcrr_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000100
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -657,15 +538,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11000100ttttttttccccoooommmm");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=000101
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc11000101ttttttttccccoooommmm',
-//       rule: 'Mrrc_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000101
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -680,15 +552,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11000101ttttttttccccoooommmm");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxx0 & inst(4)=1
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc1110ooo0nnnnttttccccooo1mmmm',
-//       rule: 'Mcr_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -703,15 +566,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc1110ooo0nnnnttttccccooo1mmmm");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxx1 & inst(4)=1
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc1110ooo1nnnnttttccccooo1mmmm',
-//       rule: 'Mrc_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -726,15 +580,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc1110ooo1nnnnttttccccooo1mmmm");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx0 & inst(25:20)=~000x00
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc110pudw0nnnnddddcccciiiiiiii',
-//       rule: 'Stc_Rule_A2'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -749,15 +594,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc110pudw0nnnnddddcccciiiiiiii");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx1 & inst(19:16)=~1111 & inst(25:20)=~000x01
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc110pudw1nnnnddddcccciiiiiiii',
-//       rule: 'Ldc_immediate_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -772,15 +608,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc110pudw1nnnnddddcccciiiiiiii");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=0xxxx1 & inst(19:16)=1111 & inst(25:20)=~000x01
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc110pudw11111ddddcccciiiiiiii',
-//       rule: 'Ldc_literal_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -795,15 +622,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc110pudw11111ddddcccciiiiiiii");
 }
 
-// Neutral case:
-// inst(11:8)=~101x & inst(25:20)=10xxxx & inst(4)=0
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc1110oooonnnnddddccccooo0mmmm',
-//       rule: 'Cdp_Rule_A1'}
-//
-// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,
@@ -818,15 +636,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc1110oooonnnnddddccccooo0mmmm");
 }
 
-// Neutral case:
-// inst(25:20)=00000x
-//    = {actual: 'Undefined',
-//       baseline: 'UndefinedCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc1100000xnnnnxxxxccccxxxoxxxx',
-//       rule: 'Undefined_A5_6'}
-//
-// Representative case:
 // op1(25:20)=00000x
 //    = {actual: Undefined,
 //       baseline: UndefinedCondDecoder,
@@ -841,15 +650,6 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc1100000xnnnnxxxxccccxxxoxxxx");
 }
 
-// Neutral case:
-// inst(25:20)=11xxxx
-//    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc1111iiiiiiiiiiiiiiiiiiiiiiii',
-//       rule: 'Svc_Rule_A1'}
-//
-// Representative case:
 // op1(25:20)=11xxxx
 //    = {actual: Forbidden,
 //       baseline: ForbiddenCondDecoder,

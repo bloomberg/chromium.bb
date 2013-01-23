@@ -2128,6 +2128,10 @@ class Decoder(object):
     self._is_sorted = True
     return self._tables
 
+  def table_names(self):
+    """Returns the names of all tables in the decoder."""
+    return sorted([tbl.name for tbl in self.tables()])
+
   def get_table(self, name):
     """Returns the table with the given name"""
     for tbl in self._tables:

@@ -32,35 +32,6 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Store3RegisterOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -69,6 +40,7 @@ namespace nacl_arm_test {
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Store3RegisterOp,
 //       base: Rn,
 //       baseline: Store3RegisterOp,
 //       constraints: ,
@@ -76,6 +48,7 @@ namespace nacl_arm_test {
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -91,6 +64,7 @@ namespace nacl_arm_test {
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rt, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore3RegisterOpTesterCase0
@@ -185,35 +159,6 @@ bool LoadStore3RegisterOpTesterCase0
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -222,6 +167,7 @@ bool LoadStore3RegisterOpTesterCase0
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load3RegisterOp,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -229,6 +175,7 @@ bool LoadStore3RegisterOpTesterCase0
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -244,6 +191,7 @@ bool LoadStore3RegisterOpTesterCase0
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore3RegisterOpTesterCase1
@@ -339,26 +287,6 @@ bool LoadStore3RegisterOpTesterCase1
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x0
-//    = {baseline: 'Store2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x0
 //    = {None: 32,
 //       P: P(24),
@@ -366,6 +294,7 @@ bool LoadStore3RegisterOpTesterCase1
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Store2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Store2RegisterImm8Op,
 //       constraints: ,
@@ -373,6 +302,7 @@ bool LoadStore3RegisterOpTesterCase1
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         Rt  ==
@@ -382,6 +312,8 @@ bool LoadStore3RegisterOpTesterCase1
 //               Pc ||
 //            Rn  ==
 //               Rt) => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rt, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore2RegisterImm8OpTesterCase2
@@ -457,27 +389,6 @@ bool LoadStore2RegisterImm8OpTesterCase2
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -485,6 +396,7 @@ bool LoadStore2RegisterImm8OpTesterCase2
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -492,6 +404,7 @@ bool LoadStore2RegisterImm8OpTesterCase2
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -502,6 +415,8 @@ bool LoadStore2RegisterImm8OpTesterCase2
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore2RegisterImm8OpTesterCase3
@@ -585,34 +500,27 @@ bool LoadStore2RegisterImm8OpTesterCase3
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111
-//    = {baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
+//       is_literal_load: true,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8OpTesterCase4
     : public LoadRegisterImm8OpTester {
  public:
@@ -674,42 +582,6 @@ bool LoadRegisterImm8OpTesterCase4
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterDoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1, inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 ||
-//            15  ==
-//               inst(3:0) ||
-//            inst(15:12)  ==
-//               inst(3:0) ||
-//            inst(15:12) + 1  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -719,6 +591,7 @@ bool LoadRegisterImm8OpTesterCase4
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Load3RegisterDoubleOp,
 //       base: Rn,
 //       baseline: Load3RegisterDoubleOp,
 //       constraints: ,
@@ -726,6 +599,7 @@ bool LoadRegisterImm8OpTesterCase4
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -751,6 +625,7 @@ bool LoadRegisterImm8OpTesterCase4
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore3RegisterDoubleOpTesterCase5
@@ -863,35 +738,6 @@ bool LoadStore3RegisterDoubleOpTesterCase5
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -900,6 +746,7 @@ bool LoadStore3RegisterDoubleOpTesterCase5
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load3RegisterOp,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -907,6 +754,7 @@ bool LoadStore3RegisterDoubleOpTesterCase5
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -922,6 +770,7 @@ bool LoadStore3RegisterDoubleOpTesterCase5
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore3RegisterOpTesterCase6
@@ -1017,28 +866,6 @@ bool LoadStore3RegisterOpTesterCase6
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1, inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -1047,6 +874,7 @@ bool LoadStore3RegisterOpTesterCase6
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Load2RegisterImm8DoubleOp,
 //       base: Rn,
 //       baseline: Load2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -1054,6 +882,7 @@ bool LoadStore3RegisterOpTesterCase6
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -1065,6 +894,8 @@ bool LoadStore3RegisterOpTesterCase6
 //               Rt2) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore2RegisterImm8DoubleOpTesterCase7
@@ -1153,27 +984,23 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase7
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'LoadRegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1},
-//       safety: [15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
+//       actual: LoadRegisterImm8DoubleOp,
+//       base: Pc,
 //       baseline: LoadRegisterImm8DoubleOp,
 //       constraints: ,
 //       defs: {Rt, Rt2},
 //       fields: [Rt(15:12)],
+//       generated_baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
+//       is_literal_load: true,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         Rt2  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8DoubleOpTesterCase8
     : public LoadRegisterImm8DoubleOpTester {
  public:
@@ -1232,27 +1059,6 @@ bool LoadRegisterImm8DoubleOpTesterCase8
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -1260,6 +1066,7 @@ bool LoadRegisterImm8DoubleOpTesterCase8
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -1267,6 +1074,7 @@ bool LoadRegisterImm8DoubleOpTesterCase8
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1277,6 +1085,8 @@ bool LoadRegisterImm8DoubleOpTesterCase8
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore2RegisterImm8OpTesterCase9
@@ -1360,34 +1170,27 @@ bool LoadStore2RegisterImm8OpTesterCase9
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
+//       is_literal_load: true,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8OpTesterCase10
     : public LoadRegisterImm8OpTester {
  public:
@@ -1452,38 +1255,6 @@ bool LoadRegisterImm8OpTesterCase10
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Store3RegisterDoubleOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -1493,6 +1264,7 @@ bool LoadRegisterImm8OpTesterCase10
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Store3RegisterDoubleOp,
 //       base: Rn,
 //       baseline: Store3RegisterDoubleOp,
 //       constraints: ,
@@ -1500,6 +1272,7 @@ bool LoadRegisterImm8OpTesterCase10
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -1521,6 +1294,7 @@ bool LoadRegisterImm8OpTesterCase10
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rt, Rt2, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore3RegisterDoubleOpTesterCase11
@@ -1625,35 +1399,6 @@ bool LoadStore3RegisterDoubleOpTesterCase11
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -1662,6 +1407,7 @@ bool LoadStore3RegisterDoubleOpTesterCase11
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load3RegisterOp,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -1669,6 +1415,7 @@ bool LoadStore3RegisterDoubleOpTesterCase11
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1684,6 +1431,7 @@ bool LoadStore3RegisterDoubleOpTesterCase11
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore3RegisterOpTesterCase12
@@ -1779,27 +1527,6 @@ bool LoadStore3RegisterOpTesterCase12
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x0
-//    = {baseline: 'Store2RegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x0
 //    = {None: 32,
 //       P: P(24),
@@ -1808,6 +1535,7 @@ bool LoadStore3RegisterOpTesterCase12
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Store2RegisterImm8DoubleOp,
 //       base: Rn,
 //       baseline: Store2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -1815,6 +1543,7 @@ bool LoadStore3RegisterOpTesterCase12
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
 //            W(21)=1 => UNPREDICTABLE,
@@ -1825,6 +1554,8 @@ bool LoadStore3RegisterOpTesterCase12
 //               Rt) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rt, Rt2, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore2RegisterImm8DoubleOpTesterCase13
@@ -1904,27 +1635,6 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -1932,6 +1642,7 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -1939,6 +1650,7 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1949,6 +1661,8 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class LoadStore2RegisterImm8OpTesterCase14
@@ -2032,34 +1746,27 @@ bool LoadStore2RegisterImm8OpTesterCase14
   return true;
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//       is_literal_load: true,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8OpTesterCase15
     : public LoadRegisterImm8OpTester {
  public:
@@ -2129,36 +1836,6 @@ bool LoadRegisterImm8OpTesterCase15
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Store3RegisterOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'STRH_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -2167,6 +1844,7 @@ bool LoadRegisterImm8OpTesterCase15
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Store3RegisterOp,
 //       base: Rn,
 //       baseline: Store3RegisterOp,
 //       constraints: ,
@@ -2174,6 +1852,7 @@ bool LoadRegisterImm8OpTesterCase15
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
 //       rule: STRH_register,
 //       safety: [P(24)=0 &&
@@ -2190,6 +1869,7 @@ bool LoadRegisterImm8OpTesterCase15
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rt, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store3RegisterOpTester_Case0
@@ -2201,36 +1881,6 @@ class Store3RegisterOpTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRH_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -2239,6 +1889,7 @@ class Store3RegisterOpTester_Case0
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load3RegisterOp,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2246,6 +1897,7 @@ class Store3RegisterOpTester_Case0
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
 //       rule: LDRH_register,
 //       safety: [P(24)=0 &&
@@ -2262,6 +1914,7 @@ class Store3RegisterOpTester_Case0
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterOpTester_Case1
@@ -2273,27 +1926,6 @@ class Load3RegisterOpTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x0
-//    = {baseline: 'Store2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'STRH_immediate',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x0
 //    = {None: 32,
 //       P: P(24),
@@ -2301,6 +1933,7 @@ class Load3RegisterOpTester_Case1
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Store2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Store2RegisterImm8Op,
 //       constraints: ,
@@ -2308,6 +1941,7 @@ class Load3RegisterOpTester_Case1
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
 //       rule: STRH_immediate,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -2318,6 +1952,8 @@ class Load3RegisterOpTester_Case1
 //               Pc ||
 //            Rn  ==
 //               Rt) => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rt, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store2RegisterImm8OpTester_Case2
@@ -2329,28 +1965,6 @@ class Store2RegisterImm8OpTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRH_immediate',
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -2358,6 +1972,7 @@ class Store2RegisterImm8OpTester_Case2
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2365,6 +1980,7 @@ class Store2RegisterImm8OpTester_Case2
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
 //       rule: LDRH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
@@ -2376,6 +1992,8 @@ class Store2RegisterImm8OpTester_Case2
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8OpTester_Case3
@@ -2387,36 +2005,28 @@ class Load2RegisterImm8OpTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111
-//    = {baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       rule: 'LDRH_literal',
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
+//       is_literal_load: true,
 //       rule: LDRH_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8OpTester_Case4
     : public LoadRegisterImm8OpTesterCase4 {
  public:
@@ -2426,43 +2036,6 @@ class LoadRegisterImm8OpTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterDoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1, inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRD_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 ||
-//            15  ==
-//               inst(3:0) ||
-//            inst(15:12)  ==
-//               inst(3:0) ||
-//            inst(15:12) + 1  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -2472,6 +2045,7 @@ class LoadRegisterImm8OpTester_Case4
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Load3RegisterDoubleOp,
 //       base: Rn,
 //       baseline: Load3RegisterDoubleOp,
 //       constraints: ,
@@ -2479,6 +2053,7 @@ class LoadRegisterImm8OpTester_Case4
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
 //       rule: LDRD_register,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
@@ -2505,6 +2080,7 @@ class LoadRegisterImm8OpTester_Case4
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterDoubleOpTester_Case5
@@ -2516,36 +2092,6 @@ class Load3RegisterDoubleOpTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRSB_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -2554,6 +2100,7 @@ class Load3RegisterDoubleOpTester_Case5
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load3RegisterOp,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2561,6 +2108,7 @@ class Load3RegisterDoubleOpTester_Case5
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
 //       rule: LDRSB_register,
 //       safety: [P(24)=0 &&
@@ -2577,6 +2125,7 @@ class Load3RegisterDoubleOpTester_Case5
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterOpTester_Case6
@@ -2588,29 +2137,6 @@ class Load3RegisterOpTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1, inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRD_immediate',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -2619,6 +2145,7 @@ class Load3RegisterOpTester_Case6
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Load2RegisterImm8DoubleOp,
 //       base: Rn,
 //       baseline: Load2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -2626,6 +2153,7 @@ class Load3RegisterOpTester_Case6
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
 //       rule: LDRD_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Rt(0)=1 => UNPREDICTABLE,
@@ -2638,6 +2166,8 @@ class Load3RegisterOpTester_Case6
 //               Rt2) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8DoubleOpTester_Case7
@@ -2649,29 +2179,24 @@ class Load2RegisterImm8DoubleOpTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'LoadRegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1},
-//       rule: 'LDRD_literal',
-//       safety: [15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
+//       actual: LoadRegisterImm8DoubleOp,
+//       base: Pc,
 //       baseline: LoadRegisterImm8DoubleOp,
 //       constraints: ,
 //       defs: {Rt, Rt2},
 //       fields: [Rt(15:12)],
+//       generated_baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
+//       is_literal_load: true,
 //       rule: LDRD_literal,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         Rt2  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8DoubleOpTester_Case8
     : public LoadRegisterImm8DoubleOpTesterCase8 {
  public:
@@ -2681,28 +2206,6 @@ class LoadRegisterImm8DoubleOpTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRSB_immediate',
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -2710,6 +2213,7 @@ class LoadRegisterImm8DoubleOpTester_Case8
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -2717,6 +2221,7 @@ class LoadRegisterImm8DoubleOpTester_Case8
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
 //       rule: LDRSB_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
@@ -2728,6 +2233,8 @@ class LoadRegisterImm8DoubleOpTester_Case8
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8OpTester_Case9
@@ -2739,36 +2246,28 @@ class Load2RegisterImm8OpTester_Case9
   {}
 };
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       rule: 'LDRSB_literal',
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
+//       is_literal_load: true,
 //       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8OpTester_Case10
     : public LoadRegisterImm8OpTesterCase10 {
  public:
@@ -2778,39 +2277,6 @@ class LoadRegisterImm8OpTester_Case10
   {}
 };
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Store3RegisterDoubleOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'STRD_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -2820,6 +2286,7 @@ class LoadRegisterImm8OpTester_Case10
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Store3RegisterDoubleOp,
 //       base: Rn,
 //       baseline: Store3RegisterDoubleOp,
 //       constraints: ,
@@ -2827,6 +2294,7 @@ class LoadRegisterImm8OpTester_Case10
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
 //       rule: STRD_register,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
@@ -2849,6 +2317,7 @@ class LoadRegisterImm8OpTester_Case10
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rt, Rt2, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store3RegisterDoubleOpTester_Case11
@@ -2860,36 +2329,6 @@ class Store3RegisterDoubleOpTester_Case11
   {}
 };
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRSH_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -2898,6 +2337,7 @@ class Store3RegisterDoubleOpTester_Case11
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load3RegisterOp,
 //       base: Rn,
 //       baseline: Load3RegisterOp,
 //       constraints: ,
@@ -2905,6 +2345,7 @@ class Store3RegisterDoubleOpTester_Case11
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
 //       rule: LDRSH_register,
 //       safety: [P(24)=0 &&
@@ -2921,6 +2362,7 @@ class Store3RegisterDoubleOpTester_Case11
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterOpTester_Case12
@@ -2932,28 +2374,6 @@ class Load3RegisterOpTester_Case12
   {}
 };
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x0
-//    = {baseline: 'Store2RegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'STRD_immediate',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x0
 //    = {None: 32,
 //       P: P(24),
@@ -2962,6 +2382,7 @@ class Load3RegisterOpTester_Case12
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       W: W(21),
+//       actual: Store2RegisterImm8DoubleOp,
 //       base: Rn,
 //       baseline: Store2RegisterImm8DoubleOp,
 //       constraints: ,
@@ -2969,6 +2390,7 @@ class Load3RegisterOpTester_Case12
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
 //       rule: STRD_immediate,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -2980,6 +2402,8 @@ class Load3RegisterOpTester_Case12
 //               Rt) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rt, Rt2, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store2RegisterImm8DoubleOpTester_Case13
@@ -2991,28 +2415,6 @@ class Store2RegisterImm8DoubleOpTester_Case13
   {}
 };
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       rule: 'LDRSH_immediate',
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -3020,6 +2422,7 @@ class Store2RegisterImm8DoubleOpTester_Case13
 //       Rn: Rn(19:16),
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: Load2RegisterImm8Op,
 //       base: Rn,
 //       baseline: Load2RegisterImm8Op,
 //       constraints: ,
@@ -3027,6 +2430,7 @@ class Store2RegisterImm8DoubleOpTester_Case13
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
 //       rule: LDRSH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
@@ -3038,6 +2442,8 @@ class Store2RegisterImm8DoubleOpTester_Case13
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8OpTester_Case14
@@ -3049,36 +2455,28 @@ class Load2RegisterImm8OpTester_Case14
   {}
 };
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       rule: 'LDRSB_literal',
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
+//       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//       is_literal_load: true,
 //       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 class LoadRegisterImm8OpTester_Case15
     : public LoadRegisterImm8OpTesterCase15 {
  public:
@@ -3097,38 +2495,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: 'Store3RegisterOp',
-//       baseline: 'Store3RegisterOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu0w0nnnntttt00001011mmmm',
-//       rule: 'STRH_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -3145,6 +2511,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
 //       pattern: cccc000pu0w0nnnntttt00001011mmmm,
 //       rule: STRH_register,
@@ -3162,6 +2529,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rt, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3170,38 +2538,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu0w0nnnntttt00001011mmmm");
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: 'Load3RegisterOp',
-//       baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu0w1nnnntttt00001011mmmm',
-//       rule: 'LDRH_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -3218,6 +2554,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
 //       pattern: cccc000pu0w1nnnntttt00001011mmmm,
 //       rule: LDRH_register,
@@ -3235,6 +2572,7 @@ TEST_F(Arm32DecoderStateTests,
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3243,29 +2581,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu0w1nnnntttt00001011mmmm");
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x0
-//    = {actual: 'Store2RegisterImm8Op',
-//       baseline: 'Store2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu1w0nnnnttttiiii1011iiii',
-//       rule: 'STRH_immediate',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x0
 //    = {None: 32,
 //       P: P(24),
@@ -3281,6 +2596,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
 //       pattern: cccc000pu1w0nnnnttttiiii1011iiii,
 //       rule: STRH_immediate,
 //       safety: [P(24)=0 &&
@@ -3292,6 +2608,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc ||
 //            Rn  ==
 //               Rt) => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rt, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3300,30 +2618,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu1w0nnnnttttiiii1011iiii");
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {actual: 'Load2RegisterImm8Op',
-//       baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu1w1nnnnttttiiii1011iiii',
-//       rule: 'LDRH_immediate',
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -3339,6 +2633,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
 //       pattern: cccc000pu1w1nnnnttttiiii1011iiii,
 //       rule: LDRH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
@@ -3351,6 +2646,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3359,32 +2656,19 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu1w1nnnnttttiiii1011iiii");
 }
 
-// Neutral case:
-// inst(6:5)=01 & inst(24:20)=xx1x1 & inst(19:16)=1111
-//    = {actual: 'LoadRegisterImm8Op',
-//       baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       pattern: 'cccc000pu1w11111ttttiiii1011iiii',
-//       rule: 'LDRH_literal',
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=01 & op1(24:20)=xx1x1 & Rn(19:16)=1111
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
 //       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
+//       is_literal_load: true,
 //       pattern: cccc000pu1w11111ttttiiii1011iiii,
 //       rule: LDRH_literal,
 //       safety: [P(24)=0 &&
@@ -3392,52 +2676,15 @@ TEST_F(Arm32DecoderStateTests,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case4_TestCase4) {
   LoadRegisterImm8OpTester_Case4 tester;
   tester.Test("cccc000pu1w11111ttttiiii1011iiii");
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: 'Load3RegisterDoubleOp',
-//       baseline: 'Load3RegisterDoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1, inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu0w0nnnntttt00001101mmmm',
-//       rule: 'LDRD_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 ||
-//            15  ==
-//               inst(3:0) ||
-//            inst(15:12)  ==
-//               inst(3:0) ||
-//            inst(15:12) + 1  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -3455,6 +2702,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
 //       pattern: cccc000pu0w0nnnntttt00001101mmmm,
 //       rule: LDRD_register,
@@ -3482,6 +2730,7 @@ TEST_F(Arm32DecoderStateTests,
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3490,38 +2739,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu0w0nnnntttt00001101mmmm");
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: 'Load3RegisterOp',
-//       baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu0w1nnnntttt00001101mmmm',
-//       rule: 'LDRSB_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -3538,6 +2755,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
 //       pattern: cccc000pu0w1nnnntttt00001101mmmm,
 //       rule: LDRSB_register,
@@ -3555,6 +2773,7 @@ TEST_F(Arm32DecoderStateTests,
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3563,31 +2782,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu0w1nnnntttt00001101mmmm");
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=~1111
-//    = {actual: 'Load2RegisterImm8DoubleOp',
-//       baseline: 'Load2RegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1, inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu1w0nnnnttttiiii1101iiii',
-//       rule: 'LDRD_immediate',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -3604,6 +2798,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
 //       pattern: cccc000pu1w0nnnnttttiiii1101iiii,
 //       rule: LDRD_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
@@ -3617,6 +2812,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt2) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3625,63 +2822,31 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu1w0nnnnttttiiii1101iiii");
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x0 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'LoadRegisterImm8DoubleOp',
-//       baseline: 'LoadRegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(15:12) + 1},
-//       pattern: 'cccc0001u1001111ttttiiii1101iiii',
-//       rule: 'LDRD_literal',
-//       safety: [15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x0 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt + 1,
 //       actual: LoadRegisterImm8DoubleOp,
+//       base: Pc,
 //       baseline: LoadRegisterImm8DoubleOp,
 //       constraints: ,
 //       defs: {Rt, Rt2},
 //       fields: [Rt(15:12)],
+//       generated_baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
+//       is_literal_load: true,
 //       pattern: cccc0001u1001111ttttiiii1101iiii,
 //       rule: LDRD_literal,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         Rt2  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8DoubleOpTester_Case8_TestCase8) {
   LoadRegisterImm8DoubleOpTester_Case8 tester;
   tester.Test("cccc0001u1001111ttttiiii1101iiii");
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {actual: 'Load2RegisterImm8Op',
-//       baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu1w1nnnnttttiiii1101iiii',
-//       rule: 'LDRSB_immediate',
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -3697,6 +2862,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
 //       pattern: cccc000pu1w1nnnnttttiiii1101iiii,
 //       rule: LDRSB_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
@@ -3709,6 +2875,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3717,32 +2885,19 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu1w1nnnnttttiiii1101iiii");
 }
 
-// Neutral case:
-// inst(6:5)=10 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'LoadRegisterImm8Op',
-//       baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       pattern: 'cccc0001u1011111ttttiiii1101iiii',
-//       rule: 'LDRSB_literal',
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=10 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
 //       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
+//       is_literal_load: true,
 //       pattern: cccc0001u1011111ttttiiii1101iiii,
 //       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
@@ -3750,48 +2905,15 @@ TEST_F(Arm32DecoderStateTests,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case10_TestCase10) {
   LoadRegisterImm8OpTester_Case10 tester;
   tester.Test("cccc0001u1011111ttttiiii1101iiii");
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx0x0 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: 'Store3RegisterDoubleOp',
-//       baseline: 'Store3RegisterDoubleOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu0w0nnnntttt00001111mmmm',
-//       rule: 'STRD_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16) ||
-//            inst(15:12) + 1  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx0x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -3809,6 +2931,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
 //       pattern: cccc000pu0w0nnnntttt00001111mmmm,
 //       rule: STRD_register,
@@ -3832,6 +2955,7 @@ TEST_F(Arm32DecoderStateTests,
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rt, Rt2, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3840,38 +2964,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu0w0nnnntttt00001111mmmm");
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: 'Load3RegisterOp',
-//       baseline: 'Load3RegisterOp',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu0w1nnnntttt00001111mmmm',
-//       rule: 'LDRSH_register',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) ||
-//            15  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         ArchVersion()  <
-//               6 &&
-//            (inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(19:16)  ==
-//               inst(3:0) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR,
-//         inst(24)=1 => FORBIDDEN]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {None: 32,
 //       P: P(24),
@@ -3888,6 +2980,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       generated_baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
 //       pattern: cccc000pu0w1nnnntttt00001111mmmm,
 //       rule: LDRSH_register,
@@ -3905,6 +2998,7 @@ TEST_F(Arm32DecoderStateTests,
 //            Rm  ==
 //               Rn => UNPREDICTABLE,
 //         index => FORBIDDEN],
+//       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3913,30 +3007,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu0w1nnnntttt00001111mmmm");
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x0
-//    = {actual: 'Store2RegisterImm8DoubleOp',
-//       baseline: 'Store2RegisterImm8DoubleOp',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu1w0nnnnttttiiii1111iiii',
-//       rule: 'STRD_immediate',
-//       safety: [(inst(24)=0) ||
-//            (inst(21)=1) &&
-//            (15  ==
-//               inst(19:16) ||
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         15  ==
-//               inst(15:12) + 1 => UNPREDICTABLE,
-//         inst(15:12)(0)=1 => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => UNPREDICTABLE]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x0
 //    = {None: 32,
 //       P: P(24),
@@ -3953,6 +3023,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
 //       pattern: cccc000pu1w0nnnnttttiiii1111iiii,
 //       rule: STRD_immediate,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
@@ -3965,6 +3036,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt) => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
+//       small_imm_base_wb: wback,
+//       uses: {Rt, Rt2, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -3973,30 +3046,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu1w0nnnnttttiiii1111iiii");
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=~1111
-//    = {actual: 'Load2RegisterImm8Op',
-//       baseline: 'Load2RegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12), inst(19:16)
-//            if (inst(24)=0) ||
-//            (inst(21)=1)
-//            else 32},
-//       pattern: 'cccc000pu1w1nnnnttttiiii1111iiii',
-//       rule: 'LDRSH_immediate',
-//       safety: [15  ==
-//               inst(15:12) => FORBIDDEN_OPERANDS,
-//         15  ==
-//               inst(15:12) ||
-//            ((inst(24)=0) ||
-//            (inst(21)=1) &&
-//            inst(15:12)  ==
-//               inst(19:16)) => UNPREDICTABLE,
-//         inst(19:16)=1111 => DECODER_ERROR,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=~1111
 //    = {None: 32,
 //       P: P(24),
@@ -4012,6 +3061,7 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       generated_baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
 //       pattern: cccc000pu1w1nnnnttttiiii1111iiii,
 //       rule: LDRSH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
@@ -4024,6 +3074,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Rt) => UNPREDICTABLE,
 //         Rt  ==
 //               Pc => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: wback,
+//       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 TEST_F(Arm32DecoderStateTests,
@@ -4032,32 +3084,19 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc000pu1w1nnnnttttiiii1111iiii");
 }
 
-// Neutral case:
-// inst(6:5)=11 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'LoadRegisterImm8Op',
-//       baseline: 'LoadRegisterImm8Op',
-//       constraints: ,
-//       defs: {inst(15:12)},
-//       pattern: 'cccc0001u1011111ttttiiii1111iiii',
-//       rule: 'LDRSB_literal',
-//       safety: [15  ==
-//               inst(15:12) => UNPREDICTABLE,
-//         inst(21)  ==
-//               inst(24) => UNPREDICTABLE,
-//         inst(24)=0 &&
-//            inst(21)=1 => DECODER_ERROR]}
-//
-// Representative case:
 // op2(6:5)=11 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {P: P(24),
 //       Pc: 15,
 //       Rt: Rt(15:12),
 //       W: W(21),
 //       actual: LoadRegisterImm8Op,
+//       base: Pc,
 //       baseline: LoadRegisterImm8Op,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
+//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//       is_literal_load: true,
 //       pattern: cccc0001u1011111ttttiiii1111iiii,
 //       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
@@ -4065,7 +3104,9 @@ TEST_F(Arm32DecoderStateTests,
 //         P  ==
 //               W => UNPREDICTABLE,
 //         Rt  ==
-//               Pc => UNPREDICTABLE]}
+//               Pc => UNPREDICTABLE],
+//       true: true,
+//       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case15_TestCase15) {
   LoadRegisterImm8OpTester_Case15 tester;

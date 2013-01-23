@@ -29,13 +29,13 @@ def ActionDefinesDecoder(action):
      be automatically generated.
      """
   return (isinstance(action, dgen_core.DecoderAction) and
-          any(_IsMethodDefined(action, m) for m in _METHODS))
+          any(_IsMethodDefined(action, m) for m in METHODS))
 
 def BaselineToActual(baseline):
   """Given the baseline action, return the corresponding actual."""
   if not ActionDefinesDecoder(baseline): return None
   return baseline.action_filter(
-      [m for m in _METHODS if _IsMethodDefined(baseline, m)])
+      [m for m in METHODS if _IsMethodDefined(baseline, m)])
 
 def BaselineName(baseline):
   """Given the baseline action, returns the representative name that
@@ -95,7 +95,7 @@ def DeclareDecoder(action, decoder_name, out):
      out: The output stream to write the class declation to."""
   values = {'decoder_name': decoder_name}
   out.write(DECODER_CLASS_HEADER % values)
-  for method in _METHODS:
+  for method in METHODS:
     if _IsMethodDefined(action, method, allow_optional=True):
       DeclareMethodFcn(method)(out, values)
   out.write(DECODER_CLASS_FOOTER % values)
@@ -109,7 +109,7 @@ def DefineDecoder(action, decoder_name, out):
   """
 
   values = {'decoder_name': decoder_name}
-  for method in _METHODS:
+  for method in METHODS:
     if _IsMethodDefined(action, method, allow_optional=True):
       method_body = _FindMethodBody(action, method, allow_optional=True)
       values['neutral_rep'] = (
@@ -474,4 +474,4 @@ def _DefineUses(out, uses, values):
 _METHODS_MAP['uses'] = [_DeclareUses, _DefineUses]
 
 """Defines the set of method fields."""
-_METHODS = sorted(set(_METHODS_MAP.keys() + _OPTIONAL_METHODS_MAP.keys()))
+METHODS = sorted(set(_METHODS_MAP.keys() + _OPTIONAL_METHODS_MAP.keys()))

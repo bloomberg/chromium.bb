@@ -32,34 +32,20 @@ namespace nacl_arm_test {
 //  due to row checks, or restrictions specified by the row restrictions.
 
 
-// Neutral case:
-// inst(25:20)=0000x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0000x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -70,6 +56,9 @@ namespace nacl_arm_test {
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase0
     : public LoadStoreRegisterListTester {
@@ -132,33 +121,20 @@ bool LoadStoreRegisterListTesterCase0
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0000x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0000x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -168,6 +144,9 @@ bool LoadStoreRegisterListTesterCase0
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase1
     : public LoadStoreRegisterListTester {
@@ -230,34 +209,20 @@ bool LoadStoreRegisterListTesterCase1
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0010x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0010x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -268,6 +233,9 @@ bool LoadStoreRegisterListTesterCase1
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase2
     : public LoadStoreRegisterListTester {
@@ -330,33 +298,20 @@ bool LoadStoreRegisterListTesterCase2
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0010x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0010x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -366,6 +321,9 @@ bool LoadStoreRegisterListTesterCase2
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase3
     : public LoadStoreRegisterListTester {
@@ -428,34 +386,20 @@ bool LoadStoreRegisterListTesterCase3
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0100x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0100x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -466,6 +410,9 @@ bool LoadStoreRegisterListTesterCase3
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase4
     : public LoadStoreRegisterListTester {
@@ -528,33 +475,20 @@ bool LoadStoreRegisterListTesterCase4
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0100x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0100x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -564,6 +498,9 @@ bool LoadStoreRegisterListTesterCase4
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase5
     : public LoadStoreRegisterListTester {
@@ -626,34 +563,20 @@ bool LoadStoreRegisterListTesterCase5
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0110x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0110x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -664,6 +587,9 @@ bool LoadStoreRegisterListTesterCase5
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase6
     : public LoadStoreRegisterListTester {
@@ -726,33 +652,20 @@ bool LoadStoreRegisterListTesterCase6
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0110x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0110x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       safety: [Rn  ==
@@ -762,6 +675,9 @@ bool LoadStoreRegisterListTesterCase6
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadStoreRegisterListTesterCase7
     : public LoadStoreRegisterListTester {
@@ -824,14 +740,9 @@ bool LoadStoreRegisterListTesterCase7
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=0xx1x0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: ForbiddenCondDecoder,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase8
     : public UnsafeCondDecoderTester {
@@ -861,14 +772,9 @@ bool UnsafeCondDecoderTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(25:20)=0xx1x1 & inst(15)=0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: ForbiddenCondDecoder,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase9
     : public UnsafeCondDecoderTester {
@@ -901,14 +807,9 @@ bool UnsafeCondDecoderTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(25:20)=0xx1x1 & inst(15)=1
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
-//
-// Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: ForbiddenCondDecoder,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: }
 class UnsafeCondDecoderTesterCase10
     : public UnsafeCondDecoderTester {
@@ -938,21 +839,21 @@ bool UnsafeCondDecoderTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-// Neutral case:
-// inst(25:20)=10xxxx
-//    = {baseline: 'BranchImmediate24',
-//       constraints: ,
-//       defs: {15},
-//       safety: [true => MAY_BE_SAFE]}
-//
-// Representative case:
 // op(25:20)=10xxxx
 //    = {Pc: 15,
+//       actual: BranchImmediate24,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc},
+//       fields: [imm24(23:0)],
+//       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
+//       imm24: imm24(23:0),
+//       imm32: SignExtend(imm24:0(1:0), 32),
+//       relative: true,
+//       relative_offset: imm32,
 //       safety: [true => MAY_BE_SAFE],
-//       true: true}
+//       true: true,
+//       uses: {Pc}}
 class BranchImmediate24TesterCase11
     : public BranchImmediate24Tester {
  public:
@@ -996,22 +897,22 @@ bool BranchImmediate24TesterCase11
   return true;
 }
 
-// Neutral case:
-// inst(25:20)=11xxxx
-//    = {baseline: 'BranchImmediate24',
-//       constraints: ,
-//       defs: {15, 14},
-//       safety: [true => MAY_BE_SAFE]}
-//
-// Representative case:
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
+//       actual: BranchImmediate24,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc, Lr},
+//       fields: [imm24(23:0)],
+//       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
+//       imm24: imm24(23:0),
+//       imm32: SignExtend(imm24:0(1:0), 32),
+//       relative: true,
+//       relative_offset: imm32,
 //       safety: [true => MAY_BE_SAFE],
-//       true: true}
+//       true: true,
+//       uses: {Pc}}
 class BranchImmediate24TesterCase12
     : public BranchImmediate24Tester {
  public:
@@ -1061,35 +962,20 @@ bool BranchImmediate24TesterCase12
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-// Neutral case:
-// inst(25:20)=0000x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'STMDA_STMED',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0000x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STMDA_STMED,
@@ -1101,6 +987,9 @@ bool BranchImmediate24TesterCase12
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case0
     : public LoadStoreRegisterListTesterCase0 {
@@ -1111,34 +1000,20 @@ class StoreRegisterListTester_Case0
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0000x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       rule: 'LDMDA_LDMFA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0000x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDMDA_LDMFA,
@@ -1149,6 +1024,9 @@ class StoreRegisterListTester_Case0
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case1
     : public LoadStoreRegisterListTesterCase1 {
@@ -1159,35 +1037,20 @@ class LoadRegisterListTester_Case1
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0010x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'STM_STMIA_STMEA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0010x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STM_STMIA_STMEA,
@@ -1199,6 +1062,9 @@ class LoadRegisterListTester_Case1
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case2
     : public LoadStoreRegisterListTesterCase2 {
@@ -1209,34 +1075,20 @@ class StoreRegisterListTester_Case2
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0010x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       rule: 'LDM_LDMIA_LDMFD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0010x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDM_LDMIA_LDMFD,
@@ -1247,6 +1099,9 @@ class StoreRegisterListTester_Case2
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case3
     : public LoadStoreRegisterListTesterCase3 {
@@ -1257,35 +1112,20 @@ class LoadRegisterListTester_Case3
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0100x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'STMDB_STMFD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0100x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STMDB_STMFD,
@@ -1297,6 +1137,9 @@ class LoadRegisterListTester_Case3
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case4
     : public LoadStoreRegisterListTesterCase4 {
@@ -1307,34 +1150,20 @@ class StoreRegisterListTester_Case4
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0100x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       rule: 'LDMDB_LDMEA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0100x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDMDB_LDMEA,
@@ -1345,6 +1174,9 @@ class StoreRegisterListTester_Case4
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case5
     : public LoadStoreRegisterListTesterCase5 {
@@ -1355,35 +1187,20 @@ class LoadRegisterListTester_Case5
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0110x0
-//    = {baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       rule: 'STMIB_STMFA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0110x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STMIB_STMFA,
@@ -1395,6 +1212,9 @@ class LoadRegisterListTester_Case5
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case6
     : public LoadStoreRegisterListTesterCase6 {
@@ -1405,34 +1225,20 @@ class StoreRegisterListTester_Case6
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0110x1
-//    = {baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       rule: 'LDMIB_LDMED',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0110x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
+//       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDMIB_LDMED,
@@ -1443,6 +1249,9 @@ class StoreRegisterListTester_Case6
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case7
     : public LoadStoreRegisterListTesterCase7 {
@@ -1453,15 +1262,9 @@ class LoadRegisterListTester_Case7
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0xx1x0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'STM_User_registers'}
-//
-// Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: ForbiddenCondDecoder,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: STM_User_registers}
 class ForbiddenCondDecoderTester_Case8
@@ -1473,15 +1276,9 @@ class ForbiddenCondDecoderTester_Case8
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0xx1x1 & inst(15)=0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'LDM_User_registers'}
-//
-// Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: ForbiddenCondDecoder,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: LDM_User_registers}
 class ForbiddenCondDecoderTester_Case9
@@ -1493,15 +1290,9 @@ class ForbiddenCondDecoderTester_Case9
   {}
 };
 
-// Neutral case:
-// inst(25:20)=0xx1x1 & inst(15)=1
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       rule: 'LDM_exception_return'}
-//
-// Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
-//    = {baseline: ForbiddenCondDecoder,
+//    = {actual: ForbiddenCondDecoder,
+//       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       rule: LDM_exception_return}
 class ForbiddenCondDecoderTester_Case10
@@ -1513,23 +1304,22 @@ class ForbiddenCondDecoderTester_Case10
   {}
 };
 
-// Neutral case:
-// inst(25:20)=10xxxx
-//    = {baseline: 'BranchImmediate24',
-//       constraints: ,
-//       defs: {15},
-//       rule: 'B',
-//       safety: [true => MAY_BE_SAFE]}
-//
-// Representative case:
 // op(25:20)=10xxxx
 //    = {Pc: 15,
+//       actual: BranchImmediate24,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc},
+//       fields: [imm24(23:0)],
+//       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
+//       imm24: imm24(23:0),
+//       imm32: SignExtend(imm24:0(1:0), 32),
+//       relative: true,
+//       relative_offset: imm32,
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
-//       true: true}
+//       true: true,
+//       uses: {Pc}}
 class BranchImmediate24Tester_Case11
     : public BranchImmediate24TesterCase11 {
  public:
@@ -1539,24 +1329,23 @@ class BranchImmediate24Tester_Case11
   {}
 };
 
-// Neutral case:
-// inst(25:20)=11xxxx
-//    = {baseline: 'BranchImmediate24',
-//       constraints: ,
-//       defs: {15, 14},
-//       rule: 'BL_BLX_immediate',
-//       safety: [true => MAY_BE_SAFE]}
-//
-// Representative case:
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
+//       actual: BranchImmediate24,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc, Lr},
+//       fields: [imm24(23:0)],
+//       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
+//       imm24: imm24(23:0),
+//       imm32: SignExtend(imm24:0(1:0), 32),
+//       relative: true,
+//       relative_offset: imm32,
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
-//       true: true}
+//       true: true,
+//       uses: {Pc}}
 class BranchImmediate24Tester_Case12
     : public BranchImmediate24TesterCase12 {
  public:
@@ -1575,38 +1364,20 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // The following functions test each pattern specified in parse
 // decoder tables.
 
-// Neutral case:
-// inst(25:20)=0000x0
-//    = {actual: 'StoreRegisterList',
-//       baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc100000w0nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'STMDA_STMED',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0000x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1619,6 +1390,9 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case0_TestCase0) {
@@ -1626,37 +1400,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100000w0nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0000x1
-//    = {actual: 'LoadRegisterList',
-//       baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       pattern: 'cccc100000w1nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'LDMDA_LDMFA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0000x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1668,6 +1425,9 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case1_TestCase1) {
@@ -1675,38 +1435,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100000w1nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0010x0
-//    = {actual: 'StoreRegisterList',
-//       baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc100010w0nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'STM_STMIA_STMEA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0010x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1719,6 +1461,9 @@ TEST_F(Arm32DecoderStateTests,
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case2_TestCase2) {
@@ -1726,37 +1471,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100010w0nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0010x1
-//    = {actual: 'LoadRegisterList',
-//       baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       pattern: 'cccc100010w1nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'LDM_LDMIA_LDMFD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0010x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1768,6 +1496,9 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case3_TestCase3) {
@@ -1775,38 +1506,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100010w1nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0100x0
-//    = {actual: 'StoreRegisterList',
-//       baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc100100w0nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'STMDB_STMFD',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0100x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1819,6 +1532,9 @@ TEST_F(Arm32DecoderStateTests,
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case4_TestCase4) {
@@ -1826,37 +1542,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100100w0nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0100x1
-//    = {actual: 'LoadRegisterList',
-//       baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       pattern: 'cccc100100w1nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'LDMDB_LDMEA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0100x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1868,6 +1567,9 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case5_TestCase5) {
@@ -1875,38 +1577,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100100w1nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0110x0
-//    = {actual: 'StoreRegisterList',
-//       baseline: 'StoreRegisterList',
-//       constraints: ,
-//       defs: {inst(19:16)
-//            if inst(21)=1
-//            else 32},
-//       pattern: 'cccc100110w0nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'STMIB_STMFA',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) &&
-//            SmallestGPR(RegisterList(inst(15:0)))  !=
-//               inst(19:16) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0110x0
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: StoreRegisterList,
+//       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1919,6 +1603,9 @@ TEST_F(Arm32DecoderStateTests,
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case6_TestCase6) {
@@ -1926,37 +1613,20 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100110w0nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0110x1
-//    = {actual: 'LoadRegisterList',
-//       baseline: 'LoadRegisterList',
-//       constraints: ,
-//       defs: Union({inst(19:16)
-//            if inst(21)=1
-//            else 32}, RegisterList(inst(15:0))),
-//       pattern: 'cccc100110w1nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'LDMIB_LDMED',
-//       safety: [15  ==
-//               inst(19:16) ||
-//            NumGPRs(RegisterList(inst(15:0)))  <
-//               1 => UNPREDICTABLE,
-//         Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
-//         inst(21)=1 &&
-//            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
-//
-// Representative case:
 // op(25:20)=0110x1
 //    = {None: 32,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
 //       actual: LoadRegisterList,
+//       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
+//       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1968,6 +1638,9 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//       small_imm_base_wb: true,
+//       true: true,
+//       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case7_TestCase7) {
@@ -1975,15 +1648,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100110w1nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0xx1x0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'ForbiddenCondDecoder',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc100pu100nnnnrrrrrrrrrrrrrrrr',
-//       rule: 'STM_User_registers'}
-//
-// Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -1996,15 +1660,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100pu100nnnnrrrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0xx1x1 & inst(15)=0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'ForbiddenCondDecoder',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc100pu101nnnn0rrrrrrrrrrrrrrr',
-//       rule: 'LDM_User_registers'}
-//
-// Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2017,15 +1672,6 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100pu101nnnn0rrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=0xx1x1 & inst(15)=1
-//    = {actual: 'ForbiddenCondDecoder',
-//       baseline: 'ForbiddenCondDecoder',
-//       constraints: ,
-//       pattern: 'cccc100pu1w1nnnn1rrrrrrrrrrrrrrr',
-//       rule: 'LDM_exception_return'}
-//
-// Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2038,44 +1684,29 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100pu1w1nnnn1rrrrrrrrrrrrrrr");
 }
 
-// Neutral case:
-// inst(25:20)=10xxxx
-//    = {actual: 'BranchImmediate24',
-//       baseline: 'BranchImmediate24',
-//       constraints: ,
-//       defs: {15},
-//       pattern: 'cccc1010iiiiiiiiiiiiiiiiiiiiiiii',
-//       rule: 'B',
-//       safety: [true => MAY_BE_SAFE]}
-//
-// Representative case:
 // op(25:20)=10xxxx
 //    = {Pc: 15,
 //       actual: BranchImmediate24,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc},
+//       fields: [imm24(23:0)],
+//       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
+//       imm24: imm24(23:0),
+//       imm32: SignExtend(imm24:0(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
+//       relative: true,
+//       relative_offset: imm32,
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
-//       true: true}
+//       true: true,
+//       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        BranchImmediate24Tester_Case11_TestCase11) {
   BranchImmediate24Tester_Case11 tester;
   tester.Test("cccc1010iiiiiiiiiiiiiiiiiiiiiiii");
 }
 
-// Neutral case:
-// inst(25:20)=11xxxx
-//    = {actual: 'BranchImmediate24',
-//       baseline: 'BranchImmediate24',
-//       constraints: ,
-//       defs: {15, 14},
-//       pattern: 'cccc1011iiiiiiiiiiiiiiiiiiiiiiii',
-//       rule: 'BL_BLX_immediate',
-//       safety: [true => MAY_BE_SAFE]}
-//
-// Representative case:
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
@@ -2083,10 +1714,17 @@ TEST_F(Arm32DecoderStateTests,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc, Lr},
+//       fields: [imm24(23:0)],
+//       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
+//       imm24: imm24(23:0),
+//       imm32: SignExtend(imm24:0(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
+//       relative: true,
+//       relative_offset: imm32,
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
-//       true: true}
+//       true: true,
+//       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        BranchImmediate24Tester_Case12_TestCase12) {
   BranchImmediate24Tester_Case12 tester;
