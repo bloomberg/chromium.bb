@@ -22,15 +22,17 @@
 namespace {
 
 // Dimensions.
-const int kIconColumnWidth = message_center::kNotificationIconWidth;
+const int kIconColumnWidth = message_center::kNotificationIconSize;
 const int kIconToTextPadding = 16;
 const int kTextTopPadding = 6;
 const int kTextBottomPadding = 6;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
+const int kActionButtonHorizontalPadding = 16;
+const int kActionButtonVecticalPadding = 0;
+const int kActionButtonIconTopPadding = 12;
+const int kActionButtonIconToTitlePadding = 16;
 const int kActionButtonTitleTopPadding = 0;
-const int kActionButtonTitleLeftPadding = 16;
-const int kActionButtonTitleRightPadding = 16;
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
@@ -124,34 +126,64 @@ int ProportionalImageView::GetHeightForWidth(int width) {
   return height;
 }
 
-// NotificationsButtons are used to render the action buttons of notifications.
+// NotificationsButtons render the action buttons of notifications.
 class NotificationButton : public views::CustomButton {
  public:
   NotificationButton(views::ButtonListener* listener);
   virtual ~NotificationButton();
 
-  void SetTitle(string16 title);
+  void SetIcon(const gfx::ImageSkia& icon);
+  void SetTitle(const string16& title);
+
+ private:
+  views::ImageView* icon_;
+  views::Label* title_;
 };
 
 NotificationButton::NotificationButton(views::ButtonListener* listener)
-    : views::CustomButton(listener) {
-  SetLayoutManager(new views::FillLayout());
+    : views::CustomButton(listener),
+      icon_(NULL),
+      title_(NULL) {
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                        kActionButtonHorizontalPadding,
+                                        kActionButtonVecticalPadding,
+                                        kActionButtonIconToTitlePadding));
 }
 
 NotificationButton::~NotificationButton() {
 }
 
-void NotificationButton::SetTitle(string16 title) {
-  RemoveAllChildViews(true);
-  views::Label* label = new views::Label(title);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetElideBehavior(views::Label::ELIDE_AT_END);
-  label->SetEnabledColor(kTitleColor);
-  label->SetBackgroundColor(kTitleBackgroundColor);
-  label->set_border(MakePadding(
-      kActionButtonTitleTopPadding, kActionButtonTitleLeftPadding,
-      0, kActionButtonTitleRightPadding));
-  AddChildView(label);
+void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
+  if (icon_ != NULL)
+    delete icon_;  // This removes the icon from this view's children.
+  if (image.isNull()) {
+    icon_ = NULL;
+  } else {
+    icon_ = new views::ImageView();
+    icon_->SetImageSize(gfx::Size(message_center::kNotificationButtonIconSize,
+                                  message_center::kNotificationButtonIconSize));
+    icon_->SetImage(image);
+    icon_->SetHorizontalAlignment(views::ImageView::LEADING);
+    icon_->SetVerticalAlignment(views::ImageView::LEADING);
+    icon_->set_border(MakePadding(kActionButtonIconTopPadding, 0, 0, 0));
+    AddChildViewAt(icon_, 0);
+  }
+}
+
+void NotificationButton::SetTitle(const string16& title) {
+  if (title_ != NULL)
+    delete title_;  // This removes the title from this view's children.
+  if (title.empty()) {
+    title_ = NULL;
+  } else {
+    title_ = new views::Label(title);
+    title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    title_->SetElideBehavior(views::Label::ELIDE_AT_END);
+    title_->SetEnabledColor(kTitleColor);
+    title_->SetBackgroundColor(kTitleBackgroundColor);
+    title_->set_border(MakePadding(kActionButtonTitleTopPadding, 0, 0, 0));
+    AddChildView(title_);
+  }
 }
 
 }  // namespace
@@ -266,8 +298,8 @@ views::View* NotificationView::MakeContentView() {
   // to its right as well as the padding view below them.
   layout->StartRow(0, 0);
   views::ImageView* icon = new views::ImageView();
-  icon->SetImageSize(gfx::Size(message_center::kNotificationIconWidth,
-                               message_center::kNotificationIconWidth));
+  icon->SetImageSize(gfx::Size(message_center::kNotificationIconSize,
+                               message_center::kNotificationIconSize));
   icon->SetImage(notification().primary_icon);
   icon->SetHorizontalAlignment(views::ImageView::LEADING);
   icon->SetVerticalAlignment(views::ImageView::LEADING);
@@ -316,6 +348,7 @@ views::View* NotificationView::MakeContentView() {
                     views::GridLayout::FILL, views::GridLayout::FILL, 0, 1);
     NotificationButton* button = new NotificationButton(this);
     button->SetTitle(notification().button_titles[i]);
+    button->SetIcon(notification().button_icons[i]);
     action_buttons_.push_back(button);
     layout->StartRow(0, 0);
     layout->AddView(button, 2, 1,

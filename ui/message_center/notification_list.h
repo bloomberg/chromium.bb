@@ -55,8 +55,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
     // Images fetched asynchronously
     gfx::ImageSkia primary_icon;
-    gfx::ImageSkia secondary_icon;
     gfx::ImageSkia image;
+    std::vector<gfx::ImageSkia> button_icons;
 
     bool is_read;  // True if this has been seen in the message center
     bool shown_as_popup;  // True if this has been shown as a popup notification
@@ -125,15 +125,17 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   void SendRemoveNotificationsByExtension(const std::string& id);
 
   // Returns true if the notification exists and was updated.
-  bool SetNotificationPrimaryIcon(const std::string& id,
-                                  const gfx::ImageSkia& image);
+  bool SetNotificationIcon(const std::string& notification_id,
+                           const gfx::ImageSkia& image);
 
   // Returns true if the notification exists and was updated.
-  bool SetNotificationSecondaryIcon(const std::string& id,
-                                    const gfx::ImageSkia& image);
+  bool SetNotificationImage(const std::string& notification_id,
+                            const gfx::ImageSkia& image);
 
-  // Returns true if the notification exists and was updated.
-  bool SetNotificationImage(const std::string& id, const gfx::ImageSkia& image);
+  // Returns true if the notification and button exist and were updated.
+  bool SetNotificationButtonIcon(const std::string& notification_id,
+                                 int button_index,
+                                 const gfx::ImageSkia& image);
 
   bool HasNotification(const std::string& id);
 

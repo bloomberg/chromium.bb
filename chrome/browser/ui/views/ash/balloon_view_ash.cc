@@ -159,14 +159,22 @@ BalloonHost* BalloonViewAsh::GetHost() const {
   return NULL;
 }
 
-void BalloonViewAsh::SetNotificationIcon(const std::string& id,
+void BalloonViewAsh::SetNotificationIcon(const std::string& notification_id,
                                          const gfx::ImageSkia& image) {
-  GetMessageCenter()->SetNotificationPrimaryIcon(id, image);
+  GetMessageCenter()->SetNotificationIcon(notification_id, image);
 }
 
-void BalloonViewAsh::SetNotificationImage(const std::string& id,
+void BalloonViewAsh::SetNotificationImage(const std::string& notification_id,
                                           const gfx::ImageSkia& image) {
-  GetMessageCenter()->SetNotificationImage(id, image);
+  GetMessageCenter()->SetNotificationImage(notification_id, image);
+}
+
+void BalloonViewAsh::SetNotificationButtonIcon(
+    const std::string& notification_id,
+    int button_index,
+    const gfx::ImageSkia& image) {
+  GetMessageCenter()->SetNotificationButtonIcon(notification_id, button_index,
+                                                image);
 }
 
 void BalloonViewAsh::DownloadImages(const Notification& notification) {
@@ -179,23 +187,46 @@ void BalloonViewAsh::DownloadImages(const Notification& notification) {
   } else if (!notification.icon_url().is_empty()) {
       downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
           notification, notification.icon_url(),
-          message_center::kNotificationIconWidth,
+          message_center::kNotificationIconSize,
           base::Bind(&BalloonViewAsh::SetNotificationIcon,
                      base::Unretained(this), notification.notification_id()))));
   }
 
-  // Start a download for the notification's image if appropriate.
   const base::DictionaryValue* optional_fields = notification.optional_fields();
-  if (optional_fields &&
-      optional_fields->HasKey(ui::notifications::kImageUrlKey)) {
-    string16 url;
-    optional_fields->GetString(ui::notifications::kImageUrlKey, &url);
-    if (!url.empty()) {
-      downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
-          notification, GURL(url),
-          message_center::kNotificationPreferredImageSize,
-          base::Bind(&BalloonViewAsh::SetNotificationImage,
-                     base::Unretained(this), notification.notification_id()))));
+  if (optional_fields) {
+    // Start a download for the notification's image if appropriate.
+    if (optional_fields->HasKey(ui::notifications::kImageUrlKey)) {
+      string16 url;
+      optional_fields->GetString(ui::notifications::kImageUrlKey, &url);
+      if (!url.empty()) {
+        downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
+            notification,
+            GURL(url),
+            message_center::kNotificationPreferredImageSize,
+            base::Bind(&BalloonViewAsh::SetNotificationImage,
+                       base::Unretained(this),
+                       notification.notification_id()))));
+      }
+    }
+
+    // Start a download for the notification's button icons if appropriate.
+    const char* kButtonIconKeys[] = { ui::notifications::kButtonOneIconUrlKey,
+                                      ui::notifications::kButtonTwoIconUrlKey };
+    for (size_t i = 0; i < arraysize(kButtonIconKeys); ++i) {
+      if (optional_fields->HasKey(kButtonIconKeys[i])) {
+        string16 url;
+        optional_fields->GetString(kButtonIconKeys[i], &url);
+        if (!url.empty()) {
+          downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
+              notification,
+              GURL(url),
+              message_center::kNotificationButtonIconSize,
+              base::Bind(&BalloonViewAsh::SetNotificationButtonIcon,
+                         base::Unretained(this),
+                         notification.notification_id(),
+                         i))));
+        }
+      }
     }
   }
 }

@@ -28,8 +28,13 @@ class BalloonViewAsh : public BalloonView {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual BalloonHost* GetHost() const OVERRIDE;
 
-  void SetNotificationIcon(const std::string& id, const gfx::ImageSkia& image);
-  void SetNotificationImage(const std::string& id, const gfx::ImageSkia& image);
+  void SetNotificationIcon(const std::string& notification_id,
+                           const gfx::ImageSkia& image);
+  void SetNotificationImage(const std::string& notification_id,
+                            const gfx::ImageSkia& image);
+  void SetNotificationButtonIcon(const std::string& notification_id,
+                                 int button_index,
+                                 const gfx::ImageSkia& image);
 
  private:
   class ImageDownload;

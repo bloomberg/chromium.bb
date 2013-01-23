@@ -44,11 +44,13 @@
     // that mean?
     long? unreadCount;
 
-    // Text and of the first button in the notification.
+    // Text and icon of the first button in the notification.
     DOMString? buttonOneTitle;
+    DOMString? buttonOneIconUrl;
 
-    // Text and intent of the second button in the notification.
+    // Text and icon of the second button in the notification.
     DOMString? buttonTwoTitle;
+    DOMString? buttonTwoIconUrl;
 
     // Secondary notification content.
     DOMString? expandedMessage;

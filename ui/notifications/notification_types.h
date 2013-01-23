@@ -16,10 +16,11 @@ namespace notifications {
 // Keys for optional fields in Notification.
 UI_EXPORT extern const char kPriorityKey[];
 UI_EXPORT extern const char kTimestampKey[];
-UI_EXPORT extern const char kSecondIconUrlKey[];
 UI_EXPORT extern const char kUnreadCountKey[];
 UI_EXPORT extern const char kButtonOneTitleKey[];
+UI_EXPORT extern const char kButtonOneIconUrlKey[];
 UI_EXPORT extern const char kButtonTwoTitleKey[];
+UI_EXPORT extern const char kButtonTwoIconUrlKey[];
 UI_EXPORT extern const char kExpandedMessageKey[];
 UI_EXPORT extern const char kImageUrlKey[];
 UI_EXPORT extern const char kItemsKey[];

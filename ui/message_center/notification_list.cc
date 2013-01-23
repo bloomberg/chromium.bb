@@ -79,36 +79,39 @@ void NotificationList::AddNotification(
   PushNotification(notification);
 }
 
-void NotificationList::UnpackOptionalFields(
-    const DictionaryValue* optional_fields, Notification* notification) {
-  if (!optional_fields)
+void NotificationList::UnpackOptionalFields(const DictionaryValue* fields,
+                                            Notification* notification) {
+  if (!fields)
     return;
 
-  optional_fields->GetInteger(ui::notifications::kPriorityKey,
-                              &notification->priority);
-  if (optional_fields->HasKey(ui::notifications::kTimestampKey)) {
+  fields->GetInteger(ui::notifications::kPriorityKey, &notification->priority);
+  if (fields->HasKey(ui::notifications::kTimestampKey)) {
     std::string time_string;
-    optional_fields->GetString(ui::notifications::kTimestampKey, &time_string);
+    fields->GetString(ui::notifications::kTimestampKey, &time_string);
     base::Time::FromString(time_string.c_str(), &notification->timestamp);
   }
-  optional_fields->GetInteger(ui::notifications::kUnreadCountKey,
-                              &notification->unread_count);
-  if (optional_fields->HasKey(ui::notifications::kButtonOneTitleKey)) {
+  fields->GetInteger(ui::notifications::kUnreadCountKey,
+                     &notification->unread_count);
+  if (fields->HasKey(ui::notifications::kButtonOneTitleKey) ||
+      fields->HasKey(ui::notifications::kButtonOneIconUrlKey)) {
     string16 title;
-    if (optional_fields->GetString(ui::notifications::kButtonOneTitleKey,
-                                   &title) && !title.empty()) {
+    string16 icon;
+    if (fields->GetString(ui::notifications::kButtonOneTitleKey, &title) ||
+        fields->GetString(ui::notifications::kButtonOneIconUrlKey, &icon)) {
       notification->button_titles.push_back(title);
-      if (optional_fields->GetString(ui::notifications::kButtonTwoTitleKey,
-                                     &title) && !title.empty()) {
+      notification->button_icons.push_back(gfx::ImageSkia());
+      if (fields->GetString(ui::notifications::kButtonTwoTitleKey, &title) ||
+          fields->GetString(ui::notifications::kButtonTwoIconUrlKey, &icon)) {
         notification->button_titles.push_back(title);
+        notification->button_icons.push_back(gfx::ImageSkia());
       }
     }
   }
-  optional_fields->GetString(ui::notifications::kExpandedMessageKey,
-                             &notification->expanded_message);
-  if (optional_fields->HasKey(ui::notifications::kItemsKey)) {
+  fields->GetString(ui::notifications::kExpandedMessageKey,
+                    &notification->expanded_message);
+  if (fields->HasKey(ui::notifications::kItemsKey)) {
     const ListValue* items;
-    CHECK(optional_fields->GetList(ui::notifications::kItemsKey, &items));
+    CHECK(fields->GetList(ui::notifications::kItemsKey, &items));
     for (size_t i = 0; i < items->GetSize(); ++i) {
       string16 title;
       string16 message;
@@ -187,31 +190,32 @@ void NotificationList::SendRemoveNotificationsByExtension(
   }
 }
 
-bool NotificationList::SetNotificationPrimaryIcon(const std::string& id,
-                                                  const gfx::ImageSkia& image) {
+bool NotificationList::SetNotificationIcon(const std::string& notification_id,
+                                           const gfx::ImageSkia& image) {
   Notifications::iterator iter;
-  if (!GetNotification(id, &iter))
+  if (!GetNotification(notification_id, &iter))
     return false;
   iter->primary_icon = image;
   return true;
 }
 
-bool NotificationList::SetNotificationSecondaryIcon(
-    const std::string& id,
-    const gfx::ImageSkia& image) {
+bool NotificationList::SetNotificationImage(const std::string& notification_id,
+                                            const gfx::ImageSkia& image) {
   Notifications::iterator iter;
-  if (!GetNotification(id, &iter))
+  if (!GetNotification(notification_id, &iter))
     return false;
-  iter->secondary_icon = image;
+  iter->image = image;
   return true;
 }
 
-bool NotificationList::SetNotificationImage(const std::string& id,
-                                            const gfx::ImageSkia& image) {
+bool NotificationList::SetNotificationButtonIcon(
+    const std::string& notification_id, int button_index,
+    const gfx::ImageSkia& image) {
   Notifications::iterator iter;
-  if (!GetNotification(id, &iter))
+  if (!GetNotification(notification_id, &iter) ||
+      static_cast<size_t>(button_index) >= iter->button_icons.size())
     return false;
-  iter->image = image;
+  iter->button_icons[button_index] = image;
   return true;
 }
 

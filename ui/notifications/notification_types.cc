@@ -11,12 +11,11 @@ namespace notifications {
 const char kMessageIntentKey[] = "message_intent";
 const char kPriorityKey[] = "priority";
 const char kTimestampKey[] = "timestamp";
-const char kSecondIconUrlKey[] = "second_icon_url";
 const char kUnreadCountKey[] = "unread_count";
 const char kButtonOneTitleKey[] = "button_one_title";
-const char kButtonOneIntentKey[] = "button_one_intent";
+const char kButtonOneIconUrlKey[] = "button_one_icon_url";
 const char kButtonTwoTitleKey[] = "button_two_title";
-const char kButtonTwoIntentKey[] = "button_two_intent";
+const char kButtonTwoIconUrlKey[] = "button_two_icon_url";
 const char kExpandedMessageKey[] = "expanded_message";
 const char kImageUrlKey[] = "image_url";
 const char kItemsKey[] = "items";

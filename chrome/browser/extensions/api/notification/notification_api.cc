@@ -136,18 +136,24 @@ bool NotificationShowFunction::RunImpl() {
   if (options->timestamp.get())
     optional_fields->SetString(ui::notifications::kTimestampKey,
                                *options->timestamp);
-  if (options->second_icon_url.get())
-    optional_fields->SetString(ui::notifications::kSecondIconUrlKey,
-                               UTF8ToUTF16(*options->second_icon_url));
   if (options->unread_count.get())
     optional_fields->SetInteger(ui::notifications::kUnreadCountKey,
                                 *options->unread_count);
   if (options->button_one_title.get())
     optional_fields->SetString(ui::notifications::kButtonOneTitleKey,
                                UTF8ToUTF16(*options->button_one_title));
+  if (options->button_one_icon_url.get())
+    optional_fields->SetString(ui::notifications::kButtonOneIconUrlKey,
+                               UTF8ToUTF16(*options->button_one_icon_url));
+  // TODO(dharcourt): Fail if:
+  //  (options->button_two_title.get() || options->button_two_icon_url.get()) &&
+  //  !(options->button_one_title.get() || options->button_one_icon_url.get())
   if (options->button_two_title.get())
     optional_fields->SetString(ui::notifications::kButtonTwoTitleKey,
                                UTF8ToUTF16(*options->button_two_title));
+  if (options->button_two_icon_url.get())
+    optional_fields->SetString(ui::notifications::kButtonTwoIconUrlKey,
+                               UTF8ToUTF16(*options->button_two_icon_url));
   if (options->expanded_message.get())
     optional_fields->SetString(ui::notifications::kExpandedMessageKey,
                                UTF8ToUTF16(*options->expanded_message));
