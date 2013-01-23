@@ -535,6 +535,7 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS" file="common/omnibox_tts.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_DARK" file="common/omnibox_tts_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_SELECTED" file="common/omnibox_tts_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_ONE_CLICK_SIGNIN" file="common/one_click_signin.png" />
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="common/otr_icon.png" />
       </if>
