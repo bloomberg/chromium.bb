@@ -332,6 +332,7 @@ class FeedEntry {
 
   // List of entry links.
   const ScopedVector<Link>& links() const { return links_; }
+  ScopedVector<Link>* mutable_links() { return &links_; }
 
   // List of entry categories.
   const ScopedVector<Category>& categories() const { return categories_; }

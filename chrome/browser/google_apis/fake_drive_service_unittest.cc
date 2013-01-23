@@ -86,6 +86,91 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
+TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndex) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL("http://dummyurl/?start-offset=2"),
+      0,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Because the start-offset was set to 2, the size should be 10 instead of
+  // 12 (the total number).
+  EXPECT_EQ(10U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndexAndMaxResults) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL("http://localhost/?start-offset=2&max-results=5"),
+      0,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Because the max-results was set to 5, the size should be 5 instead of 10.
+  EXPECT_EQ(5U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  // The next link should be provided. The new start-offset should be
+  // 2 (original start index) + 5 (max results).
+  const google_apis::Link* next_link =
+      resource_list->GetLinkByType(Link::LINK_NEXT);
+  ASSERT_TRUE(next_link);
+  EXPECT_EQ(GURL("http://localhost/?start-offset=7&max-results=5"),
+            next_link->href());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_WithDefaultMaxResultsChanged) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_default_max_results(3);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Because the default max results was changed to 3, the size should be 3
+  // instead of 12 (the total number).
+  EXPECT_EQ(3U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  // The next link should be provided.
+  const google_apis::Link* next_link =
+      resource_list->GetLinkByType(Link::LINK_NEXT);
+  ASSERT_TRUE(next_link);
+  EXPECT_EQ(GURL("http://localhost/?start-offset=3&max-results=3"),
+            next_link->href());
+}
+
 TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 

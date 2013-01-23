@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -22,6 +23,7 @@ namespace google_apis {
 
 FakeDriveService::FakeDriveService()
     : largest_changestamp_(0),
+      default_max_results_(0),
       resource_id_count_(0),
       resource_list_load_count_(0),
       account_metadata_load_count_(0),
@@ -154,12 +156,29 @@ void FakeDriveService::GetResourceList(
     return;
   }
 
+  // "start-offset" is a parameter only used in the FakeDriveService to
+  // implement pagenation.
+  int start_offset = 0;
+  int max_results = default_max_results_;
+  std::vector<std::pair<std::string, std::string> > parameters;
+  if (base::SplitStringIntoKeyValuePairs(
+          feed_url.query(), '=', '&', &parameters)) {
+    for (size_t i = 0; i < parameters.size(); ++i) {
+      if (parameters[i].first == "start-offset")
+        base::StringToInt(parameters[i].second, &start_offset);
+      if (parameters[i].first == "max-results")
+        base::StringToInt(parameters[i].second, &max_results);
+    }
+  }
+
   scoped_ptr<ResourceList> resource_list =
       ResourceList::CreateFrom(*resource_list_value_);
 
   // Filter out entries per parameters like |directory_resource_id| and
   // |search_query|.
   ScopedVector<ResourceEntry>* entries = resource_list->mutable_entries();
+
+  int num_entries_matched = 0;
   for (size_t i = 0; i < entries->size();) {
     ResourceEntry* entry = (*entries)[i];
     bool should_exclude = false;
@@ -188,20 +207,43 @@ void FakeDriveService::GetResourceList(
         should_exclude = true;
     }
 
-    // If |start_changestamp| is non-zero, exclude the entry if the
+    // If |start_changestamp| is set, exclude the entry if the
     // changestamp is older than |largest_changestamp|.
     // See https://developers.google.com/google-apps/documents-list/
     // #retrieving_all_changes_since_a_given_changestamp
-    if (start_changestamp > 0) {
-      if (entry->changestamp() < start_changestamp) {
-        should_exclude = true;
-      }
-    }
+    if (start_changestamp > 0 && entry->changestamp() < start_changestamp)
+      should_exclude = true;
+
+    // The entry matched the criteria for inclusion.
+    if (!should_exclude)
+      ++num_entries_matched;
+
+    // If |start_offset| is set, exclude the entry if the entry is before the
+    // start index. <= instead of < as |num_entries_matched| was
+    // already incremented.
+    if (start_offset > 0 && num_entries_matched <= start_offset)
+      should_exclude = true;
 
     if (should_exclude)
       entries->erase(entries->begin() + i);
     else
       ++i;
+  }
+
+  // If |max_results| is set, trim the entries if the number exceeded the max
+  // results.
+  if (max_results > 0 && entries->size() > static_cast<size_t>(max_results)) {
+    entries->erase(entries->begin() + max_results, entries->end());
+    // Adds the next URL.
+    const GURL next_url(
+        base::StringPrintf(
+            "http://localhost/?start-offset=%d&max-results=%d",
+            start_offset + max_results,
+            max_results));
+    Link* link = new Link;
+    link->set_type(Link::LINK_NEXT);
+    link->set_href(next_url);
+    resource_list->mutable_links()->push_back(link);
   }
 
   ++resource_list_load_count_;
