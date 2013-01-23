@@ -454,7 +454,12 @@ bool NetworkLibraryImplBase::wifi_scanning() const {
 }
 
 bool NetworkLibraryImplBase::cellular_initializing() const {
-  return (uninitialized_devices_ & (1 << TYPE_CELLULAR));
+  if (uninitialized_devices_ & (1 << TYPE_CELLULAR))
+    return true;
+  const NetworkDevice* device = FindDeviceByType(TYPE_CELLULAR);
+  if (device && device->scanning())
+    return true;
+  return false;
 }
 
 bool NetworkLibraryImplBase::offline_mode() const { return offline_mode_; }
