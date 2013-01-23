@@ -31,6 +31,13 @@ const char kDebugOutOfProcess[] = "out-of-process";
 // Add "testrequest=1" parameter to the update check query.
 const char kDebugRequestParam[] = "test-request";
 
+// The urls from which an update manifest can be fetched.
+const char* kUrlSources[] = {
+  "http://clients2.google.com/service/update2/crx",       // BANDAID
+  "http://omaha.google.com/service/update2/crx",          // CWS_PUBLIC
+  "http://omaha.sandbox.google.com/service/update2/crx"   // CWS_SANDBOX
+};
+
 bool HasDebugValue(const std::vector<std::string>& vec, const char* test) {
   if (vec.empty())
     return 0;
@@ -107,7 +114,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual int NextCheckDelay() OVERRIDE;
   virtual int StepDelay() OVERRIDE;
   virtual int MinimumReCheckWait() OVERRIDE;
-  virtual GURL UpdateUrl() OVERRIDE;
+  virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE;
   virtual const char* ExtraRequestParams() OVERRIDE;
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
@@ -119,7 +126,6 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   std::string extra_info_;
   bool fast_update_;
   bool out_of_process_;
-  GURL app_update_url_;
 };
 
 ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
@@ -132,14 +138,6 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
       ",", &debug_values);
   fast_update_ = HasDebugValue(debug_values, kDebugFastUpdate);
   out_of_process_ = HasDebugValue(debug_values, kDebugOutOfProcess);
-
-  // Allow switch to override update URL (piggyback on AppsGalleryUpdateURL).
-  if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL)) {
-    app_update_url_ =
-        GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
-  } else {
-    app_update_url_ = GURL("http://clients2.google.com/service/update2/crx");
-  }
 
   // Make the extra request params, they are necessary so omaha does
   // not deliver components that are going to be rejected at install time.
@@ -169,8 +167,8 @@ int ChromeConfigurator::MinimumReCheckWait() {
   return fast_update_ ? 30 : (6 * kDelayOneHour);
 }
 
-GURL ChromeConfigurator::UpdateUrl() {
-  return app_update_url_;
+GURL ChromeConfigurator::UpdateUrl(CrxComponent::UrlSource source) {
+  return GURL(kUrlSources[source]);
 }
 
 const char* ChromeConfigurator::ExtraRequestParams() {

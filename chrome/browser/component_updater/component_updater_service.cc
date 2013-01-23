@@ -45,6 +45,13 @@ using extensions::Extension;
 // base::Bind() calls are not refcounted.
 
 namespace {
+// Manifest sources, from most important to least important.
+const CrxComponent::UrlSource kManifestSources[] = {
+  CrxComponent::BANDAID,
+  CrxComponent::CWS_PUBLIC,
+  CrxComponent::CWS_SANDBOX
+};
+
 // Extends an omaha compatible update check url |query| string. Does
 // not mutate the string if it would be longer than |limit| chars.
 bool AddQueryString(const std::string& id,
@@ -215,8 +222,13 @@ struct CrxUpdateItem {
 
 typedef ComponentUpdateService::Configurator Config;
 
-CrxComponent::CrxComponent() : installer(NULL) {}
-CrxComponent::~CrxComponent() {}
+CrxComponent::CrxComponent()
+    : installer(NULL),
+      source(BANDAID) {
+}
+
+CrxComponent::~CrxComponent() {
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // The one and only implementation of the ComponentUpdateService interface. In
@@ -515,64 +527,79 @@ void CrxUpdateService::ProcessPendingItems() {
     return;
   }
 
-  std::string query;
-  // If no pending upgrades, we check the if there are new
-  // components we have not checked against the server. We
-  // can batch a bunch in a single url request.
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    CrxUpdateItem* item = *it;
-    if (item->status != CrxUpdateItem::kNew)
-      continue;
-    if (!AddItemToUpdateCheck(item, &query))
-      break;
-  }
+  for (size_t ix = 0; ix != arraysize(kManifestSources); ++ix) {
+    const CrxComponent::UrlSource manifest_source = kManifestSources[ix];
 
-  // Next we can go back to components we already checked, here
-  // we can also batch them in a single url request, as long as
-  // we have not checked them recently.
-  const base::TimeDelta min_delta_time =
-      base::TimeDelta::FromSeconds(config_->MinimumReCheckWait());
+    std::string query;
+    // If no pending upgrades, we check if there are new components we have not
+    // checked against the server. We can batch some in a single url request.
+    for (UpdateItems::const_iterator it = work_items_.begin();
+         it != work_items_.end(); ++it) {
+      CrxUpdateItem* item = *it;
+      if (item->status != CrxUpdateItem::kNew)
+        continue;
+      if (item->component.source != manifest_source)
+        continue;
+      if (!AddItemToUpdateCheck(item, &query))
+        break;
+    }
 
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    CrxUpdateItem* item = *it;
-    if ((item->status != CrxUpdateItem::kNoUpdate) &&
-        (item->status != CrxUpdateItem::kUpToDate))
-      continue;
-    base::TimeDelta delta = base::Time::Now() - item->last_check;
-    if (delta < min_delta_time)
-      continue;
-    if (!AddItemToUpdateCheck(item, &query))
-      break;
-  }
-  // Finally, we check components that we already updated.
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    CrxUpdateItem* item = *it;
-    if (item->status != CrxUpdateItem::kUpdated)
-      continue;
-    base::TimeDelta delta = base::Time::Now() - item->last_check;
-    if (delta < min_delta_time)
-      continue;
-    if (!AddItemToUpdateCheck(item, &query))
-      break;
-  }
+    // Next we can go back to components we already checked, here
+    // we can also batch them in a single url request, as long as
+    // we have not checked them recently.
+    const base::TimeDelta min_delta_time =
+        base::TimeDelta::FromSeconds(config_->MinimumReCheckWait());
 
-  if (query.empty()) {
-    // Next check after the long sleep.
-    ScheduleNextRun(false);
+    for (UpdateItems::const_iterator it = work_items_.begin();
+         it != work_items_.end(); ++it) {
+      CrxUpdateItem* item = *it;
+      if ((item->status != CrxUpdateItem::kNoUpdate) &&
+          (item->status != CrxUpdateItem::kUpToDate))
+        continue;
+      if (item->component.source != manifest_source)
+        continue;
+      base::TimeDelta delta = base::Time::Now() - item->last_check;
+      if (delta < min_delta_time)
+        continue;
+      if (!AddItemToUpdateCheck(item, &query))
+        break;
+    }
+
+    // Finally, we check components that we already updated as long as
+    // we have not checked them recently.
+    for (UpdateItems::const_iterator it = work_items_.begin();
+         it != work_items_.end(); ++it) {
+      CrxUpdateItem* item = *it;
+      if (item->status != CrxUpdateItem::kUpdated)
+        continue;
+      if (item->component.source != manifest_source)
+        continue;
+      base::TimeDelta delta = base::Time::Now() - item->last_check;
+      if (delta < min_delta_time)
+        continue;
+      if (!AddItemToUpdateCheck(item, &query))
+        break;
+    }
+
+    // If no components to update we move down to the next source.
+    if (query.empty())
+      continue;
+
+    // We got components to check. Start the url request and exit.
+    const std::string full_query =
+        MakeFinalQuery(config_->UpdateUrl(manifest_source).spec(),
+                       query,
+                       config_->ExtraRequestParams());
+
+    url_fetcher_.reset(net::URLFetcher::Create(
+        0, GURL(full_query), net::URLFetcher::GET,
+        MakeContextDelegate(this, new UpdateContext())));
+    StartFetch(url_fetcher_.get(), config_->RequestContext(), false);
     return;
   }
 
-  // We got components to check. Start the url request.
-  const std::string full_query = MakeFinalQuery(config_->UpdateUrl().spec(),
-                                                query,
-                                                config_->ExtraRequestParams());
-  url_fetcher_.reset(net::URLFetcher::Create(
-      0, GURL(full_query), net::URLFetcher::GET,
-      MakeContextDelegate(this, new UpdateContext())));
-  StartFetch(url_fetcher_.get(), config_->RequestContext(), false);
+  // No components to update. Next check after the long sleep.
+  ScheduleNextRun(false);
 }
 
 // Caled when we got a response from the update server. It consists of an xml

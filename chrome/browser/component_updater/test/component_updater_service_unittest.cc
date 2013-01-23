@@ -32,7 +32,7 @@ namespace {
 // and loops faster. In actual usage it takes hours do to a full cycle.
 class TestConfigurator : public ComponentUpdateService::Configurator {
  public:
-  TestConfigurator() : times_(1) {
+  TestConfigurator() : times_(1), recheck_time_(0) {
   }
 
   virtual int InitialDelay() OVERRIDE { return 0; }
@@ -54,10 +54,19 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   }
 
   virtual int MinimumReCheckWait() OVERRIDE {
-    return 0;
+    return recheck_time_;
   }
 
-  virtual GURL UpdateUrl() OVERRIDE { return GURL("http://localhost/upd"); }
+  virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE {
+    switch (source) {
+      case CrxComponent::BANDAID:
+        return GURL("http://localhost/upd");
+      case CrxComponent::CWS_PUBLIC:
+        return GURL("http://localhost/cws");
+      default:
+        return GURL("http://wronghost/bad");
+    };
+  }
 
   virtual const char* ExtraRequestParams() OVERRIDE { return "extra=foo"; }
 
@@ -76,8 +85,13 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   // Set how many update checks are called, the default value is just once.
   void SetLoopCount(int times) { times_ = times; }
 
+  void SetRecheckTime(int seconds) {
+    recheck_time_ = seconds;
+  }
+
  private:
   int times_;
+  int recheck_time_;
 };
 
 class TestInstaller : public ComponentInstaller {
@@ -349,6 +363,9 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
+
   EXPECT_EQ(3, interceptor.GetHitCount());
 
   ASSERT_EQ(5ul, notification_tracker().size());
@@ -363,6 +380,78 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
 
   TestNotificationTracker::Event ev4 = notification_tracker().at(4);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
+
+  component_updater()->Stop();
+}
+
+// This test is like the above InstallCrx but the second component
+// has a different source. In this case there would be two manifest
+// checks to different urls, each only containing one component.
+TEST_F(ComponentUpdaterTest, InstallCrxTwoSources) {
+  MessageLoop message_loop;
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE);
+  content::TestBrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartIOThread();
+  file_thread.Start();
+
+  content::URLRequestPrepackagedInterceptor interceptor;
+
+  CrxComponent com1;
+  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"));
+  CrxComponent com2;
+  com2.source = CrxComponent::CWS_PUBLIC;
+  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"));
+
+  const GURL expected_update_url_1(
+      "http://localhost/upd?extra=foo&x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+
+  const GURL expected_update_url_2(
+      "http://localhost/cws?extra=foo&x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc");
+
+  interceptor.SetResponse(expected_update_url_1,
+                          test_file("updatecheck_reply_3.xml"));
+  interceptor.SetResponse(expected_update_url_2,
+                          test_file("updatecheck_reply_1.xml"));
+  interceptor.SetResponse(GURL(expected_crx_url),
+                          test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+
+  test_configurator()->SetLoopCount(3);
+
+  // We have to set SetRecheckTime to something bigger than 0 or else the
+  // component updater will keep re-checking the 'abag' component because
+  // the default source pre-empts the other sources.
+  test_configurator()->SetRecheckTime(60*60);
+
+  component_updater()->Start();
+  message_loop.Run();
+
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
+  EXPECT_EQ(1, static_cast<TestInstaller*>(com2.installer)->install_count());
+
+  EXPECT_EQ(3, interceptor.GetHitCount());
+
+  ASSERT_EQ(6ul, notification_tracker().size());
+
+  TestNotificationTracker::Event ev0 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev0.type);
+
+  TestNotificationTracker::Event ev1 = notification_tracker().at(2);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
+
+  TestNotificationTracker::Event ev2 = notification_tracker().at(3);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev2.type);
+
+  TestNotificationTracker::Event ev3 = notification_tracker().at(4);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
+
+  TestNotificationTracker::Event ev4 = notification_tracker().at(5);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
 
   component_updater()->Stop();

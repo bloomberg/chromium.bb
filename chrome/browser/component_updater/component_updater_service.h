@@ -47,11 +47,23 @@ class ComponentInstaller {
 // Only |name| is optional. |pk_hash| is the SHA256 hash of the component's
 // public key. If the component is to be installed then version should be
 // "0" or "0.0", else it should be the current version.
+// |source| is by default pointing to BANDAID but if needed it can be made
+// to point to the webstore (CWS_PUBLIC) or to the webstore sandbox. It is
+// important to note that the BANDAID source if active throught the day
+// can pre-empt updates from the other sources down the list.
 struct CrxComponent {
+  // Specifies the source url for manifest check.
+  enum UrlSource {
+    BANDAID,
+    CWS_PUBLIC,
+    CWS_SANDBOX
+  };
+
   std::vector<uint8> pk_hash;
   ComponentInstaller* installer;
   Version version;
   std::string name;
+  UrlSource source;
   CrxComponent();
   ~CrxComponent();
 };
@@ -100,7 +112,7 @@ class ComponentUpdateService {
     // Minimun delta time in seconds before checking again the same component.
     virtual int MinimumReCheckWait() = 0;
     // The url that is going to be used update checks over Omaha protocol.
-    virtual GURL UpdateUrl() = 0;
+    virtual GURL UpdateUrl(CrxComponent::UrlSource source) = 0;
     // Parameters added to each url request. It can be null if none are needed.
     virtual const char* ExtraRequestParams() = 0;
     // How big each update request can be. Don't go above 2000.
