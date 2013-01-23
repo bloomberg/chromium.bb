@@ -209,7 +209,7 @@ def CMDupdate(parser, args):
 
   try:
     delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                  DEFAULT_SDK_ROOT)
+                                                 DEFAULT_SDK_ROOT)
     command.update.Update(delegate, remote_manifest, local_manifest, args,
                            options.force)
   finally:
@@ -303,7 +303,7 @@ def UpdateSDKTools(options, args):
 
   try:
     delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                  DEFAULT_SDK_ROOT)
+                                                 DEFAULT_SDK_ROOT)
     command.update.UpdateBundleIfNeeded(
         delegate,
         remote_manifest,

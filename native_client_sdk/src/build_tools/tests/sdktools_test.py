@@ -190,6 +190,7 @@ class TestAutoUpdateSdkTools(SdkToolsTestCase):
     """Test that running naclsdk with a new revision will auto-update."""
     new_revision = self.current_revision + 1
     archive = self._BuildUpdaterArchive('new', new_revision)
+    self.sdk_tools_bundle.RemoveAllArchivesForHostOS(archive.host_os)
     self.sdk_tools_bundle.AddArchive(archive)
     self.sdk_tools_bundle.revision = new_revision
     self._WriteManifest()
@@ -206,6 +207,7 @@ class TestAutoUpdateSdkTools(SdkToolsTestCase):
     """
     new_revision = self.current_revision + 1
     archive = self._BuildUpdaterArchive('new', new_revision)
+    self.sdk_tools_bundle.RemoveAllArchivesForHostOS(archive.host_os)
     self.sdk_tools_bundle.AddArchive(archive)
     self.sdk_tools_bundle.revision = new_revision
     self._WriteManifest()

@@ -535,7 +535,7 @@ class Updater(object):
             '  Revision %s is not newer than than online revision %s. '
             'Skipping.' % (bundle.revision, online_bundle.revision))
 
-        manifest.MergeBundle(online_bundle)
+        manifest.SetBundle(online_bundle)
         continue
 
       major_version = SplitVersion(version)[0]
@@ -548,7 +548,6 @@ class Updater(object):
         bundle.recommended = 'yes'
       else:
         bundle.recommended = 'no'
-      manifest.MergeBundle(bundle)
     self._UploadManifest(manifest)
     self.delegate.Print('Done.')
 

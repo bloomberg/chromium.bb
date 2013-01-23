@@ -219,16 +219,16 @@ class Bundle(dict):
     duplicated: the values of the keys in |bundle| take precedence in the
     resulting dictionary.
 
-    Archives in |bundle| will be appended to archives in self. Archives in
-    |bundle| will override archives in self with the same host_os.
+    Archives in |bundle| will be appended to archives in self.
 
     Args:
       bundle: The other bundle.  Must be a dict.
     """
+    assert self is not bundle
+
     for k, v in bundle.iteritems():
       if k == ARCHIVES_KEY:
         for archive in v:
-          self.RemoveArchive(archive['host_os'])
           self.get(k, []).append(archive)
       else:
         self[k] = v
@@ -324,16 +324,21 @@ class Bundle(dict):
     """Retrieve the archive for the current host os."""
     return self.GetArchive(GetHostOS())
 
+  def GetHostOSArchives(self):
+    """Retrieve all archives for the current host os, or marked all.
+    """
+    return [archive for archive in self.GetArchives()
+        if archive.host_os in (GetHostOS(), 'all')]
+
   def GetArchives(self):
     """Returns all the archives in this bundle"""
     return self[ARCHIVES_KEY]
 
   def AddArchive(self, archive):
     """Add an archive to this bundle."""
-    self.RemoveArchive(archive.host_os)
     self[ARCHIVES_KEY].append(archive)
 
-  def RemoveArchive(self, host_os_name):
+  def RemoveAllArchivesForHostOS(self, host_os_name):
     """Remove an archive from this Bundle."""
     if host_os_name == 'all':
       del self[ARCHIVES_KEY][:]
