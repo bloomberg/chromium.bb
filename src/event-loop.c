@@ -447,6 +447,6 @@ WL_EXPORT struct wl_listener *
 wl_event_loop_get_destroy_listener(struct wl_event_loop *loop,
 				   wl_notify_func_t notify)
 {
-	wl_signal_get(&loop->destroy_signal, notify);
+	return wl_signal_get(&loop->destroy_signal, notify);
 }
 
