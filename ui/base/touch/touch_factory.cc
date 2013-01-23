@@ -21,19 +21,10 @@
 #include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
 
-namespace {
-
-// The X cursor is hidden if it is idle for kCursorIdleSeconds seconds.
-int kCursorIdleSeconds = 5;
-
-}  // namespace
-
 namespace ui {
 
 TouchFactory::TouchFactory()
-    : is_cursor_visible_(true),
-      cursor_timer_(),
-      pointer_device_lookup_(),
+    : pointer_device_lookup_(),
       touch_device_available_(false),
       touch_events_disabled_(false),
       touch_device_list_(),
@@ -47,11 +38,6 @@ TouchFactory::TouchFactory()
 #endif
 
   Display* display = GetXDisplay();
-
-  invisible_cursor_ = CreateInvisibleCursor();
-  arrow_cursor_ = XCreateFontCursor(display, XC_arrow);
-
-  SetCursorVisible(false, false);
   UpdateDeviceList(display);
 
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
@@ -61,18 +47,6 @@ TouchFactory::TouchFactory()
 }
 
 TouchFactory::~TouchFactory() {
-#if defined(USE_AURA)
-  if (!base::MessagePumpForUI::HasXInput2())
-    return;
-#endif
-
-  // The XDisplay may be lost by the time we get destroyed.
-  if (ui::XDisplayExists()) {
-    SetCursorVisible(true, false);
-    Display* display = ui::GetXDisplay();
-    XFreeCursor(display, invisible_cursor_);
-    XFreeCursor(display, arrow_cursor_);
-  }
 }
 
 // static
@@ -293,93 +267,6 @@ bool TouchFactory::IsSlotUsed(int slot) const {
 void TouchFactory::SetSlotUsed(int slot, bool used) {
   CHECK_LT(slot, kMaxTouchPoints);
   slots_used_[slot] = used;
-}
-
-bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
-#if defined(USE_AURA)
-  if (!base::MessagePumpForUI::HasXInput2() ||
-      touch_device_list_.empty())
-    return true;
-#endif
-
-  unsigned char mask[XIMaskLen(XI_LASTEVENT)];
-  bool success = true;
-
-  memset(mask, 0, sizeof(mask));
-#if defined(USE_XI2_MT)
-  XISetMask(mask, XI_TouchBegin);
-  XISetMask(mask, XI_TouchUpdate);
-  XISetMask(mask, XI_TouchEnd);
-#endif
-  XISetMask(mask, XI_ButtonPress);
-  XISetMask(mask, XI_ButtonRelease);
-  XISetMask(mask, XI_Motion);
-
-  XIEventMask evmask;
-  evmask.mask_len = sizeof(mask);
-  evmask.mask = mask;
-  for (std::map<int, bool>::const_iterator iter =
-       touch_device_list_.begin();
-       iter != touch_device_list_.end(); ++iter) {
-    evmask.deviceid = iter->first;
-    Status status = XIGrabDevice(display, iter->first, window, CurrentTime,
-        None, GrabModeAsync, GrabModeAsync, False, &evmask);
-    success = success && status == GrabSuccess;
-  }
-
-  return success;
-}
-
-bool TouchFactory::UngrabTouchDevices(Display* display) {
-#if defined(USE_AURA)
-  if (!base::MessagePumpForUI::HasXInput2())
-    return true;
-#endif
-
-  bool success = true;
-  for (std::map<int, bool>::const_iterator iter =
-       touch_device_list_.begin();
-       iter != touch_device_list_.end(); ++iter) {
-    Status status = XIUngrabDevice(display, iter->first, CurrentTime);
-    success = success && status == GrabSuccess;
-  }
-  return success;
-}
-
-void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
-  // This function may get called after the display is terminated.
-  if (!ui::XDisplayExists())
-    return;
-
-#if defined(USE_AURA)
-  if (!base::MessagePumpForUI::HasXInput2())
-    return;
-#endif
-
-  // The cursor is going to be shown. Reset the timer for hiding it.
-  if (show && start_timer) {
-    cursor_timer_.Stop();
-    cursor_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kCursorIdleSeconds),
-        this, &TouchFactory::HideCursorForInactivity);
-  } else {
-    cursor_timer_.Stop();
-  }
-
-  if (show == is_cursor_visible_)
-    return;
-
-  is_cursor_visible_ = show;
-
-  Display* display = ui::GetXDisplay();
-  Window window = DefaultRootWindow(display);
-
-  // Hide the cursor only if there's a chance that the user will be using touch
-  // (i.e. if a touch device is available).
-  if (is_cursor_visible_)
-    XDefineCursor(display, window, arrow_cursor_);
-  else if (touch_device_available_)
-    XDefineCursor(display, window, invisible_cursor_);
 }
 
 bool TouchFactory::IsTouchDevicePresent() {

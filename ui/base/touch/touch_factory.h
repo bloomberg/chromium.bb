@@ -72,49 +72,12 @@ class UI_EXPORT TouchFactory {
   // Marks a slot as being used/unused.
   void SetSlotUsed(int slot, bool used);
 
-  // Grabs the touch devices for the specified window on the specified display.
-  // Returns if grab was successful for all touch devices.
-  bool GrabTouchDevices(Display* display, ::Window window);
-
-  // Ungrabs the touch devices. Returns if ungrab was successful for all touch
-  // devices.
-  bool UngrabTouchDevices(Display* display);
-
-  // Updates the root window to show (or hide) the cursor. Also indicate whether
-  // the timer should be started to automatically hide the cursor after a
-  // certain duration of inactivity (i.e. it is ignored if |show| is false).
-  void SetCursorVisible(bool show, bool start_timer);
-
-  // Whether the cursor is currently visible or not.
-  bool is_cursor_visible() const {
-    return is_cursor_visible_;
-  }
-
   // Whether any touch device is currently present and enabled.
   bool IsTouchDevicePresent();
 
  private:
-  void HideCursorForInactivity() {
-    SetCursorVisible(false, false);
-  }
-
   // Requirement for Singleton
   friend struct DefaultSingletonTraits<TouchFactory>;
-
-  // The default cursor is hidden after startup, and when the mouse pointer is
-  // idle for a while. Once there is some event from a mouse device, the cursor
-  // is immediately displayed.
-  bool is_cursor_visible_;
-
-  // The cursor is hidden if it is idle for a certain amount time. This timer
-  // is used to keep track of the idleness.
-  base::OneShotTimer<TouchFactory> cursor_timer_;
-
-  // The default cursor.
-  Cursor arrow_cursor_;
-
-  // The invisible cursor.
-  Cursor invisible_cursor_;
 
   // NOTE: To keep track of touch devices, we currently maintain a lookup table
   // to quickly decide if a device is a touch device or not. We also maintain a
