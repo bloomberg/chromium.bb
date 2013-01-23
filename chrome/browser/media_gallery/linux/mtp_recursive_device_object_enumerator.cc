@@ -35,12 +35,13 @@ FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
     // Process is in shut down mode.
     return FilePath();
   }
-
-  if (!current_enumerator_->HasMoreEntries()) {
+  FilePath path = current_enumerator_->Next();
+  if (path.empty()) {
     scoped_ptr<MTPDeviceObjectEnumerator> next_enumerator =
         GetNextSubdirectoryEnumerator();
     if (next_enumerator) {
       current_enumerator_ = next_enumerator.Pass();
+      path = current_enumerator_->Next();
     } else {
       // If there's no |next_enumerator|, then |current_enumerator_| is the
       // last enumerator and it remains in its end state. Thus it is retained
@@ -49,7 +50,6 @@ FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
     }
   }
 
-
   if (IsDirectory()) {
     // If the current entry is a directory, add it to
     // |untraversed_directory_entry_ids_| to scan after scanning this directory.
@@ -57,7 +57,7 @@ FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
     if (current_enumerator_->GetEntryId(&dir_entry_id))
       untraversed_directory_entry_ids_.push(dir_entry_id);
   }
-  return current_enumerator_->Next();
+  return path;
 }
 
 int64 MTPRecursiveDeviceObjectEnumerator::Size() {

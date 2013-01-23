@@ -32,11 +32,11 @@ class MTPDeviceObjectEnumerator
   // with the entry identifier else returns false and |entry_id| is not set.
   bool GetEntryId(uint32_t* entry_id) const;
 
+ private:
   // Returns true if the enumerator has more entries to traverse, false
   // otherwise.
   bool HasMoreEntries() const;
 
- private:
   // Returns true if Next() has been called at least once, and the enumerator
   // has more entries to traverse.
   bool IsIndexReadyAndInRange() const;
