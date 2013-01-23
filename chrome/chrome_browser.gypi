@@ -1155,8 +1155,6 @@
         'browser/net/pref_proxy_config_tracker_impl.h',
         'browser/net/proxy_service_factory.cc',
         'browser/net/proxy_service_factory.h',
-        'browser/net/quoted_printable.cc',
-        'browser/net/quoted_printable.h',
         'browser/net/referrer.cc',
         'browser/net/referrer.h',
         'browser/net/resource_prefetch_predictor_observer.cc',
