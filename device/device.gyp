@@ -11,6 +11,8 @@
       'target_name': 'device_bluetooth',
       'type': 'static_library',
       'dependencies': [
+          '../base/base.gyp:base',
+          '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
           '../chrome/chrome_resources.gyp:chrome_strings',
           '../third_party/libxml/libxml.gyp:libxml',
           '../ui/ui.gyp:ui'
@@ -132,7 +134,6 @@
         'device_bluetooth_mocks',
         'device_usb',
         '../base/base.gyp:test_support_base',
-        '../content/content.gyp:test_support_content',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
@@ -144,8 +145,6 @@
         'bluetooth/bluetooth_service_record_win_unittest.cc',
         'bluetooth/bluetooth_task_manager_win_unittest.cc',
         'bluetooth/bluetooth_utils_unittest.cc',
-        'test/device_test_suite.cc',
-        'test/device_test_suite.h',
         'test/run_all_unittests.cc',
         'usb/usb_ids_unittest.cc',
       ],

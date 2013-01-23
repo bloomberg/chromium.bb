@@ -1,7 +1,4 @@
 include_rules = [
-  "+chrome/common",
-  "+chrome/test/base",
-  "+content/public/test",
   "+chromeos/dbus",
   "+dbus",
   "+grit",
