@@ -5,6 +5,7 @@
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,17 +117,34 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
 }
 
 void ManagedModeInterstitial::CommandReceived(const std::string& command) {
+  // For use in histograms.
+  enum Commands {
+    PREVIEW,
+    BACK,
+    NTP,
+    HISTOGRAM_BOUNDING_VALUE
+  };
+
   if (command == "\"preview\"") {
+    UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
+                              PREVIEW,
+                              HISTOGRAM_BOUNDING_VALUE);
     interstitial_page_->Proceed();
     return;
   }
 
   if (command == "\"back\"") {
+    UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
+                              BACK,
+                              HISTOGRAM_BOUNDING_VALUE);
     interstitial_page_->DontProceed();
     return;
   }
 
   if (command == "\"ntp\"") {
+    UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
+                              NTP,
+                              HISTOGRAM_BOUNDING_VALUE);
     GoToNewTabPage();
     return;
   }

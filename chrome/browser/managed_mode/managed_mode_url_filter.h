@@ -34,7 +34,8 @@ class ManagedModeURLFilter
   enum FilteringBehavior {
     ALLOW,
     WARN,
-    BLOCK
+    BLOCK,
+    HISTOGRAM_BOUNDING_VALUE
   };
 
   class Observer {

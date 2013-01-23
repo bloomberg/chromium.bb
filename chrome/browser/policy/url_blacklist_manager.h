@@ -49,6 +49,9 @@ class URLBlacklist {
   // Returns true if the URL is blocked.
   bool IsURLBlocked(const GURL& url) const;
 
+  // Returns the number of items in the list.
+  size_t Size() const;
+
   // Returns true if the URL has a standard scheme. Only URLs with standard
   // schemes are filtered.
   static bool HasStandardScheme(const GURL& url);
