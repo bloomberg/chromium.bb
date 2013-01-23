@@ -30,8 +30,8 @@ if [ -d "$base_dir/svn_bin" -a $MINGW = 0 ]; then
 fi
 
 GIT="git"
-if [ -d "$base_dir/git_bin" -a $MINGW = 0 ]; then
-  GIT="$base_dir/git_bin/bin/git.exe"
+if [ -d "$base_dir/git-1.8.0_bin" -a $MINGW = 0 ]; then
+  GIT="$base_dir/git-1.8.0_bin/bin/git.exe"
 fi
 
 # Test git and git --version.
