@@ -1052,27 +1052,6 @@
           ],
         },
         {
-          'target_name': 'scaler_bench',
-          'type': 'executable',
-          'dependencies': [
-            'media',
-            'yuv_convert',
-            '../base/base.gyp:base',
-            '../skia/skia.gyp:skia',
-            '../ui/ui.gyp:ui',
-          ],
-          'sources': [
-            'tools/scaler_bench/scaler_bench.cc',
-          ],
-        },
-        {
-          'target_name': 'qt_faststart',
-          'type': 'executable',
-          'sources': [
-            'tools/qt_faststart/qt_faststart.c'
-          ],
-        },
-        {
           'target_name': 'seek_tester',
           'type': 'executable',
           'dependencies': [
@@ -1139,25 +1118,6 @@
                 'tools/shader_bench/window_win.cc',
               ],
             }],
-          ],
-        },
-      ],
-    }],
-    ['OS == "linux" and target_arch != "arm" and target_arch != "mipsel"', {
-      'targets': [
-        {
-          'target_name': 'tile_render_bench',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../ui/gl/gl.gyp:gl',
-          ],
-          'libraries': [
-            '-lGL',
-            '-ldl',
-          ],
-          'sources': [
-            'tools/tile_render_bench/tile_render_bench.cc',
           ],
         },
       ],
