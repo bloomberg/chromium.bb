@@ -432,8 +432,9 @@ void UserView::Layout() {
 
     // Give the remaining space to the user card.
     gfx::Rect user_card_area = contents_area;
-    user_card_area.set_width(contents_area.width() -
-        (logout_area.width() + kTrayPopupPaddingBetweenItems));
+    int remaining_width = contents_area.width() -
+        (logout_area.width() + kTrayPopupPaddingBetweenItems);
+    user_card_area.set_width(std::max(0, remaining_width));
     user_card_->SetBoundsRect(user_card_area);
   } else if (user_card_) {
     user_card_->SetBoundsRect(contents_area);
