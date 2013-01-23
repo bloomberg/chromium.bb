@@ -1805,3 +1805,30 @@
    fun:net::::URLRequestFtpJobTest::AddSocket
    fun:net::::URLRequestFtpJobTest_FtpProxyRequestDoNotReuseSocket_Test::TestBody
 }
+{
+   bug_171571
+   Heapcheck:Leak
+   ...
+   fun:GeolocationPermissionContextTests_PermissionForFileScheme_Test::TestBody
+}
+{
+   bug_171571_a
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:base::PrepareForUTF8Output
+   fun:UTF16ToUTF8
+   fun:UTF16ToUTF8
+   fun:l10n_util::GetStringUTF8
+   fun:::CreateLocaleDefaultValue
+   fun:PrefServiceSyncable::RegisterLocalizedStringPref
+   fun:PrefsTabHelper::RegisterUserPrefs
+   fun:chrome::RegisterUserPrefs
+   fun:TestingProfile::CreateTestingPrefService
+   fun:TestingProfile::GetPrefs
+   fun:ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile
+   fun:ProfileDependencyManager::CreateProfileServices
+   fun:TestingProfile::Init
+   fun:TestingProfile::TestingProfile
+   fun:ChromeRenderViewHostTestHarness::SetUp
+   fun:GeolocationPermissionContextTests::SetUp
+}
