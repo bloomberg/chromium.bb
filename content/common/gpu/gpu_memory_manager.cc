@@ -322,6 +322,11 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
   }
 }
 
+bool GpuMemoryManager::EnsureGPUMemoryAvailable(size_t /* size_needed */) {
+  // TODO: Check if there is enough space. Lose contexts until there is.
+  return true;
+}
+
 GpuMemoryManagerClientState* GpuMemoryManager::CreateClientState(
     GpuMemoryManagerClient* client,
     bool has_surface,

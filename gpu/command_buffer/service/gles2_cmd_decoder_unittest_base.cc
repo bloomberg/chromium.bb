@@ -40,6 +40,7 @@ namespace gles2 {
 GLES2DecoderTestBase::GLES2DecoderTestBase()
     : surface_(NULL),
       context_(NULL),
+      memory_tracker_(NULL),
       client_buffer_id_(100),
       client_framebuffer_id_(101),
       client_program_id_(102),
@@ -90,7 +91,7 @@ void GLES2DecoderTestBase::InitDecoder(
   ::gfx::GLInterface::SetGLInterface(gl_.get());
   group_ = ContextGroup::Ref(new ContextGroup(NULL,
                                               NULL,
-                                              NULL,
+                                              memory_tracker_,
                                               bind_generates_resource));
 
   InSequence sequence;

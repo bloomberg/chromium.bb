@@ -148,6 +148,7 @@ class CONTENT_EXPORT GpuMemoryManager :
       size_t new_size,
       gpu::gles2::MemoryTracker::Pool tracking_pool);
   void OnDestroyTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
+  bool EnsureGPUMemoryAvailable(size_t size_needed);
 
   // GpuMemoryManagerClientState interface
   void SetClientStateVisible(

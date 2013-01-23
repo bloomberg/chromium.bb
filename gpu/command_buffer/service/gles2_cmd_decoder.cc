@@ -659,6 +659,18 @@ class GLES2DecoderImpl : public GLES2Decoder {
     return vertex_array_manager_.get();
   }
 
+  MemoryTracker* memory_tracker() {
+    return group_->memory_tracker();
+  }
+
+  bool EnsureGPUMemoryAvailable(size_t estimated_size) {
+    MemoryTracker* tracker = memory_tracker();
+    if (tracker) {
+      return tracker->EnsureGPUMemoryAvailable(estimated_size);
+    }
+    return true;
+  }
+
   bool IsOffscreenBufferMultisampled() const {
     return offscreen_target_samples_ > 1;
   }
@@ -1826,8 +1838,7 @@ ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
 
 Texture::Texture(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
-      memory_tracker_(decoder->GetContextGroup()->memory_tracker(),
-                      MemoryTracker::kUnmanaged),
+      memory_tracker_(decoder->memory_tracker(), MemoryTracker::kUnmanaged),
       bytes_allocated_(0),
       id_(0) {
 }
@@ -1862,8 +1873,7 @@ void Texture::Create() {
   memory_tracker_.TrackMemAlloc(bytes_allocated_);
 }
 
-bool Texture::AllocateStorage(const gfx::Size& size, GLenum format,
-                              bool zero) {
+bool Texture::AllocateStorage(const gfx::Size& size, GLenum format, bool zero) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(decoder_);
   ScopedTexture2DBinder binder(decoder_, id_);
@@ -1871,6 +1881,10 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format,
   GLES2Util::ComputeImageDataSizes(
       size.width(), size.height(), format, GL_UNSIGNED_BYTE, 8, &image_size,
       NULL, NULL);
+
+  if (!memory_tracker_.EnsureGPUMemoryAvailable(image_size)) {
+    return false;
+  }
 
   scoped_array<char> zero_data;
   if (zero) {
@@ -1928,8 +1942,7 @@ void Texture::Invalidate() {
 
 RenderBuffer::RenderBuffer(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
-      memory_tracker_(decoder->GetContextGroup()->memory_tracker(),
-                      MemoryTracker::kUnmanaged),
+      memory_tracker_(decoder->memory_tracker(), MemoryTracker::kUnmanaged),
       bytes_allocated_(0),
       id_(0) {
 }
@@ -1951,6 +1964,17 @@ bool RenderBuffer::AllocateStorage(const gfx::Size& size, GLenum format,
                                    GLsizei samples) {
   ScopedGLErrorSuppressor suppressor(decoder_);
   ScopedRenderBufferBinder binder(decoder_, id_);
+
+  uint32 estimated_size = 0;
+  if (!RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      size.width(), size.height(), samples, format, &estimated_size)) {
+    return false;
+  }
+
+  if (!memory_tracker_.EnsureGPUMemoryAvailable(estimated_size)) {
+    return false;
+  }
+
   if (samples <= 1) {
     glRenderbufferStorageEXT(GL_RENDERBUFFER,
                              format,
@@ -1974,9 +1998,7 @@ bool RenderBuffer::AllocateStorage(const gfx::Size& size, GLenum format,
   bool success = glGetError() == GL_NO_ERROR;
   if (success) {
     memory_tracker_.TrackMemFree(bytes_allocated_);
-    bytes_allocated_ =
-        size.width() * size.height() * samples *
-        GLES2Util::RenderbufferBytesPerPixel(format);
+    bytes_allocated_ = estimated_size;
     memory_tracker_.TrackMemAlloc(bytes_allocated_);
   }
   return success;
@@ -4782,39 +4804,39 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
       GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
   if (!renderbuffer) {
     SetGLError(GL_INVALID_OPERATION,
-               "glGetRenderbufferStorageMultisample", "no renderbuffer bound");
+               "glRenderbufferStorageMultisampleEXT", "no renderbuffer bound");
     return;
   }
 
   if (samples > renderbuffer_manager()->max_samples()) {
     SetGLError(GL_INVALID_VALUE,
-               "glGetRenderbufferStorageMultisample", "samples too large");
+               "glRenderbufferStorageMultisampleEXT", "samples too large");
     return;
   }
 
   if (width > renderbuffer_manager()->max_renderbuffer_size() ||
       height > renderbuffer_manager()->max_renderbuffer_size()) {
     SetGLError(GL_INVALID_VALUE,
-               "glGetRenderbufferStorageMultisample", "size too large");
+               "glRenderbufferStorageMultisample", "dimensions too large");
     return;
   }
 
-  GLenum impl_format = internalformat;
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    switch (impl_format) {
-      case GL_DEPTH_COMPONENT16:
-        impl_format = GL_DEPTH_COMPONENT;
-        break;
-      case GL_RGBA4:
-      case GL_RGB5_A1:
-        impl_format = GL_RGBA;
-        break;
-      case GL_RGB565:
-        impl_format = GL_RGB;
-        break;
-    }
+  uint32 estimated_size = 0;
+  if (!RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      width, height, samples, internalformat, &estimated_size)) {
+    SetGLError(GL_OUT_OF_MEMORY,
+               "glRenderbufferStorageMultsampleEXT", "dimensions too large");
+    return;
   }
 
+  if (!EnsureGPUMemoryAvailable(estimated_size)) {
+    SetGLError(GL_OUT_OF_MEMORY,
+               "glRenderbufferStorageMultsampleEXT", "out of memory");
+    return;
+  }
+
+  GLenum impl_format = RenderbufferManager::
+      InternalRenderbufferFormatToImplFormat(internalformat);
   CopyRealGLErrorsToWrapper();
   if (IsAngle()) {
     glRenderbufferStorageMultisampleANGLE(
@@ -4839,42 +4861,42 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
       GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
   if (!renderbuffer) {
     SetGLError(GL_INVALID_OPERATION,
-               "glGetRenderbufferStorage", "no renderbuffer bound");
+               "glRenderbufferStorage", "no renderbuffer bound");
     return;
   }
 
   if (width > renderbuffer_manager()->max_renderbuffer_size() ||
       height > renderbuffer_manager()->max_renderbuffer_size()) {
     SetGLError(GL_INVALID_VALUE,
-               "glGetRenderbufferStorage", "size too large");
+               "glRenderbufferStorage", "dimensions too large");
     return;
   }
 
-  GLenum impl_format = internalformat;
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    switch (impl_format) {
-      case GL_DEPTH_COMPONENT16:
-        impl_format = GL_DEPTH_COMPONENT;
-        break;
-      case GL_RGBA4:
-      case GL_RGB5_A1:
-        impl_format = GL_RGBA;
-        break;
-      case GL_RGB565:
-        impl_format = GL_RGB;
-        break;
-    }
+  uint32 estimated_size = 0;
+  if (!RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      width, height, 1, internalformat, &estimated_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glRenderbufferStorage",
+               "dimensions too large");
+    return;
+  }
+
+  if (!EnsureGPUMemoryAvailable(estimated_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glRenderbufferStorage", "out of memory");
+    return;
   }
 
   CopyRealGLErrorsToWrapper();
-  glRenderbufferStorageEXT(target, impl_format, width, height);
+  glRenderbufferStorageEXT(
+      target, RenderbufferManager::
+          InternalRenderbufferFormatToImplFormat(internalformat),
+      width, height);
   GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     // TODO(gman): If tetxures tracked which framebuffers they were attached to
     // we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
     renderbuffer_manager()->SetInfo(
-        renderbuffer, 0, internalformat, width, height);
+        renderbuffer, 1, internalformat, width, height);
   }
 }
 
@@ -7091,6 +7113,12 @@ void GLES2DecoderImpl::DoBufferData(
     SetGLError(GL_INVALID_VALUE, "glBufferData", "unknown buffer");
     return;
   }
+
+  if (!EnsureGPUMemoryAvailable(size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glBufferData", "out of memory");
+    return;
+  }
+
   // Clear the buffer to 0 if no initial data was passed in.
   scoped_array<int8> zero;
   if (!data) {
@@ -7442,6 +7470,11 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     return error::kNoError;
   }
 
+  if (!EnsureGPUMemoryAvailable(image_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glCompressedTexImage2D", "out of memory");
+    return error::kNoError;
+  }
+
   if (info->IsAttachedToFramebuffer()) {
     clear_state_dirty_ = true;
     // TODO(gman): If textures tracked which framebuffers they were attached to
@@ -7676,6 +7709,12 @@ void GLES2DecoderImpl::DoTexImage2D(
       width, height, border, format, type, pixels, pixels_size)) {
     return;
   }
+
+  if (!EnsureGPUMemoryAvailable(pixels_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glTexImage2D", "out of memory");
+    return;
+  }
+
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
@@ -7902,7 +7941,20 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
     SetGLError(
         GL_INVALID_OPERATION,
-        "glCopyImage2D", "can not be used with depth or stencil textures");
+        "glCopyTexImage2D", "can not be used with depth or stencil textures");
+    return;
+  }
+
+  uint32 estimated_size = 0;
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, internal_format, GL_UNSIGNED_BYTE, state_.unpack_alignment,
+      &estimated_size, NULL, NULL)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too large");
+    return;
+  }
+
+  if (!EnsureGPUMemoryAvailable(estimated_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glCopyTexImage2D", "out of memory");
     return;
   }
 
@@ -9575,13 +9627,38 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
                "glTexStorage2DEXT", "texture is immutable");
     return;
   }
+
+  GLenum format = ExtractFormatFromStorageFormat(internal_format);
+  GLenum type = ExtractTypeFromStorageFormat(internal_format);
+
+  {
+    GLsizei level_width = width;
+    GLsizei level_height = height;
+    uint32 estimated_size = 0;
+    for (int ii = 0; ii < levels; ++ii) {
+      uint32 level_size = 0;
+      if (!GLES2Util::ComputeImageDataSizes(
+          level_width, level_height, format, type, state_.unpack_alignment,
+          &estimated_size, NULL, NULL) ||
+          !SafeAddUint32(estimated_size, level_size, &estimated_size)) {
+        SetGLError(GL_OUT_OF_MEMORY,
+                   "glTexStorage2DEXT", "dimensions too large");
+        return;
+      }
+      level_width = std::max(1, level_width >> 1);
+      level_height = std::max(1, level_height >> 1);
+    }
+    if (!EnsureGPUMemoryAvailable(estimated_size)) {
+      SetGLError(GL_OUT_OF_MEMORY, "glTexStorage2DEXT", "out of memory");
+      return;
+    }
+  }
+
   CopyRealGLErrorsToWrapper();
   glTexStorage2DEXT(target, levels, GetTexInternalFormat(internal_format),
                     width, height);
   GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
-    GLenum format = ExtractFormatFromStorageFormat(internal_format);
-    GLenum type = ExtractTypeFromStorageFormat(internal_format);
     GLsizei level_width = width;
     GLsizei level_height = height;
     for (int ii = 0; ii < levels; ++ii) {
@@ -9880,6 +9957,11 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   if (info->IsDefined()) {
     SetGLError(GL_INVALID_OPERATION,
         "glAsyncTexImage2DCHROMIUM", "already defined");
+    return error::kNoError;
+  }
+
+  if (!EnsureGPUMemoryAvailable(pixels_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glAsyncTexImage2DCHROMIUM", "out of memory");
     return error::kNoError;
   }
 

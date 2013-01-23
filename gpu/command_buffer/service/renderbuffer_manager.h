@@ -170,6 +170,10 @@ class GPU_EXPORT RenderbufferManager {
     return memory_tracker_->GetMemRepresented();
   }
 
+  static bool ComputeEstimatedRenderbufferSize(
+      int width, int height, int samples, int internal_format, uint32* size);
+  static GLenum InternalRenderbufferFormatToImplFormat(GLenum impl_format);
+
  private:
   void StartTracking(RenderbufferInfo* renderbuffer);
   void StopTracking(RenderbufferInfo* renderbuffer);

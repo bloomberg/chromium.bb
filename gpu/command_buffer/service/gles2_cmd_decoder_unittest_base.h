@@ -27,6 +27,8 @@
 namespace gpu {
 namespace gles2 {
 
+class MemoryTracker;
+
 class GLES2DecoderTestBase : public testing::Test {
  public:
   GLES2DecoderTestBase();
@@ -139,6 +141,10 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
+
+  void set_memory_tracker(MemoryTracker* memory_tracker) {
+    memory_tracker_ = memory_tracker;
+  }
 
   void InitDecoder(
       const char* extensions,
@@ -468,6 +474,7 @@ class GLES2DecoderTestBase : public testing::Test {
   scoped_refptr<gfx::GLContextStub> context_;
   scoped_ptr<GLES2Decoder> mock_decoder_;
   scoped_ptr<GLES2Decoder> decoder_;
+  MemoryTracker* memory_tracker_;
 
   GLuint client_buffer_id_;
   GLuint client_framebuffer_id_;

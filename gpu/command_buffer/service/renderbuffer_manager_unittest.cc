@@ -148,7 +148,7 @@ TEST_F(RenderbufferManagerTest, RenderbufferInfo) {
   EXPECT_FALSE(info1->cleared());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_TRUE(manager_->HaveUnclearedRenderbuffers());
-  EXPECT_EQ(kWidth * kHeight * 4u * 2u, info1->EstimatedSize());
+  EXPECT_EQ(kWidth * kHeight * 4u * 4u, info1->EstimatedSize());
 
   manager_->SetCleared(info1, true);
   EXPECT_TRUE(info1->cleared());
@@ -179,10 +179,12 @@ TEST_F(RenderbufferManagerMemoryTrackerTest, Basic) {
   const GLsizei kWidth = 128;
   const GLsizei kHeight1 = 64;
   const GLsizei kHeight2 = 32;
-  size_t expected_size_1 = kWidth * kHeight1 * kSamples *
-      GLES2Util::RenderbufferBytesPerPixel(kFormat);
-  size_t expected_size_2 = kWidth * kHeight2 * kSamples *
-      GLES2Util::RenderbufferBytesPerPixel(kFormat);
+  uint32 expected_size_1 = 0;
+  uint32 expected_size_2 = 0;
+  RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      kWidth, kHeight1, kSamples, kFormat, &expected_size_1);
+  RenderbufferManager::ComputeEstimatedRenderbufferSize(
+      kWidth, kHeight2, kSamples, kFormat, &expected_size_2);
   EXPECT_MEMORY_ALLOCATION_CHANGE(
       0, expected_size_1, MemoryTracker::kUnmanaged);
   manager_->SetInfo(info1, kSamples, kFormat, kWidth, kHeight1);

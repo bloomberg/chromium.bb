@@ -56,6 +56,10 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
         old_size, new_size, pool);
   }
 
+  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) {
+    return tracking_group_->EnsureGPUMemoryAvailable(size_needed);
+  };
+
  private:
   ~GpuCommandBufferMemoryTracker() {
   }

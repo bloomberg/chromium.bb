@@ -25,6 +25,9 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
                                            size_t new_size,
                                            Pool pool) = 0;
 
+   // Ensure a certain amount of GPU memory is free. Returns true on success.
+   virtual bool EnsureGPUMemoryAvailable(size_t size_needed) = 0;
+
  protected:
   friend class base::RefCounted<MemoryTracker>;
   MemoryTracker() {}
@@ -65,6 +68,14 @@ class MemoryTypeTracker {
 
   size_t GetMemRepresented() const {
     return mem_represented_at_last_update_;
+  }
+
+  // Ensure a certain amount of GPU memory is free. Returns true on success.
+  bool EnsureGPUMemoryAvailable(size_t size_needed) {
+    if (memory_tracker_) {
+      return memory_tracker_->EnsureGPUMemoryAvailable(size_needed);
+    }
+    return true;
   }
 
  private:

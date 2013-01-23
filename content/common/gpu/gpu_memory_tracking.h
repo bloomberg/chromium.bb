@@ -23,6 +23,7 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
       size_t old_size,
       size_t new_size,
       gpu::gles2::MemoryTracker::Pool tracking_pool);
+  bool EnsureGPUMemoryAvailable(size_t size_needed);
   base::ProcessId GetPid() const {
     return pid_;
   }

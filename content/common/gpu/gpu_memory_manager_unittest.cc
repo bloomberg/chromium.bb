@@ -23,10 +23,13 @@ struct hash<content::GpuMemoryManagerClient*> {
 
 class FakeMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  void TrackMemoryAllocatedChange(
-      size_t old_size,
-      size_t new_size,
-      gpu::gles2::MemoryTracker::Pool pool) {
+  virtual void TrackMemoryAllocatedChange(
+      size_t /* old_size */,
+      size_t /* new_size */,
+      gpu::gles2::MemoryTracker::Pool /* pool */) {
+  }
+  virtual bool EnsureGPUMemoryAvailable(size_t /* size_needed */) {
+    return true;
   }
  private:
   ~FakeMemoryTracker() {
