@@ -1747,3 +1747,61 @@
    fun:MessageLoop::MessageLoop
    fun:ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test::TestBody
 }
+{
+   bug_171722
+   Heapcheck:Leak
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   ...
+}
+{
+   bug_171722_b
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::SupportsWeakPtr::AsWeakPtr
+   fun:net::DeterministicMockClientSocketFactory::CreateTransportClientSocket
+   fun:net::TransportConnectJob::DoTransportConnect
+   fun:net::TransportConnectJob::DoLoop
+   fun:net::TransportConnectJob::OnIOComplete
+}
+{
+   bug_171722_c
+   Heapcheck:Leak
+   ...
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   fun:net::::URLRequestFtpJobTest_FtpProxyRequestDoNotSaveCookies_Test::TestBody
+}
+{
+   bug_171722_d
+   Heapcheck:Leak
+   ...
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   fun:net::::URLRequestFtpJobTest_FtpProxyRequestDoNotFollowRedirects_Test::TestBody
+}
+{
+   bug_171722_e
+   Heapcheck:Leak
+   ...
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   fun:net::::URLRequestFtpJobTest_FtpProxyRequestNeedAuth_Test::TestBody
+}
+{
+   bug_171722_f
+   Heapcheck:Leak
+   ...
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   fun:net::::URLRequestFtpJobTest_FtpProxyRequest_Test::TestBody
+}
+{
+   bug_171722_g
+   Heapcheck:Leak
+   ...
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   fun:net::::URLRequestFtpJobTest_FtpProxyRequestReuseSocket_Test::TestBody
+}
+{
+   bug_171722_h
+   Heapcheck:Leak
+   ...
+   fun:net::::URLRequestFtpJobTest::AddSocket
+   fun:net::::URLRequestFtpJobTest_FtpProxyRequestDoNotReuseSocket_Test::TestBody
+}
