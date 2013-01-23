@@ -1,0 +1,5 @@
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    ROLE_SYSTEM_PROGRESSBAR name='' READONLY minimumValue=1.00
+    ROLE_SYSTEM_SCROLLBAR name='' minimumValue=2.00
+    ROLE_SYSTEM_SLIDER name='' minimumValue=3.00
+    ROLE_SYSTEM_SPINBUTTON name='' minimumValue=4.00

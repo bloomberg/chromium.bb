@@ -10,6 +10,7 @@
 #import "base/memory/scoped_nsobject.h"
 #import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/accessibility/browser_accessibility.h"
+#include "content/common/accessibility_node_data.h"
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
@@ -31,6 +32,10 @@
 
 // Invalidate children for a non-ignored ancestor (including self).
 - (void)childrenChanged;
+
+// Convenience method to get the internal, cross-platform role
+// from browserAccessibility_.
+- (content::AccessibilityNodeData::Role)internalRole;
 
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.

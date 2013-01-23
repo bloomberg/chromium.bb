@@ -66,6 +66,8 @@ void DumpAccessibilityTreeHelper::StartLine() {
 
 void DumpAccessibilityTreeHelper::Add(
     bool include_by_default, const string16& attr) {
+  if (attr.empty())
+    return;
   if (!MatchesFilters(attr, include_by_default))
     return;
   if (!line_.empty())

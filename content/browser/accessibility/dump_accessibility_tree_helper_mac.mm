@@ -18,10 +18,12 @@ string16 Format(BrowserAccessibility* node,
                 SEL selector,
                 const char *suffix) {
   BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
+  NSString* value = [cocoa_node performSelector:selector];
+  if (!value)
+    return string16();
   NSString* format_str =
       [NSString stringWithFormat:@"%s%%@%s", prefix, suffix];
-  NSString* tmp = [NSString stringWithFormat:format_str,
-                   [cocoa_node performSelector:selector]];
+  NSString* tmp = [NSString stringWithFormat:format_str, value];
   return UTF8ToUTF16([tmp cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 }
@@ -45,6 +47,9 @@ string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
   Add(false, Format(node, "description='", @selector(description), "'"));
   Add(false, Format(node, "help='", @selector(help), "'"));
   Add(false, Format(node, "invalid='", @selector(invalid), "'"));
+  Add(false, Format(node, "disclosing='", @selector(disclosing), "'"));
+  Add(false, Format(node, "disclosureLevel='", @selector(disclosureLevel),
+                    "'"));
   return ASCIIToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }
 

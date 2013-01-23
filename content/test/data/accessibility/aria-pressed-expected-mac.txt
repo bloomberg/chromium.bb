@@ -1,0 +1,5 @@
+AXWebArea title='' value=''
+    AXButton title='Regular button' value=''
+    AXButton title='Toggle button unpressed' value=''
+    AXButton title='Toggle button pressed' value=''
+    AXButton title='Toggle button mixed' value=''

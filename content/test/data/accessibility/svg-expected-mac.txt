@@ -1,0 +1,5 @@
+AXWebArea title='' value=''
+    AXGroup title='' value=''
+        AXGroup title='' value='' description='svg'
+            AXGroup title='Test' value=''
+                AXStaticText title='' value='Test'

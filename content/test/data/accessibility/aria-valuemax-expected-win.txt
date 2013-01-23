@@ -1,0 +1,5 @@
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    ROLE_SYSTEM_PROGRESSBAR name='' READONLY maximumValue=101.00
+    ROLE_SYSTEM_SCROLLBAR name='' maximumValue=102.00
+    ROLE_SYSTEM_SLIDER name='' maximumValue=103.00
+    ROLE_SYSTEM_SPINBUTTON name='' maximumValue=104.00

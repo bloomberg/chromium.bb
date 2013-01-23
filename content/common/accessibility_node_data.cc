@@ -138,6 +138,7 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     case ROLE_SPLIT_GROUP: result += " SPLIT_GROUP"; break;
     case ROLE_STATIC_TEXT: result += " STATIC_TEXT"; break;
     case ROLE_STATUS: result += " STATUS"; break;
+    case ROLE_SVG_ROOT: result += " SVG_ROOT"; break;
     case ROLE_SYSTEM_WIDE: result += " SYSTEM_WIDE"; break;
     case ROLE_TAB: result += " TAB"; break;
     case ROLE_TABLE: result += " TABLE"; break;
@@ -278,6 +279,15 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
         break;
     case ATTR_TITLE_UI_ELEMENT:
         result += " title_elem=" + value;
+        break;
+    case ATTR_COLOR_VALUE_RED:
+        result += " color_value_red=" + value;
+        break;
+    case ATTR_COLOR_VALUE_GREEN:
+        result += " color_value_green=" + value;
+        break;
+    case ATTR_COLOR_VALUE_BLUE:
+        result += " color_value_blue=" + value;
         break;
     }
   }

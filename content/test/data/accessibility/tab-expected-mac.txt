@@ -1,0 +1,4 @@
+AXWebArea title='' value=''
+    AXTabGroup title='' value=''
+        AXRadioButton title='Tab 1' value='0'
+        AXRadioButton title='Tab 2' value='0'

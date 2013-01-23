@@ -223,6 +223,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_SPLITTER;
     case WebKit::WebAccessibilityRoleStaticText:
       return AccessibilityNodeData::ROLE_STATIC_TEXT;
+    case WebKit::WebAccessibilityRoleSVGRoot:
+      return AccessibilityNodeData::ROLE_SVG_ROOT;
     case WebKit::WebAccessibilityRoleSystemWide:
       return AccessibilityNodeData::ROLE_SYSTEM_WIDE;
     case WebKit::WebAccessibilityRoleTab:
@@ -359,6 +361,14 @@ void SerializeAccessibilityNode(
   else
     dst->value = src.stringValue();
 
+  if (dst->role == AccessibilityNodeData::ROLE_COLOR_WELL) {
+    int r, g, b;
+    src.colorValue(r, g, b);
+    dst->int_attributes[dst->ATTR_COLOR_VALUE_RED] = r;
+    dst->int_attributes[dst->ATTR_COLOR_VALUE_GREEN] = g;
+    dst->int_attributes[dst->ATTR_COLOR_VALUE_BLUE] = b;
+  }
+
   if (src.accessKey().length())
     dst->string_attributes[dst->ATTR_ACCESS_KEY] = src.accessKey();
   if (src.actionVerb().length())
@@ -385,8 +395,12 @@ void SerializeAccessibilityNode(
   if (!src.url().isEmpty())
     dst->string_attributes[dst->ATTR_URL] = src.url().spec().utf16();
 
-  if (dst->role == dst->ROLE_TREE_ITEM)
+  if (dst->role == dst->ROLE_HEADING)
+    dst->int_attributes[dst->ATTR_HIERARCHICAL_LEVEL] = src.headingLevel();
+  else if ((dst->role == dst->ROLE_TREE_ITEM || dst->role == dst->ROLE_ROW) &&
+           src.hierarchicalLevel() > 0) {
     dst->int_attributes[dst->ATTR_HIERARCHICAL_LEVEL] = src.hierarchicalLevel();
+  }
 
   if (dst->role == dst->ROLE_SLIDER)
     include_children = false;
@@ -404,6 +418,9 @@ void SerializeAccessibilityNode(
   if (!node.isNull() && node.isElementNode()) {
     WebElement element = node.to<WebElement>();
     is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+
+    if (LowerCaseEqualsASCII(element.getAttribute("aria-expanded"), "true"))
+      dst->state |= (1 << AccessibilityNodeData::STATE_EXPANDED);
 
     // TODO(ctguil): The tagName in WebKit is lower cased but
     // HTMLElement::nodeName calls localNameUpper. Consider adding

@@ -162,6 +162,7 @@ RoleMap BuildRoleMap() {
     { AccessibilityNodeData::ROLE_SPLIT_GROUP, NSAccessibilitySplitGroupRole },
     { AccessibilityNodeData::ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
     { AccessibilityNodeData::ROLE_STATUS, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_SVG_ROOT, NSAccessibilityGroupRole },
     { AccessibilityNodeData::ROLE_SYSTEM_WIDE, NSAccessibilityUnknownRole },
     { AccessibilityNodeData::ROLE_TAB, NSAccessibilityRadioButtonRole },
     { AccessibilityNodeData::ROLE_TAB_LIST, NSAccessibilityTabGroupRole },
@@ -271,6 +272,10 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityChildrenAttribute, @"children" },
     { NSAccessibilityColumnsAttribute, @"columns" },
     { NSAccessibilityDescriptionAttribute, @"description" },
+    { NSAccessibilityDisclosingAttribute, @"disclosing" },
+    { NSAccessibilityDisclosedByRowAttribute, @"disclosedByRow" },
+    { NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel" },
+    { NSAccessibilityDisclosedRowsAttribute, @"disclosedRows" },
     { NSAccessibilityEnabledAttribute, @"enabled" },
     { NSAccessibilityFocusedAttribute, @"focused" },
     { NSAccessibilityHelpAttribute, @"help" },
@@ -459,6 +464,42 @@ NSDictionary* attributeToMethodNameMap = nil;
   return @"";
 }
 
+- (NSNumber*)disclosing {
+  if ([self internalRole] == AccessibilityNodeData::ROLE_TREE_ITEM) {
+    return [NSNumber numberWithBool:
+        GetState(browserAccessibility_, AccessibilityNodeData::STATE_EXPANDED)];
+  } else {
+    return nil;
+  }
+}
+
+- (id)disclosedByRow {
+  // The row that contains this row.
+  // It should be the same as the first parent that is a treeitem.
+  return nil;
+}
+
+- (id)disclosureLevel {
+  AccessibilityNodeData::Role role = [self internalRole];
+  if (role == AccessibilityNodeData::ROLE_ROW ||
+      role == AccessibilityNodeData::ROLE_TREE_ITEM) {
+    int level = 0;
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL, &level);
+    // Mac disclosureLevel is 0-based, but web levels are 1-based.
+    if (level > 0)
+      level--;
+    return [NSNumber numberWithInt:level];
+  } else {
+    return nil;
+  }
+}
+
+- (id)disclosedRows {
+  // The rows that are considered inside this row.
+  return nil;
+}
+
 - (NSNumber*)enabled {
   return [NSNumber numberWithBool:
       !GetState(browserAccessibility_,
@@ -524,9 +565,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)orientation {
   // We present a spin button as a vertical slider, with a role description
   // of "spin button".
-  AccessibilityNodeData::Role internal_role =
-      static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
-  if (internal_role == AccessibilityNodeData::ROLE_SPIN_BUTTON)
+  if ([self internalRole] == AccessibilityNodeData::ROLE_SPIN_BUTTON)
     return NSAccessibilityVerticalOrientationValue;
 
   if (GetState(browserAccessibility_, AccessibilityNodeData::STATE_VERTICAL))
@@ -567,13 +606,15 @@ NSDictionary* attributeToMethodNameMap = nil;
       GetState(browserAccessibility_, AccessibilityNodeData::STATE_REQUIRED)];
 }
 
-// Returns a string indicating the role of this object.
-- (NSString*)role {
-  AccessibilityNodeData::Role browserAccessibilityRole =
-      static_cast<AccessibilityNodeData::Role>( browserAccessibility_->role());
+// Returns an enum indicating the role from browserAccessibility_.
+- (AccessibilityNodeData::Role)internalRole {
+  return static_cast<AccessibilityNodeData::Role>(
+      browserAccessibility_->role());
+}
 
-  // Roles that we only determine at runtime.
-  return NativeRoleFromAccessibilityNodeDataRole(browserAccessibilityRole);
+// Returns a string indicating the NSAccessibility role of this object.
+- (NSString*)role {
+  return NativeRoleFromAccessibilityNodeDataRole([self internalRole]);
 }
 
 // Returns a string indicating the role description of this object.
@@ -602,9 +643,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     const std::vector<std::pair<string16, string16> >& htmlAttributes =
         browserAccessibility_->html_attributes();
-    AccessibilityNodeData::Role browserAccessibilityRole =
-        static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
-
+    AccessibilityNodeData::Role browserAccessibilityRole = [self internalRole];
     if ((browserAccessibilityRole != AccessibilityNodeData::ROLE_GROUP &&
          browserAccessibilityRole != AccessibilityNodeData::ROLE_LIST_ITEM) ||
          browserAccessibilityRole == AccessibilityNodeData::ROLE_TAB) {
@@ -618,9 +657,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     }
   }
 
-  AccessibilityNodeData::Role internal_role =
-      static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
-  switch(internal_role) {
+  switch([self internalRole]) {
   case AccessibilityNodeData::ROLE_FOOTER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FOOTER));
@@ -653,8 +690,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
-  AccessibilityNodeData::Role browserAccessibilityRole =
-      static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
+  AccessibilityNodeData::Role browserAccessibilityRole = [self internalRole];
   if (browserAccessibilityRole == AccessibilityNodeData::ROLE_TEXT_FIELD &&
       GetState(browserAccessibility_, AccessibilityNodeData::STATE_PROTECTED)) {
     return @"AXSecureTextField";
@@ -680,7 +716,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSArray*)tabs {
   NSMutableArray* tabSubtree = [[[NSMutableArray alloc] init] autorelease];
 
-  if (browserAccessibility_->role() == AccessibilityNodeData::ROLE_TAB)
+  if ([self internalRole] == AccessibilityNodeData::ROLE_TAB)
     [tabSubtree addObject:self];
 
   for (uint i=0; i < [[self children] count]; ++i) {
@@ -724,13 +760,10 @@ NSDictionary* attributeToMethodNameMap = nil;
   // to approximate Cocoa ax behavior best as we can.
   NSString* role = [self role];
   if ([role isEqualToString:@"AXHeading"]) {
-    NSString* headingLevel =
-        NSStringForStringAttribute(
-            browserAccessibility_->string_attributes(),
-            AccessibilityNodeData::ATTR_HTML_TAG);
-    if ([headingLevel length] >= 2) {
-      return [NSNumber numberWithInt:
-          [[headingLevel substringFromIndex:1] intValue]];
+    int level;
+    if (browserAccessibility_->GetIntAttribute(
+            AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL, &level)) {
+      return [NSNumber numberWithInt:level];
     }
   } else if ([role isEqualToString:NSAccessibilityButtonRole]) {
     // AXValue does not make sense for pure buttons.
@@ -759,6 +792,17 @@ NSDictionary* attributeToMethodNameMap = nil;
             AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &floatValue)) {
       return [NSNumber numberWithFloat:floatValue];
     }
+  } else if ([role isEqualToString:NSAccessibilityColorWellRole]) {
+    int r, g, b;
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_COLOR_VALUE_RED, &r);
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_COLOR_VALUE_GREEN, &g);
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_COLOR_VALUE_BLUE, &b);
+    // This string matches the one returned by a native Mac color well.
+    return [NSString stringWithFormat:@"rgb %7.5f %7.5f %7.5f 1",
+                r / 255., g / 255., b / 255.];
   }
 
   return base::SysUTF16ToNSString(browserAccessibility_->value());
@@ -966,6 +1010,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   // Specific role attributes.
   NSString* role = [self role];
+  NSString* subrole = [self subrole];
   if ([role isEqualToString:NSAccessibilityTableRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityColumnsAttribute,
@@ -995,6 +1040,13 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSAccessibilityMinValueAttribute,
         NSAccessibilityOrientationAttribute,
         NSAccessibilityValueDescriptionAttribute,
+        nil]];
+  } else if ([subrole isEqualToString:NSAccessibilityOutlineRowSubrole]) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityDisclosingAttribute,
+        NSAccessibilityDisclosedByRowAttribute,
+        NSAccessibilityDisclosureLevelAttribute,
+        NSAccessibilityDisclosedRowsAttribute,
         nil]];
   }
 

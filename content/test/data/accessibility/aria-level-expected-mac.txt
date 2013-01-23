@@ -1,0 +1,21 @@
+AXWebArea
+    AXHeading title='H3' value='3'
+        AXStaticText value='H3'
+    AXHeading title='ARIA heading level 3' value='3'
+        AXStaticText value='ARIA heading level 3'
+    AXOutline
+        AXRow subrole=AXOutlineRow disclosing='1' disclosureLevel='0'
+            AXStaticText value='Tree item at level 1'
+            AXRow subrole=AXOutlineRow disclosing='0' disclosureLevel='1'
+                AXStaticText value='Tree item at level 2'
+        AXRow subrole=AXOutlineRow disclosing='0' disclosureLevel='2'
+            AXStaticText value='Tree item at level 3'
+    AXTable
+        AXRow disclosureLevel='0'
+            AXCell
+                AXStaticText value='Cell at level 1'
+        AXRow disclosureLevel='1'
+            AXCell
+                AXStaticText value='Cell at level 2'
+        AXColumn
+        AXGroup

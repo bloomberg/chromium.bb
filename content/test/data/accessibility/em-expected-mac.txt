@@ -1,0 +1,5 @@
+AXWebArea title='' value=''
+    AXGroup title='' value=''
+        AXStaticText title='' value='One word is '
+        AXStaticText title='' value='emphasized'
+        AXStaticText title='' value='.'

@@ -1,0 +1,6 @@
+AXWebArea title='' value=''
+    AXList subrole=AXDefinitionList title='' value=''
+        AXGroup subrole=AXTerm title='' value=''
+            AXStaticText title='' value='Term'
+        AXGroup subrole=AXDefinition title='' value=''
+            AXStaticText title='' value='Definition'

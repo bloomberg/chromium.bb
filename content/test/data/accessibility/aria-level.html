@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+@MAC-ALLOW:subrole=AXOutlineRow
+@MAC-ALLOW:disclosing*
+@MAC-ALLOW:disclosureLevel*
+@MAC-DENY:title=''
+@MAC-DENY:value=''
+@WIN-ALLOW:level:1
+@WIN-ALLOW:level:2
+@WIN-ALLOW:level:3
+@WIN-ALLOW:EXPANDED
+@WIN-DENY:name=''
+-->
+<html>
+<body>
+
+<h3>H3</h3>
+
+<div role="heading" aria-level="3">ARIA heading level 3</div>
+
+<div role="tree">
+  <div role="treeitem" aria-expanded="true">
+    Tree item at level 1
+    <div role="group">
+      <div role="treeitem">Tree item at level 2</div>
+    </div>
+  </div>
+  <div role="treeitem" aria-level="3">
+    Tree item at level 3
+  </div>
+</div>
+
+<table role="treegrid">
+  <tr role="row" aria-level="1">
+    <td role="gridcell">Cell at level 1</td>
+  </tr>
+  <tr role="row" aria-level="2">
+    <td role="gridcell">Cell at level 2</td>
+  </tr>
+</table>
+
+</body>
+</html>

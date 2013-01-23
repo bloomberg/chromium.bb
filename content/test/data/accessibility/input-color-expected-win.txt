@@ -1,0 +1,3 @@
+ROLE_SYSTEM_DOCUMENT name='' value='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='' value='' READONLY
+        IA2_ROLE_COLOR_CHOOSER name='' value='100% red 60% green 0% blue' FOCUSABLE

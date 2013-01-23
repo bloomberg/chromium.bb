@@ -1,0 +1,5 @@
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_PARAGRAPH name=''
+        ROLE_SYSTEM_TEXT name='This paragraph has one ' READONLY
+        ROLE_SYSTEM_TEXT name='word' READONLY
+        ROLE_SYSTEM_TEXT name=' in a span.' READONLY

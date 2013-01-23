@@ -1,0 +1,3 @@
+AXWebArea value=''
+    AXGroup subrole=AXDocumentArticle value=''
+        AXStaticText value='This is an article.'

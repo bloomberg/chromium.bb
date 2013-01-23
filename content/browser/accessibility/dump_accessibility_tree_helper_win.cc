@@ -33,11 +33,16 @@ string16 DumpAccessibilityTreeHelper::ToString(
   VARIANT variant_self;
   variant_self.vt = VT_I4;
   variant_self.lVal = CHILDID_SELF;
-  CComBSTR msaa_name_variant;
-  HRESULT hresult = acc_obj->get_accName(variant_self, &msaa_name_variant);
+  CComBSTR msaa_variant;
+  HRESULT hresult = acc_obj->get_accName(variant_self, &msaa_variant);
   string16 name;
   if (S_OK == hresult)
-    name = msaa_name_variant.m_str;
+    name = msaa_variant.m_str;
+
+  hresult = acc_obj->get_accValue(variant_self, &msaa_variant);
+  string16 value;
+  if (S_OK == hresult)
+    value = msaa_variant.m_str;
 
   // Get state strings.
   std::vector<string16> state_strings;
@@ -56,6 +61,7 @@ string16 DumpAccessibilityTreeHelper::ToString(
   StartLine();
   Add(true, IAccessible2RoleToString(acc_obj->ia2_role()));
   Add(true, L"name='" + name + L"'");
+  Add(false, L"value='" + value + L"'");
   for (std::vector<string16>::const_iterator it = state_strings.begin();
        it != state_strings.end();
        ++it) {

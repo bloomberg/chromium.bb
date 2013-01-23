@@ -1,0 +1,21 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_HEADING name='H3' READONLY level:3
+        ROLE_SYSTEM_TEXT name='H3' READONLY
+    IA2_ROLE_HEADING name='ARIA heading level 3' READONLY level:3
+        ROLE_SYSTEM_TEXT name='ARIA heading level 3' READONLY
+    ROLE_SYSTEM_OUTLINE READONLY
+        ROLE_SYSTEM_OUTLINEITEM READONLY EXPANDED level:1
+            ROLE_SYSTEM_TEXT name='Tree item at level 1' READONLY
+            ROLE_SYSTEM_OUTLINEITEM READONLY level:2
+                ROLE_SYSTEM_TEXT name='Tree item at level 2' READONLY
+        ROLE_SYSTEM_OUTLINEITEM READONLY level:3
+            ROLE_SYSTEM_TEXT name='Tree item at level 3' READONLY
+    ROLE_SYSTEM_OUTLINE
+        ROLE_SYSTEM_ROW READONLY level:1
+            ROLE_SYSTEM_CELL
+                ROLE_SYSTEM_TEXT name='Cell at level 1' READONLY
+        ROLE_SYSTEM_ROW READONLY level:2
+            ROLE_SYSTEM_CELL
+                ROLE_SYSTEM_TEXT name='Cell at level 2' READONLY
+        ROLE_SYSTEM_COLUMN
+        IA2_ROLE_SECTION

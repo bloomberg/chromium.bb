@@ -2627,18 +2627,12 @@ void BrowserAccessibilityWin::PreInitialize() {
 
   InitRoleAndState();
 
-  // Expose headings levels with the "level" attribute.
-  if (role_ == AccessibilityNodeData::ROLE_HEADING && role_name_.size() == 2 &&
-          IsAsciiDigit(role_name_[1])) {
-    ia2_attributes_.push_back(string16(L"level:") + role_name_.substr(1));
-  }
-
   // Expose the "display" and "tag" attributes.
   StringAttributeToIA2(AccessibilityNodeData::ATTR_DISPLAY, "display");
   StringAttributeToIA2(AccessibilityNodeData::ATTR_HTML_TAG, "tag");
   StringAttributeToIA2(AccessibilityNodeData::ATTR_ROLE, "xml-roles");
 
-  // Expose "level" attribute for tree nodes.
+  // Expose "level" attribute for headings, trees, etc.
   IntAttributeToIA2(AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL, "level");
 
   // Expose the set size and position in set for listbox options.
@@ -2649,6 +2643,12 @@ void BrowserAccessibilityWin::PreInitialize() {
         L"setsize:" + base::IntToString16(parent_->child_count()));
     ia2_attributes_.push_back(
         L"setsize:" + base::IntToString16(index_in_parent_ + 1));
+  }
+
+  if (ia_role_ == ROLE_SYSTEM_CHECKBUTTON ||
+      ia_role_ == ROLE_SYSTEM_RADIOBUTTON ||
+      ia2_role_ == IA2_ROLE_TOGGLE_BUTTON) {
+    ia2_attributes_.push_back(L"checkable:true");
   }
 
   // Expose live region attributes.
@@ -2678,6 +2678,17 @@ void BrowserAccessibilityWin::PreInitialize() {
       value_ = UTF8ToUTF16(base::DoubleToString(fval));
     }
     ia2_attributes_.push_back(L"valuetext:" + value_);
+  }
+
+  // Expose color well value.
+  if (ia2_role_ == IA2_ROLE_COLOR_CHOOSER) {
+    int r, g, b;
+    GetIntAttribute(AccessibilityNodeData::ATTR_COLOR_VALUE_RED, &r);
+    GetIntAttribute(AccessibilityNodeData::ATTR_COLOR_VALUE_GREEN, &g);
+    GetIntAttribute(AccessibilityNodeData::ATTR_COLOR_VALUE_BLUE, &b);
+    value_ = base::IntToString16((r * 100) / 255) + L"% red " +
+             base::IntToString16((g * 100) / 255) + L"% green " +
+             base::IntToString16((b * 100) / 255) + L"% blue";
   }
 
   // Expose table cell index.
@@ -3367,13 +3378,23 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case AccessibilityNodeData::ROLE_SPLITTER:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
       break;
+    case AccessibilityNodeData::ROLE_SVG_ROOT:
+      ia_role_ = ROLE_SYSTEM_GRAPHIC;
+      break;
     case AccessibilityNodeData::ROLE_TAB:
       ia_role_ = ROLE_SYSTEM_PAGETAB;
       break;
-    case AccessibilityNodeData::ROLE_TABLE:
-      ia_role_ = ROLE_SYSTEM_TABLE;
-      ia_state_ |= STATE_SYSTEM_READONLY;
+    case AccessibilityNodeData::ROLE_TABLE: {
+      string16 aria_role;
+      GetStringAttribute(AccessibilityNodeData::ATTR_ROLE, &aria_role);
+      if (aria_role == L"treegrid") {
+        ia_role_ = ROLE_SYSTEM_OUTLINE;
+      } else {
+        ia_role_ = ROLE_SYSTEM_TABLE;
+        ia_state_ |= STATE_SYSTEM_READONLY;
+      }
       break;
+    }
     case AccessibilityNodeData::ROLE_TABLE_HEADER_CONTAINER:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
