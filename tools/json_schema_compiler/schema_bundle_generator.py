@@ -15,6 +15,22 @@ import re
 # TODO(miket/asargent) - parameterize this.
 SOURCE_BASE_PATH = 'chrome/common/extensions/api'
 
+def _RemoveDescriptions(node):
+  """Returns a copy of |schema| with "description" fields removed.
+  """
+  if isinstance(node, dict):
+    result = {}
+    for key, value in node.items():
+      # Some schemas actually have properties called "description", so only
+      # remove descriptions that have string values.
+      if key == 'description' and isinstance(value, basestring):
+        continue
+      result[key] = _RemoveDescriptions(value)
+    return result
+  if isinstance(node, list):
+    return [_RemoveDescriptions(v) for v in node]
+  return node
+
 class SchemaBundleGenerator(object):
   """This class contains methods to generate code based on multiple schemas.
   """
@@ -172,17 +188,12 @@ class SchemaBundleGenerator(object):
     for api in self._api_defs:
       namespace = self._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
-      json_content = json.dumps([api], indent=2)
+      json_content = json.dumps([_RemoveDescriptions(api)],
+                                separators=(',', ':'))
       # Escape all double-quotes and backslashes. For this to output a valid
       # JSON C string, we need to escape \ and ".
       json_content = json_content.replace('\\', '\\\\').replace('"', '\\"')
-      lines = json_content.split('\n')
-      c.Append('(*schemas)["%s"] = ' % namespace.name)
-      for index, line in enumerate(lines):
-        line = '    "%s"' % line
-        if index == len(lines) - 1:
-          line += ';'
-        c.Append(line)
+      c.Append('(*schemas)["%s"] = "%s";' % (namespace.name, json_content))
     c.Eblock('}')
     c.Append()
     c.Concat(self._cpp_type_generator.GetRootNamespaceEnd())
