@@ -47,9 +47,8 @@ chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
 
   apiFunctions.setHandleRequest('sendNativeMessage',
                                 function(targetId, message, responseCallback) {
-    var port = chrome.runtime.connectNative(
-        targetId, message, chromeHidden.kNativeMessageChannel);
-    chromeHidden.Port.sendMessageImpl(port, '', responseCallback);
+    var port = chrome.runtime.connectNative(targetId);
+    chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('connect', function() {
@@ -74,23 +73,12 @@ chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
     return [targetId, connectInfo];
   });
 
-  apiFunctions.setUpdateArgumentsPreValidate('connectNative', function() {
-    var nextArg = 0;
-
-    // appName is required.
-    var appName = arguments[nextArg++];
-
-    // connectionMessage is required.
-    var connectMessage = arguments[nextArg++];
-
-    // channelName is only passed by sendMessage
-    var channelName = 'connectNative';
-    if (typeof(arguments[nextArg]) == 'string')
-      channelName = arguments[nextArg++];
-
-    if (nextArg != arguments.length)
+  apiFunctions.setUpdateArgumentsPreValidate('connectNative',
+                                             function(appName) {
+    if (typeof(appName) !== 'string') {
       throw new Error('Invalid arguments to connectNative.');
-    return [appName, {name: channelName, message: connectMessage}];
+    }
+    return [appName];
   });
 
   apiFunctions.setHandleRequest('connect', function(targetId, connectInfo) {
@@ -113,14 +101,11 @@ chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
     return;
 
   apiFunctions.setHandleRequest('connectNative',
-                                function(nativeAppName, connectInfo) {
+                                function(nativeAppName) {
     // Turn the object into a string here, because it eventually will be.
-    var portId = OpenChannelToNativeApp(chrome.runtime.id,
-                                        nativeAppName,
-                                        connectInfo.name,
-                                        JSON.stringify(connectInfo.message));
+    var portId = OpenChannelToNativeApp(chrome.runtime.id, nativeAppName);
     if (portId >= 0) {
-      return chromeHidden.Port.createPort(portId, connectInfo.name);
+      return chromeHidden.Port.createPort(portId, '');
     }
     throw new Error('Error connecting to native app: ' + nativeAppName);
   });

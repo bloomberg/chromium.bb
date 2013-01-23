@@ -180,14 +180,6 @@
             "type": "string",
             "name": "appName",
             "description": "The name of the registered app to connect to."
-          },
-          {
-            "name": "connectionMessage",
-            "description": "The object that will be passed to the registered native app on connection.",
-            "type": "object",
-            "additionalProperties": {
-              "type": "any"
-            }
           }
         ],
         "returns": {

@@ -28,8 +28,6 @@ class NativeMessageProcessHost
     : public MessageLoopForIO::Watcher {
 #endif  // defined(OS_WIN)
  public:
-  class ScopedNativeProcessClose;
-
 #if defined(OS_WIN)
   typedef HANDLE FileHandle;
   typedef base::win::ScopedHandle ScopedFileHandle;
@@ -37,25 +35,6 @@ class NativeMessageProcessHost
   typedef int FileHandle;
   typedef file_util::ScopedFD ScopedFileHandle;
 #endif  // defined(OS_WIN)
-
-  typedef scoped_ptr_malloc<NativeMessageProcessHost, ScopedNativeProcessClose>
-      ScopedHost;
-
-  typedef base::Callback<void(ScopedHost host)> CreateCallback;
-
-  // Append any new types to the end. Changing the ordering will break native
-  // apps.
-  enum MessageType {
-    TYPE_SEND_MESSAGE_REQUEST,  // Used when an extension is sending a one-off
-                                // message to a native app.
-    TYPE_SEND_MESSAGE_RESPONSE,  // Used by a native app to respond to a one-off
-                                 // message.
-    TYPE_CONNECT,  // Used when an extension wants to establish a persistent
-                   // connection with a native app.
-    TYPE_CONNECT_MESSAGE,  // Used for messages after a connection has already
-                           // been established.
-    NUM_MESSAGE_TYPES  // The number of types of messages.
-  };
 
   // Interface for classes that which to recieve messages from the native
   // process.
@@ -68,43 +47,22 @@ class NativeMessageProcessHost
     virtual void CloseChannel(int port_id, bool error) = 0;
   };
 
-  // Desctruction functor that ensures a NativeMessageProcessHost is destroyed
-  // on the FILE thread.
-  class ScopedNativeProcessClose {
-   public:
-    inline void operator()(extensions::NativeMessageProcessHost* x) const {
-      content::BrowserThread::DeleteSoon(content::BrowserThread::FILE,
-                                        FROM_HERE, x);
-    }
-  };
-
-
   virtual ~NativeMessageProcessHost();
 
-  // |type| must be TYPE_CONNECT or TYPE_SEND_MESSAGE_REQUEST. |callback| will
-  // be called with an empty ScopedHost on error.
-  static void Create(base::WeakPtr<Client> weak_client_ui,
-                     const std::string& native_app_name,
-                     const std::string& connection_message,
-                     int destination_port,
-                     MessageType type,
-                     CreateCallback callback);
+  static scoped_ptr<NativeMessageProcessHost> Create(
+      base::WeakPtr<Client> weak_client_ui,
+      const std::string& native_host_name,
+      int destination_port);
 
-  // Create a NativeMessageProcessHost using the specified launcher. This allows
-  // for easy testing.
-  static void CreateWithLauncher(base::WeakPtr<Client> weak_client_ui,
-                                 const std::string& native_app_name,
-                                 const std::string& connection_message,
-                                 int destination_port,
-                                 MessageType type,
-                                 CreateCallback callback,
-                                 const NativeProcessLauncher& launcher);
+  // Create using specified |launcher|. Used in tests.
+  static scoped_ptr<NativeMessageProcessHost> CreateWithLauncher(
+      base::WeakPtr<Client> weak_client_ui,
+      const std::string& native_host_name,
+      int destination_port,
+      scoped_ptr<NativeProcessLauncher> launcher);
 
-  // TYPE_SEND_MESSAGE_REQUEST will be sent via the connection message in
-  // NativeMessageProcessHost::Create, so only TYPE_CONNECT_MESSAGE is expected.
-  void Send(const std::string& json) {
-    SendImpl(TYPE_CONNECT_MESSAGE, json);
-  }
+  // Send a message with the specified payload.
+  void Send(const std::string& json);
 
   // Try and read a single message from |read_file_|. This should only be called
   // in unittests when you know there is data in the file.
@@ -112,24 +70,22 @@ class NativeMessageProcessHost
 
  private:
   NativeMessageProcessHost(base::WeakPtr<Client> weak_client_ui,
+                           const std::string& native_host_name,
                            int destination_port,
-                           base::ProcessHandle native_process_handle,
-                           FileHandle read_fd,
-                           FileHandle write_fd,
-                           bool is_send_message);
+                           scoped_ptr<NativeProcessLauncher> launcher);
+
+  // Starts the host process.
+  void LaunchHostProcess(scoped_ptr<NativeProcessLauncher> launcher);
 
   // Initialize any IO watching that needs to occur between the native process.
   void InitIO();
 
-  // Send a message to the native process with the specified type and payload.
-  void SendImpl(MessageType type, const std::string& json);
-
   // Write a message/data to the native process.
-  bool WriteMessage(MessageType type, const std::string& message);
+  bool WriteMessage(const std::string& message);
   bool WriteData(FileHandle file, const char* data, size_t bytes_to_write);
 
   // Read a message/data from the native process.
-  bool ReadMessage(MessageType* type, std::string* messgae);
+  bool ReadMessage(std::string* message);
   bool ReadData(FileHandle file, char* data, size_t bytes_to_write);
 
 #if defined(OS_POSIX)
@@ -156,6 +112,9 @@ class NativeMessageProcessHost
   // UI thread.
   base::WeakPtr<Client> weak_client_ui_;
 
+  // Name of the native messaging host.
+  std::string native_host_name_;
+
   // The id of the port on the other side of this connection. This is passed to
   // |weak_client_ui_| when posting messages.
   int destination_port_;
@@ -166,9 +125,6 @@ class NativeMessageProcessHost
   FileHandle write_file_;
   ScopedFileHandle scoped_read_file_;
   ScopedFileHandle scoped_write_file_;
-
-  // Only looking for one response.
-  bool is_send_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMessageProcessHost);
 };

@@ -315,37 +315,30 @@ void ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread(
 }
 
 void ChromeRenderMessageFilter::OnOpenChannelToNativeApp(
-    int routing_id, const std::string& source_extension_id,
+    int routing_id,
+    const std::string& source_extension_id,
     const std::string& native_app_name,
-    const std::string& channel_name,
-    const std::string& connect_message, int* port_id) {
+    int* port_id) {
   int port2_id;
   extensions::MessageService::AllocatePortIdPair(port_id, &port2_id);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ChromeRenderMessageFilter::OpenChannelToNativeAppOnUIThread,
-                 this,
-                 routing_id,
-                 port2_id,
-                 source_extension_id,
-                 native_app_name,
-                 channel_name,
-                 connect_message));
+                 this, routing_id, port2_id, source_extension_id,
+                 native_app_name));
 }
 
 void ChromeRenderMessageFilter::OpenChannelToNativeAppOnUIThread(
     int source_routing_id,
     int receiver_port_id,
     const std::string& source_extension_id,
-    const std::string& native_app_name,
-    const std::string& channel_name,
-    const std::string& connect_message) {
+    const std::string& native_app_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   extensions::ExtensionSystem::Get(profile_)->message_service()->
       OpenChannelToNativeApp(
           render_process_id_, source_routing_id, receiver_port_id,
-          source_extension_id, native_app_name, channel_name, connect_message);
+          source_extension_id, native_app_name);
 }
 
 void ChromeRenderMessageFilter::OnOpenChannelToTab(

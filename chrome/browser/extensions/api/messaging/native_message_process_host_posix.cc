@@ -31,14 +31,8 @@ void NativeMessageProcessHost::OnFileCanReadWithoutBlocking(int fd) {
   // Make sure that the fd given to us is the same one we started with.
   CHECK_EQ(fd, read_file_);
 
-  // If this is a sendMessage request, stop trying to read after the first
-  // message.
-  if (is_send_message_)
-    read_watcher_.StopWatchingFileDescriptor();
-
-  MessageType type;
   std::string message;
-  if (!ReadMessage(&type, &message)) {
+  if (!ReadMessage(&message)) {
     // A read failed, is the process dead?
     if (base::GetTerminationStatus(native_process_handle_, NULL) !=
         base::TERMINATION_STATUS_STILL_RUNNING) {

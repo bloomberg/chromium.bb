@@ -460,12 +460,10 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToExtension,
                             std::string /* channel_name */,
                             int /* port_id */)
 
-IPC_SYNC_MESSAGE_CONTROL5_1(ExtensionHostMsg_OpenChannelToNativeApp,
+IPC_SYNC_MESSAGE_CONTROL3_1(ExtensionHostMsg_OpenChannelToNativeApp,
                             int /* routing_id */,
                             std::string /* source_extension_id */,
                             std::string /* native_app_name */,
-                            std::string /* channel_name */,
-                            std::string /* connection_message */,
                             int /* port_id */)
 
 // Get a port handle to the given tab.  The handle can be used for sending

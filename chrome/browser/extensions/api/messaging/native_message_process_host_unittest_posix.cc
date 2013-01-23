@@ -6,11 +6,13 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
+#include "base/process_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
@@ -25,6 +27,8 @@
 using content::BrowserThread;
 
 namespace {
+
+const char kTestMessage[] = "{\"text\": \"Hello.\"}";
 
 FilePath GetTestDir() {
   FilePath test_dir;
@@ -46,7 +50,7 @@ class FakeLauncher : public NativeProcessLauncher {
         NULL, NULL);
     write_file_ = base::CreatePlatformFile(
         write_file,
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
+        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
         NULL, NULL);
   }
 
@@ -55,7 +59,7 @@ class FakeLauncher : public NativeProcessLauncher {
       base::ProcessHandle* native_process_handle,
       NativeMessageProcessHost::FileHandle* read_file,
       NativeMessageProcessHost::FileHandle* write_file) const OVERRIDE {
-    *native_process_handle = base::kNullProcessHandle;
+    *native_process_handle = base::GetCurrentProcessHandle();
     *read_file = read_file_;
     *write_file = write_file_;
     return true;
@@ -70,12 +74,15 @@ class NativeMessagingTest : public ::testing::Test,
                             public NativeMessageProcessHost::Client,
                             public base::SupportsWeakPtr<NativeMessagingTest> {
  public:
-  NativeMessagingTest() : current_channel_(chrome::VersionInfo::CHANNEL_DEV) {
+  NativeMessagingTest()
+      : current_channel_(chrome::VersionInfo::CHANNEL_DEV),
+        native_message_process_host_(NULL) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableNativeMessaging);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     // Change the user data dir so native apps will be looked for in the test
     // directory.
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
@@ -86,29 +93,46 @@ class NativeMessagingTest : public ::testing::Test,
                                                       &message_loop_));
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // Change the user data dir back for other tests.
     ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, user_data_dir_));
-    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
-                              native_message_process_host_);
+    if (native_message_process_host_.get()) {
+      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
+                                native_message_process_host_.release());
+    }
     message_loop_.RunUntilIdle();
   }
 
-  void PostMessageFromNativeProcess(int port_id, const std::string& message) {
+  virtual void PostMessageFromNativeProcess(
+      int port_id,
+      const std::string& message) OVERRIDE  {
     last_posted_message_ = message;
   }
 
-  void CloseChannel(int port_id, bool error) {
-  }
-
-  void AcquireProcess(NativeMessageProcessHost::ScopedHost process) {
-    native_message_process_host_ = process.release();
+  virtual void CloseChannel(int port_id, bool error) OVERRIDE {
   }
 
  protected:
+  std::string FormatMessage(const std::string& message) {
+    Pickle pickle;
+    pickle.WriteString(message);
+    return std::string(const_cast<const Pickle*>(&pickle)->payload(),
+                       pickle.payload_size());
+  }
+
+  FilePath CreateTempFileWithMessage(const std::string& message) {
+    FilePath filename = temp_dir_.path().Append("input");
+    file_util::CreateTemporaryFile(&filename);
+    std::string message_with_header = FormatMessage(message);
+    EXPECT_TRUE(file_util::WriteFile(
+        filename, message_with_header.data(), message_with_header.size()));
+    return filename;
+  }
+
   // Force the channel to be dev.
+  base::ScopedTempDir temp_dir_;
   Feature::ScopedCurrentChannel current_channel_;
-  NativeMessageProcessHost* native_message_process_host_;
+  scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
   FilePath user_data_dir_;
   MessageLoopForIO message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
@@ -116,67 +140,66 @@ class NativeMessagingTest : public ::testing::Test,
   std::string last_posted_message_;
 };
 
-// Read a single message from a local file (single_message_response.msg).
+// Read a single message from a local file.
 TEST_F(NativeMessagingTest, SingleSendMessageRead) {
-  FilePath temp_file;
-  file_util::CreateTemporaryFile(&temp_file);
-  FakeLauncher launcher(GetTestDir().AppendASCII("single_message_response.msg"),
-                        temp_file);
-  NativeMessageProcessHost::CreateWithLauncher(
-      AsWeakPtr(), "empty_app.py", "{}", 0,
-      NativeMessageProcessHost::TYPE_SEND_MESSAGE_REQUEST, base::Bind(
-          &NativeMessagingTest::AcquireProcess, AsWeakPtr()),
-      launcher);
+  FilePath temp_output_file = temp_dir_.path().Append("output");
+  FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
+
+  scoped_ptr<NativeProcessLauncher> launcher(
+      new FakeLauncher(temp_input_file, temp_output_file));
+  native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
+      AsWeakPtr(), "empty_app.py", 0, launcher.Pass());
+  ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
-  ASSERT_TRUE(native_message_process_host_);
+
   native_message_process_host_->ReadNowForTesting();
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(last_posted_message_, "{\"text\": \"Hi There!.\"}");
-  file_util::Delete(temp_file, false /* non-recursive */);
+  EXPECT_EQ(kTestMessage, last_posted_message_);
 }
 
 // Tests sending a single message. The message should get written to
 // |temp_file| and should match the contents of single_message_request.msg.
 TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
-  FilePath temp_file;
-  file_util::CreateTemporaryFile(&temp_file);
-  FakeLauncher launcher(GetTestDir().AppendASCII("single_message_response.msg"),
-                        temp_file);
-  NativeMessageProcessHost::CreateWithLauncher(
-      AsWeakPtr(), "empty_app.py", "{\"text\": \"Hello.\"}", 0,
-      NativeMessageProcessHost::TYPE_SEND_MESSAGE_REQUEST, base::Bind(
-          &NativeMessagingTest::AcquireProcess, AsWeakPtr()),
-      launcher);
+  FilePath temp_output_file = temp_dir_.path().Append("output");
+  FilePath temp_input_file = CreateTempFileWithMessage(std::string());
+
+  scoped_ptr<NativeProcessLauncher> launcher(
+      new FakeLauncher(temp_input_file, temp_output_file));
+  native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
+      AsWeakPtr(), "empty_app.py", 0, launcher.Pass());
+  ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
-  ASSERT_TRUE(native_message_process_host_);
 
-  EXPECT_TRUE(file_util::ContentsEqual(
-      temp_file, GetTestDir().AppendASCII("single_message_request.msg")));
+  native_message_process_host_->Send(kTestMessage);
+  message_loop_.RunUntilIdle();
 
-  file_util::Delete(temp_file, false /* non-recursive */);
+  std::string output;
+  ASSERT_TRUE(file_util::ReadFileToString(temp_output_file, &output));
+  EXPECT_EQ(FormatMessage(kTestMessage), output);
 }
 
 // Disabled, see http://crbug.com/159754.
 // Test send message with a real client. The client just echo's back the text
 // it recieved.
 TEST_F(NativeMessagingTest, DISABLED_EchoConnect) {
-  NativeMessageProcessHost::Create(
-      AsWeakPtr(), "echo.py", "{\"text\": \"Hello.\"}", 0,
-      NativeMessageProcessHost::TYPE_CONNECT, base::Bind(
-          &NativeMessagingTest::AcquireProcess, AsWeakPtr()));
+  native_message_process_host_ = NativeMessageProcessHost::Create(
+      AsWeakPtr(), "empty_app.py", 0);
+  ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
-  ASSERT_TRUE(native_message_process_host_);
+
+  native_message_process_host_->Send("{\"text\": \"Hello.\"}");
+  message_loop_.RunUntilIdle();
 
   native_message_process_host_->ReadNowForTesting();
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(last_posted_message_,
-            "{\"id\": 1, \"echo\": {\"text\": \"Hello.\"}}");
+  EXPECT_EQ("{\"id\": 1, \"echo\": {\"text\": \"Hello.\"}}",
+            last_posted_message_);
 
   native_message_process_host_->Send("{\"foo\": \"bar\"}");
   message_loop_.RunUntilIdle();
   native_message_process_host_->ReadNowForTesting();
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(last_posted_message_, "{\"id\": 2, \"echo\": {\"foo\": \"bar\"}}");
+  EXPECT_EQ("{\"id\": 2, \"echo\": {\"foo\": \"bar\"}}", last_posted_message_);
 }
 
 }  // namespace extensions

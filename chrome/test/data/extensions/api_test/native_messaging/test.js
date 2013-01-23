@@ -31,8 +31,9 @@ chrome.test.getConfig(function(config) {
                                  {"id": 3, "echo": messagesToSend[2]}];
         var currentMessage = 0;
 
-        port = chrome.runtime.connectNative('echo.py',
-                                              messagesToSend[currentMessage]);
+        port = chrome.runtime.connectNative('echo.py');
+        port.postMessage(messagesToSend[currentMessage]);
+
         port.onMessage.addListener(function(message) {
           chrome.test.assertEq(expectedResponses[currentMessage], message);
           currentMessage++;

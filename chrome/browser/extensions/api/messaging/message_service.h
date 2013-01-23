@@ -119,17 +119,7 @@ class MessageService : public content::NotificationObserver,
       int source_routing_id,
       int receiver_port_id,
       const std::string& source_extension_id,
-      const std::string& native_app_name,
-      const std::string& channel_name,
-      const std::string& connect_message);
-
-  // Should be called on the UI thread.
-  void FinalizeOpenChannelToNativeApp(
-      int receiver_port_id,
-      const std::string& channel_name,
-      scoped_ptr<MessageChannel> channel,
-      const std::string& tab_json,
-      NativeMessageProcessHost::ScopedHost native_process);
+      const std::string& native_app_name);
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
@@ -140,7 +130,8 @@ class MessageService : public content::NotificationObserver,
 
   // NativeMessageProcessHost::Client
   virtual void PostMessageFromNativeProcess(
-      int port_id, const std::string& message) OVERRIDE;
+      int port_id,
+      const std::string& message) OVERRIDE;
 
  private:
   friend class MockMessageService;

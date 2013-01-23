@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
+#include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
@@ -30,25 +32,27 @@ namespace extensions {
 
 NativeMessageProcessHost::NativeMessageProcessHost(
     base::WeakPtr<Client> weak_client_ui,
+    const std::string& native_host_name,
     int destination_port,
-    base::ProcessHandle native_process_handle,
-    FileHandle read_file,
-    FileHandle write_file,
-    bool is_send_message)
+    scoped_ptr<NativeProcessLauncher> launcher)
     : weak_client_ui_(weak_client_ui),
+      native_host_name_(native_host_name),
       destination_port_(destination_port),
-      native_process_handle_(native_process_handle),
-      read_file_(read_file),
-      write_file_(write_file),
-      scoped_read_file_(&read_file_),
-      scoped_write_file_(&write_file_),
-      is_send_message_(is_send_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  InitIO();
+      native_process_handle_(base::kNullProcessHandle),
+      read_file_(base::kInvalidPlatformFileValue),
+      write_file_(base::kInvalidPlatformFileValue) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // It's safe to use base::Unretained() here because NativeMessagePort always
+  // deletes us on the FILE thread.
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
+                 base::Unretained(this), base::Passed(&launcher)));
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
   // Give the process some time to shutdown, then try and kill it.
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::FILE,
@@ -61,84 +65,83 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 }
 
 // static
-void NativeMessageProcessHost::Create(base::WeakPtr<Client> weak_client_ui,
-                                      const std::string& native_app_name,
-                                      const std::string& connection_message,
-                                      int destination_port,
-                                      MessageType type,
-                                      CreateCallback callback) {
-  NativeProcessLauncher launcher;
-  CreateWithLauncher(weak_client_ui, native_app_name, connection_message,
-                     destination_port, type, callback, launcher);
+scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
+    base::WeakPtr<Client> weak_client_ui,
+    const std::string& native_host_name,
+    int destination_port) {
+  scoped_ptr<NativeProcessLauncher> launcher(new NativeProcessLauncher());
+  return CreateWithLauncher(weak_client_ui, native_host_name, destination_port,
+                            launcher.Pass());
 }
 
 // static
-void NativeMessageProcessHost::CreateWithLauncher(
+scoped_ptr<NativeMessageProcessHost>
+NativeMessageProcessHost::CreateWithLauncher(
     base::WeakPtr<Client> weak_client_ui,
-    const std::string& native_app_name,
-    const std::string& connection_message,
+    const std::string& native_host_name,
     int destination_port,
-    MessageType type,
-    CreateCallback callback,
-    const NativeProcessLauncher& launcher) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  DCHECK(type == TYPE_SEND_MESSAGE_REQUEST || type == TYPE_CONNECT);
+    scoped_ptr<NativeProcessLauncher> launcher) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ScopedHost process;
+  scoped_ptr<NativeMessageProcessHost> process;
   if (Feature::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV ||
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNativeMessaging)) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(callback,
-                                                base::Passed(&process)));
-    return;
+    return process.Pass();
   }
+
+  process.reset(new NativeMessageProcessHost(
+      weak_client_ui, native_host_name, destination_port, launcher.Pass()));
+
+  return process.Pass();
+}
+
+void NativeMessageProcessHost::LaunchHostProcess(
+    scoped_ptr<NativeProcessLauncher> launcher) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   FilePath native_host_program;
   FilePath native_host_registry;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &native_host_registry));
   native_host_registry =
       native_host_registry.AppendASCII(kNativeHostsDirectoryName);
-  native_host_program = native_host_registry.AppendASCII(native_app_name);
+  native_host_program = native_host_registry.AppendASCII(native_host_name_);
 
   // Make sure that the client is not trying to invoke something outside of the
   // proper directory. Eg. '../../dangerous_something.exe'.
   if (!file_util::ContainsPath(native_host_registry, native_host_program)) {
-    LOG(ERROR) << "Could not find native host: " << native_app_name;
+    LOG(ERROR) << "Could not find native host: " << native_host_name_;
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(callback,
-                                                base::Passed(&process)));
+        base::Bind(&Client::CloseChannel, weak_client_ui_,
+                   destination_port_, true));
     return;
   }
 
-  FileHandle read_handle;
-  FileHandle write_handle;
-  base::ProcessHandle native_process_handle;
-
-  if (!launcher.LaunchNativeProcess(native_host_program,
-                                    &native_process_handle,
-                                    &read_handle,
-                                    &write_handle)) {
+  if (!launcher->LaunchNativeProcess(native_host_program,
+                                     &native_process_handle_,
+                                     &read_file_,
+                                     &write_file_)) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(callback,
-                                                base::Passed(&process)));
+        base::Bind(&Client::CloseChannel, weak_client_ui_,
+                   destination_port_, true));
     return;
   }
 
-  process.reset(new NativeMessageProcessHost(
-      weak_client_ui, destination_port, native_process_handle, read_handle,
-      write_handle, type == TYPE_SEND_MESSAGE_REQUEST));
+#if defined(OS_POSIX)
+  scoped_read_file_.reset(&read_file_);
+  scoped_write_file_.reset(&write_file_);
+#endif  // defined(OS_POSIX)
 
-  process->SendImpl(type, connection_message);
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::Passed(&process)));
+  InitIO();
 }
 
-void NativeMessageProcessHost::SendImpl(MessageType type,
-                                        const std::string& json) {
+void NativeMessageProcessHost::Send(const std::string& json) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  if (native_process_handle_ == base::kNullProcessHandle) {
+    // Don't need to do anything if LaunchHostProcess() didn't succeed.
+    return;
+  }
 
   // Make sure that the process has not died.
   if (base::GetTerminationStatus(native_process_handle_, NULL) !=
@@ -149,21 +152,17 @@ void NativeMessageProcessHost::SendImpl(MessageType type,
                    destination_port_, true));
   }
 
-  WriteMessage(type, json);
+  WriteMessage(json);
 }
 
-bool NativeMessageProcessHost::WriteMessage(MessageType type,
-                                            const std::string& message) {
+bool NativeMessageProcessHost::WriteMessage(const std::string& message) {
   Pickle pickle;
-
-  // Pickles will always pad bytes to 32-bit alignment, so just use a unit32.
-  pickle.WriteUInt32(type);
 
   // Pickles write the length of a string before it as a uint32.
   pickle.WriteString(message);
 
   // Make sure that the pickle doesn't do any unexpected padding.
-  CHECK(8 + message.length() == pickle.payload_size());
+  CHECK_EQ(4 + message.length(), pickle.payload_size());
 
   if (!WriteData(write_file_, pickle.payload(), pickle.payload_size())) {
     LOG(ERROR) << "Error writing message to the native client.";
@@ -173,40 +172,22 @@ bool NativeMessageProcessHost::WriteMessage(MessageType type,
   return true;
 }
 
-bool NativeMessageProcessHost::ReadMessage(MessageType* type,
-                                           std::string* message) {
-  // Read the type (uint32) and length (uint32).
-  char message_meta_data[8];
-  if (!ReadData(read_file_, message_meta_data, 8)) {
-    LOG(ERROR) << "Error reading the message type and length.";
+bool NativeMessageProcessHost::ReadMessage(std::string* message) {
+  // Read the length (uint32).
+  char message_meta_data[4];
+  if (!ReadData(read_file_, message_meta_data, sizeof(message_meta_data))) {
+    LOG(ERROR) << "Error reading the message length.";
     return false;
   }
 
   Pickle pickle;
   pickle.WriteBytes(message_meta_data, 8);
   PickleIterator pickle_it(pickle);
-  uint32 uint_type;
   uint32 data_length;
-  if (!pickle_it.ReadUInt32(&uint_type) ||
-      !pickle_it.ReadUInt32(&data_length)) {
-    LOG(ERROR) << "Error getting the message type and length from the pickle.";
+  if (!pickle_it.ReadUInt32(&data_length)) {
+    LOG(ERROR) << "Error getting the message  length from the pickle.";
     return false;
   }
-
-  if (uint_type >= NUM_MESSAGE_TYPES) {
-    LOG(ERROR) << type << " is not a valid message type.";
-    return false;
-  }
-
-  if ((is_send_message_ && (uint_type != TYPE_SEND_MESSAGE_RESPONSE)) ||
-      (!is_send_message_ && (uint_type != TYPE_CONNECT_MESSAGE))) {
-    LOG(ERROR) << "Recieved a message of type " << uint_type << ". "
-               << "Expecting a message of type "
-               << (is_send_message_ ? TYPE_SEND_MESSAGE_RESPONSE :
-                                      TYPE_CONNECT_MESSAGE);
-    return false;
-  }
-  *type = static_cast<MessageType>(uint_type);
 
   if (data_length > kMaxMessageDataLength) {
     LOG(ERROR) << data_length << " is too large for the length of a message. "
