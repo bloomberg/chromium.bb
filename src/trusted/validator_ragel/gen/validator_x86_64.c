@@ -2254,28 +2254,30 @@ tr0:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr7:
 	{
@@ -2288,28 +2290,30 @@ tr7:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr8:
 	{
@@ -2330,28 +2334,30 @@ tr8:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr13:
 	{
@@ -2366,28 +2372,30 @@ tr13:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr14:
 	{
@@ -2402,28 +2410,30 @@ tr14:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr17:
 	{
@@ -2437,28 +2447,30 @@ tr17:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr18:
 	{
@@ -2483,28 +2495,30 @@ tr18:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr25:
 	{
@@ -2517,28 +2531,30 @@ tr25:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr26:
 	{
@@ -2560,28 +2576,30 @@ tr26:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr31:
 	{
@@ -2597,28 +2615,30 @@ tr31:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr32:
 	{
@@ -2634,28 +2654,30 @@ tr32:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr35:
 	{
@@ -2681,28 +2703,30 @@ tr35:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr42:
 	{
@@ -2716,28 +2740,30 @@ tr42:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr43:
 	{
@@ -2760,28 +2786,30 @@ tr43:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr48:
 	{
@@ -2798,28 +2826,30 @@ tr48:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr49:
 	{
@@ -2836,28 +2866,30 @@ tr49:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr52:
 	{
@@ -2869,28 +2901,30 @@ tr52:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr56:
 	{
@@ -2903,56 +2937,60 @@ tr56:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr59:
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr61:
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
@@ -2960,28 +2998,30 @@ tr61:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr69:
 	{ SET_CPU_FEATURE(CPUFeature_TSC);       }
@@ -2989,28 +3029,30 @@ tr69:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr78:
 	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
@@ -3018,28 +3060,30 @@ tr78:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr96:
 	{
@@ -3053,28 +3097,30 @@ tr96:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr100:
 	{ SET_CPU_FEATURE(CPUFeature_MON);       }
@@ -3085,28 +3131,30 @@ tr100:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr101:
 	{ SET_CPU_FEATURE(CPUFeature_MON);       }
@@ -3117,28 +3165,30 @@ tr101:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr102:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
@@ -3146,28 +3196,30 @@ tr102:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr103:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
@@ -3183,28 +3235,30 @@ tr103:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr110:
 	{
@@ -3221,28 +3275,30 @@ tr110:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr115:
 	{
@@ -3253,28 +3309,30 @@ tr115:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr116:
 	{
@@ -3285,28 +3343,30 @@ tr116:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr127:
 	{
@@ -3317,28 +3377,30 @@ tr127:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr128:
 	{
@@ -3349,28 +3411,30 @@ tr128:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr138:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
@@ -3390,28 +3454,30 @@ tr138:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr145:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
@@ -3419,28 +3485,30 @@ tr145:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr146:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
@@ -3456,28 +3524,30 @@ tr146:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr153:
 	{
@@ -3492,28 +3562,30 @@ tr153:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr172:
 	{
@@ -3524,28 +3596,30 @@ tr172:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr186:
 	{
@@ -3556,28 +3630,30 @@ tr186:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr188:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
@@ -3597,28 +3673,30 @@ tr188:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr191:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
@@ -3638,28 +3716,30 @@ tr191:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr202:
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
@@ -3667,28 +3747,30 @@ tr202:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr203:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
@@ -3696,28 +3778,30 @@ tr203:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr204:
 	{
@@ -3735,28 +3819,30 @@ tr204:
                      rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr206:
 	{
@@ -3775,28 +3861,30 @@ tr206:
                                 operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr216:
 	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
@@ -3816,28 +3904,30 @@ tr216:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr226:
 	{
@@ -3849,28 +3939,30 @@ tr226:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr230:
 	{
@@ -3881,28 +3973,30 @@ tr230:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr234:
 	{
@@ -3913,28 +4007,30 @@ tr234:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr244:
 	{
@@ -3948,28 +4044,30 @@ tr244:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr256:
 	{
@@ -3989,28 +4087,30 @@ tr256:
                                 operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr257:
 	{
@@ -4027,28 +4127,30 @@ tr257:
                                 operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr258:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
@@ -4056,28 +4158,30 @@ tr258:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr305:
 	{
@@ -4090,28 +4194,30 @@ tr305:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr344:
 	{
@@ -4133,28 +4239,30 @@ tr344:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr351:
 	{
@@ -4173,28 +4281,30 @@ tr351:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr356:
 	{
@@ -4207,28 +4317,30 @@ tr356:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr357:
 	{
@@ -4241,28 +4353,30 @@ tr357:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr360:
 	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
@@ -4276,28 +4390,30 @@ tr360:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr377:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
@@ -4311,28 +4427,30 @@ tr377:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr378:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
@@ -4346,28 +4464,30 @@ tr378:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr379:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
@@ -4387,28 +4507,30 @@ tr379:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr386:
 	{ SET_CPU_FEATURE(CPUFeature_CMOVx87);   }
@@ -4416,28 +4538,30 @@ tr386:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr387:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
@@ -4448,28 +4572,30 @@ tr387:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr391:
 	{
@@ -4484,28 +4610,30 @@ tr391:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr392:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
@@ -4520,28 +4648,30 @@ tr392:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr405:
 	{
@@ -4557,28 +4687,30 @@ tr405:
                      rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr420:
 	{
@@ -4592,28 +4724,30 @@ tr420:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr424:
 	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
@@ -4633,28 +4767,30 @@ tr424:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr466:
 	{
@@ -4664,28 +4800,30 @@ tr466:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr467:
 	{
@@ -4706,28 +4844,30 @@ tr467:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr474:
 	{
@@ -4745,28 +4885,30 @@ tr474:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr479:
 	{
@@ -4778,28 +4920,30 @@ tr479:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr480:
 	{
@@ -4811,28 +4955,30 @@ tr480:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr490:
 	{
@@ -4844,28 +4990,30 @@ tr490:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr492:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
@@ -4879,28 +5027,30 @@ tr492:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr499:
 	{ if (restricted_register == REG_RSP)
@@ -4914,28 +5064,30 @@ tr499:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr500:
 	{ if (restricted_register == REG_RBP)
@@ -4949,28 +5101,30 @@ tr500:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr510:
 	{
@@ -4981,28 +5135,30 @@ tr510:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr544:
 	{
@@ -5016,28 +5172,30 @@ tr544:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr555:
 	{
@@ -5053,28 +5211,30 @@ tr555:
                      rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr565:
 	{
@@ -5086,28 +5246,30 @@ tr565:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr587:
 	{
@@ -5117,28 +5279,30 @@ tr587:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr626:
 	{
@@ -5149,28 +5313,30 @@ tr626:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr662:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
@@ -5184,28 +5350,30 @@ tr662:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr704:
 	{
@@ -5221,28 +5389,30 @@ tr704:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr705:
 	{
@@ -5254,28 +5424,30 @@ tr705:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr723:
 	{
@@ -5288,28 +5460,30 @@ tr723:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr730:
 	{
@@ -5320,28 +5494,30 @@ tr730:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr769:
 	{
@@ -5351,28 +5527,30 @@ tr769:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr877:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
@@ -5397,28 +5575,30 @@ tr877:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr880:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
@@ -5431,28 +5611,30 @@ tr880:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr882:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
@@ -5460,28 +5642,30 @@ tr882:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr883:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
@@ -5496,28 +5680,30 @@ tr883:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr886:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
@@ -5542,28 +5728,30 @@ tr886:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr889:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
@@ -5576,28 +5764,30 @@ tr889:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr891:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
@@ -5612,28 +5802,30 @@ tr891:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr996:
 	{
@@ -5644,28 +5836,30 @@ tr996:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1084:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
@@ -5685,28 +5879,30 @@ tr1084:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1087:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
@@ -5714,28 +5910,30 @@ tr1087:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1226:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
@@ -5760,28 +5958,30 @@ tr1226:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1229:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
@@ -5794,28 +5994,30 @@ tr1229:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1231:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
@@ -5840,28 +6042,30 @@ tr1231:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1234:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
@@ -5874,28 +6078,30 @@ tr1234:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1299:
 	{
@@ -5905,28 +6111,30 @@ tr1299:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1340:
 	{
@@ -5937,28 +6145,30 @@ tr1340:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1345:
 	{
@@ -5970,28 +6180,30 @@ tr1345:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1355:
 	{
@@ -6007,28 +6219,30 @@ tr1355:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1356:
 	{
@@ -6040,28 +6254,30 @@ tr1356:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1360:
 	{
@@ -6073,28 +6289,30 @@ tr1360:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1364:
 	{
@@ -6105,28 +6323,30 @@ tr1364:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1377:
 	{
@@ -6142,28 +6362,30 @@ tr1377:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1378:
 	{
@@ -6175,28 +6397,30 @@ tr1378:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1382:
 	{
@@ -6212,28 +6436,30 @@ tr1382:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 tr1383:
 	{
@@ -6245,28 +6471,30 @@ tr1383:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st891;
 st891:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7704,18 +7932,18 @@ case 33:
 	goto tr56;
 tr57:
 	{
-        result &= user_callback(instruction_start, current_position,
-                                UNRECOGNIZED_INSTRUCTION, callback_data);
-        /*
-         * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkAMD64 function.
-         *
-         * It does not affect the case which we really care about (when code
-         * is validatable), but makes it possible to detect more errors in one
-         * run in tools like ncval.
-         */
-        continue;
-    }
+    result &= user_callback(instruction_start, current_position,
+                            UNRECOGNIZED_INSTRUCTION, callback_data);
+    /*
+     * Process the next bundle: “continue” here is for the “for” cycle in
+     * the ValidateChunkAMD64 function.
+     *
+     * It does not affect the case which we really care about (when code
+     * is validatable), but makes it possible to detect more errors in one
+     * run in tools like ncval.
+     */
+    continue;
+  }
 	goto st0;
 st0:
 ( current_state) = 0;
@@ -10097,28 +10325,30 @@ tr336:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st892;
 st892:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10178,28 +10408,30 @@ tr341:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st893;
 st893:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10251,28 +10483,30 @@ tr342:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st894;
 tr512:
 	{
@@ -10286,28 +10520,30 @@ tr512:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st894;
 st894:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11144,9 +11380,9 @@ st196:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof196;
 case 196:
-	if ( (*( current_position)) <= 127u )
-		goto tr52;
-	goto tr466;
+	if ( 128u <= (*( current_position)) )
+		goto tr466;
+	goto tr52;
 tr402:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -11531,28 +11767,30 @@ tr502:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st895;
 st895:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11604,28 +11842,30 @@ tr505:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st896;
 tr1363:
 	{
@@ -11639,28 +11879,30 @@ tr1363:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st896;
 st896:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11729,28 +11971,30 @@ tr508:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st897;
 st897:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11839,28 +12083,30 @@ tr343:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st898;
 tr513:
 	{
@@ -11874,28 +12120,30 @@ tr513:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st898;
 st898:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11964,28 +12212,30 @@ tr516:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st899;
 st899:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13473,28 +13723,30 @@ tr698:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st900;
 st900:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13542,28 +13794,30 @@ tr700:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st901;
 tr701:
 	{ if (restricted_register == REG_RSP)
@@ -13577,28 +13831,30 @@ tr701:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st901;
 tr702:
 	{ if (restricted_register == REG_RBP)
@@ -13612,28 +13868,30 @@ tr702:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st901;
 st901:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13863,28 +14121,30 @@ tr712:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st902;
 tr724:
 	{
@@ -13898,28 +14158,30 @@ tr724:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st902;
 st902:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13988,28 +14250,30 @@ tr716:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st903;
 st903:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14061,28 +14325,30 @@ tr719:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st904;
 tr1339:
 	{
@@ -14096,28 +14362,30 @@ tr1339:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st904;
 st904:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14186,28 +14454,30 @@ tr722:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st905;
 st905:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14268,28 +14538,30 @@ tr713:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st906;
 tr725:
 	{
@@ -14303,28 +14575,30 @@ tr725:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st906;
 st906:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14393,28 +14667,30 @@ tr728:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st907;
 st907:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -21855,28 +22131,30 @@ tr1341:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st908;
 tr1348:
 	{
@@ -21890,28 +22168,30 @@ tr1348:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st908;
 st908:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -21980,28 +22260,30 @@ tr1344:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st909;
 st909:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22196,28 +22478,30 @@ tr1351:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st910;
 tr1352:
 	{ if (restricted_register == REG_RSP)
@@ -22231,28 +22515,30 @@ tr1352:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st910;
 tr1353:
 	{ if (restricted_register == REG_RBP)
@@ -22266,28 +22552,30 @@ tr1353:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st910;
 st910:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22647,28 +22935,30 @@ tr1365:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st911;
 tr1371:
 	{
@@ -22682,28 +22972,30 @@ tr1371:
                                operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st911;
 st911:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22772,28 +23064,30 @@ tr1368:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st912;
 st912:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22988,28 +23282,30 @@ tr1375:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st913;
 st913:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23103,28 +23399,30 @@ tr1380:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st914;
 st914:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23232,28 +23530,30 @@ tr1386:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st915;
 tr1387:
 	{ if (restricted_register == REG_RSP)
@@ -23267,28 +23567,30 @@ tr1387:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st915;
 tr1388:
 	{ if (restricted_register == REG_RBP)
@@ -23302,28 +23604,30 @@ tr1388:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st915;
 st915:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23473,28 +23777,30 @@ tr1392:
                     rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st916;
 tr1393:
 	{ if (restricted_register == REG_RSP)
@@ -23508,28 +23814,30 @@ tr1393:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st916;
 tr1394:
 	{ if (restricted_register == REG_RBP)
@@ -23543,28 +23851,30 @@ tr1394:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(
-             instruction_start, current_position,
-             instruction_info_collected |
-             ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
-              RESTRICTED_REGISTER_MASK), callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       /* Clear variables.  */
-       instruction_info_collected = 0;
-       SET_REX_PREFIX(FALSE);
-       /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
-       SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
-       SET_VEX_PREFIX3(0x00);
-       operand_states = 0;
-     }
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(
+          instruction_start, current_position,
+          instruction_info_collected |
+          ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
+           RESTRICTED_REGISTER_MASK), callback_data);
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    /* Clear variables.  */
+    instruction_info_collected = 0;
+    SET_REX_PREFIX(FALSE);
+    /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
+    SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
+    SET_VEX_PREFIX3(0x00);
+    operand_states = 0;
+    base = 0;
+    index = 0;
+  }
 	goto st916;
 st916:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -25490,18 +25800,18 @@ case 890:
 	case 889: 
 	case 890: 
 	{
-        result &= user_callback(instruction_start, current_position,
-                                UNRECOGNIZED_INSTRUCTION, callback_data);
-        /*
-         * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkAMD64 function.
-         *
-         * It does not affect the case which we really care about (when code
-         * is validatable), but makes it possible to detect more errors in one
-         * run in tools like ncval.
-         */
-        continue;
-    }
+    result &= user_callback(instruction_start, current_position,
+                            UNRECOGNIZED_INSTRUCTION, callback_data);
+    /*
+     * Process the next bundle: “continue” here is for the “for” cycle in
+     * the ValidateChunkAMD64 function.
+     *
+     * It does not affect the case which we really care about (when code
+     * is validatable), but makes it possible to detect more errors in one
+     * run in tools like ncval.
+     */
+    continue;
+  }
 	break;
 	}
 	}

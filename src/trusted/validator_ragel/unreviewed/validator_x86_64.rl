@@ -620,6 +620,8 @@
     SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
     SET_VEX_PREFIX3(0x00);
     operand_states = 0;
+    base = 0;
+    index = 0;
   }
 
   # This action reports fatal error detected by DFA.
