@@ -56,8 +56,6 @@ elf/reldep6
 elf/reldep7
 elf/reldep8
 elf/resolvfail
-elf/restest2
-elf/tst-addr1
 elf/tst-align
 elf/tst-align2
 elf/tst-audit1
