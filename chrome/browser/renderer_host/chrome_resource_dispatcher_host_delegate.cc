@@ -55,7 +55,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -153,8 +153,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #if defined(OS_ANDROID)
   if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
     throttles->push_back(
-        content::InterceptNavigationDelegate::CreateThrottleFor(
-            request));
+        components::InterceptNavigationDelegate::CreateThrottleFor(request));
   }
 #endif
 #if defined(OS_CHROMEOS)

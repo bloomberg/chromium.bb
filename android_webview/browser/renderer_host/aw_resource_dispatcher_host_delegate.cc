@@ -11,7 +11,7 @@
 #include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -22,8 +22,8 @@
 #include "net/url_request/url_request.h"
 
 using android_webview::AwContentsIoThreadClient;
+using components::InterceptNavigationDelegate;
 using content::BrowserThread;
-using content::InterceptNavigationDelegate;
 
 namespace {
 

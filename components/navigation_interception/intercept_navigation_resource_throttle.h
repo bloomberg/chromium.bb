@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
-#define CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
+#ifndef COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
+#define COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
 
 #include <string>
 
@@ -23,18 +23,19 @@ namespace net {
 class URLRequest;
 }
 
-namespace content {
+namespace components {
 
 // This class allows the provider of the Callback to selectively ignore top
 // level navigations.
 class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
  public:
-  typedef base::Callback<bool(content::RenderViewHost* /* source */,
-                              const GURL& /* url */,
-                              const content::Referrer& /*referrer*/,
-                              bool /* is_post */,
-                              bool /* has_user_gesture */,
-                              PageTransition /* page transition type */)>
+  typedef base::Callback<
+      bool(content::RenderViewHost* /* source */,
+           const GURL& /* url */,
+           const content::Referrer& /*referrer*/,
+           bool /* is_post */,
+           bool /* has_user_gesture */,
+           content::PageTransition /* page transition type */)>
       CheckOnUIThreadCallback;
 
   InterceptNavigationResourceThrottle(
@@ -57,6 +58,6 @@ class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
   DISALLOW_COPY_AND_ASSIGN(InterceptNavigationResourceThrottle);
 };
 
-}  // namespace content
+}  // namespace components
 
-#endif  // CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
+#endif  // COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_

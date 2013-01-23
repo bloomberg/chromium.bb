@@ -6,10 +6,9 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",
   "+components/auto_login_parser",
+  "+components/navigation_interception",
   "+components/visitedlink/browser",
   "+components/web_contents_delegate_android",
-  # TODO(boliu): Remove when content/components is moved to components.
-  "+content/components",
   "+content/public/browser",
   "+device/bluetooth",
   "+device/media_transfer_protocol",

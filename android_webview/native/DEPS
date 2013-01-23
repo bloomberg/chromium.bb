@@ -4,6 +4,7 @@ include_rules = [
   "+ui/gl",
 
   # Components that Android WebView depends on.
+  "+components/navigation_interception",
   "+components/web_contents_delegate_android",
 
   # TODO(joth): Remove if we can move the compositor driver into ../browser/

@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/components/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "components/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
@@ -30,7 +30,7 @@ using testing::Eq;
 using testing::Ne;
 using testing::Return;
 
-namespace content {
+namespace components {
 
 namespace {
 
@@ -38,10 +38,8 @@ const char kTestUrl[] = "http://www.test.com/";
 const char kUnsafeTestUrl[] = "about:crash";
 
 void ContinueTestCase() {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      MessageLoop::QuitClosure());
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
 } // namespace
@@ -50,16 +48,17 @@ void ContinueTestCase() {
 
 class MockInterceptCallbackReceiver {
  public:
-  MOCK_METHOD6(ShouldIgnoreNavigation, bool(RenderViewHost* source,
-                                            const GURL& url,
-                                            const Referrer& referrer,
-                                            bool is_post,
-                                            bool has_user_gesture,
-                                            PageTransition page_transition));
+  MOCK_METHOD6(ShouldIgnoreNavigation,
+               bool(content::RenderViewHost* source,
+                    const GURL& url,
+                    const content::Referrer& referrer,
+                    bool is_post,
+                    bool has_user_gesture,
+                    content::PageTransition page_transition));
 };
 
 // MockResourceController -----------------------------------------------------
-class MockResourceController : public ResourceController {
+class MockResourceController : public content::ResourceController {
  public:
   enum Status {
     UNKNOWN,
@@ -103,14 +102,15 @@ class TestIOThreadState {
                     MockInterceptCallbackReceiver* callback_receiver)
       : request_(url, NULL, resource_context_.GetRequestContext()),
         throttle_(NULL) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
       if (render_process_id != MSG_ROUTING_NONE &&
           render_view_id != MSG_ROUTING_NONE) {
-        ResourceRequestInfo::AllocateForTesting(&request_,
-                                                ResourceType::MAIN_FRAME,
-                                                &resource_context_,
-                                                render_process_id,
-                                                render_view_id);
+        content::ResourceRequestInfo::AllocateForTesting(
+            &request_,
+            ResourceType::MAIN_FRAME,
+            &resource_context_,
+            render_process_id,
+            render_view_id);
       }
       throttle_.reset(new InterceptNavigationResourceThrottle(
           &request_,
@@ -121,7 +121,7 @@ class TestIOThreadState {
   }
 
   void ThrottleWillStartRequest(bool* defer) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     throttle_->WillStartRequest(defer);
   }
 
@@ -136,7 +136,7 @@ class TestIOThreadState {
   }
 
  private:
-  MockResourceContext resource_context_;
+  content::MockResourceContext resource_context_;
   net::URLRequest request_;
   scoped_ptr<InterceptNavigationResourceThrottle> throttle_;
   MockResourceController throttle_controller_;
@@ -145,12 +145,12 @@ class TestIOThreadState {
 // InterceptNavigationResourceThrottleTest ------------------------------------
 
 class InterceptNavigationResourceThrottleTest
-  : public RenderViewHostTestHarness {
+  : public content::RenderViewHostTestHarness {
  public:
   InterceptNavigationResourceThrottleTest()
       : mock_callback_receiver_(new MockInterceptCallbackReceiver()),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO),
+        ui_thread_(content::BrowserThread::UI, &message_loop_),
+        io_thread_(content::BrowserThread::IO),
         io_thread_state_(NULL) {
   }
 
@@ -164,8 +164,8 @@ class InterceptNavigationResourceThrottleTest
     if (web_contents())
       web_contents()->SetDelegate(NULL);
 
-    BrowserThread::PostTask(
-        BrowserThread::IO,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(&base::DeletePointer<TestIOThreadState>, io_thread_state_));
 
@@ -182,7 +182,7 @@ class InterceptNavigationResourceThrottleTest
       int render_process_id,
       int render_view_id,
       bool* defer) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     TestIOThreadState* io_thread_state =
         new TestIOThreadState(url, render_process_id, render_view_id,
                               request_method, mock_callback_receiver_.get());
@@ -212,8 +212,8 @@ class InterceptNavigationResourceThrottleTest
                 ShouldIgnoreNavigation(rvh(), Eq(GURL(kTestUrl)), _, _, _, _))
       .Times(1);
 
-    BrowserThread::PostTask(
-        BrowserThread::IO,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(
             &InterceptNavigationResourceThrottleTest::
@@ -231,8 +231,8 @@ class InterceptNavigationResourceThrottleTest
 
   void WaitForPreviouslyScheduledIoThreadWork() {
     base::WaitableEvent io_thread_work_done(true, false);
-    BrowserThread::PostTask(
-        BrowserThread::IO,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(
           &base::WaitableEvent::Signal,
@@ -241,8 +241,8 @@ class InterceptNavigationResourceThrottleTest
   }
 
   scoped_ptr<MockInterceptCallbackReceiver> mock_callback_receiver_;
-  TestBrowserThread ui_thread_;
-  TestBrowserThread io_thread_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   TestIOThreadState* io_thread_state_;
 };
 
@@ -273,8 +273,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   // The tested scenario is when the WebContents is deleted after the
   // ResourceThrottle has finished processing on the IO thread but before the
   // UI thread callback has been processed.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &RenderViewHostTestHarness::DeleteContents,
@@ -284,8 +284,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
               ShouldIgnoreNavigation(_, _, _, _, _, _))
       .Times(0);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &InterceptNavigationResourceThrottleTest::
@@ -312,8 +312,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
        RequestNotDeferredForRequestNotAssociatedWithARenderView) {
   bool defer = false;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &InterceptNavigationResourceThrottleTest::
@@ -342,8 +342,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
               ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _, _))
       .Times(1);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &InterceptNavigationResourceThrottleTest::
@@ -368,8 +368,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
                                      _))
       .WillOnce(Return(false));
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &InterceptNavigationResourceThrottleTest::
@@ -394,8 +394,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
                                      _))
       .WillOnce(Return(false));
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &InterceptNavigationResourceThrottleTest::
@@ -411,4 +411,4 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   message_loop_.Run();
 }
 
-}  // namespace content
+}  // namespace components

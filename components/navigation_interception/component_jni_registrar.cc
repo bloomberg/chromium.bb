@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/components/navigation_interception/component_jni_registrar.h"
+#include "components/navigation_interception/component_jni_registrar.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 
-namespace content {
+namespace components {
 
 static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
   { "InterceptNavigationDelegate", RegisterInterceptNavigationDelegate },
@@ -19,4 +19,4 @@ bool RegisterNavigationInterceptionJni(JNIEnv* env) {
       kComponentRegisteredMethods, arraysize(kComponentRegisteredMethods));
 }
 
-}  // namespace content
+}  // namespace components

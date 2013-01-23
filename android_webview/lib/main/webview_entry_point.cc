@@ -6,16 +6,17 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
-#include "content/components/navigation_interception/component_jni_registrar.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
 
 static base::android::RegistrationMethod
-kWebViewDependencyRegisteredMethods[] = {
-  { "NavigationInterception", content::RegisterNavigationInterceptionJni },
-  { "WebContentsDelegateAndroid",
-      components::RegisterWebContentsDelegateAndroidJni },
+    kWebViewDependencyRegisteredMethods[] = {
+    { "NavigationInterception",
+        components::RegisterNavigationInterceptionJni },
+    { "WebContentsDelegateAndroid",
+        components::RegisterWebContentsDelegateAndroidJni },
 };
 
 // This is called by the VM when the shared library is first loaded.

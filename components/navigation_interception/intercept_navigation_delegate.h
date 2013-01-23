@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_
-#define CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_
+#ifndef COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_
+#define COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_
 
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,7 +21,7 @@ namespace net {
 class URLRequest;
 }
 
-namespace content {
+namespace components {
 
 // Native side of the InterceptNavigationDelegate Java interface.
 // This is used to create a InterceptNavigationResourceThrottle that calls the
@@ -57,13 +57,13 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   virtual bool ShouldIgnoreNavigation(const GURL& url,
                                       bool is_post,
                                       bool has_user_gesture,
-                                      PageTransition transition_type);
+                                      content::PageTransition transition_type);
  private:
   JavaObjectWeakGlobalRef weak_jdelegate_;
 };
 
 bool RegisterInterceptNavigationDelegate(JNIEnv* env);
 
-}  // namespace content
+}  // namespace components
 
-#endif  // CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_
+#endif  // COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_

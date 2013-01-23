@@ -27,7 +27,7 @@
 #include "base/pickle.h"
 #include "base/supports_user_data.h"
 #include "cc/layer.h"
-#include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -65,9 +65,9 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using components::InterceptNavigationDelegate;
 using content::BrowserThread;
 using content::ContentViewCore;
-using content::InterceptNavigationDelegate;
 using content::WebContents;
 
 extern "C" {

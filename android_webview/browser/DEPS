@@ -3,6 +3,7 @@ include_rules = [
   "+android_webview/browser",
   "+android_webview/common",
 
+  "+components/navigation_interception",
   "+content/public/browser",
 
   # Temporary until we bundle our own favicon. See

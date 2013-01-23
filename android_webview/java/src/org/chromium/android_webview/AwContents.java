@@ -31,7 +31,7 @@ import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
 import org.chromium.content.common.CleanupReference;
-import org.chromium.content.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.net.GURLUtils;
 import org.chromium.net.X509Util;
 import org.chromium.ui.gfx.NativeWindow;

@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/components/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "components/navigation_interception/intercept_navigation_resource_throttle.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
+using content::PageTransition;
 using content::Referrer;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 
-namespace content {
+namespace components {
 
 namespace {
 
@@ -134,4 +135,4 @@ void InterceptNavigationResourceThrottle::OnResultObtained(
   }
 }
 
-}  // namespace content
+}  // namespace components

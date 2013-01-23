@@ -1,5 +1,5 @@
 # Please include joth@ and (joi@ or erikwright@) on the review for any changes
-# to DEPS files under android_webview/ 
+# to DEPS files under android_webview/
 
 # Do not add any includes under chrome/ anywhere in android_webview.
 
@@ -9,8 +9,6 @@ include_rules = [
 
   "!chrome/browser/component",
   "+cc",
-  # TODO(boliu): Remove this when content/components is moved to components/.
-  "+content/components",
   "+content/public/common",
   "+jni",
   "+net",

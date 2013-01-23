@@ -100,9 +100,9 @@
       'type': 'static_library',
       'dependencies': [
         '../android_webview/native/webview_native.gyp:webview_native',
+        '../components/components.gyp:navigation_interception',
         '../components/components.gyp:web_contents_delegate_android',
         '../content/content.gyp:content',
-        '../content/content.gyp:navigation_interception',
         '../skia/skia.gyp:skia',
         'android_webview_pak',
       ],
@@ -187,9 +187,9 @@
       'target_name': 'android_webview_java',
       'type': 'none',
       'dependencies': [
-        '../content/content.gyp:content_java',
-        '../content/content.gyp:navigation_interception_java',
+        '../components/components.gyp:navigation_interception_java',
         '../components/components.gyp:web_contents_delegate_android_java',
+        '../content/content.gyp:content_java',
         '../ui/ui.gyp:ui_java',
       ],
       'variables': {
@@ -203,9 +203,9 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java',
+        '../components/components.gyp:navigation_interception_java',
         '../components/components.gyp:web_contents_delegate_android_java',
         '../content/content.gyp:content_java',
-        '../content/content.gyp:navigation_interception_java',
         '../media/media.gyp:media_java',
         '../net/net.gyp:net_java',
         '../ui/ui.gyp:ui_java',

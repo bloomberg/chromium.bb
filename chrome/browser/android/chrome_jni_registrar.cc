@@ -18,15 +18,15 @@
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
+#include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
-#include "content/components/navigation_interception/component_jni_registrar.h"
 
 namespace chrome {
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   // Register JNI for components we depend on.
-  { "NavigationInterception", content::RegisterNavigationInterceptionJni },
+  { "NavigationInterception", components::RegisterNavigationInterceptionJni },
   { "WebContentsDelegateAndroid",
       components::RegisterWebContentsDelegateAndroidJni },
   // Register JNI for chrome classes.

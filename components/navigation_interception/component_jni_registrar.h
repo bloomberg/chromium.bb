@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_
-#define CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_
+#ifndef COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_
+#define COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_
 
 #include <jni.h>
 
-namespace content {
+namespace components {
 
 // Register all JNI bindings necessary for the navigation_interception
 // component.
 bool RegisterNavigationInterceptionJni(JNIEnv* env);
 
-}  // namespace content
+}  // namespace components
 
-#endif  // CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_
+#endif  // COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_

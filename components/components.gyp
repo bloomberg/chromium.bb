@@ -6,6 +6,7 @@
   'includes': [
     'auto_login_parser.gypi',
     'components_tests.gypi',
+    'navigation_interception.gypi',
     'visitedlink.gypi',
     'web_contents_delegate_android.gypi',
   ],

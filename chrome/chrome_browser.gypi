@@ -2269,7 +2269,7 @@
             'installer_util',
             'sync_file_system_proto',
             '../cc/cc.gyp:cc',
-            '../content/content.gyp:navigation_interception',
+            '../components/components.gyp:navigation_interception',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',

@@ -12,7 +12,6 @@
         'some.gyp:*',
         '../base/base.gyp:*',
         '../chrome/chrome.gyp:*',
-        '../components/components.gyp:*',
         '../content/content.gyp:*',
         '../crypto/crypto.gyp:*',
         '../media/media.gyp:*',
@@ -35,6 +34,7 @@
         ['OS!="ios"', {
           'dependencies': [
             '../cc/cc_tests.gyp:*',
+            '../components/components.gyp:*',
             '../device/device.gyp:*',
             '../gpu/gpu.gyp:*',
             '../gpu/tools/tools.gyp:*',
