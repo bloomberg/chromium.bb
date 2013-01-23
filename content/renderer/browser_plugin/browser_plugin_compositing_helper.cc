@@ -4,6 +4,7 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 
+#include "cc/solid_color_layer.h"
 #include "cc/texture_layer.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -33,7 +34,15 @@ BrowserPluginCompositingHelper::~BrowserPluginCompositingHelper() {
 void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
   if (enable && !texture_layer_) {
     texture_layer_ = cc::TextureLayer::createForMailbox();
-    web_layer_.reset(new WebKit::WebLayerImpl(texture_layer_));
+    texture_layer_->setIsDrawable(true);
+    texture_layer_->setContentsOpaque(true);
+
+    background_layer_ = cc::SolidColorLayer::create();
+    background_layer_->setMasksToBounds(true);
+    background_layer_->setBackgroundColor(
+        SkColorSetARGBInline(255, 255, 255, 255));
+    background_layer_->addChild(texture_layer_);
+    web_layer_.reset(new WebKit::WebLayerImpl(background_layer_));
   }
 
   container_->setWebLayer(enable ? web_layer_.get() : NULL);
@@ -102,6 +111,7 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
   container_ = NULL;
 
   texture_layer_ = NULL;
+  background_layer_ = NULL;
   web_layer_.reset();
 }
 
@@ -123,13 +133,13 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   // During resize, the container size changes first and then some time
   // later, a new buffer with updated size will arrive. During this process,
   // we need to make sure that things are still displayed pixel perfect.
-  // We accomplish this by modifying texture coordinates in the layer,
-  // and either buffer size or container size change triggers the need
-  // to also update texture coordinates. Visually, this will either
-  // display a smaller part of the buffer or introduce a gutter around it.
+  // We accomplish this by modifying bounds of the texture layer only
+  // when a new buffer arrives.
+  // Visually, this will either display a smaller part of the buffer
+  // or introduce a gutter around it.
   if (buffer_size_ != size) {
     buffer_size_ = size;
-    UpdateUVRect();
+    texture_layer_->setBounds(buffer_size_);
   }
 
   bool current_mailbox_valid = !mailbox_name.empty();
@@ -150,28 +160,6 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   texture_layer_->setTextureMailbox(cc::TextureMailbox(mailbox_name,
                                                        callback));
   last_mailbox_valid_ = current_mailbox_valid;
-}
-
-void BrowserPluginCompositingHelper::SetContainerSize(const gfx::Size& size) {
-  if (container_size_ == size)
-    return;
-
-  container_size_ = size;
-  UpdateUVRect();
-}
-
-void BrowserPluginCompositingHelper::UpdateUVRect() {
-  if (!texture_layer_)
-    return;
-
-  gfx::RectF uv_rect(0, 0, 1, 1);
-  if (!buffer_size_.IsEmpty() && !container_size_.IsEmpty()) {
-    uv_rect.set_width(static_cast<float>(container_size_.width()) /
-                      static_cast<float>(buffer_size_.width()));
-    uv_rect.set_height(static_cast<float>(container_size_.height()) /
-                       static_cast<float>(buffer_size_.height()));
-  }
-  texture_layer_->setUV(uv_rect.origin(), uv_rect.bottom_right());
 }
 
 }  // namespace content
