@@ -4,6 +4,8 @@
 
 // For WinDDK ATL compatibility, these ATL headers must come first.
 
+// TODO(sky): nuke this once TableViewViews stabilizes.
+
 #include "build/build_config.h"
 
 #include <atlbase.h>  // NOLINT

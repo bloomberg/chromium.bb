@@ -31,6 +31,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/table/group_table_model.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -128,8 +129,8 @@ void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 
-void HungPagesTableModel::GetGroupRangeForItem(int item,
-                                               views::GroupRange* range) {
+void HungPagesTableModel::GetGroupRange(int model_index,
+                                        views::GroupRange* range) {
   DCHECK(range);
   range->start = 0;
   range->length = RowCount();
@@ -367,9 +368,10 @@ void HungRendererDialogView::Init() {
   hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());
-  hung_pages_table_ = new views::GroupTableView(
+  hung_pages_table_ = new views::TableView(
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true,
-      false, true, false);
+      false, true);
+  hung_pages_table_->SetGrouper(hung_pages_table_model_.get());
 
   CreateKillButtonView();
 

@@ -2413,11 +2413,11 @@
             ['exclude', '^browser/ui/views/tabs/native_view_photobooth.h'],
             ['exclude', '^browser/ui/views/tabs/native_view_photobooth_win.cc'],
             ['exclude', '^browser/ui/views/tabs/native_view_photobooth_win.h'],
-            ['exclude', '^browser/ui/views/task_manager_view.cc'],
             ['exclude', '^browser/ui/views/user_data_dir_dialog_view.cc'],
             ['exclude', '^browser/ui/views/tab_contents/web_drag_bookmark_handler_win.cc'],
             ['exclude', '^browser/ui/views/tab_contents/web_drag_bookmark_handler_win.h'],
             ['exclude', '^browser/ui/webui/help/version_updater_win.cc'],
+            ['exclude', '^browser/ui/webui/task_manager/'],
             ['exclude', '^browser/ui/window_sizer/window_sizer_win.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
             ['include', '^browser/ui/views/simple_message_box_views.cc'],

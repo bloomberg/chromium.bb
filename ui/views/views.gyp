@@ -207,8 +207,6 @@
         'controls/table/group_table_view.h',
         'controls/table/group_table_view_views.cc',
         'controls/table/group_table_view_views.h',
-        'controls/table/group_table_view_win.cc',
-        'controls/table/group_table_view_win.h',
         'controls/table/table_header.cc',
         'controls/table/table_header.h',
         'controls/table/table_utils.cc',
@@ -218,8 +216,6 @@
         'controls/table/table_view_row_background_painter.h',
         'controls/table/table_view_views.cc',
         'controls/table/table_view_views.h',
-        'controls/table/table_view_win.cc',
-        'controls/table/table_view_win.h',
         'controls/textfield/native_textfield_views.cc',
         'controls/textfield/native_textfield_views.h',
         'controls/textfield/native_textfield_win.cc',
@@ -498,15 +494,6 @@
           'sources!': [
             'controls/menu/menu_config_views.cc',
             'controls/menu/menu_separator_views.cc',
-            'controls/table/group_table_view_views.cc',
-            'controls/table/group_table_view_views.h',
-            'controls/table/table_header.cc',
-            'controls/table/table_header.h',
-            'controls/table/table_utils.cc',
-            'controls/table/table_utils.h',
-            'controls/table/table_view_row_background_painter.h',
-            'controls/table/table_view_views.cc',
-            'controls/table/table_view_views.h',
           ],
         }],
         ['use_aura==1 and OS=="win"', {
@@ -671,7 +658,6 @@
         'controls/slider_unittest.cc',
         'controls/tabbed_pane/tabbed_pane_unittest.cc',
         'controls/table/table_utils_unittest.cc',
-        'controls/table/table_view_unittest.cc',
         'controls/table/table_view_views_unittest.cc',
         'controls/table/test_table_model.cc',
         'controls/table/test_table_model.h',
@@ -720,10 +706,6 @@
         ['use_aura==0 and OS=="win"', {
           'sources/': [
             ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
-            ['exclude', 'controls/table/table_utils_unittest.cc'],
-            ['exclude', 'controls/table/table_view_views_unittest.cc'],
-            ['exclude', 'controls/table/test_table_model.cc'],
-            ['exclude', 'controls/table/test_table_model.h'],
             ['exclude', 'controls/tree/tree_view_views_unittest.cc'],
           ],
         }],
@@ -732,7 +714,6 @@
             '../aura/aura.gyp:aura_test_support',
           ],
           'sources/': [
-            ['exclude', 'controls/table/table_view_unittest.cc'],
             ['exclude', 'widget/native_widget_win_unittest.cc'],
           ],
         }, {

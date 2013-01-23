@@ -131,7 +131,6 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)  // !defined(USE_AURA)
@@ -1098,19 +1097,11 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowTaskManager() {
-#if defined(USE_AURA)
-  TaskManagerDialog::Show();
-#else
   chrome::ShowTaskManager(browser());
-#endif  // defined(USE_AURA)
 }
 
 void BrowserView::ShowBackgroundPages() {
-#if defined(USE_AURA)
-  TaskManagerDialog::ShowBackgroundPages();
-#else
   chrome::ShowBackgroundPages(browser());
-#endif  // defined(USE_AURA)
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {

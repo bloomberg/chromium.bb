@@ -8,9 +8,10 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/models/table_model.h"
 #include "ui/views/controls/button/text_button.h"
-#include "ui/views/controls/table/group_table_model.h"
-#include "ui/views/controls/table/group_table_view.h"
+#include "ui/views/controls/table/table_grouper.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -18,7 +19,7 @@ class WebContents;
 }
 
 // Provides functionality to display information about a hung renderer.
-class HungPagesTableModel : public views::GroupTableModel {
+class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
  public:
   // The Delegate is notified any time a WebContents the model is listening to
   // is destroyed.
@@ -42,13 +43,15 @@ class HungPagesTableModel : public views::GroupTableModel {
   // Returns the first RenderViewHost, or NULL if there aren't any WebContents.
   content::RenderViewHost* GetRenderViewHost();
 
-  // Overridden from views::GroupTableModel:
+  // Overridden from ui::TableModel:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
   virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
-  virtual void GetGroupRangeForItem(int item, views::GroupRange* range)
-      OVERRIDE;
+
+  // Overridden from views::TableGrouper:
+  virtual void GetGroupRange(int model_index,
+                             views::GroupRange* range) OVERRIDE;
 
  private:
   // Used to track a single WebContents. If the WebContents is destroyed
@@ -150,7 +153,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static void InitClass();
 
   // Controls within the dialog box.
-  views::GroupTableView* hung_pages_table_;
+  views::TableView* hung_pages_table_;
 
   // The button we insert into the ClientView to kill the errant process. This
   // is parented to a container view that uses a grid layout to align it
