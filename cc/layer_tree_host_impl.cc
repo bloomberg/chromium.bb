@@ -1683,7 +1683,6 @@ void LayerTreeHostImpl::setTreePriority(TreePriority priority)
     if (new_state.tree_priority == priority)
         return;
 
-    TRACE_COUNTER_ID1("cc", "TreePriority", this, priority);
     new_state.tree_priority = priority;
     m_tileManager->SetGlobalState(new_state);
 }
