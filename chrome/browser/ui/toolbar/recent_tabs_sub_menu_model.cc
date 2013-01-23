@@ -229,12 +229,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       return;
     if (tab->navigations.empty())
       return;
-    int prev_num_tabs = browser_->tab_strip_model()->count();
     SessionRestore::RestoreForeignSessionTab(
         chrome::GetActiveWebContents(browser_), *tab, disposition);
-    // If tab is successfully added (i.e. there's 1 more tab), select it.
-    if (browser_->tab_strip_model()->count() == prev_num_tabs + 1)
-      chrome::SelectNextTab(browser_);
   }
 }
 

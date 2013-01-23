@@ -622,7 +622,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           tab_index,
           selected_index,
           tab.extension_app_id,
-          false,  // selected
+          disposition == NEW_FOREGROUND_TAB,  // selected
           tab.pinned,
           true,
           NULL,
