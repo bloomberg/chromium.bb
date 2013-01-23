@@ -409,7 +409,8 @@ cr.define('print_preview', function() {
       }
       this.plugin_ = document.createElement('embed');
       // NOTE: The plugin's 'id' field must be set to 'pdf-viewer' since
-      // chrome/renderer/print_web_view_helper.cc actually references it.
+      // chrome/renderer/printing/print_web_view_helper.cc actually references
+      // it.
       this.plugin_.setAttribute('id', 'pdf-viewer');
       this.plugin_.setAttribute('class', 'preview-area-plugin');
       this.plugin_.setAttribute(

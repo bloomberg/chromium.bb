@@ -1312,7 +1312,7 @@
         'renderer/automation/automation_renderer_helper_browsertest.cc',
         'renderer/content_settings_observer_browsertest.cc',
         'renderer/page_click_tracker_browsertest.cc',
-        'renderer/print_web_view_helper_browsertest.cc',
+        'renderer/printing/print_web_view_helper_browsertest.cc',
         'renderer/safe_browsing/malware_dom_details_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
@@ -22,6 +22,8 @@
 #include "base/process_util.h"
 #endif  // !defined(OS_CHROMEOS)
 
+namespace printing {
+
 using WebKit::WebFrame;
 using WebKit::WebNode;
 
@@ -31,11 +33,10 @@ bool PrintWebViewHelper::RenderPreviewPage(
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_params;
   page_params.page_number = page_number;
-  scoped_ptr<printing::Metafile> draft_metafile;
-  printing::Metafile* initial_render_metafile =
-      print_preview_context_.metafile();
+  scoped_ptr<Metafile> draft_metafile;
+  Metafile* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile.reset(new printing::PreviewMetafile);
+    draft_metafile.reset(new PreviewMetafile);
     initial_render_metafile = draft_metafile.get();
   }
 
@@ -57,7 +58,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 }
 
 bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
-  printing::NativeMetafile metafile;
+  NativeMetafile metafile;
   if (!metafile.Init())
     return false;
 
@@ -124,7 +125,7 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebFrame* frame,
                                      const WebKit::WebNode& node,
                                      std::vector<int>* printed_pages,
-                                     printing::Metafile* metafile) {
+                                     Metafile* metafile) {
   PrepareFrameAndViewForPrint prepare(params.params, frame, node);
   PrintMsg_Print_Params print_params = params.params;
   UpdateFrameAndViewFromCssPageLayout(frame, node, &prepare, print_params,
@@ -173,8 +174,8 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame,
-    printing::Metafile* metafile) {
-  printing::PageSizeMargins page_layout_in_points;
+    Metafile* metafile) {
+  PageSizeMargins page_layout_in_points;
   double scale_factor = 1.0f;
   ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
                                   ignore_css_margins_, &scale_factor,
@@ -195,7 +196,7 @@ void PrintWebViewHelper::PrintPageInternal(
   // can't be a stack object.
   skia::RefPtr<skia::VectorCanvas> canvas =
       skia::AdoptRef(new skia::VectorCanvas(device));
-  printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
+  MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
   skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
 
   if (params.params.display_header_footer) {
@@ -214,3 +215,5 @@ void PrintWebViewHelper::PrintPageInternal(
   if (!metafile->FinishPage())
     NOTREACHED() << "metafile failed";
 }
+
+}  // namespace printing

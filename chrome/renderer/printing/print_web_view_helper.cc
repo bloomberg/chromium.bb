@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 
 #include <string>
 
@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
@@ -44,6 +44,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
 
+namespace printing {
+
 namespace {
 
 const double kMinDpi = 1.0;
@@ -66,7 +68,7 @@ int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
   // On the Mac, the printable area is in points, don't do any scaling based
   // on dpi.
-  return printing::kPointsPerInch;
+  return kPointsPerInch;
 #else
   return static_cast<int>(print_params->dpi);
 #endif  // defined(OS_MACOSX)
@@ -121,8 +123,6 @@ PrintMsg_Print_Params GetCssPrintParams(
   PrintMsg_Print_Params page_css_params = page_params;
   int dpi = GetDPI(&page_params);
 
-  using printing::ConvertUnit;
-  using printing::kPixelsPerInch;
   WebKit::WebSize page_size_in_pixels(
       ConvertUnit(page_params.page_size.width(), dpi, kPixelsPerInch),
       ConvertUnit(page_params.page_size.height(), dpi, kPixelsPerInch));
@@ -224,7 +224,7 @@ double FitPrintParamsToPage(const PrintMsg_Print_Params& page_params,
 
 void CalculatePageLayoutFromPrintParams(
     const PrintMsg_Print_Params& params,
-    printing::PageSizeMargins* page_layout_in_points) {
+    PageSizeMargins* page_layout_in_points) {
   int dpi = GetDPI(&params);
   int content_width = params.content_size.width();
   int content_height = params.content_size.height();
@@ -234,8 +234,6 @@ void CalculatePageLayoutFromPrintParams(
   int margin_right = params.page_size.width() -
                       content_width - params.margin_left;
 
-  using printing::ConvertUnit;
-  using printing::kPointsPerInch;
   page_layout_in_points->content_width =
       ConvertUnit(content_width, dpi, kPointsPerInch);
   page_layout_in_points->content_height =
@@ -274,7 +272,6 @@ void ComputeWebKitPrintParamsInDesiredDpi(
   webkit_print_params->printerDPI = dpi;
   webkit_print_params->printScalingOption = print_params.print_scaling_option;
 
-  using printing::ConvertUnit;
   webkit_print_params->printContentArea.width =
       ConvertUnit(print_params.content_size.width(), dpi,
                   print_params.desired_dpi);
@@ -328,18 +325,17 @@ bool PrintingFrameHasPageSizeStyle(WebKit::WebFrame* frame,
   return frame_has_custom_page_size_style;
 }
 
-printing::MarginType GetMarginsForPdf(WebKit::WebFrame* frame,
-                                      const WebKit::WebNode& node) {
+MarginType GetMarginsForPdf(WebKit::WebFrame* frame,
+                            const WebKit::WebNode& node) {
   if (frame->isPrintScalingDisabledForPlugin(node))
-    return printing::NO_MARGINS;
+    return NO_MARGINS;
   else
-    return printing::PRINTABLE_AREA_MARGINS;
+    return PRINTABLE_AREA_MARGINS;
 }
 
 bool FitToPageEnabled(const DictionaryValue& job_settings) {
   bool fit_to_paper_size = false;
-  if (!job_settings.GetBoolean(printing::kSettingFitToPageEnabled,
-                               &fit_to_paper_size)) {
+  if (!job_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_paper_size)) {
     NOTREACHED();
   }
   return fit_to_paper_size;
@@ -406,7 +402,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
     int page_number,
     int total_pages,
     float webkit_scale_factor,
-    const printing::PageSizeMargins& page_layout,
+    const PageSizeMargins& page_layout,
     const DictionaryValue& header_footer_info,
     const PrintMsg_Print_Params& params) {
   skia::VectorPlatformDeviceSkia* device =
@@ -722,7 +718,7 @@ void PrintWebViewHelper::OnPrintForSystemDialog() {
 }
 
 void PrintWebViewHelper::GetPageSizeAndContentAreaFromPageLayout(
-    const printing::PageSizeMargins& page_layout_in_points,
+    const PageSizeMargins& page_layout_in_points,
     gfx::Size* page_size,
     gfx::Rect* content_area) {
   *page_size = gfx::Size(
@@ -741,15 +737,15 @@ void PrintWebViewHelper::GetPageSizeAndContentAreaFromPageLayout(
 void PrintWebViewHelper::UpdateFrameMarginsCssInfo(
     const DictionaryValue& settings) {
   int margins_type = 0;
-  if (!settings.GetInteger(printing::kSettingMarginsType, &margins_type))
-    margins_type = printing::DEFAULT_MARGINS;
-  ignore_css_margins_ = (margins_type != printing::DEFAULT_MARGINS);
+  if (!settings.GetInteger(kSettingMarginsType, &margins_type))
+    margins_type = DEFAULT_MARGINS;
+  ignore_css_margins_ = (margins_type != DEFAULT_MARGINS);
 }
 
 bool PrintWebViewHelper::IsPrintToPdfRequested(
     const DictionaryValue& job_settings) {
   bool print_to_pdf = false;
-  if (!job_settings.GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf))
+  if (!job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf))
     NOTREACHED();
   return print_to_pdf;
 }
@@ -828,7 +824,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   print_pages_params_->params.supports_alpha_blend = true;
 
   bool generate_draft_pages = false;
-  if (!settings.GetBoolean(printing::kSettingGenerateDraftData,
+  if (!settings.GetBoolean(kSettingGenerateDraftData,
                            &generate_draft_pages)) {
     NOTREACHED();
   }
@@ -851,7 +847,7 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
     return false;
   }
 
-  printing::PageSizeMargins default_page_layout;
+  PageSizeMargins default_page_layout;
   ComputePageLayoutInPointsForCss(print_preview_context_.frame(), 0,
                                   print_params, ignore_css_margins_, NULL,
                                   &default_page_layout);
@@ -863,8 +859,6 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
         print_preview_context_.total_page_count());
     int dpi = GetDPI(&print_params);
 
-    using printing::ConvertUnit;
-    using printing::kPointsPerInch;
     gfx::Rect printable_area_in_points(
         ConvertUnit(print_params.printable_area.x(), dpi, kPointsPerInch),
         ConvertUnit(print_params.printable_area.y(), dpi, kPointsPerInch),
@@ -923,7 +917,7 @@ bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   print_preview_context_.FinalizePrintReadyDocument();
 
   // Get the size of the resulting metafile.
-  printing::PreviewMetafile* metafile = print_preview_context_.metafile();
+  PreviewMetafile* metafile = print_preview_context_.metafile();
   uint32 buf_size = metafile->GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
@@ -1174,7 +1168,7 @@ void PrintWebViewHelper::ComputePageLayoutInPointsForCss(
     const PrintMsg_Print_Params& page_params,
     bool ignore_css_margins,
     double* scale_factor,
-    printing::PageSizeMargins* page_layout_in_points) {
+    PageSizeMargins* page_layout_in_points) {
   PrintMsg_Print_Params params = CalculatePrintParamsForCss(
       frame, page_index, page_params, ignore_css_margins,
       page_params.print_scaling_option ==
@@ -1274,8 +1268,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   bool source_is_html = true;
   if (print_for_preview_) {
-    if (!job_settings->GetBoolean(printing::kSettingPreviewModifiable,
-                                  &source_is_html)) {
+    if (!job_settings->GetBoolean(kSettingPreviewModifiable, &source_is_html)) {
       NOTREACHED();
     }
   } else {
@@ -1284,10 +1277,8 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   if (print_for_preview_ || !source_is_html) {
     modified_job_settings.MergeDictionary(job_settings);
-    modified_job_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
-                                     false);
-    modified_job_settings.SetInteger(printing::kSettingMarginsType,
-                                     printing::NO_MARGINS);
+    modified_job_settings.SetBoolean(kSettingHeaderFooterEnabled, false);
+    modified_job_settings.SetInteger(kSettingMarginsType, NO_MARGINS);
     job_settings = &modified_job_settings;
   }
 
@@ -1326,11 +1317,11 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   if (!print_for_preview_) {
     // Validate expected print preview settings.
-    if (!job_settings->GetInteger(printing::kPreviewUIID,
+    if (!job_settings->GetInteger(kPreviewUIID,
                                   &(settings.params.preview_ui_id)) ||
-        !job_settings->GetInteger(printing::kPreviewRequestID,
+        !job_settings->GetInteger(kPreviewRequestID,
                                   &(settings.params.preview_request_id)) ||
-        !job_settings->GetBoolean(printing::kIsFirstRequest,
+        !job_settings->GetBoolean(kIsFirstRequest,
                                   &(settings.params.is_first_request))) {
       NOTREACHED();
       print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
@@ -1345,11 +1336,11 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     // Header/Footer: Set |header_footer_info_|.
     if (settings.params.display_header_footer) {
       header_footer_info_.reset(new DictionaryValue());
-      header_footer_info_->SetString(printing::kSettingHeaderFooterDate,
+      header_footer_info_->SetString(kSettingHeaderFooterDate,
                                      settings.params.date);
-      header_footer_info_->SetString(printing::kSettingHeaderFooterURL,
+      header_footer_info_->SetString(kSettingHeaderFooterURL,
                                      settings.params.url);
-      header_footer_info_->SetString(printing::kSettingHeaderFooterTitle,
+      header_footer_info_->SetString(kSettingHeaderFooterTitle,
                                      settings.params.title);
     }
   }
@@ -1371,7 +1362,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
-  printing::MarginType margin_type = printing::DEFAULT_MARGINS;
+  MarginType margin_type = DEFAULT_MARGINS;
   if (PrintingNodeOrPdfFrame(frame, node))
     margin_type = GetMarginsForPdf(frame, node);
   params.margin_type = margin_type;
@@ -1404,7 +1395,7 @@ bool PrintWebViewHelper::RenderPagesForPrint(
 
 #if defined(OS_POSIX)
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    printing::Metafile* metafile,
+    Metafile* metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   scoped_ptr<base::SharedMemory> shared_buf(
@@ -1512,8 +1503,8 @@ bool PrintWebViewHelper::CheckForCancel() {
 }
 
 bool PrintWebViewHelper::PreviewPageRendered(int page_number,
-                                             printing::Metafile* metafile) {
-  DCHECK_GE(page_number, printing::FIRST_PAGE_INDEX);
+                                             Metafile* metafile) {
+  DCHECK_GE(page_number, FIRST_PAGE_INDEX);
 
   // For non-modifiable files, |metafile| should be NULL, so do not bother
   // sending a message. If we don't generate draft metafiles, |metafile| is
@@ -1594,7 +1585,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   DCHECK_EQ(INITIALIZED, state_);
   state_ = RENDERING;
 
-  metafile_.reset(new printing::PreviewMetafile);
+  metafile_.reset(new PreviewMetafile);
   if (!metafile_->Init()) {
     set_error(PREVIEW_ERROR_METAFILE_INIT_FAILED);
     LOG(ERROR) << "PreviewMetafile Init failed";
@@ -1751,7 +1742,7 @@ bool PrintWebViewHelper::PrintPreviewContext::generate_draft_pages() const {
   return generate_draft_pages_;
 }
 
-printing::PreviewMetafile* PrintWebViewHelper::PrintPreviewContext::metafile() {
+PreviewMetafile* PrintWebViewHelper::PrintPreviewContext::metafile() {
   DCHECK(IsRendering());
   return metafile_.get();
 }
@@ -1771,3 +1762,5 @@ void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
   pages_to_render_.clear();
   error_ = PREVIEW_ERROR_NONE;
 }
+
+}  // namespace printing

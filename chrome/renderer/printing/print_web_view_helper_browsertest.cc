@@ -6,7 +6,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/renderer/mock_printer.h"
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
 #include "printing/print_job_constants.h"
@@ -22,6 +22,8 @@
 using WebKit::WebFrame;
 using WebKit::WebString;
 #endif
+
+namespace printing {
 
 namespace {
 
@@ -71,20 +73,20 @@ const char kPrintPreviewHTML[] =
     "<body><p id=\"pdf-viewer\">Hello World!</p></body>";
 
 void CreatePrintSettingsDictionary(DictionaryValue* dict) {
-  dict->SetBoolean(printing::kSettingLandscape, false);
-  dict->SetBoolean(printing::kSettingCollate, false);
-  dict->SetInteger(printing::kSettingColor, printing::GRAY);
-  dict->SetBoolean(printing::kSettingPrintToPDF, true);
-  dict->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
-  dict->SetInteger(printing::kSettingCopies, 1);
-  dict->SetString(printing::kSettingDeviceName, "dummy");
-  dict->SetInteger(printing::kPreviewUIID, 4);
-  dict->SetInteger(printing::kPreviewRequestID, 12345);
-  dict->SetBoolean(printing::kIsFirstRequest, true);
-  dict->SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
-  dict->SetBoolean(printing::kSettingPreviewModifiable, false);
-  dict->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
-  dict->SetBoolean(printing::kSettingGenerateDraftData, true);
+  dict->SetBoolean(kSettingLandscape, false);
+  dict->SetBoolean(kSettingCollate, false);
+  dict->SetInteger(kSettingColor, GRAY);
+  dict->SetBoolean(kSettingPrintToPDF, true);
+  dict->SetInteger(kSettingDuplexMode, SIMPLEX);
+  dict->SetInteger(kSettingCopies, 1);
+  dict->SetString(kSettingDeviceName, "dummy");
+  dict->SetInteger(kPreviewUIID, 4);
+  dict->SetInteger(kPreviewRequestID, 12345);
+  dict->SetBoolean(kIsFirstRequest, true);
+  dict->SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
+  dict->SetBoolean(kSettingPreviewModifiable, false);
+  dict->SetBoolean(kSettingHeaderFooterEnabled, false);
+  dict->SetBoolean(kSettingGenerateDraftData, true);
 }
 
 }  // namespace
@@ -286,7 +288,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
   // Verify output through MockPrinter.
   const MockPrinter* printer(chrome_render_thread_->printer());
   ASSERT_EQ(1, printer->GetPrintedPages());
-  const printing::Image& image1(printer->GetPrintedPage(0)->image());
+  const Image& image1(printer->GetPrintedPage(0)->image());
 
   // TODO(sverrir): Figure out a way to improve this test to actually print
   // only the content of the iframe.  Currently image1 will contain the full
@@ -531,8 +533,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, false);
-  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, false);
+  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -551,8 +553,8 @@ TEST_F(PrintWebViewHelperPreviewTest, NonDefaultMarginsSelectedIgnorePrintCss) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, false);
-  dict.SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, false);
+  dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -571,9 +573,9 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, true);
-  dict.SetInteger(printing::kSettingMarginsType,
-                  printing::PRINTABLE_AREA_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, true);
+  dict.SetInteger(kSettingMarginsType,
+                  PRINTABLE_AREA_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -604,8 +606,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPageMarginsCss) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, true);
-  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, true);
+  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -624,8 +626,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, false);
-  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, false);
+  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -654,8 +656,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, false);
-  dict.SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, false);
+  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -672,8 +674,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, false);
-  dict.SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, false);
+  dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -690,8 +692,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorOrientationCss) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetBoolean(printing::kSettingPrintToPDF, true);
-  dict.SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
+  dict.SetBoolean(kSettingPrintToPDF, true);
+  dict.SetInteger(kSettingMarginsType, CUSTOM_MARGINS);
   OnPrintPreview(dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -713,14 +715,14 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
   // metafile with the selected pages. Page numbers used in the dictionary
   // are 1-based.
   DictionaryValue* page_range = new DictionaryValue();
-  page_range->SetInteger(printing::kSettingPageRangeFrom, 1);
-  page_range->SetInteger(printing::kSettingPageRangeTo, 1);
+  page_range->SetInteger(kSettingPageRangeFrom, 1);
+  page_range->SetInteger(kSettingPageRangeTo, 1);
 
   ListValue* page_range_array = new ListValue();
   page_range_array->Append(page_range);
 
-  dict.Set(printing::kSettingPageRange, page_range_array);
-  dict.SetBoolean(printing::kSettingGenerateDraftData, false);
+  dict.Set(kSettingPageRange, page_range_array);
+  dict.SetBoolean(kSettingGenerateDraftData, false);
 
   OnPrintPreview(dict);
 
@@ -913,3 +915,5 @@ TEST_F(PrintWebViewHelperKioskTest, DontBlockScriptInitiatedPrinting) {
   LoadHTML(kPrintWithJSHTML);
   VerifyPagesPrinted(true);
 }
+
+}  // namespace printing

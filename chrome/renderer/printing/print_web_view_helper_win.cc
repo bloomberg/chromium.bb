@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,10 +26,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-using printing::ConvertUnit;
-using printing::ConvertUnitDouble;
-using printing::kPointsPerInch;
-using printing::Metafile;
+namespace printing {
+
 using WebKit::WebFrame;
 
 void PrintWebViewHelper::PrintPageInternal(
@@ -38,7 +36,7 @@ void PrintWebViewHelper::PrintPageInternal(
     WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
-  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile);
+  scoped_ptr<NativeMetafile> metafile(new NativeMetafile);
   metafile->Init();
   DCHECK(metafile->context());
   skia::InitializeDC(metafile->context());
@@ -63,7 +61,7 @@ void PrintWebViewHelper::PrintPageInternal(
     NOTREACHED();
 
   if (!params.params.supports_alpha_blend && metafile->IsAlphaBlendUsed()) {
-    scoped_ptr<printing::NativeMetafile> raster_metafile(
+    scoped_ptr<NativeMetafile> raster_metafile(
         metafile->RasterizeAlphaBlend());
     if (raster_metafile.get())
       metafile.swap(raster_metafile);
@@ -97,11 +95,10 @@ bool PrintWebViewHelper::RenderPreviewPage(
   double actual_shrink = static_cast<float>(print_params.desired_dpi /
                                             print_params.dpi);
   scoped_ptr<Metafile> draft_metafile;
-  printing::Metafile* initial_render_metafile =
-      print_preview_context_.metafile();
+  Metafile* initial_render_metafile = print_preview_context_.metafile();
 
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile.reset(new printing::PreviewMetafile);
+    draft_metafile.reset(new PreviewMetafile);
     initial_render_metafile = draft_metafile.get();
   }
 
@@ -126,7 +123,7 @@ void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, int page_number, WebFrame* frame,
     bool is_preview, Metafile* metafile, double* actual_shrink,
     gfx::Size* page_size_in_dpi, gfx::Rect* content_area_in_dpi) {
-  printing::PageSizeMargins page_layout_in_points;
+  PageSizeMargins page_layout_in_points;
   double css_scale_factor = 1.0f;
   ComputePageLayoutInPointsForCss(frame, page_number, params,
                                   ignore_css_margins_, &css_scale_factor,
@@ -139,22 +136,22 @@ void PrintWebViewHelper::RenderPage(
   // Calculate the actual page size and content area in dpi.
   if (page_size_in_dpi) {
     *page_size_in_dpi = gfx::Size(
-        static_cast<int>(ConvertUnitDouble(
-            page_size.width(), printing::kPointsPerInch, dpi)),
-        static_cast<int>(ConvertUnitDouble(
-            page_size.height(), printing::kPointsPerInch, dpi)));
+        static_cast<int>(ConvertUnitDouble(page_size.width(), kPointsPerInch,
+                                           dpi)),
+        static_cast<int>(ConvertUnitDouble(page_size.height(), kPointsPerInch,
+                                           dpi)));
   }
 
   if (content_area_in_dpi) {
     *content_area_in_dpi = gfx::Rect(
-        static_cast<int>(ConvertUnitDouble(content_area.x(),
-            printing::kPointsPerInch, dpi)),
-        static_cast<int>(ConvertUnitDouble(content_area.y(),
-            printing::kPointsPerInch, dpi)),
-        static_cast<int>(ConvertUnitDouble(content_area.width(),
-            printing::kPointsPerInch, dpi)),
+        static_cast<int>(ConvertUnitDouble(content_area.x(), kPointsPerInch,
+                                           dpi)),
+        static_cast<int>(ConvertUnitDouble(content_area.y(), kPointsPerInch,
+                                           dpi)),
+        static_cast<int>(ConvertUnitDouble(content_area.width(), kPointsPerInch,
+                                           dpi)),
         static_cast<int>(ConvertUnitDouble(content_area.height(),
-            printing::kPointsPerInch, dpi)));
+                                           kPointsPerInch, dpi)));
   }
 
   if (!is_preview) {
@@ -183,7 +180,7 @@ void PrintWebViewHelper::RenderPage(
       skia::AdoptRef(new skia::VectorCanvas(device));
 
   if (is_preview) {
-    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
+    MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
     skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
   }
@@ -208,7 +205,7 @@ void PrintWebViewHelper::RenderPage(
     // TODO(gene): We should revisit this solution for the next versions.
     // Consider creating metafile of the right size (or resizable)
     // https://code.google.com/p/chromium/issues/detail?id=126037
-    if (!printing::MetafileSkiaWrapper::GetCustomScaleOnCanvas(
+    if (!MetafileSkiaWrapper::GetCustomScaleOnCanvas(
             *canvas, actual_shrink)) {
       // Update the dpi adjustment with the "page |actual_shrink|" calculated in
       // webkit.
@@ -224,7 +221,7 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     Metafile* metafile, base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemory shared_buf;
-  if (buf_size >= printing::kMetafileMaxSize) {
+  if (buf_size >= kMetafileMaxSize) {
     NOTREACHED() << "Buffer too large: " << buf_size;
     return false;
   }
@@ -248,3 +245,5 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
                                          shared_mem_handle));
   return true;
 }
+
+}  // namespace printing

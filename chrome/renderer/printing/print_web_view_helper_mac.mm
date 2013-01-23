@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 
 #import <AppKit/AppKit.h>
 
@@ -19,13 +19,15 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
+namespace printing {
+
 using WebKit::WebFrame;
 
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame) {
-  printing::NativeMetafile metafile;
+  NativeMetafile metafile;
   if (!metafile.Init())
     return;
 
@@ -56,15 +58,14 @@ bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
   PrintMsg_Print_Params printParams = print_params;
-  scoped_ptr<printing::Metafile> draft_metafile;
-  printing::Metafile* initial_render_metafile =
-      print_preview_context_.metafile();
+  scoped_ptr<Metafile> draft_metafile;
+  Metafile* initial_render_metafile = print_preview_context_.metafile();
 
   bool render_to_draft = print_preview_context_.IsModifiable() &&
                          is_print_ready_metafile_sent_;
 
   if (render_to_draft) {
-    draft_metafile.reset(new printing::PreviewMetafile());
+    draft_metafile.reset(new PreviewMetafile());
     if (!draft_metafile->Init()) {
       print_preview_context_.set_error(
           PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED);
@@ -96,11 +97,11 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
 void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, int page_number, WebFrame* frame,
-    bool is_preview, printing::Metafile* metafile, gfx::Size* page_size,
+    bool is_preview, Metafile* metafile, gfx::Size* page_size,
     gfx::Rect* content_rect) {
   double scale_factor = 1.0f;
   double webkit_shrink_factor = frame->getPrintPageShrink(page_number);
-  printing::PageSizeMargins page_layout_in_points;
+  PageSizeMargins page_layout_in_points;
   gfx::Rect content_area;
 
   ComputePageLayoutInPointsForCss(frame, page_number, params,
@@ -125,7 +126,7 @@ void PrintWebViewHelper::RenderPage(
     skia::RefPtr<skia::VectorCanvas> canvas =
         skia::AdoptRef(new skia::VectorCanvas(device));
     WebKit::WebCanvas* canvas_ptr = canvas.get();
-    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
+    MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
     skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
 
@@ -142,3 +143,5 @@ void PrintWebViewHelper::RenderPage(
   // Done printing. Close the device context to retrieve the compiled metafile.
   metafile->FinishPage();
 }
+
+}  // namespace printing

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
-#define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
+#ifndef CHROME_RENDERER_PRINTING_PRINT_WEB_VIEW_HELPER_H_
+#define CHROME_RENDERER_PRINTING_PRINT_WEB_VIEW_HELPER_H_
 
 #include <vector>
 
@@ -29,14 +29,14 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace printing {
-struct PageSizeMargins;
-}
-
 namespace WebKit {
 class WebFrame;
 class WebView;
 }
+
+namespace printing {
+
+struct PageSizeMargins;
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
@@ -154,7 +154,7 @@ class PrintWebViewHelper
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.
   void GetPageSizeAndContentAreaFromPageLayout(
-      const printing::PageSizeMargins& page_layout_in_points,
+      const PageSizeMargins& page_layout_in_points,
       gfx::Size* page_size,
       gfx::Rect* content_area);
 
@@ -260,7 +260,7 @@ class PrintWebViewHelper
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          WebKit::WebFrame* frame,
-                         printing::Metafile* metafile);
+                         Metafile* metafile);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
@@ -277,20 +277,20 @@ class PrintWebViewHelper
                   int page_number,
                   WebKit::WebFrame* frame,
                   bool is_preview,
-                  printing::Metafile* metafile,
+                  Metafile* metafile,
                   double* scale_factor,
                   gfx::Size* page_size_in_dpi,
                   gfx::Rect* content_area_in_dpi);
 #elif defined(OS_MACOSX)
   void RenderPage(const PrintMsg_Print_Params& params, int page_number,
                   WebKit::WebFrame* frame, bool is_preview,
-                  printing::Metafile* metafile, gfx::Size* page_size,
+                  Metafile* metafile, gfx::Size* page_size,
                   gfx::Rect* content_rect);
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame, const WebKit::WebNode& node,
                    std::vector<int>* printed_pages,
-                   printing::Metafile* metafile);
+                   Metafile* metafile);
 #endif  // defined(OS_WIN)
 
   // Renders page contents from |frame| to |content_area| of |canvas|.
@@ -308,7 +308,7 @@ class PrintWebViewHelper
 
   bool CopyAndPrint(WebKit::WebFrame* web_frame);
 
-  bool CopyMetafileDataToSharedMem(printing::Metafile* metafile,
+  bool CopyMetafileDataToSharedMem(Metafile* metafile,
                                    base::SharedMemoryHandle* shared_mem_handle);
 
   // Helper method to get page layout in points and fit to page if needed.
@@ -318,7 +318,7 @@ class PrintWebViewHelper
       const PrintMsg_Print_Params& default_params,
       bool ignore_css_margins,
       double* scale_factor,
-      printing::PageSizeMargins* page_layout_in_points);
+      PageSizeMargins* page_layout_in_points);
 
   // Prepare the frame and view for print and then call this function to honor
   // the CSS page layout information.
@@ -336,7 +336,7 @@ class PrintWebViewHelper
       int page_number,
       int total_pages,
       float webkit_scale_factor,
-      const printing::PageSizeMargins& page_layout_in_points,
+      const PageSizeMargins& page_layout_in_points,
       const base::DictionaryValue& header_footer_info,
       const PrintMsg_Print_Params& params);
 
@@ -375,7 +375,7 @@ class PrintWebViewHelper
   // For a valid |page_number| with modifiable content,
   // |metafile| is the rendered page. Otherwise |metafile| is NULL.
   // Returns true if print preview should continue, false on failure.
-  bool PreviewPageRendered(int page_number, printing::Metafile* metafile);
+  bool PreviewPageRendered(int page_number, Metafile* metafile);
 
   // WebView used only to print the selection.
   WebKit::WebView* print_web_view_;
@@ -455,7 +455,7 @@ class PrintWebViewHelper
     const WebKit::WebNode& node() const;
     int total_page_count() const;
     bool generate_draft_pages() const;
-    printing::PreviewMetafile* metafile();
+    PreviewMetafile* metafile();
     gfx::Size GetPrintCanvasSize() const;
     int last_error() const;
 
@@ -475,7 +475,7 @@ class PrintWebViewHelper
     WebKit::WebNode node_;
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
-    scoped_ptr<printing::PreviewMetafile> metafile_;
+    scoped_ptr<PreviewMetafile> metafile_;
 
     // Total page count in the renderer.
     int total_page_count_;
@@ -505,4 +505,6 @@ class PrintWebViewHelper
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
 
-#endif  // CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
+}  // namespace printing
+
+#endif  // CHROME_RENDERER_PRINTING_PRINT_WEB_VIEW_HELPER_H_

@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
@@ -420,6 +420,7 @@ void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
   WebKit::WebView* view = element.document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
 
+  using printing::PrintWebViewHelper;
   PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
   if (print_view_helper)
     print_view_helper->PrintNode(element);

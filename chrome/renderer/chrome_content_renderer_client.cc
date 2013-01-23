@@ -59,7 +59,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerender_webmediaplayer.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
-#include "chrome/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/print_web_view_helper.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox/searchbox.h"
@@ -287,7 +287,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
-  new PrintWebViewHelper(render_view);
+  new printing::PrintWebViewHelper(render_view);
 #endif
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, spellcheck_.get());
