@@ -66,10 +66,10 @@ LockDiscardableMemoryStatus DiscardableMemory::Lock() {
     purged = true;
 
   if (!Map())
-    return FAILED;
+    return DISCARDABLE_MEMORY_FAILED;
 
   is_pinned_ = true;
-  return purged ? PURGED : SUCCESS;
+  return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
 }
 
 void DiscardableMemory::Unlock() {
@@ -112,4 +112,4 @@ void DiscardableMemory::Unmap() {
   memory_ = NULL;
 }
 
-}  // namespace skia
+}  // namespace base

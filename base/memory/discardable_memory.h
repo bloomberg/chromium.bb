@@ -12,9 +12,9 @@
 namespace base {
 
 enum LockDiscardableMemoryStatus {
-  FAILED = -1,
-  PURGED = 0,
-  SUCCESS = 1
+  DISCARDABLE_MEMORY_FAILED = -1,
+  DISCARDABLE_MEMORY_PURGED = 0,
+  DISCARDABLE_MEMORY_SUCCESS = 1
 };
 
 // Platform abstraction for discardable memory. The DiscardableMemory should
@@ -57,8 +57,11 @@ class BASE_EXPORT DiscardableMemory {
   bool InitializeAndLock(size_t size);
 
   // Lock the memory so that it will not be purged by the system. Returns
-  // SUCCESS on success. Returns FAILED on error or PURGED if the memory is
-  // purged. Don't call this function in a nested fashion.
+  // DISCARDABLE_MEMORY_SUCCESS on success. If the return value is
+  // DISCARDABLE_MEMORY_FAILED then this object should be discarded and
+  // a new one should be created. If the return value is
+  // DISCARDABLE_MEMORY_PURGED then the memory is present but any data that
+  // was in it is gone.
   LockDiscardableMemoryStatus Lock() WARN_UNUSED_RESULT;
 
   // Unlock the memory so that it can be purged by the system. Must be called

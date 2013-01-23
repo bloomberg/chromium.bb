@@ -24,7 +24,7 @@ TEST(DiscardableMemoryTest, LockAndUnLock) {
   ASSERT_NE(static_cast<void*>(NULL), addr);
 
   memory.Unlock();
-  EXPECT_EQ(SUCCESS, memory.Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_SUCCESS, memory.Lock());
   addr = memory.Memory();
   ASSERT_NE(static_cast<void*>(NULL), addr);
 
