@@ -11,10 +11,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class FilePath;
@@ -68,7 +70,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 };
 
 class BookmarksAPI : public ProfileKeyedAPI,
-                     public EventRouter::Observer {
+                    public EventRouter::Observer {
  public:
   explicit BookmarksAPI(Profile* profile);
   virtual ~BookmarksAPI();
@@ -80,8 +82,8 @@ class BookmarksAPI : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<BookmarksAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(
-      const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details)
+      OVERRIDE;
 
  private:
   friend class ProfileKeyedAPIFactory<BookmarksAPI>;
@@ -99,14 +101,13 @@ class BookmarksAPI : public ProfileKeyedAPI,
 };
 
 class BookmarksFunction : public AsyncExtensionFunction,
-                          public BaseBookmarkModelObserver {
+                          public content::NotificationObserver {
  public:
   // AsyncExtensionFunction:
   virtual void Run() OVERRIDE;
 
  protected:
-  BookmarksFunction();
-  virtual ~BookmarksFunction();
+  virtual ~BookmarksFunction() {}
 
   // Helper to get the bookmark id as int64 from the given string id.
   // Sets error_ to an error string if the given id string can't be parsed
@@ -118,12 +119,12 @@ class BookmarksFunction : public AsyncExtensionFunction,
   bool EditBookmarksEnabled();
 
  private:
-  // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  BookmarkModel* bookmark_model_;
+  content::NotificationRegistrar registrar_;
 };
 
 class BookmarksGetTreeFunction : public BookmarksFunction {
@@ -198,8 +199,7 @@ class BookmarksRemoveFunction : public BookmarksFunction {
 
   // Returns true on successful parse and sets invalid_id to true if conversion
   // from id string to int64 failed.
-  static bool ExtractIds(const base::ListValue* args,
-                         std::list<int64>* ids,
+  static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
@@ -239,8 +239,7 @@ class BookmarksMoveFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.move", BOOKMARKS_MOVE)
 
-  static bool ExtractIds(const base::ListValue* args,
-                         std::list<int64>* ids,
+  static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
 
   // ExtensionFunction:
@@ -258,8 +257,7 @@ class BookmarksUpdateFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.update", BOOKMARKS_UPDATE)
 
-  static bool ExtractIds(const base::ListValue* args,
-                         std::list<int64>* ids,
+  static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
 
   // ExtensionFunction:
@@ -304,9 +302,8 @@ class BookmarksImportFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION("bookmarks.import", BOOKMARKS_IMPORT)
 
   // BookmarkManagerIOFunction:
-  virtual void FileSelected(const FilePath& path,
-                            int index,
-                            void* params) OVERRIDE;
+  virtual void FileSelected(const FilePath& path, int index, void* params)
+      OVERRIDE;
 
  private:
   virtual ~BookmarksImportFunction() {}
@@ -320,9 +317,8 @@ class BookmarksExportFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION("bookmarks.export", BOOKMARKS_EXPORT)
 
   // BookmarkManagerIOFunction:
-  virtual void FileSelected(const FilePath& path,
-                            int index,
-                            void* params) OVERRIDE;
+  virtual void FileSelected(const FilePath& path, int index, void* params)
+      OVERRIDE;
 
  private:
   virtual ~BookmarksExportFunction() {}

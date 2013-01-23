@@ -88,10 +88,12 @@ FilePath GetDefaultFilepathForBookmarkExport() {
 }  // namespace
 
 void BookmarksFunction::Run() {
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile());
-  if (!bookmark_model_->IsLoaded()) {
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  if (!model->IsLoaded()) {
     // Bookmarks are not ready yet.  We'll wait.
-    bookmark_model_->AddObserver(this);
+    registrar_.Add(
+        this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+        content::NotificationService::AllBrowserContextsAndSources());
     AddRef();  // Balanced in Observe().
     return;
   }
@@ -106,17 +108,8 @@ void BookmarksFunction::Run() {
   SendResponse(success);
 }
 
-BookmarksFunction::BookmarksFunction()
-    : bookmark_model_(NULL) {
-}
-
-BookmarksFunction::~BookmarksFunction() {
-  if (bookmark_model_)
-    bookmark_model_->RemoveObserver(this);
-}
-
-bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
-                                             int64* id) {
+bool BookmarksFunction::GetBookmarkIdAsInt64(
+    const std::string& id_string, int64* id) {
   if (base::StringToInt64(id_string, id))
     return true;
 
@@ -132,17 +125,17 @@ bool BookmarksFunction::EditBookmarksEnabled() {
   return false;
 }
 
-void BookmarksFunction::BookmarkModelChanged() {
-}
+void BookmarksFunction::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED);
+  Profile* source_profile = content::Source<Profile>(source).ptr();
+  if (!source_profile || !source_profile->IsSameProfile(profile()))
+    return;
 
-void BookmarksFunction::Loaded(BookmarkModel* model, bool ids_reassigned) {
+  DCHECK(BookmarkModelFactory::GetForProfile(profile())->IsLoaded());
   Run();
   Release();  // Balanced in Run().
-}
-
-void BookmarksFunction::BookmarkModelBeingDeleted(BookmarkModel* model) {
-  bookmark_model_->RemoveObserver(this);
-  bookmark_model_ = NULL;
 }
 
 BookmarkEventRouter::BookmarkEventRouter(BookmarkModel* model) : model_(model) {
