@@ -31,6 +31,8 @@
 }
 
 - (void)setShowsDivider:(BOOL)show {
+  if (showsDivider_ == show)
+    return;
   showsDivider_ = show;
   [self setNeedsDisplay:YES];
 }

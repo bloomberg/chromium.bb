@@ -144,6 +144,20 @@
 - (void)enableBarVisibilityUpdates;
 - (void)disableBarVisibilityUpdates;
 
+// The opacity for the toolbar divider; 0 means that it shouldn't be shown.
+- (CGFloat)toolbarDividerOpacity;
+
+// Returns YES if instant results are being shown under the omnibox.
+- (BOOL)isShowingInstantResults;
+
+// Updates the content offets of the tab strip controller and the previewable
+// contents controller. This is used to adjust the overlap between those views
+// and the bookmark bar.
+- (void)updateContentOffsets;
+
+// Ensures the z-order of subviews is correct.
+- (void)updateSubviewZOrder;
+
 @end  // @interface BrowserWindowController(Private)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_

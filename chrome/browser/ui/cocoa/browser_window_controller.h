@@ -113,10 +113,6 @@ class WebContents;
   // nil for those which don't).
   scoped_nsobject<NSView> floatingBarBackingView_;
 
-  // Tracks whether the floating bar is above or below the bookmark bar, in
-  // terms of z-order.
-  BOOL floatingBarAboveBookmarkBar_;
-
   // The borderless window used in fullscreen mode.  Lion reuses the original
   // window in fullscreen mode, so this is always nil on Lion.
   scoped_nsobject<NSWindow> fullscreenWindow_;
@@ -162,6 +158,10 @@ class WebContents;
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
   scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
+
+  // The offset between the bottom of the toolbar and web contents. This is used
+  // to push the web contents below the bookmark bar.
+  CGFloat toolbarToWebContentsOffset_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a
@@ -201,6 +201,9 @@ class WebContents;
 // Return a weak pointer to the tab strip controller.
 - (TabStripController*)tabStripController;
 
+// Return a weak pointer to the find bar controller.
+- (FindBarCocoaController*)findBarCocoaController;
+
 // Access the ObjC controller that contains the infobars.
 - (InfoBarContainerController*)infoBarContainerController;
 
@@ -209,6 +212,12 @@ class WebContents;
 
 // Access the C++ bridge object representing the location bar.
 - (LocationBarViewMac*)locationBarBridge;
+
+// Returns a weak pointer to the floating bar backing view;
+- (NSView*)floatingBarBackingView;
+
+// Returns a weak pointer to the previewable contents controller.
+- (PreviewableContentsController*)previewableContentsController;
 
 // Access the Profile object that backs this Browser.
 - (Profile*)profile;
@@ -329,6 +338,8 @@ class WebContents;
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code
             context:(void*)context;
+
+- (void)updateBookmarkBarStateForInstantPreview;
 
 @end  // @interface BrowserWindowController
 

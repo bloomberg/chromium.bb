@@ -67,6 +67,8 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -392,7 +394,6 @@ enum {
              resizeDelegate:self]);
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
-    [[[self window] contentView] addSubview:[toolbarController_ view]];
 
     // Create a sub-controller for the bookmark bar.
     bookmarkBarController_.reset(
@@ -401,21 +402,12 @@ enum {
                initialWidth:NSWidth([[[self window] contentView] frame])
                    delegate:self
              resizeDelegate:self]);
-
-    // Add bookmark bar to the view hierarchy, which also triggers the nib load.
-    // The bookmark bar is defined (in the nib) to be bottom-aligned to its
-    // parent view (among other things), so position and resize properties don't
-    // need to be set.
-    [[[self window] contentView] addSubview:[bookmarkBarController_ view]
-                                 positioned:NSWindowBelow
-                                 relativeTo:[toolbarController_ view]];
     [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
 
     // Create the infobar container view, so we can pass it to the
     // ToolbarController.
     infoBarContainerController_.reset(
         [[InfoBarContainerController alloc] initWithResizeDelegate:self]);
-    [[[self window] contentView] addSubview:[infoBarContainerController_ view]];
 
     // We don't want to try and show the bar before it gets placed in its parent
     // view, so this step shoudn't be inside the bookmark bar controller's
@@ -538,6 +530,10 @@ enum {
   return tabStripController_.get();
 }
 
+- (FindBarCocoaController*)findBarCocoaController {
+  return findBarCocoaController_.get();
+}
+
 - (InfoBarContainerController*)infoBarContainerController {
   return infoBarContainerController_.get();
 }
@@ -548,6 +544,14 @@ enum {
 
 - (LocationBarViewMac*)locationBarBridge {
   return [toolbarController_ locationBarBridge];
+}
+
+- (NSView*)floatingBarBackingView {
+  return floatingBarBackingView_;
+}
+
+- (PreviewableContentsController*)previewableContentsController {
+  return previewableContentsController_;
 }
 
 - (Profile*)profile {
@@ -1528,13 +1532,7 @@ enum {
 
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
-  NSView* contentView = [[self window] contentView];
-  NSView* relativeView =
-      [self inPresentationMode] ? [toolbarController_ view] :
-                                  [infoBarContainerController_ view];
-  [contentView addSubview:[findBarCocoaController_ view]
-               positioned:NSWindowAbove
-               relativeTo:relativeView];
+  [self updateSubviewZOrder];
 
   // Place the find bar immediately below the toolbar/attached bookmark bar. In
   // presentation mode, it hangs off the top of the screen when the bar is
@@ -1542,7 +1540,7 @@ enum {
   CGFloat maxY = [self placeBookmarkBarBelowInfoBar] ?
       NSMinY([[toolbarController_ view] frame]) :
       NSMinY([[bookmarkBarController_ view] frame]);
-  CGFloat maxWidth = NSWidth([contentView frame]);
+  CGFloat maxWidth = NSWidth([[[self window] contentView] frame]);
   [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 
   // This allows the FindBarCocoaController to call |layoutSubviews| and get
@@ -1909,8 +1907,7 @@ enum {
 - (void)bookmarkBar:(BookmarkBarController*)controller
  didChangeFromState:(BookmarkBar::State)oldState
             toState:(BookmarkBar::State)newState {
-  [toolbarController_
-      setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
+  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
   [self adjustToolbarAndBookmarkBarForCompression:
           [controller getDesiredToolbarHeightCompression]];
 }
@@ -1919,8 +1916,7 @@ enum {
 - (void)bookmarkBar:(BookmarkBarController*)controller
 willAnimateFromState:(BookmarkBar::State)oldState
             toState:(BookmarkBar::State)newState {
-  [toolbarController_
-      setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
+  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
   [self adjustToolbarAndBookmarkBarForCompression:
           [controller getDesiredToolbarHeightCompression]];
 }
@@ -1989,6 +1985,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
          returnCode:(NSInteger)code
             context:(void*)context {
   [sheet orderOut:self];
+}
+
+- (void)updateBookmarkBarStateForInstantPreview {
+  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
+  [self updateContentOffsets];
+  [self updateSubviewZOrder];
 }
 
 @end  // @implementation BrowserWindowController

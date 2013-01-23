@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 
+#include "base/logging.h"
+
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
@@ -26,6 +28,38 @@
   NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
   mouseLoc = [[self superview] convertPoint:mouseLoc fromView:nil];
   return [self hitTest:mouseLoc] == self;
+}
+
+- (BOOL)cr_isBelowView:(NSView*)otherView {
+  NSArray* subviews = [[self superview] subviews];
+
+  NSUInteger selfIndex = [subviews indexOfObject:self];
+  DCHECK_NE(NSNotFound, selfIndex);
+
+  NSUInteger otherIndex = [subviews indexOfObject:otherView];
+  DCHECK_NE(NSNotFound, otherIndex);
+
+  return selfIndex < otherIndex;
+}
+
+- (BOOL)cr_isAboveView:(NSView*)otherView {
+  return ![self cr_isBelowView:otherView];
+}
+
+- (void)cr_ensureSubview:(NSView*)subview
+            isPositioned:(NSWindowOrderingMode)place
+              relativeTo:(NSView *)otherView {
+  DCHECK(place == NSWindowAbove || place == NSWindowBelow);
+  BOOL isAbove = place == NSWindowAbove;
+  if ([[subview superview] isEqual:self] &&
+      [subview cr_isAboveView:otherView] == isAbove) {
+    return;
+  }
+
+  [subview removeFromSuperview];
+  [self addSubview:subview
+        positioned:place
+        relativeTo:otherView];
 }
 
 @end

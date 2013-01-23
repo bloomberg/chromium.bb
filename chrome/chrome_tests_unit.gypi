@@ -1294,6 +1294,7 @@
         'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',
         'browser/ui/cocoa/nsimage_cache_unittest.mm',
         'browser/ui/cocoa/nsmenuitem_additions_unittest.mm',
+        'browser/ui/cocoa/nsview_additions_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
         'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
