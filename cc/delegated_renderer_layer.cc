@@ -8,25 +8,23 @@
 
 namespace cc {
 
-scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::create()
-{
-    return scoped_refptr<DelegatedRendererLayer>(new DelegatedRendererLayer());
+scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create() {
+  return scoped_refptr<DelegatedRendererLayer>(new DelegatedRendererLayer());
 }
 
 DelegatedRendererLayer::DelegatedRendererLayer()
-    : Layer()
-{
-    setIsDrawable(true);
-    setMasksToBounds(true);
+    : Layer() {
+  setIsDrawable(true);
+  // TODO(danakj): Remove this.
+  setMasksToBounds(true);
 }
 
-DelegatedRendererLayer::~DelegatedRendererLayer()
-{
-}
+DelegatedRendererLayer::~DelegatedRendererLayer() {}
 
-scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return DelegatedRendererLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return DelegatedRendererLayerImpl::Create(
+      tree_impl, m_layerId).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

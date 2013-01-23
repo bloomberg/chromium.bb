@@ -583,7 +583,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     root_->setIsDrawable(true);
 
     scoped_refptr<DelegatedRendererLayer> delegated_ =
-        DelegatedRendererLayer::create();
+        DelegatedRendererLayer::Create();
     delegated_->setBounds(gfx::Size(10, 10));
     delegated_->setAnchorPoint(gfx::PointF());
     delegated_->setIsDrawable(true);
@@ -704,7 +704,7 @@ class LayerTreeHostContextTestDontUseLostResources :
       DelegatedRendererLayerImpl* delegated_impl =
           static_cast<DelegatedRendererLayerImpl*>(
               host_impl->rootLayer()->children()[0]);
-      delegated_impl->setRenderPasses(pass_list);
+      delegated_impl->SetRenderPasses(pass_list);
       EXPECT_TRUE(pass_list.empty());
 
       color_video_frame_ = VideoFrame::CreateColorFrame(

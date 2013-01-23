@@ -11,16 +11,17 @@
 namespace cc {
 
 class CC_EXPORT DelegatedRendererLayer : public Layer {
-public:
-    static scoped_refptr<DelegatedRendererLayer> create();
+ public:
+  static scoped_refptr<DelegatedRendererLayer> Create();
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
 
-protected:
-    DelegatedRendererLayer();
+ protected:
+  DelegatedRendererLayer();
 
-private:
-    virtual ~DelegatedRendererLayer();
+ private:
+  virtual ~DelegatedRendererLayer();
 };
 
 }

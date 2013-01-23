@@ -12,190 +12,215 @@
 
 namespace cc {
 
-DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(LayerTreeImpl* treeImpl, int id)
-    : LayerImpl(treeImpl, id)
-{
+DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(
+    LayerTreeImpl* tree_impl, int id)
+    : LayerImpl(tree_impl, id) {
 }
 
-DelegatedRendererLayerImpl::~DelegatedRendererLayerImpl()
-{
-    clearRenderPasses();
+DelegatedRendererLayerImpl::~DelegatedRendererLayerImpl() {
+  ClearRenderPasses();
 }
 
-bool DelegatedRendererLayerImpl::hasDelegatedContent() const
-{
-    return !m_renderPassesInDrawOrder.empty();
+bool DelegatedRendererLayerImpl::hasDelegatedContent() const {
+  return !render_passes_in_draw_order_.empty();
 }
 
-bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const
-{
-    // The root RenderPass for the layer is merged with its target
-    // RenderPass in each frame. So we only have extra RenderPasses
-    // to merge when we have a non-root RenderPass present.
-    return m_renderPassesInDrawOrder.size() > 1;
+bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const {
+  // The root RenderPass for the layer is merged with its target
+  // RenderPass in each frame. So we only have extra RenderPasses
+  // to merge when we have a non-root RenderPass present.
+  return render_passes_in_draw_order_.size() > 1;
 }
 
-void DelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<RenderPass>& renderPassesInDrawOrder)
-{
-    gfx::RectF oldRootDamage;
-    if (!m_renderPassesInDrawOrder.empty())
-        oldRootDamage = m_renderPassesInDrawOrder.back()->damage_rect;
+void DelegatedRendererLayerImpl::SetRenderPasses(
+    ScopedPtrVector<RenderPass>& render_passes_in_draw_order) {
+  gfx::RectF old_root_damage;
+  if (!render_passes_in_draw_order_.empty())
+    old_root_damage = render_passes_in_draw_order_.back()->damage_rect;
 
-    clearRenderPasses();
+  ClearRenderPasses();
 
-    for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
-        m_renderPassesIndexById.insert(std::pair<RenderPass::Id, int>(renderPassesInDrawOrder[i]->id, i));
-        m_renderPassesInDrawOrder.push_back(renderPassesInDrawOrder.take(renderPassesInDrawOrder.begin() + i));
+  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
+    render_passes_index_by_id_.insert(
+        std::pair<RenderPass::Id, int>(render_passes_in_draw_order[i]->id, i));
+    scoped_ptr<RenderPass> passed_render_pass =
+        render_passes_in_draw_order.take(
+            render_passes_in_draw_order.begin() + i);
+    render_passes_in_draw_order_.push_back(passed_render_pass.Pass());
+  }
+  render_passes_in_draw_order.clear();
+
+  if (!render_passes_in_draw_order_.empty())
+    render_passes_in_draw_order_.back()->damage_rect.Union(old_root_damage);
+}
+
+void DelegatedRendererLayerImpl::ClearRenderPasses() {
+  // FIXME: Release the resources back to the nested compositor.
+  render_passes_index_by_id_.clear();
+  render_passes_in_draw_order_.clear();
+}
+
+void DelegatedRendererLayerImpl::didLoseOutputSurface() {
+  ClearRenderPasses();
+}
+
+static inline int IndexToId(int index) { return index + 1; }
+static inline int IdToIndex(int id) { return id - 1; }
+
+RenderPass::Id DelegatedRendererLayerImpl::firstContributingRenderPassId()
+    const {
+  return RenderPass::Id(id(), IndexToId(0));
+}
+
+RenderPass::Id DelegatedRendererLayerImpl::nextContributingRenderPassId(
+    RenderPass::Id previous) const {
+  return RenderPass::Id(previous.layer_id, previous.index + 1);
+}
+
+RenderPass::Id DelegatedRendererLayerImpl::ConvertDelegatedRenderPassId(
+    RenderPass::Id delegated_render_pass_id) const {
+  base::hash_map<RenderPass::Id, int>::const_iterator found =
+      render_passes_index_by_id_.find(delegated_render_pass_id);
+  DCHECK(found != render_passes_index_by_id_.end());
+  unsigned delegatedRenderPassIndex = found->second;
+  return RenderPass::Id(id(), IndexToId(delegatedRenderPassIndex));
+}
+
+void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
+    RenderPassSink* render_pass_sink) {
+  DCHECK(hasContributingDelegatedRenderPasses());
+
+  for (size_t i = 0; i < render_passes_in_draw_order_.size() - 1; ++i) {
+    RenderPass::Id output_render_pass_id =
+        ConvertDelegatedRenderPassId(render_passes_in_draw_order_[i]->id);
+
+    // Don't clash with the RenderPass we generate if we own a RenderSurface.
+    DCHECK(output_render_pass_id.index > 0);
+
+    render_pass_sink->appendRenderPass(
+        render_passes_in_draw_order_[i]->Copy(output_render_pass_id));
+  }
+}
+
+void DelegatedRendererLayerImpl::appendQuads(
+    QuadSink& quad_sink, AppendQuadsData& append_quads_data) {
+  if (render_passes_in_draw_order_.empty())
+    return;
+
+  RenderPass::Id target_render_pass_id = append_quads_data.renderPassId;
+
+  const RenderPass* root_delegated_render_pass =
+      render_passes_in_draw_order_.back();
+
+  DCHECK(root_delegated_render_pass->output_rect.origin().IsOrigin());
+  gfx::Size frame_size = root_delegated_render_pass->output_rect.size();
+
+  // If the index of the renderPassId is 0, then it is a renderPass generated
+  // for a layer in this compositor, not the delegated renderer. Then we want to
+  // merge our root renderPass with the target renderPass. Otherwise, it is some
+  // renderPass which we added from the delegated renderer.
+  bool should_merge_root_render_pass_with_target = !target_render_pass_id.index;
+  if (should_merge_root_render_pass_with_target) {
+    // Verify that the renderPass we are appending to is created our
+    // renderTarget.
+    DCHECK(target_render_pass_id.layer_id == renderTarget()->id());
+
+    AppendRenderPassQuads(
+        &quad_sink, &append_quads_data, root_delegated_render_pass, frame_size);
+  } else {
+    // Verify that the renderPass we are appending to was created by us.
+    DCHECK(target_render_pass_id.layer_id == id());
+
+    int render_pass_index = IdToIndex(target_render_pass_id.index);
+    const RenderPass* delegated_render_pass =
+        render_passes_in_draw_order_[render_pass_index];
+    AppendRenderPassQuads(
+        &quad_sink, &append_quads_data, delegated_render_pass, frame_size);
+  }
+}
+
+void DelegatedRendererLayerImpl::AppendRenderPassQuads(
+    QuadSink* quad_sink,
+    AppendQuadsData* append_quads_data,
+    const RenderPass* delegated_render_pass,
+    gfx::Size frame_size) const {
+
+  const SharedQuadState* delegated_shared_quad_state = NULL;
+  SharedQuadState* output_shared_quad_state = NULL;
+
+  for (size_t i = 0; i < delegated_render_pass->quad_list.size(); ++i) {
+    const DrawQuad* delegated_quad = delegated_render_pass->quad_list[i];
+
+    if (delegated_quad->shared_quad_state != delegated_shared_quad_state) {
+      delegated_shared_quad_state = delegated_quad->shared_quad_state;
+      output_shared_quad_state = quad_sink->useSharedQuadState(
+          delegated_shared_quad_state->Copy());
+
+      bool is_root_delegated_render_pass =
+          delegated_render_pass == render_passes_in_draw_order_.back();
+      if (is_root_delegated_render_pass) {
+        // Don't allow areas inside the bounds that are empty.
+        DCHECK(display_size_.IsEmpty() ||
+               gfx::Rect(display_size_).Contains(gfx::Rect(bounds())));
+        gfx::Size display_size =
+            display_size_.IsEmpty() ? bounds() : display_size_;
+
+        gfx::Transform delegated_frame_to_layer_space_transform;
+        delegated_frame_to_layer_space_transform.Scale(
+            static_cast<double>(display_size.width()) / frame_size.width(),
+            static_cast<double>(display_size.height()) / frame_size.height());
+
+        gfx::Transform delegated_frame_to_target_transform =
+            drawTransform() * delegated_frame_to_layer_space_transform;
+
+        output_shared_quad_state->content_to_target_transform.ConcatTransform(
+            delegated_frame_to_target_transform);
+
+        if (renderTarget() == this) {
+          DCHECK(!isClipped());
+          DCHECK(renderSurface());
+          output_shared_quad_state->clip_rect = MathUtil::mapClippedRect(
+              delegated_frame_to_target_transform,
+              output_shared_quad_state->clip_rect);
+        } else {
+          gfx::Rect clip_rect = drawableContentRect();
+          if (output_shared_quad_state->is_clipped) {
+            clip_rect.Intersect(MathUtil::mapClippedRect(
+                delegated_frame_to_target_transform,
+                output_shared_quad_state->clip_rect));
+          }
+          output_shared_quad_state->clip_rect = clip_rect;
+          output_shared_quad_state->is_clipped = true;
+        }
+
+        output_shared_quad_state->opacity *= drawOpacity();
+      }
     }
-    renderPassesInDrawOrder.clear();
+    DCHECK(output_shared_quad_state);
 
-    if (!m_renderPassesInDrawOrder.empty())
-        m_renderPassesInDrawOrder.back()->damage_rect.Union(oldRootDamage);
-}
-
-void DelegatedRendererLayerImpl::clearRenderPasses()
-{
-    // FIXME: Release the resources back to the nested compositor.
-    m_renderPassesIndexById.clear();
-    m_renderPassesInDrawOrder.clear();
-}
-
-void DelegatedRendererLayerImpl::didLoseOutputSurface()
-{
-    clearRenderPasses();
-}
-
-static inline int indexToId(int index) { return index + 1; }
-static inline int idToIndex(int id) { return id - 1; }
-
-RenderPass::Id DelegatedRendererLayerImpl::firstContributingRenderPassId() const
-{
-    return RenderPass::Id(id(), indexToId(0));
-}
-
-RenderPass::Id DelegatedRendererLayerImpl::nextContributingRenderPassId(RenderPass::Id previous) const
-{
-    return RenderPass::Id(previous.layer_id, previous.index + 1);
-}
-
-RenderPass::Id DelegatedRendererLayerImpl::convertDelegatedRenderPassId(RenderPass::Id delegatedRenderPassId) const
-{
-    base::hash_map<RenderPass::Id, int>::const_iterator it = m_renderPassesIndexById.find(delegatedRenderPassId);
-    DCHECK(it != m_renderPassesIndexById.end());
-    unsigned delegatedRenderPassIndex = it->second;
-    return RenderPass::Id(id(), indexToId(delegatedRenderPassIndex));
-}
-
-void DelegatedRendererLayerImpl::appendContributingRenderPasses(RenderPassSink& renderPassSink)
-{
-    DCHECK(hasContributingDelegatedRenderPasses());
-
-    for (size_t i = 0; i < m_renderPassesInDrawOrder.size() - 1; ++i) {
-        RenderPass::Id outputRenderPassId = convertDelegatedRenderPassId(m_renderPassesInDrawOrder[i]->id);
-
-        // Don't clash with the RenderPass we generate if we own a RenderSurfaceImpl.
-        DCHECK(outputRenderPassId.index > 0);
-
-        renderPassSink.appendRenderPass(m_renderPassesInDrawOrder[i]->Copy(outputRenderPassId));
-    }
-}
-
-void DelegatedRendererLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
-{
-    if (m_renderPassesInDrawOrder.empty())
-        return;
-
-    RenderPass::Id targetRenderPassId = appendQuadsData.renderPassId;
-
-    const RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.back();
-
-    DCHECK(rootDelegatedRenderPass->output_rect.origin().IsOrigin());
-    gfx::Size frameSize = rootDelegatedRenderPass->output_rect.size();
-
-    // If the index of the renderPassId is 0, then it is a renderPass generated for a layer
-    // in this compositor, not the delegated renderer. Then we want to merge our root renderPass with
-    // the target renderPass. Otherwise, it is some renderPass which we added from the delegated
-    // renderer.
-    bool shouldMergeRootRenderPassWithTarget = !targetRenderPassId.index;
-    if (shouldMergeRootRenderPassWithTarget) {
-        // Verify that the renderPass we are appending to is created our renderTarget.
-        DCHECK(targetRenderPassId.layer_id == renderTarget()->id());
-
-        appendRenderPassQuads(quadSink, appendQuadsData, rootDelegatedRenderPass, frameSize);
+    scoped_ptr<DrawQuad> output_quad;
+    if (delegated_quad->material != DrawQuad::RENDER_PASS) {
+      output_quad = delegated_quad->Copy(output_shared_quad_state);
     } else {
-        // Verify that the renderPass we are appending to was created by us.
-        DCHECK(targetRenderPassId.layer_id == id());
+      RenderPass::Id delegated_contributing_render_pass_id =
+          RenderPassDrawQuad::MaterialCast(delegated_quad)->render_pass_id;
+      RenderPass::Id output_contributing_render_pass_id =
+          ConvertDelegatedRenderPassId(delegated_contributing_render_pass_id);
+      DCHECK(output_contributing_render_pass_id !=
+             append_quads_data->renderPassId);
 
-        int renderPassIndex = idToIndex(targetRenderPassId.index);
-        const RenderPass* delegatedRenderPass = m_renderPassesInDrawOrder[renderPassIndex];
-        appendRenderPassQuads(quadSink, appendQuadsData, delegatedRenderPass, frameSize);
+      output_quad = RenderPassDrawQuad::MaterialCast(delegated_quad)->Copy(
+          output_shared_quad_state,
+          output_contributing_render_pass_id).PassAs<DrawQuad>();
     }
+    DCHECK(output_quad.get());
+
+    quad_sink->append(output_quad.Pass(), *append_quads_data);
+  }
 }
 
-void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, const RenderPass* delegatedRenderPass, gfx::Size frameSize) const
-{
-    const SharedQuadState* currentSharedQuadState = 0;
-    SharedQuadState* copiedSharedQuadState = 0;
-    for (size_t i = 0; i < delegatedRenderPass->quad_list.size(); ++i) {
-        const DrawQuad* quad = delegatedRenderPass->quad_list[i];
-
-        if (quad->shared_quad_state != currentSharedQuadState) {
-            currentSharedQuadState = quad->shared_quad_state;
-            copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->Copy());
-            bool isRootDelegatedRenderPass = delegatedRenderPass == m_renderPassesInDrawOrder.back();
-            if (isRootDelegatedRenderPass) {
-              // Don't allow areas inside the bounds that are empty.
-              DCHECK(m_displaySize.IsEmpty() || gfx::Rect(m_displaySize).Contains(gfx::Rect(bounds())));
-              gfx::Size displaySize = m_displaySize.IsEmpty() ? bounds() : m_displaySize;
-
-              gfx::Transform delegatedFrameToLayerSpaceTransform;
-              delegatedFrameToLayerSpaceTransform.Scale(
-                  static_cast<double>(displaySize.width()) / frameSize.width(),
-                  static_cast<double>(displaySize.height()) / frameSize.height());
-
-              copiedSharedQuadState->content_to_target_transform = drawTransform() * delegatedFrameToLayerSpaceTransform * copiedSharedQuadState->content_to_target_transform;
-
-              if (renderTarget() == this) {
-                  DCHECK(!isClipped());
-                  DCHECK(renderSurface());
-                  copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(
-                      drawTransform() * delegatedFrameToLayerSpaceTransform,
-                      copiedSharedQuadState->clip_rect);
-              } else {
-                  gfx::Rect clip_rect = drawableContentRect();
-                  if (copiedSharedQuadState->is_clipped) {
-                      clip_rect.Intersect(MathUtil::mapClippedRect(
-                          drawTransform() * delegatedFrameToLayerSpaceTransform,
-                          copiedSharedQuadState->clip_rect));
-                  }
-                  copiedSharedQuadState->clip_rect = clip_rect;
-                  copiedSharedQuadState->is_clipped = true;
-              }
-
-              copiedSharedQuadState->opacity *= drawOpacity();
-            }
-        }
-        DCHECK(copiedSharedQuadState);
-
-        scoped_ptr<DrawQuad> copyQuad;
-        if (quad->material != DrawQuad::RENDER_PASS)
-            copyQuad = quad->Copy(copiedSharedQuadState);
-        else {
-            RenderPass::Id contributingDelegatedRenderPassId = RenderPassDrawQuad::MaterialCast(quad)->render_pass_id;
-            RenderPass::Id contributingRenderPassId = convertDelegatedRenderPassId(contributingDelegatedRenderPassId);
-            DCHECK(contributingRenderPassId != appendQuadsData.renderPassId);
-
-            copyQuad = RenderPassDrawQuad::MaterialCast(quad)->Copy(copiedSharedQuadState, contributingRenderPassId).PassAs<DrawQuad>();
-        }
-        DCHECK(copyQuad.get());
-
-        quadSink.append(copyQuad.Pass(), appendQuadsData);
-    }
-}
-
-const char* DelegatedRendererLayerImpl::layerTypeAsString() const
-{
-    return "DelegatedRendererLayer";
+const char* DelegatedRendererLayerImpl::layerTypeAsString() const {
+  return "DelegatedRendererLayer";
 }
 
 }  // namespace cc

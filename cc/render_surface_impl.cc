@@ -161,7 +161,7 @@ RenderPass::Id RenderSurfaceImpl::renderPassId()
 void RenderSurfaceImpl::appendRenderPasses(RenderPassSink& passSink)
 {
     for (size_t i = 0; i < m_contributingDelegatedRenderPassLayerList.size(); ++i)
-        m_contributingDelegatedRenderPassLayerList[i]->appendContributingRenderPasses(passSink);
+        m_contributingDelegatedRenderPassLayerList[i]->AppendContributingRenderPasses(&passSink);
 
     scoped_ptr<RenderPass> pass = RenderPass::Create();
     pass->SetNew(renderPassId(), m_contentRect, m_damageTracker->currentDamageRect(), m_screenSpaceTransform);
