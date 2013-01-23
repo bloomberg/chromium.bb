@@ -600,7 +600,7 @@ cr.define('ntp', function() {
 
       // If this is the first tile being added, make it focusable after add.
       if (this.focusableElements_.length == 1)
-        this.updateFocusableElement_();
+        this.updateFocusableElement();
       this.fireAddedEvent(wrapperDiv, index, animate);
     },
 
@@ -629,10 +629,12 @@ cr.define('ntp', function() {
     removeTile: function(tile, opt_animate, opt_dontNotify) {
       if (opt_animate)
         this.classList.add('animating-tile-page');
+
       var index = tile.index;
       tile.parentNode.removeChild(tile);
       this.calculateLayoutValues_();
       this.cleanupDrag();
+      this.updateFocusableElement();
 
       if (!opt_dontNotify)
         this.fireRemovedEvent(tile, index, !!opt_animate);
@@ -667,7 +669,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardSelection_: function(e) {
-      this.updateFocusableElement_();
+      this.updateFocusableElement();
 
       // When we are selected, we re-calculate the layout values. (See comment
       // in doDrop.)
@@ -772,9 +774,9 @@ cr.define('ntp', function() {
      * Ensure 0 <= this.focusElementIndex_ < this.focusableElements_.length,
      * make the focusable element at this.focusElementIndex_ (if any) eligible
      * for tab focus, and the previously-focused element not eligible.
-     * @private
+     * @protected
      */
-    updateFocusableElement_: function() {
+    updateFocusableElement: function() {
       if (this.focusableElements_.length == 0 || !this.selected) {
         this.focusElementIndex_ = -1;
         return;
@@ -798,7 +800,7 @@ cr.define('ntp', function() {
      * @private
      */
     updateFocusElement_: function() {
-      this.updateFocusableElement_();
+      this.updateFocusableElement();
       if (this.focusElementIndex_ >= 0)
         this.focusableElements_[this.focusElementIndex_].focus();
     },

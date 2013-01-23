@@ -367,6 +367,7 @@ cr.define('ntp', function() {
       }
 
       this.updateTiles_();
+      this.updateFocusableElement();
       logEvent('mostVisited.layout: ' + (Date.now() - startTime));
     },
 
