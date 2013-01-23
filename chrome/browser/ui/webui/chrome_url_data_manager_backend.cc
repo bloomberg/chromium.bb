@@ -17,10 +17,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -30,7 +28,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -520,49 +517,6 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
 
 namespace {
 
-#if defined(DEBUG_DEVTOOLS)
-bool IsSupportedDevToolsURL(const GURL& url, FilePath* path) {
-  if (!url.SchemeIs(chrome::kChromeDevToolsScheme))
-    return false;
-
-  if (!url.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Remove Query and Ref from URL.
-  GURL stripped_url;
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  stripped_url = url.ReplaceComponents(replacements);
-
-  std::string source_name;
-  std::string relative_path;
-  URLToRequest(stripped_url, &source_name, &relative_path);
-
-  if (source_name != chrome::kChromeUIDevToolsHost)
-    return false;
-
-  // Check that |relative_path| is not an absolute path (otherwise
-  // AppendASCII() will DCHECK).  The awkward use of StringType is because on
-  // some systems FilePath expects a std::string, but on others a std::wstring.
-  FilePath p(FilePath::StringType(relative_path.begin(), relative_path.end()));
-  if (p.IsAbsolute())
-    return false;
-
-  FilePath inspector_dir;
-  if (!PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir))
-    return false;
-
-  if (inspector_dir.empty())
-    return false;
-
-  *path = inspector_dir.AppendASCII(relative_path);
-  return true;
-}
-#endif  // defined(DEBUG_DEVTOOLS)
-
 class DevToolsJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
@@ -602,11 +556,6 @@ DevToolsJobFactory::~DevToolsJobFactory() {}
 net::URLRequestJob*
 DevToolsJobFactory::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-#if defined(DEBUG_DEVTOOLS)
-  FilePath path;
-  if (IsSupportedDevToolsURL(request->url(), &path))
-    return new net::URLRequestFileJob(request, network_delegate, path);
-#endif
   return new URLRequestChromeJob(request, network_delegate, backend_,
                                  is_incognito_);
 }
