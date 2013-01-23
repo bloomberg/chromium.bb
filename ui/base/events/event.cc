@@ -174,13 +174,13 @@ Event::Event(const base::NativeEvent& native_event,
                               delta.InMicroseconds(), 0, 1000000, 100);
   std::string name_for_event =
       base::StringPrintf("Event.Latency.Browser.%s", name_.c_str());
-  base::Histogram* counter_for_type =
+  base::HistogramBase* counter_for_type =
       base::Histogram::FactoryTimeGet(
           name_for_event,
           base::TimeDelta::FromMilliseconds(0),
           base::TimeDelta::FromMilliseconds(1000000),
           100,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   counter_for_type->AddTime(delta);
   InitWithNativeEvent(native_event);
 }

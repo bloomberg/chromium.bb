@@ -209,11 +209,11 @@ static const MagicNumber kSniffableTags[] = {
   MAGIC_HTML_TAG("p")  // Mozilla
 };
 
-static base::Histogram* UMASnifferHistogramGet(const char* name,
-                                               int array_size) {
-  base::Histogram* counter =
+static base::HistogramBase* UMASnifferHistogramGet(const char* name,
+                                                   int array_size) {
+  base::HistogramBase* counter =
       base::LinearHistogram::FactoryGet(name, 1, array_size - 1, array_size,
-      base::Histogram::kUmaTargetedHistogramFlag);
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   return counter;
 }
 
@@ -266,7 +266,7 @@ static bool MatchMagicNumber(const char* content, size_t size,
 
 static bool CheckForMagicNumbers(const char* content, size_t size,
                                  const MagicNumber* magic, size_t magic_len,
-                                 base::Histogram* counter,
+                                 base::HistogramBase* counter,
                                  std::string* result) {
   for (size_t i = 0; i < magic_len; ++i) {
     if (MatchMagicNumber(content, size, &(magic[i]), result)) {
@@ -308,7 +308,7 @@ static bool SniffForHTML(const char* content,
     if (!IsAsciiWhitespace(*pos))
       break;
   }
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kSniffableTags2",
                                      arraysize(kSniffableTags));
@@ -327,7 +327,7 @@ static bool SniffForMagicNumbers(const char* content,
   *have_enough_content &= TruncateSize(kBytesRequiredForMagic, &size);
 
   // Check our big table of Magic Numbers
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kMagicNumbers2",
                                      arraysize(kMagicNumbers));
@@ -369,7 +369,7 @@ static bool SniffXML(const char* content,
   // We want to skip XML processing instructions (of the form "<?xml ...")
   // and stop at the first "plain" tag, then make a decision on the mime-type
   // based on the name (or possibly attributes) of that tag.
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kMagicXML2",
                                      arraysize(kMagicXML));
@@ -454,7 +454,7 @@ static bool SniffBinary(const char* content,
   const bool is_truncated = TruncateSize(kMaxBytesToSniff, &size);
 
   // First, we look for a BOM.
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kByteOrderMark2",
                                      arraysize(kByteOrderMark));
@@ -497,7 +497,7 @@ static bool IsUnknownMimeType(const std::string& mime_type) {
     // Firefox rejects a mime type if it is exactly */*
     "*/*",
   };
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kUnknownMimeTypes2",
                                      arraysize(kUnknownMimeTypes) + 1);
@@ -524,7 +524,7 @@ static bool SniffCRX(const char* content,
                      const std::string& type_hint,
                      bool* have_enough_content,
                      std::string* result) {
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kSniffCRX", 3);
 
@@ -563,7 +563,7 @@ static bool SniffCRX(const char* content,
 }
 
 bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
-  static base::Histogram* should_sniff_counter(NULL);
+  static base::HistogramBase* should_sniff_counter(NULL);
   if (!should_sniff_counter)
     should_sniff_counter =
         UMASnifferHistogramGet("mime_sniffer.ShouldSniffMimeType2", 3);
@@ -590,7 +590,7 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
     "text/xml",
     "application/xml",
   };
-  static base::Histogram* counter(NULL);
+  static base::HistogramBase* counter(NULL);
   if (!counter)
     counter = UMASnifferHistogramGet("mime_sniffer.kSniffableTypes2",
                                      arraysize(kSniffableTypes) + 1);

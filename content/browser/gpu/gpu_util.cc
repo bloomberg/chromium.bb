@@ -244,17 +244,17 @@ void UpdateStats(const GpuBlacklist* blacklist,
       value = kGpuFeatureBlacklisted;
     else if (kGpuFeatureUserFlags[i])
       value = kGpuFeatureDisabled;
-    base::Histogram* histogram_pointer = base::LinearHistogram::FactoryGet(
+    base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
         kGpuBlacklistFeatureHistogramNames[i],
         1, kGpuFeatureNumStatus, kGpuFeatureNumStatus + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
+        base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram_pointer->Add(value);
 #if defined(OS_WIN)
     histogram_pointer = base::LinearHistogram::FactoryGet(
         kGpuBlacklistFeatureHistogramNamesWin[i],
         1, kNumWinSubVersions * kGpuFeatureNumStatus,
         kNumWinSubVersions * kGpuFeatureNumStatus + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
+        base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram_pointer->Add(GetGpuBlacklistHistogramValueWin(value));
 #endif
   }

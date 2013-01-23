@@ -524,7 +524,7 @@ class ChromiumEnv : public Env, public UMALogger {
       return Status::IOError(fname, strerror(errno));
     } else {
       if (!sync_parent(fname)) {
-        fclose(f); 
+        fclose(f);
         return Status::IOError(fname, strerror(errno));
       }
       *result = new ChromiumLogger(f);
@@ -572,8 +572,8 @@ class ChromiumEnv : public Env, public UMALogger {
   typedef std::deque<BGItem> BGQueue;
   BGQueue queue_;
 
-  base::Histogram* io_error_histogram_;
-  base::Histogram* random_access_file_histogram_;
+  base::HistogramBase* io_error_histogram_;
+  base::HistogramBase* random_access_file_histogram_;
 };
 
 ChromiumEnv::ChromiumEnv()

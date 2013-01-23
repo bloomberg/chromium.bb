@@ -109,12 +109,12 @@ void OnBrowserStartupComplete() {
         i != time_hash->end();
         ++i) {
       const std::string histogram_name = i->first;
-      base::Histogram* counter = base::Histogram::FactoryTimeGet(
+      base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
           histogram_name,
           kStartupTimeMin,
           kStartupTimeMax,
           kStartupTimeBuckets,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
       counter->AddTime(i->second);
     }
   }

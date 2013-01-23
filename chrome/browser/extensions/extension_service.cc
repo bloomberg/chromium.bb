@@ -1000,14 +1000,14 @@ void ExtensionService::GrantPermissions(const Extension* extension,
 // static
 void ExtensionService::RecordPermissionMessagesHistogram(
     const Extension* e, const char* histogram) {
-  // Since this is called from multiple sources, and since the Histogram macros
-  // use statics, we need to manually lookup the Histogram ourselves.
-  base::Histogram* counter = base::LinearHistogram::FactoryGet(
+  // Since this is called from multiple sources, and since the histogram macros
+  // use statics, we need to manually lookup the histogram ourselves.
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
       histogram,
       1,
       PermissionMessage::kEnumBoundary,
       PermissionMessage::kEnumBoundary + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
+      base::HistogramBase::kUmaTargetedHistogramFlag);
 
   PermissionMessages permissions = e->GetPermissionMessages();
   if (permissions.empty()) {

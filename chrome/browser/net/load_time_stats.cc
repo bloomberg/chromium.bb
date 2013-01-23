@@ -317,7 +317,7 @@ LoadTimeStats::LoadTimeStats() {
         histograms_[status][histogram_type].push_back(
             base::LinearHistogram::FactoryGet(
                 histogram_name,
-                0, 101, 51, base::Histogram::kUmaTargetedHistogramFlag));
+                0, 101, 51, base::HistogramBase::kUmaTargetedHistogramFlag));
       }
       DCHECK_EQ(histograms_[status][histogram_type].size(),
                 arraysize(kStatsCollectionTimesMs));

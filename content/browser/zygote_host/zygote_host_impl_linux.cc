@@ -311,12 +311,13 @@ pid_t ZygoteHostImpl::ForkRequest(
       // Here we're using whatever name we got from the other side.
       // But since it's likely that the same one will be used repeatedly
       // (even though it's not guaranteed), we cache it here.
-      static base::Histogram* uma_histogram;
+      static base::HistogramBase* uma_histogram;
       if (!uma_histogram || uma_histogram->histogram_name() != uma_name) {
         uma_histogram = base::LinearHistogram::FactoryGet(
             uma_name, 1,
             uma_boundary_value,
-            uma_boundary_value + 1, base::Histogram::kUmaTargetedHistogramFlag);
+            uma_boundary_value + 1,
+            base::HistogramBase::kUmaTargetedHistogramFlag);
       }
       uma_histogram->Add(uma_sample);
     }

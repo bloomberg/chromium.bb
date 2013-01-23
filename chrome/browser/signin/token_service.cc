@@ -307,13 +307,13 @@ void TokenService::FireTokenRequestFailedNotification(
   // the metric name can be "TokenService.TokenRequestFailed." + one of four
   // different values, we need to create the histogram ourselves and add the
   // sample.
-  base::Histogram* histogram =
+  base::HistogramBase* histogram =
       base::LinearHistogram::FactoryGet(
           metric,
           1,
           GoogleServiceAuthError::NUM_STATES,
           GoogleServiceAuthError::NUM_STATES + 1,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(error.state());
 #endif
 

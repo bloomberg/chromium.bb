@@ -188,7 +188,7 @@ void* CreateHistogram(
   } else {
     histogram_name = std::string(name);
   }
-  base::Histogram* histogram = base::Histogram::FactoryGet(
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
       histogram_name, min, max, buckets,
       base::Histogram::kUmaTargetedHistogramFlag);
   return histogram;

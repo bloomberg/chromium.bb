@@ -20,7 +20,7 @@
 #include "net/base/network_delegate.h"
 
 namespace base {
-class Histogram;
+class HistogramBase;
 }
 
 namespace net {
@@ -111,7 +111,8 @@ class LoadTimeStats {
 
   TabLoadStatsMap tab_load_stats_;
   RequestStatsMap request_stats_;
-  std::vector<base::Histogram*> histograms_[REQUEST_STATUS_MAX][HISTOGRAM_MAX];
+  std::vector<base::HistogramBase*>
+      histograms_[REQUEST_STATUS_MAX][HISTOGRAM_MAX];
   base::hash_set<const net::URLRequestContext*> main_request_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadTimeStats);

@@ -1118,7 +1118,7 @@ void ResourcePrefetchPredictor::ReportAccuracyStats(
   { \
     std::string name = "ResourcePrefetchPredictor." + histogram_type + suffix; \
     std::string g_name = "ResourcePrefetchPredictor." + std::string(suffix); \
-    base::Histogram* histogram = base::LinearHistogram::FactoryGet( \
+    base::HistogramBase* histogram = base::LinearHistogram::FactoryGet( \
         name, 1, 101, 102, base::Histogram::kUmaTargetedHistogramFlag); \
     histogram->Add(value); \
     UMA_HISTOGRAM_PERCENTAGE(g_name, value); \
@@ -1202,7 +1202,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
 #define RPP_PREDICTED_HISTOGRAM_COUNTS(name, value) \
   { \
     std::string full_name = prefix + name + suffix; \
-    base::Histogram* histogram = base::Histogram::FactoryGet( \
+    base::HistogramBase* histogram = base::Histogram::FactoryGet( \
         full_name, 1, 1000000, 50, \
         base::Histogram::kUmaTargetedHistogramFlag); \
     histogram->Add(value); \
@@ -1211,7 +1211,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
 #define RPP_PREDICTED_HISTOGRAM_PERCENTAGE(name, value) \
   { \
     std::string full_name = prefix + name + suffix; \
-    base::Histogram* histogram = base::LinearHistogram::FactoryGet( \
+    base::HistogramBase* histogram = base::LinearHistogram::FactoryGet( \
         full_name, 1, 101, 102, base::Histogram::kUmaTargetedHistogramFlag); \
     histogram->Add(value); \
   }

@@ -32,7 +32,14 @@ class StatisticsRecorderTest : public testing::Test {
     statistics_recorder_ = NULL;
   }
 
-  void DeleteHistogram(Histogram* histogram) {
+  Histogram* CreateHistogram(const std::string& name,
+                             HistogramBase::Sample min,
+                             HistogramBase::Sample max,
+                             size_t bucket_count) {
+    return new Histogram(name, min, max, bucket_count, NULL);
+  }
+
+  void DeleteHistogram(HistogramBase* histogram) {
     delete histogram;
   }
 
@@ -47,13 +54,16 @@ TEST_F(StatisticsRecorderTest, NotInitialized) {
   StatisticsRecorder::Histograms registered_histograms;
   std::vector<const BucketRanges*> registered_ranges;
 
-  // We can still create histograms, but it's not registered.
-  // TODO(kaiwang): Do not depend on Histogram FactoryGet implementation.
-  Histogram* histogram(
-      Histogram::FactoryGet("StatisticsRecorderTest_NotInitialized",
-                            1, 1000, 10, Histogram::kNoFlags));
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(0u, registered_histograms.size());
+
+  Histogram* histogram = CreateHistogram("TestHistogram", 1, 1000, 10);
+
+  // When StatisticsRecorder is not initialized, register is a noop.
+  EXPECT_EQ(histogram,
+            StatisticsRecorder::RegisterOrDeleteDuplicate(histogram));
+  // Manually delete histogram that was not registered.
+  DeleteHistogram(histogram);
 
   // RegisterOrDeleteDuplicateRanges is a no-op.
   BucketRanges* ranges = new BucketRanges(3);;
@@ -62,8 +72,6 @@ TEST_F(StatisticsRecorderTest, NotInitialized) {
             StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges));
   StatisticsRecorder::GetBucketRanges(&registered_ranges);
   EXPECT_EQ(0u, registered_ranges.size());
-
-  DeleteHistogram(histogram);
 }
 
 TEST_F(StatisticsRecorderTest, RegisterBucketRanges) {
@@ -106,13 +114,8 @@ TEST_F(StatisticsRecorderTest, RegisterBucketRanges) {
 
 TEST_F(StatisticsRecorderTest, RegisterHistogram) {
   // Create a Histogram that was not registered.
-  // TODO(kaiwang): Do not depend on Histogram FactoryGet implementation.
-  UninitializeStatisticsRecorder();
-  Histogram* histogram = Histogram::FactoryGet(
-      "TestHistogram", 1, 1000, 10, Histogram::kNoFlags);
+  Histogram* histogram = CreateHistogram("TestHistogram", 1, 1000, 10);
 
-  // Clean StatisticsRecorder.
-  InitializeStatisticsRecorder();
   StatisticsRecorder::Histograms registered_histograms;
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(0u, registered_histograms.size());
@@ -129,13 +132,15 @@ TEST_F(StatisticsRecorderTest, RegisterHistogram) {
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(1u, registered_histograms.size());
+
+  DeleteHistogram(histogram);
 }
 
 TEST_F(StatisticsRecorderTest, FindHistogram) {
-  Histogram* histogram1 = Histogram::FactoryGet(
-      "TestHistogram1", 1, 1000, 10, Histogram::kNoFlags);
-  Histogram* histogram2 = Histogram::FactoryGet(
-      "TestHistogram2", 1, 1000, 10, Histogram::kNoFlags);
+  HistogramBase* histogram1 = Histogram::FactoryGet(
+      "TestHistogram1", 1, 1000, 10, HistogramBase::kNoFlags);
+  HistogramBase* histogram2 = Histogram::FactoryGet(
+      "TestHistogram2", 1, 1000, 10, HistogramBase::kNoFlags);
 
   EXPECT_EQ(histogram1, StatisticsRecorder::FindHistogram("TestHistogram1"));
   EXPECT_EQ(histogram2, StatisticsRecorder::FindHistogram("TestHistogram2"));
@@ -166,16 +171,16 @@ TEST_F(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   StatisticsRecorder::GetHistograms(&registered_histograms);
   ASSERT_EQ(0u, registered_histograms.size());
 
-  // Create a Histogram.
-  Histogram* histogram = Histogram::FactoryGet(
-      "TestHistogram", 1, 1000, 10, Histogram::kNoFlags);
+  // Create a histogram.
+  HistogramBase* histogram = Histogram::FactoryGet(
+      "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(1u, registered_histograms.size());
 
   // Get an existing histogram.
-  Histogram* histogram2 = Histogram::FactoryGet(
-      "TestHistogram", 1, 1000, 10, Histogram::kNoFlags);
+  HistogramBase* histogram2 = Histogram::FactoryGet(
+      "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(1u, registered_histograms.size());
@@ -183,14 +188,14 @@ TEST_F(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
 
   // Create a LinearHistogram.
   histogram = LinearHistogram::FactoryGet(
-      "TestLinearHistogram", 1, 1000, 10, Histogram::kNoFlags);
+      "TestLinearHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(2u, registered_histograms.size());
 
   // Create a BooleanHistogram.
   histogram = BooleanHistogram::FactoryGet(
-      "TestBooleanHistogram", Histogram::kNoFlags);
+      "TestBooleanHistogram", HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(3u, registered_histograms.size());
@@ -200,7 +205,7 @@ TEST_F(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   custom_ranges.push_back(1);
   custom_ranges.push_back(5);
   histogram = CustomHistogram::FactoryGet(
-      "TestCustomHistogram", custom_ranges, Histogram::kNoFlags);
+      "TestCustomHistogram", custom_ranges, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(4u, registered_histograms.size());
@@ -209,8 +214,8 @@ TEST_F(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
 TEST_F(StatisticsRecorderTest, RegisterHistogramWithMacros) {
   StatisticsRecorder::Histograms registered_histograms;
 
-  Histogram* histogram = Histogram::FactoryGet(
-      "TestHistogramCounts", 1, 1000000, 50, Histogram::kNoFlags);
+  HistogramBase* histogram = Histogram::FactoryGet(
+      "TestHistogramCounts", 1, 1000000, 50, HistogramBase::kNoFlags);
 
   // The histogram we got from macro is the same as from FactoryGet.
   HISTOGRAM_COUNTS("TestHistogramCounts", 30);
@@ -239,18 +244,21 @@ TEST_F(StatisticsRecorderTest, RegisterHistogramWithMacros) {
 }
 
 TEST_F(StatisticsRecorderTest, BucketRangesSharing) {
-  Histogram* histogram1(Histogram::FactoryGet(
-      "Histogram", 1, 64, 8, Histogram::kNoFlags));
-  Histogram* histogram2(Histogram::FactoryGet(
-      "Histogram2", 1, 64, 8, Histogram::kNoFlags));
-  Histogram* histogram3(Histogram::FactoryGet(
-      "Histogram3", 1, 64, 16, Histogram::kNoFlags));
+  std::vector<const BucketRanges*> ranges;
+  StatisticsRecorder::GetBucketRanges(&ranges);
+  EXPECT_EQ(0u, ranges.size());
 
-  const BucketRanges* bucket_ranges1 = histogram1->bucket_ranges();
-  const BucketRanges* bucket_ranges2 = histogram2->bucket_ranges();
-  const BucketRanges* bucket_ranges3 = histogram3->bucket_ranges();
-  EXPECT_EQ(bucket_ranges1, bucket_ranges2);
-  EXPECT_FALSE(bucket_ranges1->Equals(bucket_ranges3));
+  Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags);
+  Histogram::FactoryGet("Histogram2", 1, 64, 8, HistogramBase::kNoFlags);
+
+  StatisticsRecorder::GetBucketRanges(&ranges);
+  EXPECT_EQ(1u, ranges.size());
+
+  Histogram::FactoryGet("Histogram3", 1, 64, 16, HistogramBase::kNoFlags);
+
+  ranges.clear();
+  StatisticsRecorder::GetBucketRanges(&ranges);
+  EXPECT_EQ(2u, ranges.size());
 }
 
 }  // namespace base

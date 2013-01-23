@@ -81,7 +81,7 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 
  private:
   base::TimeTicks begin_process_message_;
-  base::Histogram* const process_times_;
+  base::HistogramBase* const process_times_;
   DISALLOW_COPY_AND_ASSIGN(RendererMessageLoopObserver);
 };
 

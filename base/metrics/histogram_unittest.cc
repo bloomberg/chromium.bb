@@ -49,20 +49,20 @@ class HistogramTest : public testing::Test {
 // Check for basic syntax and use.
 TEST_F(HistogramTest, BasicTest) {
   // Try basic construction
-  Histogram* histogram(Histogram::FactoryGet(
-      "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags));
-  EXPECT_NE(reinterpret_cast<Histogram*>(NULL), histogram);
+  HistogramBase* histogram = Histogram::FactoryGet(
+      "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
+  EXPECT_TRUE(histogram);
 
-  Histogram* linear_histogram(LinearHistogram::FactoryGet(
-      "TestLinearHistogram", 1, 1000, 10, HistogramBase::kNoFlags));
-  EXPECT_NE(reinterpret_cast<Histogram*>(NULL), linear_histogram);
+  HistogramBase* linear_histogram = LinearHistogram::FactoryGet(
+      "TestLinearHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
+  EXPECT_TRUE(linear_histogram);
 
   vector<int> custom_ranges;
   custom_ranges.push_back(1);
   custom_ranges.push_back(5);
-  Histogram* custom_histogram(CustomHistogram::FactoryGet(
-      "TestCustomHistogram", custom_ranges, HistogramBase::kNoFlags));
-  EXPECT_NE(reinterpret_cast<Histogram*>(NULL), custom_histogram);
+  HistogramBase* custom_histogram = CustomHistogram::FactoryGet(
+      "TestCustomHistogram", custom_ranges, HistogramBase::kNoFlags);
+  EXPECT_TRUE(custom_histogram);
 
   // Use standard macros (but with fixed samples)
   HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
@@ -79,11 +79,12 @@ TEST_F(HistogramTest, BasicTest) {
 TEST_F(HistogramTest, NameMatchTest) {
   HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
   HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
-  Histogram* histogram(LinearHistogram::FactoryGet(
-      "DuplicatedHistogram", 1, 101, 102, HistogramBase::kNoFlags));
-  scoped_ptr<SampleVector> samples = histogram->SnapshotSampleVector();
+  HistogramBase* histogram = LinearHistogram::FactoryGet(
+      "DuplicatedHistogram", 1, 101, 102, HistogramBase::kNoFlags);
+
+  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
   EXPECT_EQ(2, samples->TotalCount());
-  EXPECT_EQ(2, samples->GetCountAtIndex(10));
+  EXPECT_EQ(2, samples->GetCount(10));
 }
 
 TEST_F(HistogramTest, ExponentialRangesTest) {
@@ -99,8 +100,8 @@ TEST_F(HistogramTest, ExponentialRangesTest) {
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges.range(8));
 
   // Check the corresponding Histogram will use the correct ranges.
-  Histogram* histogram(Histogram::FactoryGet(
-      "Histogram", 1, 64, 8, HistogramBase::kNoFlags));
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
   EXPECT_TRUE(ranges.Equals(histogram->bucket_ranges()));
 
   // When bucket count is limited, exponential ranges will partially look like
@@ -126,8 +127,8 @@ TEST_F(HistogramTest, ExponentialRangesTest) {
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges2.range(15));
 
   // Check the corresponding Histogram will use the correct ranges.
-  Histogram* histogram2(Histogram::FactoryGet(
-      "Histogram2", 1, 32, 15, HistogramBase::kNoFlags));
+  Histogram* histogram2 = static_cast<Histogram*>(
+      Histogram::FactoryGet("Histogram2", 1, 32, 15, HistogramBase::kNoFlags));
   EXPECT_TRUE(ranges2.Equals(histogram2->bucket_ranges()));
 }
 
@@ -138,8 +139,9 @@ TEST_F(HistogramTest, LinearRangesTest) {
   for (int i = 0; i < 8; i++)
     EXPECT_EQ(i, ranges.range(i));
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges.range(8));
+
   // The correspoding LinearHistogram should use the correct ranges.
-  Histogram* histogram(
+  Histogram* histogram = static_cast<Histogram*>(
       LinearHistogram::FactoryGet("Linear", 1, 7, 8, HistogramBase::kNoFlags));
   EXPECT_TRUE(ranges.Equals(histogram->bucket_ranges()));
 
@@ -153,7 +155,7 @@ TEST_F(HistogramTest, LinearRangesTest) {
   EXPECT_EQ(6, ranges2.range(4));
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges2.range(5));
   // The correspoding LinearHistogram should use the correct ranges.
-  Histogram* histogram2(
+  Histogram* histogram2 = static_cast<Histogram*>(
       LinearHistogram::FactoryGet("Linear2", 1, 6, 5, HistogramBase::kNoFlags));
   EXPECT_TRUE(ranges2.Equals(histogram2->bucket_ranges()));
 }
@@ -176,8 +178,10 @@ TEST_F(HistogramTest, CustomHistogramTest) {
   vector<HistogramBase::Sample> custom_ranges;
   custom_ranges.push_back(1);
   custom_ranges.push_back(2);
-  Histogram* histogram = CustomHistogram::FactoryGet(
-      "TestCustomHistogram1", custom_ranges, HistogramBase::kNoFlags);
+
+  Histogram* histogram = static_cast<Histogram*>(
+      CustomHistogram::FactoryGet("TestCustomHistogram1", custom_ranges,
+                                  HistogramBase::kNoFlags));
   const BucketRanges* ranges = histogram->bucket_ranges();
   ASSERT_EQ(4u, ranges->size());
   EXPECT_EQ(0, ranges->range(0));  // Auto added.
@@ -189,8 +193,9 @@ TEST_F(HistogramTest, CustomHistogramTest) {
   custom_ranges.clear();
   custom_ranges.push_back(2);
   custom_ranges.push_back(1);
-  histogram = CustomHistogram::FactoryGet(
-      "TestCustomHistogram2", custom_ranges, HistogramBase::kNoFlags);
+  histogram = static_cast<Histogram*>(
+      CustomHistogram::FactoryGet("TestCustomHistogram2", custom_ranges,
+                                  HistogramBase::kNoFlags));
   ranges = histogram->bucket_ranges();
   ASSERT_EQ(4u, ranges->size());
   EXPECT_EQ(0, ranges->range(0));
@@ -203,8 +208,9 @@ TEST_F(HistogramTest, CustomHistogramTest) {
   custom_ranges.push_back(4);
   custom_ranges.push_back(1);
   custom_ranges.push_back(4);
-  histogram = CustomHistogram::FactoryGet(
-      "TestCustomHistogram3", custom_ranges, HistogramBase::kNoFlags);
+  histogram = static_cast<Histogram*>(
+      CustomHistogram::FactoryGet("TestCustomHistogram3", custom_ranges,
+                                  HistogramBase::kNoFlags));
   ranges = histogram->bucket_ranges();
   ASSERT_EQ(4u, ranges->size());
   EXPECT_EQ(0, ranges->range(0));
@@ -222,8 +228,9 @@ TEST_F(HistogramTest, CustomHistogramWithOnly2Buckets) {
   vector<HistogramBase::Sample> custom_ranges;
   custom_ranges.push_back(4);
 
-  Histogram* histogram = CustomHistogram::FactoryGet(
-      "2BucketsCustomHistogram", custom_ranges, HistogramBase::kNoFlags);
+  Histogram* histogram = static_cast<Histogram*>(
+      CustomHistogram::FactoryGet("2BucketsCustomHistogram", custom_ranges,
+                                  HistogramBase::kNoFlags));
   const BucketRanges* ranges = histogram->bucket_ranges();
   ASSERT_EQ(3u, ranges->size());
   EXPECT_EQ(0, ranges->range(0));
@@ -234,8 +241,9 @@ TEST_F(HistogramTest, CustomHistogramWithOnly2Buckets) {
 // Make sure histogram handles out-of-bounds data gracefully.
 TEST_F(HistogramTest, BoundsTest) {
   const size_t kBucketCount = 50;
-  Histogram* histogram(Histogram::FactoryGet(
-      "Bounded", 10, 100, kBucketCount, HistogramBase::kNoFlags));
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("Bounded", 10, 100, kBucketCount,
+                            HistogramBase::kNoFlags));
 
   // Put two samples "out of bounds" above and below.
   histogram->Add(5);
@@ -257,9 +265,9 @@ TEST_F(HistogramTest, BoundsTest) {
   custom_ranges.push_back(10);
   custom_ranges.push_back(50);
   custom_ranges.push_back(100);
-  Histogram* test_custom_histogram = CustomHistogram::FactoryGet(
-      "TestCustomRangeBoundedHistogram", custom_ranges,
-      HistogramBase::kNoFlags);
+  Histogram* test_custom_histogram = static_cast<Histogram*>(
+      CustomHistogram::FactoryGet("TestCustomRangeBoundedHistogram",
+                                  custom_ranges, HistogramBase::kNoFlags));
 
   // Put two samples "out of bounds" above and below.
   test_custom_histogram->Add(5);
@@ -280,8 +288,8 @@ TEST_F(HistogramTest, BoundsTest) {
 
 // Check to be sure samples land as expected is "correct" buckets.
 TEST_F(HistogramTest, BucketPlacementTest) {
-  Histogram* histogram(Histogram::FactoryGet(
-      "Histogram", 1, 64, 8, HistogramBase::kNoFlags));
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
   // Add i+1 samples to the i'th bucket.
   histogram->Add(0);
@@ -299,8 +307,8 @@ TEST_F(HistogramTest, BucketPlacementTest) {
 }
 
 TEST_F(HistogramTest, CorruptSampleCounts) {
-  Histogram* histogram(Histogram::FactoryGet(
-      "Histogram", 1, 64, 8, HistogramBase::kNoFlags));  // As per header file.
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
   // Add some samples.
   histogram->Add(20);
@@ -326,8 +334,8 @@ TEST_F(HistogramTest, CorruptSampleCounts) {
 }
 
 TEST_F(HistogramTest, CorruptBucketBounds) {
-  Histogram* histogram(Histogram::FactoryGet(
-      "Histogram", 1, 64, 8, HistogramBase::kNoFlags));  // As per header file.
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
   scoped_ptr<SampleVector> snapshot = histogram->SnapshotSampleVector();
   EXPECT_EQ(Histogram::NO_INCONSISTENCIES,
@@ -360,9 +368,9 @@ TEST_F(HistogramTest, CorruptBucketBounds) {
 }
 
 TEST_F(HistogramTest, HistogramSerializeInfo) {
-  Histogram* histogram = Histogram::FactoryGet(
-      "Histogram", 1, 64, 8, HistogramBase::kIPCSerializationSourceFlag);
-
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("Histogram", 1, 64, 8,
+                            HistogramBase::kIPCSerializationSourceFlag));
   Pickle pickle;
   histogram->SerializeInfo(&pickle);
 
@@ -405,7 +413,7 @@ TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
   custom_ranges.push_back(10);
   custom_ranges.push_back(100);
 
-  Histogram* custom_histogram = CustomHistogram::FactoryGet(
+  HistogramBase* custom_histogram = CustomHistogram::FactoryGet(
       "TestCustomRangeBoundedHistogram",
       custom_ranges,
       HistogramBase::kNoFlags);
@@ -440,25 +448,27 @@ TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
 // 1). But we accept ranges exceeding those limits, and silently clamped to
 // those limits. This is for backwards compatibility.
 TEST(HistogramDeathTest, BadRangesTest) {
-  Histogram* histogram = Histogram::FactoryGet(
+  HistogramBase* histogram = Histogram::FactoryGet(
       "BadRanges", 0, HistogramBase::kSampleType_MAX, 8,
       HistogramBase::kNoFlags);
-  EXPECT_EQ(1, histogram->declared_min());
-  EXPECT_EQ(HistogramBase::kSampleType_MAX - 1, histogram->declared_max());
+  EXPECT_TRUE(
+      histogram->HasConstructionArguments(
+          1, HistogramBase::kSampleType_MAX - 1, 8));
 
-  Histogram* linear_histogram = LinearHistogram::FactoryGet(
+  HistogramBase* linear_histogram = LinearHistogram::FactoryGet(
       "BadRangesLinear", 0, HistogramBase::kSampleType_MAX, 8,
       HistogramBase::kNoFlags);
-  EXPECT_EQ(1, linear_histogram->declared_min());
-  EXPECT_EQ(HistogramBase::kSampleType_MAX - 1,
-            linear_histogram->declared_max());
+  EXPECT_TRUE(
+      linear_histogram->HasConstructionArguments(
+          1, HistogramBase::kSampleType_MAX - 1, 8));
 
   vector<int> custom_ranges;
   custom_ranges.push_back(0);
   custom_ranges.push_back(5);
-  Histogram* custom_histogram1 = CustomHistogram::FactoryGet(
-      "BadRangesCustom", custom_ranges, HistogramBase::kNoFlags);
-  const BucketRanges* ranges = custom_histogram1->bucket_ranges();
+  Histogram* custom_histogram = static_cast<Histogram*>(
+      CustomHistogram::FactoryGet(
+          "BadRangesCustom", custom_ranges, HistogramBase::kNoFlags));
+  const BucketRanges* ranges = custom_histogram->bucket_ranges();
   ASSERT_EQ(3u, ranges->size());
   EXPECT_EQ(0, ranges->range(0));
   EXPECT_EQ(5, ranges->range(1));

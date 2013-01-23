@@ -386,7 +386,7 @@ void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
 
   // FactoryTimeGet will always return a pointer to the same histogram object,
   // keyed on its name. There's no need for us to store it explicitly anywhere.
-  base::Histogram* counter = base::Histogram::FactoryTimeGet(
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       name, kMin, kMax, kBuckets, base::Histogram::kUmaTargetedHistogramFlag);
 
   counter->AddTime(time);

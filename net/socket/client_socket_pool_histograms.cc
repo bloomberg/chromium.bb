@@ -13,6 +13,7 @@
 namespace net {
 
 using base::Histogram;
+using base::HistogramBase;
 using base::LinearHistogram;
 
 ClientSocketPoolHistograms::ClientSocketPoolHistograms(
@@ -22,25 +23,25 @@ ClientSocketPoolHistograms::ClientSocketPoolHistograms(
   // UMA_HISTOGRAM_ENUMERATION
   socket_type_ = LinearHistogram::FactoryGet("Net.SocketType_" + pool_name, 1,
       ClientSocketHandle::NUM_TYPES, ClientSocketHandle::NUM_TYPES + 1,
-      Histogram::kUmaTargetedHistogramFlag);
+      HistogramBase::kUmaTargetedHistogramFlag);
   // UMA_HISTOGRAM_CUSTOM_TIMES
   request_time_ = Histogram::FactoryTimeGet(
       "Net.SocketRequestTime_" + pool_name,
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMinutes(10),
-      100, Histogram::kUmaTargetedHistogramFlag);
+      100, HistogramBase::kUmaTargetedHistogramFlag);
   // UMA_HISTOGRAM_CUSTOM_TIMES
   unused_idle_time_ = Histogram::FactoryTimeGet(
       "Net.SocketIdleTimeBeforeNextUse_UnusedSocket_" + pool_name,
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMinutes(6),
-      100, Histogram::kUmaTargetedHistogramFlag);
+      100, HistogramBase::kUmaTargetedHistogramFlag);
   // UMA_HISTOGRAM_CUSTOM_TIMES
   reused_idle_time_ = Histogram::FactoryTimeGet(
       "Net.SocketIdleTimeBeforeNextUse_ReusedSocket_" + pool_name,
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMinutes(6),
-      100, Histogram::kUmaTargetedHistogramFlag);
+      100, HistogramBase::kUmaTargetedHistogramFlag);
 
   if (pool_name == "HTTPProxy")
     is_http_proxy_connection_ = true;

@@ -117,8 +117,8 @@ class JankObserverHelper {
   // Counters for the two types of jank we measure.
   base::StatsCounter slow_processing_counter_;  // Msgs w/ long proc time.
   base::StatsCounter queueing_delay_counter_;   // Msgs w/ long queueing delay.
-  base::Histogram* const process_times_;  // Time spent proc. task.
-  base::Histogram* const total_times_;  // Total queueing plus proc.
+  base::HistogramBase* const process_times_;  // Time spent proc. task.
+  base::HistogramBase* const total_times_;  // Total queueing plus proc.
   JankWatchdog total_time_watchdog_;  // Watching for excessive total_time.
 
   DISALLOW_COPY_AND_ASSIGN(JankObserverHelper);

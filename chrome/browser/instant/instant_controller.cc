@@ -65,10 +65,10 @@ void RecordEventHistogram(InstantControllerEvent event) {
 void AddSessionStorageHistogram(bool extended_enabled,
                                 const content::WebContents* tab1,
                                 const content::WebContents* tab2) {
-  base::Histogram* histogram = base::BooleanHistogram::FactoryGet(
+  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
       std::string("Instant.SessionStorageNamespace") +
           (extended_enabled ? "_Extended" : "_Instant"),
-      base::Histogram::kUmaTargetedHistogramFlag);
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   const content::SessionStorageNamespaceMap& session_storage_map1 =
       tab1->GetController().GetSessionStorageNamespaceMap();
   const content::SessionStorageNamespaceMap& session_storage_map2 =

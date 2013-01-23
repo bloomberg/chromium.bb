@@ -107,11 +107,11 @@ void CheckCorruption(const Histogram& histogram, bool new_histogram) {
   CHECK(histogram.bucket_ranges()->HasValidChecksum());
 }
 
-Histogram* Histogram::FactoryGet(const string& name,
-                                 Sample minimum,
-                                 Sample maximum,
-                                 size_t bucket_count,
-                                 int32 flags) {
+HistogramBase* Histogram::FactoryGet(const string& name,
+                                     Sample minimum,
+                                     Sample maximum,
+                                     size_t bucket_count,
+                                     int32 flags) {
   bool valid_arguments =
       InspectConstructionArguments(name, &minimum, &maximum, &bucket_count);
   DCHECK(valid_arguments);
@@ -140,11 +140,11 @@ Histogram* Histogram::FactoryGet(const string& name,
   return histogram;
 }
 
-Histogram* Histogram::FactoryTimeGet(const string& name,
-                                     TimeDelta minimum,
-                                     TimeDelta maximum,
-                                     size_t bucket_count,
-                                     int32 flags) {
+HistogramBase* Histogram::FactoryTimeGet(const string& name,
+                                         TimeDelta minimum,
+                                         TimeDelta maximum,
+                                         size_t bucket_count,
+                                         int32 flags) {
   return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
                     bucket_count, flags);
 }
@@ -195,10 +195,6 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   }
   ranges->set_range(ranges->size() - 1, HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();
-}
-
-void Histogram::AddBoolean(bool value) {
-  DCHECK(false);
 }
 
 // static
@@ -574,25 +570,25 @@ void Histogram::GetCountAndBucketData(Count* count, ListValue* buckets) const {
 
 LinearHistogram::~LinearHistogram() {}
 
-Histogram* LinearHistogram::FactoryGet(const string& name,
-                                       Sample minimum,
-                                       Sample maximum,
-                                       size_t bucket_count,
-                                       int32 flags) {
+HistogramBase* LinearHistogram::FactoryGet(const string& name,
+                                           Sample minimum,
+                                           Sample maximum,
+                                           size_t bucket_count,
+                                           int32 flags) {
   return FactoryGetWithRangeDescription(
       name, minimum, maximum, bucket_count, flags, NULL);
 }
 
-Histogram* LinearHistogram::FactoryTimeGet(const string& name,
-                                           TimeDelta minimum,
-                                           TimeDelta maximum,
-                                           size_t bucket_count,
-                                           int32 flags) {
+HistogramBase* LinearHistogram::FactoryTimeGet(const string& name,
+                                               TimeDelta minimum,
+                                               TimeDelta maximum,
+                                               size_t bucket_count,
+                                               int32 flags) {
   return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
                     bucket_count, flags);
 }
 
-Histogram* LinearHistogram::FactoryGetWithRangeDescription(
+HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
       const std::string& name,
       Sample minimum,
       Sample maximum,
@@ -713,7 +709,7 @@ HistogramBase* LinearHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 // This section provides implementation for BooleanHistogram.
 //------------------------------------------------------------------------------
 
-Histogram* BooleanHistogram::FactoryGet(const string& name, int32 flags) {
+HistogramBase* BooleanHistogram::FactoryGet(const string& name, int32 flags) {
   Histogram* histogram = StatisticsRecorder::FindHistogram(name);
   if (!histogram) {
     // To avoid racy destruction at shutdown, the following will be leaked.
@@ -739,10 +735,6 @@ Histogram* BooleanHistogram::FactoryGet(const string& name, int32 flags) {
 
 HistogramType BooleanHistogram::GetHistogramType() const {
   return BOOLEAN_HISTOGRAM;
-}
-
-void BooleanHistogram::AddBoolean(bool value) {
-  Add(value ? 1 : 0);
 }
 
 BooleanHistogram::BooleanHistogram(const string& name,
@@ -775,9 +767,9 @@ HistogramBase* BooleanHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 // CustomHistogram:
 //------------------------------------------------------------------------------
 
-Histogram* CustomHistogram::FactoryGet(const string& name,
-                                       const vector<Sample>& custom_ranges,
-                                       int32 flags) {
+HistogramBase* CustomHistogram::FactoryGet(const string& name,
+                                           const vector<Sample>& custom_ranges,
+                                           int32 flags) {
   CHECK(ValidateCustomRanges(custom_ranges));
 
   Histogram* histogram = StatisticsRecorder::FindHistogram(name);

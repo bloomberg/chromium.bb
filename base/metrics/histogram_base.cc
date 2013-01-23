@@ -86,6 +86,14 @@ void HistogramBase::ClearFlags(int32 flags) {
   flags_ &= ~flags;
 }
 
+void HistogramBase::AddTime(const TimeDelta& time) {
+  Add(static_cast<Sample>(time.InMilliseconds()));
+}
+
+void HistogramBase::AddBoolean(bool value) {
+  Add(value ? 1 : 0);
+}
+
 bool HistogramBase::SerializeInfo(Pickle* pickle) const {
   if (!pickle->WriteInt(GetHistogramType()))
     return false;

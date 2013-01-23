@@ -42,7 +42,7 @@
 #endif
 
 namespace base {
-class Histogram;
+class HistogramBase;
 class RunLoop;
 class ThreadTaskRunnerHandle;
 #if defined(OS_ANDROID)
@@ -490,7 +490,7 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
 
   std::string thread_name_;
   // A profiling histogram showing the counts of various messages and events.
-  base::Histogram* message_histogram_;
+  base::HistogramBase* message_histogram_;
 
   // An incoming queue of tasks that are acquired under a mutex for processing
   // on this instance's thread. These tasks have not yet been sorted out into

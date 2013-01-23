@@ -52,7 +52,7 @@ bool MetricsHistogramHelperFunction::RecordValue(
   if (buckets > static_cast<size_t>(max - min + 2))
     buckets = max - min + 2;
 
-  base::Histogram* counter;
+  base::HistogramBase* counter;
   if (type == base::LINEAR_HISTOGRAM) {
     counter = base::LinearHistogram::FactoryGet(
         name, min, max, buckets,

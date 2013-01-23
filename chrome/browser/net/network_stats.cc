@@ -554,7 +554,7 @@ NetworkStats::Status NetworkStats::VerifyPackets() {
         kMaximumSequentialPackets,
         kPorts[histogram_port_],
         load_size_);
-    base::Histogram* histogram = base::Histogram::FactoryTimeGet(
+    base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
         histogram_name, base::TimeDelta::FromMilliseconds(1),
         base::TimeDelta::FromSeconds(30), 50,
         base::Histogram::kUmaTargetedHistogramFlag);
@@ -712,8 +712,9 @@ void NetworkStats::RecordAcksReceivedHistograms(
       kMaximumSequentialPackets,
       kPorts[histogram_port_],
       load_size_string.c_str());
-  base::Histogram* got_an_ack_histogram = base::BooleanHistogram::FactoryGet(
-      histogram_name, base::Histogram::kUmaTargetedHistogramFlag);
+  base::HistogramBase* got_an_ack_histogram =
+      base::BooleanHistogram::FactoryGet(
+          histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
   got_an_ack_histogram->AddBoolean(received_atleast_one_packet);
 
   histogram_name = base::StringPrintf(
@@ -722,11 +723,11 @@ void NetworkStats::RecordAcksReceivedHistograms(
       kMaximumSequentialPackets,
       kPorts[histogram_port_],
       load_size_string.c_str());
-  base::Histogram* packets_sent_histogram =
+  base::HistogramBase* packets_sent_histogram =
       base::Histogram::FactoryGet(
           histogram_name,
           1, kMaximumSequentialPackets, kMaximumSequentialPackets + 1,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   packets_sent_histogram->Add(packets_sent_);
 
   if (!received_atleast_one_packet || packets_sent_ != packets_to_send_)
@@ -738,11 +739,11 @@ void NetworkStats::RecordAcksReceivedHistograms(
       kMaximumSequentialPackets,
       kPorts[histogram_port_],
       load_size_string.c_str());
-  base::Histogram* ack_received_for_nth_packet_histogram =
+  base::HistogramBase* ack_received_for_nth_packet_histogram =
       base::Histogram::FactoryGet(
           histogram_name,
           1, kMaximumSequentialPackets + 1, kMaximumSequentialPackets + 2,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
 
   int count = 0;
   for (size_t j = 0; j < packets_to_send_; j++) {
@@ -760,10 +761,10 @@ void NetworkStats::RecordAcksReceivedHistograms(
         packet_number,
         kPorts[histogram_port_],
         load_size_string.c_str());
-    base::Histogram* acks_received_count_histogram =
+    base::HistogramBase* acks_received_count_histogram =
         base::Histogram::FactoryGet(
             histogram_name, 1, packet_number, packet_number + 1,
-            base::Histogram::kUmaTargetedHistogramFlag);
+            base::HistogramBase::kUmaTargetedHistogramFlag);
     acks_received_count_histogram->Add(count);
   }
 }
@@ -792,12 +793,13 @@ void NetworkStats::RecordPacketLossSeriesHistograms(
   size_t histogram_count = has_proxy_server_ ? 1 : 2;
   for (size_t i = 0; i < histogram_count; i++) {
     // For packet loss test, just record packet loss data.
-    base::Histogram* series_acked_histogram = base::LinearHistogram::FactoryGet(
-        series_acked_histogram_name,
-        1,
-        1 << kCorrelatedLossPacketCount,
-        (1 << kCorrelatedLossPacketCount) + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
+    base::HistogramBase* series_acked_histogram =
+        base::LinearHistogram::FactoryGet(
+             series_acked_histogram_name,
+             1,
+             1 << kCorrelatedLossPacketCount,
+             (1 << kCorrelatedLossPacketCount) + 1,
+             base::HistogramBase::kUmaTargetedHistogramFlag);
     series_acked_histogram->Add(correlated_packet_mask);
     series_acked_histogram_name.append(".NoProxy");
   }
@@ -817,11 +819,11 @@ void NetworkStats::RecordRTTHistograms(const ProtocolValue& protocol,
       index + 1,
       kPorts[histogram_port_],
       load_size_string.c_str());
-  base::Histogram* rtt_histogram = base::Histogram::FactoryTimeGet(
+  base::HistogramBase* rtt_histogram = base::Histogram::FactoryTimeGet(
       rtt_histogram_name,
       base::TimeDelta::FromMilliseconds(10),
       base::TimeDelta::FromSeconds(30), 50,
-      base::Histogram::kUmaTargetedHistogramFlag);
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   base::TimeDelta duration =
       packet_status_[index].end_time_ - packet_status_[index].start_time_;
   rtt_histogram->AddTime(duration);

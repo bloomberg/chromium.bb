@@ -129,9 +129,9 @@ void AddProfileImageTimeHistogram(ProfileDownloadResult result,
   static const base::TimeDelta max_time = base::TimeDelta::FromSeconds(50);
   const size_t bucket_count(50);
 
-  base::Histogram* counter = base::Histogram::FactoryTimeGet(
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       histogram_name, min_time, max_time, bucket_count,
-      base::Histogram::kUmaTargetedHistogramFlag);
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->AddTime(time_delta);
 
   DVLOG(1) << "Profile image download time: " << time_delta.InSecondsF();

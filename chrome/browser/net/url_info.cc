@@ -139,11 +139,11 @@ void UrlInfo::RemoveFromQueue() {
   }
   // Make a custom linear histogram for the region from 0 to boundary.
   static const size_t kBucketCount = 52;
-  static base::Histogram* histogram(NULL);
+  static base::HistogramBase* histogram(NULL);
   if (!histogram)
     histogram = base::LinearHistogram::FactoryTimeGet(
         "DNS.QueueRecycledUnder2", TimeDelta(), kBoundary, kBucketCount,
-        base::Histogram::kUmaTargetedHistogramFlag);
+        base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTime(queue_duration_);
 }
 

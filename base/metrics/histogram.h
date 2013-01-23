@@ -147,8 +147,9 @@ class Lock;
                                        histogram_factory_get_invocation) \
   do { \
     static base::subtle::AtomicWord atomic_histogram_pointer = 0; \
-    base::Histogram* histogram_pointer(reinterpret_cast<base::Histogram*>( \
-        base::subtle::Acquire_Load(&atomic_histogram_pointer))); \
+    base::HistogramBase* histogram_pointer( \
+        reinterpret_cast<base::HistogramBase*>( \
+            base::subtle::Acquire_Load(&atomic_histogram_pointer))); \
     if (!histogram_pointer) { \
       histogram_pointer = histogram_factory_get_invocation; \
       base::subtle::Release_Store(&atomic_histogram_pointer, \
@@ -309,7 +310,7 @@ class Lock;
 #define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample), \
         base::Histogram::FactoryTimeGet(name, min, max, bucket_count, \
-            base::Histogram::kUmaTargetedHistogramFlag))
+            base::HistogramBase::kUmaTargetedHistogramFlag))
 
 #define UMA_HISTOGRAM_COUNTS(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
     name, sample, 1, 1000000, 50)
@@ -323,7 +324,7 @@ class Lock;
 #define UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
         base::Histogram::FactoryGet(name, min, max, bucket_count, \
-            base::Histogram::kUmaTargetedHistogramFlag))
+            base::HistogramBase::kUmaTargetedHistogramFlag))
 
 #define UMA_HISTOGRAM_MEMORY_KB(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
     name, sample, 1000, 500000, 50)
@@ -337,19 +338,19 @@ class Lock;
 #define UMA_HISTOGRAM_BOOLEAN(name, sample) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, AddBoolean(sample), \
         base::BooleanHistogram::FactoryGet(name, \
-            base::Histogram::kUmaTargetedHistogramFlag))
+            base::HistogramBase::kUmaTargetedHistogramFlag))
 
 // The samples should always be strictly less than |boundary_value|.  For more
 // details, see the comment for the |HISTOGRAM_ENUMERATION| macro, above.
 #define UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
         base::LinearHistogram::FactoryGet(name, 1, boundary_value, \
-            boundary_value + 1, base::Histogram::kUmaTargetedHistogramFlag))
+            boundary_value + 1, base::HistogramBase::kUmaTargetedHistogramFlag))
 
 #define UMA_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
         base::CustomHistogram::FactoryGet(name, custom_ranges, \
-            base::Histogram::kUmaTargetedHistogramFlag))
+            base::HistogramBase::kUmaTargetedHistogramFlag))
 
 //------------------------------------------------------------------------------
 
@@ -388,16 +389,16 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // buckets <= (maximum - minimum + 2) - this is to ensure that we don't have
   // more buckets than the range of numbers; having more buckets than 1 per
   // value in the range would be nonsensical.
-  static Histogram* FactoryGet(const std::string& name,
-                               Sample minimum,
-                               Sample maximum,
-                               size_t bucket_count,
-                               int32 flags);
-  static Histogram* FactoryTimeGet(const std::string& name,
-                                   base::TimeDelta minimum,
-                                   base::TimeDelta maximum,
+  static HistogramBase* FactoryGet(const std::string& name,
+                                   Sample minimum,
+                                   Sample maximum,
                                    size_t bucket_count,
                                    int32 flags);
+  static HistogramBase* FactoryTimeGet(const std::string& name,
+                                       base::TimeDelta minimum,
+                                       base::TimeDelta maximum,
+                                       size_t bucket_count,
+                                       int32 flags);
 
   // Time call for use with DHISTOGRAM*.
   // Returns TimeTicks::Now() in debug and TimeTicks() in release build.
@@ -407,14 +408,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                      Sample maximum,
                                      size_t bucket_count,
                                      BucketRanges* ranges);
-
-  // This method is an interface, used only by BooleanHistogram.
-  virtual void AddBoolean(bool value);
-
-  // Accept a TimeDelta to increment.
-  void AddTime(TimeDelta time) {
-    Add(static_cast<int>(time.InMilliseconds()));
-  }
 
   // This constant if for FindCorruption. Since snapshots of histograms are
   // taken asynchronously relative to sampling, and our counting code currently
@@ -567,16 +560,16 @@ class BASE_EXPORT LinearHistogram : public Histogram {
 
   /* minimum should start from 1. 0 is as minimum is invalid. 0 is an implicit
      default underflow bucket. */
-  static Histogram* FactoryGet(const std::string& name,
-                               Sample minimum,
-                               Sample maximum,
-                               size_t bucket_count,
-                               int32 flags);
-  static Histogram* FactoryTimeGet(const std::string& name,
-                                   TimeDelta minimum,
-                                   TimeDelta maximum,
+  static HistogramBase* FactoryGet(const std::string& name,
+                                   Sample minimum,
+                                   Sample maximum,
                                    size_t bucket_count,
                                    int32 flags);
+  static HistogramBase* FactoryTimeGet(const std::string& name,
+                                       TimeDelta minimum,
+                                       TimeDelta maximum,
+                                       size_t bucket_count,
+                                       int32 flags);
 
   struct DescriptionPair {
     Sample sample;
@@ -588,7 +581,7 @@ class BASE_EXPORT LinearHistogram : public Histogram {
   // |descriptions| can be NULL, which means no special descriptions to set. If
   // it's not NULL, the last element in the array must has a NULL in its
   // "description" field.
-  static Histogram* FactoryGetWithRangeDescription(
+  static HistogramBase* FactoryGetWithRangeDescription(
       const std::string& name,
       Sample minimum,
       Sample maximum,
@@ -640,11 +633,9 @@ class BASE_EXPORT LinearHistogram : public Histogram {
 // BooleanHistogram is a histogram for booleans.
 class BASE_EXPORT BooleanHistogram : public LinearHistogram {
  public:
-  static Histogram* FactoryGet(const std::string& name, int32 flags);
+  static HistogramBase* FactoryGet(const std::string& name, int32 flags);
 
   virtual HistogramType GetHistogramType() const OVERRIDE;
-
-  virtual void AddBoolean(bool value) OVERRIDE;
 
  private:
   BooleanHistogram(const std::string& name, const BucketRanges* ranges);
@@ -665,9 +656,9 @@ class BASE_EXPORT CustomHistogram : public Histogram {
   // > 0 and < kSampleType_MAX. (Currently 0 is still accepted for backward
   // compatibility). The limits can be unordered or contain duplication, but
   // client should not depend on this.
-  static Histogram* FactoryGet(const std::string& name,
-                               const std::vector<Sample>& custom_ranges,
-                               int32 flags);
+  static HistogramBase* FactoryGet(const std::string& name,
+                                   const std::vector<Sample>& custom_ranges,
+                                   int32 flags);
 
   // Overridden from Histogram:
   virtual HistogramType GetHistogramType() const OVERRIDE;

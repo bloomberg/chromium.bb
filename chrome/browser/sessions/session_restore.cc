@@ -358,7 +358,7 @@ void TabLoader::Observe(int type,
           std::string time_for_count =
               base::StringPrintf("SessionRestore.FirstTabPainted_%d",
                                  tab_count_);
-          base::Histogram* counter_for_count =
+          base::HistogramBase* counter_for_count =
               base::Histogram::FactoryTimeGet(
                   time_for_count,
                   base::TimeDelta::FromMilliseconds(10),
@@ -463,7 +463,7 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
     // Record a time for the number of tabs, to help track down contention.
     std::string time_for_count =
         base::StringPrintf("SessionRestore.AllTabsLoaded_%d", tab_count_);
-    base::Histogram* counter_for_count =
+    base::HistogramBase* counter_for_count =
         base::Histogram::FactoryTimeGet(
             time_for_count,
             base::TimeDelta::FromMilliseconds(10),

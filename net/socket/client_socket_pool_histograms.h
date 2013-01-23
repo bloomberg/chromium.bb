@@ -12,7 +12,7 @@
 #include "net/base/net_export.h"
 
 namespace base {
-class Histogram;
+class HistogramBase;
 }
 
 namespace net {
@@ -28,10 +28,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolHistograms {
   void AddReusedIdleTime(base::TimeDelta time) const;
 
  private:
-  base::Histogram* socket_type_;
-  base::Histogram* request_time_;
-  base::Histogram* unused_idle_time_;
-  base::Histogram* reused_idle_time_;
+  base::HistogramBase* socket_type_;
+  base::HistogramBase* request_time_;
+  base::HistogramBase* unused_idle_time_;
+  base::HistogramBase* reused_idle_time_;
 
   bool is_http_proxy_connection_;
   bool is_socks_connection_;

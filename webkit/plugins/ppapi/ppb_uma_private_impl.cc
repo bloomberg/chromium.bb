@@ -36,13 +36,13 @@ void HistogramCustomTimes(PP_Var name,
   StringVar* name_string = StringVar::FromPPVar(name);
   if (name_string == NULL)
     return;
-  base::Histogram* counter =
+  base::HistogramBase* counter =
       base::Histogram::FactoryTimeGet(
           name_string->value(),
           base::TimeDelta::FromMilliseconds(min),
           base::TimeDelta::FromMilliseconds(max),
           bucket_count,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
 }
 
@@ -55,13 +55,13 @@ void HistogramCustomCounts(PP_Var name,
   StringVar* name_string = StringVar::FromPPVar(name);
   if (name_string == NULL)
     return;
-  base::Histogram* counter =
+  base::HistogramBase* counter =
       base::Histogram::FactoryGet(
           name_string->value(),
           min,
           max,
           bucket_count,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
 
@@ -73,13 +73,13 @@ void HistogramEnumeration(PP_Var name,
   StringVar* name_string = StringVar::FromPPVar(name);
   if (name_string == NULL)
     return;
-  base::Histogram* counter =
+  base::HistogramBase* counter =
       base::LinearHistogram::FactoryGet(
           name_string->value(),
           1,
           boundary_value,
           boundary_value + 1,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
 

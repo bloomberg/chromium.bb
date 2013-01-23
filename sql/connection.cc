@@ -665,10 +665,10 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
     // shouldn't execute often enough for such caching to be crucial.
     // If it becomes an issue, the object could be cached alongside
     // error_histogram_name_.
-    base::Histogram* histogram =
+    base::HistogramBase* histogram =
         base::LinearHistogram::FactoryGet(
             error_histogram_name_, 1, kSqliteErrorMax, kSqliteErrorMax + 1,
-            base::Histogram::kUmaTargetedHistogramFlag);
+            base::HistogramBase::kUmaTargetedHistogramFlag);
     if (histogram)
       histogram->Add(base_err);
   }

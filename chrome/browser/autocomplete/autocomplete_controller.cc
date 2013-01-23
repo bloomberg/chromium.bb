@@ -201,7 +201,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
     base::TimeTicks end_time = base::TimeTicks::Now();
     std::string name = "Omnibox.QueryTime." + base::IntToString(
         input.text().length());
-    base::Histogram* counter = base::Histogram::FactoryGet(
+    base::HistogramBase* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
   }

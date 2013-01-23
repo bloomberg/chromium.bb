@@ -163,13 +163,13 @@ void LogUMAHistogramEnumeration(const std::string& name,
   // We can't use the UMA_HISTOGRAM_ENUMERATION macro here because the histogram
   // name can vary over the duration of the program.
   // Note that this leaks memory; that is expected behavior.
-  base::Histogram* counter =
+  base::HistogramBase* counter =
       base::LinearHistogram::FactoryGet(
           name,
           1,
           boundary_value,
           boundary_value + 1,
-          base::Histogram::kUmaTargetedHistogramFlag);
+          base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
 

@@ -122,7 +122,7 @@ void ExternalMetrics::RecordHistogram(const char* histogram_data) {
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
-  base::Histogram* counter = base::Histogram::FactoryGet(
+  base::HistogramBase* counter = base::Histogram::FactoryGet(
       name, min, max, nbuckets, base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
@@ -143,7 +143,7 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
-  base::Histogram* counter = base::LinearHistogram::FactoryGet(
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
       name, 1, max, max + 1, base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }

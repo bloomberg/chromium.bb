@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 
 class Pickle;
 class PickleIterator;
@@ -89,6 +90,10 @@ class BASE_EXPORT HistogramBase {
                                         size_t bucket_count) const = 0;
 
   virtual void Add(Sample value) = 0;
+
+  // 2 convenient functions that call Add(Sample).
+  void AddTime(const TimeDelta& time);
+  void AddBoolean(bool value);
 
   virtual void AddSamples(const HistogramSamples& samples) = 0;
   virtual bool AddSamplesFromPickle(PickleIterator* iter) = 0;
