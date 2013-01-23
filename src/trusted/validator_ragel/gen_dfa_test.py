@@ -86,7 +86,7 @@ class TestInstruction(unittest.TestCase):
     assert not instr.HasModRM()
 
 
-class TestPrinter(unittest.TestCase):
+class TestPrinterParts(unittest.TestCase):
 
   def test_nop_signature(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
@@ -145,6 +145,29 @@ class TestPrinter(unittest.TestCase):
     printer.PrintOpcode(instr)
 
     self.assertEquals(printer.GetContent(), '0x80')
+
+
+class TestInstructionPrinter(unittest.TestCase):
+
+  def test_no_modrm(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'mov Ob !ab, 0xa0, ia32')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0xa0
+        @instruction_mov
+        @operands_count_is_2
+        @operand0_8bit
+        @operand1_8bit
+        @operand1_rax
+        @operand0_absolute_disp
+        disp32
+        """.split())
 
 
 class TestParser(unittest.TestCase):

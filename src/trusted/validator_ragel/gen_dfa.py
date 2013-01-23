@@ -116,6 +116,13 @@ SUPPORTED_ATTRIBUTES = [
 
 class Operand(object):
 
+  __slots__ = [
+      'read_write_attr',
+      'arg_type',
+      'size',
+      'implicit',
+      'index']
+
   # Operand read/write modes.
   UNUSED = '\''
   READ = '='
@@ -256,7 +263,9 @@ class Instruction(object):
         default_rw = Operand.READ_WRITE if last else Operand.READ
       else:
         default_rw = Operand.WRITE if last else Operand.READ
-      self.operands.append(Operand.Parse(op, default_rw=default_rw))
+      operand = Operand.Parse(op, default_rw=default_rw)
+      operand.index = i
+      self.operands.append(operand)
 
   def ParseOpcodes(self, opcodes_column):
     opcodes = opcodes_column.split()
@@ -285,8 +294,19 @@ class Instruction(object):
   def HasModRM(self):
     return any(operand.ResidesInModRM() for operand in self.operands)
 
+  def FindOperand(self, arg_type):
+    result = None
+    for operand in self.operands:
+      if operand.arg_type == arg_type:
+        assert result is None, 'multiple operands of type %s' % arg_type
+        result = operand
+    return result
+
   def HasRegisterInOpcode(self):
-    return any(operand.arg_type == 'r' for operand in self.operands)
+    return self.FindOperand('r') is not None
+
+  def HasOpcodeInsteadOfImmediate(self):
+    return '/' in self.opcodes
 
   def GetMainOpcodePart(self):
     result = []
@@ -333,6 +353,7 @@ class InstructionPrinter(object):
     main_opcode_part = instruction.GetMainOpcodePart()
     if instruction.HasRegisterInOpcode():
       assert not instruction.HasModRM()
+      assert not instruction.HasOpcodeInsteadOfImmediate()
 
       self.out.write(' '.join(main_opcode_part[:-1]))
 
@@ -384,6 +405,46 @@ class InstructionPrinter(object):
 
     # TODO(shcherbina): print spurious REX stuff (probably not in this
     # function).
+
+  def PrintImplicitOperandSources(self, instruction):
+    """Print actions specifying sources of implicit operands.
+
+    Args:
+      instruction: instruction.
+
+    Returns:
+      None.
+    """
+    operand = instruction.FindOperand('a')
+    if operand is not None:
+      self.out.write('@operand%d_rax\n' % operand.index)
+    # TODO(shcherbina): handle other implicit operands.
+
+  def PrintInstructionWithoutModRM(self, instruction):
+    # TODO(shcherbina): print legacy prefixes.
+    # TODO(shcherbina): print REX prefix.
+
+    assert not instruction.HasModRM()
+    assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
+
+    self.PrintOpcode(instruction)
+    self.out.write('\n')
+
+    self.PrintSignature(instruction)
+    self.PrintImplicitOperandSources(instruction)
+
+    # TODO(shcherbina): print immediate or relative args.
+
+    # Displacement encoded in the instruction.
+    operand = instruction.FindOperand('O')
+    if operand is not None:
+      self.out.write('@operand%d_absolute_disp\n' % operand.index)
+      self.out.write('disp%d\n' % self.bitness)
+
+    # TODO(shcherbina): add mechanism to check that all operand sources are
+    # printed.
+
+    # TODO(shcherbina): subtract NOP from XCHG
 
 
 def ParseDefFile(filename):
