@@ -669,6 +669,7 @@ namespace shill {
 // Function names.
 const char kClearPropertiesFunction[] = "ClearProperties";
 const char kRefreshFunction[] = "Refresh";
+const char kResetFunction[] = "Reset";
 const char kSetCarrierFunction[] = "SetCarrier";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 
