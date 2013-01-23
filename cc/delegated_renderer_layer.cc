@@ -15,8 +15,6 @@ scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create() {
 DelegatedRendererLayer::DelegatedRendererLayer()
     : Layer() {
   setIsDrawable(true);
-  // TODO(danakj): Remove this.
-  setMasksToBounds(true);
 }
 
 DelegatedRendererLayer::~DelegatedRendererLayer() {}
