@@ -79,8 +79,9 @@ if [ "$solution" = "$1" ]; then
   fi
   shift 2
   $first_args $@ | sed "s/^/[$solution] /g" 1>&2
-  if [ $? -ne 0 ]; then
-    exit $?
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    exit $status
   fi
 
   set_target_os
