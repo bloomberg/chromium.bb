@@ -28,6 +28,9 @@ const int kTextTopPadding = 6;
 const int kTextBottomPadding = 6;
 const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
+const int kActionButtonTitleTopPadding = 0;
+const int kActionButtonTitleLeftPadding = 16;
+const int kActionButtonTitleRightPadding = 16;
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
@@ -37,10 +40,16 @@ const SkColor kTitleColor = SkColorSetRGB(68, 68, 68);
 const SkColor kTitleBackgroundColor = SK_ColorWHITE;
 const SkColor kMessageColor = SkColorSetRGB(136, 136, 136);
 const SkColor kMessageBackgroundColor = SK_ColorBLACK;
+const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 
 // Static function to create an empty border to be used as padding.
 views::Border* MakePadding(int top, int left, int bottom, int right) {
   return views::Border::CreateEmptyBorder(top, left, bottom, right);
+}
+
+// Static function to create an empty border to be used as padding.
+views::Background* MakeBackground(SkColor color) {
+  return views::Background::CreateSolidBackground(color);
 }
 
 // ItemViews are responsible for drawing each list notification item's title and
@@ -115,6 +124,36 @@ int ProportionalImageView::GetHeightForWidth(int width) {
   return height;
 }
 
+// NotificationsButtons are used to render the action buttons of notifications.
+class NotificationButton : public views::CustomButton {
+ public:
+  NotificationButton(views::ButtonListener* listener);
+  virtual ~NotificationButton();
+
+  void SetTitle(string16 title);
+};
+
+NotificationButton::NotificationButton(views::ButtonListener* listener)
+    : views::CustomButton(listener) {
+  SetLayoutManager(new views::FillLayout());
+}
+
+NotificationButton::~NotificationButton() {
+}
+
+void NotificationButton::SetTitle(string16 title) {
+  RemoveAllChildViews(true);
+  views::Label* label = new views::Label(title);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetElideBehavior(views::Label::ELIDE_AT_END);
+  label->SetEnabledColor(kTitleColor);
+  label->SetBackgroundColor(kTitleBackgroundColor);
+  label->set_border(MakePadding(
+      kActionButtonTitleTopPadding, kActionButtonTitleLeftPadding,
+      0, kActionButtonTitleRightPadding));
+  AddChildView(label);
+}
+
 }  // namespace
 
 namespace message_center {
@@ -153,6 +192,17 @@ void NotificationView::SetUpView() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
   AddChildView(MakeContentView());
   AddChildView(close_button());
+}
+
+void NotificationView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
+  for (size_t i = 0; i < action_buttons_.size(); ++i) {
+    if (action_buttons_[i] == sender) {
+      list_delegate()->OnButtonClicked(notification().id, i);
+      return;
+    }
+  }
+  MessageView::ButtonPressed(sender, event);
 }
 
 views::View* NotificationView::MakeContentView() {
@@ -257,7 +307,20 @@ views::View* NotificationView::MakeContentView() {
     layout->AddView(image, 2, 1);
   }
 
-  // TODO(dharcourt): Add action button rows.
+  // Add action button rows.
+  for (size_t i = 0; i < notification().button_titles.size(); ++i) {
+    views::View* separator = new views::View();
+    separator->set_background(MakeBackground(kButtonSeparatorColor));
+    layout->StartRow(0, 0);
+    layout->AddView(separator, 2, 1,
+                    views::GridLayout::FILL, views::GridLayout::FILL, 0, 1);
+    NotificationButton* button = new NotificationButton(this);
+    button->SetTitle(notification().button_titles[i]);
+    action_buttons_.push_back(button);
+    layout->StartRow(0, 0);
+    layout->AddView(button, 2, 1,
+                    views::GridLayout::FILL, views::GridLayout::FILL, 0, 40);
+  }
 
   return content_view_;
 }

@@ -25,11 +25,14 @@ class NotificationView : public MessageView {
 
   // Overridden from MessageView.
   virtual void SetUpView() OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
 
  private:
   views::View* MakeContentView();
 
   views::View* content_view_;
+  std::vector<views::Button*> action_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };

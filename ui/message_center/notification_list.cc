@@ -84,26 +84,28 @@ void NotificationList::UnpackOptionalFields(
   if (!optional_fields)
     return;
 
-  if (optional_fields->HasKey(ui::notifications::kPriorityKey))
-    optional_fields->GetInteger(ui::notifications::kPriorityKey,
-                                &notification->priority);
+  optional_fields->GetInteger(ui::notifications::kPriorityKey,
+                              &notification->priority);
   if (optional_fields->HasKey(ui::notifications::kTimestampKey)) {
     std::string time_string;
     optional_fields->GetString(ui::notifications::kTimestampKey, &time_string);
     base::Time::FromString(time_string.c_str(), &notification->timestamp);
   }
-  if (optional_fields->HasKey(ui::notifications::kUnreadCountKey))
-    optional_fields->GetInteger(ui::notifications::kUnreadCountKey,
-                                &notification->unread_count);
-  if (optional_fields->HasKey(ui::notifications::kButtonOneTitleKey))
-    optional_fields->GetString(ui::notifications::kButtonOneTitleKey,
-                               &notification->button_one_title);
-  if (optional_fields->HasKey(ui::notifications::kButtonTwoTitleKey))
-    optional_fields->GetString(ui::notifications::kButtonTwoTitleKey,
-                               &notification->button_two_title);
-  if (optional_fields->HasKey(ui::notifications::kExpandedMessageKey))
-    optional_fields->GetString(ui::notifications::kExpandedMessageKey,
-                               &notification->expanded_message);
+  optional_fields->GetInteger(ui::notifications::kUnreadCountKey,
+                              &notification->unread_count);
+  if (optional_fields->HasKey(ui::notifications::kButtonOneTitleKey)) {
+    string16 title;
+    if (optional_fields->GetString(ui::notifications::kButtonOneTitleKey,
+                                   &title) && !title.empty()) {
+      notification->button_titles.push_back(title);
+      if (optional_fields->GetString(ui::notifications::kButtonTwoTitleKey,
+                                     &title) && !title.empty()) {
+        notification->button_titles.push_back(title);
+      }
+    }
+  }
+  optional_fields->GetString(ui::notifications::kExpandedMessageKey,
+                             &notification->expanded_message);
   if (optional_fields->HasKey(ui::notifications::kItemsKey)) {
     const ListValue* items;
     CHECK(optional_fields->GetList(ui::notifications::kItemsKey, &items));

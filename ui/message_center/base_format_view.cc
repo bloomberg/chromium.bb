@@ -73,15 +73,13 @@ void BaseFormatView::SetUpView() {
 
   // TODO(miket): unreadCount
 
-  if (notification().button_one_title.length() != 0) {
-    button_one_ = new views::LabelButton(
-        this, notification().button_one_title);
+  if (notification().button_titles.size() > 0) {
+    button_one_ = new views::LabelButton(this, notification().button_titles[0]);
     button_one_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button_one_->SetNativeTheme(true);
   }
-  if (button_one_ && notification().button_two_title.length() != 0) {
-    button_two_ = new views::LabelButton(
-        this, notification().button_two_title);
+  if (notification().button_titles.size() > 1) {
+    button_two_ = new views::LabelButton(this, notification().button_titles[1]);
     button_two_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button_two_->SetNativeTheme(true);
   }
@@ -146,26 +144,31 @@ void BaseFormatView::SetUpView() {
   if (timestamp)
     layout->AddView(timestamp, 1, 1);
   else
-    layout->SkipColumns(2);
+    layout->SkipColumns(1);
   layout->AddView(close_button(), 1, 1);
 
   // Row 1: Big icon, title.
   layout->StartRow(0, 0);
   layout->AddView(icon, 1, 3);
-  layout->AddView(title, 6, 1);
+  layout->AddView(title, 3, 1);
+  layout->SkipColumns(1);
 
   // Row 2: Continuation of big icon, message.
   layout->StartRow(0, 0);
   layout->SkipColumns(1);
-  layout->AddView(message, 6, 1);
+  layout->AddView(message, 3, 1);
+  layout->SkipColumns(1);
   layout->AddPaddingRow(0, kBaseFormatPaddingBetweenItems);
 
   // Row 3: Continuation of big icon, two buttons, secondary icon.
   layout->StartRow(0,0);
   layout->SkipColumns(1);
-  if (button_one_) {
+  if (button_two_) {
     layout->AddView(button_one_, 1, 1);
     layout->AddView(button_two_, 1, 1);
+  } else if (button_one_) {
+    layout->AddView(button_one_, 1, 1);
+    layout->SkipColumns(1);
   } else {
     layout->SkipColumns(3);  // two buttons plus padding
   }

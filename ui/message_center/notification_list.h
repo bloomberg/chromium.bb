@@ -48,8 +48,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     int priority;
     base::Time timestamp;
     int unread_count;
-    string16 button_one_title;
-    string16 button_two_title;
+    std::vector<string16> button_titles;
     string16 expanded_message;
     std::vector<NotificationItem> items;
     // End unpacked values
