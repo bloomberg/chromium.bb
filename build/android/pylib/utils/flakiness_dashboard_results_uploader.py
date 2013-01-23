@@ -151,13 +151,16 @@ class ResultsUploader(object):
     self._test_results_map = {}
 
   def AddResults(self, test_results):
+    # TODO(frankf): Differentiate between fail/crash/timeouts.
     conversion_map = [
         (test_results.ok, False,
             json_results_generator.JSONResultsGeneratorBase.PASS_RESULT),
         (test_results.failed, True,
             json_results_generator.JSONResultsGeneratorBase.FAIL_RESULT),
         (test_results.crashed, True,
-            "C"),
+            json_results_generator.JSONResultsGeneratorBase.FAIL_RESULT),
+        (test_results.timed_out, True,
+            json_results_generator.JSONResultsGeneratorBase.FAIL_RESULT),
         (test_results.unknown, True,
             json_results_generator.JSONResultsGeneratorBase.NO_DATA_RESULT),
         ]
