@@ -18,6 +18,8 @@ cr.define('options', function() {
     REMOTE_PIN_CODE: 'bluetoothRemotePinCode',
     REMOTE_PASSKEY: 'bluetoothRemotePasskey',
     CONFIRM_PASSKEY: 'bluetoothConfirmPasskey',
+    DISMISSED: 'bluetoothPairingDismissed', // pairing dismissed(succeeded or
+                                            // canceled).
   };
 
   /**
@@ -127,6 +129,14 @@ cr.define('options', function() {
           this.keyDownEventHandler_.bind(this));
       $('bluetooth-pincode').addEventListener('keydown',
           this.keyDownEventHandler_.bind(this));
+    },
+
+    /** @override */
+    didClosePage: function() {
+      if (this.device_.pairing != PAIRING.DISMISSED) {
+        chrome.send('updateBluetoothDevice',
+                    [this.device_.address, 'cancel']);
+      }
     },
 
     /**
@@ -356,8 +366,10 @@ cr.define('options', function() {
   BluetoothPairing.dismissDialog = function() {
     var overlay = OptionsPage.getTopmostVisiblePage();
     var dialog = BluetoothPairing.getInstance();
-    if (overlay == dialog && dialog.dismissible_)
+    if (overlay == dialog && dialog.dismissible_) {
+      dialog.device_.pairing = PAIRING.DISMISSED;
       OptionsPage.closeOverlay();
+    }
   };
 
   // Export

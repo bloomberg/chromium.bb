@@ -240,6 +240,9 @@ class BluetoothDevice {
   //
   // If the request fails, |error_callback| will be called; otherwise,
   // |callback| is called when the request is complete.
+  // After calling Connect, CancelPairing should be called to cancel the pairing
+  // process and release |pairing_delegate_| if user cancels the pairing and
+  // closes the pairing UI.
   virtual void Connect(PairingDelegate* pairing_delegate,
                        const base::Closure& callback,
                        const ConnectErrorCallback& error_callback) = 0;
@@ -264,7 +267,8 @@ class BluetoothDevice {
   // Rejects a pairing or connection request from a remote device.
   virtual void RejectPairing() = 0;
 
-  // Cancels a pairing or connection attempt to a remote device.
+  // Cancels a pairing or connection attempt to a remote device or release
+  // |pairing_deleage_| and |agent_|.
   virtual void CancelPairing() = 0;
 
   // Disconnects the device, terminating the low-level ACL connection

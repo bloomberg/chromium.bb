@@ -215,20 +215,35 @@ void BluetoothDeviceChromeOs::RejectPairing() {
 }
 
 void BluetoothDeviceChromeOs::CancelPairing() {
-  if (!agent_.get())
-    return;
+  bool have_callback = false;
+  if (agent_.get()) {
+    if (!pincode_callback_.is_null()) {
+      pincode_callback_.Run(CANCELLED, "");
+      pincode_callback_.Reset();
+      have_callback = true;
+    }
+    if (!passkey_callback_.is_null()) {
+      passkey_callback_.Run(CANCELLED, 0);
+      passkey_callback_.Reset();
+      have_callback = true;
+    }
+    if (!confirmation_callback_.is_null()) {
+      confirmation_callback_.Run(CANCELLED);
+      confirmation_callback_.Reset();
+      have_callback = true;
+    }
+  }
 
-  if (!pincode_callback_.is_null()) {
-    pincode_callback_.Run(CANCELLED, "");
-    pincode_callback_.Reset();
-  }
-  if (!passkey_callback_.is_null()) {
-    passkey_callback_.Run(CANCELLED, 0);
-    passkey_callback_.Reset();
-  }
-  if (!confirmation_callback_.is_null()) {
-    confirmation_callback_.Run(CANCELLED);
-    confirmation_callback_.Reset();
+  if (!have_callback) {
+    // User cancels the pairing process.
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->CancelDeviceCreation(
+        adapter_->object_path_,
+        address_,
+        base::Bind(&BluetoothDeviceChromeOs::OnCancelDeviceCreation,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    pairing_delegate_ = NULL;
+    agent_.reset();
   }
 }
 
@@ -556,6 +571,13 @@ void BluetoothDeviceChromeOs::ForgetCallback(
     LOG(WARNING) << "Forget failed: " << address_;
     error_callback.Run();
   }
+}
+
+void BluetoothDeviceChromeOs::OnCancelDeviceCreation(
+    const dbus::ObjectPath& adapter_path,
+    bool success) {
+  if (!success)
+    LOG(WARNING) << "CancelDeviceCreation failed: " << address_;
 }
 
 void BluetoothDeviceChromeOs::SearchServicesForNameErrorCallback(

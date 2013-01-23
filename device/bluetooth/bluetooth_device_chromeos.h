@@ -185,6 +185,11 @@ class BluetoothDeviceChromeOs
   void ForgetCallback(const ErrorCallback& error_callback,
                       const dbus::ObjectPath& adapter_path, bool success);
 
+  // Called by BluetoothAdapterClient when a call to CancelDeviceCreation()
+  // completes, |success| indicates whether or not the request succeeded.
+  void OnCancelDeviceCreation(const dbus::ObjectPath& adapter_path,
+                              bool success);
+
   // Called if the call to GetServiceRecords from ProvidesServiceWithName fails.
   void SearchServicesForNameErrorCallback(
       const ProvidesServiceCallback& callback);
