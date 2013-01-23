@@ -16,10 +16,6 @@ namespace cryptohome {
 
 class MockAsyncMethodCaller : public AsyncMethodCaller {
  public:
-  static const char kFakeAttestationEnrollRequest[];
-  static const char kFakeAttestationCertRequest[];
-  static const char kFakeAttestationCert[];
-
   MockAsyncMethodCaller();
   virtual ~MockAsyncMethodCaller();
 
@@ -54,10 +50,6 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
   MountError return_code_;
 
   void DoCallback(Callback callback);
-  // Default fakes for attestation calls.
-  void FakeCreateEnrollRequest(const DataCallback& callback);
-  void FakeCreateCertRequest(const DataCallback& callback);
-  void FakeFinishCertRequest(const DataCallback& callback);
 
   DISALLOW_COPY_AND_ASSIGN(MockAsyncMethodCaller);
 };
