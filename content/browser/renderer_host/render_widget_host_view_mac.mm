@@ -73,7 +73,6 @@ using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
-using WebKit::WebGestureEvent;
 
 // These are not documented, so use only after checking -respondsToSelector:.
 @interface NSApplication (UndocumentedSpeechMethods)
@@ -1847,45 +1846,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   const WebMouseEvent event =
       WebInputEventFactory::mouseEvent(theEvent, self);
   renderWidgetHostView_->ForwardMouseEvent(event);
-}
-
-- (void)shortCircuitEndGestureWithEvent:(NSEvent*)event {
-  DCHECK(base::mac::IsOSLionOrLater());
-
-  if ([event subtype] != kIOHIDEventTypeScroll)
-    return;
-
-  if (renderWidgetHostView_->render_widget_host_) {
-    WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
-  }
-
-  if (endGestureMonitor_) {
-    [NSEvent removeMonitor:endGestureMonitor_];
-    endGestureMonitor_ = nil;
-  }
-}
-
-- (void)beginGestureWithEvent:(NSEvent*)event {
-  if (base::mac::IsOSLionOrLater() &&
-      [event subtype] == kIOHIDEventTypeScroll &&
-      renderWidgetHostView_->render_widget_host_) {
-    WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
-
-    // Use an NSEvent monitor to get the gesture-end event. This is done in
-    // order to get the gesture-end, even if the view is not visible, which is
-    // not the case with -endGestureWithEvent:. An example scenario where this
-    // may happen is switching tabs while a gesture is in progress.
-    if (!endGestureMonitor_) {
-      endGestureMonitor_ =
-          [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskEndGesture
-              handler:^(NSEvent* blockEvent) {
-                        [self shortCircuitEndGestureWithEvent:blockEvent];
-                        return blockEvent;
-                      }];
-    }
-  }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
