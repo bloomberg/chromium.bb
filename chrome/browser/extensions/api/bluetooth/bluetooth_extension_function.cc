@@ -24,10 +24,10 @@ bool IsBluetoothSupported(Profile* profile) {
   return GetEventRouter(profile)->IsBluetoothSupported();
 }
 
-void GetAdapter(
-    const device::BluetoothAdapterFactory::AdapterCallback callback,
+void RunCallbackOnAdapterReady(
+    const device::BluetoothAdapter::AdapterCallback callback,
     Profile* profile) {
-  GetEventRouter(profile)->GetAdapter(callback);
+  GetEventRouter(profile)->RunCallbackOnAdapterReady(callback);
 }
 
 }  // namespace
@@ -36,7 +36,8 @@ namespace extensions {
 
 namespace api {
 
-BluetoothExtensionFunction::BluetoothExtensionFunction() {
+BluetoothExtensionFunction::BluetoothExtensionFunction()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 BluetoothExtensionFunction::~BluetoothExtensionFunction() {
@@ -47,9 +48,10 @@ bool BluetoothExtensionFunction::RunImpl() {
     SetError(kPlatformNotSupported);
     return false;
   }
-  GetAdapter(base::Bind(&BluetoothExtensionFunction::RunOnAdapterReady, this),
-             profile());
-
+  RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothExtensionFunction::RunOnAdapterReady,
+                 weak_ptr_factory_.GetWeakPtr()),
+      profile());
   return true;
 }
 

@@ -29,8 +29,8 @@ class ExtensionBluetoothEventRouter
   // adapter is available for the current platform.
   bool IsBluetoothSupported() const;
 
-  void GetAdapter(
-      const device::BluetoothAdapterFactory::AdapterCallback& callback);
+  void RunCallbackOnAdapterReady(
+      const device::BluetoothAdapter::AdapterCallback& callback);
 
   // Called when a bluetooth event listener is added.
   void OnListenerAdded();

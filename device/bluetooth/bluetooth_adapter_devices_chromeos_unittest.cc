@@ -52,7 +52,7 @@ class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
     EXPECT_CALL(*mock_adapter_client_, AddObserver(_))
         .Times(1);
 
-    BluetoothAdapterFactory::GetAdapter(
+    BluetoothAdapterFactory::RunCallbackOnAdapterReady(
         base::Bind(&BluetoothAdapterDevicesChromeOsTest::SetAdapter,
                    base::Unretained(this)));
     ASSERT_TRUE(adapter_ != NULL);

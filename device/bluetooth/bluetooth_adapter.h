@@ -79,6 +79,9 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   typedef base::Callback<void(const BluetoothOutOfBandPairingData& data)>
       BluetoothOutOfBandPairingDataCallback;
 
+  typedef base::Callback<void(scoped_refptr<BluetoothAdapter> adapter)>
+      AdapterCallback;
+
   // Adds and removes observers for events on this bluetooth adapter,
   // if monitoring multiple adapters check the |adapter| parameter of
   // observer methods to determine which adapter is issuing the event.
@@ -92,6 +95,9 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // The name of the adapter.
   virtual const std::string& name() const;
+
+  // Queue adapter callbacks to be run when the adapter is initialized.
+  virtual void QueueAdapterCallback(const AdapterCallback& callback);
 
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
@@ -153,6 +159,8 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // Name of the adapter.
   std::string name_;
+
+  std::vector<AdapterCallback> adapter_callbacks_;
 
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value

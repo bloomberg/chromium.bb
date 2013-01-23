@@ -18,23 +18,18 @@ namespace device {
 // adapter" which may change depending on availability.
 class BluetoothAdapterFactory {
  public:
-  typedef base::Callback<void(scoped_refptr<BluetoothAdapter> adapter)>
-      AdapterCallback;
-
   // Returns true if the Bluetooth adapter is available for the current
   // platform.
   static bool IsBluetoothAdapterAvailable();
 
-  // Returns the shared instance of the default adapter, creating and
-  // initializing it if necessary. |callback| is called with the adapter
-  // instance passed only once the adapter is fully initialized and ready to
-  // use.
-  static void GetAdapter(const AdapterCallback& callback);
+  // Runs the callback with the shared instance for the default adapter when the
+  // adapter is available to be used.
+  static void RunCallbackOnAdapterReady(
+      const BluetoothAdapter::AdapterCallback& callback);
 
-  // Returns the shared instance of the adapter that has already been created,
-  // but may or may not have been initialized.
+  // Returns the shared instance of the adapter that has already been created.
   // It returns NULL if no adapter has been created at the time.
-  static scoped_refptr<BluetoothAdapter> MaybeGetAdapter();
+  static scoped_refptr<BluetoothAdapter> GetAdapter();
 
   // Creates an instance for a specific adapter at address |address|.
   static BluetoothAdapter* Create(const std::string& address);
