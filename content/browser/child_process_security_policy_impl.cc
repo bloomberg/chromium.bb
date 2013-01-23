@@ -515,15 +515,9 @@ bool ChildProcessSecurityPolicyImpl::CanLoadPage(
   // stronger security restrictions on page navigation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
       ResourceType::IsFrame(resource_type)) {
-    // TODO(irobert): This currently breaks some WebUI page such as
-    // "chrome://extensions/" (belongs to site chrome://chrome/) which
-    // will load an iframe for the page "chrome://uber-frame/"
-    // (belongs to site chrome://uber-frame/).
-    base::AutoLock lock(lock_);
-    SecurityStateMap::iterator state = security_state_.find(child_id);
-    if (state == security_state_.end())
-      return false;
-    return state->second->CanLoadPage(url);
+    // TODO(nasko): Do the proper check for site-per-process, once
+    // out-of-process iframes is ready to go.
+    return true;
   }
   return true;
 }

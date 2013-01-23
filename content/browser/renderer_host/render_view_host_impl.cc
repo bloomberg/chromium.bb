@@ -1254,8 +1254,8 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
                                      validated_params.url) ||
         static_cast<SiteInstanceImpl*>(GetSiteInstance())->
             HasWrongProcessForURL(validated_params.url)) {
-      base::KillProcess(process->GetHandle(), RESULT_CODE_KILLED, true);
-      UMA_HISTOGRAM_COUNTS("ChildProcess.ViolatedSitePerProcess", 1);
+      // TODO(nasko): Removed the actual kill process call until out-of-process
+      // iframes is ready to go.
     }
   }
 

@@ -16,9 +16,11 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/appcache/appcache_interceptor.h"
@@ -474,6 +476,34 @@ void ResourceLoader::CompleteResponseStarted() {
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
   PopulateResourceResponse(request_.get(), response);
+
+  // The --site-per-process flag enables an out-of-process iframes
+  // prototype. It works by changing the MIME type of cross-site subframe
+  // responses to a Chrome specific one. This new type causes the subframe
+  // to be replaced by a <webview> tag with the same URL, which results in
+  // using a renderer in a different process.
+  //
+  // For prototyping purposes, we will use a small hack to ensure same site
+  // iframes are not changed. We can compare the URL for the subframe
+  // request with the referrer. If the two don't match, then it should be a
+  // cross-site iframe.
+  // Also, we don't do the MIME type change for chrome:// URLs, as those
+  // require different privileges and are not allowed in regular renderers.
+  //
+  // The usage of SiteInstance::IsSameWebSite is safe on the IO thread,
+  // if the browser_context parameter is NULL. This does not work for hosted
+  // apps, but should be fine for prototyping.
+  // TODO(nasko): Once the SiteInstance check is fixed, ensure we do the
+  // right thing here. http://crbug.com/160576
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSitePerProcess) &&
+      GetRequestInfo()->GetResourceType() == ResourceType::SUB_FRAME &&
+      response->head.mime_type == "text/html" &&
+      !request_->url().SchemeIs(chrome::kChromeUIScheme) &&
+      !SiteInstance::IsSameWebSite(NULL, request_->url(),
+          request_->GetSanitizedReferrer())) {
+    response->head.mime_type = "application/browser-plugin";
+  }
 
   if (request_->ssl_info().cert) {
     int cert_id =

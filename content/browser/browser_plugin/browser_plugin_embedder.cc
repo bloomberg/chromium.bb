@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
@@ -61,6 +63,7 @@ void BrowserPluginEmbedder::CreateGuest(
     BrowserPluginGuest* guest_opener,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
   WebContentsImpl* guest_web_contents = NULL;
+  SiteInstance* guest_site_instance = NULL;
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   CHECK(!guest);
 
@@ -75,43 +78,60 @@ void BrowserPluginEmbedder::CreateGuest(
     return;
   }
 
-  const std::string& host =
-      render_view_host_->GetSiteInstance()->GetSiteURL().host();
-  std::string url_encoded_partition = net::EscapeQueryParamValue(
-      params.storage_partition_id, false);
-
-  SiteInstance* guest_site_instance = NULL;
-  if (guest_opener) {
-    guest_site_instance = guest_opener->GetWebContents()->GetSiteInstance();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSitePerProcess)) {
+    // When --site-per-process is specified, the behavior of BrowserPlugin
+    // as <webview> is broken and we use it for rendering out-of-process
+    // iframes instead. We use the src URL sent by the renderer to find the
+    // right process in which to place this instance.
+    // Note: Since BrowserPlugin doesn't support cross-process navigation,
+    // the instance will stay in the initially assigned process, regardless
+    // of the site it is navigated to.
+    // TODO(nasko): Fix this, and such that cross-process navigations are
+    // supported.
+    guest_site_instance =
+        web_contents()->GetSiteInstance()->GetRelatedSiteInstance(
+            GURL(params.src));
   } else {
-    // The SiteInstance of a given webview tag is based on the fact that it's a
-    // guest process in addition to which platform application the tag belongs
-    // to and what storage partition is in use, rather than the URL that the tag
-    // is being navigated to.
-    GURL guest_site(
-        base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
-                          host.c_str(), params.persist_storage ? "persist" : "",
-                          url_encoded_partition.c_str()));
+    const std::string& host =
+        render_view_host_->GetSiteInstance()->GetSiteURL().host();
+    std::string url_encoded_partition = net::EscapeQueryParamValue(
+        params.storage_partition_id, false);
 
-    // If we already have a webview tag in the same app using the same storage
-    // partition, we should use the same SiteInstance so the existing tag and
-    // the new tag can script each other.
-    for (ContainerInstanceMap::const_iterator it =
-            guest_web_contents_by_instance_id_.begin();
-        it != guest_web_contents_by_instance_id_.end(); ++it) {
-      if (it->second->GetSiteInstance()->GetSiteURL() == guest_site) {
-        guest_site_instance = it->second->GetSiteInstance();
-        break;
+    if (guest_opener) {
+      guest_site_instance = guest_opener->GetWebContents()->GetSiteInstance();
+    } else {
+      // The SiteInstance of a given webview tag is based on the fact that it's
+      // a guest process in addition to which platform application the tag
+      // belongs to and what storage partition is in use, rather than the URL
+      // that the tag is being navigated to.
+      GURL guest_site(
+          base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
+                             host.c_str(),
+                             params.persist_storage ? "persist" : "",
+                             url_encoded_partition.c_str()));
+
+      // If we already have a webview tag in the same app using the same storage
+      // partition, we should use the same SiteInstance so the existing tag and
+      // the new tag can script each other.
+      for (ContainerInstanceMap::const_iterator it =
+           guest_web_contents_by_instance_id_.begin();
+           it != guest_web_contents_by_instance_id_.end(); ++it) {
+        if (it->second->GetSiteInstance()->GetSiteURL() == guest_site) {
+          guest_site_instance = it->second->GetSiteInstance();
+          break;
+        }
+      }
+      if (!guest_site_instance) {
+        // Create the SiteInstance in a new BrowsingInstance, which will ensure
+        // that webview tags are also not allowed to send messages across
+        // different partitions.
+        guest_site_instance = SiteInstance::CreateForURL(
+            web_contents()->GetBrowserContext(), guest_site);
       }
     }
-    if (!guest_site_instance) {
-      // Create the SiteInstance in a new BrowsingInstance, which will ensure
-      // that webview tags are also not allowed to send messages across
-      // different partitions.
-      guest_site_instance = SiteInstance::CreateForURL(
-          web_contents()->GetBrowserContext(), guest_site);
-    }
   }
+
   WebContentsImpl* opener_web_contents = static_cast<WebContentsImpl*>(
       guest_opener ? guest_opener->GetWebContents() : NULL);
   guest_web_contents = WebContentsImpl::CreateGuest(

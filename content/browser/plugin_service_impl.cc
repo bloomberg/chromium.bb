@@ -147,10 +147,27 @@ void PluginServiceImpl::Init() {
 
   RegisterPepperPlugins();
 
+  // The --site-per-process flag enables an out-of-process iframes
+  // prototype, which uses WebView for rendering. We need to register the MIME
+  // type we use with the plugin, so the renderer can instantiate it.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kSitePerProcess)) {
+    webkit::WebPluginInfo webview_plugin(
+        ASCIIToUTF16("WebView Tag"),
+        FilePath(FILE_PATH_LITERAL("")),
+        ASCIIToUTF16("1.2.3.4"),
+        ASCIIToUTF16("Browser Plugin."));
+    webview_plugin.type = webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI;
+    webkit::WebPluginMimeType webview_plugin_mime_type;
+    webview_plugin_mime_type.mime_type = "application/browser-plugin";
+    webview_plugin_mime_type.file_extensions.push_back("*");
+    webview_plugin.mime_types.push_back(webview_plugin_mime_type);
+    RegisterInternalPlugin(webview_plugin, true);
+  }
+
   GetContentClient()->AddNPAPIPlugins(plugin_list_);
 
   // Load any specified on the command line as well.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath path = command_line->GetSwitchValuePath(switches::kLoadPlugin);
   if (!path.empty())
     AddExtraPluginPath(path);

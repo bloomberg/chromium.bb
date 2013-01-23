@@ -162,7 +162,9 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
+// TODO(nasko): Disable this test until out-of-process iframes is ready and the
+// security checks are back in place.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrossSiteIframe) {
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
@@ -191,7 +193,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeRedirectOnce) {
+// TODO(nasko): Disable this test until out-of-process iframes is ready and the
+// security checks are back in place.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DISABLED_CrossSiteIframeRedirectOnce) {
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
@@ -312,8 +317,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeRedirectOnce) {
   }
 }
 
+// TODO(nasko): Disable this test until out-of-process iframes is ready and the
+// security checks are back in place.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       CrossSiteIframeRedirectTwice) {
+                       DISABLED_CrossSiteIframeRedirectTwice) {
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
