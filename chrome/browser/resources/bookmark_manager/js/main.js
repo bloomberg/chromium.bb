@@ -983,6 +983,11 @@ document.addEventListener('canExecute', function(e) {
       e.canExecute = !list.isRecent() && !list.isSearch() &&
           list.dataModel.length > 1;
       break;
+    case 'undo-command':
+      // The global undo command has no visible UI, so always enable it, and
+      // just make it a no-op if undo is not possible.
+      e.canExecute = true;
+      break;
     default:
       canExecuteForList(e);
       break;
