@@ -66,7 +66,7 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
-#include "chrome/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -191,7 +191,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   extension_dispatcher_.reset(new extensions::Dispatcher());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
-  visited_link_slave_.reset(new VisitedLinkSlave());
+  visited_link_slave_.reset(new components::VisitedLinkSlave());
 #if defined(FULL_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif

@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/app",  # The plugins use the theme library to get the sad plugin bitmap.
+  "+components/visitedlink/renderer",
   # TODO(jam): remove this once all of chrome doesn't depend on content/common.
   "-content/common",
   "+content/public/renderer",

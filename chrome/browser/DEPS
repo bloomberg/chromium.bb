@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",
   "+components/auto_login_parser",
+  "+components/visitedlink/browser",
   "+components/web_contents_delegate_android",
   # TODO(boliu): Remove when content/components is moved to components.
   "+content/components",
@@ -98,8 +99,4 @@ include_rules = [
   "+third_party/re2",
   "+third_party/sqlite",
   "+third_party/undoview",
-
-  # FIXME: this is used by a browser_test. We need to find a better structure
-  # for this include.
-  "!chrome/renderer/visitedlink_slave.h",
 ]

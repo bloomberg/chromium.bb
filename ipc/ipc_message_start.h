@@ -73,6 +73,7 @@ enum IPCMessageStart {
   MediaPlayerMsgStart,
   TracingMsgStart,
   PeerConnectionTrackerMsgStart,
+  VisitedLinkMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

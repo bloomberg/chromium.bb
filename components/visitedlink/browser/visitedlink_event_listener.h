@@ -6,18 +6,17 @@
 // processes. It also coalesces the updates to avoid excessive broadcasting of
 // messages to the renderers.
 
-#ifndef CHROME_BROWSER_VISITEDLINK_VISITEDLINK_EVENT_LISTENER_H_
-#define CHROME_BROWSER_VISITEDLINK_VISITEDLINK_EVENT_LISTENER_H_
+#ifndef COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
+#define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
 
 #include <map>
 
 #include "base/memory/linked_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/visitedlink/visitedlink_master.h"
+#include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class VisitedLinkUpdater;
 
 namespace base {
 class SharedMemory;
@@ -26,6 +25,10 @@ class SharedMemory;
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace components {
+
+class VisitedLinkUpdater;
 
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                                  public content::NotificationObserver {
@@ -64,4 +67,6 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventListener);
 };
 
-#endif  // CHROME_BROWSER_VISITEDLINK_VISITEDLINK_EVENT_LISTENER_H_
+}  // namespace components
+
+#endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_

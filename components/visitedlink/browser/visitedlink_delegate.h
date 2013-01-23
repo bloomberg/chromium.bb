@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VISITEDLINK_VISITEDLINK_DELEGATE_H_
-#define CHROME_BROWSER_VISITEDLINK_VISITEDLINK_DELEGATE_H_
+#ifndef COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_DELEGATE_H_
+#define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_DELEGATE_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -12,6 +12,8 @@ class GURL;
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace components {
 
 // Delegate class that clients of VisitedLinkMaster must implement.
 class VisitedLinkDelegate {
@@ -49,4 +51,6 @@ class VisitedLinkDelegate {
   virtual ~VisitedLinkDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_VISITEDLINK_VISITEDLINK_DELEGATE_H_
+}  // namespace components
+
+#endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_DELEGATE_H_

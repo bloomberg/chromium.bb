@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_VISITEDLINK_SLAVE_H_
-#define CHROME_RENDERER_VISITEDLINK_SLAVE_H_
+#ifndef COMPONENTS_VISITEDLINK_RENDERER_VISITEDLINK_SLAVE_H_
+#define COMPONENTS_VISITEDLINK_RENDERER_VISITEDLINK_SLAVE_H_
 
 #include "base/compiler_specific.h"
 #include "base/shared_memory.h"
-#include "chrome/common/visitedlink_common.h"
+#include "components/visitedlink/common/visitedlink_common.h"
 #include "content/public/renderer/render_process_observer.h"
+
+namespace components {
 
 // Reads the link coloring database provided by the master. There can be any
 // number of slaves reading the same database.
@@ -34,4 +36,6 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkSlave);
 };
 
-#endif  // CHROME_RENDERER_VISITEDLINK_SLAVE_H_
+}  // namespace components
+
+#endif  // COMPONENTS_VISITEDLINK_RENDERER_VISITEDLINK_SLAVE_H_

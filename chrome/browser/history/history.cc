@@ -56,13 +56,13 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
-#include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
+#include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -112,7 +112,8 @@ void RunWithFaviconResults(
 }
 
 // Extract history::URLRows into GURLs for VisitedLinkMaster.
-class URLIteratorFromURLRows : public VisitedLinkMaster::URLIterator {
+class URLIteratorFromURLRows
+    : public components::VisitedLinkMaster::URLIterator {
  public:
   explicit URLIteratorFromURLRows(const history::URLRows& url_rows)
       : itr_(url_rows.begin()),
@@ -231,7 +232,7 @@ HistoryService::HistoryService(Profile* profile)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
-      visitedlink_master_(new VisitedLinkMaster(
+      visitedlink_master_(new components::VisitedLinkMaster(
           profile, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       backend_loaded_(false),
       current_backend_id_(-1),

@@ -1447,7 +1447,6 @@
         'browser/value_store/value_store_frontend_unittest.cc',
         'browser/value_store/value_store_unittest.cc',
         'browser/value_store/value_store_unittest.h',
-        'browser/visitedlink/visitedlink_unittest.cc',
         'browser/web_applications/web_app_mac_unittest.mm',
         'browser/web_applications/web_app_unittest.cc',
         'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
@@ -1667,8 +1666,10 @@
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
 
-        # TODO(boliu): Move this to component unit test target.
+        # TODO(boliu): Move this to components_unittests target under
+        # components/.
         '../components/auto_login_parser/auto_login_parser_unittest.cc',
+        '../components/visitedlink/test/visitedlink_unittest.cc',
       ],
       'conditions': [
         ['OS!="ios"', {

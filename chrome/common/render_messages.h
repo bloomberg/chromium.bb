@@ -259,21 +259,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_WebUIJavaScript,
 // render view responds with a ChromeViewHostMsg_Snapshot.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_CaptureSnapshot)
 
-// History system notification that the visited link database has been
-// replaced. It has one SharedMemoryHandle argument consisting of the table
-// handle. This handle is valid in the context of the renderer
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_NewTable,
-                     base::SharedMemoryHandle)
-
-// History system notification that a link has been added and the link
-// coloring state for the given hash must be re-calculated.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Add, std::vector<uint64>)
-
-// History system notification that one or more history items have been
-// deleted, which at this point means that all link coloring state must be
-// re-calculated.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_VisitedLink_Reset)
-
 // Set the content setting rules stored by the renderer.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
                      RendererContentSettingRules /* rules */)

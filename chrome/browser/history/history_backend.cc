@@ -1059,7 +1059,8 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
 }
 
 void HistoryBackend::IterateURLs(
-    const scoped_refptr<VisitedLinkDelegate::URLEnumerator>& iterator) {
+    const scoped_refptr<components::VisitedLinkDelegate::URLEnumerator>&
+    iterator) {
   if (db_.get()) {
     HistoryDatabase::URLEnumerator e;
     if (db_->InitURLEnumeratorForEverything(&e)) {

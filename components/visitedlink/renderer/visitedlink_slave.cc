@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_slave.h"
 
 #include "base/logging.h"
 #include "base/shared_memory.h"
-#include "chrome/common/render_messages.h"
+#include "components/visitedlink/common/visitedlink_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+
+namespace components {
 
 using WebKit::WebView;
 
@@ -87,3 +89,5 @@ void VisitedLinkSlave::FreeTable() {
   hash_table_ = NULL;
   table_length_ = 0;
 }
+
+}  // namespace components

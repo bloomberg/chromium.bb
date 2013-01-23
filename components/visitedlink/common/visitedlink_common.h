@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_VISITEDLINK_COMMON_H__
-#define CHROME_COMMON_VISITEDLINK_COMMON_H__
+#ifndef COMPONENTS_VISITEDLINK_COMMON_VISITEDLINK_COMMON_H_
+#define COMPONENTS_VISITEDLINK_COMMON_VISITEDLINK_COMMON_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 
 class GURL;
+
+namespace components {
 
 // number of bytes in the salt
 #define LINK_SALT_LENGTH 8
@@ -131,4 +133,6 @@ class VisitedLinkCommon {
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkCommon);
 };
 
-#endif  // CHROME_COMMON_VISITEDLINK_COMMON_H_
+}  // namespace components
+
+#endif  // COMPONENTS_VISITEDLINK_COMMON_VISITEDLINK_COMMON_H_

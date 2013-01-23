@@ -13,13 +13,13 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/browser/visitedlink/visitedlink_delegate.h"
-#include "chrome/browser/visitedlink/visitedlink_event_listener.h"
-#include "chrome/browser/visitedlink/visitedlink_master.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/visitedlink/browser/visitedlink_delegate.h"
+#include "components/visitedlink/browser/visitedlink_event_listener.h"
+#include "components/visitedlink/browser/visitedlink_master.h"
+#include "components/visitedlink/common/visitedlink_messages.h"
+#include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -32,6 +32,8 @@
 using content::BrowserThread;
 using content::MockRenderProcessHost;
 using content::RenderViewHostTester;
+
+namespace components {
 
 namespace {
 
@@ -757,3 +759,5 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(1, profile()->add_event_count());
   EXPECT_EQ(1, profile()->reset_event_count());
 }
+
+}  // namespace components

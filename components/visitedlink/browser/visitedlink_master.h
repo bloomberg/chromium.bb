@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VISITEDLINK_VISITEDLINK_MASTER_H_
-#define CHROME_BROWSER_VISITEDLINK_VISITEDLINK_MASTER_H_
+#ifndef COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_
+#define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -17,19 +17,21 @@
 #include "base/gtest_prod_util.h"
 #include "base/shared_memory.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/visitedlink_common.h"
+#include "components/visitedlink/common/visitedlink_common.h"
 
 #if defined(UNIT_TEST) || defined(PERF_TEST) || !defined(NDEBUG)
 #include "base/logging.h"
 #endif
 
 class GURL;
-class VisitedLinkDelegate;
 
 namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace components {
+
+class VisitedLinkDelegate;
 
 // Controls the link coloring database. The master controls all writing to the
 // database as well as disk I/O. There should be only one master.
@@ -431,4 +433,6 @@ inline void VisitedLinkMaster::DebugValidate() {
 }
 #endif
 
-#endif  // CHROME_BROWSER_VISITEDLINK_VISITEDLINK_MASTER_H_
+}  // namespace components
+
+#endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_

@@ -1,0 +1,6 @@
+include_rules = [
+  "+content/public/renderer",
+  "+third_party/WebKit/Source/Platform/chromium/public",
+  "+third_party/WebKit/Source/WebKit/chromium/public",
+]
+

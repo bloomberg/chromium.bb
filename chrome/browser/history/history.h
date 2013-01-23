@@ -25,9 +25,9 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/browser/visitedlink/visitedlink_delegate.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
+#include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
@@ -46,12 +46,15 @@ class HistoryURLProvider;
 class PageUsageData;
 class PageUsageRequest;
 class Profile;
-class VisitedLinkMaster;
 struct HistoryURLProviderParams;
 
 namespace base {
 class Thread;
 }
+
+namespace components {
+class VisitedLinkMaster;
+}  // namespace components
 
 
 namespace history {
@@ -110,7 +113,7 @@ class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
                        public syncer::SyncableService,
                        public ProfileKeyedService,
-                       public VisitedLinkDelegate {
+                       public components::VisitedLinkDelegate {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
@@ -657,7 +660,7 @@ class HistoryService : public CancelableRequestProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Implementation of VisitedLinkDelegate.
+  // Implementation of components::VisitedLinkDelegate.
   virtual bool AreEquivalentContexts(
       content::BrowserContext* context1,
       content::BrowserContext* context2) OVERRIDE;
@@ -1090,7 +1093,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Used for propagating link highlighting data across renderers. May be null
   // in tests.
-  scoped_ptr<VisitedLinkMaster> visitedlink_master_;
+  scoped_ptr<components::VisitedLinkMaster> visitedlink_master_;
 
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.

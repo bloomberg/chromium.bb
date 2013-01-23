@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/visitedlink/visitedlink_event_listener.h"
+#include "components/visitedlink/browser/visitedlink_event_listener.h"
 
 #include "base/shared_memory.h"
-#include "chrome/browser/visitedlink/visitedlink_delegate.h"
-#include "chrome/common/render_messages.h"
+#include "components/visitedlink/browser/visitedlink_delegate.h"
+#include "components/visitedlink/common/visitedlink_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,6 +26,8 @@ static const int kCommitIntervalMs = 100;
 static const unsigned kVisitedLinkBufferThreshold = 50;
 
 }  // namespace
+
+namespace components {
 
 // This class manages buffering and sending visited link hashes (fingerprints)
 // to renderer based on widget visibility.
@@ -214,3 +216,5 @@ void VisitedLinkEventListener::Observe(
       break;
   }
 }
+
+}  // namespace components

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/visitedlink_common.h"
+#include "components/visitedlink/common/visitedlink_common.h"
 
 #include <string.h>  // for memset()
 
 #include "base/logging.h"
 #include "base/md5.h"
 #include "googleurl/src/gurl.h"
+
+namespace components {
 
 const VisitedLinkCommon::Fingerprint VisitedLinkCommon::null_fingerprint_ = 0;
 const VisitedLinkCommon::Hash VisitedLinkCommon::null_hash_ = -1;
@@ -96,3 +98,5 @@ VisitedLinkCommon::Fingerprint VisitedLinkCommon::ComputeURLFingerprint(
   return bit_cast<Fingerprint, uint8[8]>(
       *reinterpret_cast<uint8(*)[8]>(&digest.a));
 }
+
+}  // namespace components

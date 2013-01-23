@@ -24,6 +24,7 @@ include_rules = [
   "-chrome",
   "+chrome/common",
   "+chrome/test",
+  "+components/visitedlink/common",
   "+content/public/common",
   "+content/public/test",
   "+content/test/gpu",

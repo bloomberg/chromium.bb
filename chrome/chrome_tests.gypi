@@ -2383,10 +2383,13 @@
           ],
           'sources': [
             'browser/net/sqlite_persistent_cookie_store_perftest.cc',
-            'browser/visitedlink/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',
             'test/perf/perftests.cc',
             'test/perf/url_parse_perftest.cc',
+
+            # TODO(boliu): Move this to a separate components_perftest target
+            # under components/.
+            '../components/visitedlink/test/visitedlink_perftest.cc',
           ],
           'conditions': [
             ['toolkit_uses_gtk == 1', {
