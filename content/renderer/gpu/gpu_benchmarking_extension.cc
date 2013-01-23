@@ -153,7 +153,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "};"
           "chrome.gpuBenchmarking.beginWindowSnapshotPNG = function(callback) {"
           "  native function BeginWindowSnapshotPNG();"
-          "  BeginWindowPNGSnapshot(callback);"
+          "  BeginWindowSnapshotPNG(callback);"
           "};") {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
