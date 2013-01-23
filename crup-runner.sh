@@ -64,6 +64,12 @@ solution="${1%%/*}"
 cd "$solution"
 
 if [ "$solution" = "$1" ]; then
+  # Skip git checkouts not managed by crup.
+  if ! grep -q -s "The Chromium Authors" ".git/description"; then
+    echo "Skipping unmanaged git directory $1" 1>&2
+    exit 0
+  fi
+
   # Don't "pull" if checkout is not on a named branch
   shift
   if test "$2" = "pull" && ( ! git symbolic-ref HEAD >/dev/null 2>/dev/null ); then
