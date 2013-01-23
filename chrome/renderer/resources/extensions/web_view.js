@@ -109,7 +109,10 @@ function WebView(node) {
     get: function() {
       // TODO(fsamuel): This is a workaround to enable
       // contentWindow.postMessage until http://crbug.com/152006 is fixed.
-      return objectNode.contentWindow.self;
+      if (objectNode.contentWindow)
+        return objectNode.contentWindow.self;
+      console.error('contentWindow is not available at this time. ' +
+          'It will become available when the page has finished loading.');
     },
     // No setter.
     enumerable: true
