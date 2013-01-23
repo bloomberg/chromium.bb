@@ -25,10 +25,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#endif
-
 namespace {
 
 string16 AutocompleteResultAsString(const AutocompleteResult& result) {
