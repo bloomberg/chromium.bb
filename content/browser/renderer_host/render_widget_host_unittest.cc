@@ -67,6 +67,12 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   float delta_x() const { return delta_x_; }
   float delta_y() const { return delta_y_; }
 
+  void Reset() {
+    current_mode_ = OVERSCROLL_NONE;
+    completed_mode_ = OVERSCROLL_NONE;
+    delta_x_ = delta_y_ = 0.f;
+  }
+
  private:
   // Overridden from OverscrollControllerDelegate:
   virtual void OnOverscrollUpdate(float delta_x, float delta_y) OVERRIDE {
@@ -2859,6 +2865,53 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, process_->sink().message_count());
+}
+
+// Tests that a fling in the opposite direction of the overscroll cancels the
+// overscroll nav instead of completing it.
+TEST_F(RenderWidgetHostTest, ReverseFlingCancelsOverscroll) {
+  host_->SetupForOverscrollControllerTest();
+  host_->set_debounce_interval_time_ms(0);
+  process_->sink().ClearMessages();
+  view_->set_bounds(gfx::Rect(0, 0, 400, 200));
+  view_->Show();
+
+  {
+    // Start and end a gesture in the same direction without processing the
+    // gesture events in the renderer. This should initiate and complete an
+    // overscroll navigation.
+    SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                         WebGestureEvent::Touchscreen);
+    SimulateGestureScrollUpdateEvent(300, -5, 0);
+    SendInputEventACK(WebInputEvent::GestureScrollBegin, true);
+    SendInputEventACK(WebInputEvent::GestureScrollUpdate, false);
+    EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
+    EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
+
+    SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                         WebGestureEvent::Touchscreen);
+    EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());
+    EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+    SendInputEventACK(WebInputEvent::GestureScrollEnd, false);
+  }
+
+  {
+    // Start over, except instead of ending the gesture with ScrollEnd, end it
+    // with a FlingStart, with velocity in the reverse direction. This should
+    // initiate an overscroll navigation, but it should be cancelled because of
+    // the fling in the opposite direction.
+    host_->overscroll_delegate()->Reset();
+    SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                         WebGestureEvent::Touchscreen);
+    SimulateGestureScrollUpdateEvent(-300, -5, 0);
+    SendInputEventACK(WebInputEvent::GestureScrollBegin, true);
+    SendInputEventACK(WebInputEvent::GestureScrollUpdate, false);
+    EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_mode());
+    EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_delegate()->current_mode());
+    SimulateGestureFlingStartEvent(100, 0, WebGestureEvent::Touchscreen);
+    EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->completed_mode());
+    EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  }
 }
 
 // Tests that touch-scroll events are handled correctly by the overscroll
