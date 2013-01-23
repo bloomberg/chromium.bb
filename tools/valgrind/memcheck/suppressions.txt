@@ -6507,3 +6507,10 @@
    fun:_ZN33GeolocationPermissionContextTests28RequestGeolocationPermissionERK30GeolocationPermissionRequestIDRK4GURL
    fun:_ZN62GeolocationPermissionContextTests_PermissionForFileScheme_Test8TestBodyEv
 }
+{
+   bug_171722
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12_GLOBAL__N_120URLRequestFtpJobTest9AddSocketEPNS_13MockReadWriteILNS_17MockReadWriteTypeE0EEEmPNS2_ILS3_1EEEm
+   ...
+}

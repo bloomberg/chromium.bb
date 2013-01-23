@@ -2347,3 +2347,10 @@
    fun:_ZN9Offscreen5getCGERK19SkScalerContext_MacRK7SkGlyphtPmb
    fun:_ZN19SkScalerContext_Mac13generateImageERK7SkGlyph
 }
+{
+   bug_171722_mac
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12_GLOBAL__N_120URLRequestFtpJobTest9AddSocketEPNS_13MockReadWriteILNS_17MockReadWriteTypeE0EEEmPNS2_ILS3_1EEEm
+   ...
+}
