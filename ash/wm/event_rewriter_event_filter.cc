@@ -17,7 +17,7 @@ EventRewriterEventFilter::~EventRewriterEventFilter() {}
 
 void EventRewriterEventFilter::SetEventRewriterDelegate(
     scoped_ptr<EventRewriterDelegate> delegate) {
-  delegate_.swap(delegate);
+  delegate_ = delegate.Pass();
 }
 
 void EventRewriterEventFilter::OnKeyEvent(ui::KeyEvent* event) {

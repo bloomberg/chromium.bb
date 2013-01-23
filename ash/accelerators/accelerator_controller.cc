@@ -793,18 +793,18 @@ void AcceleratorController::SetBrightnessControlDelegate(
   if (Shell::GetInstance()->display_manager()->HasInternalDisplay() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableBrightnessControl)) {
-    brightness_control_delegate_.swap(brightness_control_delegate);
+    brightness_control_delegate_ = brightness_control_delegate.Pass();
   }
 }
 
 void AcceleratorController::SetImeControlDelegate(
     scoped_ptr<ImeControlDelegate> ime_control_delegate) {
-  ime_control_delegate_.swap(ime_control_delegate);
+  ime_control_delegate_ = ime_control_delegate.Pass();
 }
 
 void AcceleratorController::SetScreenshotDelegate(
     scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
-  screenshot_delegate_.swap(screenshot_delegate);
+  screenshot_delegate_ = screenshot_delegate.Pass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
