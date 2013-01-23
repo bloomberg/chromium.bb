@@ -10,8 +10,6 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 
-class GURL;
-
 namespace gfx {
 class ImageSkia;
 }
