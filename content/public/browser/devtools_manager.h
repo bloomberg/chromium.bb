@@ -28,6 +28,8 @@ class CONTENT_EXPORT DevToolsManager {
  public:
   static DevToolsManager* GetInstance();
 
+  virtual ~DevToolsManager() {}
+
   // Routes devtools message from |from| client to corresponding
   // DevToolsAgentHost.
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
@@ -66,7 +68,6 @@ class CONTENT_EXPORT DevToolsManager {
   virtual void AddMessageToConsole(DevToolsAgentHost* agent_host,
                                    ConsoleMessageLevel level,
                                    const std::string& message) = 0;
-
 };
 
 }  // namespace content

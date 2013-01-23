@@ -21,6 +21,8 @@ class ZygoteHost {
   // Returns the singleton instance.
   CONTENT_EXPORT static ZygoteHost* GetInstance();
 
+  virtual ~ZygoteHost() {}
+
   // Returns the pid of the Zygote process.
   virtual pid_t GetPid() const = 0;
 

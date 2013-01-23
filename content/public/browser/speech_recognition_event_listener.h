@@ -60,8 +60,8 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // process and the |SpeechRecognizer| object can be freed if necessary.
   virtual void OnRecognitionEnd(int session_id) = 0;
 
-protected:
-  virtual ~SpeechRecognitionEventListener() { }
+ protected:
+  virtual ~SpeechRecognitionEventListener() {}
 };
 
 }  // namespace content

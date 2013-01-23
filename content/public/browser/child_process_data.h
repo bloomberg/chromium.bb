@@ -29,7 +29,7 @@ struct ChildProcessData {
   // The handle to the process.
   base::ProcessHandle handle;
 
-  ChildProcessData(content::ProcessType type)
+  explicit ChildProcessData(content::ProcessType type)
       : type(type), id(0), handle(base::kNullProcessHandle) {
   }
 };
