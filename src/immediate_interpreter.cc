@@ -328,6 +328,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       tap_max_movement_(prop_reg, "Tap Maximum Movement", 0.0001),
       tap_max_finger_age_(prop_reg, "Tap Maximum Finger Age", 1.2),
       three_finger_click_enable_(prop_reg, "Three Finger Click Enable", 0),
+      zero_finger_click_enable_(prop_reg, "Zero Finger Click Enable", 1),
       t5r2_three_finger_click_enable_(prop_reg,
                                       "T5R2 Three Finger Click Enable",
                                       0),
@@ -1475,6 +1476,8 @@ int ImmediateInterpreter::EvaluateButtonType(
     return GESTURES_BUTTON_RIGHT;
   }
   int num_pointing = pointing_.size();
+  if (!zero_finger_click_enable_.val_ && hwstate.finger_cnt == 0)
+    return GESTURES_BUTTON_NONE;
   if (num_pointing <= 1)
     return hwstate.buttons_down;
   if (current_gesture_type_ == kGestureTypeScroll)
@@ -1581,7 +1584,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
     button_type_ = EvaluateButtonType(hwstate);
     // button_up before button_evaluation_timeout_ expired.
     // Send up & down for button that was previously down, but not yet sent.
-    if (button_type_ == 0)
+    if (button_type_ == GESTURES_BUTTON_NONE)
       button_type_ = prev_button_down;
     // We send non-left buttons immediately, but delay left in case future
     // packets indicate non-left button.
@@ -1613,7 +1616,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
     else
       result_.details.buttons.up = button_type_;
     // Reset button state
-    button_type_ = 0;
+    button_type_ = GESTURES_BUTTON_NONE;
     button_down_timeout_ = 0;
     sent_button_down_ = false;
   }

@@ -438,6 +438,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If three finger click should be enabled. This is a temporary flag so that
   // we can deploy this feature behind a file while we work out the bugs.
   BoolProperty three_finger_click_enable_;
+  // If zero finger click should be enabled. On some platforms, bending the
+  // case may accidentally cause a physical click.  This supresses all clicks
+  // that do not have at least 1 finger detected on the touchpad.
+  BoolProperty zero_finger_click_enable_;
   // If T5R2 should support three-finger click/tap, which can in some situations
   // be unreliable.
   BoolProperty t5r2_three_finger_click_enable_;

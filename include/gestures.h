@@ -119,6 +119,7 @@ struct FingerState {
 #endif
 };
 
+#define GESTURES_BUTTON_NONE 0
 #define GESTURES_BUTTON_LEFT 1
 #define GESTURES_BUTTON_MIDDLE 2
 #define GESTURES_BUTTON_RIGHT 4
