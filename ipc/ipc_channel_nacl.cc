@@ -107,7 +107,7 @@ void Channel::ChannelImpl::ReaderThreadRunner::Run() {
     bool success = ReadDataOnReaderThread(pipe_, msg_contents.get());
     if (success) {
       main_message_loop_->PostTask(FROM_HERE,
-          base::Bind(data_read_callback_, base::Passed(msg_contents.Pass())));
+          base::Bind(data_read_callback_, base::Passed(&msg_contents)));
     } else {
       main_message_loop_->PostTask(FROM_HERE, failure_callback_);
       // Because the read failed, we know we're going to quit. Don't bother
