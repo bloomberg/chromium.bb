@@ -11,6 +11,9 @@ HTTPSEVCRLSetTest.FreshCRLSet
 HTTPSRequestTest.ClientAuthTest
 HTTPSRequestTest.ResumeTest
 HTTPSRequestTest.SSLSessionCacheShardTest
+# Bug: 171812
+MultiThreadedCertVerifierTest.CancelRequest
+
 PythonUtils.PythonRunTime
 TransportSecurityStateTest.ValidPinsHeadersSHA1
 TransportSecurityStateTest.ValidPinsHeadersSHA256
