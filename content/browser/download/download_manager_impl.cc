@@ -485,6 +485,12 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
   return download_item;
 }
 
+void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
+    DownloadItem* download_item) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnSavePackageSuccessfullyFinished(this, download_item));
+}
+
 void DownloadManagerImpl::CancelDownload(int32 download_id) {
   DownloadItem* download = GetDownload(download_id);
   if (!download || !download->IsInProgress())

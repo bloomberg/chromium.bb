@@ -84,6 +84,10 @@ class CONTENT_EXPORT DownloadManager
     virtual void OnDownloadCreated(
         DownloadManager* manager, DownloadItem* item) {}
 
+    // A SavePackage has successfully finished.
+    virtual void OnSavePackageSuccessfullyFinished(
+        DownloadManager* manager, DownloadItem* item) {}
+
     // Called when the DownloadManager is being destroyed to prevent Observers
     // from calling back to a stale pointer.
     virtual void ManagerGoingDown(DownloadManager* manager) {}
