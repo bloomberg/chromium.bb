@@ -116,8 +116,8 @@ TEST_F(QuicSendSchedulerTest, FixedRateBandwidth) {
     sender_->OnIncomingAckFrame(ack);
   }
   EXPECT_EQ(100000, sender_->BandwidthEstimate());
-  EXPECT_EQ(101010, sender_->PeakSustainedBandwidth());
-  EXPECT_EQ(101010, sender_->SentBandwidth());
+  EXPECT_NEAR(100000, sender_->PeakSustainedBandwidth(), 4000);
+  EXPECT_NEAR(100000, sender_->SentBandwidth(), 4000);
 }
 
 TEST_F(QuicSendSchedulerTest, BandwidthWith3SecondGap) {
@@ -140,13 +140,13 @@ TEST_F(QuicSendSchedulerTest, BandwidthWith3SecondGap) {
     sender_->OnIncomingAckFrame(ack);
   }
   EXPECT_EQ(100000, sender_->BandwidthEstimate());
-  EXPECT_EQ(100000, sender_->PeakSustainedBandwidth());
-  EXPECT_EQ(100000, sender_->SentBandwidth());
+  EXPECT_NEAR(100000, sender_->PeakSustainedBandwidth(), 2000);
+  EXPECT_NEAR(100000, sender_->SentBandwidth(), 2000);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
-  EXPECT_EQ(50000, sender_->SentBandwidth());
+  EXPECT_NEAR(50000, sender_->SentBandwidth(), 1000);
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2100));
-  EXPECT_EQ(100000, sender_->BandwidthEstimate());
-  EXPECT_EQ(100000, sender_->PeakSustainedBandwidth());
+  EXPECT_NEAR(100000, sender_->BandwidthEstimate(), 2000);
+  EXPECT_NEAR(100000, sender_->PeakSustainedBandwidth(), 2000);
   EXPECT_EQ(0, sender_->SentBandwidth());
   for (int i = 1; i <= 150; ++i) {
     EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
@@ -158,8 +158,8 @@ TEST_F(QuicSendSchedulerTest, BandwidthWith3SecondGap) {
     sender_->OnIncomingAckFrame(ack);
   }
   EXPECT_EQ(100000, sender_->BandwidthEstimate());
-  EXPECT_EQ(100000, sender_->PeakSustainedBandwidth());
-  EXPECT_EQ(50000, sender_->SentBandwidth());
+  EXPECT_NEAR(100000, sender_->PeakSustainedBandwidth(), 2000);
+  EXPECT_NEAR(100000, sender_->SentBandwidth(), 2000);
 }
 
 TEST_F(QuicSendSchedulerTest, Pacing) {

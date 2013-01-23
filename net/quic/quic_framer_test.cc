@@ -108,6 +108,10 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     peer_address_ = peer_address;
   }
 
+  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {
+    public_reset_packet_.reset(new QuicPublicResetPacket(packet));
+  }
+
   virtual void OnRevivedPacket() {
     revived_packets_++;
   }
@@ -169,6 +173,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
   scoped_ptr<QuicPacketHeader> header_;
+  scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
   vector<QuicStreamFrame*> stream_frames_;
   vector<QuicAckFrame*> ack_frames_;
   vector<QuicCongestionFeedbackFrame*> congestion_feedback_frames_;
@@ -391,9 +396,7 @@ TEST_F(QuicFramerTest, LargePacket) {
     // private flags
     0x00,
     // first fec protected packet offset
-    0xFF,
-    // frame count
-    0x01,
+    0xFF
   };
 
   memset(packet + kPacketHeaderSize, 0, kMaxPacketSize - kPacketHeaderSize + 1);
@@ -405,7 +408,7 @@ TEST_F(QuicFramerTest, LargePacket) {
   // Make sure we've parsed the packet header, so we can send an error.
   EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
             visitor_.header_->public_header.guid);
-  // Make sure the correct error is propogated.
+  // Make sure the correct error is propagated.
   EXPECT_EQ(QUIC_PACKET_TOO_LARGE, framer_.error());
 }
 
@@ -455,6 +458,84 @@ TEST_F(QuicFramerTest, PacketHeader) {
   }
 }
 
+TEST_F(QuicFramerTest, InvalidPublicFlag) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x07,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame count
+    0x01,
+    // frame type (stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // fin
+    0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length
+    0x0c, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+  CheckProcessingFails(packet,
+                       arraysize(packet),
+                       "Illegal public flags value.",
+                       QUIC_INVALID_PACKET_HEADER);
+};
+
+TEST_F(QuicFramerTest, InvalidPrivateFlag) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x00,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x07,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame count
+    0x01,
+    // frame type (stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // fin
+    0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length
+    0x0c, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+  CheckProcessingFails(packet,
+                       arraysize(packet),
+                       "Illegal private flags value.",
+                       QUIC_INVALID_PACKET_HEADER);
+};
+
 TEST_F(QuicFramerTest, PaddingFrame) {
   unsigned char packet[] = {
     // guid
@@ -470,8 +551,6 @@ TEST_F(QuicFramerTest, PaddingFrame) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (padding frame)
     0x00,
     // Ignored data (which in this case is a stream frame)
@@ -498,11 +577,9 @@ TEST_F(QuicFramerTest, PaddingFrame) {
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 1; ++i) {
     string expected_error;
     if (i < 1) {
-      expected_error = "Unable to read frame count.";
-    } else if (i < 2) {
       expected_error = "Unable to read frame type.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -525,8 +602,6 @@ TEST_F(QuicFramerTest, StreamFrame) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (stream frame)
     0x01,
     // stream id
@@ -563,19 +638,17 @@ TEST_F(QuicFramerTest, StreamFrame) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 29; ++i) {
+  for (size_t i = 0; i < 28; ++i) {
     string expected_error;
     if (i < 1) {
-      expected_error = "Unable to read frame count.";
-    } else if (i < 2) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 6) {
+    } else if (i < 5) {
       expected_error = "Unable to read stream_id.";
-    } else if (i < 7) {
+    } else if (i < 6) {
       expected_error = "Unable to read fin.";
-    } else if (i < 15) {
+    } else if (i < 14) {
       expected_error = "Unable to read offset.";
-    } else if (i < 29) {
+    } else if (i < 28) {
       expected_error = "Unable to read frame data.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -600,8 +673,6 @@ TEST_F(QuicFramerTest, RejectPacket) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (stream frame)
     0x01,
     // stream id
@@ -633,8 +704,6 @@ TEST_F(QuicFramerTest, RejectPacket) {
 
 TEST_F(QuicFramerTest, RevivedStreamFrame) {
   unsigned char payload[] = {
-    // frame count
-    0x01,
     // frame type (stream frame)
     0x01,
     // stream id
@@ -699,8 +768,6 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
     // first fec protected packet offset
     0x02,
 
-    // frame count
-    0x01,
     // frame type (stream frame)
     0x01,
     // stream id
@@ -755,8 +822,6 @@ TEST_F(QuicFramerTest, AckFrame) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (ack frame)
     0x02,
     // least packet sequence number awaiting an ack
@@ -790,19 +855,17 @@ TEST_F(QuicFramerTest, AckFrame) {
   EXPECT_EQ(GG_UINT64_C(0x0123456789AA0), frame.sent_info.least_unacked);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 21; ++i) {
+  for (size_t i = 0; i < 20; ++i) {
     string expected_error;
     if (i < 1) {
-      expected_error = "Unable to read frame count.";
-    } else if (i < 2) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 8) {
+    } else if (i < 7) {
       expected_error = "Unable to read least unacked.";
-    } else if (i < 14) {
+    } else if (i < 13) {
       expected_error = "Unable to read largest observed.";
-    } else if (i < 15) {
+    } else if (i < 14) {
       expected_error = "Unable to read num missing packets.";
-    } else if (i < 21) {
+    } else if (i < 20) {
       expected_error = "Unable to read sequence number in missing packets.";
     }    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
                          QUIC_INVALID_FRAME_DATA);
@@ -824,8 +887,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (tcp)
@@ -853,17 +914,15 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
   EXPECT_EQ(0x0403, frame.tcp.receive_window);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 7; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     string expected_error;
     if (i < 1) {
-      expected_error = "Unable to read frame count.";
-    } else if (i < 2) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 3) {
+    } else if (i < 2) {
       expected_error = "Unable to read congestion feedback type.";
-    } else if (i < 5) {
+    } else if (i < 4) {
       expected_error = "Unable to read accumulated number of lost packets.";
-    } else if (i < 7) {
+    } else if (i < 6) {
       expected_error = "Unable to read receive window.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -886,8 +945,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (inter arrival)
@@ -942,29 +999,27 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
             iter->second);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 32; ++i) {
+  for (size_t i = 0; i < 31; ++i) {
     string expected_error;
     if (i < 1) {
-      expected_error = "Unable to read frame count.";
-    } else if (i < 2) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 3) {
+    } else if (i < 2) {
       expected_error = "Unable to read congestion feedback type.";
-    } else if (i < 5) {
+    } else if (i < 4) {
       expected_error = "Unable to read accumulated number of lost packets.";
-    } else if (i < 6) {
+    } else if (i < 5) {
       expected_error = "Unable to read num received packets.";
-    } else if (i < 12) {
+    } else if (i < 11) {
       expected_error = "Unable to read smallest received.";
-    } else if (i < 20) {
+    } else if (i < 19) {
       expected_error = "Unable to read time received.";
-    } else if (i < 22) {
+    } else if (i < 21) {
       expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < 26) {
+    } else if (i < 25) {
       expected_error = "Unable to read time delta in received packets.";
-    } else if (i < 28) {
+    } else if (i < 27) {
       expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < 32) {
+    } else if (i < 31) {
       expected_error = "Unable to read time delta in received packets.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -987,8 +1042,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (fix rate)
@@ -1013,15 +1066,13 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
             frame.fix_rate.bitrate_in_bytes_per_second);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 7; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     string expected_error;
     if (i < 1) {
-      expected_error = "Unable to read frame count.";
-    } else if (i < 2) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 3) {
+    } else if (i < 2) {
       expected_error = "Unable to read congestion feedback type.";
-    } else if (i < 7) {
+    } else if (i < 6) {
       expected_error = "Unable to read bitrate.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -1045,8 +1096,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (invalid)
@@ -1074,8 +1123,6 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (rst stream frame)
     0x04,
     // stream id
@@ -1110,15 +1157,15 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
   EXPECT_EQ("because I can", visitor_.rst_stream_frame_.error_details);
 
   // Now test framing boundaries
-  for (size_t i = 3; i < 33; ++i) {
+  for (size_t i = 2; i < 32; ++i) {
     string expected_error;
-    if (i < 6) {
+    if (i < 5) {
       expected_error = "Unable to read stream_id.";
-    } else if (i < 14) {
+    } else if (i < 13) {
       expected_error = "Unable to read offset in rst frame.";
-    } else if (i < 18) {
+    } else if (i < 17) {
       expected_error = "Unable to read rst stream error code.";
-    } else if (i < 33) {
+    } else if (i < 32) {
       expected_error = "Unable to read rst stream error details.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -1141,8 +1188,6 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (connection close frame)
     0x05,
     // error code
@@ -1168,14 +1213,6 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     // missing packet
     0xBE, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // congestion feedback type (inter arrival)
-    0x02,
-    // accumulated_number_of_lost_packets
-    0x02, 0x03,
-    // offset_time
-    0x04, 0x05,
-    // delta_time
-    0x06, 0x07,
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
@@ -1200,15 +1237,59 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
   EXPECT_EQ(GG_UINT64_C(0x0123456789AA0), frame.sent_info.least_unacked);
 
   // Now test framing boundaries
-  for (size_t i = 3; i < 21; ++i) {
+  for (size_t i = 2; i < 20; ++i) {
     string expected_error;
-    if (i < 6) {
+    if (i < 5) {
       expected_error = "Unable to read connection close error code.";
-    } else if (i < 21) {
+    } else if (i < 20) {
       expected_error = "Unable to read connection close error details.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
                          QUIC_INVALID_CONNECTION_CLOSE_DATA);
+  }
+}
+
+TEST_F(QuicFramerTest, PublicResetPacket) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (public reset)
+    0x02,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.public_reset_packet_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.public_reset_packet_->public_header.guid);
+  EXPECT_EQ(PACKET_PUBLIC_FLAGS_RST,
+            visitor_.public_reset_packet_->public_header.flags);
+  EXPECT_EQ(GG_UINT64_C(0xABCDEF0123456789),
+            visitor_.public_reset_packet_->nonce_proof);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.public_reset_packet_->rejected_sequence_number);
+
+  // Now test framing boundaries
+  for (size_t i = 0; i < kPublicResetPacketSize; ++i) {
+    string expected_error;
+    if (i < kPublicFlagsOffset) {
+      expected_error = "Unable to read GUID.";
+    } else if (i < kPublicResetPacketNonceProofOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i < kPublicResetPacketRejectedSequenceNumberOffset) {
+      expected_error = "Unable to read nonce proof.";
+    } else {
+      expected_error = "Unable to read rejected sequence number.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
   }
 }
 
@@ -1276,8 +1357,6 @@ TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (padding frame)
     0x00,
   };
@@ -1325,8 +1404,6 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (stream frame)
     0x01,
     // stream id
@@ -1383,8 +1460,6 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (ack frame)
     0x02,
     // least packet sequence number awaiting an ack
@@ -1438,8 +1513,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (TCP)
@@ -1495,8 +1568,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (inter arrival)
@@ -1559,8 +1630,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (congestion feedback frame)
     0x03,
     // congestion feedback type (fix rate)
@@ -1624,8 +1693,6 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (rst stream frame)
     0x04,
     // stream id
@@ -1689,8 +1756,6 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
     // first fec protected packet offset
     0xFF,
 
-    // frame count
-    0x01,
     // frame type (connection close frame)
     0x05,
     // error code
@@ -1718,6 +1783,36 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
   };
 
   scoped_ptr<QuicPacket> data(framer_.ConstructFrameDataPacket(header, frames));
+  ASSERT_TRUE(data != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
+TEST_F(QuicFramerTest, ConstructPublicResetPacket) {
+  QuicPublicResetPacket reset_packet;
+  reset_packet.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  reset_packet.public_header.flags = PACKET_PUBLIC_FLAGS_RST;
+  reset_packet.rejected_sequence_number = GG_UINT64_C(0x123456789ABC);
+  reset_packet.nonce_proof = GG_UINT64_C(0xABCDEF0123456789);
+
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x02,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+  };
+
+  scoped_ptr<QuicEncryptedPacket> data(
+      framer_.ConstructPublicResetPacket(reset_packet));
   ASSERT_TRUE(data != NULL);
 
   test::CompareCharArraysWithHexError("constructed packet",
@@ -1864,21 +1959,86 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
 
   // Now make sure we can turn our ack packet back into an ack frame
   ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, *ack_packet));
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  ASSERT_EQ(peer_address_, visitor_.peer_address_);
-  ASSERT_EQ(self_address_, visitor_.self_address_);
-  EXPECT_EQ(1u, visitor_.ack_frames_.size());
 
   // And do the same for the close frame.
   ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_,
                                     *close_packet));
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  EXPECT_EQ(0x05060708, visitor_.connection_close_frame_.error_code);
-  EXPECT_EQ("because I can", visitor_.connection_close_frame_.error_details);
+}
 
-  ValidateTruncatedAck(visitor_.ack_frames_[0], 194);
-  ValidateTruncatedAck(&visitor_.connection_close_frame_.ack_frame, 191);
+TEST_F(QuicFramerTest, CleanTruncation) {
+  QuicPacketHeader header;
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
+  header.fec_group = 0;
+
+  QuicConnectionCloseFrame close_frame;
+  QuicAckFrame* ack_frame = &close_frame.ack_frame;
+  close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
+  close_frame.error_details = "because I can";
+  ack_frame->received_info.largest_observed = 201;
+  for (uint64 i = 1; i < ack_frame->received_info.largest_observed; ++i) {
+    ack_frame->received_info.missing_packets.insert(i);
+  }
+
+  // Create a packet with just the ack
+  QuicFrame frame;
+  frame.type = ACK_FRAME;
+  frame.ack_frame = ack_frame;
+  QuicFrames frames;
+  frames.push_back(frame);
+
+  scoped_ptr<QuicPacket> raw_ack_packet(
+      framer_.ConstructFrameDataPacket(header, frames));
+  ASSERT_TRUE(raw_ack_packet != NULL);
+
+  scoped_ptr<QuicEncryptedPacket> ack_packet(
+      framer_.EncryptPacket(*raw_ack_packet));
+
+  // Create a packet with just connection close.
+  frames.clear();
+  frame.type = CONNECTION_CLOSE_FRAME;
+  frame.connection_close_frame = &close_frame;
+  frames.push_back(frame);
+
+  scoped_ptr<QuicPacket> raw_close_packet(
+      framer_.ConstructFrameDataPacket(header, frames));
+  ASSERT_TRUE(raw_close_packet != NULL);
+
+  scoped_ptr<QuicEncryptedPacket> close_packet(
+      framer_.EncryptPacket(*raw_close_packet));
+
+  // Now make sure we can turn our ack packet back into an ack frame
+  ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, *ack_packet));
+
+  // And do the same for the close frame.
+  ASSERT_TRUE(framer_.ProcessPacket(self_address_, peer_address_,
+                                    *close_packet));
+
+  // Test for clean truncation of the ack by comparing the length of the
+  // original packets to the re-serialized packets.
+  frames.clear();
+  frame.type = ACK_FRAME;
+  frame.ack_frame = visitor_.ack_frames_[0];
+  frames.push_back(frame);
+
+  size_t original_raw_length = raw_ack_packet->length();
+  raw_ack_packet.reset(
+      framer_.ConstructFrameDataPacket(header, frames));
+  ASSERT_TRUE(raw_ack_packet != NULL);
+  EXPECT_EQ(original_raw_length, raw_ack_packet->length());
+
+  frames.clear();
+  frame.type = CONNECTION_CLOSE_FRAME;
+  frame.connection_close_frame = &visitor_.connection_close_frame_;
+  frames.push_back(frame);
+
+  original_raw_length = raw_close_packet->length();
+  raw_close_packet.reset(
+      framer_.ConstructFrameDataPacket(header, frames));
+  ASSERT_TRUE(raw_ack_packet != NULL);
+  EXPECT_EQ(original_raw_length, raw_close_packet->length());
 }
 
 }  // namespace test

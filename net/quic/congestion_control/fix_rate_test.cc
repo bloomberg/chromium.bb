@@ -28,6 +28,7 @@ class FixRateTest : public ::testing::Test {
   }
   const QuicTime::Delta rtt_;
   MockClock clock_;
+  SendAlgorithmInterface::SentPacketsMap not_used_;
   scoped_ptr<FixRateSender> sender_;
   scoped_ptr<FixRateReceiver> receiver_;
 };
@@ -46,7 +47,7 @@ TEST_F(FixRateTest, SenderAPI) {
   QuicCongestionFeedbackFrame feedback;
   feedback.type = kFixRate;
   feedback.fix_rate.bitrate_in_bytes_per_second = 300000;
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, not_used_);
   EXPECT_EQ(300000, sender_->BandwidthEstimate());
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
   EXPECT_EQ(kMaxPacketSize * 2, sender_->AvailableCongestionWindow());
@@ -74,7 +75,7 @@ TEST_F(FixRateTest, FixRatePacing) {
   QuicCongestionFeedbackFrame feedback;
   receiver_->SetBitrate(240000);  // Bytes per second.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, not_used_);
   QuicTime acc_advance_time(QuicTime::Zero());
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {

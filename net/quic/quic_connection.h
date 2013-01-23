@@ -23,6 +23,7 @@
 #include "base/hash_tables.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
+#include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
@@ -126,7 +127,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   virtual void ClearAckAlarm() = 0;
 };
 
-class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
+class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface,
+                                          public QuicBlockedWriterInterface {
  public:
   // Constructs a new QuicConnection for the specified |guid| and |address|.
   // |helper| will be owned by this connection.
@@ -164,14 +166,17 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet);
 
+  // QuicBlockedWriterInterface
   // Called when the underlying connection becomes writable to allow
   // queued writes to happen.  Returns false if the socket has become blocked.
-  virtual bool OnCanWrite();
+  virtual bool OnCanWrite() OVERRIDE;
 
   // From QuicFramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
   virtual void OnPacket(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address) OVERRIDE;
+  virtual void OnPublicResetPacket(
+      const QuicPublicResetPacket& packet) OVERRIDE;
   virtual void OnRevivedPacket() OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE;
@@ -314,7 +319,7 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
     return QuicTime::Delta::FromMilliseconds(500);
   }
 
-  static void DeleteUnackedPacket(UnackedPacket* unacked);
+  static void DeleteEnclosedFrames(UnackedPacket* unacked);
   static bool ShouldRetransmit(const QuicFrame& frame);
 
   // Checks if a packet can be written now, and sets the timer if necessary.
@@ -390,8 +395,6 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   bool write_blocked_;
 
   FecGroupMap group_map_;
-  QuicPacketHeader revived_header_;
-  scoped_array<char> revived_payload_;
 
   QuicConnectionVisitorInterface* visitor_;
   QuicPacketCreator packet_creator_;

@@ -13,7 +13,6 @@ namespace net {
 size_t QuicUtils::StreamFramePacketOverhead(int num_frames) {
   // TODO(jar): Use sizeof(some name).
   return kPacketHeaderSize +
-         1 +   // frame count
          (1 +  // 8 bit type
           kMinStreamFrameLength) * num_frames;
 }
@@ -68,6 +67,7 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);
     RETURN_STRING_LITERAL(QUIC_INVALID_STREAM_ID);
     RETURN_STRING_LITERAL(QUIC_TOO_MANY_OPEN_STREAMS);
+    RETURN_STRING_LITERAL(QUIC_PUBLIC_RESET);
     RETURN_STRING_LITERAL(QUIC_CONNECTION_TIMED_OUT);
     // Intentionally have no default case, so we'll break the build
     // if we add errors and don't put them here.

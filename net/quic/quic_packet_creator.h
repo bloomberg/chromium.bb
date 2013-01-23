@@ -73,6 +73,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Packetize FEC data.
   PacketPair SerializeFec();
 
+  // Creates a packet with connection close frame. Caller owns the created
+  // packet.
   PacketPair CloseConnection(QuicConnectionCloseFrame* close_frame);
 
   QuicPacketSequenceNumber sequence_number() const {

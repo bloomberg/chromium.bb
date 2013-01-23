@@ -123,15 +123,17 @@ QuicConnection::QuicConnection(QuicGuid guid,
 }
 
 QuicConnection::~QuicConnection() {
-  for (UnackedPacketMap::iterator u = unacked_packets_.begin();
-       u != unacked_packets_.end(); ++u) {
-    DeleteUnackedPacket(u->second);
+  // Call DeleteEnclosedFrames on each QuicPacket because the destructor does
+  // not delete enclosed frames.
+  for (UnackedPacketMap::iterator it = unacked_packets_.begin();
+       it != unacked_packets_.end(); ++it) {
+    DeleteEnclosedFrames(it->second);
   }
   STLDeleteValues(&unacked_packets_);
   STLDeleteValues(&group_map_);
-  for (QueuedPacketList::iterator q = queued_packets_.begin();
-       q != queued_packets_.end(); ++q) {
-    delete q->packet;
+  for (QueuedPacketList::iterator it = queued_packets_.begin();
+       it != queued_packets_.end(); ++it) {
+    delete it->packet;
   }
 }
 
@@ -160,7 +162,7 @@ void QuicConnection::DeleteEnclosedFrame(QuicFrame* frame) {
   }
 }
 
-void QuicConnection::DeleteUnackedPacket(UnackedPacket* unacked) {
+void QuicConnection::DeleteEnclosedFrames(UnackedPacket* unacked) {
   for (QuicFrames::iterator it = unacked->frames.begin();
        it != unacked->frames.end(); ++it) {
     DCHECK(ShouldRetransmit(*it));
@@ -186,10 +188,21 @@ void QuicConnection::OnPacket(const IPEndPoint& self_address,
   peer_address_ = peer_address;
 }
 
+void QuicConnection::OnPublicResetPacket(
+    const QuicPublicResetPacket& packet) {
+  CloseConnection(QUIC_PUBLIC_RESET, true);
+}
+
 void QuicConnection::OnRevivedPacket() {
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
+  if (header.public_header.guid != guid_) {
+    DLOG(INFO) << "Ignoring packet from unexpected GUID: "
+               << header.public_header.guid << " instead of " << guid_;
+    return false;
+  }
+
   if (!Near(header.packet_sequence_number,
             last_header_.packet_sequence_number)) {
     DLOG(INFO) << "Packet " << header.packet_sequence_number
@@ -344,7 +357,7 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
         }
       }
       acked_packets.insert(it->first);
-      DeleteUnackedPacket(it->second);
+      DeleteEnclosedFrames(it->second);
       delete it->second;
       UnackedPacketMap::iterator it_tmp = it;
       ++it;
@@ -690,6 +703,13 @@ bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
                                 bool should_retransmit,
                                 bool force,
                                 bool is_retransmission) {
+  if (!connected_) {
+    DLOG(INFO)
+        << "Dropping packet to be sent since connection is disconnected.";
+    delete packet;
+    return false;
+  }
+
   // If this packet is being forced, don't bother checking to see if we should
   // write, just write.
   if (!force) {
@@ -834,17 +854,19 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   if (group == NULL || !group->CanRevive()) {
     return;
   }
-  DCHECK(!revived_payload_.get());
-  revived_payload_.reset(new char[kMaxPacketSize]);
-  size_t len = group->Revive(&revived_header_, revived_payload_.get(),
-                             kMaxPacketSize);
+  QuicPacketHeader revived_header;
+  char revived_payload[kMaxPacketSize];
+  size_t len = group->Revive(&revived_header, revived_payload, kMaxPacketSize);
+  revived_header.public_header.guid = guid_;
+  revived_header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  revived_header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  revived_header.fec_group = kNoFecOffset;
   group_map_.erase(last_header_.fec_group);
   delete group;
 
   last_packet_revived_ = true;
-  framer_.ProcessRevivedPacket(revived_header_,
-                               StringPiece(revived_payload_.get(), len));
-  revived_payload_.reset();
+  framer_.ProcessRevivedPacket(revived_header,
+                               StringPiece(revived_payload, len));
 }
 
 QuicFecGroup* QuicConnection::GetFecGroup() {

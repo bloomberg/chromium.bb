@@ -51,6 +51,7 @@ class QuicTcpCubicSenderTest : public ::testing::Test {
   const QuicTime::Delta rtt_;
   const QuicTime::Delta one_ms_;
   MockClock clock_;
+  SendAlgorithmInterface::SentPacketsMap not_used_;
   scoped_ptr<TcpCubicSender> sender_;
   scoped_ptr<TcpReceiver> receiver_;
   QuicPacketSequenceNumber sequence_number_;
@@ -66,7 +67,7 @@ TEST_F(QuicTcpCubicSenderTest, SimpleSender) {
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
   // And that window is un-affected.
@@ -83,7 +84,7 @@ TEST_F(QuicTcpCubicSenderTest, ExponentialSlowStart) {
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
 
@@ -109,7 +110,7 @@ TEST_F(QuicTcpCubicSenderTest, SlowStartAckTrain) {
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
 
@@ -149,7 +150,7 @@ TEST_F(QuicTcpCubicSenderTest, SlowStartPacketLoss) {
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
 

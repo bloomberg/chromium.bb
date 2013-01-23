@@ -42,6 +42,11 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnPacket(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address) = 0;
 
+  // Called when a public reset packet has been parsed but has not yet
+  // been validated.
+  virtual void OnPublicResetPacket(
+      const QuicPublicResetPacket& packet) = 0;
+
   // Called when a lost packet has been recovered via FEC,
   // before it has been processed.
   virtual void OnRevivedPacket() = 0;
@@ -158,6 +163,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicPacket* ConstructFecPacket(const QuicPacketHeader& header,
                                  const QuicFecData& fec);
 
+  // Returns a new public reset packet, owned by the caller.
+  static QuicEncryptedPacket* ConstructPublicResetPacket(
+      const QuicPublicResetPacket& packet);
+
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(const QuicPacket& packet);
 
@@ -167,6 +176,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   const std::string& detailed_error() { return detailed_error_; }
 
+  // Read the guid from a packet header.
+  // Return true on success, else false.
+  static bool ReadGuidFromPacket(const QuicEncryptedPacket& packet,
+                                 QuicGuid* guid);
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -174,6 +188,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
                          const IPEndPoint& self_address,
                          const IPEndPoint& peer_address,
                          const QuicEncryptedPacket& packet);
+
+  bool ProcessPublicResetPacket(const QuicPacketPublicHeader& public_header);
 
   bool WritePacketHeader(const QuicPacketHeader& header,
                          QuicDataWriter* writer);
@@ -204,7 +220,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Computes the wire size in bytes of the payload of |frame|.
   size_t ComputeFramePayloadLength(const QuicFrame& frame);
 
-  bool AppendPacketSequenceNumber(
+  static bool AppendPacketSequenceNumber(
       QuicPacketSequenceNumber packet_sequence_number,
       QuicDataWriter* writer);
 

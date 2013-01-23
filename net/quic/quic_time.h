@@ -25,11 +25,14 @@ class NET_EXPORT_PRIVATE QuicTime {
    public:
     explicit Delta(base::TimeDelta delta);
 
+    // Create a object with an offset of 0.
+    static Delta Zero();
+
     // Create a object with infinite offset time.
     static Delta Infinite();
 
-    // Create a object with infinite offset time.
-    static Delta Zero();
+    // Converts a number of seconds to a time offset.
+    static Delta FromSeconds(int64 secs);
 
     // Converts a number of milliseconds to a time offset.
     static Delta FromMilliseconds(int64 ms);
@@ -58,6 +61,7 @@ class NET_EXPORT_PRIVATE QuicTime {
     base::TimeDelta delta_;
 
     friend class QuicTime;
+    friend class QuicClock;
   };
 
   explicit QuicTime(base::TimeTicks ticks);

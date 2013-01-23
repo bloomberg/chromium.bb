@@ -26,7 +26,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& feedback) OVERRIDE;
+      const QuicCongestionFeedbackFrame& feedback,
+      const SentPacketsMap& sent_packets) OVERRIDE;
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              size_t acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;

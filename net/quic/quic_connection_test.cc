@@ -251,6 +251,13 @@ class QuicConnectionTest : public ::testing::Test {
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   }
 
+  void ProcessClosePacket(QuicPacketSequenceNumber number,
+                          QuicFecGroupNumber fec_group) {
+    scoped_ptr<QuicPacket> packet(ConstructClosePacket(number, fec_group));
+    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(*packet));
+    connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+  }
+
   // Sends an FEC packet that covers the packets that would have been sent.
   void ProcessFecPacket(QuicPacketSequenceNumber number,
                         QuicPacketSequenceNumber min_protected_packet,
@@ -335,6 +342,25 @@ class QuicConnectionTest : public ::testing::Test {
 
     QuicFrames frames;
     QuicFrame frame(&frame1_);
+    frames.push_back(frame);
+    QuicPacket* packet = framer_.ConstructFrameDataPacket(header_, frames);
+    EXPECT_TRUE(packet != NULL);
+    return packet;
+  }
+
+  QuicPacket* ConstructClosePacket(QuicPacketSequenceNumber number,
+                                   QuicFecGroupNumber fec_group) {
+    header_.public_header.guid = guid_;
+    header_.packet_sequence_number = number;
+    header_.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+    header_.fec_group = fec_group;
+
+    QuicConnectionCloseFrame qccf;
+    qccf.error_code = QUIC_CLIENT_GOING_AWAY;
+    qccf.ack_frame = QuicAckFrame(0, 1);
+
+    QuicFrames frames;
+    QuicFrame frame(&qccf);
     frames.push_back(frame);
     QuicPacket* packet = framer_.ConstructFrameDataPacket(header_, frames);
     EXPECT_TRUE(packet != NULL);
@@ -638,7 +664,7 @@ TEST_F(QuicConnectionTest, RetransmitOnNack) {
   ProcessAckPacket(&nack_two);
 
   // The third nack should trigger a retransimission.
-  EXPECT_CALL(*scheduler_, SentPacket(_, 38, true)).Times(1);
+  EXPECT_CALL(*scheduler_, SentPacket(_, 37, true)).Times(1);
   ProcessAckPacket(&nack_two);
 }
 
@@ -1076,6 +1102,35 @@ TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(17);
   EXPECT_EQ(17u, connection_.SendStreamData(
                 1, "EnoughDataToQueue", 0, false).bytes_consumed);
+}
+
+TEST_F(QuicConnectionTest, NoAckForClose) {
+  ProcessPacket(1);
+  EXPECT_CALL(*scheduler_, OnIncomingAckFrame(_));
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CLIENT_GOING_AWAY, true));
+  EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(0);
+  ProcessClosePacket(2, 0);
+}
+
+TEST_F(QuicConnectionTest, SendWhenDisconnected) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_CLIENT_GOING_AWAY, false));
+  connection_.CloseConnection(QUIC_CLIENT_GOING_AWAY, false);
+  EXPECT_FALSE(connection_.connected());
+  QuicPacket* packet = ConstructDataPacket(1, 0);
+  EXPECT_CALL(*scheduler_, SentPacket(1, _, _)).Times(0);
+  connection_.SendPacket(1, packet, true, false, false);
+}
+
+TEST_F(QuicConnectionTest, PublicReset) {
+  QuicPublicResetPacket header;
+  header.public_header.guid = guid_;
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_RST;
+  header.rejected_sequence_number = 10101;
+  scoped_ptr<QuicEncryptedPacket> packet(
+      framer_.ConstructPublicResetPacket(header));
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_PUBLIC_RESET, true));
+  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *packet);
 }
 
 }  // namespace

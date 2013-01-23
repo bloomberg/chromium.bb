@@ -28,9 +28,17 @@ TEST_F(QuicTimeDeltaTest, Infinite) {
 TEST_F(QuicTimeDeltaTest, FromTo) {
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(1),
             QuicTime::Delta::FromMicroseconds(1000));
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(1),
+            QuicTime::Delta::FromMilliseconds(1000));
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(1),
+            QuicTime::Delta::FromMicroseconds(1000000));
+
   EXPECT_EQ(1, QuicTime::Delta::FromMicroseconds(1000).ToMilliseconds());
   EXPECT_EQ(2, QuicTime::Delta::FromMilliseconds(2000).ToSeconds());
   EXPECT_EQ(1000, QuicTime::Delta::FromMilliseconds(1).ToMicroseconds());
+  EXPECT_EQ(1, QuicTime::Delta::FromMicroseconds(1000).ToMilliseconds());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(2000).ToMicroseconds(),
+            QuicTime::Delta::FromSeconds(2).ToMicroseconds());
 }
 
 TEST_F(QuicTimeDeltaTest, Add) {

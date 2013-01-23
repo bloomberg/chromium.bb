@@ -33,6 +33,7 @@ typedef uint32 QuicStreamId;
 typedef uint64 QuicStreamOffset;
 typedef uint64 QuicPacketSequenceNumber;
 typedef QuicPacketSequenceNumber QuicFecGroupNumber;
+typedef uint64 QuicPublicResetNonceProof;
 
 // TODO(rch): Consider Quic specific names for these constants.
 const size_t kMaxPacketSize = 1200;  // Maximum size in bytes of a QUIC packet.
@@ -50,10 +51,15 @@ const size_t kSequenceNumberSize = 6;
 const size_t kPrivateFlagsSize = 1;
 // Number of bytes reserved for FEC group in the packet header.
 const size_t kFecGroupSize = 1;
+// Number of bytes reserved for the nonce proof in public reset packet.
+const size_t kPublicResetNonceSize = 8;
 
 // Size in bytes of the data or fec packet header.
 const size_t kPacketHeaderSize = kQuicGuidSize + kPublicFlagsSize +
     kPrivateFlagsSize + kSequenceNumberSize + kFecGroupSize;
+// Size in bytes of the public reset packet.
+const size_t kPublicResetPacketSize = kQuicGuidSize + kPublicFlagsSize +
+    kPublicResetNonceSize + kSequenceNumberSize;
 
 // Index into the guid offset in the header.
 const size_t kGuidOffset = 0;
@@ -66,6 +72,13 @@ const size_t kSequenceNumberOffset = kPublicFlagsOffset + kPublicFlagsSize;
 const size_t kPrivateFlagsOffset = kSequenceNumberOffset + kSequenceNumberSize;
 // Index into the fec group offset in the header.
 const size_t kFecGroupOffset = kPrivateFlagsOffset + kPrivateFlagsSize;
+
+// Index into the nonce proof of the public reset packet.
+const size_t kPublicResetPacketNonceProofOffset = kPublicFlagsOffset +
+    kPublicFlagsSize;
+// Index into the rejected sequence number of the public reset packet.
+const size_t kPublicResetPacketRejectedSequenceNumberOffset =
+    kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;
 
 // Index of the first byte in a QUIC packet of FEC protected data.
 const size_t kStartOfFecProtectedData = kPacketHeaderSize;
@@ -162,6 +175,8 @@ enum QuicErrorCode {
   QUIC_INVALID_STREAM_ID,
   // Too many streams already open.
   QUIC_TOO_MANY_OPEN_STREAMS,
+  // Received public reset for this connection.
+  QUIC_PUBLIC_RESET,
 
   // We hit our prenegotiated (or default) timeout
   QUIC_CONNECTION_TIMED_OUT,
@@ -197,6 +212,15 @@ struct QuicPacketHeader {
   QuicPacketPrivateFlags private_flags;
   QuicPacketSequenceNumber packet_sequence_number;
   QuicFecGroupNumber fec_group;
+};
+
+struct QuicPublicResetPacket {
+  QuicPublicResetPacket() {}
+  explicit QuicPublicResetPacket(const QuicPacketPublicHeader& header)
+      : public_header(header) {}
+  QuicPacketPublicHeader public_header;
+  QuicPacketSequenceNumber rejected_sequence_number;
+  QuicPublicResetNonceProof nonce_proof;
 };
 
 // A padding frame contains no payload.

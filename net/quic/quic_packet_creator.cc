@@ -44,6 +44,7 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
 void QuicPacketCreator::MaybeStartFEC() {
   if (options_.max_packets_per_fec_group > 0) {
     DCHECK(fec_group_.get() == NULL);
+    // Set the fec group number to the sequence number of the next packet.
     fec_group_number_ = sequence_number() + 1;
     fec_group_.reset(new QuicFecGroup());
   }

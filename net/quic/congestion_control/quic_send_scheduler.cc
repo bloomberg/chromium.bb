@@ -14,6 +14,15 @@
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 //#include "util/gtl/map-util.h"
 
+namespace {
+const int kBitrateSmoothingPeriodMs = 3000;
+const int kMinBitrateSmoothingPeriodMs = 500;
+const int kHistoryPeriodMs = 5000;
+
+COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
+               history_must_be_longer_or_equal_to_the_smoothing_period);
+}
+
 using std::map;
 using std::max;
 
@@ -25,74 +34,68 @@ QuicSendScheduler::QuicSendScheduler(
     const QuicClock* clock,
     CongestionFeedbackType type)
     : clock_(clock),
-      current_estimated_bandwidth_(-1),
+      current_estimated_bandwidth_(0),
       max_estimated_bandwidth_(-1),
       last_sent_packet_(QuicTime::FromMicroseconds(0)),
-      current_packet_bucket_(-1),
-      first_packet_bucket_(-1),
       send_algorithm_(SendAlgorithmInterface::Create(clock, type)) {
-  memset(packet_history_, 0, sizeof(packet_history_));
 }
 
 QuicSendScheduler::~QuicSendScheduler() {
-  STLDeleteContainerPairSecondPointers(pending_packets_.begin(),
-                                       pending_packets_.end());
-}
-
-int QuicSendScheduler::UpdatePacketHistory() {
-  int timestamp_scaled = clock_->Now().ToMicroseconds() /
-      kBitrateSmoothingPeriod;
-  int bucket = timestamp_scaled % kBitrateSmoothingBuckets;
-  if (!HasSentPacket()) {
-    // First packet.
-    current_packet_bucket_ = bucket;
-    first_packet_bucket_ = bucket;
-  }
-  if (current_packet_bucket_ != bucket) {
-    // We need to make sure to zero out any skipped buckets.
-    // Max loop count is kBitrateSmoothingBuckets.
-    do {
-      current_packet_bucket_ =
-          (1 + current_packet_bucket_) % kBitrateSmoothingBuckets;
-      packet_history_[current_packet_bucket_] = 0;
-      if (first_packet_bucket_ == current_packet_bucket_) {
-        // We have filled the whole window, no need to keep track of first
-        // bucket.
-        first_packet_bucket_ = -1;
-      }
-    }  while (current_packet_bucket_ != bucket);
-  }
-  return bucket;
+  STLDeleteValues(&packet_history_map_);
 }
 
 void QuicSendScheduler::SentPacket(QuicPacketSequenceNumber sequence_number,
                                    size_t bytes,
                                    bool is_retransmission) {
-  int bucket = UpdatePacketHistory();
-  packet_history_[bucket] += bytes;
+  DCHECK(!ContainsKey(pending_packets_, sequence_number));
   send_algorithm_->SentPacket(sequence_number, bytes, is_retransmission);
-  if (!is_retransmission) {
-    pending_packets_[sequence_number] =
-        new PendingPacket(bytes, clock_->Now());
-  }
+
+  packet_history_map_[sequence_number] =
+      new class SendAlgorithmInterface::SentPacket(bytes, clock_->Now());
+  pending_packets_[sequence_number] = bytes;
+  CleanupPacketHistory();
   DLOG(INFO) << "Sent sequence number:" << sequence_number;
 }
 
 void QuicSendScheduler::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& congestion_feedback_frame) {
   send_algorithm_->OnIncomingQuicCongestionFeedbackFrame(
-      congestion_feedback_frame);
+      congestion_feedback_frame, packet_history_map_);
+}
+
+void QuicSendScheduler::CleanupPacketHistory() {
+  const QuicTime::Delta kHistoryPeriod =
+      QuicTime::Delta::FromMilliseconds(kHistoryPeriodMs);
+  QuicTime Now = clock_->Now();
+
+  SendAlgorithmInterface::SentPacketsMap::iterator history_it =
+      packet_history_map_.begin();
+  for (; history_it != packet_history_map_.end(); ++history_it) {
+    if (Now.Subtract(history_it->second->SendTimestamp()) <= kHistoryPeriod) {
+      return;
+    }
+    DLOG(INFO) << "Clear sequence number:" << history_it->first
+               << "from history";
+    delete history_it->second;
+    packet_history_map_.erase(history_it);
+    history_it = packet_history_map_.begin();
   }
+}
 
 void QuicSendScheduler::OnIncomingAckFrame(const QuicAckFrame& ack_frame) {
+  // We calculate the RTT based on the highest ACKed sequence number, the lower
+  // sequence numbers will include the ACK aggregation delay.
+  QuicTime::Delta rtt = QuicTime::Delta::Zero();
+  SendAlgorithmInterface::SentPacketsMap::iterator history_it =
+      packet_history_map_.find(ack_frame.received_info.largest_observed);
+  if (history_it != packet_history_map_.end()) {
+    rtt = clock_->Now().Subtract(history_it->second->SendTimestamp());
+  }
   // We want to.
   // * Get all packets lower(including) than largest_observed
   //   from pending_packets_.
   // * Remove all missing packets.
   // * Send each ACK in the list to send_algorithm_.
-  QuicTime last_timestamp(QuicTime::FromMicroseconds(0));
-  map<QuicPacketSequenceNumber, size_t> acked_packets;
-
   PendingPacketsMap::iterator it, it_upper;
   it = pending_packets_.begin();
   it_upper = pending_packets_.upper_bound(
@@ -102,26 +105,14 @@ void QuicSendScheduler::OnIncomingAckFrame(const QuicAckFrame& ack_frame) {
     QuicPacketSequenceNumber sequence_number = it->first;
     if (!ack_frame.received_info.IsAwaitingPacket(sequence_number)) {
       // Not missing, hence implicitly acked.
-      scoped_ptr<PendingPacket> pending_packet_cleaner(it->second);
-      acked_packets[sequence_number] = pending_packet_cleaner->BytesSent();
-      last_timestamp = pending_packet_cleaner->SendTimestamp();
+      send_algorithm_->OnIncomingAck(sequence_number,
+                                     it->second,
+                                     rtt);
+      DLOG(INFO) << "ACKed sequence number:" << sequence_number;
       pending_packets_.erase(it++);  // Must be incremented post to work.
     } else {
       ++it;
     }
-  }
-  // We calculate the RTT based on the highest ACKed sequence number, the lower
-  // sequence numbers will include the ACK aggregation delay.
-  QuicTime::Delta rtt = clock_->Now().Subtract(last_timestamp);
-
-  map<QuicPacketSequenceNumber, size_t>::iterator it_acked_packets;
-  for (it_acked_packets = acked_packets.begin();
-      it_acked_packets != acked_packets.end();
-      ++it_acked_packets) {
-    send_algorithm_->OnIncomingAck(it_acked_packets->first,
-                                   it_acked_packets->second,
-                                   rtt);
-    DLOG(INFO) << "ACKed sequence number:" << it_acked_packets->first;
   }
 }
 
@@ -142,37 +133,35 @@ int QuicSendScheduler::BandwidthEstimate() {
   return bandwidth_estimate;
 }
 
-bool QuicSendScheduler::HasSentPacket() {
-  return (current_packet_bucket_ != -1);
-}
-
-// TODO(pwestin) add a timer to make this accurate even if not called.
+// TODO(pwestin): add a timer to make max_estimated_bandwidth_ accurate.
 int QuicSendScheduler::SentBandwidth() {
-  UpdatePacketHistory();
+  const QuicTime::Delta kBitrateSmoothingPeriod =
+      QuicTime::Delta::FromMilliseconds(kBitrateSmoothingPeriodMs);
+  const QuicTime::Delta kMinBitrateSmoothingPeriod =
+      QuicTime::Delta::FromMilliseconds(kMinBitrateSmoothingPeriodMs);
 
-  if (first_packet_bucket_ != -1) {
-    // We don't have a full set of data.
-    int number_of_buckets = (current_packet_bucket_ - first_packet_bucket_) + 1;
-    if (number_of_buckets < 0) {
-      // We have a wrap in bucket index.
-      number_of_buckets = kBitrateSmoothingBuckets + number_of_buckets;
+  QuicTime Now = clock_->Now();
+  size_t sum_bytes_sent = 0;
+
+  // Sum packet from new until they are kBitrateSmoothingPeriod old.
+  SendAlgorithmInterface::SentPacketsMap::reverse_iterator history_rit =
+      packet_history_map_.rbegin();
+
+  QuicTime::Delta max_diff = QuicTime::Delta::Zero();
+  for (; history_rit != packet_history_map_.rend(); ++history_rit) {
+    QuicTime::Delta diff = Now.Subtract(history_rit->second->SendTimestamp());
+    if (diff > kBitrateSmoothingPeriod) {
+      break;
     }
-    int64 sum = 0;
-    int bucket = first_packet_bucket_;
-    for (int n = 0; n < number_of_buckets; bucket++, n++) {
-      bucket = bucket % kBitrateSmoothingBuckets;
-      sum += packet_history_[bucket];
-    }
-    current_estimated_bandwidth_ = (sum *
-        (kNumMicrosPerSecond / kBitrateSmoothingPeriod)) / number_of_buckets;
-  } else {
-    int64 sum = 0;
-    for (uint32 bucket = 0; bucket < kBitrateSmoothingBuckets; ++bucket) {
-      sum += packet_history_[bucket];
-    }
-    current_estimated_bandwidth_ = (sum * (kNumMicrosPerSecond /
-        kBitrateSmoothingPeriod)) / kBitrateSmoothingBuckets;
+    sum_bytes_sent += history_rit->second->BytesSent();
+    max_diff = diff;
   }
+  if (max_diff < kMinBitrateSmoothingPeriod) {
+    // No estimate.
+    return 0;
+  }
+  current_estimated_bandwidth_ = sum_bytes_sent * kNumMicrosPerSecond /
+      max_diff.ToMicroseconds();
   max_estimated_bandwidth_ = max(max_estimated_bandwidth_,
                                  current_estimated_bandwidth_);
   return current_estimated_bandwidth_;
@@ -180,9 +169,7 @@ int QuicSendScheduler::SentBandwidth() {
 
 int QuicSendScheduler::PeakSustainedBandwidth() {
   // To make sure that we get the latest estimate we call SentBandwidth.
-  if (HasSentPacket()) {
     SentBandwidth();
-  }
   return max_estimated_bandwidth_;
 }
 

@@ -19,6 +19,22 @@ const int kNoValidEstimate = -1;
 
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
+  class SentPacket {
+   public:
+    SentPacket(size_t bytes, QuicTime timestamp)
+        : bytes_sent_(bytes),
+          send_timestamp_(timestamp) {
+    }
+    size_t BytesSent() { return bytes_sent_; }
+    QuicTime& SendTimestamp() { return send_timestamp_; }
+
+   private:
+    size_t bytes_sent_;
+    QuicTime send_timestamp_;
+  };
+
+  typedef std::map<QuicPacketSequenceNumber, SentPacket*> SentPacketsMap;
+
   static SendAlgorithmInterface* Create(const QuicClock* clock,
                                         CongestionFeedbackType type);
 
@@ -26,7 +42,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // Called when we receive congestion feedback from remote peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& feedback) = 0;
+      const QuicCongestionFeedbackFrame& feedback,
+      const SentPacketsMap& sent_packets) = 0;
 
   // Called for each received ACK, with sequence number from remote peer.
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,

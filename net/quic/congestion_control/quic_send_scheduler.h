@@ -23,29 +23,8 @@
 
 namespace net {
 
-const uint32 kBitrateSmoothingBuckets = 300;
-
-// 10 ms in micro seconds, must be less than 1 second for current
-// implementation due to overflow resulting in a potential divide by zero.
-const uint32 kBitrateSmoothingPeriod = 10000;
-
 class NET_EXPORT_PRIVATE QuicSendScheduler {
  public:
-  class PendingPacket {
-   public:
-    PendingPacket(size_t bytes, QuicTime timestamp)
-        : bytes_sent_(bytes),
-          send_timestamp_(timestamp) {
-    }
-    size_t BytesSent() { return bytes_sent_; }
-    QuicTime& SendTimestamp() { return send_timestamp_; }
-
-   private:
-    size_t bytes_sent_;
-    QuicTime send_timestamp_;
-  };
-  typedef std::map<QuicPacketSequenceNumber, PendingPacket*> PendingPacketsMap;
-
   // Enable pacing to prevent a large congestion window to be sent all at once,
   // when pacing is enabled a large congestion window will be sent in multiple
   // bursts of packet(s) instead of one big burst that might introduce packet
@@ -88,24 +67,16 @@ class NET_EXPORT_PRIVATE QuicSendScheduler {
   int PeakSustainedBandwidth();  // In bytes per second.
 
  private:
-  // Have we sent any packets during this session?
-  bool HasSentPacket();
-  int UpdatePacketHistory();
+  typedef std::map<QuicPacketSequenceNumber, size_t> PendingPacketsMap;
+
+  void CleanupPacketHistory();
 
   const QuicClock* clock_;
-  int current_estimated_bandwidth_;
-  int max_estimated_bandwidth_;
+  int64 current_estimated_bandwidth_;
+  int64 max_estimated_bandwidth_;
   QuicTime last_sent_packet_;
-  // To keep track of the real sent bitrate we keep track of the last sent bytes
-  // by keeping an array containing the number of bytes sent in a short timespan
-  // kBitrateSmoothingPeriod; multiple of these buckets kBitrateSmoothingBuckets
-  // create a time window in which we calculate the average bitrate.
-  int current_packet_bucket_;  // Last active bucket in window.
-  int first_packet_bucket_;  // First active bucket in window.
-  uint32 packet_history_[kBitrateSmoothingBuckets];  // The window.
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
-  // TODO(pwestin): should we combine the packet_history_ bucket with this map?
-  // For now I keep it separate for easy implementation.
+  SendAlgorithmInterface::SentPacketsMap packet_history_map_;
   PendingPacketsMap pending_packets_;
 };
 
