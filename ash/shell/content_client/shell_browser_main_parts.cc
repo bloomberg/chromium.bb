@@ -27,6 +27,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/compositor_test_support.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
 
@@ -98,6 +99,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ash::Shell::GetInstance()->set_browser_context(browser_context_.get());
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
+  gfx::Screen* screen = Shell::GetInstance()->GetScreen();
+  screen->AddObserver(window_watcher_.get());
   delegate->SetWatcher(window_watcher_.get());
 
   ash::shell::InitWindowTypeLauncher();
@@ -114,6 +117,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
+  gfx::Screen* screen = Shell::GetInstance()->GetScreen();
+  screen->RemoveObserver(window_watcher_.get());
 
   window_watcher_.reset();
   ash::Shell::DeleteInstance();

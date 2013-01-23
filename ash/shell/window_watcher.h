@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/display_observer.h"
 
 namespace aura {
 class Window;
@@ -24,7 +25,8 @@ namespace shell {
 
 // WindowWatcher is responsible for listening for newly created windows and
 // creating items on the Launcher for them.
-class WindowWatcher : public aura::WindowObserver {
+class WindowWatcher : public aura::WindowObserver,
+                      public gfx::DisplayObserver {
  public:
   WindowWatcher();
   virtual ~WindowWatcher();
@@ -36,15 +38,15 @@ class WindowWatcher : public aura::WindowObserver {
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
 
+  // gfx::DisplayObserver overrides:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+
  private:
   class WorkspaceWindowWatcher;
 
   typedef std::map<ash::LauncherID, aura::Window*> IDToWindow;
-
-  // Window watching for newly created windows to be added to.
-  aura::Window* window_;
-
-  aura::Window* panel_container_;
 
   // Maps from window to the id we gave it.
   IDToWindow id_to_window_;
