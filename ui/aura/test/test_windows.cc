@@ -52,8 +52,7 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);
   window->Show();
-  if (parent)
-    parent->AddChild(window);
+  parent->AddChild(window);
   window->SetProperty(aura::client::kCanMaximizeKey, true);
   return window;
 }
