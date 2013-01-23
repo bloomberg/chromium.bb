@@ -47,7 +47,7 @@ enum SwapType {
 
 base::Thread* g_compositor_thread = NULL;
 
-bool test_compositor_enabled = false;
+bool g_test_compositor_enabled = false;
 
 ui::ContextFactory* g_context_factory = NULL;
 
@@ -314,7 +314,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
   settings.initialDebugState.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.refreshRate =
-      test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
+      g_test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
   settings.initialDebugState.showDebugBorders =
       command_line->HasSwitch(switches::kUIShowLayerBorders);
   settings.partialSwapEnabled =
@@ -346,7 +346,7 @@ Compositor::~Compositor() {
   // down any contexts that the |host_| may rely upon.
   host_.reset();
 
-  if (!test_compositor_enabled)
+  if (!g_test_compositor_enabled)
     ContextFactory::GetInstance()->RemoveCompositor(this);
 }
 
@@ -506,7 +506,7 @@ void Compositor::applyScrollAndScale(gfx::Vector2d scrollDelta,
 }
 
 scoped_ptr<cc::OutputSurface> Compositor::createOutputSurface() {
-  if (test_compositor_enabled) {
+  if (g_test_compositor_enabled) {
     ui::TestWebGraphicsContext3D* test_context =
       new ui::TestWebGraphicsContext3D();
     test_context->Initialize();
@@ -592,22 +592,22 @@ void Compositor::NotifyEnd() {
 COMPOSITOR_EXPORT void SetupTestCompositor() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTestCompositor)) {
-    test_compositor_enabled = true;
+    g_test_compositor_enabled = true;
   }
 #if defined(OS_CHROMEOS)
   // If the test is running on the chromeos envrionment (such as
   // device or vm bots), use the real compositor.
   if (base::chromeos::IsRunningOnChromeOS())
-    test_compositor_enabled = false;
+    g_test_compositor_enabled = false;
 #endif
 }
 
 COMPOSITOR_EXPORT void DisableTestCompositor() {
-  test_compositor_enabled = false;
+  g_test_compositor_enabled = false;
 }
 
 COMPOSITOR_EXPORT bool IsTestCompositorEnabled() {
-  return test_compositor_enabled;
+  return g_test_compositor_enabled;
 }
 
 }  // namespace ui
