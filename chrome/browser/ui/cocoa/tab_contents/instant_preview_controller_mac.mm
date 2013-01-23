@@ -37,4 +37,5 @@ void InstantPreviewControllerMac::PreviewStateChanged(
     [preview_ hidePreview];
   }
   browser_->MaybeUpdateBookmarkBarStateForInstantPreview(model.mode());
+  [window_ updateBookmarkBarStateForInstantPreview];
 }

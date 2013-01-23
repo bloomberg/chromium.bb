@@ -1252,7 +1252,7 @@ void Browser::MaybeUpdateBookmarkBarStateForInstantPreview(
   // bookmark bar.
   if (mode.is_search_suggestions() &&
       bookmark_bar_state_ == BookmarkBar::SHOW) {
-    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE);
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
   }
 }
 
@@ -2229,8 +2229,10 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   }
 
   // Don't allow the bookmark bar to be shown in suggestions mode.
+#if !defined(OS_MACOSX)
   if (search_model_->mode().is_search_suggestions())
     state = BookmarkBar::HIDDEN;
+#endif
 
   if (state == bookmark_bar_state_)
     return;
@@ -2247,14 +2249,10 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     return;
   }
 
-  // Don't animate if mode is |NTP| because the bookmark is attached at top when
-  // pref is on and detached at bottom when off.
-  BookmarkBar::AnimateChangeType animate_type =
-      (reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE ||
-       reason == BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE) ?
+  bool shouldAnimate = reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE;
+  window_->BookmarkBarStateChanged(shouldAnimate ?
       BookmarkBar::ANIMATE_STATE_CHANGE :
-      BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
-  window_->BookmarkBarStateChanged(animate_type);
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
 bool Browser::ShouldHideUIForFullscreen() const {

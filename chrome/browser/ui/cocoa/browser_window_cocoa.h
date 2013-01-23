@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;
@@ -30,7 +31,8 @@ class Extension;
 
 class BrowserWindowCocoa :
     public BrowserWindow,
-    public extensions::ExtensionKeybindingRegistry::Delegate {
+    public extensions::ExtensionKeybindingRegistry::Delegate,
+    public chrome::search::SearchModelObserver {
  public:
   BrowserWindowCocoa(Browser* browser,
                      BrowserWindowController* controller);
@@ -149,6 +151,10 @@ class BrowserWindowCocoa :
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
+
+  // Overridden from chrome::search::SearchModelObserver:
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Adds the given FindBar cocoa controller to this browser window.
   void AddFindBar(FindBarCocoaController* find_bar_cocoa_controller);

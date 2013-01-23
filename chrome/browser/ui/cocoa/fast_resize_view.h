@@ -16,7 +16,13 @@
 @interface FastResizeView : NSView {
  @private
   BOOL fastResizeMode_;
+
+  // Offset from the top of the view where the view's content starts. This is
+  // used to prevent this view from drawing white on non-content area.
+  CGFloat contentOffset_;
 }
+
+@property(assign, nonatomic) CGFloat contentOffset;
 
 // Turns fast resizing mode on or off, which determines how this view resizes
 // its subviews.  Turning fast resizing mode off has the effect of immediately

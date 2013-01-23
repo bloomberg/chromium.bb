@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
 #include "chrome/browser/ui/cocoa/tab_contents/preview_drop_shadow_view.h"
 #include "content/public/browser/web_contents.h"
@@ -19,10 +20,13 @@
 @implementation PreviewableContentsController
 
 @synthesize drawDropShadow = drawDropShadow_;
+@synthesize previewOffset = previewOffset_;
+@synthesize activeContainerOffset = activeContainerOffset_;
 
 - (id)initWithBrowser:(Browser*)browser
      windowController:(BrowserWindowController*)windowController {
   if ((self = [super init])) {
+    windowController_ = windowController;
     scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
     [view setAutoresizingMask:NSViewHeightSizable | NSViewWidthSizable];
     [view setAutoresizesSubviews:NO];
@@ -119,6 +123,10 @@
   }
 }
 
+- (BOOL)isShowingPreview {
+  return previewContents_ != nil;
+}
+
 - (InstantPreviewControllerMac*)instantPreviewController {
   return instantPreviewController_.get();
 }
@@ -131,6 +139,22 @@
   return dropShadowView_.get();
 }
 
+- (void)setPreviewOffset:(CGFloat)previewOffset {
+  if (previewOffset_ == previewOffset)
+    return;
+
+  previewOffset_ = previewOffset;
+  [self layoutViews];
+}
+
+- (void)setActiveContainerOffset:(CGFloat)activeContainerOffset {
+  if (activeContainerOffset_ == activeContainerOffset)
+    return;
+
+  activeContainerOffset_ = activeContainerOffset;
+  [self layoutViews];
+}
+
 - (void)viewDidResize:(NSNotification*)note {
   [self layoutViews];
 }
@@ -141,7 +165,8 @@
   if (previewContents_) {
     NSRect previewFrame = bounds;
     previewFrame.size.height = [self previewHeightInPixels];
-    previewFrame.origin.y = NSMaxY(bounds) - NSHeight(previewFrame);
+    previewFrame.origin.y =
+        NSMaxY(bounds) - NSHeight(previewFrame) - previewOffset_;
     [previewContents_->GetNativeView() setFrame:previewFrame];
 
     if (dropShadowView_) {
@@ -153,11 +178,13 @@
     }
   }
 
-  [activeContainer_ setFrame:bounds];
+  NSRect activeFrame = bounds;
+  activeFrame.size.height -= activeContainerOffset_;
+  [activeContainer_ setFrame:activeFrame];
 }
 
 - (CGFloat)previewHeightInPixels {
-  CGFloat height = NSHeight([[self view] bounds]);
+  CGFloat height = NSHeight([[self view] bounds]) - previewOffset_;
   switch (previewHeightUnits_) {
     case INSTANT_SIZE_PERCENT:
       return std::min(height, (height * previewHeight_) / 100);
