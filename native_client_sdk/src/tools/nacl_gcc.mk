@@ -43,24 +43,24 @@ ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar r
 #
 define C_COMPILER_RULE
 $(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(X86_CC) -o $$@ -c $$< -m32 $(POSIX_OPT_FLAGS) $(2) $(NACL_CFLAGS)
+	$(X86_CC) -o $$@ -c $$< -m32 $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 
 $(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(X86_CC) -o $$@ -c $$< -m64 $(POSIX_OPT_FLAGS) $(2) $(NACL_CFLAGS)
+	$(X86_CC) -o $$@ -c $$< -m64 $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 
 $(OUTDIR)/$(basename $(1))_arm.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(ARM_CC) -o $$@ -c $$< $(POSIX_OPT_FLAGS) $(2) $(NACL_CFLAGS)
+	$(ARM_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 endef
 
 define CXX_COMPILER_RULE
 $(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(X86_CXX) -o $$@ -c $$< -m32 $(POSIX_OPT_FLAGS) $(2) $(NACL_CXXFLAGS)
+	$(X86_CXX) -o $$@ -c $$< -m32 $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS)
 
 $(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(X86_CXX) -o $$@ -c $$< -m64 $(POSIX_OPT_FLAGS) $(2) $(NACL_CXXFLAGS)
+	$(X86_CXX) -o $$@ -c $$< -m64 $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS)
 
 $(OUTDIR)/$(basename $(1))_arm.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(ARM_CXX) -o $$@ -c $$< $(POSIX_OPT_FLAGS) $(2) $(NACL_CXXFLAGS)
+	$(ARM_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CXXFLAGS)
 endef
 
 

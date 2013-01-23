@@ -166,9 +166,9 @@ endif
 # Common Compile Options
 #
 ifeq ('Release','$(CONFIG)')
-POSIX_OPT_FLAGS?=-g -O2 -pthread
+POSIX_FLAGS?=-g -O2 -pthread -MMD
 else
-POSIX_OPT_FLAGS?=-g -O0 -pthread
+POSIX_FLAGS?=-g -O0 -pthread -MMD
 endif
 
 NACL_CFLAGS?=-Wno-long-long -Werror
@@ -240,8 +240,6 @@ CHROME_ARGS+=--enable-nacl --enable-pnacl --incognito --ppapi-out-of-process
 PPAPI_DEBUG=$(abspath $(OSNAME)/Debug/$(TARGET)$(HOST_EXT));application/x-ppapi-debug
 PPAPI_RELEASE=$(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-ppapi-release
 
-info:
-	@echo "DEBUG=$(PPAPI_DEBUG)"
 
 PAGE?=index_$(TOOLCHAIN)_$(CONFIG).html
 
@@ -255,3 +253,13 @@ endif
 	    $(CHROME_PATH) $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
+
+SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome)
+GDB_ARGS+=-D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
+GDB_ARGS+=-D $(CURDIR)/$(OUTDIR)/$(TARGET)_$(SYSARCH).nexe
+
+DEBUG: CHECK_FOR_CHROME all
+	$(RUN_PY) $(GDB_ARGS) \
+	    -C $(CURDIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
+	    $(CHROME_PATH) $(CHROME_ARGS) --enable-nacl-debug \
+	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"

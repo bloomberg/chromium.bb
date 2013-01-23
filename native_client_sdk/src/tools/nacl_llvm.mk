@@ -27,12 +27,12 @@ PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar r
 #
 define C_COMPILER_RULE
 $(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(PNACL_CC) -o $$@ -c $$< $(POSIX_OPT_FLAGS) $(2) $(NACL_CFLAGS)
+	$(PNACL_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 endef
 
 define CXX_COMPILER_RULE
 $(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(PNACL_CXX) -o $$@ -c $$< $(POSIX_OPT_FLAGS) $(2) $(NACL_CFLAGS)
+	$(PNACL_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
 endef
 
 

@@ -8,6 +8,7 @@ points to that server.
 """
 
 import copy
+import getos
 import optparse
 import os
 import subprocess
@@ -33,6 +34,9 @@ def main(args):
       dest='serve_dir', default=os.path.abspath('.'))
   parser.add_option('-P', '--path', help='Path to load from local server.',
       dest='path', default='index.html')
+  parser.add_option('-D',
+      help='Add debug command-line when launching the chrome debug.',
+      dest='debug', action='append', default=[])
   parser.add_option('-E',
       help='Add environment variables when launching the executable.',
       dest='environ', action='append', default=[])
@@ -60,12 +64,26 @@ def main(args):
   cmd = args + [server.GetURL(options.path)]
   print 'Running: %s...' % (' '.join(cmd),)
   process = subprocess.Popen(cmd, env=env)
+
+  # If any debug args are passed in, assume we want to debug
+  if options.debug:
+    if getos.GetPlatform() != 'win':
+      cmd = ['xterm', '-title', 'NaCl Debugger', '-e']
+    else:
+      cmd = []
+    cmd += options.debug
+    print 'Starting debugger: ' + ' '.join(cmd)
+    debug_process = subprocess.Popen(cmd, env=env)
+  else:
+    debug_process = False
+
   try:
     return server.ServeUntilSubprocessDies(process)
   finally:
     if process.returncode is None:
       process.kill()
-
+    if debug_process and debug_process.returncode is None:
+      debug_process.kill()
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

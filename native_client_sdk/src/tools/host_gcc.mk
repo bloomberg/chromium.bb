@@ -22,7 +22,7 @@ HOST_LIB?=ar r
 
 
 LINUX_WARNINGS?=-Wno-long-long
-LINUX_CCFLAGS=-fPIC -MMD -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
+LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 
 
 #
@@ -33,12 +33,12 @@ LINUX_CCFLAGS=-fPIC -MMD -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -
 #
 define C_COMPILER_RULE
 $(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_OPT_FLAGS) $(2) $(LINUX_FLAGS)
+	$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS)
 endef
 
 define CXX_COMPILER_RULE
 $(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(OUTDIR)
-	$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_OPT_FLAGS) $(2) $(LINUX_FLAGS)
+	$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS)
 endef
 
 
