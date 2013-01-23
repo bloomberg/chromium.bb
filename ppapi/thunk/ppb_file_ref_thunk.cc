@@ -7,6 +7,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -21,11 +22,12 @@ namespace {
 typedef EnterResource<PPB_FileRef_API> EnterFileRef;
 
 PP_Resource Create(PP_Resource file_system, const char* path) {
+  ppapi::ProxyAutoLock lock;
   Resource* object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_system);
   if (!object)
     return 0;
-  EnterResourceCreation enter(object->pp_instance());
+  EnterResourceCreationNoLock enter(object->pp_instance());
   if (enter.failed())
     return 0;
   return enter.functions()->CreateFileRef(file_system, path);

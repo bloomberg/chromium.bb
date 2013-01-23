@@ -48,9 +48,13 @@ PPAPI_THUNK_EXPORT void AssertLockHeld();
 
 // This helps us define our RAII Enter classes easily. To make an RAII class
 // which locks the proxy lock on construction and unlocks on destruction,
-// inherit from |LockOnEntry<true>|. For cases where you don't want to lock,
-// inherit from |LockOnEntry<false>|. This allows us to share more code between
-// Enter* and Enter*NoLock classes.
+// inherit from |LockOnEntry<true>| before all other base classes. This ensures
+// that the lock is acquired before any other base class's constructor can run,
+// and that the lock is only released after all other destructors have run.
+// (This order of initialization is guaranteed by C++98/C++11 12.6.2.10).
+//
+// For cases where you don't want to lock, inherit from |LockOnEntry<false>|.
+// This allows us to share more code between Enter* and Enter*NoLock classes.
 template <bool lock_on_entry>
 struct LockOnEntry;
 
@@ -161,8 +165,9 @@ class PPAPI_THUNK_EXPORT EnterBase {
 // EnterResource ---------------------------------------------------------------
 
 template<typename ResourceT, bool lock_on_entry = true>
-class EnterResource : public subtle::EnterBase,
-                      public subtle::LockOnEntry<lock_on_entry> {
+class EnterResource
+    : public subtle::LockOnEntry<lock_on_entry>,  // Must be first; see above.
+      public subtle::EnterBase {
  public:
   EnterResource(PP_Resource resource, bool report_error)
       : EnterBase(resource) {
@@ -213,8 +218,8 @@ class EnterResourceNoLock : public EnterResource<ResourceT, false> {
 // EnterInstance ---------------------------------------------------------------
 
 class PPAPI_THUNK_EXPORT EnterInstance
-    : public subtle::EnterBase,
-      public subtle::LockOnEntry<true> {
+    : public subtle::LockOnEntry<true>,  // Must be first; see above.
+      public subtle::EnterBase {
  public:
   explicit EnterInstance(PP_Instance instance);
   EnterInstance(PP_Instance instance,
@@ -231,8 +236,8 @@ class PPAPI_THUNK_EXPORT EnterInstance
 };
 
 class PPAPI_THUNK_EXPORT EnterInstanceNoLock
-    : public subtle::EnterBase,
-      public subtle::LockOnEntry<false> {
+    : public subtle::LockOnEntry<false>,  // Must be first; see above.
+      public subtle::EnterBase {
  public:
   explicit EnterInstanceNoLock(PP_Instance instance);
   EnterInstanceNoLock(PP_Instance instance,
@@ -249,8 +254,8 @@ class PPAPI_THUNK_EXPORT EnterInstanceNoLock
 
 template<typename ApiT, bool lock_on_entry = true>
 class EnterInstanceAPI
-    : public subtle::EnterBase,
-      public subtle::LockOnEntry<lock_on_entry> {
+    : public subtle::LockOnEntry<lock_on_entry>,  // Must be first; see above
+      public subtle::EnterBase {
  public:
   explicit EnterInstanceAPI(PP_Instance instance)
       : EnterBase(),
@@ -288,8 +293,8 @@ class EnterInstanceAPINoLock : public EnterInstanceAPI<ApiT, false> {
 // EnterResourceCreation -------------------------------------------------------
 
 class PPAPI_THUNK_EXPORT EnterResourceCreation
-    : public subtle::EnterBase,
-      public subtle::LockOnEntry<true> {
+    : public subtle::LockOnEntry<true>,  // Must be first; see above.
+      public subtle::EnterBase {
  public:
   explicit EnterResourceCreation(PP_Instance instance);
   ~EnterResourceCreation();
@@ -301,8 +306,8 @@ class PPAPI_THUNK_EXPORT EnterResourceCreation
 };
 
 class PPAPI_THUNK_EXPORT EnterResourceCreationNoLock
-    : public subtle::EnterBase,
-      public subtle::LockOnEntry<false> {
+    : public subtle::LockOnEntry<false>,  // Must be first; see above.
+      public subtle::EnterBase {
  public:
   explicit EnterResourceCreationNoLock(PP_Instance instance);
   ~EnterResourceCreationNoLock();
