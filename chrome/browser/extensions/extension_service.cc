@@ -90,6 +90,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -500,6 +501,8 @@ void ExtensionService::RegisterForImportFinished() {
 }
 
 void ExtensionService::InitAfterImport() {
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupExtensionServiceInitAfterImport");
   component_loader_->LoadAll();
 
   CheckForExternalUpdates();
