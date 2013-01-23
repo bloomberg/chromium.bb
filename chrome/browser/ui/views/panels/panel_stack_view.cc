@@ -50,6 +50,7 @@ PanelStackView::PanelStackView(
   window_->Init(params);
   window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   window_->set_focus_on_creation(false);
+  window_->SetOpacity(0x00);
   window_->AddObserver(this);
   window_->ShowInactive();
 }
