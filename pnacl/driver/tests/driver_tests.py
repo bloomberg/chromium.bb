@@ -12,6 +12,7 @@ import unittest
 MODULES = [
     'expand_response_file_test',
     'help_message_test',
+    'strip_test',
 ]
 
 # The tested modules live in the parent directory. Set up the import path
