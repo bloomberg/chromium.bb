@@ -67,10 +67,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // (as opposed to the more-common method of adjusting the backlight).
     virtual void ScreenDimmingRequested(ScreenDimmingState state) {}
 
-    // Called when the system is about to suspend. Suspend is deferred until
-    // all observers' implementations of this method have finished running.
-    virtual void SuspendImminent() {}
-
     // Called when the power button is pressed or released.
     virtual void PowerButtonEventReceived(bool down,
                                           const base::TimeTicks& timestamp) {}

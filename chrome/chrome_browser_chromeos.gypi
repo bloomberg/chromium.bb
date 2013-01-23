@@ -558,8 +558,6 @@
         'browser/chromeos/power/session_length_limiter.h',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.cc',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.h',
-        'browser/chromeos/power/suspend_observer.cc',
-        'browser/chromeos/power/suspend_observer.h',
         'browser/chromeos/power/user_activity_notifier.cc',
         'browser/chromeos/power/user_activity_notifier.h',
         'browser/chromeos/power/video_activity_notifier.cc',

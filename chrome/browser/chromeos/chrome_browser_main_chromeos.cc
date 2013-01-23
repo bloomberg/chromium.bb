@@ -56,7 +56,6 @@
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_dimming_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
-#include "chrome/browser/chromeos/power/suspend_observer.h"
 #include "chrome/browser/chromeos/power/user_activity_notifier.h"
 #include "chrome/browser/chromeos/power/video_activity_notifier.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -599,7 +598,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   output_observer_.reset(new OutputObserver());
   resume_observer_.reset(new ResumeObserver());
   screen_lock_observer_.reset(new ScreenLockObserver());
-  suspend_observer_.reset(new SuspendObserver());
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
     power_state_override_ = new PowerStateOverride(
         PowerStateOverride::BLOCK_DISPLAY_SLEEP);
@@ -695,7 +693,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   screen_lock_observer_.reset();
-  suspend_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
   output_observer_.reset();
