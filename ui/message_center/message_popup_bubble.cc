@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "ui/message_center/message_view.h"
-#include "ui/message_center/message_view_factory.h"
+#include "ui/message_center/notification_view.h"
 #include "ui/notifications/notification_types.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -64,7 +64,7 @@ class PopupBubbleContentsView : public views::View {
              popup_notifications.begin();
          iter != popup_notifications.end(); ++iter) {
       MessageView* view =
-          MessageViewFactory::ViewForNotification(*iter, list_delegate_);
+          NotificationView::ViewForNotification(*iter, list_delegate_);
       view->SetUpView();
       content_->AddChildView(view);
     }

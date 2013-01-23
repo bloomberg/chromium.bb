@@ -19,7 +19,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_view.h"
-#include "ui/message_center/message_view_factory.h"
+#include "ui/message_center/notification_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/text_button.h"
@@ -435,7 +435,7 @@ class MessageCenterContentsView : public views::View {
     for (NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
       MessageView* view =
-          MessageViewFactory::ViewForNotification(*iter, list_delegate_);
+          NotificationView::ViewForNotification(*iter, list_delegate_);
       view->set_scroller(scroller_);
       view->SetUpView();
       if (UseNewDesign()) {

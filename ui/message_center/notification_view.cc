@@ -190,6 +190,31 @@ void NotificationButton::SetTitle(const string16& title) {
 
 namespace message_center {
 
+// static
+MessageView* NotificationView::ViewForNotification(
+    const NotificationList::Notification& notification,
+    NotificationList::Delegate* list_delegate) {
+  switch (notification.type) {
+    case ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT:
+    case ui::notifications::NOTIFICATION_TYPE_IMAGE:
+    case ui::notifications::NOTIFICATION_TYPE_MULTIPLE:
+    case ui::notifications::NOTIFICATION_TYPE_SIMPLE:
+      break;
+    default:
+      // If the caller asks for an unrecognized kind of view (entirely possible
+      // if an application is running on an older version of this code that
+      // doesn't have the requested kind of notification template), we'll fall
+      // back to a notification instance that will provide at least basic
+      // functionality.
+      LOG(WARNING) << "Unable to fulfill request for unrecognized "
+                   << "notification type " << notification.type << ". "
+                   << "Falling back to simple notification type.";
+  }
+
+  // Currently all roads lead to the generic NotificationView.
+  return new NotificationView(list_delegate, notification);
+}
+
 NotificationView::NotificationView(
     NotificationList::Delegate* list_delegate,
     const NotificationList::Notification& notification)

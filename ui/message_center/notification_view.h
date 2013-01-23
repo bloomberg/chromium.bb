@@ -10,11 +10,19 @@
 
 namespace message_center {
 
-// View that displays image and list notifications, and in the future will
-// display all types of notification (web/simple, basic/base, image, and
-// list/multiple-item/inbox/digest).
+// View that displays all current types of notification (web, basic, image, and
+// list). Future notification types may be handled by other classes, in which
+// case instances of those classes would be returned by the
+// ViewForNotification() factory method below.
 class NotificationView : public MessageView {
  public:
+  // Creates appropriate MessageViews for notifications. Those currently are
+  // always NotificationView instances but in the future may be instances of
+  // other classes, with the class depending on the notification type.
+  static MessageView* ViewForNotification(
+      const NotificationList::Notification& notification,
+      NotificationList::Delegate* list_delegate);
+
   NotificationView(NotificationList::Delegate* list_delegate,
                    const NotificationList::Notification& notification);
   virtual ~NotificationView();
