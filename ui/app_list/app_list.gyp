@@ -53,6 +53,8 @@
         'views/app_list_background.h',
         'views/app_list_item_view.cc',
         'views/app_list_item_view.h',
+        'views/app_list_main_view.cc',
+        'views/app_list_main_view.h',
         'views/app_list_view.cc',
         'views/app_list_view.h',
         'views/apps_grid_view.cc',

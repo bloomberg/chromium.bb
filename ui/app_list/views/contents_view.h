@@ -17,8 +17,8 @@ class ViewModel;
 
 namespace app_list {
 
+class AppListMainView;
 class AppListModel;
-class AppListView;
 class PaginationModel;
 
 // A view to manage sub views under the search box (apps grid view + page
@@ -27,7 +27,7 @@ class PaginationModel;
 // and animates the transition between show states.
 class ContentsView : public views::View {
  public:
-  ContentsView(AppListView* app_list_view,
+  ContentsView(AppListMainView* app_list_main_view,
                PaginationModel* pagination_model);
   virtual ~ContentsView();
 

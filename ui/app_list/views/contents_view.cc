@@ -8,7 +8,7 @@
 
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/base/events/event.h"
@@ -44,7 +44,7 @@ SearchResultListView* GetSearchResultListView(views::ViewModel* model) {
 
 }  // namespace
 
-ContentsView::ContentsView(AppListView* app_list_view,
+ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            PaginationModel* pagination_model)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
@@ -55,7 +55,7 @@ ContentsView::ContentsView(AppListView* app_list_view,
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
 
-  AppsGridView* apps_grid_view = new AppsGridView(app_list_view,
+  AppsGridView* apps_grid_view = new AppsGridView(app_list_main_view,
                                                   pagination_model);
   apps_grid_view->SetLayout(kPreferredIconDimension,
                             kPreferredCols,
@@ -64,7 +64,7 @@ ContentsView::ContentsView(AppListView* app_list_view,
   view_model_->Add(apps_grid_view, kIndexAppsGrid);
 
   SearchResultListView* search_results_view = new SearchResultListView(
-      app_list_view);
+      app_list_main_view);
   AddChildView(search_results_view);
   view_model_->Add(search_results_view, kIndexSearchResults);
 }
