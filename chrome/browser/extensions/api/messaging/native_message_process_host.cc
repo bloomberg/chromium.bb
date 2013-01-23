@@ -22,6 +22,9 @@
 
 namespace {
 
+// Message header contains 4-byte integer size of the message.
+const size_t kMessageHeaderSize = 4;
+
 const int kExitTimeoutMS = 5000;
 const uint32 kMaxMessageDataLength = 10 * 1024 * 1024;
 const char kNativeHostsDirectoryName[] = "native_hosts";
@@ -162,7 +165,7 @@ bool NativeMessageProcessHost::WriteMessage(const std::string& message) {
   pickle.WriteString(message);
 
   // Make sure that the pickle doesn't do any unexpected padding.
-  CHECK_EQ(4 + message.length(), pickle.payload_size());
+  CHECK_EQ(kMessageHeaderSize + message.length(), pickle.payload_size());
 
   if (!WriteData(write_file_, pickle.payload(), pickle.payload_size())) {
     LOG(ERROR) << "Error writing message to the native client.";
@@ -174,14 +177,14 @@ bool NativeMessageProcessHost::WriteMessage(const std::string& message) {
 
 bool NativeMessageProcessHost::ReadMessage(std::string* message) {
   // Read the length (uint32).
-  char message_meta_data[4];
+  char message_meta_data[kMessageHeaderSize];
   if (!ReadData(read_file_, message_meta_data, sizeof(message_meta_data))) {
     LOG(ERROR) << "Error reading the message length.";
     return false;
   }
 
   Pickle pickle;
-  pickle.WriteBytes(message_meta_data, 8);
+  pickle.WriteBytes(message_meta_data, sizeof(message_meta_data));
   PickleIterator pickle_it(pickle);
   uint32 data_length;
   if (!pickle_it.ReadUInt32(&data_length)) {
