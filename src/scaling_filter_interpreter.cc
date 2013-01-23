@@ -78,7 +78,8 @@ void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
-  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD) {
+  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD ||
+      devclass_ == GESTURES_DEVCLASS_TOUCHSCREEN) {
     ScaleTouchpadHardwareState(hwstate);
   } else if (devclass_ == GESTURES_DEVCLASS_MOUSE) {
     ScaleMouseHardwareState(hwstate);
