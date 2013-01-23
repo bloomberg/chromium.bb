@@ -24,7 +24,6 @@
             'build_glibc': 0,
             'build_newlib': 1,
             'defines': [
-              'NACL_PPAPI_IPC_PROXY',
               # Enable threading for the untrusted side of the proxy.
               # TODO(bbudge) remove when this is the default.
               'ENABLE_PEPPER_THREADING',
