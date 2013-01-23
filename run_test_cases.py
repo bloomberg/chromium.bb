@@ -1068,7 +1068,14 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
         '-j', '--jobs',
         type='int',
         default=num_processors(),
-        help='number of parallel jobs; default=%default')
+        help='Number of parallel jobs; default=%default')
+    self.add_option(
+        '--use-less-jobs',
+        action='store_const',
+        const=num_processors() - 1,
+        dest='jobs',
+        help='Starts less parallel jobs than the default, used to help reduce'
+             'contention between threads if all the tests are very CPU heavy.')
     self.add_option(
         '-t', '--timeout',
         type='int',
