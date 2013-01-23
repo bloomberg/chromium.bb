@@ -241,8 +241,8 @@ def process_items(contains_hash_url, infiles, zip_and_upload):
   Some may already be on the server.
   """
   next_queries = []
-  items = ((k, v) for k, v in infiles.iteritems() if 'size' in v)
-  for relfile, metadata in sorted(items, key=lambda x: -x[1]['size']):
+  items = ((k, v) for k, v in infiles.iteritems() if 's' in v)
+  for relfile, metadata in sorted(items, key=lambda x: -x[1]['s']):
     next_queries.append((relfile, metadata))
     if len(next_queries) == ITEMS_PER_CONTAINS_QUERY:
       update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)

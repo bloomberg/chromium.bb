@@ -19,17 +19,17 @@ class IsolateServerTest(unittest.TestCase):
     old = isolateserver_archive.update_files_to_upload
     try:
       items = {
-        'foo': {'size': 12},
+        'foo': {'s': 12},
         'bar': {},
-        'blow': {'size': 0},
-        'bizz': {'size': 1222},
-        'buzz': {'size': 1223},
+        'blow': {'s': 0},
+        'bizz': {'s': 1222},
+        'buzz': {'s': 1223},
       }
       expected = [
-        ('buzz', {'size': 1223}),
-        ('bizz', {'size': 1222}),
-        ('foo', {'size': 12}),
-        ('blow', {'size': 0}),
+        ('buzz', {'s': 1223}),
+        ('bizz', {'s': 1222}),
+        ('foo', {'s': 12}),
+        ('blow', {'s': 0}),
       ]
       actual = []
       def process(url, items, upload_func):

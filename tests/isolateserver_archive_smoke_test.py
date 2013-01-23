@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import binascii
 import os
 import subprocess
 import sys
@@ -10,6 +11,10 @@ import tempfile
 import time
 import unittest
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
+import isolateserver_archive
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -28,7 +33,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
                       + '-gzip')
 
   def _archive_given_files(self, files):
-    """Given a list of files, call isolateserver_archive.py with them."""
+    """Given a list of files, call isolateserver_archive.py with them. Then
+    verify they are all on the server."""
     args = [
         sys.executable,
         os.path.join(ROOT_DIR, 'isolateserver_archive.py'),
@@ -39,13 +45,28 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       args.append('--verbose')
     args.extend(os.path.join(TEST_DATA_DIR, filename) for filename in files)
 
-    return subprocess.call(args)
+    self.assertEqual(0, subprocess.call(args))
+
+    # Ensure the files are present on the server.
+    contains_hash_url = '%s/content/contains/%s' % (
+        ISOLATE_SERVER.rstrip('/'), self.namespace)
+
+    file_hashes = (isolateserver_archive.sha1_file(
+        os.path.join(TEST_DATA_DIR, f)) for f in files)
+    body = ''.join(binascii.unhexlify(h) for h in file_hashes)
+
+    response = isolateserver_archive.url_open(contains_hash_url, body).read()
+
+    for i in range(len(response)):
+      self.assertEqual(chr(1), response[i],
+                       'File %s was missing from the server' % files[i])
+
 
   def test_archive_empty_file(self):
-    self.assertEqual(0, self._archive_given_files(['empty_file.txt']))
+    self._archive_given_files(['empty_file.txt'])
 
   def test_archive_small_file(self):
-    self.assertEqual(0, self._archive_given_files(['small_file.txt']))
+    self._archive_given_files(['small_file.txt'])
 
   def test_archive_huge_file(self):
     # Create a file over 2gbs.
@@ -61,7 +82,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       finally:
         os.close(handle)
 
-      self.assertEqual(0, self._archive_given_files([filepath]))
+      self._archive_given_files([filepath])
     finally:
       if filepath:
         os.remove(filepath)
