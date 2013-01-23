@@ -54,7 +54,7 @@ IPC_STRUCT_BEGIN(AutomationURLResponse)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ExternalTabSettings)
-  IPC_STRUCT_MEMBER(gfx::AcceleratedWidget, parent)
+  IPC_STRUCT_MEMBER(gfx::NativeWindow, parent)
   IPC_STRUCT_MEMBER(gfx::Rect, dimensions)
   IPC_STRUCT_MEMBER(unsigned int, style)
   IPC_STRUCT_MEMBER(bool, is_incognito)
