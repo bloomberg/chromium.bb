@@ -914,8 +914,8 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.mox.StubOutWithMock(os, 'rename')
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 
-    self.parallel_mock = parallel_unittest.ParallelMock()
-    self.StartPatcher(self.parallel_mock)
+    # pylint: disable=E1101
+    self.parallel_mock = self.StartPatcher(parallel_unittest.ParallelMock())
 
   def ConstructStage(self):
     return stages.BuildTargetStage(
@@ -1127,6 +1127,7 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
       directly passed to mock.patch.object.
     """
     for item in to_patch:
+      # pylint: disable=E1101
       self.StartPatcher(mock.patch.object(*item, autospec=True))
 
   def _PatchDependencies(self):
@@ -1142,6 +1143,7 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self._build_config['push_image'] = True
 
     self.archive_mock = ArchiveStageMock()
+    # pylint: disable=E1101
     self.StartPatcher(self.archive_mock)
     self._PatchDependencies()
 

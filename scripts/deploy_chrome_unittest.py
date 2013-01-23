@@ -104,8 +104,7 @@ class DeployChromeTest(cros_test_lib.MockTempDirTestCase):
         options, self.tempdir, os.path.join(self.tempdir, 'staging'))
 
   def setUp(self):
-    self.deploy_mock = DeployChromeMock()
-    self.StartPatcher(self.deploy_mock)
+    self.deploy_mock = self.StartPatcher(DeployChromeMock())
     self.deploy = self._GetDeployChrome()
 
 

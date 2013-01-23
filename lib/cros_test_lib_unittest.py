@@ -30,8 +30,7 @@ class VerifyTarballTest(cros_test_lib.MockTempDirTestCase):
   TARBALL = 'fake_tarball'
 
   def setUp(self):
-    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
-    self.StartPatcher(self.rc_mock)
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
 
   def _MockTarList(self, files):
     """Mock out tarball content list call.

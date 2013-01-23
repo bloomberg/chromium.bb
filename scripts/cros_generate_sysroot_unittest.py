@@ -55,8 +55,7 @@ TAR_NAME = 'test.tar.xz'
 class OverallTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
-    self.cg_mock = CrosGenMock()
-    self.StartPatcher(self.cg_mock)
+    self.cg_mock = self.StartPatcher(CrosGenMock())
 
   def testTarballGeneration(self):
     """End-to-end test of tarball generation."""

@@ -43,8 +43,7 @@ class RemoteShMock(partial_mock.PartialCmdMock):
 class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
-    self.rsh_mock = RemoteShMock()
-    self.StartPatcher(self.rsh_mock)
+    self.rsh_mock = self.StartPatcher(RemoteShMock())
     self.host = remote_access.RemoteAccess('foon', self.tempdir)
 
 

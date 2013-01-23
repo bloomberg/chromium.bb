@@ -51,9 +51,8 @@ class RunCommandMock(partial_mock.PartialCmdMock):
 class RunCommandTestCase(cros_test_lib.MockTestCase):
 
   def setUp(self):
-    self.rc = RunCommandMock()
+    self.rc = self.StartPatcher(RunCommandMock())
     self.rc.SetDefaultCmdResult()
-    self.StartPatcher(self.rc)
     self.assertCommandContains = self.rc.assertCommandContains
 
 

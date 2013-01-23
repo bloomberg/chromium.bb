@@ -819,15 +819,16 @@ class MockTestCase(TestCase):
 
   def StartPatcher(self, patcher):
     """Call start() on the patcher, and stop() in tearDown."""
-    patcher.start()
+    m = patcher.start()
     self._patchers.append(patcher)
+    return m
 
   def PatchObject(self, *args, **kwargs):
     """Create and start a mock.patch.object().
 
     stop() will be called automatically during tearDown.
     """
-    self.StartPatcher(mock.patch.object(*args, **kwargs))
+    return self.StartPatcher(mock.patch.object(*args, **kwargs))
 
 
 # MockTestCase must be before TempDirTestCase in this inheritance order,

@@ -89,8 +89,7 @@ class FetchGSUtilMock(partial_mock.PartialMock):
 class FetchGSUtilTest(cros_test_lib.MockTempDirTestCase):
   """Test the fetching of 'gsutil' tarball"""
   def setUp(self):
-    self.mock = FetchGSUtilMock()
-    self.StartPatcher(self.mock)
+    self.mock = self.StartPatcher(FetchGSUtilMock())
     self.cache = cache.TarballCache(os.path.join(self.tempdir, 'cache'))
     self.PatchObject(cache, 'Untar')
 
@@ -109,8 +108,7 @@ class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
   """Base class for GSContext tests."""
 
   def setUp(self):
-    self.gs_mock = GSContextMock()
-    self.StartPatcher(self.gs_mock)
+    self.gs_mock = self.StartPatcher(GSContextMock())
     self.gs_mock.SetDefaultCmdResult()
     self.ctx = gs.GSContext()
 
