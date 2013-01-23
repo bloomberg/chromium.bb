@@ -122,24 +122,6 @@ PlatformFileError DeviceMediaFileUtil::Truncate(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-bool DeviceMediaFileUtil::IsDirectoryEmpty(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
-  if (!delegate)
-    return false;
-
-  scoped_ptr<AbstractFileEnumerator> enumerator(
-      CreateFileEnumerator(context, url, false));
-  FilePath path;
-  while (!(path = enumerator->Next()).empty()) {
-    if (enumerator->IsDirectory() ||
-        context->media_path_filter()->Match(path))
-      return false;
-  }
-  return true;
-}
-
 PlatformFileError DeviceMediaFileUtil::CopyOrMoveFile(
     FileSystemOperationContext* context,
     const FileSystemURL& src_url,
@@ -161,7 +143,7 @@ PlatformFileError DeviceMediaFileUtil::DeleteFile(
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-PlatformFileError DeviceMediaFileUtil::DeleteSingleDirectory(
+PlatformFileError DeviceMediaFileUtil::DeleteDirectory(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
   return base::PLATFORM_FILE_ERROR_SECURITY;

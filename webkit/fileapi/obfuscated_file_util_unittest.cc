@@ -918,7 +918,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->DeleteSingleDirectory(context.get(), url));
+      ofu()->DeleteDirectory(context.get(), url));
 
   FileSystemURL root = CreateURLFromUTF8("");
   EXPECT_FALSE(DirectoryExists(url));
@@ -947,8 +947,8 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
   // Can't remove a non-empty directory.
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
-      ofu()->DeleteSingleDirectory(context.get(),
-                                   url.WithPath(url.path().DirName())));
+      ofu()->DeleteDirectory(context.get(),
+                             url.WithPath(url.path().DirName())));
   EXPECT_TRUE(change_observer()->HasNoChange());
 
   base::PlatformFileInfo file_info;
@@ -976,8 +976,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
   // frees up quota from its path.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(0);
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->DeleteSingleDirectory(context.get(), url));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->DeleteDirectory(context.get(), url));
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(ObfuscatedFileUtil::ComputeFilePathCost(url.path()),
       context->allowed_bytes_growth());
@@ -1823,9 +1822,8 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
             ofu()->DeleteFile(context.get(), url));
   EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
-  // DeleteSingleDirectory, fail case.
-  url = dir_url.WithPath(
-      dir_url.path().AppendASCII("DeleteSingleDirectory_dir"));
+  // DeleteDirectory, fail case.
+  url = dir_url.WithPath(dir_url.path().AppendASCII("DeleteDirectory_dir"));
   FileSystemURL file_path(url.WithPath(url.path().AppendASCII("pakeratta")));
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -1839,7 +1837,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
   ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
-            ofu()->DeleteSingleDirectory(context.get(), url));
+            ofu()->DeleteDirectory(context.get(), url));
   EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // delete case.
@@ -1849,8 +1847,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
 
   ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->DeleteSingleDirectory(context.get(), url));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->DeleteDirectory(context.get(), url));
   EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 }
 

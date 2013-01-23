@@ -202,20 +202,35 @@ bool NativeFileUtil::DirectoryExists(const FilePath& path) {
   return file_util::DirectoryExists(path);
 }
 
-bool NativeFileUtil::IsDirectoryEmpty(const FilePath& path) {
-  return file_util::IsDirectoryEmpty(path);
-}
-
 PlatformFileError NativeFileUtil::CopyOrMoveFile(
     const FilePath& src_path,
     const FilePath& dest_path,
     bool copy) {
+  base::PlatformFileInfo info;
+  base::PlatformFileError error = NativeFileUtil::GetFileInfo(src_path, &info);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (info.is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+
+  error = NativeFileUtil::GetFileInfo(dest_path, &info);
+  if (error != base::PLATFORM_FILE_OK &&
+      error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
+    return error;
+  if (info.is_directory)
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    error = NativeFileUtil::GetFileInfo(dest_path.DirName(), &info);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
+    if (!info.is_directory)
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  }
+
   if (copy) {
-    if (file_util::CopyFile(src_path,
-                            dest_path))
+    if (file_util::CopyFile(src_path, dest_path))
       return base::PLATFORM_FILE_OK;
   } else {
-    DCHECK(!file_util::DirectoryExists(src_path));
     if (file_util::Move(src_path, dest_path))
       return base::PLATFORM_FILE_OK;
   }
@@ -232,17 +247,13 @@ PlatformFileError NativeFileUtil::DeleteFile(const FilePath& path) {
   return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::DeleteSingleDirectory(const FilePath& path) {
+PlatformFileError NativeFileUtil::DeleteDirectory(const FilePath& path) {
   if (!file_util::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  if (!file_util::DirectoryExists(path)) {
-    // TODO(dmikurube): Check if this error code is appropriate.
+  if (!file_util::DirectoryExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-  }
-  if (!file_util::IsDirectoryEmpty(path)) {
-    // TODO(dmikurube): Check if this error code is appropriate.
+  if (!file_util::IsDirectoryEmpty(path))
     return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-  }
   if (!file_util::Delete(path, false))
     return base::PLATFORM_FILE_ERROR_FAILED;
   return base::PLATFORM_FILE_OK;

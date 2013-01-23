@@ -50,6 +50,14 @@ FilePath GetTopLevelPath(const FilePath& path) {
   return FilePath(components[0]);
 }
 
+bool IsDirectoryEmpty(FileSystemOperationContext* context,
+                      FileSystemFileUtil* file_util,
+                      const FileSystemURL& url) {
+  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum =
+      file_util->CreateFileEnumerator(context, url, false /* recursive */);
+  return file_enum->Next().empty();
+}
+
 }  // namespace
 
 // TODO(kinuko): we should have separate tests for DraggedFileUtil and
@@ -196,8 +204,8 @@ class IsolatedFileUtilTest : public testing::Test {
       if (file_enum2->IsDirectory()) {
         FileSystemOperationContext context1(file_system_context());
         FileSystemOperationContext context2(file_system_context());
-        EXPECT_EQ(file_util1->IsDirectoryEmpty(&context1, url1),
-                  file_util2->IsDirectoryEmpty(&context2, url2));
+        EXPECT_EQ(IsDirectoryEmpty(&context1, file_util1, url1),
+                  IsDirectoryEmpty(&context2, file_util2, url2));
         continue;
       }
       EXPECT_TRUE(file_set1.find(relative) != file_set1.end());

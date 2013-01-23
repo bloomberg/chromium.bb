@@ -191,15 +191,6 @@ PlatformFileError LocalFileUtil::Truncate(
   return NativeFileUtil::Truncate(file_path, length);
 }
 
-bool LocalFileUtil::IsDirectoryEmpty(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  FilePath file_path;
-  if (GetLocalFilePath(context, url, &file_path) != base::PLATFORM_FILE_OK)
-    return true;
-  return NativeFileUtil::IsDirectoryEmpty(file_path);
-}
-
 PlatformFileError LocalFileUtil::CopyOrMoveFile(
     FileSystemOperationContext* context,
     const FileSystemURL& src_url,
@@ -218,7 +209,6 @@ PlatformFileError LocalFileUtil::CopyOrMoveFile(
   return NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path, copy);
 }
 
-// TODO(dmikurube): Make it independent from CopyOrMoveFile.
 PlatformFileError LocalFileUtil::CopyInForeignFile(
     FileSystemOperationContext* context,
     const FilePath& src_file_path,
@@ -244,14 +234,14 @@ PlatformFileError LocalFileUtil::DeleteFile(
   return NativeFileUtil::DeleteFile(file_path);
 }
 
-PlatformFileError LocalFileUtil::DeleteSingleDirectory(
+PlatformFileError LocalFileUtil::DeleteDirectory(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
   FilePath file_path;
   PlatformFileError error = GetLocalFilePath(context, url, &file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  return NativeFileUtil::DeleteSingleDirectory(file_path);
+  return NativeFileUtil::DeleteDirectory(file_path);
 }
 
 base::PlatformFileError LocalFileUtil::CreateSnapshotFile(
@@ -261,9 +251,14 @@ base::PlatformFileError LocalFileUtil::CreateSnapshotFile(
     FilePath* platform_path,
     SnapshotFilePolicy* policy) {
   DCHECK(policy);
+  DCHECK(file_info);
   // We're just returning the local file information.
   *policy = kSnapshotFileLocal;
-  return GetFileInfo(context, url, file_info, platform_path);
+  base::PlatformFileError error =
+      GetFileInfo(context, url, file_info, platform_path);
+  if (error == base::PLATFORM_FILE_OK && file_info->is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  return error;
 }
 
 }  // namespace fileapi

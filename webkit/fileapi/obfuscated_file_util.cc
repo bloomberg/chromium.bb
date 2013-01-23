@@ -572,31 +572,6 @@ PlatformFileError ObfuscatedFileUtil::Truncate(
   return error;
 }
 
-bool ObfuscatedFileUtil::IsDirectoryEmpty(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      url.origin(), url.type(), false);
-  if (!db)
-    return true;  // Not a great answer, but it's what others do.
-  FileId file_id;
-  if (!db->GetFileWithPath(url.path(), &file_id))
-    return true;  // Ditto.
-  FileInfo file_info;
-  if (!db->GetFileInfo(file_id, &file_info)) {
-    DCHECK(!file_id);
-    // It's the root directory and the database hasn't been initialized yet.
-    return true;
-  }
-  if (!file_info.is_directory())
-    return true;
-  std::vector<FileId> children;
-  // TODO(ericu): This could easily be made faster with help from the database.
-  if (!db->ListChildren(file_id, &children))
-    return true;
-  return children.empty();
-}
-
 PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
     FileSystemOperationContext* context,
     const FileSystemURL& src_url,
@@ -628,7 +603,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
   if (src_file_info.is_directory())
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
 
   FileInfo dest_file_info;
   base::PlatformFileInfo dest_platform_file_info;  // overwrite case only
@@ -642,13 +617,12 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
     else if (error != base::PLATFORM_FILE_OK)
       return error;
     else if (dest_file_info.is_directory())
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   }
   if (!overwrite) {
     FileId dest_parent_id;
     if (!db->GetFileWithPath(dest_url.path().DirName(),
                              &dest_parent_id)) {
-      NOTREACHED();  // We shouldn't be called in this case.
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     }
 
@@ -768,16 +742,16 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
     else if (error != base::PLATFORM_FILE_OK)
       return error;
     else if (dest_file_info.is_directory())
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   }
   if (!overwrite) {
     FileId dest_parent_id;
     if (!db->GetFileWithPath(dest_url.path().DirName(),
-                             &dest_parent_id) ||
-        !dest_file_info.is_directory()) {
-      NOTREACHED();
+                             &dest_parent_id)) {
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     }
+    if (!dest_file_info.is_directory())
+      return base::PLATFORM_FILE_ERROR_FAILED;
     InitFileInfo(&dest_file_info, dest_parent_id,
                  VirtualPath::BaseName(dest_url.path()).value());
   }
@@ -865,7 +839,7 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
   return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
+PlatformFileError ObfuscatedFileUtil::DeleteDirectory(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
@@ -877,10 +851,12 @@ PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
   if (!db->GetFileWithPath(url.path(), &file_id))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   FileInfo file_info;
-  if (!db->GetFileInfo(file_id, &file_info) || !file_info.is_directory()) {
+  if (!db->GetFileInfo(file_id, &file_info)) {
     NOTREACHED();
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
+  if (!file_info.is_directory())
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
   if (!db->RemoveFileInfo(file_id))
     return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
   int64 growth = -UsageForPath(file_info.name.size());
@@ -901,7 +877,36 @@ base::PlatformFileError ObfuscatedFileUtil::CreateSnapshotFile(
   DCHECK(policy);
   // We're just returning the local file information.
   *policy = kSnapshotFileLocal;
-  return GetFileInfo(context, url, file_info, platform_path);
+  base::PlatformFileError error = GetFileInfo(
+      context, url, file_info, platform_path);
+  if (error == base::PLATFORM_FILE_OK && file_info->is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  return error;
+}
+
+bool ObfuscatedFileUtil::IsDirectoryEmpty(
+    FileSystemOperationContext* context,
+    const FileSystemURL& url) {
+  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+      url.origin(), url.type(), false);
+  if (!db)
+    return true;  // Not a great answer, but it's what others do.
+  FileId file_id;
+  if (!db->GetFileWithPath(url.path(), &file_id))
+    return true;  // Ditto.
+  FileInfo file_info;
+  if (!db->GetFileInfo(file_id, &file_info)) {
+    DCHECK(!file_id);
+    // It's the root directory and the database hasn't been initialized yet.
+    return true;
+  }
+  if (!file_info.is_directory())
+    return true;
+  std::vector<FileId> children;
+  // TODO(ericu): This could easily be made faster with help from the database.
+  if (!db->ListChildren(file_id, &children))
+    return true;
+  return children.empty();
 }
 
 FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(

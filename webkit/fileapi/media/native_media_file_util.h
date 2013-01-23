@@ -41,9 +41,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int64 length) OVERRIDE;
-  virtual bool IsDirectoryEmpty(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,

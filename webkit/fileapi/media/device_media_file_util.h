@@ -65,9 +65,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int64 length) OVERRIDE;
-  virtual bool IsDirectoryEmpty(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
@@ -80,7 +77,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaFileUtil
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual base::PlatformFileError DeleteSingleDirectory(
+  virtual base::PlatformFileError DeleteDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
   virtual base::PlatformFileError CreateSnapshotFile(

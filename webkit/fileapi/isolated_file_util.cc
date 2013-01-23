@@ -179,19 +179,4 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
-bool DraggedFileUtil::IsDirectoryEmpty(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  DCHECK(url.is_valid());
-  if (url.path().empty()) {
-    // The root directory case.
-    std::vector<FileInfo> toplevels;
-    bool success = IsolatedContext::GetInstance()->GetDraggedFileInfo(
-        url.filesystem_id(), &toplevels);
-    DCHECK(success);
-    return toplevels.empty();
-  }
-  return NativeFileUtil::IsDirectoryEmpty(url.path());
-}
-
 }  // namespace fileapi

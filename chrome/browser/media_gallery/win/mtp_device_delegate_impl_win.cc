@@ -167,6 +167,8 @@ base::PlatformFileError MTPDeviceDelegateImplWin::CreateSnapshotFile(
   base::PlatformFileError error = GetFileInfo(device_file_path, file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
+  if (file_info->is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   if (!media_transfer_protocol::WriteFileObjectContentToPath(device_.get(),
                                                              file_object_id,
                                                              local_path))

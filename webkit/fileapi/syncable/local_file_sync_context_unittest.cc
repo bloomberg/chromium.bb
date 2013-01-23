@@ -572,7 +572,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   // with wrong file type will result in error.
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                       SYNC_FILE_TYPE_FILE);
-  EXPECT_EQ(SYNC_FILE_ERROR_FAILED,
+  EXPECT_NE(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, kFilePath1, kDir,
                               SYNC_FILE_TYPE_DIRECTORY));

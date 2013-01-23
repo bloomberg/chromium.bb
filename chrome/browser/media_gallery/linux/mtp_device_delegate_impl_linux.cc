@@ -133,6 +133,8 @@ PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(
   PlatformFileError error = GetFileInfo(device_file_path, file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
+  if (file_info->is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
 
   if (file_info->size <= 0 || file_info->size > kuint32max)
     return base::PLATFORM_FILE_ERROR_FAILED;

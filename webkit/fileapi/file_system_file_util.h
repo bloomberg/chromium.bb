@@ -155,12 +155,18 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
       const FileSystemURL& url,
       int64 length) = 0;
 
-  // Returns true if a given |url| is an empty directory.
-  virtual bool IsDirectoryEmpty(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) = 0;
-
   // Copies or moves a single file from |src_url| to |dest_url|.
+  // The filesystem type of |src_url| and |dest_url| MUST be same.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
@@ -168,20 +174,38 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
       bool copy) = 0;
 
   // Copies in a single file from a different filesystem.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
   virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
         const FilePath& src_file_path,
         const FileSystemURL& dest_url) = 0;
 
   // Deletes a single file.
-  // It assumes the given url points a file.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  //
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url) = 0;
 
   // Deletes a single empty directory.
-  // It assumes the given url points an empty directory.
-  virtual base::PlatformFileError DeleteSingleDirectory(
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
+  // - PLATFORM_FILE_ERROR_NOT_EMPTY if |url| is not empty.
+  //
+  virtual base::PlatformFileError DeleteDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) = 0;
 
@@ -197,6 +221,11 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   // |platform_path| is the path to the snapshot file created.
   // |policy| should indicate the policy how the fileapi backend
   // should handle the returned file.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  //
   virtual base::PlatformFileError CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,

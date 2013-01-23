@@ -110,60 +110,8 @@ CrossFileUtilHelper::CrossFileUtilHelper(
 CrossFileUtilHelper::~CrossFileUtilHelper() {}
 
 base::PlatformFileError CrossFileUtilHelper::DoWork() {
-  base::PlatformFileError error = PerformErrorCheckAndPreparation();
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  if (FileUtilHelper::DirectoryExists(context_, src_util_, src_root_url_))
-    return CopyOrMoveDirectory(src_root_url_, dest_root_url_);
-  return CopyOrMoveFile(src_root_url_, dest_root_url_);
-}
-
-PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
-  FilePath platform_path;
-  base::PlatformFileInfo src_root_info;
-  base::PlatformFileInfo dest_root_info;
-
-  PlatformFileError error = src_util_->GetFileInfo(
-      context_, src_root_url_, &src_root_info, &platform_path);
-
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-
-  error = dest_util_->GetFileInfo(
-      context_, dest_root_url_, &dest_root_info, &platform_path);
-  bool dest_root_exists = (error == base::PLATFORM_FILE_OK);
-  bool dest_parent_exists = dest_root_exists || IsInRoot(dest_root_url_);
-
-  if (!dest_parent_exists) {
-    base::PlatformFileInfo file_info;
-    FileSystemURL parent_url = dest_root_url_.WithPath(
-        dest_root_url_.path().DirName());
-    error = dest_util_->GetFileInfo(
-        context_, parent_url, &file_info, &platform_path);
-    dest_parent_exists = (error == base::PLATFORM_FILE_OK &&
-                          file_info.is_directory);
-  }
-
-  // The parent of the |dest_root_url_| does not exist.
-  if (!dest_parent_exists)
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
   // It is an error to try to copy/move an entry into its child.
   if (same_file_system_ && src_root_url_.path().IsParent(dest_root_url_.path()))
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-
-  // Now it is ok to return if the |dest_root_url_| does not exist.
-  if (!dest_root_exists)
-    return base::PLATFORM_FILE_OK;
-
-  // |src_root_url_| exists and is a directory.
-  // |dest_root_url_| exists and is a file.
-  bool src_is_directory = src_root_info.is_directory;
-  bool dest_is_directory = dest_root_info.is_directory;
-
-  // Either one of |src_root_url_| or |dest_root_url_| is directory,
-  // while the other is not.
-  if (src_is_directory != dest_is_directory)
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // It is an error to copy/move an entry into the same path.
@@ -171,19 +119,25 @@ PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
       src_root_url_.path() == dest_root_url_.path())
     return base::PLATFORM_FILE_ERROR_EXISTS;
 
-  if (dest_is_directory) {
-    // It is an error to copy/move an entry to a non-empty directory.
-    // Otherwise the copy/move attempt must overwrite the destination, but
-    // the file_util's Copy or Move method doesn't perform overwrite
-    // on all platforms, so we delete the destination directory here.
-    if (base::PLATFORM_FILE_OK !=
-        dest_util_->DeleteSingleDirectory(context_, dest_root_url_)) {
-      if (!dest_util_->IsDirectoryEmpty(context_, dest_root_url_))
-        return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-      return base::PLATFORM_FILE_ERROR_FAILED;
-    }
-  }
-  return base::PLATFORM_FILE_OK;
+  // First try to copy/move the file.
+  base::PlatformFileError error = CopyOrMoveFile(src_root_url_, dest_root_url_);
+  if (error == base::PLATFORM_FILE_OK ||
+      error != base::PLATFORM_FILE_ERROR_NOT_A_FILE)
+    return error;
+
+  // Now we should be sure that the source (and destination if exists)
+  // is directory.
+  // Now let's try to remove the destination directory, this must
+  // fail if the directory isn't empty or its parent doesn't exist.
+  error = dest_util_->DeleteDirectory(context_, dest_root_url_);
+  if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY)
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  if (error != base::PLATFORM_FILE_OK &&
+      error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
+    return error;
+
+  // Perform the actual work for directory copy/move.
+  return CopyOrMoveDirectory(src_root_url_, dest_root_url_);
 }
 
 PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
@@ -284,6 +238,7 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
     return error;
 
   // For now we don't support non-snapshot file case.
+  // TODO(kinuko): Address this case too.
   DCHECK(!platform_file_path.empty());
 
   scoped_ptr<ScopedFileDeleter> file_deleter;
@@ -348,7 +303,7 @@ base::PlatformFileError FileUtilHelper::Delete(
     bool recursive) {
   if (DirectoryExists(context, file_util, url)) {
     if (!recursive)
-      return file_util->DeleteSingleDirectory(context, url);
+      return file_util->DeleteDirectory(context, url);
     else
       return DeleteDirectoryRecursive(context, file_util, url);
   } else {
@@ -411,14 +366,14 @@ base::PlatformFileError FileUtilHelper::DeleteDirectoryRecursive(
   }
 
   while (!directories.empty()) {
-    PlatformFileError error = file_util->DeleteSingleDirectory(
+    PlatformFileError error = file_util->DeleteDirectory(
         context, url.WithPath(directories.top()));
     if (error != base::PLATFORM_FILE_ERROR_NOT_FOUND &&
         error != base::PLATFORM_FILE_OK)
       return error;
     directories.pop();
   }
-  return file_util->DeleteSingleDirectory(context, url);
+  return file_util->DeleteDirectory(context, url);
 }
 
 }  // namespace fileapi
