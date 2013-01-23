@@ -198,8 +198,7 @@ void LocalFileSystemQuotaTest::SetUp() {
 
   test_helper_.SetUp(filesystem_dir_path,
                      false /* unlimited quota */,
-                     quota_manager_->proxy(),
-                     NULL);
+                     quota_manager_->proxy());
 }
 
 void LocalFileSystemQuotaTest::TearDown() {

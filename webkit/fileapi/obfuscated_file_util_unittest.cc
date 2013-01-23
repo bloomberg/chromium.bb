@@ -128,11 +128,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
         data_dir_.path(),
         CreateAllowFileAccessOptions());
 
-    obfuscated_file_util_ = static_cast<ObfuscatedFileUtil*>(
-        file_system_context_->GetFileUtil(type_));
-
-    test_helper_.SetUp(file_system_context_.get(),
-                       obfuscated_file_util_);
+    test_helper_.SetUp(file_system_context_.get());
 
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
@@ -185,13 +181,12 @@ class ObfuscatedFileUtilTest : public testing::Test {
     LocalFileSystemTestOriginHelper* helper =
         new LocalFileSystemTestOriginHelper(origin, type);
 
-    helper->SetUp(file_system_context_.get(),
-                  obfuscated_file_util_);
+    helper->SetUp(file_system_context_.get());
     return helper;
   }
 
   ObfuscatedFileUtil* ofu() {
-    return obfuscated_file_util_;
+    return static_cast<ObfuscatedFileUtil*>(test_helper_.file_util());
   }
 
   const FilePath& test_directory() const {
@@ -641,7 +636,6 @@ class ObfuscatedFileUtilTest : public testing::Test {
  private:
   base::ScopedTempDir data_dir_;
   MessageLoop message_loop_;
-  ObfuscatedFileUtil* obfuscated_file_util_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL origin_;

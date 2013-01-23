@@ -56,10 +56,12 @@ FilePath GetTopLevelPath(const FilePath& path) {
 // IsolatedFileUtil.
 class IsolatedFileUtilTest : public testing::Test {
  public:
-  IsolatedFileUtilTest() {}
+  IsolatedFileUtilTest()
+      : other_file_util_helper_(GURL("http://foo/"), kFileSystemTypeTest) {}
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(partition_dir_.CreateUniqueTempDir());
     file_util_.reset(new DraggedFileUtil());
 
     // Register the files/directories of RegularTestCases (with random
@@ -70,12 +72,11 @@ class IsolatedFileUtilTest : public testing::Test {
         FileSystemTaskRunners::CreateMockTaskRunners(),
         make_scoped_refptr(new quota::MockSpecialStoragePolicy()),
         NULL /* quota_manager */,
-        data_dir_.path(),
+        partition_dir_.path(),
         CreateAllowFileAccessOptions());
 
     // For cross-FileUtil copy/move tests.
-    other_file_util_.reset(new LocalFileUtil());
-    other_file_util_helper_.SetUp(file_system_context_, other_file_util_.get());
+    other_file_util_helper_.SetUp(file_system_context_);
 
     isolated_context()->AddReference(filesystem_id_);
   }
@@ -96,7 +97,9 @@ class IsolatedFileUtilTest : public testing::Test {
     return file_system_context_.get();
   }
   FileSystemFileUtil* file_util() const { return file_util_.get(); }
-  FileSystemFileUtil* other_file_util() const { return other_file_util_.get(); }
+  FileSystemFileUtil* other_file_util() const {
+    return other_file_util_helper_.file_util();
+  }
   std::string filesystem_id() const { return filesystem_id_; }
 
   FilePath GetTestCasePlatformPath(const FilePath::StringType& path) {
@@ -235,12 +238,12 @@ class IsolatedFileUtilTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
+  base::ScopedTempDir partition_dir_;
   MessageLoop message_loop_;
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<FilePath, FilePath> toplevel_root_map_;
   scoped_ptr<IsolatedFileUtil> file_util_;
-  scoped_ptr<LocalFileUtil> other_file_util_;
   LocalFileSystemTestOriginHelper other_file_util_helper_;
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtilTest);
 };

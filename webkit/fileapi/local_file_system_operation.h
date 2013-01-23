@@ -122,14 +122,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
     return operation_context_.get();
   }
 
-  // The unit tests that need to specify and control the lifetime of the
-  // file_util on their own should call this before performing the actual
-  // operation. If it is given it will not be overwritten by the class.
-  void set_override_file_util(FileSystemFileUtil* file_util) {
-    src_util_ = file_util;
-    dest_util_ = file_util;
-  }
-
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.
   void GetUsageAndQuotaThenRunTask(

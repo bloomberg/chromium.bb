@@ -37,17 +37,15 @@ class LocalFileSystemTestOriginHelper {
   LocalFileSystemTestOriginHelper();
   ~LocalFileSystemTestOriginHelper();
 
-  void SetUp(const FilePath& base_dir, FileSystemFileUtil* file_util);
+  void SetUp(const FilePath& base_dir);
   // If you want to use more than one LocalFileSystemTestOriginHelper in
   // a single base directory, they have to share a context, so that they don't
   // have multiple databases fighting over the lock to the origin directory
   // [deep down inside ObfuscatedFileUtil].
-  void SetUp(FileSystemContext* file_system_context,
-             FileSystemFileUtil* file_util);
+  void SetUp(FileSystemContext* file_system_context);
   void SetUp(const FilePath& base_dir,
              bool unlimited_quota,
-             quota::QuotaManagerProxy* quota_manager_proxy,
-             FileSystemFileUtil* file_util);
+             quota::QuotaManagerProxy* quota_manager_proxy);
   void TearDown();
 
   FilePath GetOriginRootPath() const;
@@ -95,6 +93,8 @@ class LocalFileSystemTestOriginHelper {
   FileSystemFileUtil* file_util() const { return file_util_; }
 
  private:
+  void SetUpFileUtil();
+
   scoped_refptr<FileSystemContext> file_system_context_;
   const GURL origin_;
   const FileSystemType type_;

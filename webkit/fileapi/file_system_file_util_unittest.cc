@@ -51,16 +51,16 @@ class FileSystemFileUtilTest : public testing::Test {
       bool copy) {
     base::ScopedTempDir base_dir;
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
-    scoped_ptr<ObfuscatedFileUtil> file_util(
-        new ObfuscatedFileUtil(base_dir.path()));
     LocalFileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
                      false,  // unlimited quota
-                     NULL,  // quota::QuotaManagerProxy
-                     file_util.get());
+                     NULL);  // quota::QuotaManagerProxy
 
     LocalFileSystemTestOriginHelper dest_helper(dest_origin, dest_type);
-    dest_helper.SetUp(src_helper.file_system_context(), file_util.get());
+    dest_helper.SetUp(src_helper.file_system_context());
+
+    ObfuscatedFileUtil* file_util = static_cast<ObfuscatedFileUtil*>(
+        src_helper.file_util());
 
     // Set up all the source data.
     scoped_ptr<FileSystemOperationContext> context;

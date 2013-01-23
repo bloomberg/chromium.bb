@@ -243,7 +243,7 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
   // Set up another (non-syncable) local file system.
   LocalFileSystemTestOriginHelper other_file_system_(GURL("http://foo.com/"),
                                                      kFileSystemTypeTemporary);
-  other_file_system_.SetUp(file_system_.file_system_context(), NULL);
+  other_file_system_.SetUp(file_system_.file_system_context());
 
   // Create directory '/a' and file '/a/b' in the other file system.
   const FileSystemURL kSrcDir = other_file_system_.CreateURLFromUTF8("/a");

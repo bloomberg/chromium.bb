@@ -301,8 +301,7 @@ void LocalFileSystemOperationTest::SetUp() {
       base::MessageLoopProxy::current());
   test_helper_.SetUp(base_dir,
                      false /* unlimited quota */,
-                     quota_manager_proxy_.get(),
-                     NULL);
+                     quota_manager_proxy_.get());
 }
 
 void LocalFileSystemOperationTest::TearDown() {
