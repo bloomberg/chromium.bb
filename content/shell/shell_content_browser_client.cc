@@ -14,6 +14,7 @@
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_message_filter.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
@@ -76,6 +77,7 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
+  host->GetChannel()->AddFilter(new ShellMessageFilter(host->GetID()));
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
 }
 

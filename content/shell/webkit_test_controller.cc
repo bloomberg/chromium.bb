@@ -7,13 +7,11 @@
 #include <iostream>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -26,7 +24,6 @@
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_helpers.h"
-#include "webkit/fileapi/isolated_context.h"
 #include "webkit/support/webkit_support_gfx.h"
 
 namespace content {
@@ -255,9 +252,6 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ReadFileToString, OnReadFileToString)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_RegisterIsolatedFileSystem,
-                        OnRegisterIsolatedFileSystem)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
@@ -435,11 +429,6 @@ void WebKitTestController::OnPrintMessage(const std::string& message) {
   printer_->AddMessageRaw(message);
 }
 
-void WebKitTestController::OnReadFileToString(const FilePath& local_file,
-                                              std::string* contents) {
-  file_util::ReadFileToString(local_file, contents);
-}
-
 void WebKitTestController::OnOverridePreferences(
     const webkit_glue::WebPreferences& prefs) {
   should_override_prefs_ = true;
@@ -499,24 +488,6 @@ void WebKitTestController::OnShowWebInspector() {
 
 void WebKitTestController::OnCloseWebInspector() {
   main_window_->CloseDevTools();
-}
-
-void WebKitTestController::OnRegisterIsolatedFileSystem(
-    const std::vector<FilePath>& absolute_filenames,
-    std::string* filesystem_id) {
-  fileapi::IsolatedContext::FileInfoSet files;
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  int renderer_id = main_window_->web_contents()->GetRenderViewHost()->
-      GetProcess()->GetID();
-  for (size_t i = 0; i < absolute_filenames.size(); ++i) {
-    files.AddPath(absolute_filenames[i], NULL);
-    if (!policy->CanReadFile(renderer_id, absolute_filenames[i]))
-      policy->GrantReadFile(renderer_id, absolute_filenames[i]);
-  }
-  *filesystem_id =
-      fileapi::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
-  policy->GrantReadFileSystem(renderer_id, *filesystem_id);
 }
 
 void WebKitTestController::OnNotImplemented(

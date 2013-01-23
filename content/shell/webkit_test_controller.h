@@ -121,7 +121,6 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
-  void OnReadFileToString(const FilePath& file_path, std::string* contents);
   void OnOverridePreferences(const webkit_glue::WebPreferences& prefs);
   void OnNotifyDone();
   void OnDumpAsText();
@@ -132,9 +131,6 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnCanOpenWindows();
   void OnShowWebInspector();
   void OnCloseWebInspector();
-  void OnRegisterIsolatedFileSystem(
-      const std::vector<FilePath>& absolute_filenames,
-      std::string* filesystem_id);
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);

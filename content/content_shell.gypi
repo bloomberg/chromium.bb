@@ -97,6 +97,8 @@
         'shell/shell_login_dialog.h',
         'shell/shell_main_delegate.cc',
         'shell/shell_main_delegate.h',
+        'shell/shell_message_filter.cc',
+        'shell/shell_message_filter.h',
         'shell/shell_messages.cc',
         'shell/shell_messages.h',
         'shell/shell_network_delegate.cc',
