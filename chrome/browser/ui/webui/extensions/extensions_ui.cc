@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/extensions/pack_extension_handler.h"
 #include "chrome/browser/ui/webui/generic_handler.h"
-#include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
@@ -39,7 +38,6 @@ content::WebUIDataSource* CreateExtensionsHTMLSource() {
 ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = CreateExtensionsHTMLSource();
-  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
   handler->GetLocalizedValues(source);

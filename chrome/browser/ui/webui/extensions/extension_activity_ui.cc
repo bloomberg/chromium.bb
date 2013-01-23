@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -43,9 +42,6 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_EXTENSION_ACTIVITY_HTML);
   profile_ = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddWebUIDataSource(profile_, source);
-  ChromeURLDataManager::AddDataSource(
-      profile_, new SharedResourcesDataSource());
-
   // Callback handlers.
   web_ui->RegisterMessageCallback("requestExtensionData",
       base::Bind(&ExtensionActivityUI::HandleRequestExtensionData,

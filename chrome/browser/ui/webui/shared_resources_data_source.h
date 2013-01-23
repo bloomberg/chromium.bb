@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/url_data_source.h"

@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/webui/help/help_handler.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -34,7 +33,6 @@ HelpUI::HelpUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = CreateAboutPageHTMLSource();
-  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   HelpHandler* handler = new HelpHandler();
   handler->GetLocalizedValues(source);

@@ -6,14 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
-#include "grit/webui_resources.h"
 #include "grit/webui_resources_map.h"
 #include "net/base/mime_util.h"
 
