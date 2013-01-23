@@ -291,10 +291,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
-  base::Time::Exploded exploded;
-  base::Time::FromJsTime(visit_time).LocalExplode(&exploded);
-  exploded.hour = exploded.minute = exploded.second = exploded.millisecond = 0;
-  base::Time begin_time = base::Time::FromLocalExploded(exploded);
+  base::Time begin_time = base::Time::FromJsTime(visit_time).LocalMidnight();
   base::Time end_time = begin_time + base::TimeDelta::FromDays(1);
 
   // Get URLs.
@@ -311,6 +308,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
     urls_to_be_deleted_.insert(GURL(string16_value));
   }
 
+  Profile* profile = Profile::FromWebUI(web_ui());
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
@@ -318,6 +316,17 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
       base::Bind(&BrowsingHistoryHandler::RemoveComplete,
                  base::Unretained(this)),
       &delete_task_tracker_);
+
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(profile);
+  if (web_history) {
+    web_history_delete_request_ = web_history->ExpireHistoryBetween(
+      urls_to_be_deleted_,
+      begin_time,
+      end_time,
+      base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
+                 base::Unretained(this)));
+  }
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
@@ -475,6 +484,13 @@ void BrowsingHistoryHandler::RemoveComplete() {
 
   // Notify the page that the deletion request succeeded.
   web_ui()->CallJavascriptFunction("deleteComplete");
+}
+
+void BrowsingHistoryHandler::RemoveWebHistoryComplete(
+    history::WebHistoryService::Request* request, bool success) {
+  // Notify the page that the deletion request is complete.
+  base::FundamentalValue success_value(success);
+  web_ui()->CallJavascriptFunction("webHistoryDeleteComplete", success_value);
 }
 
 // Helper function for Observe that determines if there are any differences

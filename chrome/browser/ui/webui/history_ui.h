@@ -77,6 +77,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Callback from the history system when visits were deleted.
   void RemoveComplete();
 
+  // Callback from history server when visits were deleted.
+  void RemoveWebHistoryComplete(history::WebHistoryService::Request* request,
+                                bool success);
+
   bool ExtractIntegerValueAtIndex(
       const base::ListValue* value, int index, int* out_int);
 
@@ -94,6 +98,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // The currently-executing request for synced history results.
   // Deleting the request will cancel it.
   scoped_ptr<history::WebHistoryService::Request> web_history_request_;
+
+  // The currently-executing delete request for synced history.
+  // Deleting the request will cancel it.
+  scoped_ptr<history::WebHistoryService::Request> web_history_delete_request_;
 
   // Tracker for delete requests to the history service.
   CancelableTaskTracker delete_task_tracker_;
