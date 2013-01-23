@@ -38,7 +38,7 @@ void WontCompile() {
   scoped_ptr<int[10]> x;
 }
 
-#elif defined(NCTEST_NO_PASS_FROM_ARRAY)  // [r"is private"]
+#elif defined(NCTEST_NO_PASS_FROM_ARRAY)  // [r"size of array is negative"]
 
 void WontCompile() {
   scoped_ptr<int[]> a;
@@ -61,14 +61,14 @@ void WontCompile() {
   scoped_ptr<int*> b(a.Pass());
 }
 
-#elif defined(NCTEST_NO_CONSTRUCT_TO_ARRAY)  // [r"no matching function for call'"]
+#elif defined(NCTEST_NO_CONSTRUCT_TO_ARRAY)  // [r"no matching function for call"]
 
 void WontCompile() {
   scoped_ptr<int*> a;
   scoped_ptr<int[]> b(a.Pass());
 }
 
-#elif defined(NCTEST_NO_DELETER_REFERENCE)  // [r"fails to be a struct or class type'"]
+#elif defined(NCTEST_NO_DELETER_REFERENCE)  // [r"fails to be a struct or class type"]
 
 struct Deleter {
   void operator()(int*) {}

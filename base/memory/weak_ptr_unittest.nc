@@ -112,14 +112,14 @@ void WontCompile() {
   WeakPtr<Unrelated> ptr = AsWeakPtr<Unrelated>(&f);
 }
 
-#elif defined(NCTEST_COMPLETELY_UNRELATED_HELPER)  // [r"array with negative size"]
+#elif defined(NCTEST_COMPLETELY_UNRELATED_HELPER)  // [r"size of array is negative"]
 
 void WontCompile() {
   Unrelated f;
   WeakPtr<Unrelated> ptr = AsWeakPtr(&f);
 }
 
-#elif defined(NCTEST_DERIVED_COMPLETELY_UNRELATED_HELPER)  // [r"array with negative size"]
+#elif defined(NCTEST_DERIVED_COMPLETELY_UNRELATED_HELPER)  // [r"size of array is negative"]
 
 void WontCompile() {
   DerivedUnrelated f;

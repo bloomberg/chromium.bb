@@ -273,17 +273,17 @@ def FailTest(resultfile, test, error, stdout=None, stderr=None):
     stdout: The test's output to stdout.
     stderr: The test's output to stderr.
   """
-  resultfile.write('#error %s Failed: %s\n' % (test['name'], error))
-  resultfile.write('#error compile line: %s\n' % test['cmdline'])
+  resultfile.write('#error "%s Failed: %s"\n' % (test['name'], error))
+  resultfile.write('#error "compile line: %s"\n' % test['cmdline'])
   if stdout and len(stdout) != 0:
-    resultfile.write('#error %s stdout:\n' % test['name'])
+    resultfile.write('#error "%s stdout:"\n' % test['name'])
     for line in stdout.split('\n'):
-      resultfile.write('#error   %s\n' % line)
+      resultfile.write('#error "  %s:"\n' % line)
 
   if stderr and len(stderr) != 0:
-    resultfile.write('#error %s stderr:\n' % test['name'])
+    resultfile.write('#error "%s stderr:"\n' % test['name'])
     for line in stderr.split('\n'):
-      resultfile.write('#error   %s\n' % line)
+      resultfile.write('#error "  %s"\n' % line)
   resultfile.write('\n')
 
 
