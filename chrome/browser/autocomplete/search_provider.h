@@ -226,8 +226,10 @@ class SearchProvider : public AutocompleteProvider,
 
   // Remove results that cannot inline auto-complete the current input.
   void RemoveStaleResults();
-  void RemoveStaleSuggestResults(SuggestResults* list, bool is_keyword);
-  void RemoveStaleNavigationResults(NavigationResults* list, bool is_keyword);
+  static void RemoveStaleSuggestResults(SuggestResults* list,
+                                        const string16& input);
+  void RemoveStaleNavigationResults(NavigationResults* list,
+                                    const string16& input);
 
   // Apply calculated relevance scores to the current results.
   void ApplyCalculatedRelevance();

@@ -591,22 +591,26 @@ void SearchProvider::ClearResults() {
 }
 
 void SearchProvider::RemoveStaleResults() {
-  RemoveStaleSuggestResults(&keyword_suggest_results_, true);
-  RemoveStaleSuggestResults(&default_suggest_results_, false);
-  RemoveStaleNavigationResults(&keyword_navigation_results_, true);
-  RemoveStaleNavigationResults(&default_navigation_results_, false);
+  // Keyword provider results should match |keyword_input_text_|, unless
+  // the input was just changed to non-keyword mode; in that case, compare
+  // against |input_.text()|.
+  const string16& keyword_input =
+      !keyword_input_text_.empty() ? keyword_input_text_ : input_.text();
+  RemoveStaleSuggestResults(&keyword_suggest_results_, keyword_input);
+  RemoveStaleSuggestResults(&default_suggest_results_, input_.text());
+  RemoveStaleNavigationResults(&keyword_navigation_results_, keyword_input);
+  RemoveStaleNavigationResults(&default_navigation_results_, input_.text());
 }
 
+// static
 void SearchProvider::RemoveStaleSuggestResults(SuggestResults* list,
-                                               bool is_keyword) {
-  const string16& input = is_keyword ? keyword_input_text_ : input_.text();
+                                               const string16& input) {
   for (SuggestResults::iterator i = list->begin(); i < list->end();)
     i = StartsWith(i->suggestion(), input, false) ? (i + 1) : list->erase(i);
 }
 
 void SearchProvider::RemoveStaleNavigationResults(NavigationResults* list,
-                                                  bool is_keyword) {
-  const string16& input = is_keyword ? keyword_input_text_ : input_.text();
+                                                  const string16& input) {
   for (NavigationResults::iterator i = list->begin(); i < list->end();) {
     const string16 fill(AutocompleteInput::FormattedStringWithEquivalentMeaning(
         i->url(), StringForURLDisplay(i->url(), true, false)));
