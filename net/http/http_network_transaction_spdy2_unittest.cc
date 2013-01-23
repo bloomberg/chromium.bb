@@ -6226,6 +6226,13 @@ TEST_F(HttpNetworkTransactionSpdy2Test, GroupNameForHTTPProxyConnections) {
       "ssl/host.with.alternate:443",
       true,
     },
+
+    {
+      "http_proxy",
+      "ftp://ftp.google.com/http_proxy_normal",
+      "ftp/ftp.google.com:21",
+      false,
+    },
   };
 
   HttpStreamFactory::set_use_alternate_protocols(true);

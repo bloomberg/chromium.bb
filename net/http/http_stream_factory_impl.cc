@@ -70,6 +70,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
       GetAlternateProtocolRequestFor(request_info.url, &alternate_url);
   Job* alternate_job = NULL;
   if (has_alternate_protocol) {
+    // Never share connection with other jobs for FTP requests.
+    DCHECK(!request_info.url.SchemeIs("ftp"));
+
     HttpRequestInfo alternate_request_info = request_info;
     alternate_request_info.url = alternate_url;
     alternate_job =
@@ -83,6 +86,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
                      proxy_ssl_config, net_log.net_log());
   request->AttachJob(job);
   if (alternate_job) {
+    // Never share connection with other jobs for FTP requests.
+    DCHECK(!request_info.url.SchemeIs("ftp"));
+
     job->WaitFor(alternate_job);
     // Make sure to wait until we call WaitFor(), before starting
     // |alternate_job|, otherwise |alternate_job| will not notify |job|
@@ -134,6 +140,9 @@ bool HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     return false;
 
   if (!use_alternate_protocols())
+    return false;
+
+  if (original_url.SchemeIs("ftp"))
     return false;
 
   HostPortPair origin = HostPortPair(original_url.HostNoBrackets(),

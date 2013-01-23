@@ -112,6 +112,12 @@ int InitSocketPoolHelper(const GURL& request_url,
   // Determine the host and port to connect to.
   std::string connection_group = origin_host_port.ToString();
   DCHECK(!connection_group.empty());
+  if (request_url.SchemeIs("ftp")) {
+    // Combining FTP with forced SPDY over SSL would be a "path to madness".
+    // Make sure we never do that.
+    DCHECK(!using_ssl);
+    connection_group = "ftp/" + connection_group;
+  }
   if (using_ssl) {
     // All connections in a group should use the same SSLConfig settings.
     // Encode version_max in the connection group's name, unless it's the

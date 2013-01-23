@@ -9,9 +9,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "net/base/auth.h"
-#include "net/base/completion_callback.h"
 #include "net/ftp/ftp_request_info.h"
 #include "net/ftp/ftp_transaction.h"
+#include "net/http/http_request_info.h"
+#include "net/http/http_transaction.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_job.h"
 
 namespace net {
@@ -35,15 +38,21 @@ class URLRequestFtpJob : public URLRequestJob {
                                 const std::string& scheme);
 
   // Overridden from URLRequestJob:
+  virtual bool IsSafeRedirect(const GURL& location) OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
   virtual HostPortPair GetSocketAddress() const OVERRIDE;
 
  private:
   virtual ~URLRequestFtpJob();
 
-  void StartTransaction();
+  void OnResolveProxyComplete(int result);
+
+  void StartFtpTransaction();
+  void StartHttpTransaction();
 
   void OnStartCompleted(int result);
+  void OnStartCompletedAsync(int result);
   void OnReadCompleted(int result);
 
   void RestartTransactionWithAuth();
@@ -66,8 +75,15 @@ class URLRequestFtpJob : public URLRequestJob {
                            int buf_size,
                            int *bytes_read) OVERRIDE;
 
-  FtpRequestInfo request_info_;
-  scoped_ptr<FtpTransaction> transaction_;
+  ProxyInfo proxy_info_;
+  ProxyService::PacRequest* pac_request_;
+
+  FtpRequestInfo ftp_request_info_;
+  scoped_ptr<FtpTransaction> ftp_transaction_;
+
+  HttpRequestInfo http_request_info_;
+  scoped_ptr<HttpTransaction> http_transaction_;
+  const HttpResponseInfo* response_info_;
 
   bool read_in_progress_;
 

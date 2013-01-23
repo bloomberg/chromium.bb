@@ -2,74 +2,358 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ftp/ftp_auth_cache.h"
-#include "net/ftp/ftp_transaction.h"
-#include "net/ftp/ftp_transaction_factory.h"
-#include "net/url_request/ftp_protocol_handler.h"
+#include "base/run_loop.h"
+#include "net/proxy/proxy_config_service.h"
+#include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_ftp_job.h"
 #include "net/url_request/url_request_status.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::Return;
-using ::testing::_;
 
 namespace net {
 
-class MockFtpTransactionFactory : public FtpTransactionFactory {
+namespace {
+
+class SimpleProxyConfigService : public ProxyConfigService {
  public:
-  MOCK_METHOD0(CreateTransaction, FtpTransaction*());
-  MOCK_METHOD1(Suspend, void(bool suspend));
+  SimpleProxyConfigService() {
+    // Any FTP requests that ever go through HTTP paths are proxied requests.
+    config_.proxy_rules().ParseFromString("ftp=localhost");
+  }
+
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observer_ = observer;
+  }
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    if (observer_ == observer) {
+      observer_ = NULL;
+    }
+  }
+
+  virtual ConfigAvailability GetLatestProxyConfig(
+      ProxyConfig* config) OVERRIDE {
+    *config = config_;
+    return CONFIG_VALID;
+  }
+
+  void IncrementConfigId() {
+    config_.set_id(config_.id() + 1);
+    observer_->OnProxyConfigChanged(config_, ProxyConfigService::CONFIG_VALID);
+  }
+
+ private:
+  ProxyConfig config_;
+  Observer* observer_;
 };
 
-class MockURLRequestDelegate : public URLRequest::Delegate {
+class FtpTestURLRequestContext : public TestURLRequestContext {
  public:
-  MOCK_METHOD3(OnReceivedRedirect, void(URLRequest* request,
-                                        const GURL& new_url,
-                                        bool* defer_redirect));
-  MOCK_METHOD2(OnAuthRequired, void(URLRequest* request,
-                                    AuthChallengeInfo* auth_info));
-  MOCK_METHOD2(OnCertificateRequested,
-               void(URLRequest* request,
-                    SSLCertRequestInfo* cert_request_info));
-  MOCK_METHOD3(OnSSLCertificateError, void(URLRequest* request,
-                                           const SSLInfo& ssl_info,
-                                           bool fatal));
-  MOCK_METHOD1(OnResponseStarted, void(URLRequest* request));
-  MOCK_METHOD2(OnReadCompleted, void(URLRequest* request, int bytes_read));
+  FtpTestURLRequestContext(ClientSocketFactory* socket_factory,
+                           ProxyService* proxy_service,
+                           NetworkDelegate* network_delegate)
+      : TestURLRequestContext(true) {
+    set_client_socket_factory(socket_factory);
+    context_storage_.set_proxy_service(proxy_service);
+    set_network_delegate(network_delegate);
+    Init();
+  }
 };
 
-ACTION_P(HandleOnResponseStarted, expected_status) {
-  EXPECT_EQ(expected_status, arg0->status().status());
+class URLRequestFtpJobTest : public testing::Test {
+ public:
+  URLRequestFtpJobTest()
+      : proxy_service_(new ProxyService(
+                           new SimpleProxyConfigService, NULL, NULL)),
+        request_context_(&socket_factory_,
+                         proxy_service_,
+                         &network_delegate_) {
+  }
+
+  ~URLRequestFtpJobTest() {
+    // Clean up any remaining tasks that mess up unrelated tests.
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+
+  void AddSocket(MockRead* reads, size_t reads_size,
+                 MockWrite* writes, size_t writes_size) {
+    DeterministicSocketData* socket_data = new DeterministicSocketData(
+        reads, reads_size, writes, writes_size);
+    socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+    socket_data->StopAfter(reads_size + writes_size - 1);
+    socket_factory_.AddSocketDataProvider(socket_data);
+
+    socket_data_.push_back(socket_data);
+  }
+
+  URLRequestContext* request_context() { return &request_context_; }
+  TestNetworkDelegate* network_delegate() { return &network_delegate_; }
+  DeterministicSocketData* socket_data(size_t index) {
+    return socket_data_[index];
+  }
+
+ private:
+  DeterministicMockClientSocketFactory socket_factory_;
+  TestNetworkDelegate network_delegate_;
+
+  // Owned by |request_context_|:
+  ProxyService* proxy_service_;
+  std::vector<DeterministicSocketData*> socket_data_;
+
+  FtpTestURLRequestContext request_context_;
+};
+
+TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 2, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 3, "test.html"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate;
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+  socket_data(0)->RunFor(4);
+
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_FALSE(request_delegate.auth_required_called());
+  EXPECT_EQ("test.html", request_delegate.data_received());
 }
 
-TEST(FtpProtocolHandlerTest, CreateTransactionFails) {
-  testing::InSequence in_sequence_;
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedAuth) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    // No credentials.
+    MockRead(ASYNC, 1, "HTTP/1.1 407 Proxy Authentication Required\r\n"),
+    MockRead(ASYNC, 2, "Proxy-Authenticate: Basic "
+             "realm=\"MyRealm1\"\r\n"),
+    MockRead(ASYNC, 3, "Content-Length: 9\r\n\r\n"),
+    MockRead(ASYNC, 4, "test.html"),
+  };
 
-  ::testing::StrictMock<MockFtpTransactionFactory> ftp_transaction_factory;
-  ::testing::StrictMock<MockURLRequestDelegate> delegate;
-  FtpAuthCache ftp_auth_cache;
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
 
-  GURL url("ftp://example.com");
-  URLRequestContext context;
-  URLRequest url_request(url, &delegate, &context);
+  TestDelegate request_delegate;
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+  socket_data(0)->RunFor(5);
 
-  FtpProtocolHandler ftp_protocol_handler(
-      &ftp_transaction_factory, &ftp_auth_cache);
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_FALSE(request_delegate.auth_required_called());
+  EXPECT_EQ("test.html", request_delegate.data_received());
+}
 
-  scoped_refptr<URLRequestJob> ftp_job(
-      ftp_protocol_handler.MaybeCreateJob(&url_request, NULL));
-  ASSERT_TRUE(ftp_job.get());
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotSaveCookies) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 2, "Content-Length: 9\r\n"),
+    MockRead(ASYNC, 3, "Set-Cookie: name=value\r\n\r\n"),
+    MockRead(ASYNC, 4, "test.html"),
+  };
 
-  EXPECT_CALL(ftp_transaction_factory, CreateTransaction())
-      .WillOnce(Return(static_cast<FtpTransaction*>(NULL)));
-  ftp_job->Start();
-  EXPECT_CALL(delegate, OnResponseStarted(_))
-      .WillOnce(HandleOnResponseStarted(URLRequestStatus::FAILED));
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate;
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  ASSERT_TRUE(url_request.is_pending());
+
+  socket_data(0)->RunFor(5);
+
+  EXPECT_TRUE(url_request.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+
+  // Make sure we do not accept cookies.
+  EXPECT_EQ(0, network_delegate()->set_cookie_count());
+
+  EXPECT_FALSE(request_delegate.auth_required_called());
+  EXPECT_EQ("test.html", request_delegate.data_received());
+}
+
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotFollowRedirects) {
+  MockWrite writes[] = {
+    MockWrite(SYNCHRONOUS, 0, "GET ftp://ftp.example.com/ HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 302 Found\r\n"),
+    MockRead(ASYNC, 2, "Location: http://other.example.com/\r\n\r\n"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate;
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+  EXPECT_TRUE(url_request.is_pending());
+
   MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(url_request.is_pending());
+
+  EXPECT_TRUE(url_request.is_pending());
+  EXPECT_EQ(0, request_delegate.response_started_count());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  ASSERT_TRUE(url_request.status().is_success());
+
+  socket_data(0)->RunFor(1);
+
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(1, network_delegate()->error_count());
+  EXPECT_FALSE(url_request.status().is_success());
+  EXPECT_EQ(ERR_UNSAFE_REDIRECT, url_request.status().error());
 }
+
+// We should re-use socket for requests using the same scheme, host, and port.
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestReuseSocket) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/first HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+    MockWrite(ASYNC, 4, "GET ftp://ftp.example.com/second HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+    MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 2, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 3, "test1.html"),
+    MockRead(ASYNC, 5, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 6, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 7, "test2.html"),
+  };
+
+  AddSocket(reads, arraysize(reads), writes, arraysize(writes));
+
+  TestDelegate request_delegate1;
+  URLRequest url_request1(GURL("ftp://ftp.example.com/first"),
+                          &request_delegate1,
+                          request_context(),
+                          network_delegate());
+  url_request1.Start();
+  ASSERT_TRUE(url_request1.is_pending());
+  socket_data(0)->RunFor(4);
+
+  EXPECT_TRUE(url_request1.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_FALSE(request_delegate1.auth_required_called());
+  EXPECT_EQ("test1.html", request_delegate1.data_received());
+
+  TestDelegate request_delegate2;
+  URLRequest url_request2(GURL("ftp://ftp.example.com/second"),
+                          &request_delegate2,
+                          request_context(),
+                          network_delegate());
+  url_request2.Start();
+  ASSERT_TRUE(url_request2.is_pending());
+  socket_data(0)->RunFor(4);
+
+  EXPECT_TRUE(url_request2.status().is_success());
+  EXPECT_EQ(2, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_FALSE(request_delegate2.auth_required_called());
+  EXPECT_EQ("test2.html", request_delegate2.data_received());
+}
+
+// We should not re-use socket when there are two requests to the same host,
+// but one is FTP and the other is HTTP.
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
+  MockWrite writes1[] = {
+    MockWrite(ASYNC, 0, "GET ftp://ftp.example.com/first HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockWrite writes2[] = {
+    MockWrite(ASYNC, 0, "GET /second HTTP/1.1\r\n"
+              "Host: ftp.example.com\r\n"
+              "Connection: keep-alive\r\n"
+              "User-Agent:\r\n"
+              "Accept-Encoding: gzip,deflate\r\n"
+              "Accept-Language: en-us,fr\r\n"
+              "Accept-Charset: iso-8859-1,*,utf-8\r\n\r\n"),
+  };
+  MockRead reads1[] = {
+    MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 2, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 3, "test1.html"),
+  };
+  MockRead reads2[] = {
+    MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, 2, "Content-Length: 10\r\n\r\n"),
+    MockRead(ASYNC, 3, "test2.html"),
+  };
+
+  AddSocket(reads1, arraysize(reads1), writes1, arraysize(writes1));
+  AddSocket(reads2, arraysize(reads2), writes2, arraysize(writes2));
+
+  TestDelegate request_delegate1;
+  URLRequest url_request1(GURL("ftp://ftp.example.com/first"),
+                          &request_delegate1,
+                          request_context(),
+                          network_delegate());
+  url_request1.Start();
+  ASSERT_TRUE(url_request1.is_pending());
+  socket_data(0)->RunFor(4);
+
+  EXPECT_TRUE(url_request1.status().is_success());
+  EXPECT_EQ(1, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_FALSE(request_delegate1.auth_required_called());
+  EXPECT_EQ("test1.html", request_delegate1.data_received());
+
+  TestDelegate request_delegate2;
+  URLRequest url_request2(GURL("http://ftp.example.com/second"),
+                          &request_delegate2,
+                          request_context(),
+                          network_delegate());
+  url_request2.Start();
+  ASSERT_TRUE(url_request2.is_pending());
+  socket_data(1)->RunFor(4);
+
+  EXPECT_TRUE(url_request2.status().is_success());
+  EXPECT_EQ(2, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  EXPECT_FALSE(request_delegate2.auth_required_called());
+  EXPECT_EQ("test2.html", request_delegate2.data_received());
+}
+
+}  // namespace
 
 }  // namespace net

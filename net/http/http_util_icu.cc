@@ -22,7 +22,10 @@ std::string HttpUtil::PathForRequest(const GURL& url) {
 
 // static
 std::string HttpUtil::SpecForRequest(const GURL& url) {
-  DCHECK(url.is_valid() && (url.SchemeIs("http") || url.SchemeIs("https")));
+  // We may get ftp scheme when fetching ftp resources through proxy.
+  DCHECK(url.is_valid() && (url.SchemeIs("http") ||
+                            url.SchemeIs("https") ||
+                            url.SchemeIs("ftp")));
   return SimplifyUrlForRequest(url).spec();
 }
 

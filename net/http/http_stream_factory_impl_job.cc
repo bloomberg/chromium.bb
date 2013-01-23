@@ -573,7 +573,14 @@ int HttpStreamFactoryImpl::Job::DoStart() {
                                  &request_info_.url, &origin_url_));
 
   // Don't connect to restricted ports.
-  if (!IsPortAllowedByDefault(port) && !IsPortAllowedByOverride(port)) {
+  bool is_port_allowed = IsPortAllowedByDefault(port);
+  if (request_info_.url.SchemeIs("ftp")) {
+    // Never share connection with other jobs for FTP requests.
+    DCHECK(!waiting_job_);
+
+    is_port_allowed = IsPortAllowedByFtp(port);
+  }
+  if (!is_port_allowed && !IsPortAllowedByOverride(port)) {
     if (waiting_job_) {
       waiting_job_->Resume(this);
       waiting_job_ = NULL;
@@ -938,8 +945,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   }
 
   if (!using_spdy_) {
+    // We may get ftp scheme when fetching ftp resources through proxy.
     bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
-        request_info_.url.SchemeIs("http");
+                       (request_info_.url.SchemeIs("http") ||
+                        request_info_.url.SchemeIs("ftp"));
     if (stream_factory_->http_pipelined_host_pool_.
             IsExistingPipelineAvailableForKey(*http_pipelining_key_.get())) {
       stream_.reset(stream_factory_->http_pipelined_host_pool_.

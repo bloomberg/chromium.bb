@@ -58,8 +58,18 @@ class TestURLRequestContext : public URLRequestContext {
 
   void Init();
 
+  ClientSocketFactory* client_socket_factory() {
+    return client_socket_factory_;
+  }
+  void set_client_socket_factory(ClientSocketFactory* factory) {
+    client_socket_factory_ = factory;
+  }
+
  private:
   bool initialized_;
+
+  // Not owned:
+  ClientSocketFactory* client_socket_factory_;
 
  protected:
   URLRequestContextStorage context_storage_;

@@ -44,12 +44,14 @@ const int kStageDestruction = 1 << 10;
 
 TestURLRequestContext::TestURLRequestContext()
     : initialized_(false),
+      client_socket_factory_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(context_storage_(this)) {
   Init();
 }
 
 TestURLRequestContext::TestURLRequestContext(bool delay_initialization)
     : initialized_(false),
+      client_socket_factory_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(context_storage_(this)) {
   if (!delay_initialization)
     Init();
@@ -92,17 +94,20 @@ void TestURLRequestContext::Init() {
     context_storage_.set_transport_security_state(
         new TransportSecurityState());
   }
-  HttpNetworkSession::Params params;
-  params.host_resolver = host_resolver();
-  params.cert_verifier = cert_verifier();
-  params.proxy_service = proxy_service();
-  params.ssl_config_service = ssl_config_service();
-  params.http_auth_handler_factory = http_auth_handler_factory();
-  params.network_delegate = network_delegate();
-  params.http_server_properties = http_server_properties();
-  params.net_log = net_log();
-
-  if (!http_transaction_factory()) {
+  if (http_transaction_factory()) {
+    // Make sure we haven't been passed an object we're not going to use.
+    EXPECT_FALSE(client_socket_factory_);
+  } else {
+    HttpNetworkSession::Params params;
+    params.client_socket_factory = client_socket_factory();
+    params.host_resolver = host_resolver();
+    params.cert_verifier = cert_verifier();
+    params.proxy_service = proxy_service();
+    params.ssl_config_service = ssl_config_service();
+    params.http_auth_handler_factory = http_auth_handler_factory();
+    params.network_delegate = network_delegate();
+    params.http_server_properties = http_server_properties();
+    params.net_log = net_log();
     context_storage_.set_http_transaction_factory(new HttpCache(
         new HttpNetworkSession(params),
         HttpCache::DefaultBackend::InMemory(0)));
