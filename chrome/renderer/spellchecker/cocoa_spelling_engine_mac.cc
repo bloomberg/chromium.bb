@@ -47,10 +47,8 @@ void CocoaSpellingEngine::FillSuggestionList(
         wrong_word, optional_suggestions));
 }
 
-void CocoaSpellingEngine::OnWordAdded(const std::string&) {
-  // OSX doesn't support the custom dictionary yet.
-}
-
-void CocoaSpellingEngine::OnWordRemoved(const std::string&) {
+void CocoaSpellingEngine::OnCustomDictionaryChanged(
+    const std::vector<std::string>& words_added,
+    const std::vector<std::string>& words_removed) {
   // OSX doesn't support the custom dictionary yet.
 }

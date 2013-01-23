@@ -315,6 +315,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncHistoryDeleteDirectives;
     case syncer::SYNCED_NOTIFICATIONS:
       return prefs::kSyncSyncedNotifications;
+    case syncer::DICTIONARY:
+      return prefs::kSyncDictionary;
     default:
       break;
   }
@@ -379,6 +381,7 @@ void SyncPrefs::RegisterPrefGroups() {
 
   pref_groups_[syncer::EXTENSIONS].Put(syncer::EXTENSION_SETTINGS);
 
+  pref_groups_[syncer::PREFERENCES].Put(syncer::DICTIONARY);
   pref_groups_[syncer::PREFERENCES].Put(syncer::SEARCH_ENGINES);
 
   // TODO(akalin): Revisit this once UI lands.

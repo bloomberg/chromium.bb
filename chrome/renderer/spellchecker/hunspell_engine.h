@@ -30,19 +30,20 @@ class HunspellEngine : public SpellingEngine {
   virtual bool CheckSpelling(const string16& word_to_check, int tag) OVERRIDE;
   virtual void FillSuggestionList(const string16& wrong_word,
                           std::vector<string16>* optional_suggestions) OVERRIDE;
-  virtual void OnWordAdded(const std::string& word) OVERRIDE;
-  virtual void OnWordRemoved(const std::string& word) OVERRIDE;
+  virtual void OnCustomDictionaryChanged(
+      const std::vector<std::string>& words_added,
+      const std::vector<std::string>& words_removed) OVERRIDE;
 
  private:
   // Initializes the Hunspell dictionary, or does nothing if |hunspell_| is
   // non-null. This blocks.
   void InitializeHunspell();
 
-  // Add the given custom word to |hunspell_|.
-  void AddWordToHunspell(const std::string& word);
+  // Add the given custom words to |hunspell_|.
+  void AddWordsToHunspell(const std::vector<std::string>& words);
 
-  // Remove the given custom word from |hunspell_|.
-  void RemoveWordFromHunspell(const std::string& word);
+  // Remove the given custom words from |hunspell_|.
+  void RemoveWordsFromHunspell(const std::vector<std::string>& words);
 
   // We memory-map the BDict file.
   scoped_ptr<file_util::MemoryMappedFile> bdict_file_;
@@ -54,7 +55,7 @@ class HunspellEngine : public SpellingEngine {
 
   base::PlatformFile file_;
 
-  // This flags is true if we have been intialized.
+  // This flags is true if we have been initialized.
   // The value indicates whether we should request a
   // dictionary from the browser when the render view asks us to check the
   // spelling of a word.

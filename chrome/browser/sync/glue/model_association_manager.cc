@@ -37,6 +37,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::SEARCH_ENGINES,
   syncer::SESSIONS,
   syncer::APP_NOTIFICATIONS,
+  syncer::DICTIONARY,
   syncer::AUTOFILL,             // Non-UI thread datatypes.
   syncer::AUTOFILL_PROFILE,
   syncer::EXTENSION_SETTINGS,

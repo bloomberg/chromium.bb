@@ -50,7 +50,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(22, MODEL_TYPE_COUNT);
+  EXPECT_EQ(23, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -195,6 +195,10 @@ TEST_F(ProtoValueConversionsTest, TypedUrlSpecificsToValue) {
   TestSpecificsToValue(TypedUrlSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, DictionarySpecificsToValue) {
+  TestSpecificsToValue(DictionarySpecificsToValue);
+}
+
 // TODO(akalin): Figure out how to better test EntitySpecificsToValue.
 
 TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
@@ -209,13 +213,14 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(autofill);
   SET_FIELD(autofill_profile);
   SET_FIELD(bookmark);
+  SET_FIELD(device_info);
+  SET_FIELD(dictionary);
   SET_FIELD(experiments);
   SET_FIELD(extension);
   SET_FIELD(extension_setting);
   SET_FIELD(history_delete_directive);
   SET_FIELD(nigori);
   SET_FIELD(password);
-  SET_FIELD(device_info);
   SET_FIELD(preference);
   SET_FIELD(priority_preference);
   SET_FIELD(search_engine);

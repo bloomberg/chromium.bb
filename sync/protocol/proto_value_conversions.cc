@@ -16,6 +16,7 @@
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/dictionary_specifics.pb.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/experiments_specifics.pb.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
@@ -319,6 +320,13 @@ DictionaryValue* DeviceInfoSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* DictionarySpecificsToValue(
+    const sync_pb::DictionarySpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(word);
+  return value;
+}
+
 DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -372,6 +380,7 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_app_settings);
   SET_BOOL(encrypt_apps);
   SET_BOOL(encrypt_search_engines);
+  SET_BOOL(encrypt_dictionary);
   SET_BOOL(encrypt_everything);
   SET_BOOL(sync_tab_favicons);
   SET_ENUM(passphrase_type, PassphraseTypeString);
@@ -468,6 +477,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
   SET_FIELD(bookmark, BookmarkSpecificsToValue);
   SET_FIELD(device_info, DeviceInfoSpecificsToValue);
+  SET_FIELD(dictionary, DictionarySpecificsToValue);
   SET_FIELD(experiments, ExperimentsSpecificsToValue);
   SET_FIELD(extension, ExtensionSpecificsToValue);
   SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);

@@ -66,7 +66,7 @@ class SpellCheck : public content::RenderProcessObserver,
                       int* misspelling_len,
                       std::vector<string16>* optional_suggestions);
 
-  // SpellCheck a paragrpah.
+  // SpellCheck a paragraph.
   // Returns true if |text| is correctly spelled, false otherwise.
   // If the spellchecker failed to initialize, always returns true.
   bool SpellCheckParagraph(
@@ -118,8 +118,9 @@ class SpellCheck : public content::RenderProcessObserver,
               const std::vector<std::string>& custom_words,
               const std::string& language,
               bool auto_spell_correct);
-  void OnWordAdded(const std::string& word);
-  void OnWordRemoved(const std::string& word);
+  void OnCustomDictionaryChanged(
+      const std::vector<std::string>& words_added,
+      const std::vector<std::string>& words_removed);
   void OnEnableAutoSpellCorrect(bool enable);
   void OnEnableSpellCheck(bool enable);
 

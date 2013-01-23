@@ -22,6 +22,7 @@ import "bookmark_specifics.proto";
 import "client_commands.proto";
 import "client_debug_info.proto";
 import "device_info_specifics.proto";
+import "dictionary_specifics.proto";
 import "encryption.proto";
 import "experiments_specifics.proto";
 import "extension_setting_specifics.proto";
@@ -108,6 +109,7 @@ message EntitySpecifics {
   optional DeviceInfoSpecifics device_info = 154522;
   optional ExperimentsSpecifics experiments = 161496;
   optional PriorityPreferenceSpecifics priority_preference = 163425;
+  optional DictionarySpecifics dictionary = 170540;
 }
 
 message SyncEntity {

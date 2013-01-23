@@ -19,6 +19,7 @@
         'client_commands.proto',
         'client_debug_info.proto',
         'device_info_specifics.proto',
+        'dictionary_specifics.proto',
         'encryption.proto',
         'experiments_specifics.proto',
         'extension_setting_specifics.proto',

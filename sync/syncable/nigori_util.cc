@@ -275,6 +275,7 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
   nigori->set_encrypt_apps(encrypted_types.Has(APPS));
   nigori->set_encrypt_app_notifications(
       encrypted_types.Has(APP_NOTIFICATIONS));
+  nigori->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
 }
 
 ModelTypeSet GetEncryptedTypesFromNigori(
@@ -310,6 +311,8 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     encrypted_types.Put(APPS);
   if (nigori.encrypt_app_notifications())
     encrypted_types.Put(APP_NOTIFICATIONS);
+  if (nigori.encrypt_dictionary())
+    encrypted_types.Put(DICTIONARY);
   return encrypted_types;
 }
 

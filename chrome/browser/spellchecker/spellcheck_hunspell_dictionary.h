@@ -21,7 +21,7 @@ class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
 
-// Defines a the browser-side hunspell dictionary and provides access to it.
+// Defines the browser-side hunspell dictionary and provides access to it.
 class SpellcheckHunspellDictionary
     : public SpellcheckDictionary,
       public net::URLFetcherDelegate {

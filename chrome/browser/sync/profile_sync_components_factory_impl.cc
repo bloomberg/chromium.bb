@@ -19,6 +19,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/glue/app_notification_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
@@ -223,6 +225,13 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
         new UIDataTypeController(
             syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));
   }
+
+  // Dictionary sync is disabled by default.  Register only if explicitly
+  // enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncDictionary)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(syncer::DICTIONARY, this, profile_, pss));
+  }
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
@@ -297,6 +306,9 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
               profile_, Profile::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
     }
+    case syncer::DICTIONARY:
+      return SpellcheckServiceFactory::GetForProfile(profile_)->
+          GetCustomDictionary()->AsWeakPtr();
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:

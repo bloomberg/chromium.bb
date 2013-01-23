@@ -29,6 +29,7 @@ class DebugEventInfo;
 class DebugInfo;
 class DeviceInfoSpecifics;
 class DeviceInformation;
+class DictionarySpecifics;
 class EncryptedData;
 class EntitySpecifics;
 class EverythingDirective;
@@ -139,6 +140,9 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* BookmarkSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* DeviceInfoSpecificsToValue(
     const sync_pb::DeviceInfoSpecifics& device_info_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* DictionarySpecificsToValue(
+    const sync_pb::DictionarySpecifics& dictionary_specifics);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto);

@@ -30,7 +30,7 @@ class RenderProcessHost;
 
 // Encapsulates the browser side spellcheck service. There is one of these per
 // profile and each is created by the SpellCheckServiceFactory.  The
-// SpellCheckService maintains any per-profile information about spellcheck.
+// SpellcheckService maintains any per-profile information about spellcheck.
 class SpellcheckService : public ProfileKeyedService,
                           public content::NotificationObserver,
                           public SpellcheckCustomDictionary::Observer {
@@ -70,10 +70,10 @@ class SpellcheckService : public ProfileKeyedService,
   // metrics. This should be called only if the metrics recording is active.
   void StartRecordingMetrics(bool spellcheck_enabled);
 
-  // Pass all renderers some basic initialization infomration.
+  // Pass all renderers some basic initialization information.
   void InitForAllRenderers();
 
-  // Pass the renderer some basic intialization information. Note that the
+  // Pass the renderer some basic initialization information. Note that the
   // renderer will not load Hunspell until it needs to.
   void InitForRenderer(content::RenderProcessHost* process);
 
@@ -91,8 +91,8 @@ class SpellcheckService : public ProfileKeyedService,
 
   // SpellcheckCustomDictionary::Observer implementation.
   virtual void OnCustomDictionaryLoaded() OVERRIDE;
-  virtual void OnCustomDictionaryWordAdded(const std::string& word) OVERRIDE;
-  virtual void OnCustomDictionaryWordRemoved(const std::string& word) OVERRIDE;
+  virtual void OnCustomDictionaryChanged(
+      const SpellcheckCustomDictionary::Change& dictionary_change) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);

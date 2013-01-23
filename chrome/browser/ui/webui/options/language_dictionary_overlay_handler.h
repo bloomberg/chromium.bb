@@ -27,8 +27,8 @@ class LanguageDictionaryOverlayHandler
 
   // Overridden from SpellcheckCustomDictionary::Observer:
   virtual void OnCustomDictionaryLoaded() OVERRIDE;
-  virtual void OnCustomDictionaryWordAdded(const std::string& word) OVERRIDE;
-  virtual void OnCustomDictionaryWordRemoved(const std::string& word) OVERRIDE;
+  virtual void OnCustomDictionaryChanged(
+      const SpellcheckCustomDictionary::Change& dictionary_change) OVERRIDE;
 
  private:
   // Sends the dictionary words to WebUI.

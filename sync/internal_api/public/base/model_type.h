@@ -85,7 +85,9 @@ enum ModelType {
   HISTORY_DELETE_DIRECTIVES,
   // Synced push notifications.
   SYNCED_NOTIFICATIONS,
-  LAST_USER_MODEL_TYPE = SYNCED_NOTIFICATIONS,
+  // Custom spelling dictionary.
+  DICTIONARY,
+  LAST_USER_MODEL_TYPE = DICTIONARY,
 
   // An object representing a set of Nigori keys.
   NIGORI,

@@ -24,6 +24,7 @@ import app_setting_specifics_pb2
 import app_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
+import dictionary_specifics_pb2
 import get_updates_caller_info_pb2
 import extension_setting_specifics_pb2
 import extension_specifics_pb2
@@ -52,6 +53,7 @@ ALL_TYPES = (
     AUTOFILL_PROFILE,
     BOOKMARK,
     DEVICE_INFO,
+    DICTIONARY,
     EXPERIMENTS,
     EXTENSIONS,
     HISTORY_DELETE_DIRECTIVE,
@@ -63,9 +65,9 @@ ALL_TYPES = (
     SYNCED_NOTIFICATION,
     THEME,
     TYPED_URL,
-    EXTENSION_SETTINGS) = range(20)
+    EXTENSION_SETTINGS) = range(21)
 
-# An eumeration on the frequency at which the server should send errors
+# An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
 # Note: This enum should be kept in the same order as the enum in sync_test.h.
 SYNC_ERROR_FREQUENCY = (
@@ -87,6 +89,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     AUTOFILL_PROFILE: SYNC_TYPE_FIELDS['autofill_profile'],
     BOOKMARK: SYNC_TYPE_FIELDS['bookmark'],
     DEVICE_INFO: SYNC_TYPE_FIELDS['device_info'],
+    DICTIONARY: SYNC_TYPE_FIELDS['dictionary'],
     EXPERIMENTS: SYNC_TYPE_FIELDS['experiments'],
     EXTENSION_SETTINGS: SYNC_TYPE_FIELDS['extension_setting'],
     EXTENSIONS: SYNC_TYPE_FIELDS['extension'],
@@ -481,6 +484,8 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=THEME),
       PermanentItem('google_chrome_typed_urls', name='Typed URLs',
                     parent_tag=ROOT_ID, sync_type=TYPED_URL),
+      PermanentItem('google_chrome_dictionary', name='Dictionary',
+                    parent_tag=ROOT_ID, sync_type=DICTIONARY),
       ]
 
   def __init__(self):

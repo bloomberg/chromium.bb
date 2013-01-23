@@ -88,6 +88,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case PRIORITY_PREFERENCES:
       specifics->mutable_priority_preference();
       break;
+    case DICTIONARY:
+      specifics->mutable_dictionary();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -161,6 +164,9 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       break;
     case PRIORITY_PREFERENCES:
       return sync_pb::EntitySpecifics::kPriorityPreferenceFieldNumber;
+      break;
+    case DICTIONARY:
+      return sync_pb::EntitySpecifics::kDictionaryFieldNumber;
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -269,6 +275,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_priority_preference())
     return PRIORITY_PREFERENCES;
 
+  if (specifics.has_dictionary())
+    return DICTIONARY;
+
   return UNSPECIFIED;
 }
 
@@ -358,6 +367,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Experiments";
     case PRIORITY_PREFERENCES:
       return "Priority Preferences";
+    case DICTIONARY:
+      return "Dictionary";
     default:
       break;
   }
@@ -433,6 +444,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return EXPERIMENTS;
   else if (model_type_string == "Priority Preferences")
     return PRIORITY_PREFERENCES;
+  else if (model_type_string == "Dictionary")
+    return DICTIONARY;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -511,6 +524,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_experiments";
     case PRIORITY_PREFERENCES:
       return "google_chrome_priority_preferences";
+    case DICTIONARY:
+      return "google_chrome_dictionary";
     default:
       break;
   }
@@ -542,6 +557,7 @@ const char kSyncedNotificationType[] = "SYNCED_NOTIFICATION";
 const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
 const char kExperimentsNotificationType[] = "EXPERIMENTS";
 const char kPriorityPreferenceNotificationType[] = "PRIORITY_PREFERENCE";
+const char kDictionaryNotificationType[] = "DICTIONARY";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -604,6 +620,10 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case PRIORITY_PREFERENCES:
       *notification_type = kPriorityPreferenceNotificationType;
+      return true;
+    case DICTIONARY:
+      *notification_type = kDictionaryNotificationType;
+      return true;
     default:
       break;
   }
@@ -667,6 +687,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kPriorityPreferenceNotificationType) {
     *model_type = PRIORITY_PREFERENCES;
+    return true;
+  } else if (notification_type == kDictionaryNotificationType) {
+    *model_type = DICTIONARY;
     return true;
   }
   *model_type = UNSPECIFIED;

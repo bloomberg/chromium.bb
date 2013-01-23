@@ -96,6 +96,9 @@
       case ::syncer::PRIORITY_PREFERENCES :\
         PER_DATA_TYPE_MACRO("PriorityPreferences"); \
         break; \
+      case ::syncer::DICTIONARY: \
+        PER_DATA_TYPE_MACRO("Dictionary"); \
+        break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
                      << ::syncer::ModelTypeToString(datatype);  \

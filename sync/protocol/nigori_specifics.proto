@@ -112,5 +112,9 @@ message NigoriSpecifics {
   // Note: this field may not be set if the custom passphrase was applied before
   // this field was introduced.
   optional int64 custom_passphrase_time = 33;
+
+  // Boolean corresponding to whether custom spelling dictionary should be
+  // encrypted.
+  optional bool encrypt_dictionary = 34;
 }
 

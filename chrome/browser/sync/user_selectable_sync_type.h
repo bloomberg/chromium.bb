@@ -38,6 +38,7 @@ enum UserSelectableSyncType {
 
   // AUTOFILL_PROFILE,
   // NIGORI,
+  // DICTIONARY
   // SEARCH_ENGINES,
   // APP_SETTINGS,
   // EXTENSION_SETTINGS,

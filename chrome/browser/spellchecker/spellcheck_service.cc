@@ -229,10 +229,15 @@ void SpellcheckService::OnCustomDictionaryLoaded() {
   InitForAllRenderers();
 }
 
-void SpellcheckService::OnCustomDictionaryWordAdded(const std::string& word) {
-}
-
-void SpellcheckService::OnCustomDictionaryWordRemoved(const std::string& word) {
+void SpellcheckService::OnCustomDictionaryChanged(
+    const SpellcheckCustomDictionary::Change& dictionary_change) {
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->Send(new SpellCheckMsg_CustomDictionaryChanged(
+        dictionary_change.to_add(),
+        dictionary_change.to_remove()));
+  }
 }
 
 // static
