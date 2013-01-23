@@ -4,7 +4,6 @@
 
 #include "ui/gfx/size_f.h"
 
-#include "base/logging.h"
 #include "base/stringprintf.h"
 
 namespace gfx {
