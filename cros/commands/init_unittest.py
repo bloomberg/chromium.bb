@@ -27,16 +27,19 @@ class MockCommand(partial_mock.PartialMock):
   COMMAND = None
   TARGET_CLASS = None
 
-  def __init__(self, args):
+  def __init__(self, args, base_args=None):
     partial_mock.PartialMock.__init__(self)
     self.args = args
     self.rc_mock = cros_build_lib_unittest.RunCommandMock()
     self.rc_mock.SetDefaultCmdResult()
-    parser = commandline.ArgumentParser()
+    parser = commandline.ArgumentParser(caching=True)
     subparsers = parser.add_subparsers()
     subparser = subparsers.add_parser(self.COMMAND)
     self.TARGET_CLASS.AddParser(subparser)
-    options =  parser.parse_args([self.COMMAND] + self.args)
+
+    args = base_args if base_args else []
+    args += [self.COMMAND] + self.args
+    options =  parser.parse_args(args)
     self.inst = options.cros_class(options)
 
   def Run(self, inst):
