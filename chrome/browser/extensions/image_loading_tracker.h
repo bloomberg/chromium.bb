@@ -131,6 +131,7 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // usage of this class, so once this list is empty this class can and
   // should be removed.
   friend class ExtensionInfoBar;
+  friend class Panel;
   friend class extensions::IconImage;
   friend class extensions::TabHelper;
   FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest, Cache);

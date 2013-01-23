@@ -9,10 +9,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
@@ -50,7 +50,8 @@ class WindowController;
 //   other Panels. For example deleting a panel would rearrange other panels.
 class Panel : public BaseWindow,
               public CommandUpdaterDelegate,
-              public content::NotificationObserver {
+              public content::NotificationObserver,
+              public ImageLoadingTracker::Observer {
  public:
   enum ExpansionState {
     // The panel is fully expanded with both title-bar and the client-area.
@@ -321,7 +322,10 @@ class Panel : public BaseWindow,
     CUSTOM_MAX_SIZE
   };
 
-  void OnImageLoaded(const gfx::Image& image);
+  // ImageLoadingTracker::Observer implementation.
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE;
 
   // Initialize state for all supported commands.
   void InitCommandState();
@@ -386,10 +390,11 @@ class Panel : public BaseWindow,
   scoped_ptr<extensions::WindowController> extension_window_controller_;
   scoped_ptr<PanelHost> panel_host_;
 
+  // Used for loading app_icon_.
+  scoped_ptr<ImageLoadingTracker> app_icon_loader_;
+
   // Icon showed in the task bar.
   gfx::Image app_icon_;
-
-  base::WeakPtrFactory<Panel> image_loader_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };
