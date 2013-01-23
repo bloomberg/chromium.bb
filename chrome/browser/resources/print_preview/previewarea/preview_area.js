@@ -520,6 +520,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onPreviewGenerationFail_: function() {
+      if (this.loadingTimeout_) {
+        clearTimeout(this.loadingTimeout_);
+        this.loadingTimeout_ = null;
+      }
       this.showMessage_(PreviewArea.MessageId_.PREVIEW_FAILED);
       cr.dispatchSimpleEvent(
           this, PreviewArea.EventType.PREVIEW_GENERATION_FAIL);
