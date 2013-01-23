@@ -928,6 +928,7 @@
         'browser/chromeos/drive/drive_test_util.h',
         'browser/chromeos/extensions/echo_private_apitest.cc',
         'browser/chromeos/extensions/external_filesystem_apitest.cc',
+        'browser/chromeos/extensions/file_browser_event_router_browsertest.cc',
         'browser/chromeos/extensions/file_browser_handler_api_test.cc',
         'browser/chromeos/extensions/file_browser_notifications_browsertest.cc',
         'browser/chromeos/extensions/file_browser_private_apitest.cc',
