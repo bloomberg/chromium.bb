@@ -2805,7 +2805,7 @@
                 'cflags': [
                   '-fsanitize=thread',
                   '-fno-omit-frame-pointer',
-                  '-fPIE',
+                  '-fPIC',
                   '-mllvm', '-tsan-blacklist=<(tsan_blacklist)',
                 ],
                 'ldflags': [
