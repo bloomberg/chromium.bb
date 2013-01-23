@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_INCLUDES_WIN_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_INCLUDES_WIN_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_INIT_WIN_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_INIT_WIN_H_
 
 // windows.h needs to be included before BluetoothAPIs.h.
 #include <windows.h>
@@ -17,4 +17,15 @@
 
 #pragma comment(lib, "Bthprops.lib")
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_INCLUDES_WIN_H_
+namespace device {
+namespace bluetooth_init_win {
+
+// Returns true if the machine has a bluetooth stack available. The first call
+// to this function will involve file IO, so it should be done on an appropriate
+// thread. This function is not threadsafe.
+bool HasBluetoothStack();
+
+}  // namespace bluetooth_init_win
+}  // namespace device
+
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_INIT_WIN_H_

@@ -14,8 +14,10 @@
 
 namespace device {
 
-BluetoothAdapterWin::BluetoothAdapterWin()
+BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
     : BluetoothAdapter(),
+      init_callback_(init_callback),
+      initialized_(false),
       powered_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -40,7 +42,7 @@ void BluetoothAdapterWin::RemoveObserver(BluetoothAdapter::Observer* observer) {
 // TODO(youngki): Return true when |task_manager_| initializes the adapter
 // state.
 bool BluetoothAdapterWin::IsInitialized() const {
-  return true;
+  return initialized_;
 }
 
 bool BluetoothAdapterWin::IsPresent() const {
@@ -98,6 +100,10 @@ void BluetoothAdapterWin::AdapterStateChanged(
   name_ = state.name;
   address_ = state.address;
   powered_ = state.powered;
+  if (!initialized_) {
+    init_callback_.Run();
+  }
+  initialized_ = true;
 }
 
 void BluetoothAdapterWin::TrackDefaultAdapter() {

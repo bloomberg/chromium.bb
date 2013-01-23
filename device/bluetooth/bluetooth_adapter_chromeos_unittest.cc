@@ -75,7 +75,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotPresent) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
   ASSERT_TRUE(adapter_ != NULL);
@@ -105,7 +105,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -144,7 +144,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -199,7 +199,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -246,7 +246,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -304,7 +304,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -364,7 +364,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -431,7 +431,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -475,7 +475,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -520,7 +520,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -552,7 +552,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -594,7 +594,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -652,7 +652,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -703,7 +703,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -753,7 +753,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -825,7 +825,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -890,7 +890,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -962,7 +962,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1009,7 +1009,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1058,7 +1058,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1108,7 +1108,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1140,7 +1140,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1182,7 +1182,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1240,7 +1240,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1292,7 +1292,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1343,7 +1343,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1415,7 +1415,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1481,7 +1481,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 
@@ -1555,7 +1555,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
                  base::Unretained(this)));
 

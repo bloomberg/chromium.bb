@@ -22,10 +22,6 @@ const std::string& BluetoothAdapter::name() const {
   return name_;
 }
 
-void BluetoothAdapter::QueueAdapterCallback(const AdapterCallback& callback) {
-  adapter_callbacks_.push_back(callback);
-}
-
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
   ConstDeviceList const_devices =
     const_cast<const BluetoothAdapter *>(this)->GetDevices();

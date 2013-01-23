@@ -65,11 +65,6 @@ class BluetoothTaskManagerWin
   friend class base::RefCountedThreadSafe<BluetoothTaskManagerWin>;
   friend class BluetoothTaskManagerWinTest;
 
-  // Returns true if the machine has a bluetooth stack available. The first call
-  // to this function will involve file IO, so it should be done on an
-  // appropriate thread. This function is not threadsafe.
-  static bool HasBluetoothStack();
-
   static const int kPollIntervalMs;
 
   // Constructor to pass |ui_task_runner_| and |bluetooth_task_runner_| for

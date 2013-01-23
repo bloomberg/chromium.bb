@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
+#include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,7 @@ class BluetoothTaskManagerWinTest : public testing::Test {
         bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
         task_manager_(new BluetoothTaskManagerWin(ui_task_runner_,
                                                   bluetooth_task_runner_)),
-        has_bluetooth_stack_(BluetoothTaskManagerWin::HasBluetoothStack()) {
+        has_bluetooth_stack_(device::bluetooth_init_win::HasBluetoothStack()) {
   }
 
   virtual void SetUp() {

@@ -47,14 +47,14 @@ bool ExtensionBluetoothEventRouter::IsBluetoothSupported() const {
          device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
 }
 
-void ExtensionBluetoothEventRouter::RunCallbackOnAdapterReady(
-    const device::BluetoothAdapter::AdapterCallback& callback) {
+void ExtensionBluetoothEventRouter::GetAdapter(
+    const device::BluetoothAdapterFactory::AdapterCallback& callback) {
   if (adapter_) {
     callback.Run(scoped_refptr<device::BluetoothAdapter>(adapter_));
     return;
   }
 
-  device::BluetoothAdapterFactory::RunCallbackOnAdapterReady(callback);
+  device::BluetoothAdapterFactory::GetAdapter(callback);
 }
 
 void ExtensionBluetoothEventRouter::OnListenerAdded() {
@@ -186,9 +186,8 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
 
 void ExtensionBluetoothEventRouter::InitializeAdapterIfNeeded() {
   if (!adapter_) {
-    RunCallbackOnAdapterReady(
-        base::Bind(&ExtensionBluetoothEventRouter::InitializeAdapter,
-                   weak_ptr_factory_.GetWeakPtr()));
+    GetAdapter(base::Bind(&ExtensionBluetoothEventRouter::InitializeAdapter,
+                          weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

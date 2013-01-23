@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
-#include "device/bluetooth/bluetooth_includes_win.h"
+#include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_utils.h"
 
 namespace {
