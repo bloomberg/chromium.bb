@@ -7,8 +7,17 @@
 
 #include <string>
 
+namespace net {
+class URLRequest;
+}  // namespace net
+
 namespace components {
 namespace auto_login {
+
+enum RealmRestriction {
+  ONLY_GOOGLE_COM,
+  ALLOW_ANY_REALM
+};
 
 struct HeaderData {
   HeaderData();
@@ -27,7 +36,15 @@ struct HeaderData {
 
 // Returns whether parsing succeeded. Parameter |header_data| will not be
 // modified if parsing fails.
-bool ParseHeader(const std::string& header, HeaderData* header_data);
+bool ParseHeader(const std::string& header,
+                 RealmRestriction realm_restriction,
+                 HeaderData* header_data);
+
+// Helper function that also retrieves the header from the response of the
+// given URLRequest.
+bool ParserHeaderInResponse(net::URLRequest* request,
+                            RealmRestriction realm_restriction,
+                            HeaderData* header_data);
 
 }  // namespace auto_login
 }  // namespace components

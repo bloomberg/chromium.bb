@@ -152,4 +152,15 @@ class TestAwContentsClient extends NullContentsClient {
         mLastDownloadMimeType = mimeType;
         mLastDownloadContentLength = contentLength;
     }
+
+    String mLastAutoLoginRealm;
+    String mLastAutoLoginAccount;
+    String mLastAutoLoginArgs;
+
+    @Override
+    public void onReceivedLoginRequest(String realm, String account, String args) {
+        mLastAutoLoginRealm = realm;
+        mLastAutoLoginAccount = account;
+        mLastAutoLoginArgs = args;
+    }
 }

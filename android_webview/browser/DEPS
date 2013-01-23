@@ -3,6 +3,7 @@ include_rules = [
   "+android_webview/browser",
   "+android_webview/common",
 
+  "+components/auto_login_parser",
   "+components/navigation_interception",
   "+content/public/browser",
 

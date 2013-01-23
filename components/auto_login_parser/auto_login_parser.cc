@@ -7,17 +7,38 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/string_split.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request.h"
 
 namespace components {
 namespace auto_login {
 
+namespace {
+
+const char kHeaderName[] = "X-Auto-Login";
+
+bool MatchRealm(const std::string& realm, RealmRestriction restriction) {
+  switch (restriction) {
+    case ONLY_GOOGLE_COM:
+      return realm == "com.google";
+    case ALLOW_ANY_REALM:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+}  // namespace
+
 HeaderData::HeaderData() {}
 HeaderData::~HeaderData() {}
 
-// static
-bool ParseHeader(const std::string& header, HeaderData* header_data) {
+bool ParseHeader(const std::string& header,
+                 RealmRestriction realm_restriction,
+                 HeaderData* header_data) {
   // TODO(pliard): Investigate/fix potential internationalization issue. It
   // seems that "account" from the x-auto-login header might contain non-ASCII
   // characters.
@@ -35,8 +56,7 @@ bool ParseHeader(const std::string& header, HeaderData* header_data) {
     std::string unescaped_value(net::UnescapeURLComponent(
           pair.second, net::UnescapeRule::URL_SPECIAL_CHARS));
     if (pair.first == "realm") {
-      // Currently we only accept GAIA credentials.
-      if (unescaped_value != "com.google")
+      if (!MatchRealm(unescaped_value, realm_restriction))
         return false;
       local_params.realm = unescaped_value;
     } else if (pair.first == "account") {
@@ -50,6 +70,14 @@ bool ParseHeader(const std::string& header, HeaderData* header_data) {
 
   *header_data = local_params;
   return true;
+}
+
+bool ParserHeaderInResponse(net::URLRequest* request,
+                            RealmRestriction realm_restriction,
+                            HeaderData* header_data) {
+  std::string header_string;
+  request->GetResponseHeaderByName(kHeaderName, &header_string);
+  return ParseHeader(header_string, realm_restriction, header_data);
 }
 
 }  // namespace auto_login

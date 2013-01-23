@@ -25,7 +25,7 @@ TEST_F(AutoLoginParserTest, ParseHeader) {
       "args=kfdshfwoeriudslkfsdjfhdskjfhsdkr";
 
   HeaderData header_data;
-  EXPECT_TRUE(ParseHeader(header, &header_data));
+  EXPECT_TRUE(ParseHeader(header, ONLY_GOOGLE_COM, &header_data));
 
   ASSERT_EQ("com.google", header_data.realm);
   ASSERT_EQ("fred.example@gmail.com", header_data.account);
@@ -39,7 +39,7 @@ TEST_F(AutoLoginParserTest, ParseHeaderOnlySupportsComGoogle) {
       "args=kfdshfwoeriudslkfsdjfhdskjfhsdkr";
 
   HeaderData header_data;
-  EXPECT_FALSE(ParseHeader(header, &header_data));
+  EXPECT_FALSE(ParseHeader(header, ONLY_GOOGLE_COM, &header_data));
   // |header| should not be touched when parsing fails.
   EXPECT_TRUE(IsHeaderDataEmpty(header_data));
 }
@@ -50,7 +50,7 @@ TEST_F(AutoLoginParserTest, ParseHeaderWithMissingRealm) {
       "args=kfdshfwoeriudslkfsdjfhdskjfhsdkr";
 
   HeaderData header_data;
-  EXPECT_FALSE(ParseHeader(header, &header_data));
+  EXPECT_FALSE(ParseHeader(header, ONLY_GOOGLE_COM, &header_data));
   EXPECT_TRUE(IsHeaderDataEmpty(header_data));
 }
 
@@ -60,7 +60,7 @@ TEST_F(AutoLoginParserTest, ParseHeaderWithMissingArgs) {
       "account=fred.example%40gmail.com&";
 
   HeaderData header_data;
-  EXPECT_FALSE(ParseHeader(header, &header_data));
+  EXPECT_FALSE(ParseHeader(header, ONLY_GOOGLE_COM, &header_data));
   EXPECT_TRUE(IsHeaderDataEmpty(header_data));
 }
 
@@ -70,8 +70,22 @@ TEST_F(AutoLoginParserTest, ParseHeaderWithoutOptionalAccount) {
       "args=kfdshfwoeriudslkfsdjfhdskjfhsdkr";
 
   HeaderData header_data;
-  EXPECT_TRUE(ParseHeader(header, &header_data));
+  EXPECT_TRUE(ParseHeader(header, ONLY_GOOGLE_COM, &header_data));
   ASSERT_EQ("com.google", header_data.realm);
+  ASSERT_EQ("kfdshfwoeriudslkfsdjfhdskjfhsdkr", header_data.args);
+}
+
+TEST_F(AutoLoginParserTest, ParseHeaderAllowsAnyRealmWithOption) {
+  std::string header =
+      "realm=com.microsoft&"
+      "account=fred.example%40gmail.com&"
+      "args=kfdshfwoeriudslkfsdjfhdskjfhsdkr";
+
+  HeaderData header_data;
+  EXPECT_TRUE(ParseHeader(header, ALLOW_ANY_REALM, &header_data));
+
+  ASSERT_EQ("com.microsoft", header_data.realm);
+  ASSERT_EQ("fred.example@gmail.com", header_data.account);
   ASSERT_EQ("kfdshfwoeriudslkfsdjfhdskjfhsdkr", header_data.args);
 }
 

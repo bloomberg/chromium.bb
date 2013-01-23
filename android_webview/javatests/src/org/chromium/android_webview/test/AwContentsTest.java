@@ -30,7 +30,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * AwContents tests.
@@ -280,5 +282,65 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         } finally {
             if (webServer != null) webServer.shutdown();
         }
+    }
+
+    private void autoLoginTestHelper(final String testName, final String xAutoLoginHeader,
+            final String expectedRealm, final String expectedAccount, final String expectedArgs)
+            throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        final String path = "/" + testName + ".html";
+        final String html = testName;
+        List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(Pair.create("x-auto-login", xAutoLoginHeader));
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String pageUrl = webServer.setResponse(path, html, headers);
+
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+
+            assertEquals(expectedRealm, mContentsClient.mLastAutoLoginRealm);
+            assertEquals(expectedAccount, mContentsClient.mLastAutoLoginAccount);
+            assertEquals(expectedArgs, mContentsClient.mLastAutoLoginArgs);
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testAutoLoginOnGoogleCom() throws Throwable {
+        autoLoginTestHelper(
+                "testAutoLoginOnGoogleCom",  /* testName */
+                "realm=com.google&account=foo%40bar.com&args=random_string", /* xAutoLoginHeader */
+                "com.google",  /* expectedRealm */
+                "foo@bar.com",  /* expectedAccount */
+                "random_string"  /* expectedArgs */);
+
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testAutoLoginWithNullAccount() throws Throwable {
+        autoLoginTestHelper(
+                "testAutoLoginOnGoogleCom",  /* testName */
+                "realm=com.google&args=not.very.inventive", /* xAutoLoginHeader */
+                "com.google",  /* expectedRealm */
+                null,  /* expectedAccount */
+                "not.very.inventive"  /* expectedArgs */);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testAutoLoginOnNonGoogle() throws Throwable {
+        autoLoginTestHelper(
+                "testAutoLoginOnGoogleCom",  /* testName */
+                "realm=com.bar&account=foo%40bar.com&args=args", /* xAutoLoginHeader */
+                "com.bar",  /* expectedRealm */
+                "foo@bar.com",  /* expectedAccount */
+                "args"  /* expectedArgs */);
     }
 }

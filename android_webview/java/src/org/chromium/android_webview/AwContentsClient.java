@@ -225,6 +225,9 @@ public abstract class AwContentsClient extends ContentViewClient {
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
 
+    // TODO(boliu): Make this abstract.
+    public void onReceivedLoginRequest(String realm, String account, String args) {}
+
     public abstract void onFormResubmission(Message dontResend, Message resend);
 
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,

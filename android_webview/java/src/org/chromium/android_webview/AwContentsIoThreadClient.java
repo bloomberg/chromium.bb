@@ -36,4 +36,7 @@ public interface AwContentsIoThreadClient {
                                 String contentDisposition,
                                 String mimeType,
                                 long contentLength);
+
+    @CalledByNative
+    public void newLoginRequest(String realm, String account, String args);
 }

@@ -18,6 +18,9 @@ import org.chromium.content.browser.ContentViewCore;
  */
 class AwContentsClientCallbackHelper {
 
+    // TODO(boliu): Consider removing DownloadInfo and LoginRequestInfo by using native
+    // MessageLoop to post directly to AwContents.
+
     private static class DownloadInfo {
         final String mUrl;
         final String mUserAgent;
@@ -38,9 +41,22 @@ class AwContentsClientCallbackHelper {
         }
     }
 
+    private static class LoginRequestInfo {
+        final String mRealm;
+        final String mAccount;
+        final String mArgs;
+
+        LoginRequestInfo(String realm, String account, String args) {
+          mRealm = realm;
+          mAccount = account;
+          mArgs = args;
+        }
+    }
+
     private final static int MSG_ON_LOAD_RESOURCE = 1;
     private final static int MSG_ON_PAGE_STARTED = 2;
     private final static int MSG_ON_DOWNLOAD_START = 3;
+    private final static int MSG_ON_RECEIVED_LOGIN_REQUEST = 4;
 
     private final AwContentsClient mContentsClient;
 
@@ -62,6 +78,11 @@ class AwContentsClientCallbackHelper {
                     DownloadInfo info = (DownloadInfo) msg.obj;
                     mContentsClient.onDownloadStart(info.mUrl, info.mUserAgent,
                             info.mContentDisposition, info.mMimeType, info.mContentLength);
+                    break;
+                }
+                case MSG_ON_RECEIVED_LOGIN_REQUEST: {
+                    LoginRequestInfo info = (LoginRequestInfo) msg.obj;
+                    mContentsClient.onReceivedLoginRequest(info.mRealm, info.mAccount, info.mArgs);
                     break;
                 }
                 default:
@@ -88,5 +109,10 @@ class AwContentsClientCallbackHelper {
         DownloadInfo info = new DownloadInfo(url, userAgent, contentDisposition, mimeType,
                 contentLength);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_DOWNLOAD_START, info));
+    }
+
+    public void postOnReceivedLoginRequest(String realm, String account, String args) {
+        LoginRequestInfo info = new LoginRequestInfo(realm, account, args);
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_LOGIN_REQUEST, info));
     }
 }

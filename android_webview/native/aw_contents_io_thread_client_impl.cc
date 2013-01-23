@@ -268,6 +268,25 @@ void AwContentsIoThreadClientImpl::NewDownload(
       content_length);
 }
 
+void AwContentsIoThreadClientImpl::NewLoginRequest(const std::string& realm,
+                                                   const std::string& account,
+                                                   const std::string& args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (java_object_.is_null())
+    return;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
+  ScopedJavaLocalRef<jstring> jargs = ConvertUTF8ToJavaString(env, args);
+
+  ScopedJavaLocalRef<jstring> jaccount;
+  if (!account.empty())
+    jaccount = ConvertUTF8ToJavaString(env, account);
+
+  Java_AwContentsIoThreadClient_newLoginRequest(
+      env, java_object_.obj(), jrealm.obj(), jaccount.obj(), jargs.obj());
+}
+
 bool RegisterAwContentsIoThreadClientImpl(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

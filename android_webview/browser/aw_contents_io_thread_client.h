@@ -83,6 +83,13 @@ class AwContentsIoThreadClient {
                            const std::string& content_disposition,
                            const std::string& mime_type,
                            int64 content_length) = 0;
+
+  // Called when a new login request is detected. See the documentation for
+  // WebViewClient.onReceivedLoginRequest for arguments. Note that |account|
+  // may be empty.
+  virtual void NewLoginRequest(const std::string& realm,
+                               const std::string& account,
+                               const std::string& args) = 0;
 };
 
 } // namespace android_webview

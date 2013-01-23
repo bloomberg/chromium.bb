@@ -58,6 +58,10 @@ class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void onReceivedLoginRequest(String realm, String account, String args) {
+    }
+
+    @Override
     public void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback) {
     }

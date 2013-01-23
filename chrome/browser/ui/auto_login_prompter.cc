@@ -86,11 +86,14 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
-  std::string value;
-  request->GetResponseHeaderByName("X-Auto-Login", &value);
   Params params;
-  if (!components::auto_login::ParseHeader(value, &params.header))
+  // Currently we only accept GAIA credentials in Chrome.
+  if (!components::auto_login::ParserHeaderInResponse(
+          request,
+          components::auto_login::ONLY_GOOGLE_COM,
+          &params.header)) {
     return;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -138,8 +141,8 @@ void AutoLoginPrompter::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents_);
     // |infobar_service| is NULL for WebContents hosted in WebDialog.
     if (infobar_service)
       AutoLoginInfoBarDelegate::Create(infobar_service, params_);

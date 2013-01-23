@@ -157,6 +157,11 @@ public class AwContents {
             mContentsClient.getCallbackHelper().postOnDownloadStart(url, userAgent,
                     contentDisposition, mimeType, contentLength);
         }
+
+        @Override
+        public void newLoginRequest(String realm, String account, String args) {
+            mContentsClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
+        }
     }
 
     private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {

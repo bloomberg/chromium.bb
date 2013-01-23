@@ -100,6 +100,7 @@
       'type': 'static_library',
       'dependencies': [
         '../android_webview/native/webview_native.gyp:webview_native',
+        '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:navigation_interception',
         '../components/components.gyp:web_contents_delegate_android',
         '../content/content.gyp:content',

@@ -12,7 +12,12 @@
 
 namespace content {
 class ResourceDispatcherHostLoginDelegate;
-}
+struct ResourceResponse;
+}  // namespace content
+
+namespace IPC {
+class Sender;
+}  // namespace IPC
 
 namespace android_webview {
 
@@ -33,7 +38,6 @@ class AwResourceDispatcherHostDelegate
       int route_id,
       bool is_continuation_of_transferred_request,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
-
   virtual void DownloadStarting(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
@@ -43,17 +47,19 @@ class AwResourceDispatcherHostDelegate
       bool is_content_initiated,
       bool must_download,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
-
   virtual bool AcceptAuthRequest(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) OVERRIDE;
-
   virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       net::URLRequest* request) OVERRIDE;
-
   virtual bool HandleExternalProtocol(const GURL& url,
                                       int child_id,
                                       int route_id) OVERRIDE;
+  virtual void OnResponseStarted(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::ResourceResponse* response,
+      IPC::Sender* sender) OVERRIDE;
 
   void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
 
