@@ -1794,7 +1794,7 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
   // gfx::CanvasSkiaPaint's destructor does the actual painting. As such, wrap
   // the following in a block to force paint to occur so that we can release
   // the dc.
-  {
+  if (!delegate_->HandlePaintAccelerated(gfx::Rect(dirty_region))) {
     gfx::CanvasSkiaPaint canvas(dc, true, dirty_region.left,
                                 dirty_region.top, dirty_region.Width(),
                                 dirty_region.Height());
