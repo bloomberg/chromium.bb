@@ -5,18 +5,14 @@
 #include "base/memory/discardable_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "third_party/ashmem/ashmem.h"
-#endif
-
 namespace base {
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Test Lock() and Unlock() functionalities.
 TEST(DiscardableMemoryTest, LockAndUnLock) {
   ASSERT_TRUE(DiscardableMemory::Supported());
 
-  size_t size = 1024;
+  const size_t size = 1024;
 
   DiscardableMemory memory;
   ASSERT_TRUE(memory.InitializeAndLock(size));
@@ -24,6 +20,8 @@ TEST(DiscardableMemoryTest, LockAndUnLock) {
   ASSERT_NE(static_cast<void*>(NULL), addr);
 
   memory.Unlock();
+  // The system should have no reason to purge discardable blocks in this brief
+  // interval, though technically speaking this might flake.
   EXPECT_EQ(DISCARDABLE_MEMORY_SUCCESS, memory.Lock());
   addr = memory.Memory();
   ASSERT_NE(static_cast<void*>(NULL), addr);
@@ -35,10 +33,29 @@ TEST(DiscardableMemoryTest, LockAndUnLock) {
 TEST(DiscardableMemoryTest, DeleteWhileLocked) {
   ASSERT_TRUE(DiscardableMemory::Supported());
 
-  size_t size = 1024;
+  const size_t size = 1024;
+
   DiscardableMemory memory;
   ASSERT_TRUE(memory.InitializeAndLock(size));
 }
-#endif
+
+#if defined(OS_MACOSX)
+// Test forced purging.
+TEST(DiscardableMemoryTest, Purge) {
+  ASSERT_TRUE(DiscardableMemory::Supported());
+  ASSERT_TRUE(DiscardableMemory::PurgeForTestingSupported());
+
+  const size_t size = 1024;
+
+  DiscardableMemory memory;
+  ASSERT_TRUE(memory.InitializeAndLock(size));
+  memory.Unlock();
+
+  DiscardableMemory::PurgeForTesting();
+  EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, memory.Lock());
+}
+#endif  // OS_MACOSX
+
+#endif  // OS_*
 
 }

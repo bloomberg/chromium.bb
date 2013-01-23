@@ -13,16 +13,13 @@
 
 namespace base {
 
-DiscardableMemory::DiscardableMemory()
-    : fd_(-1),
-      memory_(NULL),
-      size_(0),
-      is_pinned_(false) {
-  DCHECK(Supported());
+// static
+bool DiscardableMemory::Supported() {
+  return true;
 }
 
 DiscardableMemory::~DiscardableMemory() {
-  if (is_pinned_)
+  if (is_locked_)
     Unlock();
   if (fd_ < 0)
     return;
@@ -53,13 +50,13 @@ bool DiscardableMemory::InitializeAndLock(size_t size) {
     return false;
   }
 
-  is_pinned_ = true;
+  is_locked_ = true;
   return true;
 }
 
 LockDiscardableMemoryStatus DiscardableMemory::Lock() {
   DCHECK_NE(fd_, -1);
-  DCHECK(!is_pinned_);
+  DCHECK(!is_locked_);
 
   bool purged = false;
   if (ashmem_pin_region(fd_, 0, 0) == ASHMEM_WAS_PURGED)
@@ -68,23 +65,18 @@ LockDiscardableMemoryStatus DiscardableMemory::Lock() {
   if (!Map())
     return DISCARDABLE_MEMORY_FAILED;
 
-  is_pinned_ = true;
+  is_locked_ = true;
   return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
 }
 
 void DiscardableMemory::Unlock() {
   DCHECK_GE(fd_, 0);
-  DCHECK(is_pinned_);
+  DCHECK(is_locked_);
 
   Unmap();
   if (ashmem_unpin_region(fd_, 0, 0))
     DLOG(ERROR) << "Failed to unpin memory.";
-  is_pinned_ = false;
-}
-
-void* DiscardableMemory::Memory() const {
-  DCHECK(is_pinned_);
-  return memory_;
+  is_locked_ = false;
 }
 
 bool DiscardableMemory::Map() {
@@ -110,6 +102,16 @@ void DiscardableMemory::Unmap() {
     DPLOG(ERROR) << "Failed to unmap memory.";
 
   memory_ = NULL;
+}
+
+// static
+bool DiscardableMemory::PurgeForTestingSupported() {
+  return false;
+}
+
+// static
+void DiscardableMemory::PurgeForTesting() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace base
