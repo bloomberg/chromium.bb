@@ -63,17 +63,19 @@ void MediaGalleryExtensionNotificationObserver::Observe(
     extension = const_cast<Extension*>(
         content::Details<extensions::UnloadedExtensionInfo>(
             details)->extension);
+    DCHECK(extension);
   } else {
     DCHECK(type == chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED);
     ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
     extension = const_cast<Extension*>(host->extension());
+    if (!extension)
+      return;
   }
-  DCHECK(extension);
   content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&HandleExtensionDestroyedOnFileThread,
-                   profile_,
-                   extension->id()));
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&HandleExtensionDestroyedOnFileThread,
+                 profile_,
+                 extension->id()));
 }
 
 }  // namespace extensions
