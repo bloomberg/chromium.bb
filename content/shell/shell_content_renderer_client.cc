@@ -9,12 +9,14 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/shell_render_process_observer.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestPlugin.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "v8/include/v8.h"
@@ -118,6 +120,7 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
       ShellRenderProcessObserver::GetInstance()->test_delegate());
   proxy->setInterfaces(
       ShellRenderProcessObserver::GetInstance()->test_interfaces());
+  render_view->GetWebView()->setSpellCheckClient(proxy->spellCheckClient());
 }
 
 }  // namespace content
