@@ -6,10 +6,16 @@
 
 #include "base/command_line.h"
 #include "grit/ui_strings.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_view.h"
@@ -31,7 +37,8 @@ namespace {
 
 const int kMessageBubbleBaseMinHeight = 80;
 const int kMarginBetweenItems = 10;
-const int kItemShadowHeight = 4;
+const int kItemShadowOffset = 1;
+const int kItemShadowBlur = 4;
 const int kFooterMargin = 16;
 const int kFooterHeight = 24;
 const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
@@ -49,6 +56,13 @@ const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
 bool UseNewDesign() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNewMessageCenterBubble);
+}
+
+gfx::Insets GetItemShadowInsets() {
+  return gfx::Insets(kItemShadowBlur / 2 - kItemShadowOffset,
+                     kItemShadowBlur / 2,
+                     kItemShadowBlur / 2 + kItemShadowOffset,
+                     kItemShadowBlur / 2);
 }
 
 class WebNotificationButtonViewBase : public views::View {
@@ -287,18 +301,19 @@ class ScrollContentView : public views::View {
       // for top and bottom, but the bottom margin here should be smaller
       // because of the shadow of message view. Use an empty border instead
       // to provide this margin.
+      gfx::Insets shadow_insets = GetItemShadowInsets();
       SetLayoutManager(
           new views::BoxLayout(views::BoxLayout::kVertical,
                                0,
                                0,
-                               kMarginBetweenItems - kItemShadowHeight));
+                               kMarginBetweenItems - shadow_insets.bottom()));
       set_background(views::Background::CreateSolidBackground(
           kMessageCenterBackgroundColor));
       set_border(views::Border::CreateEmptyBorder(
-          kMarginBetweenItems, /* top */
-          kMarginBetweenItems, /* left */
-          kMarginBetweenItems - kItemShadowHeight,  /* bottom */
-          kMarginBetweenItems /* right */ ));
+          kMarginBetweenItems - shadow_insets.top(), /* top */
+          kMarginBetweenItems - shadow_insets.left(), /* left */
+          kMarginBetweenItems - shadow_insets.bottom(),  /* bottom */
+          kMarginBetweenItems - shadow_insets.right() /* right */ ));
     } else {
       views::BoxLayout* layout =
           new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
@@ -323,28 +338,59 @@ class ScrollContentView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
 };
 
-// A view to draw gradient shadow for each MessageView.
-class MessageViewShadow : public views::View {
+// A border to provide the shadow for each card.
+// Current shadow should look like css box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3)
+class MessageViewShadowBorder : public views::Border {
  public:
-  MessageViewShadow()
-      : painter_(views::Painter::CreateVerticalGradient(
-            kMessageItemShadowColorBase, kTransparentColor)) {
+  MessageViewShadowBorder() : views::Border() {}
+  virtual ~MessageViewShadowBorder() {}
+
+ protected:
+  // views::Border overrides:
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
+    SkPaint paint;
+    std::vector<gfx::ShadowValue> shadows;
+    shadows.push_back(gfx::ShadowValue(
+        gfx::Point(0, 0), kItemShadowBlur, kMessageItemShadowColorBase));
+    skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
+    paint.setLooper(looper.get());
+    paint.setColor(kTransparentColor);
+    paint.setStrokeJoin(SkPaint::kRound_Join);
+    gfx::Rect bounds(view.size());
+    bounds.Inset(gfx::Insets(kItemShadowBlur / 2, kItemShadowBlur / 2,
+                             kItemShadowBlur / 2, kItemShadowBlur / 2));
+    canvas->DrawRect(bounds, paint);
+  }
+
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    return GetItemShadowInsets();
+  }
+};
+
+// A layout manager which is similar to views::FillLayout but respects the
+// border.
+class FillWithBorderLayout : public views::LayoutManager {
+ public:
+  FillWithBorderLayout() {}
+  virtual ~FillWithBorderLayout() {}
+
+  // views::LayoutManager overrides:
+  virtual void Layout(views::View* host) OVERRIDE {
+    if (!host->has_children())
+      return;
+    host->child_at(0)->SetBoundsRect(host->GetContentsBounds());
+  }
+
+  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE {
+    DCHECK_EQ(1, host->child_count());
+    gfx::Size size = host->child_at(0)->GetPreferredSize();
+    gfx::Insets insets = host->GetInsets();
+    size.Enlarge(insets.width(), insets.height());
+    return size;
   }
 
  private:
-  // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    // The preferred size must not be empty. Thus put an arbitrary non-zero
-    // width here. It will be just ignored by the vertical box layout.
-    return gfx::Size(1, kItemShadowHeight);
-  }
-
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    painter_->Paint(canvas, bounds().size());
-  }
-
-  scoped_ptr<views::Painter> painter_;
-  DISALLOW_COPY_AND_ASSIGN(MessageViewShadow);
+  DISALLOW_COPY_AND_ASSIGN(FillWithBorderLayout);
 };
 
 }  // namespace
@@ -394,10 +440,9 @@ class MessageCenterContentsView : public views::View {
       view->SetUpView();
       if (UseNewDesign()) {
         views::View* container = new views::View();
-        container->SetLayoutManager(
-            new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+        container->SetLayoutManager(new FillWithBorderLayout());
+        container->set_border(new MessageViewShadowBorder());
         container->AddChildView(view);
-        container->AddChildView(new MessageViewShadow());
         scroll_content_->AddChildView(container);
       } else {
         scroll_content_->AddChildView(view);
