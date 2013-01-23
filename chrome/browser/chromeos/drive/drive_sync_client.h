@@ -43,24 +43,12 @@ class DriveSyncClientObserver;
 // the states left in the cache.
 class DriveSyncClient
     : public DriveFileSystemObserver,
-      public DriveCacheObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+      public DriveCacheObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
     FETCH,  // Fetch a file from the Drive server.
     UPLOAD,  // Upload a file to the Drive server.
-  };
-
-  // The struct is used to queue tasks for fetching and uploading.
-  struct SyncTask {
-    SyncTask(SyncType in_sync_type,
-             const std::string& in_resource_id,
-             const base::Time& in_timestamp);
-
-    SyncType sync_type;
-    std::string resource_id;
-    base::Time timestamp;
   };
 
   // |profile| is used to access user preferences.
@@ -106,7 +94,7 @@ class DriveSyncClient
   // Adds the resource ID to the queue. Used only for testing.
   void AddResourceIdForTesting(SyncType sync_type,
                                const std::string& resource_id) {
-    queue_.push_back(SyncTask(sync_type, resource_id, base::Time::Now()));
+    AddTaskToQueue(sync_type, resource_id);
   }
 
   // Sets a delay for testing.
@@ -122,15 +110,10 @@ class DriveSyncClient
 
   // Adds the given task to the queue. If the same task is queued, remove the
   // existing one, and adds a new one to the end of the queue.
-  void AddTaskToQueue(const SyncTask& sync_task);
+  void AddTaskToQueue(SyncType type, const std::string& resource_id);
 
-  // Runs the sync loop that fetches/uploads files in |queue_|. One file is
-  // fetched/uploaded at a time, rather than in parallel. The loop ends when
-  // the queue becomes empty.
-  void DoSyncLoop();
-
-  // Returns true if we should stop the sync loop.
-  bool ShouldStopSyncLoop();
+  // Called when a task is ready to be added to the queue.
+  void StartTask(SyncType type, const std::string& resource_id);
 
   // Called when the resource IDs of files in the backlog are obtained.
   void OnGetResourceIdsOfBacklog(const std::vector<std::string>* to_fetch,
@@ -161,7 +144,7 @@ class DriveSyncClient
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
-  void OnFetchFileComplete(const SyncTask& sync_task,
+  void OnFetchFileComplete(const std::string& resource_id,
                            DriveFileError error,
                            const FilePath& local_path,
                            const std::string& ununsed_mime_type,
@@ -172,29 +155,23 @@ class DriveSyncClient
   void OnUploadFileComplete(const std::string& resource_id,
                             DriveFileError error);
 
-  // Called on prefs changes.
-  void OnDriveSyncPreferenceChanged();
-
-  // net::NetworkChangeNotifier::ConnectionTypeObserver override.
-  virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
   Profile* profile_;
   DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
   DriveCache* cache_;  // Owned by DriveSystemService.
-  scoped_ptr<PrefChangeRegistrar> registrar_;
   ObserverList<DriveSyncClientObserver> observers_;
 
-  // The queue of tasks used to fetch/upload files in the background
-  // thread. Note that this class does not use a lock to protect |queue_| as
-  // all methods touching |queue_| run on the UI thread.
-  std::deque<SyncTask> queue_;
+  // List of the resource ids of resources which have a fetch task created.
+  std::set<std::string> fetch_list_;
+
+  // List of the resource ids of resources which have a upload task created.
+  std::set<std::string> upload_list_;
+
+  // Fetch tasks which have been created, but not started yet.  If they are
+  // removed before starting, they will be cancelled.
+  std::set<std::string> pending_fetch_list_;
 
   // The delay is used for delaying processing SyncTasks in DoSyncLoop().
   base::TimeDelta delay_;
-
-  // True if the sync loop is running.
-  bool sync_loop_is_running_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

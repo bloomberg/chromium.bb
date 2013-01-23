@@ -64,26 +64,21 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 class TestObserver : public DriveSyncClientObserver {
  public:
-  // Type for recording sync client observer notifications.
-  enum State {
-    UNINITIALIZED,
-    STARTED,
-    STOPPED,
-    IDLE,
-  };
-
-  TestObserver() : state_(UNINITIALIZED) {}
+  TestObserver() : start_count_(0), idle_count_(0), stop_count_(0) {}
 
   // DriveSyncClientObserver overrides.
-  virtual void OnSyncTaskStarted() { state_ = STARTED; }
-  virtual void OnSyncClientStopped() { state_ = STOPPED; }
-  virtual void OnSyncClientIdle() { state_ = IDLE; }
+  virtual void OnSyncTaskStarted() { ++start_count_; }
+  virtual void OnSyncClientStopped() { ++stop_count_; }
+  virtual void OnSyncClientIdle() { ++idle_count_; }
 
-  // Returns the last notified state.
-  State state() const { return state_; }
+  int start_count() const { return start_count_; }
+  int stop_count() const { return stop_count_; }
+  int idle_count() const { return idle_count_; }
 
  private:
-  State state_;
+  int start_count_;
+  int idle_count_;
+  int stop_count_;
 };
 
 }  // namespace
@@ -141,37 +136,6 @@ class DriveSyncClientTest : public testing::Test {
     cache_->Destroy();
     google_apis::test_util::RunBlockingPoolTask();
     mock_network_change_notifier_.reset();
-  }
-
-  // Sets up MockNetworkChangeNotifier as if it's connected to a network with
-  // the specified connection type.
-  void ChangeConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    EXPECT_CALL(*mock_network_change_notifier_, GetCurrentConnectionType())
-        .WillRepeatedly(Return(type));
-    // Notify the sync client that the network is changed. This is done via
-    // NetworkChangeNotifier in production, but here, we simulate the behavior
-    // by directly calling OnConnectionTypeChanged().
-    sync_client_->OnConnectionTypeChanged(type);
-  }
-
-  // Sets up MockNetworkChangeNotifier as if it's connected to wifi network.
-  void ConnectToWifi() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
-  }
-
-  // Sets up MockNetworkChangeNotifier as if it's connected to cellular network.
-  void ConnectToCellular() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_2G);
-  }
-
-  // Sets up MockNetworkChangeNotifier as if it's connected to wimax network.
-  void ConnectToWimax() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_4G);
-  }
-
-  // Sets up MockNetworkChangeNotifier as if it's disconnected.
-  void ConnectToNone() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
   // Sets up cache for tests.
@@ -262,20 +226,6 @@ class DriveSyncClientTest : public testing::Test {
                 REGULAR_FILE)));
   }
 
-  // Sets the expectation for MockDriveFileSystem::GetFileByResourceId(),
-  // during which it disconnects from network.
-  void SetDisconnectingExpectationForGetFileByResourceId(
-      const std::string& resource_id) {
-    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(this, &DriveSyncClientTest::ConnectToNone),
-            MockGetFileByResourceId(
-                DRIVE_FILE_ERROR_NO_CONNECTION,
-                FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
-                std::string("mime_type_does_not_matter"),
-                REGULAR_FILE)));
-  }
-
   // Sets the expectation for MockDriveFileSystem::UpdateFileByResourceId(),
   // that simulates successful uploading of a file for the given resource ID.
   void SetExpectationForUpdateFileByResourceId(
@@ -294,11 +244,11 @@ class DriveSyncClientTest : public testing::Test {
   void SetExpectationForGetFileInfoByResourceId(
       const std::string& resource_id,
       const std::string& new_md5) {
-  EXPECT_CALL(*mock_file_system_,
-              GetEntryInfoByResourceId(resource_id, _))
-      .WillOnce(MockUpdateFileByResourceId(
-          DRIVE_FILE_OK,
-          new_md5));
+    EXPECT_CALL(*mock_file_system_,
+                GetEntryInfoByResourceId(resource_id, _))
+        .WillOnce(MockUpdateFileByResourceId(
+            DRIVE_FILE_OK,
+            new_md5));
   }
 
   // Returns the resource IDs in the queue to be fetched.
@@ -327,7 +277,7 @@ class DriveSyncClientTest : public testing::Test {
   // Helper function for verifying that observer is correctly notified the
   // start of sync client in SetExpectationForGetFileByResourceId.
   void VerifyStartNotified() {
-    EXPECT_EQ(TestObserver::STARTED, observer_.state());
+    EXPECT_GT(observer_.start_count(), 0);
   }
 
  protected:
@@ -344,183 +294,29 @@ class DriveSyncClientTest : public testing::Test {
 };
 
 TEST_F(DriveSyncClientTest, StartInitialScan) {
-  // Connect to no network, so the sync loop won't spin.
-  ConnectToNone();
-
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
-  google_apis::test_util::RunBlockingPoolTask();
 
   // Check the contents of the queue for fetching.
-  std::vector<std::string> resource_ids = GetResourceIdsToBeFetched();
-  ASSERT_EQ(3U, resource_ids.size());
-  // Since these are the list of file names read from the disk, the order is
-  // not guaranteed, hence sort it.
-  sort(resource_ids.begin(), resource_ids.end());
-  EXPECT_EQ("resource_id_not_fetched_bar", resource_ids[0]);
-  EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
-  EXPECT_EQ("resource_id_not_fetched_foo", resource_ids[2]);
-  // resource_id_fetched is not collected in the queue.
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
 
   // Check the contents of the queue for uploading.
-  resource_ids = GetResourceIdsToBeUploaded();
-  ASSERT_EQ(1U, resource_ids.size());
-  EXPECT_EQ("resource_id_dirty", resource_ids[0]);
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop) {
-  ConnectToWifi();
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be fetched or uploaded by DriveFileSystem, once
-  // StartSyncLoop() starts.
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
   SetExpectationForUpdateFileByResourceId("resource_id_dirty");
 
-  sync_client_->StartSyncLoop();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_Offline) {
-  ConnectToNone();
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be neither fetched nor uploaded not by DriveFileSystem,
-  // as network is not connected.
-
-  sync_client_->StartSyncLoop();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_ResumedConnection) {
-  const std::string resource_id("resource_id_not_fetched_foo");
-  const FilePath file_path(
-      FilePath::FromUTF8Unsafe("local_path_does_not_matter"));
-  const std::string mime_type("mime_type_does_not_matter");
-  ConnectToWifi();
-  AddResourceIdToFetch(resource_id);
-
-  // Disconnect from network on fetch try.
-  SetDisconnectingExpectationForGetFileByResourceId(resource_id);
-
-  sync_client_->StartSyncLoop();
-
-  // Expect fetch retry on network reconnection.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
-      .WillOnce(MockGetFileByResourceId(
-          DRIVE_FILE_OK, file_path, mime_type, REGULAR_FILE));
-
-  ConnectToWifi();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarDisabled) {
-  ConnectToWifi();  // First connect to Wifi.
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be neither fetched nor uploaded not by DriveFileSystem,
-  // as fetching over cellular network is disabled by default.
-
-  // Then connect to cellular. This will kick off StartSyncLoop().
-  ConnectToCellular();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabled) {
-  ConnectToWifi();  // First connect to Wifi.
-
-  // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be fetched or uploaded by DriveFileSystem, as syncing
-  // over cellular network is explicitly enabled.
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
-  SetExpectationForUpdateFileByResourceId("resource_id_dirty");
-
-  // Then connect to cellular. This will kick off StartSyncLoop().
-  ConnectToCellular();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_WimaxDisabled) {
-  ConnectToWifi();  // First connect to Wifi.
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be neither fetched nor uploaded not by DriveFileSystem,
-  // as syncing over wimax network is disabled by default.
-
-  // Then connect to wimax. This will kick off StartSyncLoop().
-  ConnectToWimax();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
-  ConnectToWifi();  // First connect to Wifi.
-
-  // Enable fetching over cellular network. This includes wimax.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be fetched or uploaded by DriveFileSystem, as syncing
-  // over cellular network, which includes wimax, is explicitly enabled.
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
-  SetExpectationForUpdateFileByResourceId("resource_id_dirty");
-
-  // Then connect to wimax. This will kick off StartSyncLoop().
-  ConnectToWimax();
-}
-
-TEST_F(DriveSyncClientTest, StartSyncLoop_DriveDisabled) {
-  ConnectToWifi();
-
-  // Disable the Drive feature.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
-
-  AddResourceIdToFetch("resource_id_not_fetched_foo");
-  AddResourceIdToFetch("resource_id_not_fetched_bar");
-  AddResourceIdToFetch("resource_id_not_fetched_baz");
-  AddResourceIdToUpload("resource_id_dirty");
-
-  // These files will be neither fetched nor uploaded not by DriveFileSystem,
-  // as the Drive feature is disabled.
-
-  sync_client_->StartSyncLoop();
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSyncClientTest, OnCachePinned) {
-  ConnectToWifi();
-
   // This file will be fetched by GetFileByResourceId() as OnCachePinned()
   // will kick off the sync loop.
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
 
   sync_client_->OnCachePinned("resource_id_not_fetched_foo", "md5");
+
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
@@ -529,28 +325,16 @@ TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   ASSERT_EQ(3U, GetResourceIdsToBeFetched().size());
 
-  sync_client_->OnCacheUnpinned("resource_id_not_fetched_bar", "md5");
-  // "bar" should be gone.
-  std::vector<std::string> resource_ids = GetResourceIdsToBeFetched();
-  ASSERT_EQ(2U, resource_ids.size());
-  EXPECT_EQ("resource_id_not_fetched_foo", resource_ids[0]);
-  EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
-
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_foo", "md5");
-  // "foo" should be gone.
-  resource_ids = GetResourceIdsToBeFetched();
-  ASSERT_EQ(1U, resource_ids.size());
-  EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
-
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_baz", "md5");
-  // "baz" should be gone.
-  resource_ids = GetResourceIdsToBeFetched();
-  ASSERT_TRUE(resource_ids.empty());
+
+  // Only resource_id_not_fetched_foo should be fetched.
+  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
+
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSyncClientTest, Deduplication) {
-  ConnectToWifi();
-
   AddResourceIdToFetch("resource_id_not_fetched_foo");
 
   // Set the delay so that DoSyncLoop() is delayed.
@@ -563,9 +347,6 @@ TEST_F(DriveSyncClientTest, Deduplication) {
 }
 
 TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
-  // Connect to no network, so the sync loop won't spin.
-  ConnectToNone();
-
   // Set the expectation so that the MockDriveFileSystem returns "new_md5"
   // for "resource_id_fetched". This simulates that the file is updated on
   // the server side, and the new MD5 is obtained from the server (i.e. the
@@ -582,67 +363,10 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // Start checking the existing pinned files. This will collect the resource
   // IDs of pinned files, with stale local cache files.
   sync_client_->StartCheckingExistingPinnedFiles();
+
+  SetExpectationForGetFileByResourceId("resource_id_fetched");
+
   google_apis::test_util::RunBlockingPoolTask();
-
-  // Check the contents of the queue for fetching.
-  std::vector<std::string> resource_ids =
-      GetResourceIdsToBeFetched();
-  ASSERT_EQ(1U, resource_ids.size());
-  EXPECT_EQ("resource_id_fetched", resource_ids[0]);
-  // resource_id_dirty is not collected in the queue.
-
-  // Check the contents of the queue for uploading.
-  resource_ids = GetResourceIdsToBeUploaded();
-  ASSERT_TRUE(resource_ids.empty());
-}
-
-TEST_F(DriveSyncClientTest, ObserveEmptyQueue) {
-  ConnectToCellular();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-
-  // Try all possible transitions over {None, Cellular, Wifi}, and check that
-  // the state change is notified to the observer at every step.
-  ConnectToNone();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-  ConnectToCellular();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-  ConnectToNone();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-  ConnectToCellular();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-
-  // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-
-  // Try all possible transitions again.
-  ConnectToNone();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-  ConnectToCellular();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-  ConnectToNone();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-  ConnectToCellular();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-
-  // Disable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, true);
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-
-  // Disable Drive feature.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
 }
 
 TEST_F(DriveSyncClientTest, ObserveRunAllTaskQueue) {
@@ -652,44 +376,11 @@ TEST_F(DriveSyncClientTest, ObserveRunAllTaskQueue) {
   // Starts the sync queue, and eventually notifies the idle state.
   SetExpectationForGetFileByResourceId("resource_id_foo");
   SetExpectationForGetFileByResourceId("resource_id_bar");
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
 
-  AddResourceIdToFetch("resource_id_foo");
-  AddResourceIdToFetch("resource_id_bar");
+  google_apis::test_util::RunBlockingPoolTask();
 
-  // Sync queue should stop on cellular network.
-  ConnectToCellular();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-
-  // Change of the preference should be notified to the observer.
-  SetExpectationForGetFileByResourceId("resource_id_foo");
-  SetExpectationForGetFileByResourceId("resource_id_bar");
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-}
-
-TEST_F(DriveSyncClientTest, ObserveDisconnection) {
-  // Start sync loop.
-  AddResourceIdToFetch("resource_id_foo");
-  SetExpectationForGetFileByResourceId("resource_id_foo");
-
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
-
-  // Disconnection during the sync loop should be notified.
-  AddResourceIdToFetch("resource_id_bar");
-  AddResourceIdToFetch("resource_id_buz");
-  SetDisconnectingExpectationForGetFileByResourceId("resource_id_bar");
-
-  sync_client_->StartSyncLoop();
-  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
-
-  // So as the resume from the disconnection.
-  SetExpectationForGetFileByResourceId("resource_id_bar");
-  SetExpectationForGetFileByResourceId("resource_id_buz");
-  ConnectToWifi();
-  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+  EXPECT_EQ(1, observer_.idle_count());
+  EXPECT_EQ(2, observer_.start_count());
 }
 
 }  // namespace drive
