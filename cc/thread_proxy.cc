@@ -27,7 +27,7 @@ namespace {
 const double contextRecreationTickRate = 0.03;
 
 // Measured in seconds.
-const double smoothnessTakesPriorityExpirationDelay = 0.5;
+const double smoothnessTakesPriorityExpirationDelay = 0.25;
 
 }  // namespace
 
@@ -1110,6 +1110,13 @@ void ThreadProxy::renewTreePriority()
     bool smoothnessTakesPriority =
         m_layerTreeHostImpl->pinchGestureActive() ||
         m_layerTreeHostImpl->currentlyScrollingLayer();
+
+    // Notify the the client of this compositor via the output surface.
+    // TODO(epenner): Route this to compositor-thread instead of output-surface
+    // after GTFO refactor of compositor-thread (http://crbug/170828).
+    OutputSurface* output_surface = m_layerTreeHostImpl->outputSurface();
+    if (output_surface)
+        output_surface->UpdateSmoothnessTakesPriority(smoothnessTakesPriority);
 
     // Update expiration time if smoothness currently takes priority.
     if (smoothnessTakesPriority) {

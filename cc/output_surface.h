@@ -57,6 +57,10 @@ class CC_EXPORT OutputSurface : public WebKit::WebCompositorOutputSurface {
   // capabilities().has_parent_compositor. The implementation may destroy or
   // steal the contents of the CompositorFrame passed in.
   virtual void SendFrameToParentCompositor(CompositorFrame*) = 0;
+
+  // Notifies frame-rate smoothness preference. If true, all non-critical
+  // processing should be stopped, or lowered in priority.
+  virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) {}
 };
 
 }  // namespace cc
