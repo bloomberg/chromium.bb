@@ -309,12 +309,16 @@ function isDisconnected() {
 /**
  * @return {!string} The current peer connection's ready state, or
  *     'no-peer-connection' if there is no peer connection up.
+ *
+ * NOTE: The PeerConnection states are changing and until chromium has
+ *       implemented the new states we have to use this interim solution of
+ *       always assuming that the PeerConnection is 'active'.
  */
 function getReadyState() {
   if (gPeerConnection == null)
     return 'no-peer-connection';
-  else
-    return gPeerConnection.readyState;
+
+  return 'active';
 }
 
 // Internals.
