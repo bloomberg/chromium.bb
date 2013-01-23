@@ -387,13 +387,10 @@ bool Validator::ValidateToplevelConfiguration(
     return false;
   }
 
-  static const char* kValidTypes[] =
-      { kUnencryptedConfiguration,
-        kEncryptedConfiguration,
-        NULL };
-  if (FieldExistsAndHasNoValidValue(*result,
-                                    kType,
-                                    kValidTypes))
+  static const char* kValidTypes[] = { kUnencryptedConfiguration,
+                                       kEncryptedConfiguration,
+                                       NULL };
+  if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes))
     return false;
 
   bool allRequiredExist = true;
@@ -407,9 +404,8 @@ bool Validator::ValidateToplevelConfiguration(
       !result->HasKey(kCertificates)) {
     error_or_warning_found_ = true;
     std::string message = MessageHeader(error_on_missing_field_) +
-        "Neither the field '" + kNetworkConfigurations +
-        "' nor '" + kCertificates +
-        "is present, but at least one is required.";
+        "Neither the field '" + kNetworkConfigurations + "' nor '" +
+        kCertificates + "is present, but at least one is required.";
     if (error_on_missing_field_)
       LOG(ERROR) << message;
     else
@@ -433,6 +429,7 @@ bool Validator::ValidateNetworkConfiguration(
   static const char* kValidTypes[] = { network_type::kEthernet,
                                        network_type::kVPN,
                                        network_type::kWiFi,
+                                       network_type::kCellular,
                                        NULL };
   if (FieldExistsAndHasNoValidValue(*result,
                                     kType,
@@ -469,8 +466,8 @@ bool Validator::ValidateNetworkConfiguration(
       allRequiredExist &= RequireField(*result, network_config::kCellular);
     else if (type == network_type::kVPN)
       allRequiredExist &= RequireField(*result, network_config::kVPN);
-    else
-      LOG(ERROR) << "Unknown network type " << type << " encountered";
+    else if (!type.empty())
+      NOTREACHED();
   }
 
   return !error_on_missing_field_ || allRequiredExist;

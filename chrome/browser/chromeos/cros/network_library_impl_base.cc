@@ -1096,7 +1096,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
   // Check and see if this is an encrypted ONC file. If so, decrypt it.
   std::string onc_type;
-  root_dict->GetStringWithoutPathExpansion(onc::network_config::kType,
+  root_dict->GetStringWithoutPathExpansion(onc::toplevel_config::kType,
                                            &onc_type);
   if (onc_type == onc::toplevel_config::kEncryptedConfiguration) {
     root_dict = onc::Decrypt(passphrase, *root_dict);

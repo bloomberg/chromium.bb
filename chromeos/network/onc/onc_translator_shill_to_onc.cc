@@ -176,7 +176,7 @@ void ShillToONCTranslator::TranslateWiFi() {
   std::string bssid;
   if (shill_dictionary_->GetStringWithoutPathExpansion(flimflam::kWifiBSsid,
                                                        &bssid)) {
-    onc_object_->SetString(wifi::kBSSID, bssid);
+    onc_object_->SetStringWithoutPathExpansion(wifi::kBSSID, bssid);
   }
 }
 
@@ -217,7 +217,8 @@ void ShillToONCTranslator::TranslateNetworkConfiguration() {
     } else if (NetworkState::StateIsConnecting(state)) {
       onc_state = connection_state::kConnecting;
     }
-    onc_object_->SetString(network_config::kConnectionState, onc_state);
+    onc_object_->SetStringWithoutPathExpansion(network_config::kConnectionState,
+                                               onc_state);
   }
 }
 
