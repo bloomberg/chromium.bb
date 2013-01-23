@@ -14,11 +14,13 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "net/base/file_stream.h"
 #include "net/disk_cache/block_files.h"
 #include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/mapped_file.h"
+#include "net/disk_cache/stats.h"
 #include "net/disk_cache/storage_block.h"
 #include "net/disk_cache/storage_block-inl.h"
 
@@ -51,8 +53,46 @@ int GetMajorVersionFromFile(const FilePath& name) {
   return header.version >> 16;
 }
 
+// Dumps the contents of the Stats record.
+void DumpStats(const FilePath& path, disk_cache::CacheAddr addr) {
+  // We need a message loop, although we really don't run any task.
+  MessageLoop loop(MessageLoop::TYPE_IO);
+
+  disk_cache::BlockFiles block_files(path);
+  if (!block_files.Init(false)) {
+    printf("Unable to init block files\n");
+    return;
+  }
+
+  disk_cache::Addr address(addr);
+  disk_cache::MappedFile* file = block_files.GetFile(address);
+  if (!file)
+    return;
+
+  size_t length = (2 + disk_cache::Stats::kDataSizesLength) * sizeof(int32) +
+                  disk_cache::Stats::MAX_COUNTER * sizeof(int64);
+
+  size_t offset = address.start_block() * address.BlockSize() +
+                  disk_cache::kBlockHeaderSize;
+
+  scoped_ptr<int32[]> buffer(new int32[length]);
+  if (!file->Read(buffer.get(), length, offset))
+    return;
+
+  printf("Stats:\nSignatrure: 0x%x\n", buffer[0]);
+  printf("Total size: %d\n", buffer[1]);
+  for (int i = 0; i < disk_cache::Stats::kDataSizesLength; i++)
+    printf("Size(%d): %d\n", i, buffer[i + 2]);
+
+  int64* counters = reinterpret_cast<int64*>(
+                        buffer.get() + 2 + disk_cache::Stats::kDataSizesLength);
+  for (int i = 0; i < disk_cache::Stats::MAX_COUNTER; i++)
+    printf("Count(%d): %" PRId64 "\n", i, *counters++);
+  printf("-------------------------\n\n");
+}
+
 // Dumps the contents of the Index-file header.
-void DumpIndexHeader(const FilePath& name) {
+void DumpIndexHeader(const FilePath& name, disk_cache::CacheAddr* stats_addr) {
   disk_cache::IndexHeader header;
   if (!ReadHeader(name, reinterpret_cast<char*>(&header), sizeof(header)))
     return;
@@ -67,6 +107,7 @@ void DumpIndexHeader(const FilePath& name) {
   printf("table length: %d\n", header.table_len);
   printf("last crash: %d\n", header.crash);
   printf("experiment: %d\n", header.experiment);
+  printf("stats: %x\n", header.stats);
   for (int i = 0; i < 5; i++) {
     printf("head %d: 0x%x\n", i, header.lru.heads[i]);
     printf("tail %d: 0x%x\n", i, header.lru.tails[i]);
@@ -76,6 +117,8 @@ void DumpIndexHeader(const FilePath& name) {
   printf("operation: %d\n", header.lru.operation);
   printf("operation list: %d\n", header.lru.operation_list);
   printf("-------------------------\n\n");
+
+  *stats_addr = header.stats;
 }
 
 // Dumps the contents of a block-file header.
@@ -292,13 +335,16 @@ int GetMajorVersion(const FilePath& input_path) {
 // Dumps the headers of all files.
 int DumpHeaders(const FilePath& input_path) {
   FilePath index_name(input_path.Append(kIndexName));
-  DumpIndexHeader(index_name);
+  disk_cache::CacheAddr stats_addr = 0;
+  DumpIndexHeader(index_name, &stats_addr);
 
   file_util::FileEnumerator iter(input_path, false,
                                  file_util::FileEnumerator::FILES,
                                  FILE_PATH_LITERAL("data_*"));
   for (FilePath file = iter.Next(); !file.empty(); file = iter.Next())
     DumpBlockHeader(file);
+
+  DumpStats(input_path, stats_addr);
   return 0;
 }
 
