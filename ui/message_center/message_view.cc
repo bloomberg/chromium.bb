@@ -10,11 +10,127 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+const int kCloseButtonSize = 29;
+const int kCloseIconTopPadding = 5;
+const int kCloseIconRightPadding = 5;
+
+// ControlButtons are ImageButtons whose image can be padded within the button.
+// This allows the creation of buttons like the notification close and expand
+// buttons whose clickable areas extends beyond their image areas
+// (<http://crbug.com/168822>) without the need to create and maintain
+// corresponding resource images with alpha padding. In the future, this class
+// will also allow for buttons whose touch areas extend beyond their clickable
+// area (<http://crbug.com/168856>).
+class ControlButton : public views::ImageButton {
+ public:
+  ControlButton(views::ButtonListener* listener);
+  virtual ~ControlButton();
+
+  // Overridden from views::ImageButton:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+  // The SetPadding() method also sets the button's image alignment (positive
+  // values yield left/top alignments, negative values yield right/bottom ones,
+  // and zero values center/middle ones). ImageButton::SetImageAlignment() calls
+  // will not affect ControlButton image alignments.
+  void SetPadding(int horizontal_padding, int vertical_padding);
+
+  void SetNormalImage(int resource_id);
+  void SetHoveredImage(int resource_id);
+  void SetPressedImage(int resource_id);
+
+ protected:
+  gfx::Point ComputePaddedImagePaintPosition(const gfx::ImageSkia& image);
+
+ private:
+  gfx::Insets padding_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlButton);
+};
+
+ControlButton::ControlButton(views::ButtonListener* listener)
+  : views::ImageButton(listener) {
+}
+
+ControlButton::~ControlButton() {
+}
+
+void ControlButton::SetPadding(int horizontal_padding, int vertical_padding) {
+  padding_.Set(std::max(vertical_padding, 0),
+               std::max(horizontal_padding, 0),
+               std::max(-vertical_padding, 0),
+               std::max(-horizontal_padding, 0));
+}
+
+void ControlButton::SetNormalImage(int resource_id) {
+  SetImage(views::CustomButton::STATE_NORMAL,
+           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+               resource_id));
+}
+
+void ControlButton::SetHoveredImage(int resource_id) {
+  SetImage(views::CustomButton::STATE_HOVERED,
+           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+               resource_id));
+}
+
+void ControlButton::SetPressedImage(int resource_id) {
+  SetImage(views::CustomButton::STATE_PRESSED,
+           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+               resource_id));
+}
+
+gfx::Size ControlButton::GetPreferredSize() {
+  return gfx::Size(kCloseButtonSize, kCloseButtonSize);
+}
+
+void ControlButton::OnPaint(gfx::Canvas* canvas) {
+  // This is the same implementation as ImageButton::OnPaint except
+  // that it calls ComputePaddedImagePaintPosition() instead of
+  // ComputeImagePaintPosition(), in effect overriding that private method.
+  View::OnPaint(canvas);
+  gfx::ImageSkia image = GetImageToPaint();
+  if (!image.isNull()) {
+    gfx::Point position = ComputePaddedImagePaintPosition(image);
+    if (!background_image_.isNull())
+      canvas->DrawImageInt(background_image_, position.x(), position.y());
+    canvas->DrawImageInt(image, position.x(), position.y());
+    if (!overlay_image_.isNull())
+      canvas->DrawImageInt(overlay_image_, position.x(), position.y());
+  }
+  OnPaintFocusBorder(canvas);
+}
+
+gfx::Point ControlButton::ComputePaddedImagePaintPosition(
+    const gfx::ImageSkia& image) {
+  gfx::Vector2d offset;
+  gfx::Rect bounds = GetContentsBounds();
+  bounds.Inset(padding_);
+
+  if (padding_.left() == 0 && padding_.right() == 0)
+    offset.set_x((bounds.width() - image.width()) / 2);  // Center align.
+  else if (padding_.right() > 0)
+    offset.set_x(bounds.width() - image.width());  // Right align.
+
+  if (padding_.top() == 0 && padding_.bottom() == 0)
+    offset.set_y((bounds.height() - image.height()) / 2);  // Middle align.
+  else if (padding_.bottom() > 0)
+    offset.set_y(bounds.height() - image.height());  // Bottom align.
+
+  return bounds.origin() + offset;
+}
+
+} // namespace
 
 namespace message_center {
 
@@ -111,12 +227,12 @@ MessageView::MessageView(
       notification_(notification),
       close_button_(NULL),
       scroller_(NULL) {
-  close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(
-      views::CustomButton::STATE_NORMAL,
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
-  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                   views::ImageButton::ALIGN_MIDDLE);
+  ControlButton *close = new ControlButton(this);
+  close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
+  close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
+  close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
+  close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
+  close_button_ = close;
 }
 
 MessageView::MessageView() {
@@ -161,7 +277,7 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
 
 void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
-  if (sender == close_button_)
+  if (sender == close_button())
     list_delegate_->SendRemoveNotification(notification_.id);
 }
 

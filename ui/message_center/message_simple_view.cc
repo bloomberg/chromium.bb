@@ -27,19 +27,19 @@ MessageSimpleView::~MessageSimpleView() {
 }
 
 void MessageSimpleView::SetUpView() {
-  SkColor bg_color = notification_.is_read ?
+  SkColor bg_color = notification().is_read ?
       kNotificationReadColor : kNotificationColor;
   set_background(views::Background::CreateSolidBackground(bg_color));
 
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
       gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize));
-  icon->SetImage(notification_.primary_icon);
+  icon->SetImage(notification().primary_icon);
 
-  views::Label* title = new views::Label(notification_.title);
+  views::Label* title = new views::Label(notification().title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
-  views::Label* message = new views::Label(notification_.message);
+  views::Label* message = new views::Label(notification().message);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
 
@@ -62,7 +62,7 @@ void MessageSimpleView::SetUpView() {
   // Notification message text.
   const int message_width = kWebNotificationWidth - kWebNotificationIconSize -
       kWebNotificationButtonWidth - (padding_width * 3) -
-      (scroller_ ? scroller_->GetScrollBarWidth() : 0);
+      (scroller() ? scroller()->GetScrollBarWidth() : 0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      100, /* resize percent */
                      views::GridLayout::FIXED,
@@ -84,7 +84,7 @@ void MessageSimpleView::SetUpView() {
   layout->StartRow(0, 0);
   layout->AddView(icon, 1, 2);
   layout->AddView(title, 1, 1);
-  layout->AddView(close_button_, 1, 1);
+  layout->AddView(close_button(), 1, 1);
 
   layout->StartRow(0, 0);
   layout->SkipColumns(2);

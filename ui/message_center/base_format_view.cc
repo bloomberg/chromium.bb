@@ -37,28 +37,26 @@ BaseFormatView::~BaseFormatView() {
 }
 
 void BaseFormatView::SetUpView() {
-  DCHECK(close_button_);
-
-  SkColor bg_color = notification_.is_read ?
+  SkColor bg_color = notification().is_read ?
       kNotificationReadColor : kNotificationColor;
   set_background(views::Background::CreateSolidBackground(bg_color));
 
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
       gfx::Size(kBaseFormatPrimaryIconWidth, kBaseFormatPrimaryIconWidth));
-  icon->SetImage(notification_.primary_icon);
+  icon->SetImage(notification().primary_icon);
 
   views::ImageView* second_icon = new views::ImageView;
   second_icon->SetImageSize(
       gfx::Size(kBaseFormatSecondaryIconWidth, kBaseFormatSecondaryIconWidth));
   // TODO: set up second image
-  second_icon->SetImage(notification_.primary_icon);
+  second_icon->SetImage(notification().primary_icon);
 
-  views::Label* title = new views::Label(notification_.title);
+  views::Label* title = new views::Label(notification().title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
 
-  views::Label* message = new views::Label(notification_.message);
+  views::Label* message = new views::Label(notification().message);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
   message->SetElideBehavior(views::Label::ELIDE_AT_END);
@@ -67,29 +65,29 @@ void BaseFormatView::SetUpView() {
       kBaseFormatTimestampWidth);
 
   views::Label* timestamp = NULL;
-  if (notification_.timestamp != base::Time()) {
+  if (notification().timestamp != base::Time()) {
     timestamp = new views::Label(
-        base::TimeFormatTimeOfDay(notification_.timestamp));
+        base::TimeFormatTimeOfDay(notification().timestamp));
     timestamp->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   }
 
   // TODO(miket): unreadCount
 
-  if (notification_.button_one_title.length() != 0) {
+  if (notification().button_one_title.length() != 0) {
     button_one_ = new views::LabelButton(
-        this, notification_.button_one_title);
+        this, notification().button_one_title);
     button_one_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button_one_->SetNativeTheme(true);
   }
-  if (button_one_ && notification_.button_two_title.length() != 0) {
+  if (button_one_ && notification().button_two_title.length() != 0) {
     button_two_ = new views::LabelButton(
-        this, notification_.button_two_title);
+        this, notification().button_two_title);
     button_two_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button_two_->SetNativeTheme(true);
   }
 
   views::Label* expanded_message = new views::Label(
-      notification_.expanded_message);
+      notification().expanded_message);
   expanded_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   expanded_message->SetMultiLine(true);
   expanded_message->SizeToFit(
@@ -149,7 +147,7 @@ void BaseFormatView::SetUpView() {
     layout->AddView(timestamp, 1, 1);
   else
     layout->SkipColumns(2);
-  layout->AddView(close_button_, 1, 1);
+  layout->AddView(close_button(), 1, 1);
 
   // Row 1: Big icon, title.
   layout->StartRow(0, 0);
@@ -190,9 +188,9 @@ void BaseFormatView::ButtonPressed(views::Button* sender,
   // map so that we can move this behavior to the superclass. It seems like
   // something we wouldn't want to keep recoding for each subclass.
   if (sender == button_one_) {
-    list_delegate_->OnButtonClicked(notification_.id, 0);
+    list_delegate()->OnButtonClicked(notification().id, 0);
   } else if (sender == button_two_) {
-    list_delegate_->OnButtonClicked(notification_.id, 1);
+    list_delegate()->OnButtonClicked(notification().id, 1);
   } else {
     MessageView::ButtonPressed(sender, event);
   }

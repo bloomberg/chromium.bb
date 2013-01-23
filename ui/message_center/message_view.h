@@ -58,6 +58,12 @@ class MessageView : public views::SlideOutView,
   // Overridden from views::SlideOutView.
   virtual void OnSlideOut() OVERRIDE;
 
+  NotificationList::Delegate* list_delegate() { return list_delegate_; }
+  NotificationList::Notification& notification() { return notification_; }
+  views::ImageButton* close_button() { return close_button_; }
+  views::ScrollView* scroller() { return scroller_; }
+
+ private:
   NotificationList::Delegate* list_delegate_;
   NotificationList::Notification notification_;
   views::ImageButton* close_button_;

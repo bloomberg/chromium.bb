@@ -4,7 +4,7 @@
 
 [nodoc] namespace experimental.notification {
   dictionary NotificationItem {
-    // Title of one item of a multiple-item notification.
+    // Title of one item of a list notification.
     DOMString title;
 
     // Additional details about this item.

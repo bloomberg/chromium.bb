@@ -159,7 +159,7 @@ bool NotificationShowFunction::RunImpl() {
     optional_fields->SetString(ui::notifications::kImageUrlKey,
                                UTF8ToUTF16(*options->image_url));
 
-  // For multiple-item notifications (type == 'multiple').
+  // For list notifications (type == 'multiple').
   // TODO(dharcourt): Fail if (type == 'multiple' && !options->items.get())
   // TODO(dharcourt): Fail if (type != 'multiple' && options->items.get())
   if (options->items.get()) {

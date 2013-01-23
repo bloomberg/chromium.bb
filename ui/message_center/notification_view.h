@@ -10,19 +10,27 @@
 
 namespace message_center {
 
-// View that displays multiple-item notifications, and in the future will
-// display all types of notification (simple/web, basic/base, image, and
-// multiple-item/inbox).
+// View that displays image and list notifications, and in the future will
+// display all types of notification (web/simple, basic/base, image, and
+// list/multiple-item/inbox/digest).
 class NotificationView : public MessageView {
  public:
   NotificationView(NotificationList::Delegate* list_delegate,
                    const NotificationList::Notification& notification);
   virtual ~NotificationView();
 
+  // Overridden from View.
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
   // Overridden from MessageView.
   virtual void SetUpView() OVERRIDE;
 
  private:
+  views::View* MakeContentView();
+
+  views::View* content_view_;
+
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };
 
