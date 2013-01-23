@@ -1434,7 +1434,18 @@
       ['OS=="linux" and clang_type_profiler==1', {
         'clang%': 1,
         'clang_use_chrome_plugins%': 0,
-        'make_clang_dir%': 'third_party/llvm-allocated-type/Linux_x64',
+        'conditions': [
+          ['host_arch=="x64"', {
+            'make_clang_dir%': 'third_party/llvm-allocated-type/Linux_x64',
+          }],
+          ['host_arch=="ia32"', {
+            # 32-bit Clang is unsupported.  It may not build.  Put your 32-bit
+            # Clang in this directory at your own risk if needed for some
+            # purpose (e.g. to compare 32-bit and 64-bit behavior like memory
+            # usage).  Any failure by this compiler should not close the tree.
+            'make_clang_dir%': 'third_party/llvm-allocated-type/Linux_ia32',
+          }],
+        ],
       }],
 
       # On valgrind bots, override the optimizer settings so we don't inline too
@@ -1619,6 +1630,11 @@
         'dependencies': [
           '<(DEPTH)/base/allocator/allocator.gyp:type_profiler',
         ],
+      }],
+      ['OS=="linux" and clang==1 and host_arch=="ia32"', {
+        # TODO(dmikurube): Remove -Wno-sentinel when Clang/LLVM is fixed.
+        # See http://crbug.com/162818.
+        'cflags+': ['-Wno-sentinel'],
       }],
       ['OS=="win" and "<(msbuild_toolset)"!=""', {
         'msbuild_toolset': '<(msbuild_toolset)',
