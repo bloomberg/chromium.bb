@@ -25,11 +25,10 @@ namespace {
 void CancelOrRunFaviconResultsCallback(
     const CancelableTaskTracker::IsCanceledCallback& is_canceled,
     const FaviconService::FaviconResultsCallback& callback,
-    const std::vector<history::FaviconBitmapResult>& results,
-    const history::IconURLSizesMap& size_map) {
+    const std::vector<history::FaviconBitmapResult>& results) {
   if (is_canceled.Run())
     return;
-  callback.Run(results, size_map);
+  callback.Run(results);
 }
 
 // Helper to run callback with empty results if we cannot get the history
@@ -40,9 +39,7 @@ CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
   return tracker->PostTask(
       base::MessageLoopProxy::current(),
       FROM_HERE,
-      Bind(callback,
-           std::vector<history::FaviconBitmapResult>(),
-           history::IconURLSizesMap()));
+      Bind(callback, std::vector<history::FaviconBitmapResult>()));
 }
 
 }  // namespace
@@ -54,9 +51,8 @@ FaviconService::FaviconService(HistoryService* history_service)
 // static
 void FaviconService::FaviconResultsCallbackRunner(
     const FaviconResultsCallback& callback,
-    const std::vector<history::FaviconBitmapResult>* results,
-    const history::IconURLSizesMap* size_map) {
-  callback.Run(*results, *size_map);
+    const std::vector<history::FaviconBitmapResult>* results) {
+  callback.Run(*results);
 }
 
 CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
@@ -243,7 +239,6 @@ void FaviconService::SetFavicons(
   image_skia.EnsureRepsForSupportedScaleFactors();
   const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
   std::vector<history::FaviconBitmapData> favicon_bitmap_data;
-  history::FaviconSizes favicon_sizes;
   for (size_t i = 0; i < image_reps.size(); ++i) {
     scoped_refptr<base::RefCountedBytes> bitmap_data(
         new base::RefCountedBytes());
@@ -258,21 +253,10 @@ void FaviconService::SetFavicons(
       bitmap_data_element.icon_url = icon_url;
 
       favicon_bitmap_data.push_back(bitmap_data_element);
-
-      // Construct favicon sizes from a guess at what the HTML 5 'sizes'
-      // attribute in the link tag is.
-      // TODO(pkotwicz): Plumb the HTML 5 sizes attribute to FaviconHandler.
-      favicon_sizes.push_back(pixel_size);
     }
   }
 
-  // TODO(pkotwicz): Tell the database about all the icon URLs associated
-  // with |page_url|.
-  history::IconURLSizesMap icon_url_sizes;
-  icon_url_sizes[icon_url] = favicon_sizes;
-
-  history_service_->SetFavicons(page_url, icon_type, favicon_bitmap_data,
-      icon_url_sizes);
+  history_service_->SetFavicons(page_url, icon_type, favicon_bitmap_data);
 }
 
 FaviconService::~FaviconService() {}
@@ -308,8 +292,7 @@ CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
 void FaviconService::RunFaviconImageCallbackWithBitmapResults(
     const FaviconImageCallback& callback,
     int desired_size_in_dip,
-    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
-    const history::IconURLSizesMap& icon_url_sizes_map) {
+    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results) {
   history::FaviconImageResult image_result;
   image_result.image = FaviconUtil::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
@@ -324,8 +307,7 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
     const FaviconRawCallback& callback,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
-    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
-    const history::IconURLSizesMap& icon_url_sizes_map) {
+    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results) {
   if (favicon_bitmap_results.empty() || !favicon_bitmap_results[0].is_valid()) {
     callback.Run(history::FaviconBitmapResult());
     return;

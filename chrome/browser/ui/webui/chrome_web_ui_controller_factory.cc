@@ -420,12 +420,11 @@ struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
 
 void RunFaviconCallbackAsync(
     const FaviconService::FaviconResultsCallback& callback,
-    const std::vector<history::FaviconBitmapResult>* results,
-    const history::IconURLSizesMap* size_map) {
+    const std::vector<history::FaviconBitmapResult>* results) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&FaviconService::FaviconResultsCallbackRunner,
-                 callback, base::Owned(results), base::Owned(size_map)));
+                 callback, base::Owned(results)));
 }
 
 }  // namespace
@@ -505,15 +504,13 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     ExtensionWebUI::GetFaviconForURL(profile, url, callback);
 #else
     RunFaviconCallbackAsync(callback,
-                            new std::vector<history::FaviconBitmapResult>(),
-                            new history::IconURLSizesMap());
+                            new std::vector<history::FaviconBitmapResult>());
 #endif
     return;
   }
 
   std::vector<history::FaviconBitmapResult>* favicon_bitmap_results =
       new std::vector<history::FaviconBitmapResult>();
-  history::IconURLSizesMap* icon_url_sizes = new history::IconURLSizesMap();
 
   for (size_t i = 0; i < scale_factors.size(); ++i) {
     scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
@@ -534,18 +531,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     }
   }
 
-  // Populate IconURLSizesMap such that the requirement that all the icon URLs
-  // in |favicon_bitmap_results| be present in |icon_url_sizes| holds.
-  // Populate the favicon sizes with the pixel sizes of the bitmaps available
-  // for |url|.
-  for (size_t i = 0; i < favicon_bitmap_results->size(); ++i) {
-    const history::FaviconBitmapResult& bitmap_result =
-        (*favicon_bitmap_results)[i];
-    const GURL& icon_url = bitmap_result.icon_url;
-    (*icon_url_sizes)[icon_url].push_back(bitmap_result.pixel_size);
-  }
-
-  RunFaviconCallbackAsync(callback, favicon_bitmap_results, icon_url_sizes);
+  RunFaviconCallbackAsync(callback, favicon_bitmap_results);
 }
 
 // static

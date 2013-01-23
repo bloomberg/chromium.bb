@@ -804,26 +804,19 @@ class HistoryService : public CancelableRequestProvider,
 
   // Used by the FaviconService to set the favicons for a page on the history
   // backend.
-  // |favicon_bitmap_data| is a listing of additional favicon bitmaps to store
-  // for |page_url|.
+  // |favicon_bitmap_data| replaces all the favicon bitmaps mapped to
+  // |page_url|.
   // |expired| and |icon_type| fields in FaviconBitmapData are ignored.
-  // |icon_url_sizes| is a mapping of all the icon urls of the favicons
-  // available for |page_url| to the sizes that those favicons are available
-  // from the web.
-  // |favicon_bitmap_data| does not need to have entries for all the icon urls
-  // or sizes listed in |icon_url_sizes|. However, the icon urls and pixel
-  // sizes in |favicon_bitmap_data| must be a subset of |icon_url_sizes|. It is
-  // important that |icon_url_sizes| be complete as mappings to favicons whose
-  // icon url or pixel size is not in |icon_url_sizes| will be deleted.
-  // Use MergeFavicon() if any of the icon URLs for |page_url| or any of the
-  // favicon sizes of the icon URLs are not known.
+  // Use MergeFavicon() if |favicon_bitmap_data| is incomplete, and favicon
+  // bitmaps in the database should be preserved if possible. For instance,
+  // favicon bitmaps from sync are 1x only. MergeFavicon() is used to avoid
+  // deleting the 2x favicon bitmap if it is present in the history backend.
   // See HistoryBackend::ValidateSetFaviconsParams() for more details on the
-  // criteria for |favicon_bitmap_data| and |icon_url_sizes| to be valid.
+  // criteria for |favicon_bitmap_data| to be valid.
   void SetFavicons(
       const GURL& page_url,
       history::IconType icon_type,
-      const std::vector<history::FaviconBitmapData>& favicon_bitmap_data,
-      const history::IconURLSizesMap& icon_url_sizes);
+      const std::vector<history::FaviconBitmapData>& favicon_bitmap_data);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.

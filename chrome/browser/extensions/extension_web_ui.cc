@@ -87,7 +87,6 @@ void RunFaviconCallbackAsync(
     const gfx::Image& image) {
   std::vector<history::FaviconBitmapResult>* favicon_bitmap_results =
       new std::vector<history::FaviconBitmapResult>();
-  history::IconURLSizesMap* icon_url_sizes = new history::IconURLSizesMap();
 
   const std::vector<gfx::ImageSkiaRep>& image_reps =
       image.AsImageSkia().image_reps();
@@ -111,23 +110,11 @@ void RunFaviconCallbackAsync(
     }
   }
 
-  // Populate IconURLSizesMap such that all the icon URLs in
-  // |favicon_bitmap_results| are present in |icon_url_sizes|.
-  // Populate the favicon sizes with the relevant pixel sizes in the
-  // extension's icon set.
-  for (size_t i = 0; i < favicon_bitmap_results->size(); ++i) {
-    const history::FaviconBitmapResult& bitmap_result =
-        (*favicon_bitmap_results)[i];
-    const GURL& icon_url = bitmap_result.icon_url;
-    (*icon_url_sizes)[icon_url].push_back(bitmap_result.pixel_size);
-  }
-
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&FaviconService::FaviconResultsCallbackRunner,
                  callback,
-                 base::Owned(favicon_bitmap_results),
-                 base::Owned(icon_url_sizes)));
+                 base::Owned(favicon_bitmap_results)));
 }
 
 }  // namespace

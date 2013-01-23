@@ -77,29 +77,14 @@ class FaviconService : public CancelableRequestProvider,
   // platform (eg MacOS) in addition to 1x. The vector has at most one result
   // for each of the scale factors. There are less entries if a single result
   // is the best bitmap to use for several scale factors.
-  //
-  // Second argument:
-  // a) If the callback is called as a result of GetFaviconForURL():
-  //    The second argument is a map of the icon URLs mapped to |page_url| to
-  //    the sizes at which the favicon is available from the web.
-  // b) If the callback is called as a result of GetFavicon() or
-  //    UpdateFaviconMappingsAndFetch():
-  //    The second argument is a map of the subset of |icon_urls| known to the
-  //    history backend to a vector of sizes of the favicon bitmaps at each
-  //    URL. If none of |icon_urls| are known to the history backend, an empty
-  //    map is returned.
-  // See history_types.h for more information about IconURLSizesMap.
-  typedef base::Callback<
-      void(const std::vector<history::FaviconBitmapResult>&,
-           const history::IconURLSizesMap&)>
+  typedef base::Callback<void(const std::vector<history::FaviconBitmapResult>&)>
       FaviconResultsCallback;
 
   // We usually pass parameters with pointer to avoid copy. This function is a
   // helper to run FaviconResultsCallback with pointer parameters.
   static void FaviconResultsCallbackRunner(
       const FaviconResultsCallback& callback,
-      const std::vector<history::FaviconBitmapResult>* results,
-      const history::IconURLSizesMap* size_map);
+      const std::vector<history::FaviconBitmapResult>* results);
 
   // Requests the favicon at |icon_url| of |icon_type| whose size most closely
   // matches |desired_size_in_dip|. If |desired_size_in_dip| is 0, the largest
@@ -256,8 +241,7 @@ class FaviconService : public CancelableRequestProvider,
   void RunFaviconImageCallbackWithBitmapResults(
       const FaviconImageCallback& callback,
       int desired_size_in_dip,
-      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
-      const history::IconURLSizesMap& icon_url_sizes_map);
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results);
 
   // Intermediate callback for GetRawFavicon() and GetRawFaviconForURL()
   // so that history service can deal solely with FaviconResultsCallback.
@@ -266,8 +250,7 @@ class FaviconService : public CancelableRequestProvider,
       const FaviconRawCallback& callback,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
-      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
-      const history::IconURLSizesMap& icon_url_sizes_map);
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results);
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);
 };

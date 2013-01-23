@@ -824,9 +824,6 @@ typedef std::vector<gfx::Size> FaviconSizes;
 // are unknown.
 const FaviconSizes& GetDefaultFaviconSizes();
 
-// A map from an icon URL to the FaviconSizes for that URL.
-typedef std::map<GURL, FaviconSizes> IconURLSizesMap;
-
 // Defines a favicon bitmap and its associated pixel size.
 struct FaviconBitmapIDSize {
   FaviconBitmapIDSize();

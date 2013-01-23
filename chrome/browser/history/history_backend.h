@@ -259,33 +259,24 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicon -------------------------------------------------------------------
 
-  struct FaviconResults {
-    FaviconResults();
-    ~FaviconResults();
-    void Clear();
-
-    std::vector<history::FaviconBitmapResult> bitmap_results;
-    IconURLSizesMap size_map;
-  };
-
   void GetFavicons(const std::vector<GURL>& icon_urls,
                     int icon_types,
                     int desired_size_in_dip,
                     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-                    FaviconResults* results);
+                    std::vector<FaviconBitmapResult>* bitmap_results);
 
   void GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      FaviconResults* results);
+      std::vector<FaviconBitmapResult>* bitmap_results);
 
   void GetFaviconForID(
       FaviconID favicon_id,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
-      FaviconResults* results);
+      std::vector<FaviconBitmapResult>* bitmap_results);
 
   void UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
@@ -293,7 +284,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      FaviconResults* results);
+      std::vector<FaviconBitmapResult>* bitmap_results);
 
   void MergeFavicon(const GURL& page_url,
                     const GURL& icon_url,
@@ -304,8 +295,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void SetFavicons(
       const GURL& page_url,
       IconType icon_type,
-      const std::vector<FaviconBitmapData>& favicon_bitmap_data,
-      const IconURLSizesMap& icon_url_sizes);
+      const std::vector<FaviconBitmapData>& favicon_bitmap_data);
 
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
@@ -517,7 +507,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                            SetFaviconMappingsForPageAndRedirects);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageDuplicates);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFavicons);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsDeleteBitmaps);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsReplaceBitmapData);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
@@ -672,12 +661,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      FaviconResults* results);
+      std::vector<FaviconBitmapResult>* results);
 
   // Set the favicon bitmaps for |icon_id|.
   // For each entry in |favicon_bitmap_data|, if a favicon bitmap already
   // exists at the entry's pixel size, replace the favicon bitmap's data with
   // the entry's bitmap data. Otherwise add a new favicon bitmap.
+  // Any favicon bitmaps already mapped to |icon_id| whose pixel sizes are not
+  // in |favicon_bitmap_data| are deleted.
   // If not NULL, |favicon_bitmaps_changed| is set to whether any of the bitmap
   // data at |icon_id| is changed as a result of calling this method.
   // Computing |favicon_bitmaps_changed| requires additional database queries
@@ -687,31 +678,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const std::vector<FaviconBitmapData>& favicon_bitmap_data,
       bool* favicon_bitmaps_changed);
 
-  // Returns true if |favicon_bitmap_data| and |icon_url_sizes| passed to
-  // SetFavicons() are valid.
+  // Returns true if |favicon_bitmap_data| passed to SetFavicons() is valid.
   // Criteria:
-  // 1) |icon_url_sizes| contains no more than
-  //      kMaxFaviconsPerPage icon URLs.
-  //      kMaxFaviconBitmapsPerIconURL favicon sizes for each icon URL.
-  // 2) The icon URLs and favicon sizes of |favicon_bitmap_data| are a subset
-  //    of |icon_url_sizes|.
-  // 3) The favicon sizes for entries in |icon_url_sizes| which have associated
-  //    data in |favicon_bitmap_data| is not history::GetDefaultFaviconSizes().
-  // 4) FaviconBitmapData::bitmap_data contains non NULL bitmap data.
+  // 1) |favicon_bitmap_data| contains no more than
+  //      kMaxFaviconsPerPage unique icon URLs.
+  //      kMaxFaviconBitmapsPerIconURL favicon bitmaps for each icon URL.
+  // 2) FaviconBitmapData::bitmap_data contains non NULL bitmap data.
   bool ValidateSetFaviconsParams(
-      const std::vector<FaviconBitmapData>& favicon_bitmap_data,
-      const IconURLSizesMap& icon_url_sizes) const;
-
-  // Sets the sizes that the thumbnail database knows that the favicon at
-  // |icon_id| is available from the web. See history_types.h for a more
-  // detailed description of FaviconSizes.
-  // Deletes any favicon bitmaps currently mapped to |icon_id| whose pixel
-  // sizes are not contained in |favicon_sizes|.
-  // |favicon_bitmaps_deleted| is set to true if at least one favicon bitmap
-  // is deleted.
-  void SetFaviconSizes(FaviconID icon_id,
-                       const FaviconSizes& favicon_sizes,
-                       bool* favicon_bitmaps_deleted);
+      const std::vector<FaviconBitmapData>& favicon_bitmap_data) const;
 
   // Returns true if the bitmap data at |bitmap_id| equals |new_bitmap_data|.
   bool IsFaviconBitmapDataEqual(
@@ -729,16 +703,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and FAVICON. See the comment for
   // GetFaviconResultsForBestMatch() for more details on how
   // |favicon_bitmap_results| is constructed.
-  // |icon_url_sizes| is set to a mapping of all the icon URLs which are mapped
-  // to |page_url| to the sizes of the favicon bitmaps available at each icon
-  // URL on the web.
   bool GetFaviconsFromDB(
       const GURL& page_url,
       int icon_types,
       const int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<FaviconBitmapResult>* favicon_bitmap_results,
-      IconURLSizesMap* icon_url_sizes);
+      std::vector<FaviconBitmapResult>* favicon_bitmap_results);
 
   // Returns the favicon bitmaps which most closely match |desired_size_in_dip|
   // and |desired_scale_factors| in |favicon_bitmap_results|. If
@@ -754,15 +724,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
       std::vector<FaviconBitmapResult>* favicon_bitmap_results);
-
-  // Build mapping of the icon URLs for |favicon_ids| to the sizes of the
-  // favicon bitmaps available at each icon URL on the web. Favicon bitmaps
-  // might not be cached in the thumbnail database for any of the sizes in the
-  // returned map. See history_types.h for a more detailed description of
-  // IconURLSizesMap.
-  // Returns true if map was successfully built.
-  bool BuildIconURLSizesMap(const std::vector<FaviconID>& favicon_ids,
-                            IconURLSizesMap* icon_url_sizes);
 
   // Maps the favicon ids in |icon_ids| to |page_url| (and all redirects)
   // for |icon_type|.
