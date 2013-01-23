@@ -130,9 +130,11 @@ bool ShaderTranslator::Translate(const char* shader) {
       SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS |
       SH_MAP_LONG_VARIABLE_NAMES;
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !(defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL))
   // Cannot reliably clamp an array index in HLSL.
   // https://code.google.com/p/angleproject/issues/detail?id=399
+  // ARM driver has problem with GLSL array indexing with return value of
+  // function, see http://crosbug.com/p/17387
   compile_options |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
 #endif
 
