@@ -30,6 +30,8 @@ public:
     WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize(
         const Settings&, scoped_ptr<cc::Thread> implThread);
 
+    WEBKIT_COMPOSITOR_BINDINGS_EXPORT cc::LayerTreeHost* layer_tree_host() const;
+
     // WebLayerTreeView implementation.
     virtual void setSurfaceReady() OVERRIDE;
     virtual void setRootLayer(const WebLayer&) OVERRIDE;

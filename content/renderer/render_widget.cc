@@ -14,9 +14,13 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/layer_tree_host.h"
+#include "cc/thread.h"
+#include "cc/thread_impl.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -246,10 +250,11 @@ void RenderWidget::CompleteInit() {
 
   init_complete_ = true;
 
-  if (webwidget_) {
-    webwidget_->setCompositorSurfaceReady();
-    if (is_threaded_compositing_enabled_)
-      webwidget_->enterForceCompositingMode(true);
+  if (webwidget_ && is_threaded_compositing_enabled_) {
+    webwidget_->enterForceCompositingMode(true);
+  }
+  if (web_layer_tree_view_) {
+    web_layer_tree_view_->setSurfaceReady();
   }
   DoDeferredUpdate();
 
@@ -668,10 +673,16 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||
       WebInputEvent::isTouchEventType(input_event->type);
+
+  bool frame_pending = paint_aggregator_.HasPendingUpdate();
+  if (is_accelerated_compositing_active_) {
+    frame_pending = web_layer_tree_view_ &&
+                    web_layer_tree_view_->commitRequested();
+  }
+
   bool is_input_throttled =
       throttle_input_events_ &&
-      ((webwidget_ ? webwidget_->isInputThrottled() : false) ||
-      paint_aggregator_.HasPendingUpdate());
+      frame_pending;
 
   if (event_type_gets_rate_limited && is_input_throttled && !is_hidden_) {
     // We want to rate limit the input events in this case, so we'll wait for
@@ -902,7 +913,12 @@ void RenderWidget::AnimateIfNeeded() {
     animation_timer_.Start(FROM_HERE, animationInterval, this,
                            &RenderWidget::AnimationCallback);
     animation_update_pending_ = false;
-    webwidget_->animate(0.0);
+    if (is_accelerated_compositing_active_ && web_layer_tree_view_) {
+      web_layer_tree_view_->layer_tree_host()->updateAnimations(
+          base::TimeTicks::Now());
+    } else {
+      webwidget_->animate(0.0);
+    }
     return;
   }
   TRACE_EVENT0("renderer", "EarlyOut_AnimatedTooRecently");
@@ -1289,6 +1305,33 @@ void RenderWidget::didDeactivateCompositor() {
     webwidget_->enterForceCompositingMode(false);
 }
 
+void RenderWidget::initializeLayerTreeView(
+    WebKit::WebLayerTreeViewClient* client,
+    const WebKit::WebLayer& root_layer,
+    const WebKit::WebLayerTreeView::Settings& settings) {
+  DCHECK(!web_layer_tree_view_);
+  web_layer_tree_view_.reset(new WebKit::WebLayerTreeViewImpl(client));
+
+  scoped_ptr<cc::Thread> impl_thread;
+  CompositorThread* compositor_thread =
+      RenderThreadImpl::current()->compositor_thread();
+  if (compositor_thread)
+    impl_thread = cc::ThreadImpl::createForDifferentThread(
+        compositor_thread->message_loop()->message_loop_proxy());
+  if (!web_layer_tree_view_->initialize(settings, impl_thread.Pass())) {
+    web_layer_tree_view_.reset();
+    return;
+  }
+  web_layer_tree_view_->setRootLayer(root_layer);
+  if (init_complete_) {
+    web_layer_tree_view_->setSurfaceReady();
+  }
+}
+
+WebKit::WebLayerTreeView* RenderWidget::layerTreeView() {
+  return web_layer_tree_view_.get();
+}
+
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
@@ -1442,6 +1485,8 @@ void RenderWidget::closeWidgetSoon() {
 
 void RenderWidget::Close() {
   if (webwidget_) {
+    webwidget_->willCloseLayerTreeView();
+    web_layer_tree_view_.reset();
     webwidget_->close();
     webwidget_ = NULL;
   }
@@ -1656,7 +1701,8 @@ void RenderWidget::OnRepaint(const gfx::Size& size_to_paint) {
 
   set_next_paint_is_repaint_ack();
   if (is_accelerated_compositing_active_) {
-    webwidget_->setNeedsRedraw();
+    if (web_layer_tree_view_)
+      web_layer_tree_view_->setNeedsRedraw();
     scheduleComposite();
   } else {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
@@ -1990,7 +2036,8 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
 
 void RenderWidget::GetRenderingStats(
     WebKit::WebRenderingStatsImpl& stats) const {
-  webwidget()->renderingStats(stats);
+  if (web_layer_tree_view_)
+    web_layer_tree_view_->renderingStats(stats);
 
   stats.rendering_stats.numAnimationFrames +=
       software_stats_.numAnimationFrames;

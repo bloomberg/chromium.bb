@@ -73,6 +73,11 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     return true;
 }
 
+cc::LayerTreeHost* WebLayerTreeViewImpl::layer_tree_host() const
+{
+    return m_layerTreeHost.get();
+}
+
 void WebLayerTreeViewImpl::setSurfaceReady()
 {
     m_layerTreeHost->setSurfaceReady();
