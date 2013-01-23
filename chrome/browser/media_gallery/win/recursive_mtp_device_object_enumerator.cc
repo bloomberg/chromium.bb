@@ -18,10 +18,9 @@ namespace chrome {
 RecursiveMTPDeviceObjectEnumerator::RecursiveMTPDeviceObjectEnumerator(
     IPortableDevice* device,
     const MTPDeviceObjectEntries& entries)
-    : device_(device),
-      curr_object_entries_(entries),
-      object_entry_iter_(curr_object_entries_.begin()) {
+    : device_(device) {
   base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!entries.empty());
   current_enumerator_.reset(new MTPDeviceObjectEnumerator(entries));
 }
 
@@ -31,18 +30,29 @@ RecursiveMTPDeviceObjectEnumerator::~RecursiveMTPDeviceObjectEnumerator() {
 
 FilePath RecursiveMTPDeviceObjectEnumerator::Next() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MaybeUpdateCurrentObjectList();
-  if (curr_object_entries_.empty())
-    return FilePath();
-
-  DCHECK(object_entry_iter_ != curr_object_entries_.end());
-  const MTPDeviceObjectEntry& current_object_entry = *(object_entry_iter_++);
-  if (current_object_entry.is_directory) {
-    // If |current_object_entry| is a directory, add it to
-    // |unparsed_directory_object_ids_| to scan after scanning this directory.
-    unparsed_directory_object_ids_.push(current_object_entry.object_id);
+  FilePath path = current_enumerator_->Next();
+  if (path.empty()) {
+    // Reached the end of |current_enumerator_|.
+    scoped_ptr<MTPDeviceObjectEnumerator> next_enumerator =
+        GetNextSubdirectoryEnumerator();
+    if (next_enumerator) {
+      current_enumerator_ = next_enumerator.Pass();
+      path = current_enumerator_->Next();
+    } else {
+      // Traversed all the sub directories.
+      return FilePath();
+    }
   }
-  return current_enumerator_->Next();
+
+  if (IsDirectory()) {
+    // If the current entry is a directory, add it to
+    // |untraversed_directory_object_ids_| to scan after scanning this
+    // directory.
+    string16 dir_object_entry_id = current_enumerator_->GetObjectId();
+    if (!dir_object_entry_id.empty())
+      untraversed_directory_object_ids_.push(dir_object_entry_id);
+  }
+  return path;
 }
 
 int64 RecursiveMTPDeviceObjectEnumerator::Size() {
@@ -60,30 +70,24 @@ base::Time RecursiveMTPDeviceObjectEnumerator::LastModifiedTime() {
   return current_enumerator_->LastModifiedTime();
 }
 
-void RecursiveMTPDeviceObjectEnumerator::MaybeUpdateCurrentObjectList() {
-  if (object_entry_iter_ != curr_object_entries_.end())
-    return;
-
-  curr_object_entries_.clear();
-  while (curr_object_entries_.empty() &&
-         !unparsed_directory_object_ids_.empty()) {
-    DirectoryObjectId object_id = unparsed_directory_object_ids_.front();
-    unparsed_directory_object_ids_.pop();
-    if (media_transfer_protocol::GetDirectoryEntries(device_.get(), object_id,
-                                                     &curr_object_entries_) &&
-        !curr_object_entries_.empty()) {
-      current_enumerator_.reset(
-          new MTPDeviceObjectEnumerator(curr_object_entries_));
-      break;
+scoped_ptr<MTPDeviceObjectEnumerator>
+RecursiveMTPDeviceObjectEnumerator::GetNextSubdirectoryEnumerator() {
+  while (!untraversed_directory_object_ids_.empty()) {
+    // Create a MTPReadDirectoryWorker object to enumerate sub directories.
+    string16 dir_entry_id = untraversed_directory_object_ids_.front();
+    untraversed_directory_object_ids_.pop();
+    MTPDeviceObjectEntries curr_object_entries;
+    if (media_transfer_protocol::GetDirectoryEntries(device_.get(),
+                                                     dir_entry_id,
+                                                     &curr_object_entries) &&
+        !curr_object_entries.empty()) {
+      return scoped_ptr<MTPDeviceObjectEnumerator>(
+          new MTPDeviceObjectEnumerator(curr_object_entries));
     }
   }
 
-  if (curr_object_entries_.empty()) {
-    // Parsed all the objects.
-    current_enumerator_.reset(
-        new fileapi::FileSystemFileUtil::EmptyFileEnumerator());
-  }
-  object_entry_iter_ = curr_object_entries_.begin();
+  // Reached the end. Traversed all the sub directories.
+  return scoped_ptr<MTPDeviceObjectEnumerator>();
 }
 
 }  // namespace chrome

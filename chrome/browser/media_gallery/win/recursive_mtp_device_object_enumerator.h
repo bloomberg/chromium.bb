@@ -22,6 +22,8 @@ class FilePath;
 
 namespace chrome {
 
+class MTPDeviceObjectEnumerator;
+
 // RecursiveMTPDeviceObjectEnumerator is used to recursively enumerate the
 // media transfer protocol (MTP) device storage objects from a given media file
 // object entries set. RecursiveMTPDeviceObjectEnumerator communicates with the
@@ -44,29 +46,20 @@ class RecursiveMTPDeviceObjectEnumerator
   virtual base::Time LastModifiedTime() OVERRIDE;
 
  private:
-  typedef string16 DirectoryObjectId;
-
-  void MaybeUpdateCurrentObjectList();
+  // Returns an enumerator for the next non-empty, untraversed subdirectory
+  // from |untraversed_directory_object_ids_|.
+  // Returns NULL if all subdirectories have been traversed.
+  // The caller owns the returned MTPDeviceObjectEnumerator.
+  scoped_ptr<MTPDeviceObjectEnumerator> GetNextSubdirectoryEnumerator();
 
   // The portable device.
   base::win::ScopedComPtr<IPortableDevice> device_;
 
-  // TODO(kmadhusu): Remove |curr_object_entries_| and |object_entry_iter_|.
-  // Implement GetObjectId() and HasMoreEntries() in MTPDeviceObjectEnumerator
-  // and remove |curr_object_entries_| and |object_entry_iter_|.
+  // Enumerator to access current directory Id/path entries.
+  scoped_ptr<MTPDeviceObjectEnumerator> current_enumerator_;
 
-  // List of current directory object entries.
-  MTPDeviceObjectEntries curr_object_entries_;
-
-  // Iterator to access the individual file object entries.
-  MTPDeviceObjectEntries::const_iterator object_entry_iter_;
-
-  // Enumerator to access current directory object entries.
-  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      current_enumerator_;
-
-  // Used to recursively enumerate the sub-directory objects.
-  std::queue<DirectoryObjectId> unparsed_directory_object_ids_;
+  // Queue of untraversed subdirectories.
+  std::queue<string16> untraversed_directory_object_ids_;
 
   base::ThreadChecker thread_checker_;
 

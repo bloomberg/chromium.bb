@@ -32,15 +32,28 @@ class MTPDeviceObjectEnumerator
   virtual bool IsDirectory() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;
 
+  // If the current file object entry is valid, returns an non-empty object id.
+  // Returns an empty string otherwise.
+  string16 GetObjectId() const;
+
  private:
-  // The directory file object entries.
+  // Returns true if the enumerator has more entries to traverse, false
+  // otherwise.
+  bool HasMoreEntries() const;
+
+  // Returns true if Next() has been called at least once, and the enumerator
+  // has more entries to traverse.
+  bool IsIndexReadyAndInRange() const;
+
+  // List of directory file object entries.
   MTPDeviceObjectEntries object_entries_;
 
-  // Iterator to access the individual file object entries.
-  MTPDeviceObjectEntries::const_iterator object_entry_iter_;
+  // Index into |object_entries_|.
+  // Should only be used when |is_index_ready_| is true.
+  size_t index_;
 
-  // The current file object entry.
-  const MTPDeviceObjectEntry* current_object_;
+  // Initially false. Set to true after Next() has been called.
+  bool is_index_ready_;
 
   base::ThreadChecker thread_checker_;
 

@@ -14,8 +14,8 @@ namespace chrome {
 MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
     const MTPDeviceObjectEntries& entries)
     : object_entries_(entries),
-      object_entry_iter_(object_entries_.begin()),
-      current_object_(NULL) {
+      index_(0U),
+      is_index_ready_(false) {
   base::ThreadRestrictions::AssertIOAllowed();
 }
 
@@ -25,28 +25,50 @@ MTPDeviceObjectEnumerator::~MTPDeviceObjectEnumerator() {
 
 FilePath MTPDeviceObjectEnumerator::Next() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (object_entry_iter_ == object_entries_.end()) {
-    current_object_ = NULL;
-    return FilePath();
-  }
+  if (IsIndexReadyAndInRange())
+    ++index_;  // Normal traversal.
+  else if (!is_index_ready_)
+    is_index_ready_ = true;  // First time calling Next().
 
-  current_object_ = &(*(object_entry_iter_++));
-  return FilePath(current_object_->name);
+  if (!HasMoreEntries())
+    return FilePath();
+  return FilePath(object_entries_[index_].name);
 }
 
 int64 MTPDeviceObjectEnumerator::Size() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return current_object_ ? current_object_->size : 0;
+  if (!IsIndexReadyAndInRange())
+    return 0;
+  return object_entries_[index_].size;
 }
 
 bool MTPDeviceObjectEnumerator::IsDirectory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return current_object_ ? current_object_->is_directory : false;
+  if (!IsIndexReadyAndInRange())
+    return false;
+  return object_entries_[index_].is_directory;
 }
 
 base::Time MTPDeviceObjectEnumerator::LastModifiedTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return current_object_ ? current_object_->last_modified_time : base::Time();
+  if (!IsIndexReadyAndInRange())
+    return base::Time();
+  return object_entries_[index_].last_modified_time;
+}
+
+string16 MTPDeviceObjectEnumerator::GetObjectId() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!IsIndexReadyAndInRange())
+    return string16();
+  return object_entries_[index_].object_id;
+}
+
+bool MTPDeviceObjectEnumerator::HasMoreEntries() const {
+  return index_ < object_entries_.size();
+}
+
+bool MTPDeviceObjectEnumerator::IsIndexReadyAndInRange() const {
+  return is_index_ready_ && HasMoreEntries();
 }
 
 }  // namespace chrome
