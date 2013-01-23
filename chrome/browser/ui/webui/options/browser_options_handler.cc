@@ -118,8 +118,7 @@ namespace options {
 BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_file_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_ui_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
@@ -615,10 +614,8 @@ void BrowserOptionsHandler::InitializeHandler() {
       !command_line.HasSwitch(switches::kUserDataDir)) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,
-                   weak_ptr_factory_for_ui_.GetWeakPtr(),
-                   weak_ptr_factory_for_file_.GetWeakPtr(),
+                   weak_ptr_factory_.GetWeakPtr(),
                    profile->GetPath()));
-    weak_ptr_factory_for_ui_.DetachFromThread();
   }
 #endif
 
@@ -683,6 +680,7 @@ void BrowserOptionsHandler::InitializePage() {
 #endif
 }
 
+// static
 void BrowserOptionsHandler::CheckAutoLaunch(
     base::WeakPtr<BrowserOptionsHandler> weak_this,
     const FilePath& profile_path) {

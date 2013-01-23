@@ -104,8 +104,8 @@ class BrowserOptionsHandler
   // thread (see CheckAutoLaunchCallback). A weak pointer to this is passed in
   // as a parameter to avoid the need to lock between this function and the
   // destructor. |profile_path| is the full path to the current profile.
-  void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this,
-                       const FilePath& profile_path);
+  static void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this,
+                              const FilePath& profile_path);
 
   // Sets up (on the UI thread) the necessary bindings for toggling auto-launch
   // (if the user is part of the auto-launch and makes sure the HTML UI knows
@@ -269,10 +269,8 @@ class BrowserOptionsHandler
 
   TemplateURLService* template_url_service_;  // Weak.
 
-  // Used to get |weak_ptr_| to self for use on the File thread.
-  base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_file_;
-  // Used to post update tasks to the UI thread.
-  base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_ui_;
+  // Used to get WeakPtr to self for use on the UI thread.
+  base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_;
 
   // True if the multiprofiles switch is enabled.
   bool multiprofile_;
