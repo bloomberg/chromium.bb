@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "media/audio/audio_input_device.h"
@@ -32,44 +33,62 @@ class WebRtcLocalAudioRenderer;
 // SetCapturerSource(). It is also possible to enable a local sink and
 // register a callback which the sink can call when it wants to read captured
 // data cached in a FIFO for local loopback rendering.
-// The threading model for this class is rather messy since it will be
-// created on a Libjingle thread, captured data is provided on a dedicated
+// The threading model for this class is rather complex since it will be
+// created on the main render thread, captured data is provided on a dedicated
 // AudioInputDevice thread, and methods can be called either on the Libjingle
 // thread or on the main render thread but also other client threads
 // if an alternative AudioCapturerSource has been set. In addition, the
 // AudioCapturerSource::CaptureEventHandler methods are called on the IO thread
 // and requests for data to render is done on the AudioOutputDevice thread.
-class WebRtcAudioCapturer
+class CONTENT_EXPORT WebRtcAudioCapturer
     : public base::RefCountedThreadSafe<WebRtcAudioCapturer>,
-      public media::AudioCapturerSource::CaptureCallback,
-      public media::AudioCapturerSource::CaptureEventHandler,
-      public content::WebRtcLocalAudioRenderer::LocalRenderCallback {
+      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback),
+      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureEventHandler),
+      NON_EXPORTED_BASE(
+          public content::WebRtcLocalAudioRenderer::LocalRenderCallback) {
  public:
   // Use to construct the audio capturer.
+  // Called on the main render thread.
   static scoped_refptr<WebRtcAudioCapturer> CreateCapturer();
 
+  // Creates and configures the default audio capturing source using the
+  // provided audio parameters.
+  // Called on the main render thread.
+  bool Initialize(media::ChannelLayout channel_layout, int sample_rate);
+
   // Called by the client on the sink side to add a sink.
+  // WebRtcAudioDeviceImpl calls this method on the main render thread but
+  // other clients may call it from other threads. The current implementation
+  // does not support multi-thread calling.
+  // TODO(henrika): add lock if we extend number of supported sinks.
+  // Called on the main render thread.
   void AddCapturerSink(WebRtcAudioCapturerSink* sink);
 
   // Called by the client on the sink side to remove a sink.
+  // Called on the main render thread.
+  // TODO(henrika): add lock if we extend number of supported sinks.
+  // Called on the main render thread.
   void RemoveCapturerSink(WebRtcAudioCapturerSink* sink);
 
   // SetCapturerSource() is called if the client on the source side desires to
   // provide their own captured audio data. Client is responsible for calling
   // Start() on its own source to have the ball rolling.
+  // Called on the main render thread.
   void SetCapturerSource(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::ChannelLayout channel_layout,
       float sample_rate);
 
   // The |on_device_stopped_cb| callback will be called in OnDeviceStopped().
+  // Called on the main render thread.
   void SetStopCallback(const base::Closure& on_device_stopped_cb);
 
   // Informs this class that a local sink shall be used in addition to the
   // registered WebRtcAudioCapturerSink sink(s). The capturer will enter a
   // buffering mode and store all incoming audio frames in a local FIFO.
   // The renderer will read data from this buffer using the ProvideInput()
-  // method. Called on the main render thread.
+  // method.
+  // Called on the main render thread.
   void PrepareLoopback();
 
   // Cancels loopback mode and stops buffering local copies of captured
@@ -88,24 +107,30 @@ class WebRtcAudioCapturer
   void ResumeBuffering();
 
   // Starts recording audio.
+  // Called on the main render thread or a Libjingle working thread.
   void Start();
 
   // Stops recording audio.
+  // Called on the main render thread or a Libjingle working thread.
   void Stop();
 
   // Sets the microphone volume.
+  // Called on the AudioInputDevice audio thread.
   void SetVolume(double volume);
 
   // Specifies the |session_id| to query which device to use.
+  // Called on the main render thread.
   void SetDevice(int session_id);
 
   // Enables or disables the WebRtc AGC control.
+  // Called from a Libjingle working thread.
   void SetAutomaticGainControl(bool enable);
 
   bool is_recording() const { return running_; }
 
   // Returns true if a local renderer has called PrepareLoopback() and it can
   // be utilized to prevent more than one local renderer.
+  // Called on the main render thread.
   bool IsInLoopbackMode();
 
   // Audio parameters utilized by the audio capturer. Can be utilized by
@@ -140,9 +165,8 @@ class WebRtcAudioCapturer
 
   WebRtcAudioCapturer();
 
-  // Initializes the capturer, called right after the object is created.
-  // Returns false if the initialization fails.
-  bool Initialize();
+  // Used to DCHECK that we are called on the correct thread.
+  base::ThreadChecker thread_checker_;
 
   // Protects |source_|, |sinks_|, |running_|, |on_device_stopped_cb_|,
   // |loopback_fifo_| and |buffering_|.

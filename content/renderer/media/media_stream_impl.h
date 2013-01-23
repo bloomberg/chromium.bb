@@ -175,7 +175,7 @@ class CONTENT_EXPORT MediaStreamImpl
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
       webrtc::MediaStreamInterface* stream);
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
-      int session_id);
+      webrtc::MediaStreamInterface* stream);
 
   // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.

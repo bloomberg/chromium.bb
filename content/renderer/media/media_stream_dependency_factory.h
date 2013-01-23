@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_extra_data.h"
-#include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
@@ -47,6 +46,7 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class VideoCaptureImplManager;
 class WebRtcAudioDeviceImpl;
+struct StreamDeviceInfo;
 
 // Object factory for RTC MediaStreams and RTC PeerConnections.
 class CONTENT_EXPORT MediaStreamDependencyFactory
@@ -130,6 +130,17 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
                         bool is_screen_cast,
                         const webrtc::MediaConstraintsInterface* constraints);
 
+  // Initializes the source using audio parameters for the selected
+  // capture device and specifies which capture device to use as capture
+  // source.
+  virtual bool InitializeAudioSource(const StreamDeviceInfo& device_info);
+
+  // Creates a media::AudioCapturerSource with an implementation that is
+  // specific for a WebAudio source. The created WebAudioCapturerSource
+  // instance will function as audio source instead of the default
+  // WebRtcAudioCapturer.
+  virtual bool CreateWebAudioSource(WebKit::WebMediaStreamSource* source);
+
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
@@ -142,7 +153,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   virtual bool EnsurePeerConnectionFactory();
   virtual bool PeerConnectionFactoryCreated();
-  virtual void SetAudioDeviceSessionId(int session_id);
 
  private:
   // Creates and deletes |pc_factory_|, which in turn is used for
@@ -172,9 +182,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   talk_base::Thread* signaling_thread_;
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
-
-  // Handles audio from MediaStreamAudioDestinationNode.
-  scoped_refptr<WebAudioCapturerSource> webaudio_capturer_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

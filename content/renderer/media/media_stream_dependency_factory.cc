@@ -13,6 +13,7 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
@@ -190,6 +191,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     const WebKit::WebMediaConstraints& video_constraints,
     WebKit::WebMediaStreamDescriptor* description,
     const MediaSourcesCreatedCallback& sources_created) {
+  DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeMediaSources()";
   if (!EnsurePeerConnectionFactory()) {
     sources_created.Run(description, false);
     return;
@@ -199,8 +201,6 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
   // source_observer->StartObservering.
   SourceStateObserver* source_observer =
       new SourceStateObserver(description, sources_created);
-
-  // TODO(perkj): Implement local audio sources.
 
   // Create local video sources.
   RTCMediaConstraints native_video_constraints(video_constraints);
@@ -223,11 +223,37 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
                           &native_video_constraints));
     source_observer->AddSource(source_data->video_source());
   }
+
+  // Do additional source initialization if the audio source is a valid
+  // microphone.
+  WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
+  description->audioSources(audio_components);
+  for (size_t i = 0; i < audio_components.size(); ++i) {
+    const WebKit::WebMediaStreamSource& source = audio_components[i].source();
+    MediaStreamSourceExtraData* source_data =
+        static_cast<MediaStreamSourceExtraData*>(source.extraData());
+    if (!source_data) {
+      // TODO(henrika): Implement support for sources from remote MediaStreams.
+      NOTIMPLEMENTED();
+      continue;
+    }
+
+    const StreamDeviceInfo device_info = source_data->device_info();
+    if (device_info.device.type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+      if (!InitializeAudioSource(device_info)) {
+        DLOG(WARNING) << "Unsupported audio source";
+        sources_created.Run(description, false);
+        return;
+      }
+    }
+  }
+
   source_observer->StartObservering();
 }
 
 void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description) {
+  DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeLocalMediaStream()";
   if (!EnsurePeerConnectionFactory()) {
       DVLOG(1) << "EnsurePeerConnectionFactory() failed!";
       return;
@@ -236,11 +262,6 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
   std::string label = UTF16ToUTF8(description->label());
   scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
-
-  WebRtcAudioCapturer* capturer =
-      GetWebRtcAudioDevice() ? GetWebRtcAudioDevice()->capturer() : 0;
-  if (!capturer)
-      DVLOG(1) << "CreateNativeLocalMediaStream: missing WebRtcAudioCapturer.";
 
   // Add audio tracks.
   WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
@@ -251,30 +272,18 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 
     // See if we're adding a WebAudio MediaStream.
     if (source.requiresAudioConsumer()) {
-      if (!webaudio_capturer_source_.get() && capturer) {
-        DCHECK(GetWebRtcAudioDevice());
+      // TODO(crogers, xians): In reality we should be able to send a unique
+      // audio stream to each PeerConnection separately.  But currently WebRTC
+      // is only able to handle a global audio stream sent to ALL peers.
 
-        // TODO(crogers, xians): In reality we should be able to send a unique
-        // audio stream to each PeerConnection separately.  But currently WebRTC
-        // is only able to handle a global audio stream sent to ALL peers.
-
-        // For lifetime, we're relying on the fact that
-        // |webaudio_capturer_source_| will live longer than any
-        // MediaStreamSource, since we're never calling removeAudioConsumer().
-        webaudio_capturer_source_ = new WebAudioCapturerSource(capturer);
-        source.addAudioConsumer(webaudio_capturer_source_.get());
-
+      // TODO(henrika): refactor and utilize audio constraints.
+      if (CreateWebAudioSource(&source)) {
         scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(label + "a0", NULL));
+            CreateLocalAudioTrack(UTF16ToUTF8(audio_components[i].id()), NULL));
         native_stream->AddTrack(audio_track);
         audio_track->set_enabled(audio_components[i].isEnabled());
       } else {
-        // TODO(crogers): this is very likely to be less important, but
-        // in theory we should be able to "connect" multiple WebAudio
-        // MediaStreams to a single peer, mixing their results.
-        // Instead we just ignore additional ones after the first.
-        LOG(WARNING)
-            << "Multiple MediaStreamAudioDestinationNodes not yet supported!";
+        DLOG(WARNING) << "Failed to create WebAudio source";
       }
     } else {
         MediaStreamSourceExtraData* source_data =
@@ -294,10 +303,6 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
             CreateLocalAudioTrack(UTF16ToUTF8(source.id()), NULL));
         native_stream->AddTrack(audio_track);
         audio_track->set_enabled(audio_components[i].isEnabled());
-        // TODO(xians): This set the source of all audio tracks to the same
-        // microphone. Implement support for setting the source per audio track
-        // instead.
-        SetAudioDeviceSessionId(source_data->device_info().session_id);
     }
   }
 
@@ -337,6 +342,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
+  DVLOG(1) << "MediaStreamDependencyFactory::CreatePeerConnectionFactory()";
   if (!pc_factory_.get()) {
     DCHECK(!audio_device_);
     audio_device_ = new WebRtcAudioDeviceImpl();
@@ -394,6 +400,55 @@ MediaStreamDependencyFactory::CreateVideoSource(
   return source;
 }
 
+bool MediaStreamDependencyFactory::InitializeAudioSource(
+  const StreamDeviceInfo& device_info) {
+  DVLOG(1) << "MediaStreamDependencyFactory::InitializeAudioSource()";
+  const MediaStreamDevice device = device_info.device;
+
+  // Initialize the source using audio parameters for the selected
+  // capture device.
+  WebRtcAudioCapturer* capturer = GetWebRtcAudioDevice()->capturer();
+  // TODO(henrika): refactor \content\public\common\media_stream_request.h
+  // to allow dependency of media::ChannelLayout and avoid static_cast.
+  if (!capturer->Initialize(
+          static_cast<media::ChannelLayout>(device.channel_layout),
+          device.sample_rate))
+    return false;
+
+  // Specify which capture device to use. The acquired session id is used
+  // for identification.
+  // TODO(henrika): the current design does not support a uniqe source
+  // for each audio track.
+  if (device_info.session_id <= 0)
+    return false;
+
+  capturer->SetDevice(device_info.session_id);
+  return true;
+}
+
+bool MediaStreamDependencyFactory::CreateWebAudioSource(
+    WebKit::WebMediaStreamSource* source) {
+  DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
+  DCHECK(GetWebRtcAudioDevice());
+
+  // WebAudio needs the WebRtcAudioCapturer to be able to send its data
+  // over a PeerConnection. The microphone source is not utilized in this
+  // case; instead the WebRtcAudioCapturer is driving.
+  WebRtcAudioCapturer* capturer = GetWebRtcAudioDevice()->capturer();
+  if (!capturer)
+    return false;
+
+  // TODO(henrika): life-time handling is not perfect here; there is room
+  // for improvements.
+  scoped_refptr<WebAudioCapturerSource>
+      webaudio_capturer_source(new WebAudioCapturerSource(capturer));
+  source->setExtraData(new content::MediaStreamSourceExtraData(
+      webaudio_capturer_source));
+  source->addAudioConsumer(webaudio_capturer_source);
+
+  return true;
+}
+
 scoped_refptr<webrtc::VideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
@@ -424,10 +479,6 @@ webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
 WebRtcAudioDeviceImpl*
 MediaStreamDependencyFactory::GetWebRtcAudioDevice() {
   return audio_device_;
-}
-
-void MediaStreamDependencyFactory::SetAudioDeviceSessionId(int session_id) {
-  audio_device_->SetSessionId(session_id);
 }
 
 void MediaStreamDependencyFactory::InitializeWorkerThread(

@@ -68,22 +68,6 @@ void UpdateOptionsIfTabMediaRequest(
   }
 }
 
-// Get session ID for the selected microphone to ensure that we start
-// capturing audio using the correct input device.
-static int GetSessionId(const WebKit::WebMediaStreamSource& source) {
-  MediaStreamSourceExtraData* source_data =
-      static_cast<MediaStreamSourceExtraData*>(source.extraData());
-  if (!source_data) {
-    // TODO(henrika): Implement support for sources from remote MediaStreams.
-    NOTIMPLEMENTED();
-    return -1;
-  }
-  DVLOG(1) << "local audio track source name: "
-           << source_data->device_info().device.name;
-
-  return source_data->device_info().session_id;
-}
-
 static int g_next_request_id  = 0;
 
 // Creates a WebKit representation of a stream sources based on
@@ -305,38 +289,8 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
     // WebRtcAudioDeviceImpl can only support one renderer.
     return NULL;
   } else if (extra_data->local_stream()) {
-    DVLOG(1) << "creating local audio renderer for stream:"
-             << extra_data->local_stream()->label();
-
-    WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
-    descriptor.audioSources(audio_components);
-    if (audio_components.size() != 1) {
-      // TODO(henrika): add support for more than one audio track.
-      LOG(WARNING) << "Multiple MediaStream audio tracks not supported";
-      return NULL;
-    }
-
-    if (!audio_components[0].isEnabled()) {
-      DVLOG(1) << "audio track is disabled";
-      return NULL;
-    }
-
-    int session_id = 0;
-    const WebKit::WebMediaStreamSource& source = audio_components[0].source();
-    if (!source.requiresAudioConsumer()) {
-      session_id = GetSessionId(source);
-      if (session_id == -1) {
-        return NULL;
-      }
-    } else {
-      DVLOG(1) << "WebAudio MediaStream is detected";
-      session_id = -1;
-    }
-
-    // Create the local audio renderer using the specified session ID.
-    scoped_refptr<WebRtcLocalAudioRenderer> local_renderer =
-        CreateLocalAudioRenderer(session_id);
-    return local_renderer;
+    // Create the local audio renderer if the stream contains audio tracks.
+    return CreateLocalAudioRenderer(extra_data->local_stream());
   }
 
   NOTREACHED();
@@ -351,8 +305,7 @@ void MediaStreamImpl::OnStreamGenerated(
     const StreamDeviceInfoArray& audio_array,
     const StreamDeviceInfoArray& video_array) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << "MediaStreamImpl::OnStreamGenerated("
-           << request_id << "," << label << ")";
+  DVLOG(1) << "MediaStreamImpl::OnStreamGenerated stream:" << label;
 
   UserMediaRequestInfo* request_info = FindUserMediaRequestInfo(request_id);
   if (!request_info) {
@@ -419,6 +372,8 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
 void MediaStreamImpl::OnCreateNativeSourcesComplete(
     WebKit::WebMediaStreamDescriptor* description,
     bool request_succeeded) {
+  DVLOG(1) << "MediaStreamImpl::OnCreateNativeSourcesComplete stream:"
+           << UTF16ToUTF8(description->label());
   UserMediaRequestInfo* request_info = FindUserMediaRequestInfo(description);
   if (!request_info) {
     // This can happen if the request is canceled or the frame reloads while
@@ -605,19 +560,19 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
 }
 
 scoped_refptr<WebRtcLocalAudioRenderer>
-MediaStreamImpl::CreateLocalAudioRenderer(int session_id) {
-  // Ensure that the existing capturer reads data from the selected microphone.
+MediaStreamImpl::CreateLocalAudioRenderer(
+    webrtc::MediaStreamInterface* stream) {
+  if (!stream->audio_tracks() || stream->audio_tracks()->count() == 0)
+    return NULL;
+
+  DVLOG(1) << "MediaStreamImpl::CreateLocalAudioRenderer label:"
+           << stream->label();
+
   scoped_refptr<WebRtcAudioCapturer> source =
       dependency_factory_->GetWebRtcAudioDevice()->capturer();
   if (!source) {
-    // The WebRtcAudioCapturer instance can be NULL e.g. if an unsupported
-    // sample rate is used.
-    // TODO(henrika): extend support of capture sample rates.
     return NULL;
   }
-
-  if (session_id != -1)
-    source->SetDevice(session_id);
 
   // Create a new WebRtcLocalAudioRenderer instance and connect it to the
   // existing WebRtcAudioCapturer so that the renderer can use it as source.
@@ -627,6 +582,11 @@ MediaStreamImpl::CreateLocalAudioRenderer(int session_id) {
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(
     const StreamDeviceInfo& device_info)
     : device_info_(device_info) {
+}
+
+MediaStreamSourceExtraData::MediaStreamSourceExtraData(
+    media::AudioCapturerSource* source)
+    : audio_source_(source)  {
 }
 
 MediaStreamSourceExtraData::~MediaStreamSourceExtraData() {}

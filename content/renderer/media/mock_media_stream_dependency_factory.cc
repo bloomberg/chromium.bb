@@ -348,6 +348,16 @@ MockMediaStreamDependencyFactory::CreateVideoSource(
   return last_video_source_;
 }
 
+bool MockMediaStreamDependencyFactory::InitializeAudioSource(
+  const StreamDeviceInfo& device_info) {
+  return true;
+}
+
+bool MockMediaStreamDependencyFactory::CreateWebAudioSource(
+    WebKit::WebMediaStreamSource* source) {
+  return true;
+}
+
 scoped_refptr<webrtc::LocalMediaStreamInterface>
 MockMediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
@@ -389,9 +399,6 @@ MockMediaStreamDependencyFactory::CreateIceCandidate(
     int sdp_mline_index,
     const std::string& sdp) {
   return new MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
-}
-
-void MockMediaStreamDependencyFactory::SetAudioDeviceSessionId(int session_id) {
 }
 
 }  // namespace content

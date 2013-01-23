@@ -31,7 +31,9 @@ class MediaStreamDeviceUIControllerTest
   void GetAvailableDevices(MediaStreamDevices* devices) OVERRIDE {
     devices->push_back(MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE,
                                          "mic",
-                                         "mic_id"));
+                                         "mic_id",
+                                         0,
+                                         0));
     devices->push_back(MediaStreamDevice(MEDIA_DEVICE_VIDEO_CAPTURE,
                                          "camera",
                                          "camera_id"));

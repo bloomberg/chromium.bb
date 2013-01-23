@@ -30,6 +30,8 @@ WebAudioCapturerSource::~WebAudioCapturerSource() {
 
 void WebAudioCapturerSource::setFormat(
     size_t number_of_channels, float sample_rate) {
+  DVLOG(1) << "WebAudioCapturerSource::setFormat(sample_rate="
+           << sample_rate << ")";
   if (number_of_channels <= 2) {
     set_format_channels_ = number_of_channels;
     ChannelLayout channel_layout =

@@ -49,6 +49,12 @@ struct CONTENT_EXPORT StreamDeviceInfo {
                    const std::string& name_param,
                    const std::string& device_param,
                    bool opened);
+  StreamDeviceInfo(MediaStreamType service_param,
+                   const std::string& name_param,
+                   const std::string& device_param,
+                   int sample_rate,
+                   int channel_layout,
+                   bool opened);
   static bool IsEqual(const StreamDeviceInfo& first,
                       const StreamDeviceInfo& second);
 

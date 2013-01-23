@@ -203,7 +203,10 @@ TEST_F(AudioInputDeviceManagerTest, OpenNotExistingDevice) {
   MediaStreamType stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
-  StreamDeviceInfo dummy_device(stream_type, device_name, device_id, false);
+  int sample_rate(0);
+  int channel_config(0);
+  StreamDeviceInfo dummy_device(
+      stream_type, device_name, device_id, sample_rate, channel_config, false);
 
   int session_id = manager_->Open(dummy_device);
   EXPECT_CALL(*audio_input_listener_,

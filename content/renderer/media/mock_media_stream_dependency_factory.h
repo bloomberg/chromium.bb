@@ -105,6 +105,10 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           int video_session_id,
           bool is_screencast,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual bool InitializeAudioSource(
+      const StreamDeviceInfo& device_info) OVERRIDE;
+  virtual bool CreateWebAudioSource(
+      WebKit::WebMediaStreamSource* source) OVERRIDE;
   virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoTrackInterface>
@@ -123,7 +127,6 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
 
   virtual bool EnsurePeerConnectionFactory() OVERRIDE;
   virtual bool PeerConnectionFactoryCreated() OVERRIDE;
-  virtual void SetAudioDeviceSessionId(int session_id) OVERRIDE;
 
   MockVideoSource* last_video_source() { return last_video_source_; }
 

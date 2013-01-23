@@ -60,6 +60,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
       StreamDeviceInfo info;
       info.device.type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
       info.device.name = "audio";
+      info.device.sample_rate = 0;
+      info.device.channel_layout = 0;
       info.session_id = 99;
       audio_sources[0].initialize("audio",
                                   WebKit::WebMediaStreamSource::TypeAudio,

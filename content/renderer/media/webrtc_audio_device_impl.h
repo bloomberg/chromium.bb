@@ -369,9 +369,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t SetLoudspeakerStatus(bool enable) OVERRIDE;
   virtual int32_t GetLoudspeakerStatus(bool* enabled) const OVERRIDE;
 
-  // Sets the session id.
-  void SetSessionId(int session_id);
-
   // Sets the |renderer_|, returns false if |renderer_| has already existed.
   bool SetRenderer(WebRtcAudioRenderer* renderer);
 
@@ -438,10 +435,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   webrtc::AudioDeviceModule::ErrorCode last_error_;
 
   base::TimeTicks last_process_time_;
-
-  // Id of the media session to be started, it tells which device to be used
-  // on the input/capture side.
-  int session_id_;
 
   // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|, |renderer_|.
   mutable base::Lock lock_;
