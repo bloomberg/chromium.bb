@@ -756,6 +756,8 @@
         'test/chromedriver/status.cc',
         'test/chromedriver/status.h',
         'test/chromedriver/synchronized_map.h',
+        'test/chromedriver/version.cc',
+        'test/chromedriver/version.h',
       ],
       'actions': [
         {

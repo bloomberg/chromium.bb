@@ -129,7 +129,12 @@ Status ChromeImpl::CallFunction(const std::string& frame,
       kCallFunctionScript,
       function.c_str(),
       json.c_str());
-  return EvaluateScript(frame, expression, result);
+  scoped_ptr<base::Value> temp_result;
+  Status status = EvaluateScript(frame, expression, &temp_result);
+  if (status.IsError())
+    return status;
+
+  return internal::ParseCallFunctionResult(*temp_result, result);
 }
 
 Status ChromeImpl::GetFrameByFunction(const std::string& frame,
@@ -243,20 +248,32 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
   if (type == "undefined") {
     result->reset(base::Value::CreateNullValue());
   } else {
-    int status_code;
-    if (!temp_result->GetInteger("value.status", &status_code)) {
-      return Status(kUnknownError,
-                    "Runtime.evaluate missing int 'value.status'");
-    }
-    if (status_code != kOk)
-      return Status(static_cast<StatusCode>(status_code));
-    base::Value* unscoped_value;
-    if (!temp_result->Get("value.value", &unscoped_value)) {
-      return Status(kUnknownError,
-                    "Runtime.evaluate missing 'value.value'");
-    }
-    result->reset(unscoped_value->DeepCopy());
+    base::Value* value;
+    if (!temp_result->Get("value", &value))
+      return Status(kUnknownError, "Runtime.evaluate missing 'value'");
+    result->reset(value->DeepCopy());
   }
+  return Status(kOk);
+}
+
+Status ParseCallFunctionResult(const base::Value& temp_result,
+                               scoped_ptr<base::Value>* result) {
+  const base::DictionaryValue* dict;
+  if (!temp_result.GetAsDictionary(&dict))
+    return Status(kUnknownError, "call function result must be a dictionary");
+  int status_code;
+  if (!dict->GetInteger("status", &status_code)) {
+    return Status(kUnknownError,
+                  "call function result missing int 'status'");
+  }
+  if (status_code != kOk)
+    return Status(static_cast<StatusCode>(status_code));
+  const base::Value* unscoped_value;
+  if (!dict->Get("value", &unscoped_value)) {
+    return Status(kUnknownError,
+                  "call function result missing 'value'");
+  }
+  result->reset(unscoped_value->DeepCopy());
   return Status(kOk);
 }
 

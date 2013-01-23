@@ -85,6 +85,8 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
                                  const std::string& expression,
                                  scoped_ptr<base::Value>* result);
+Status ParseCallFunctionResult(const base::Value& temp_result,
+                               scoped_ptr<base::Value>* result);
 Status GetNodeIdFromFunction(DevToolsClient* client,
                              int context_id,
                              const std::string& function,

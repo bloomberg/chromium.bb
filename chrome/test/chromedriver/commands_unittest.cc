@@ -56,6 +56,20 @@ class StubChrome : public Chrome {
   }
 };
 
+class OkChrome : public StubChrome {
+ public:
+  OkChrome() {}
+  virtual ~OkChrome() {}
+
+  // Overridden from StubChrome:
+  virtual Status EvaluateScript(const std::string& frame,
+                                const std::string& function,
+                                scoped_ptr<base::Value>* result) OVERRIDE {
+    result->reset(base::Value::CreateStringValue("99.0.99999.0"));
+    return Status(kOk);
+  }
+};
+
 class OkLauncher : public ChromeLauncher {
  public:
   OkLauncher() {}
@@ -64,7 +78,7 @@ class OkLauncher : public ChromeLauncher {
   // Overridden from ChromeLauncher:
   virtual Status Launch(const FilePath& chrome_exe,
                         scoped_ptr<Chrome>* chrome) OVERRIDE {
-    chrome->reset(new StubChrome());
+    chrome->reset(new OkChrome());
     return Status(kOk);
   }
 };

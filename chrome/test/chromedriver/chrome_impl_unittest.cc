@@ -185,8 +185,7 @@ TEST(EvaluateScriptAndGetValue, Ok) {
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
   dict.SetString("result.type", "integer");
-  dict.SetInteger("result.value.status", 0);
-  dict.SetInteger("result.value.value", 1);
+  dict.SetInteger("result.value", 1);
   client.set_result(dict);
   Status status = internal::EvaluateScriptAndGetValue(
       &client, 0, "", &result);
@@ -194,21 +193,6 @@ TEST(EvaluateScriptAndGetValue, Ok) {
   int value;
   ASSERT_TRUE(result && result->GetAsInteger(&value));
   ASSERT_EQ(1, value);
-}
-
-TEST(EvaluateScriptAndGetValue, ScriptError) {
-  scoped_ptr<base::Value> result;
-  FakeDevToolsClient client;
-  base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
-  dict.SetString("result.type", "integer");
-  dict.SetInteger("result.value.status", 1);
-  dict.SetInteger("result.value.value", 1);
-  client.set_result(dict);
-  Status status = internal::EvaluateScriptAndGetValue(
-      &client, 0, "", &result);
-  ASSERT_EQ(1, status.code());
-  ASSERT_FALSE(result);
 }
 
 TEST(EvaluateScriptAndGetObject, NoObject) {
@@ -233,4 +217,32 @@ TEST(EvaluateScriptAndGetObject, Ok) {
   ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
       &client, 0, "", &object_id).IsOk());
   ASSERT_STREQ("id", object_id.c_str());
+}
+
+TEST(ParseCallFunctionResult, NotDict) {
+  scoped_ptr<base::Value> result;
+  base::FundamentalValue value(1);
+  ASSERT_NE(kOk, internal::ParseCallFunctionResult(value, &result).code());
+}
+
+TEST(ParseCallFunctionResult, Ok) {
+  scoped_ptr<base::Value> result;
+  base::DictionaryValue dict;
+  dict.SetInteger("status", 0);
+  dict.SetInteger("value", 1);
+  Status status = internal::ParseCallFunctionResult(dict, &result);
+  ASSERT_EQ(kOk, status.code());
+  int value;
+  ASSERT_TRUE(result && result->GetAsInteger(&value));
+  ASSERT_EQ(1, value);
+}
+
+TEST(ParseCallFunctionResult, ScriptError) {
+  scoped_ptr<base::Value> result;
+  base::DictionaryValue dict;
+  dict.SetInteger("status", 1);
+  dict.SetInteger("value", 1);
+  Status status = internal::ParseCallFunctionResult(dict, &result);
+  ASSERT_EQ(1, status.code());
+  ASSERT_FALSE(result);
 }
