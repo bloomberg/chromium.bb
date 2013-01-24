@@ -329,17 +329,29 @@ void URLFetcherCore::Stop() {
 
 void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
                                    const std::string& upload_content) {
+  scoped_ptr<UploadElementReader> reader(
+      UploadOwnedBytesElementReader::CreateWithString(upload_content));
+  SetUploadDataStream(
+      upload_content_type,
+      make_scoped_ptr(UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+}
+
+void URLFetcherCore::SetUploadDataStream(
+    const std::string& upload_content_type,
+    scoped_ptr<UploadDataStream> upload_content) {
   DCHECK(!is_chunked_upload_);
+  DCHECK(!upload_content_);
+  DCHECK(upload_content_type_.empty());
   upload_content_type_ = upload_content_type;
-  upload_content_ = upload_content;
+  upload_content_ = upload_content.Pass();
 }
 
 void URLFetcherCore::SetChunkedUpload(const std::string& content_type) {
   DCHECK(is_chunked_upload_ ||
          (upload_content_type_.empty() &&
-          upload_content_.empty()));
+          !upload_content_));
   upload_content_type_ = content_type;
-  upload_content_.clear();
+  upload_content_.reset();
   is_chunked_upload_ = true;
 }
 
@@ -715,13 +727,8 @@ void URLFetcherCore::StartURLRequest() {
           request_type_ == URLFetcher::POST ? "POST" : "PUT");
       extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
                                        upload_content_type_);
-      if (!upload_content_.empty()) {
-        scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
-            upload_content_.data(), upload_content_.size()));
-        request_->set_upload(make_scoped_ptr(
-            UploadDataStream::CreateWithReader(reader.Pass(), 0)));
-      }
-
+      if (upload_content_)
+        request_->set_upload(upload_content_.Pass());
       current_upload_bytes_ = -1;
       // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
       //  layer and avoid using timer here.
@@ -986,8 +993,13 @@ void URLFetcherCore::InformDelegateUploadProgress() {
     if (current_upload_bytes_ != current) {
       current_upload_bytes_ = current;
       int64 total = -1;
-      if (!is_chunked_upload_)
-        total = static_cast<int64>(upload_content_.size());
+      if (!is_chunked_upload_) {
+        total = static_cast<int64>(request_->GetUploadProgress().size());
+        // Total may be zero if the UploadDataStream::Init has not been called
+        // yet.  Don't send the upload progress until the size is initialized.
+        if (!total)
+          return;
+      }
       delegate_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(

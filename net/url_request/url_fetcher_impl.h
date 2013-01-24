@@ -35,6 +35,9 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   virtual ~URLFetcherImpl();
 
   // URLFetcher implementation:
+  virtual void SetUploadDataStream(
+      const std::string& upload_content_type,
+      scoped_ptr<UploadDataStream> upload_content) OVERRIDE;
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) OVERRIDE;
   virtual void SetChunkedUpload(

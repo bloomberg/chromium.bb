@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "net/base/upload_data_stream.h"
 #include "net/url_request/url_fetcher_core.h"
 #include "net/url_request/url_fetcher_factory.h"
 
@@ -22,6 +23,12 @@ URLFetcherImpl::URLFetcherImpl(const GURL& url,
 
 URLFetcherImpl::~URLFetcherImpl() {
   core_->Stop();
+}
+
+void URLFetcherImpl::SetUploadDataStream(
+    const std::string& upload_content_type,
+    scoped_ptr<UploadDataStream> upload_content) {
+  core_->SetUploadDataStream(upload_content_type, upload_content.Pass());
 }
 
 void URLFetcherImpl::SetUploadData(const std::string& upload_content_type,

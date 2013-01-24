@@ -17,6 +17,8 @@
 #include "crypto/nss_util.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/upload_data_stream.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -234,6 +236,22 @@ class URLFetcherPostTest : public URLFetcherTest {
 
   // URLFetcherDelegate:
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+};
+
+// Version of URLFetcherTest that does a POST of a file using
+// SetUploadDataStream
+class URLFetcherPostFileTest : public URLFetcherTest {
+ public:
+  URLFetcherPostFileTest();
+
+  // URLFetcherTest:
+  virtual void CreateFetcher(const GURL& url) OVERRIDE;
+
+  // URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+
+ private:
+  FilePath path_;
 };
 
 // Version of URLFetcherTest that does a POST instead with empty upload body
@@ -500,6 +518,38 @@ void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source) {
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_EQ(std::string("bobsyeruncle"), data);
+  URLFetcherTest::OnURLFetchComplete(source);
+}
+
+URLFetcherPostFileTest::URLFetcherPostFileTest() {
+  PathService::Get(base::DIR_SOURCE_ROOT, &path_);
+  path_ = path_.Append(FILE_PATH_LITERAL("net"));
+  path_ = path_.Append(FILE_PATH_LITERAL("data"));
+  path_ = path_.Append(FILE_PATH_LITERAL("url_request_unittest"));
+  path_ = path_.Append(FILE_PATH_LITERAL("BullRunSpeech.txt"));
+}
+
+void URLFetcherPostFileTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
+  scoped_ptr<UploadElementReader> reader(new UploadFileElementReader(
+        base::MessageLoopProxy::current(), path_, 0, kuint64max, base::Time()));
+  fetcher_->SetUploadDataStream(
+      "application/x-www-form-urlencoded",
+       make_scoped_ptr(UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+  fetcher_->Start();
+}
+
+void URLFetcherPostFileTest::OnURLFetchComplete(const URLFetcher* source) {
+  int64 size = 0;
+  ASSERT_EQ(true, file_util::GetFileSize(path_, &size));
+  scoped_array<char> expected(new char[size]);
+  ASSERT_EQ(size, file_util::ReadFile(path_, expected.get(), size));
+
+  std::string data;
+  EXPECT_TRUE(source->GetResponseAsString(&data));
+  EXPECT_EQ(std::string(&expected[0], size), data);
   URLFetcherTest::OnURLFetchComplete(source);
 }
 
@@ -993,6 +1043,16 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndSucceed) {
 }
 
 TEST_F(URLFetcherPostTest, Basic) {
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(test_server.GetURL("echo"));
+  MessageLoop::current()->Run();
+}
+
+TEST_F(URLFetcherPostFileTest, Basic) {
   TestServer test_server(TestServer::TYPE_HTTP,
                          TestServer::kLocalhost,
                          FilePath(kDocRoot));
