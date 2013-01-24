@@ -195,7 +195,6 @@ class TestSharder(BaseTestSharder):
         test_type='Unit test',
         test_package=test_runners[0].test_package.test_suite_basename,
         build_type=self.build_type,
-        all_tests=self.all_tests,
         flakiness_server=self.flakiness_server)
     test_results.PrintAnnotation()
 
@@ -264,7 +263,7 @@ def _RunATestSuite(options):
   for buildbot_emulator in buildbot_emulators:
     buildbot_emulator.Shutdown()
 
-  return len(test_results.failed)
+  return len(test_results.GetAllBroken())
 
 
 def Dispatch(options):
