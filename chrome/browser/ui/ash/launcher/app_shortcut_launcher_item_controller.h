@@ -41,8 +41,10 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   virtual ChromeLauncherAppMenuItems* GetApplicationList() OVERRIDE;
   std::vector<content::WebContents*> GetRunningApplications();
 
-  // Stores the optional refocus url pattern for this item.
+  // Get the refocus url pattern, which can be used to identify this application
+  // from a URL link.
   const GURL& refocus_url() const { return refocus_url_; }
+  // Set the refocus url pattern. Used by unit tests.
   void set_refocus_url(const GURL& refocus_url) { refocus_url_ = refocus_url; }
 
  private:
