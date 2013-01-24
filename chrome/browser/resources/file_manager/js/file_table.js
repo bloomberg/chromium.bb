@@ -200,10 +200,6 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
 FileTable.prototype.renderSize_ = function(entry, columnId, table) {
   var div = this.ownerDocument.createElement('div');
   div.className = 'size';
-  // Unlike other rtl languages, Herbew use MB and writes the unit to the
-  // right of the number. We use css trick to workaround this.
-  if (navigator.language == 'he')
-    div.className = 'align-end-weakrtl';
   this.updateSize_(
       div, entry, this.metadataCache_.getCached(entry, 'filesystem'));
 
@@ -227,7 +223,7 @@ FileTable.prototype.updateSize_ = function(div, entry, filesystemProps) {
              FileType.isHosted(entry)) {
     div.textContent = '--';
   } else {
-    div.textContent = util.bytesToSi(filesystemProps.size);
+    div.textContent = util.bytesToString(filesystemProps.size);
   }
 };
 

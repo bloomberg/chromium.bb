@@ -167,7 +167,7 @@ DialogType.isModal = function(type) {
       sizeStatsResult, spaceInnerBar, spaceInfoLabel, spaceOuterBar) {
     spaceInnerBar.removeAttribute('pending');
     if (sizeStatsResult) {
-      var sizeStr = util.bytesToSi(sizeStatsResult.remainingSizeKB * 1024);
+      var sizeStr = util.bytesToString(sizeStatsResult.remainingSizeKB * 1024);
       spaceInfoLabel.textContent = strf('SPACE_AVAILABLE', sizeStr);
 
       var usedSpace =
@@ -327,12 +327,6 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.initFileSystem_ = function() {
     util.installFileErrorToString();
-    // Replace the default unit in util to translated unit.
-    util.UNITS = [str('SIZE_KB'),
-                  str('SIZE_MB'),
-                  str('SIZE_GB'),
-                  str('SIZE_TB'),
-                  str('SIZE_PB')];
 
     metrics.startInterval('Load.FileSystem');
 

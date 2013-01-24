@@ -445,33 +445,33 @@ util.removeFileOrDirectory = function(entry, onSuccess, onError) {
 };
 
 /**
- * Units table for bytesToSi.
- * Note: changing this requires some code change in bytesToSi.
- * Note: these values are localized in file_manager.js.
- */
-util.UNITS = ['KB', 'MB', 'GB', 'TB', 'PB'];
-
-/**
- * Scale table for bytesToSi.
- */
-util.SCALE = [Math.pow(2, 10),
-              Math.pow(2, 20),
-              Math.pow(2, 30),
-              Math.pow(2, 40),
-              Math.pow(2, 50)];
-
-/**
- * Convert a number of bytes into an appropriate International System of
- * Units (SI) representation, using the correct number separators.
+ * Convert a number of bytes into a human friendly format, using the correct
+ * number separators.
  *
  * @param {number} bytes The number of bytes.
  * @return {string} Localized string.
  */
-util.bytesToSi = function(bytes) {
+util.bytesToString = function(bytes) {
+  // Translation identifiers for size units.
+  var UNITS = ['SIZE_BYTES',
+               'SIZE_KB',
+               'SIZE_MB',
+               'SIZE_GB',
+               'SIZE_TB',
+               'SIZE_PB'];
+
+  // Minimum values for the units above.
+  var STEPS = [0,
+               Math.pow(2, 10),
+               Math.pow(2, 20),
+               Math.pow(2, 30),
+               Math.pow(2, 40),
+               Math.pow(2, 50)];
+
   function str(n, u) {
     // TODO(rginda): Switch to v8Locale's number formatter when it's
     // available.
-    return n.toLocaleString() + ' ' + u;
+    return strf(u, n.toLocaleString());
   }
 
   function fmt(s, u) {
@@ -479,27 +479,27 @@ util.bytesToSi = function(bytes) {
     return str(rounded, u);
   }
 
-  // Less than 1KB is displayed like '0.8 KB'.
-  if (bytes < util.SCALE[0]) {
-    return fmt(util.SCALE[0], util.UNITS[0]);
+  // Less than 1KB is displayed like '80 bytes'.
+  if (bytes < STEPS[1]) {
+    return str(bytes, UNITS[0]);
   }
 
   // Up to 1MB is displayed as rounded up number of KBs.
-  if (bytes < util.SCALE[1]) {
-    var rounded = Math.ceil(bytes / util.SCALE[0]);
-    return str(rounded, util.UNITS[0]);
+  if (bytes < STEPS[2]) {
+    var rounded = Math.ceil(bytes / STEPS[1]);
+    return str(rounded, UNITS[1]);
   }
 
   // This loop index is used outside the loop if it turns out |bytes|
   // requires the largest unit.
   var i;
 
-  for (i = 1; i < util.UNITS.length - 1; i++) {
-    if (bytes < util.SCALE[i + 1])
-      return fmt(util.SCALE[i], util.UNITS[i]);
+  for (i = 2 /* MB */; i < UNITS.length - 1; i++) {
+    if (bytes < STEPS[i + 1])
+      return fmt(STEPS[i], UNITS[i]);
   }
 
-  return fmt(util.SCALE[i], util.UNITS[i]);
+  return fmt(STEPS[i], UNITS[i]);
 };
 
 /**

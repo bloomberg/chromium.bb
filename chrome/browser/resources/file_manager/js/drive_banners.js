@@ -279,7 +279,7 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
     var text = this.document_.createElement('div');
     text.className = 'gdrive-text';
     text.textContent = strf('DRIVE_SPACE_AVAILABLE_LONG',
-        util.bytesToSi(sizeStats.remainingSizeKB * 1024));
+        util.bytesToString(sizeStats.remainingSizeKB * 1024));
     box.appendChild(text);
 
     var link = this.document_.createElement('a');

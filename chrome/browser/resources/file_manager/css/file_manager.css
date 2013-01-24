@@ -872,14 +872,6 @@ input.rename:focus {
   outline-color: rgb(77, 144, 254);
 }
 
-/* Elements that need to be LTR even in an RTL context, but should align
- * left. Display size in Hebrew is such a case.
- */
-html[dir='rtl'] .align-end-weakrtl {
-  direction: ltr;
-  text-align: left;
-}
-
 input.rename {
   font: inherit;
   line-height: 1;

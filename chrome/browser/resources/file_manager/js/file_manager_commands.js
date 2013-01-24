@@ -336,7 +336,7 @@ Commands.togglePinnedCommand = {
       fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
           strf('DRIVE_OUT_OF_SPACE_MESSAGE',
                unescape(entry.name),
-               util.bytesToSi(filesystem.size)));
+               util.bytesToString(filesystem.size)));
     }
 
     function callback(props) {

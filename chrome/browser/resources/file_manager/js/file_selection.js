@@ -370,7 +370,7 @@ FileSelectionHandler.prototype.updatePreviewPanelText_ = function() {
   if (selection.bytesKnown) {
     this.hideCalculating_();
     if (selection.showBytes) {
-      var bytes = util.bytesToSi(selection.bytes);
+      var bytes = util.bytesToString(selection.bytes);
       text += ', ' + bytes;
     }
   } else {

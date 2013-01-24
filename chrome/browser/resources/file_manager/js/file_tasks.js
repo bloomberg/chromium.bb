@@ -267,7 +267,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
                 urls.length == 1 ?
                     'CONFIRM_MOBILE_DATA_USE' :
                     'CONFIRM_MOBILE_DATA_USE_PLURAL',
-                util.bytesToSi(sizeToDownload)),
+                util.bytesToString(sizeToDownload)),
             callback);
       });
     });

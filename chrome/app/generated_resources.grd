@@ -12506,20 +12506,24 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SIZE_COLUMN_LABEL" desc="Size column label.">
         Size
       </message>
-      <message name="IDS_FILE_BROWSER_SIZE_KB" desc="Kilo bytes.">
-        KB
+
+      <message name="IDS_FILE_BROWSER_SIZE_BYTES" desc="Size in bytes.">
+        $1 bytes
       </message>
-      <message name="IDS_FILE_BROWSER_SIZE_MB" desc="Mega bytes.">
-        MB
+      <message name="IDS_FILE_BROWSER_SIZE_KB" desc="Size in kilo bytes.">
+        $1 KB
       </message>
-      <message name="IDS_FILE_BROWSER_SIZE_GB" desc="Giga bytes.">
-        GB
+      <message name="IDS_FILE_BROWSER_SIZE_MB" desc="Size in mega bytes.">
+        $1 MB
       </message>
-      <message name="IDS_FILE_BROWSER_SIZE_TB" desc="Tera bytes.">
-        TB
+      <message name="IDS_FILE_BROWSER_SIZE_GB" desc="Size in giga bytes.">
+        $1 GB
       </message>
-      <message name="IDS_FILE_BROWSER_SIZE_PB" desc="Peta bytes.">
-        PB
+      <message name="IDS_FILE_BROWSER_SIZE_TB" desc="Size in tera bytes.">
+        $1 TB
+      </message>
+      <message name="IDS_FILE_BROWSER_SIZE_PB" desc="Size in peta bytes.">
+        $1 PB
       </message>
 
       <message name="IDS_FILE_BROWSER_SHORTCUT_CTRL" desc="[Ctrl] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
