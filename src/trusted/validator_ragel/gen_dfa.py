@@ -342,35 +342,35 @@ class InstructionPrinter(object):
   def __init__(self, mode, bitness):
     assert mode in [DECODER, VALIDATOR]
     assert bitness in [32, 64]
-    self.mode = mode
-    self.bitness = bitness
-    self.out = StringIO.StringIO()
+    self._mode = mode
+    self._bitness = bitness
+    self._out = StringIO.StringIO()
 
   def GetContent(self):
-    return self.out.getvalue()
+    return self._out.getvalue()
 
-  def PrintOpcode(self, instruction):
+  def _PrintOpcode(self, instruction):
     main_opcode_part = instruction.GetMainOpcodePart()
     if instruction.HasRegisterInOpcode():
       assert not instruction.HasModRM()
       assert not instruction.HasOpcodeInsteadOfImmediate()
 
-      self.out.write(' '.join(main_opcode_part[:-1]))
+      self._out.write(' '.join(main_opcode_part[:-1]))
 
       # Register is encoded in three least significant bits of the last byte
       # of the opcode (in 64-bit case REX.B bit also will be involved, but it
       # will be handled elsewhere).
       last_byte = int(main_opcode_part[-1], 16)
       assert last_byte & 0b00000111 == 0
-      self.out.write(' (%s)' % '|'.join(
+      self._out.write(' (%s)' % '|'.join(
           hex(b) for b in range(last_byte, last_byte + 2**3)))
 
       # TODO(shcherbina): Print operand*_from_opcode(_x87) actions (or maybe
       # do it somewhere else).
     else:
-      self.out.write(' '.join(main_opcode_part))
+      self._out.write(' '.join(main_opcode_part))
 
-  def PrintSignature(self, instruction):
+  def _PrintSignature(self, instruction):
     """Print actions specifying instruction name and info about its operands.
 
     Example signature:
@@ -387,13 +387,13 @@ class InstructionPrinter(object):
     Returns:
       None.
     """
-    if self.mode == DECODER:
-      self.out.write('@instruction_%s\n' % instruction.GetNameAsIdentifier())
-      self.out.write('@operands_count_is_%d\n' % len(instruction.operands))
+    if self._mode == DECODER:
+      self._out.write('@instruction_%s\n' % instruction.GetNameAsIdentifier())
+      self._out.write('@operands_count_is_%d\n' % len(instruction.operands))
 
     # TODO(shcherbina): 'memory' format?
     for i, operand in enumerate(instruction.operands):
-      self.out.write('@operand%d_%s\n' % (i, operand.GetFormat()))
+      self._out.write('@operand%d_%s\n' % (i, operand.GetFormat()))
 
     # TODO(shcherbina): print operand sources and extract implicit operands.
 
@@ -406,7 +406,7 @@ class InstructionPrinter(object):
     # TODO(shcherbina): print spurious REX stuff (probably not in this
     # function).
 
-  def PrintImplicitOperandSources(self, instruction):
+  def _PrintImplicitOperandSources(self, instruction):
     """Print actions specifying sources of implicit operands.
 
     Args:
@@ -417,7 +417,7 @@ class InstructionPrinter(object):
     """
     operand = instruction.FindOperand('a')
     if operand is not None:
-      self.out.write('@operand%d_rax\n' % operand.index)
+      self._out.write('@operand%d_rax\n' % operand.index)
     # TODO(shcherbina): handle other implicit operands.
 
   def PrintInstructionWithoutModRM(self, instruction):
@@ -427,19 +427,19 @@ class InstructionPrinter(object):
     assert not instruction.HasModRM()
     assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
 
-    self.PrintOpcode(instruction)
-    self.out.write('\n')
+    self._PrintOpcode(instruction)
+    self._out.write('\n')
 
-    self.PrintSignature(instruction)
-    self.PrintImplicitOperandSources(instruction)
+    self._PrintSignature(instruction)
+    self._PrintImplicitOperandSources(instruction)
 
     # TODO(shcherbina): print immediate or relative args.
 
     # Displacement encoded in the instruction.
     operand = instruction.FindOperand('O')
     if operand is not None:
-      self.out.write('@operand%d_absolute_disp\n' % operand.index)
-      self.out.write('disp%d\n' % self.bitness)
+      self._out.write('@operand%d_absolute_disp\n' % operand.index)
+      self._out.write('disp%d\n' % self._bitness)
 
     # TODO(shcherbina): add mechanism to check that all operand sources are
     # printed.

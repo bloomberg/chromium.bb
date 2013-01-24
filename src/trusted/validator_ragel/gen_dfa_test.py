@@ -93,7 +93,7 @@ class TestPrinterParts(unittest.TestCase):
     instr = gen_dfa.Instruction.Parse(
         '"nopw   0x0(%eax,%eax,1)", 0x66 0x0f 0x1f 0x44 0x00 0x00, ia32 norex')
 
-    printer.PrintSignature(instr)
+    printer._PrintSignature(instr)
 
     self.assertEquals(
         printer.GetContent().split(),
@@ -106,7 +106,7 @@ class TestPrinterParts(unittest.TestCase):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
     instr = gen_dfa.Instruction.Parse('mov =Ob !ab, 0xa0, ia32')
 
-    printer.PrintSignature(instr)
+    printer._PrintSignature(instr)
 
     self.assertEquals(
         printer.GetContent().split(),
@@ -122,7 +122,7 @@ class TestPrinterParts(unittest.TestCase):
     instr = gen_dfa.Instruction.Parse(
         'nop, 0x90, norex')
 
-    printer.PrintOpcode(instr)
+    printer._PrintOpcode(instr)
 
     self.assertEquals(printer.GetContent(), '0x90')
 
@@ -131,7 +131,7 @@ class TestPrinterParts(unittest.TestCase):
     instr = gen_dfa.Instruction.Parse(
         'bswap ry, 0x0f 0xc8')
 
-    printer.PrintOpcode(instr)
+    printer._PrintOpcode(instr)
 
     self.assertEquals(
         printer.GetContent(),
@@ -142,7 +142,7 @@ class TestPrinterParts(unittest.TestCase):
     instr = gen_dfa.Instruction.Parse(
         'add I E, 0x80 /0, lock nacl-amd64-zero-extends')
 
-    printer.PrintOpcode(instr)
+    printer._PrintOpcode(instr)
 
     self.assertEquals(printer.GetContent(), '0x80')
 
