@@ -136,7 +136,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
-        Var('git_url') + '/chromium/tools/swarm_client.git@90c458169d01a7c07c8b94d3e96dda4955e47a2a',
+        Var('git_url') + '/chromium/tools/swarm_client.git@e1e1bff58a907eeece3a70d9c2280d0ea45b7203',
     'src/v8':
         Var('git_url') + '/external/v8.git@c47dff5fc3b12ecc3a7a9fc61fbd02868548dde6',
     'src/webkit/media/crypto/ppapi/cdm':
@@ -340,7 +340,7 @@ deps_os = {
         'src/third_party/cros_dbus_cplusplus/source':
             Var('git_url') + '/chromiumos/third_party/dbus-cplusplus.git@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900',
         'src/third_party/cros_system_api':
-            Var('git_url') + '/chromiumos/platform/system_api.git@97d8b9a0399099a14b92d7b53a423b4940102238',
+            Var('git_url') + '/chromiumos/platform/system_api.git@bbd9dbac2b17db57546ee234c0563e05b7763f4f',
         'src/third_party/gold':
             Var('git_url') + '/chromium/deps/gold.git@74c34c19eadc0135b189318e393e78ca1dd431aa',
         'src/third_party/libmtp':
