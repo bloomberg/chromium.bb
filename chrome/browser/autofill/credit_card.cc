@@ -33,6 +33,11 @@ namespace {
 
 const char16 kCreditCardObfuscationSymbol = '*';
 
+// This is the maximum obfuscated symbols displayed.
+// It is introduced to avoid rare cases where the credit card number is
+// too large and fills the screen.
+const size_t kMaxObfuscationSize = 20;
+
 std::string GetCreditCardType(const string16& number) {
   // Don't check for a specific type if this is not a credit card number.
   if (!autofill::IsValidCreditCardNumber(number))
@@ -420,10 +425,11 @@ string16 CreditCard::ObfuscatedNumber() const {
     return number_;
 
   string16 number = StripSeparators(number_);
-  string16 result(number.size() - 4, kCreditCardObfuscationSymbol);
-  result.append(LastFourDigits());
 
-  return result;
+  // Avoid making very long obfuscated numbers.
+  size_t obfuscated_digits = std::min(kMaxObfuscationSize, number.size() - 4);
+  string16 result(obfuscated_digits, kCreditCardObfuscationSymbol);
+  return result.append(LastFourDigits());
 }
 
 string16 CreditCard::LastFourDigits() const {

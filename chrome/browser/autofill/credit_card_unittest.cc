@@ -95,6 +95,16 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(ASCIIToUTF16("************5100, Exp: 01/2010"), summary4);
   string16 obfuscated4 = credit_card4.ObfuscatedNumber();
   EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated4);
+
+  // Case 5: Very long credit card
+  CreditCard credit_card5;
+  autofill_test::SetCreditCardInfo(&credit_card5,
+      "John Dillinger",
+      "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
+  string16 summary5 = credit_card5.Label();
+  EXPECT_EQ(ASCIIToUTF16("********************5100, Exp: 01/2010"), summary5);
+  string16 obfuscated5 = credit_card5.ObfuscatedNumber();
+  EXPECT_EQ(ASCIIToUTF16("********************5100"), obfuscated5);
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
