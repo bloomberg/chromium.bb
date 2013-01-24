@@ -10,6 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome_launcher_impl.h"
+#include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -41,40 +42,60 @@ void CommandExecutorImpl::Init() {
       std::string*)> execute_session_command = base::Bind(
           &ExecuteSessionCommand,
           &session_map_);
-  command_map_.Set("get", base::Bind(execute_session_command,
-      base::Bind(&ExecuteGet)));
-  command_map_.Set("executeScript", base::Bind(execute_session_command,
-      base::Bind(&ExecuteExecuteScript)));
-  command_map_.Set("switchToFrame", base::Bind(execute_session_command,
-      base::Bind(&ExecuteSwitchToFrame)));
-  command_map_.Set("getTitle", base::Bind(execute_session_command,
-      base::Bind(&ExecuteGetTitle)));
-  command_map_.Set("findElement", base::Bind(execute_session_command,
-      base::Bind(&ExecuteFindElement, 50)));
-  command_map_.Set("findElements", base::Bind(execute_session_command,
-      base::Bind(&ExecuteFindElements, 50)));
-  command_map_.Set("findChildElement", base::Bind(execute_session_command,
-      base::Bind(&ExecuteFindChildElement, 50)));
-  command_map_.Set("findChildElements", base::Bind(execute_session_command,
-      base::Bind(&ExecuteFindChildElements, 50)));
-  command_map_.Set("setTimeout", base::Bind(execute_session_command,
-      base::Bind(&ExecuteSetTimeout)));
-  command_map_.Set("getCurrentUrl", base::Bind(execute_session_command,
-      base::Bind(&ExecuteGetCurrentUrl)));
-  command_map_.Set("goBack", base::Bind(execute_session_command,
-      base::Bind(&ExecuteGoBack)));
-  command_map_.Set("goForward", base::Bind(execute_session_command,
-      base::Bind(&ExecuteGoForward)));
-  command_map_.Set("refresh", base::Bind(execute_session_command,
-      base::Bind(&ExecuteRefresh)));
+  command_map_.Set(
+      CommandNames::kGet,
+      base::Bind(execute_session_command, base::Bind(&ExecuteGet)));
+  command_map_.Set(
+      CommandNames::kExecuteScript,
+      base::Bind(execute_session_command, base::Bind(&ExecuteExecuteScript)));
+  command_map_.Set(
+      CommandNames::kSwitchToFrame,
+      base::Bind(execute_session_command, base::Bind(&ExecuteSwitchToFrame)));
+  command_map_.Set(
+      CommandNames::kGetTitle,
+      base::Bind(execute_session_command, base::Bind(&ExecuteGetTitle)));
+  command_map_.Set(
+      CommandNames::kFindElement,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteFindElement, 50)));
+  command_map_.Set(
+      CommandNames::kFindElements,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteFindElements, 50)));
+  command_map_.Set(
+      CommandNames::kFindChildElement,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteFindChildElement, 50)));
+  command_map_.Set(
+      CommandNames::kFindChildElements,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteFindChildElements, 50)));
+  command_map_.Set(
+      CommandNames::kSetTimeout,
+      base::Bind(execute_session_command, base::Bind(&ExecuteSetTimeout)));
+  command_map_.Set(
+      CommandNames::kGetCurrentUrl,
+      base::Bind(execute_session_command, base::Bind(&ExecuteGetCurrentUrl)));
+  command_map_.Set(
+      CommandNames::kGoBack,
+      base::Bind(execute_session_command, base::Bind(&ExecuteGoBack)));
+  command_map_.Set(
+      CommandNames::kGoForward,
+      base::Bind(execute_session_command, base::Bind(&ExecuteGoForward)));
+  command_map_.Set(
+      CommandNames::kRefresh,
+      base::Bind(execute_session_command, base::Bind(&ExecuteRefresh)));
   Command quit_command = base::Bind(execute_session_command,
       base::Bind(&ExecuteQuit, &session_map_));
-  command_map_.Set("quit", quit_command);
+  command_map_.Set(CommandNames::kQuit, quit_command);
 
   // Non-session commands.
-  command_map_.Set("newSession",
+  command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));
+  command_map_.Set(
+      CommandNames::kNewSession,
       base::Bind(&ExecuteNewSession, &session_map_, launcher_.get()));
-  command_map_.Set("quitAll",
+  command_map_.Set(
+      CommandNames::kQuitAll,
       base::Bind(&ExecuteQuitAll, quit_command, &session_map_));
 }
 

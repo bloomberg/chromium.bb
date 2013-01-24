@@ -24,17 +24,18 @@ ChromeDriver will use the system installed Chrome by default.
 ChromeDriver is shipped separately from Chrome. It controls Chrome out of
 process through DevTools (WebKit Inspector). ChromeDriver is a shared library
 which exports a few functions for executing WebDriver-standard commands, which
-are packaged in JSON. The WebDriver open source project maintains clients in
-various languages which eventually will be able to load this shared library.
-There's a small patch that can be applied to the open source WebDriver Java
-client to make it work with ChromeDriver.
+are packaged in JSON. For internal use, a custom python client for ChromeDriver
+is available in chromedriver.py, which works on desktop (win/mac/linux) with
+the shared library ChromeDriver.
 
-For internal use, a custom python client for ChromeDriver is available in
-chromedriver.py, which works for desktop (win/mac/linux).
+The ChromeDriver shared library runs commands on the same thread that calls
+ExecuteCommand. It doesn't create any additional threads except for the IO
+thread. The IO thread is used to keep reading incoming data from Chrome in the
+background.
 
-ChromeDriver runs commands on the same thread that calls ExecuteCommand.
-It doesn't create any additional threads except for the IO thread. The IO thread
-is used to keep reading incoming data from Chrome in the background.
+ChromeDriver is also available as a standalone server executable which
+communicates via the WebDriver JSON wire protocol. This can be used with the
+open source WebDriver client libraries.
 
 =====Testing=====
 There are 4 test suites for verifying ChromeDriver's correctness:

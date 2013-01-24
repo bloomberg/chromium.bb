@@ -8,21 +8,52 @@
 #include "base/callback.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/format_macros.h"
-#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace {
+
+Status CheckChromeVersion(Chrome* chrome, std::string* chrome_version) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<base::Value> chrome_version_value;
+  std::string temp_chrome_version;
+  Status status = chrome->EvaluateScript(
+      "",
+      "navigator.appVersion.match(/Chrome\\/.* /)[0].split('/')[1].trim()",
+      &chrome_version_value);
+  if (status.IsError() ||
+      !chrome_version_value->GetAsString(&temp_chrome_version))
+    return Status(kUnknownError, "unable to detect Chrome version");
+
+  int build_no;
+  std::vector<std::string> chrome_version_parts;
+  base::SplitString(temp_chrome_version, '.', &chrome_version_parts);
+  if (chrome_version_parts.size() != 4 ||
+      !base::StringToInt(chrome_version_parts[2], &build_no)) {
+    return Status(kUnknownError, "unrecognized Chrome version: " +
+        temp_chrome_version);
+  }
+  // Allow the version check to be skipped for testing/development purposes.
+  if (!env->HasVar("IGNORE_CHROME_VERSION")) {
+    if (build_no < kMinimumSupportedChromeBuildNo) {
+      return Status(kUnknownError, "Chrome version must be >= " +
+          GetMinimumSupportedChromeVersion());
+    }
+  }
+  *chrome_version = temp_chrome_version;
+  return Status(kOk);
+}
 
 Status FindElementByJs(
     int interval_ms,
@@ -97,6 +128,26 @@ Status FindElementByJs(
 
 }  // namespace
 
+Status ExecuteGetStatus(
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id) {
+  base::DictionaryValue build;
+  build.SetString("version", "alpha");
+
+  base::DictionaryValue os;
+  os.SetString("name", base::SysInfo::OperatingSystemName());
+  os.SetString("version", base::SysInfo::OperatingSystemVersion());
+  os.SetString("arch", base::SysInfo::OperatingSystemArchitecture());
+
+  base::DictionaryValue info;
+  info.Set("build", build.DeepCopy());
+  info.Set("os", os.DeepCopy());
+  out_value->reset(info.DeepCopy());
+  return Status(kOk);
+}
+
 Status ExecuteNewSession(
     SessionMap* session_map,
     ChromeLauncher* launcher,
@@ -120,35 +171,16 @@ Status ExecuteNewSession(
   if (status.IsError())
     return Status(kSessionNotCreatedException, status.message());
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  scoped_ptr<base::Value> chrome_version_value;
   std::string chrome_version;
-  status = chrome->EvaluateScript(
-      "",
-      "navigator.appVersion.match(/Chrome\\/.* /)[0].split('/')[1].trim()",
-      &chrome_version_value);
-  if (status.IsError() || !chrome_version_value->GetAsString(&chrome_version))
-    return Status(kUnknownError, "unable to detect Chrome version");
-  // Check the version of Chrome is supported.
-  // Allow the version check to be skipped for testing/development purposes.
-  if (!env->HasVar("IGNORE_CHROME_VERSION")) {
-    int build_no;
-    std::vector<std::string> chrome_version_parts;
-    base::SplitString(chrome_version, '.', &chrome_version_parts);
-    if (chrome_version_parts.size() != 4 ||
-        !base::StringToInt(chrome_version_parts[2], &build_no)) {
-      return Status(kUnknownError, "unrecognized Chrome version: " +
-          chrome_version);
-    }
-    if (build_no < kMinimumSupportedChromeBuildNo)
-      return Status(kUnknownError, "Chrome version must be >= " +
-          GetMinimumSupportedChromeVersion());
+  status = CheckChromeVersion(chrome.get(), &chrome_version);
+  if (status.IsError()) {
+    chrome->Quit();
+    return status;
   }
 
-  uint64 msb = base::RandUint64();
-  uint64 lsb = base::RandUint64();
-  std::string new_id =
-      base::StringPrintf("%016" PRIx64 "%016" PRIx64, msb, lsb);
+  std::string new_id = session_id;
+  if (new_id.empty())
+    new_id = GenerateId();
   scoped_ptr<Session> session(new Session(new_id, chrome.Pass()));
   scoped_refptr<SessionAccessor> accessor(
       new SessionAccessorImpl(session.Pass()));

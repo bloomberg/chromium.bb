@@ -689,19 +689,9 @@
       ],
     },
     {
-      # Third-party support sources for chromedriver2_lib.
-      'target_name': 'chromedriver2_support',
-      'type': 'static_library',
-      'sources': [
-        '../third_party/webdriver/atoms.cc',
-        '../third_party/webdriver/atoms.h',
-      ],
-    },
-    {
       'target_name': 'chromedriver2_lib',
       'type': 'static_library',
       'dependencies': [
-        'chromedriver2_support',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -714,6 +704,8 @@
       'sources': [
         '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.cc',
         '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.h',
+        '../third_party/webdriver/atoms.cc',
+        '../third_party/webdriver/atoms.h',
         'test/chromedriver/chrome.h',
         'test/chromedriver/chrome_finder.cc',
         'test/chromedriver/chrome_finder.h',
@@ -729,6 +721,8 @@
         'test/chromedriver/command_executor.h',
         'test/chromedriver/command_executor_impl.cc',
         'test/chromedriver/command_executor_impl.h',
+        'test/chromedriver/command_names.cc',
+        'test/chromedriver/command_names.h',
         'test/chromedriver/commands.cc',
         'test/chromedriver/commands.h',
         'test/chromedriver/devtools_client.h',
@@ -756,6 +750,8 @@
         'test/chromedriver/status.cc',
         'test/chromedriver/status.h',
         'test/chromedriver/synchronized_map.h',
+        'test/chromedriver/util.cc',
+        'test/chromedriver/util.h',
         'test/chromedriver/version.cc',
         'test/chromedriver/version.h',
       ],
@@ -780,17 +776,63 @@
         },
       ],
     },
+    # This is the new ChromeDriver based on DevTools.
+    {
+      'target_name': 'chromedriver2',
+      'type': 'loadable_module',
+      'dependencies': [
+        'chromedriver2_lib',
+        '../base/base.gyp:base',
+        'test/chromedriver/third_party/jni/jni.gyp:jni',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/chromedriver/chromedriver_shared_library.cc',
+      ],
+    },
+    {
+      'target_name': 'chromedriver2_server_lib',
+      'type': 'static_library',
+      'dependencies': [
+        'chromedriver2_lib',
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/chromedriver/server/http_handler.cc',
+        'test/chromedriver/server/http_handler.h',
+        'test/chromedriver/server/http_response.cc',
+        'test/chromedriver/server/http_response.h',
+      ],
+    },
+    {
+      'target_name': 'chromedriver2_server',
+      'type': 'executable',
+      'dependencies': [
+        'chromedriver2_server_lib',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        '../third_party/mongoose/mongoose.c',
+        '../third_party/mongoose/mongoose.h',
+        'test/chromedriver/server/chromedriver_server.cc',
+      ],
+    },
     {
       'target_name': 'chromedriver2_unittests',
       'type': 'executable',
       'dependencies': [
         'chromedriver2_lib',
+        'chromedriver2_server_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '..,'
       ],
       'sources': [
         'test/chromedriver/chrome_finder_unittest.cc',
@@ -802,6 +844,8 @@
         'test/chromedriver/dom_tracker_unittest.cc',
         'test/chromedriver/fake_session_accessor.cc',
         'test/chromedriver/fake_session_accessor.h',
+        'test/chromedriver/server/http_handler_unittest.cc',
+        'test/chromedriver/server/http_response_unittest.cc',
         'test/chromedriver/session_command_unittest.cc',
         'test/chromedriver/session_unittest.cc',
         'test/chromedriver/status_unittest.cc',
@@ -830,22 +874,6 @@
         'test/chromedriver/net/net_util_unittest.cc',
         'test/chromedriver/net/sync_websocket_impl_unittest.cc',
         'test/chromedriver/net/websocket_unittest.cc',
-      ],
-    },
-    # This is the new ChromeDriver based on DevTools.
-    {
-      'target_name': 'chromedriver2',
-      'type': 'loadable_module',
-      'dependencies': [
-        'chromedriver2_lib',
-        '../base/base.gyp:base',
-        'test/chromedriver/third_party/jni/jni.gyp:jni',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/chromedriver/chromedriver_shared_library.cc',
       ],
     },
     {

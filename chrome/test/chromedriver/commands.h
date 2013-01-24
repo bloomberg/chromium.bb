@@ -21,6 +21,13 @@ class Value;
 class ChromeLauncher;
 struct Session;
 
+// Gets status/info about ChromeDriver.
+Status ExecuteGetStatus(
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id);
+
 // Creates a new session.
 Status ExecuteNewSession(
     SessionMap* session_map,

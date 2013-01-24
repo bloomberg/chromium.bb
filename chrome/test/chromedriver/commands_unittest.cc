@@ -20,6 +20,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webdriver/atoms.h"
 
+TEST(CommandsTest, GetStatus) {
+  base::DictionaryValue params;
+  scoped_ptr<base::Value> value;
+  std::string session_id;
+  ASSERT_EQ(kOk, ExecuteGetStatus(params, "", &value, &session_id).code());
+  base::DictionaryValue* dict;
+  ASSERT_TRUE(value->GetAsDictionary(&dict));
+  base::Value* unused;
+  ASSERT_TRUE(dict->Get("os.name", &unused));
+  ASSERT_TRUE(dict->Get("os.version", &unused));
+  ASSERT_TRUE(dict->Get("os.arch", &unused));
+  ASSERT_TRUE(dict->Get("build.version", &unused));
+}
+
 namespace {
 
 class StubChrome : public Chrome {
