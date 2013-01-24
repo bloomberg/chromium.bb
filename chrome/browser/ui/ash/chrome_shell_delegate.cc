@@ -465,41 +465,6 @@ void ChromeShellDelegate::OpenFeedbackPage() {
 void ChromeShellDelegate::RecordUserMetricsAction(
     ash::UserMetricsAction action) {
   switch (action) {
-    case ash::UMA_ACCEL_MAXIMIZE_RESTORE_F4:
-      content::RecordAction(
-          content::UserMetricsAction("Accel_Maximize_Restore_F4"));
-      break;
-    case ash::UMA_ACCEL_PREVWINDOW_TAB:
-      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
-      break;
-    case ash::UMA_ACCEL_NEXTWINDOW_TAB:
-      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_Tab"));
-      break;
-    case ash::UMA_ACCEL_PREVWINDOW_F5:
-      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_F5"));
-      break;
-    case ash::UMA_ACCEL_NEXTWINDOW_F5:
-      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_F5"));
-      break;
-    case ash::UMA_ACCEL_NEWTAB_T:
-      content::RecordAction(content::UserMetricsAction("Accel_NewTab_T"));
-      break;
-    case ash::UMA_ACCEL_SEARCH_LWIN:
-      content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
-      break;
-    case ash::UMA_MOUSE_DOWN:
-      content::RecordAction(content::UserMetricsAction("Mouse_Down"));
-      break;
-    case ash::UMA_TOUCHSCREEN_TAP_DOWN:
-      content::RecordAction(content::UserMetricsAction("Touchscreen_Down"));
-      break;
-    case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
-      content::RecordAction(
-          content::UserMetricsAction("Launcher_ClickOnApplistButton"));
-      break;
-    case ash::UMA_LAUNCHER_CLICK_ON_APP:
-      content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
-      break;
     case ash::UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6:
       content::RecordAction(
           content::UserMetricsAction("Accel_KeyboardBrightnessDown_F6"));
@@ -507,6 +472,67 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_ACCEL_KEYBOARD_BRIGHTNESS_UP_F7:
       content::RecordAction(
           content::UserMetricsAction("Accel_KeyboardBrightnessUp_F7"));
+      break;
+    case ash::UMA_ACCEL_MAXIMIZE_RESTORE_F4:
+      content::RecordAction(
+          content::UserMetricsAction("Accel_Maximize_Restore_F4"));
+      break;
+    case ash::UMA_ACCEL_NEWTAB_T:
+      content::RecordAction(content::UserMetricsAction("Accel_NewTab_T"));
+      break;
+    case ash::UMA_ACCEL_NEXTWINDOW_F5:
+      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_F5"));
+      break;
+    case ash::UMA_ACCEL_NEXTWINDOW_TAB:
+      content::RecordAction(content::UserMetricsAction("Accel_NextWindow_Tab"));
+      break;
+    case ash::UMA_ACCEL_PREVWINDOW_F5:
+      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_F5"));
+      break;
+    case ash::UMA_ACCEL_PREVWINDOW_TAB:
+      content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
+      break;
+    case ash::UMA_ACCEL_SEARCH_LWIN:
+      content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
+      break;
+    case ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Maximize"));
+      break;
+    case ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_LEFT:
+      content::RecordAction(content::UserMetricsAction("MaxButton_MaxLeft"));
+      break;
+    case ash::UMA_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT:
+      content::RecordAction(content::UserMetricsAction("MaxButton_MaxRight"));
+      break;
+    case ash::UMA_MAXIMIZE_BUTTON_MINIMIZE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Minimize"));
+      break;
+    case ash::UMA_MAXIMIZE_BUTTON_RESTORE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_Restore"));
+      break;
+    case ash::UMA_MAXIMIZE_BUTTON_SHOW_BUBBLE:
+      content::RecordAction(content::UserMetricsAction("MaxButton_ShowBubble"));
+      break;
+    case ash::UMA_LAUNCHER_CLICK_ON_APP:
+      content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
+      break;
+    case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
+      content::RecordAction(
+          content::UserMetricsAction("Launcher_ClickOnApplistButton"));
+      break;
+    case ash::UMA_MOUSE_DOWN:
+      content::RecordAction(content::UserMetricsAction("Mouse_Down"));
+      break;
+    case ash::UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
+      content::RecordAction(
+          content::UserMetricsAction("Caption_ClickTogglesMaximize"));
+      break;
+    case ash::UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE:
+      content::RecordAction(
+          content::UserMetricsAction("Caption_GestureTogglesMaximize"));
+      break;
+    case ash::UMA_TOUCHSCREEN_TAP_DOWN:
+      content::RecordAction(content::UserMetricsAction("Touchscreen_Down"));
       break;
   }
 }

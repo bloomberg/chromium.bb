@@ -5,6 +5,7 @@
 #include "ash/wm/maximize_bubble_controller.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
@@ -426,6 +427,9 @@ MaximizeBubbleController::Bubble::Bubble(
     Show();
   else
     StartFade(true);
+
+  ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+      ash::UMA_MAXIMIZE_BUTTON_SHOW_BUBBLE);
 
   mouse_watcher_.reset(new views::MouseWatcher(
       new BubbleMouseWatcherHost(this),
