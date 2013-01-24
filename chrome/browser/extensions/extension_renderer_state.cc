@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tab_id_map.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,13 +24,14 @@ using content::RenderViewHost;
 using content::WebContents;
 
 //
-// ExtensionTabIdMap::TabObserver
+// ExtensionRendererState::TabObserver
 //
 
-// This class listens for notifications about new and closed tabs on the UI
-// thread, and notifies the ExtensionTabIdMap on the IO thread. It should only
-// ever be accessed on the UI thread.
-class ExtensionTabIdMap::TabObserver : public content::NotificationObserver {
+// This class listens for notifications about changes in renderer state on the
+// UI thread, and notifies the ExtensionRendererState on the IO thread. It
+// should only ever be accessed on the UI thread.
+class ExtensionRendererState::TabObserver
+    : public content::NotificationObserver {
  public:
   TabObserver();
   ~TabObserver();
@@ -44,7 +45,7 @@ class ExtensionTabIdMap::TabObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 };
 
-ExtensionTabIdMap::TabObserver::TabObserver() {
+ExtensionRendererState::TabObserver::TabObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
@@ -57,11 +58,11 @@ ExtensionTabIdMap::TabObserver::TabObserver() {
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-ExtensionTabIdMap::TabObserver::~TabObserver() {
+ExtensionRendererState::TabObserver::~TabObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void ExtensionTabIdMap::TabObserver::Observe(
+void ExtensionRendererState::TabObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
@@ -77,8 +78,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
-              &ExtensionTabIdMap::SetTabAndWindowId,
-              base::Unretained(ExtensionTabIdMap::GetInstance()),
+              &ExtensionRendererState::SetTabAndWindowId,
+              base::Unretained(ExtensionRendererState::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID(),
               session_tab_helper->session_id().id(),
               session_tab_helper->window_id().id()));
@@ -94,8 +95,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
-              &ExtensionTabIdMap::SetTabAndWindowId,
-              base::Unretained(ExtensionTabIdMap::GetInstance()),
+              &ExtensionRendererState::SetTabAndWindowId,
+              base::Unretained(ExtensionRendererState::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID(),
               session_tab_helper->session_id().id(),
               session_tab_helper->window_id().id()));
@@ -113,8 +114,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
-              &ExtensionTabIdMap::SetTabAndWindowId,
-              base::Unretained(ExtensionTabIdMap::GetInstance()),
+              &ExtensionRendererState::SetTabAndWindowId,
+              base::Unretained(ExtensionRendererState::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID(),
               session_tab_helper->session_id().id(),
               session_tab_helper->window_id().id()));
@@ -125,8 +126,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
-              &ExtensionTabIdMap::ClearTabAndWindowId,
-              base::Unretained(ExtensionTabIdMap::GetInstance()),
+              &ExtensionRendererState::ClearTabAndWindowId,
+              base::Unretained(ExtensionRendererState::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID()));
       break;
     }
@@ -137,43 +138,43 @@ void ExtensionTabIdMap::TabObserver::Observe(
 }
 
 //
-// ExtensionTabIdMap
+// ExtensionRendererState
 //
 
-ExtensionTabIdMap::ExtensionTabIdMap() : observer_(NULL) {
+ExtensionRendererState::ExtensionRendererState() : observer_(NULL) {
 }
 
-ExtensionTabIdMap::~ExtensionTabIdMap() {
+ExtensionRendererState::~ExtensionRendererState() {
 }
 
 // static
-ExtensionTabIdMap* ExtensionTabIdMap::GetInstance() {
-  return Singleton<ExtensionTabIdMap>::get();
+ExtensionRendererState* ExtensionRendererState::GetInstance() {
+  return Singleton<ExtensionRendererState>::get();
 }
 
-void ExtensionTabIdMap::Init() {
+void ExtensionRendererState::Init() {
   observer_ = new TabObserver;
 }
 
-void ExtensionTabIdMap::Shutdown() {
+void ExtensionRendererState::Shutdown() {
   delete observer_;
 }
 
-void ExtensionTabIdMap::SetTabAndWindowId(
+void ExtensionRendererState::SetTabAndWindowId(
     int render_process_host_id, int routing_id, int tab_id, int window_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderId render_id(render_process_host_id, routing_id);
   map_[render_id] = TabAndWindowId(tab_id, window_id);
 }
 
-void ExtensionTabIdMap::ClearTabAndWindowId(
+void ExtensionRendererState::ClearTabAndWindowId(
     int render_process_host_id, int routing_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderId render_id(render_process_host_id, routing_id);
   map_.erase(render_id);
 }
 
-bool ExtensionTabIdMap::GetTabAndWindowId(
+bool ExtensionRendererState::GetTabAndWindowId(
     int render_process_host_id, int routing_id, int* tab_id, int* window_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderId render_id(render_process_host_id, routing_id);

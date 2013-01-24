@@ -30,7 +30,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_tab_id_map.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/icon_manager.h"
@@ -184,7 +184,7 @@ BrowserProcessImpl::BrowserProcessImpl(
 
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
 
-  ExtensionTabIdMap::GetInstance()->Init();
+  ExtensionRendererState::GetInstance()->Init();
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -239,7 +239,7 @@ void BrowserProcessImpl::StartTearDown() {
   remote_debugging_server_.reset();
 #endif
 
-  ExtensionTabIdMap::GetInstance()->Shutdown();
+  ExtensionRendererState::GetInstance()->Shutdown();
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // The policy providers managed by |browser_policy_connector_| need to shut

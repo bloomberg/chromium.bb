@@ -28,9 +28,9 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile.h"
@@ -164,7 +164,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
     return;
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  ExtensionTabIdMap::GetInstance()->GetTabAndWindowId(
+  ExtensionRendererState::GetInstance()->GetTabAndWindowId(
       info->GetChildID(), info->GetRouteID(), tab_id, window_id);
   *frame_id = info->GetFrameID();
   *is_main_frame = info->IsMainFrame();
