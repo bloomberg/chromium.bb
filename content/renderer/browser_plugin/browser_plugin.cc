@@ -120,6 +120,7 @@ BrowserPlugin::BrowserPlugin(
       guest_crashed_(false),
       navigate_src_sent_(false),
       auto_size_(false),
+      auto_size_ack_pending_(false),
       max_height_(0),
       max_width_(0),
       min_height_(0),
@@ -259,6 +260,7 @@ void BrowserPlugin::SetAutoSizeAttribute(bool auto_size) {
   if (auto_size_ == auto_size)
     return;
   auto_size_ = auto_size;
+  auto_size_ack_pending_ = true;
   last_view_size_ = plugin_rect_.size();
   UpdateGuestAutoSizeState();
 }
@@ -494,8 +496,15 @@ void BrowserPlugin::OnUpdateRect(
     use_new_damage_buffer = true;
   }
 
-  if (params.is_resize_ack || !UsesDamageBuffer(params))
+  // We receive a resize ACK in regular mode, but not in autosize.
+  // In SW, |resize_ack_received_| is reset in SwapDamageBuffers().
+  // in HW mode, we need to do it here so we can continue sending
+  // resize messages when needed.
+  if (params.is_resize_ack ||
+      (!params.needs_ack && (auto_size_ || auto_size_ack_pending_)))
     resize_ack_received_ = true;
+
+  auto_size_ack_pending_ = false;
 
   if ((!auto_size_ &&
        (width() != params.view_size.width() ||

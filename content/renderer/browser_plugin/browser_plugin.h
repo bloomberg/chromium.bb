@@ -297,6 +297,7 @@ class CONTENT_EXPORT BrowserPlugin :
   bool navigate_src_sent_;
   std::string src_;
   bool auto_size_;
+  bool auto_size_ack_pending_;
   int max_height_;
   int max_width_;
   int min_height_;
