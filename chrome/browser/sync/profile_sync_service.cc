@@ -74,6 +74,10 @@
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "sync/internal_api/public/read_transaction.h"
+#endif
+
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
@@ -187,6 +191,19 @@ bool ProfileSyncService::IsSyncTokenAvailable() {
     return false;
   return token_service->HasTokenForService(GaiaConstants::kSyncService);
 }
+#if defined(OS_ANDROID)
+bool ProfileSyncService::ShouldEnablePasswordSyncForAndroid() const {
+  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
+  const syncer::ModelTypeSet preferred_types =
+      sync_prefs_.GetPreferredDataTypes(registered_types);
+  if (!preferred_types.Has(syncer::PASSWORDS))
+    return false;
+  // On Android we do not want to prompt user to enter a passphrase. If
+  // passwords cannot be decrypted we just disable them.
+  syncer::ReadTransaction trans(FROM_HERE, GetUserShare());
+  return IsCryptographerReady(&trans);
+}
+#endif
 
 void ProfileSyncService::Initialize() {
   DCHECK(!invalidator_registrar_.get());
@@ -998,6 +1015,15 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // types are enabled, and we don't want to clobber the true passphrase error.
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 
+#if defined(OS_ANDROID)
+  // Re-enable passwords if we have disabled them.
+  if (failed_datatypes_handler_.GetFailedTypes().Has(syncer::PASSWORDS) &&
+      ShouldEnablePasswordSyncForAndroid()) {
+    // Clear the data type errors.
+    failed_datatypes_handler_.OnUserChoseDatatypes();
+  }
+#endif
+
   // Make sure the data types that depend on the passphrase are started at
   // this time.
   const syncer::ModelTypeSet types = GetPreferredDataTypes();
@@ -1463,6 +1489,13 @@ void ProfileSyncService::ConfigureDataTypeManager() {
             base::Bind(&ProfileSyncService::StartSyncingWithServer,
                        base::Unretained(this))));
   }
+
+#if defined(OS_ANDROID)
+  if (GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
+      !ShouldEnablePasswordSyncForAndroid()) {
+    DisableBrokenDatatype(syncer::PASSWORDS, FROM_HERE, "Not supported.");
+  }
+#endif
 
   const syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (IsPassphraseRequiredForDecryption()) {

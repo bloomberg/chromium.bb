@@ -543,6 +543,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // not account for types pending encryption.
   virtual syncer::ModelTypeSet GetEncryptedDataTypes() const;
 
+#if defined(OS_ANDROID)
+  // Android does not display password prompts, passwords are only allowed to be
+  // synced if Cryptographer has already been initialized and does not have
+  // pending keys.
+  bool ShouldEnablePasswordSyncForAndroid() const;
+#endif
+
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
 
