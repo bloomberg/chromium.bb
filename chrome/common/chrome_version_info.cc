@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
-#include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -118,10 +117,11 @@ std::string VersionInfo::OSType() const {
 #elif defined(OS_MACOSX)
   return "Mac OS X";
 #elif defined(OS_CHROMEOS)
-  if (ui::ResourceBundle::HasSharedInstance())
-    return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
-  else
+  #if defined(GOOGLE_CHROME_BUILD)
+    return "Chrome OS";
+  #else
     return "Chromium OS";
+  #endif
 #elif defined(OS_ANDROID)
   return "Android";
 #elif defined(OS_LINUX)
