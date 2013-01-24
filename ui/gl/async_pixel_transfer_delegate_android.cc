@@ -132,13 +132,17 @@ base::MessageLoopProxy* transfer_message_loop_proxy() {
 class TransferStateInternal
     : public base::RefCountedThreadSafe<TransferStateInternal> {
  public:
-  explicit TransferStateInternal(GLuint texture_id)
+  explicit TransferStateInternal(GLuint texture_id,
+                                 bool wait_for_uploads,
+                                 bool wait_for_egl_images)
       : texture_id_(texture_id),
         thread_texture_id_(0),
         needs_late_bind_(false),
         transfer_in_progress_(false),
         egl_image_(EGL_NO_IMAGE_KHR),
-        egl_image_created_sync_(EGL_NO_SYNC_KHR) {
+        egl_image_created_sync_(EGL_NO_SYNC_KHR),
+        wait_for_uploads_(wait_for_uploads),
+        wait_for_egl_images_(wait_for_egl_images) {
     static const AsyncTexImage2DParams zero_params = {0, 0, 0, 0, 0, 0, 0, 0};
     late_bind_define_params_ = zero_params;
   }
@@ -152,17 +156,22 @@ class TransferStateInternal
     TRACE_EVENT2("gpu", "BindAsyncTransfer glEGLImageTargetTexture2DOES",
                  "width", late_bind_define_params_.width,
                  "height", late_bind_define_params_.height);
+
     DCHECK(bound_params);
-    DCHECK(needs_late_bind_);
     DCHECK(texture_id_);
     DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
+    *bound_params = late_bind_define_params_;
+    if (!needs_late_bind_)
+      return;
+
     // We can only change the active texture and unit 0,
     // as that is all that will be restored.
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, egl_image_);
-    *bound_params = late_bind_define_params_;
     needs_late_bind_ = false;
+
+    DCHECK(CHECK_GL());
   }
 
   void CreateEglImage(GLuint texture_id) {
@@ -188,10 +197,9 @@ class TransferStateInternal
         egl_buffer,
         egl_attrib_list);
 
-    // TODO(epenner): Remove for other GPUs if it's just a Qualcomm bug.
-    // BUG=crbug.com/168356
-    egl_image_created_sync_ =
-        eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
+    if (wait_for_egl_images_)
+      egl_image_created_sync_ =
+          eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
   }
 
   void CreateEglImageOnUploadThread() {
@@ -204,11 +212,8 @@ class TransferStateInternal
   }
 
   void WaitOnEglImageCreation() {
-    // The first time we use the EGL image for upload, first
-    // wait on it's creation to be completed. This seems to only be
-    // needed for Qualcomm (even when uploading on the same thread).
-    // TODO(epenner): Remove for other GPUs if it's just a Qualcomm bug.
-    // BUG=crbug.com/168356
+    // On Qualcomm, we need to wait on egl image creation before
+    // doing the first upload (or the texture remains black).
     if (egl_image_created_sync_ != EGL_NO_SYNC_KHR) {
       TRACE_EVENT0("gpu", "eglWaitSync");
       EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
@@ -218,6 +223,23 @@ class TransferStateInternal
       eglDestroySyncKHR(display, egl_image_created_sync_);
       egl_image_created_sync_ = EGL_NO_SYNC_KHR;
     }
+  }
+
+  void WaitForLastUpload() {
+    if (!wait_for_uploads_)
+      return;
+
+    // This fence is basically like calling glFinish, which is fine on
+    // the upload thread if uploads occur on the CPU. We may want to delay
+    // blocking on this fence if this causes any stalls.
+
+    TRACE_EVENT0("gpu", "eglWaitSync");
+    EGLDisplay display = eglGetCurrentDisplay();
+    EGLSyncKHR fence = eglCreateSyncKHR(display, EGL_SYNC_FENCE_KHR, NULL);
+    EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
+    EGLTimeKHR time = EGL_FOREVER_KHR;
+    eglClientWaitSyncKHR(display, fence, flags, time);
+    eglDestroySyncKHR(display, fence);
   }
 
  protected:
@@ -232,14 +254,14 @@ class TransferStateInternal
     if (egl_image_ != EGL_NO_IMAGE_KHR) {
       EGLDisplay display = eglGetCurrentDisplay();
       eglDestroyImageKHR(display, egl_image_);
-      if (thread_texture_id_) {
-        transfer_message_loop_proxy()->PostTask(FROM_HERE,
-            base::Bind(&DeleteTexture, thread_texture_id_));
-      }
     }
     if (egl_image_created_sync_ != EGL_NO_SYNC_KHR) {
       EGLDisplay display = eglGetCurrentDisplay();
       eglDestroySyncKHR(display, egl_image_created_sync_);
+    }
+    if (thread_texture_id_) {
+      transfer_message_loop_proxy()->PostTask(FROM_HERE,
+          base::Bind(&DeleteTexture, thread_texture_id_));
     }
   }
 
@@ -267,14 +289,22 @@ class TransferStateInternal
 
   // Time spent performing last transfer.
   base::TimeDelta last_transfer_time_;
+
+  // Customize when we block on fences (these are work-arounds).
+  bool wait_for_uploads_;
+  bool wait_for_egl_images_;
 };
 
 // Android needs thread-safe ref-counting, so this just wraps
 // an internal thread-safe ref-counted state object.
 class AsyncTransferStateAndroid : public AsyncPixelTransferState {
  public:
-  explicit AsyncTransferStateAndroid(GLuint texture_id)
-      : internal_(new TransferStateInternal(texture_id)) {
+  explicit AsyncTransferStateAndroid(GLuint texture_id,
+                                     bool wait_for_uploads,
+                                     bool wait_for_egl_images)
+      : internal_(new TransferStateInternal(texture_id,
+                                            wait_for_uploads,
+                                            wait_for_egl_images)) {
   }
   virtual ~AsyncTransferStateAndroid() {}
   virtual bool TransferIsInProgress() {
@@ -328,20 +358,23 @@ class AsyncPixelTransferDelegateAndroid
       base::SharedMemory* shared_memory,
       uint32 shared_memory_data_offset);
 
+  // Returns true if a work-around was used.
+  bool WorkAroundAsyncTexImage2D(
+      TransferStateInternal* state,
+      const AsyncTexImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params);
+  bool WorkAroundAsyncTexSubImage2D(
+      TransferStateInternal* state,
+      const AsyncTexSubImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params);
+
   int texture_upload_count_;
   base::TimeDelta total_texture_upload_time_;
+  bool is_imagination_;
+  bool is_qualcomm_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateAndroid);
 };
-
-namespace {
-// Imagination has some odd problems still.
-bool IsImagination() {
-  std::string vendor;
-  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-  return vendor.find("Imagination") != std::string::npos;
-}
-}
 
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
@@ -354,8 +387,7 @@ scoped_ptr<AsyncPixelTransferDelegate>
       context->HasExtension("EGL_KHR_image") &&
       context->HasExtension("EGL_KHR_image_base") &&
       context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
-      context->HasExtension("GL_OES_EGL_image") &&
-      !IsImagination()) {
+      context->HasExtension("GL_OES_EGL_image")) {
     return make_scoped_ptr(
         static_cast<AsyncPixelTransferDelegate*>(
             new AsyncPixelTransferDelegateAndroid()));
@@ -369,6 +401,10 @@ scoped_ptr<AsyncPixelTransferDelegate>
 
 AsyncPixelTransferDelegateAndroid::AsyncPixelTransferDelegateAndroid()
     : texture_upload_count_(0) {
+  std::string vendor;
+  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  is_imagination_ = vendor.find("Imagination") != std::string::npos;
+  is_qualcomm_ = vendor.find("Qualcomm") != std::string::npos;
 }
 
 AsyncPixelTransferDelegateAndroid::~AsyncPixelTransferDelegateAndroid() {
@@ -377,8 +413,17 @@ AsyncPixelTransferDelegateAndroid::~AsyncPixelTransferDelegateAndroid() {
 AsyncPixelTransferState*
     AsyncPixelTransferDelegateAndroid::
         CreateRawPixelTransferState(GLuint texture_id) {
+
+  // We can't wait on uploads on imagination (it can take 200ms+).
+  bool wait_for_uploads = !is_imagination_;
+
+  // We need to wait for EGLImage creation on Qualcomm.
+  bool wait_for_egl_images = is_qualcomm_;
+
   return static_cast<AsyncPixelTransferState*>(
-      new AsyncTransferStateAndroid(texture_id));
+      new AsyncTransferStateAndroid(texture_id,
+                                    wait_for_uploads,
+                                    wait_for_egl_images));
 }
 
 namespace {
@@ -412,6 +457,9 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
   DCHECK_EQ(state->egl_image_, EGL_NO_IMAGE_KHR);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK_EQ(tex_params.level, 0);
+
+  if (WorkAroundAsyncTexImage2D(state, tex_params, mem_params))
+    return;
 
   // Mark the transfer in progress and save define params for lazy binding.
   state->transfer_in_progress_ = true;
@@ -451,6 +499,9 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
             mem_params.shm_size);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK_EQ(tex_params.level, 0);
+
+  if (WorkAroundAsyncTexSubImage2D(state, tex_params, mem_params))
+    return;
 
   // Mark the transfer in progress.
   state->transfer_in_progress_ = true;
@@ -499,22 +550,13 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2DCompleted(
 }
 
 namespace {
-void WaitForGl() {
-  TRACE_EVENT0("gpu", "eglWaitSync");
-
-  // Uploads usually finish on the CPU, but just in case add a fence
-  // and guarantee the upload has completed. The flush bit is set to
-  // insure we don't wait forever.
-  EGLDisplay display = eglGetCurrentDisplay();
-  EGLSyncKHR fence = eglCreateSyncKHR(display, EGL_SYNC_FENCE_KHR, NULL);
-  EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
-  EGLTimeKHR time = EGL_FOREVER_KHR;
-
-  // This fence is basically like calling glFinish, which is fine if
-  // uploads occur on the CPU. If some upload work occurs on the GPU,
-  // we may want to delay blocking on the fence.
-  eglClientWaitSyncKHR(display, fence, flags, time);
-  eglDestroySyncKHR(display, fence);
+void SetGlParametersForEglImageTexture() {
+  // These params are needed for EGLImage creation to succeed on several
+  // Android devices. I couldn't find this requirement in the EGLImage
+  // extension spec, but several devices fail without it.
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 } // namespace
 
@@ -538,12 +580,7 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, state->thread_texture_id_);
 
-    // These params are needed for EGLImage creation to succeed on several
-    // Android devices. I couldn't find this requirement in the EGLImage
-    // extension spec, but several devices fail without it.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    SetGlParametersForEglImageTexture();
 
     // Allocate first, so we can create the EGLImage without
     // EGL_IMAGE_PRESERVED, which can be costly.
@@ -576,7 +613,7 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
         data);
   }
 
-  WaitForGl();
+  state->WaitForLastUpload();
   DCHECK(CHECK_GL());
 }
 
@@ -621,10 +658,125 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
         tex_params.type,
         data);
   }
-  WaitForGl();
+  state->WaitForLastUpload();
 
   DCHECK(CHECK_GL());
   state->last_transfer_time_ = base::TimeTicks::HighResNow() - begin_time;
+}
+
+
+namespace {
+bool IsPowerOfTwo (unsigned int x) {
+  return ((x != 0) && !(x & (x - 1)));
+}
+
+bool IsMultipleOfEight(unsigned int x) {
+  return (x & 7) == 0;
+}
+
+bool DimensionsSupportImgFastPath(int width, int height) {
+  // Multiple of eight, but not a power of two.
+  return IsMultipleOfEight(width) &&
+         IsMultipleOfEight(height) &&
+         !IsPowerOfTwo(width) &&
+         !IsPowerOfTwo(height);
+}
+} // namespace
+
+// It is very difficult to stream uploads on Imagination GPUs:
+// - glTexImage2D defers a swizzle/stall until draw-time
+// - glTexSubImage2D will sleep for 16ms on a good day, and 100ms
+//   or longer if OpenGL is in heavy use by another thread.
+// The one combination that avoids these problems requires:
+// a.) Allocations/Uploads must occur on different threads/contexts.
+// b.) Texture size must be non-power-of-two.
+// When using a+b, uploads will be incorrect/corrupt unless:
+// c.) Texture size must be a multiple-of-eight.
+//
+// To achieve a.) we allocate synchronously on the main thread followed
+// by uploading on the upload thread. When b/c are not true we fall back
+// on purely synchronous allocation/upload on the main thread.
+
+bool AsyncPixelTransferDelegateAndroid::WorkAroundAsyncTexImage2D(
+    TransferStateInternal* state,
+    const AsyncTexImage2DParams& tex_params,
+    const AsyncMemoryParams& mem_params) {
+  if (!is_imagination_)
+    return false;
+
+  // On imagination we allocate synchronously all the time, even
+  // if the dimensions support fast uploads. This is for part a.)
+  // above, so allocations occur on a different thread/context as uploads.
+  void* data = GetAddress(mem_params.shared_memory, mem_params.shm_data_offset);
+  SetGlParametersForEglImageTexture();
+
+  {
+    TRACE_EVENT0("gpu", "glTexImage2D with data");
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        tex_params.level,
+        tex_params.internal_format,
+        tex_params.width,
+        tex_params.height,
+        tex_params.border,
+        tex_params.format,
+        tex_params.type,
+        data);
+  }
+
+  // The allocation has already occured, so mark it as finished
+  // and ready for binding.
+  state->needs_late_bind_ = false;
+  state->transfer_in_progress_ = false;
+  state->late_bind_define_params_ = tex_params;
+
+  // If the dimensions support fast async uploads, create the
+  // EGLImage for future uploads. The late bind should not
+  // be needed since the EGLImage was created from the main thread
+  // texture, but this is required to prevent an imagination driver crash.
+  if (DimensionsSupportImgFastPath(tex_params.width, tex_params.height)) {
+    state->CreateEglImageOnMainThreadIfNeeded();
+    state->needs_late_bind_ = true;
+  }
+
+  DCHECK(CHECK_GL());
+  return true;
+}
+
+bool AsyncPixelTransferDelegateAndroid::WorkAroundAsyncTexSubImage2D(
+    TransferStateInternal* state,
+    const AsyncTexSubImage2DParams& tex_params,
+    const AsyncMemoryParams& mem_params) {
+  if (!is_imagination_)
+    return false;
+
+  // If the dimensions support fast async uploads, we can use the
+  // normal async upload path for uploads.
+  if (DimensionsSupportImgFastPath(tex_params.width, tex_params.height))
+    return false;
+
+  // Fall back on a synchronous stub as we don't have a known fast path.
+  void* data = GetAddress(mem_params.shared_memory,
+                          mem_params.shm_data_offset);
+  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
+  {
+    TRACE_EVENT0("gpu", "glTexSubImage2D");
+    glTexSubImage2D(
+        tex_params.target,
+        tex_params.level,
+        tex_params.xoffset,
+        tex_params.yoffset,
+        tex_params.width,
+        tex_params.height,
+        tex_params.format,
+        tex_params.type,
+        data);
+  }
+  texture_upload_count_++;
+  total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
+
+  DCHECK(CHECK_GL());
+  return true;
 }
 
 }  // namespace gfx

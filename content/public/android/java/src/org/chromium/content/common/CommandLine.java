@@ -59,11 +59,6 @@ public abstract class CommandLine {
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 
-    // Sets the default tile width/height. We use this for very high-res
-    // displays until Chrome can detect and do this correctly for all platforms.
-    public static final String DEFAULT_TILE_WIDTH = "default-tile-width";
-    public static final String DEFAULT_TILE_HEIGHT = "default-tile-height";
-
     // Whether to enable the auto-hiding top controls.
     public static final String ENABLE_TOP_CONTROLS_POSITION_CALCULATION
             = "enable-top-controls-position-calculation";
