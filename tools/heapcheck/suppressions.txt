@@ -1832,3 +1832,16 @@
    fun:ChromeRenderViewHostTestHarness::SetUp
    fun:GeolocationPermissionContextTests::SetUp
 }
+{
+   bug_172077
+   Heapcheck:Leak
+   ...
+   fun:extensions::RegexSetMatcher::RebuildMatcher
+   fun:extensions::RegexSetMatcher::ClearPatterns
+   ...
+   fun:extensions::URLMatcher::UpdateRegexSetMatcher
+   fun:extensions::URLMatcher::UpdateInternalDatastructures
+   fun:extensions::URLMatcher::AddConditionSets
+   fun:::FilterBuilder::Build
+   fun:::LoadWhitelistsOnBlockingPoolThread
+}
