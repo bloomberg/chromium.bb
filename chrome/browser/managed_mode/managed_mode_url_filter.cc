@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -302,11 +301,6 @@ void ManagedModeURLFilter::SetManualLists(const ListValue* whitelist,
     (*it)->GetAsString(&item);
     DVLOG(1) << item;
   }
-
-  UMA_HISTOGRAM_COUNTS_100("ManagedMode.ManualWhitelistEntries",
-      url_manual_list_allow_->Size());
-  UMA_HISTOGRAM_COUNTS_100("ManagedMode.ManualBlacklistEntries",
-      url_manual_list_block_->Size());
 }
 
 void ManagedModeURLFilter::AddURLPatternToManualList(

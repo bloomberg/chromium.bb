@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
@@ -29,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/generated_resources.h"
@@ -37,16 +35,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace {
-
-// For use in histograms.
-enum PreviewInfobarCommand {
-  INFOBAR_ACCEPT,
-  INFOBAR_CANCEL,
-  INFOBAR_HISTOGRAM_BOUNDING_VALUE
-};
 
 class ManagedModeWarningInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -210,17 +200,11 @@ bool ManagedModePreviewInfobarDelegate::Accept() {
   ManagedModeNavigationObserver* observer =
       ManagedModeNavigationObserver::FromWebContents(
           owner()->GetWebContents());
-  UMA_HISTOGRAM_ENUMERATION("ManagedMode.PreviewInfobarCommand",
-                            INFOBAR_ACCEPT,
-                            INFOBAR_HISTOGRAM_BOUNDING_VALUE);
   observer->AddSavedURLsToWhitelistAndClearState();
   return true;
 }
 
 bool ManagedModePreviewInfobarDelegate::Cancel() {
-  UMA_HISTOGRAM_ENUMERATION("ManagedMode.PreviewInfobarCommand",
-                            INFOBAR_CANCEL,
-                            INFOBAR_HISTOGRAM_BOUNDING_VALUE);
   GoBackToSafety(owner()->GetWebContents());
   return false;
 }
@@ -372,14 +356,8 @@ void ManagedModeNavigationObserver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
 
-  content::RecordAction(UserMetricsAction("ManagedMode_MainFrameNavigation"));
-
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(params.url);
-
-  UMA_HISTOGRAM_ENUMERATION("ManagedMode.FilteringBehavior",
-                            behavior,
-                            ManagedModeURLFilter::HISTOGRAM_BOUNDING_VALUE);
 
   // If the user just saw an interstitial this is the final URL so it is
   // recorded. Checking for filtering behavior here isn't useful because
