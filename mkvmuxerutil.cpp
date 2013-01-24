@@ -10,6 +10,9 @@
 
 #include <cmath>
 #include <cstdio>
+#ifdef _WIN32
+#define _CRT_RAND_S
+#endif
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -81,12 +84,12 @@ uint64 EbmlElementSize(uint64 type, uint64 value) {
   return ebml_size;
 }
 
-uint64 EbmlElementSize(uint64 type, float value) {
+uint64 EbmlElementSize(uint64 type, float /* value */ ) {
   // Size of EBML ID
   uint64 ebml_size = GetUIntSize(type);
 
   // Datasize
-  ebml_size += sizeof(value);
+  ebml_size += sizeof(float);
 
   // Size of Datasize
   ebml_size++;
@@ -508,7 +511,15 @@ mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
   for (int i = 0; i < 7; ++i) {  // avoid problems with 8-byte values
     uid <<= 8;
 
+#ifdef _WIN32
+    (void)seed;
+    unsigned int random_value;
+    const errno_t e = rand_s(&random_value);
+    (void)e;
+    const int32 nn  = random_value;
+#elif
     const int32 nn = rand_r(seed);
+#endif
     const int32 n = 0xFF & (nn >> 4);  // throw away low-order bits
 
     uid |= n;

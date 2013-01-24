@@ -164,12 +164,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="sample_muxer.cpp" />
+    <ClCompile Include="sample_muxer_metadata.cc" />
+    <ClCompile Include="vttreader.cc" />
+    <ClCompile Include="webvttparser.cc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="libwebm_2010.vcxproj">
       <Project>{7b1f12ca-0724-430b-b61a-1d357c912cba}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sample_muxer_metadata.h" />
+    <ClInclude Include="vttreader.h" />
+    <ClInclude Include="webvttparser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
