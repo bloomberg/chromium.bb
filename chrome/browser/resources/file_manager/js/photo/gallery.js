@@ -47,6 +47,7 @@ function Gallery(context) {
   this.document_ = document;
   this.context_ = context;
   this.metadataCache_ = context.metadataCache;
+  this.volumeManager_ = VolumeManager.getInstance();
 
   this.dataModel_ = new cr.ui.ArrayDataModel([]);
   this.selectionModel_ = new cr.ui.ListSelectionModel();
@@ -186,6 +187,21 @@ Gallery.prototype.initListeners_ = function() {
         'thumbnail',
         this.updateThumbnails_.bind(this));
   }
+
+  this.volumeManager_.addEventListener('externally-unmounted',
+      this.onExternallyUnmounted_.bind(this));
+};
+
+/**
+ * Closes gallery when a volume containing the selected item is unmounted.
+ * @param {Event} event The unmount event.
+ * @private
+ */
+Gallery.prototype.onExternallyUnmounted_ = function(event) {
+  if (!this.selectedItemFilesystemPath_)
+    return;
+  if (this.selectedItemFilesystemPath_.indexOf(event.mountPath) == 0)
+    this.onClose_();
 };
 
 /**
@@ -685,6 +701,21 @@ Gallery.prototype.updateSelectionAndState_ = function() {
                                 this.context_.readonlyDirName;
 
   this.filenameEdit_.value = displayName;
+
+  // Resolve real filesystem path of the current file.
+  if (this.selectionModel_.selectedIndexes.length) {
+    var selectedIndex = this.selectionModel_.selectedIndex;
+    var selectedItem =
+        this.dataModel_.item(this.selectionModel_.selectedIndex);
+
+    this.selectedItemFilesystemPath_ = null;
+    webkitResolveLocalFileSystemURL(selectedItem.getUrl(),
+      function(entry) {
+        if (this.selectionModel_.selectedIndex != selectedIndex)
+          return;
+        this.selectedItemFilesystemPath_ = entry.fullPath;
+      }.bind(this));
+  }
 };
 
 /**

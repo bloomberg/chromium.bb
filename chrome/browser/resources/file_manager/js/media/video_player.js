@@ -67,9 +67,11 @@ FullWindowVideoControls.prototype.restorePlayState = function() {
   }
 };
 
+// TODO(mtomasz): Convert it to class members: crbug.com/171191.
 var controls;
-
 var metadataCache;
+var volumeManager;
+var selectedItemFilesystemPath;
 
 /**
  * Initialize the video player window.
@@ -92,11 +94,26 @@ function loadVideoPlayer() {
       window.addEventListener('unload', unload);
 
     metadataCache = MetadataCache.createFull();
+    volumeManager = VolumeManager.getInstance();
 
     // If the video player is starting before the first instance of the File
     // Manager then it does not have access to filesystem URLs. Request it now.
     chrome.fileBrowserPrivate.requestLocalFileSystem(reload);
+
+    volumeManager.addEventListener('externally-unmounted',
+                                   onExternallyUnmounted);
   });
+}
+
+/**
+ * Closes video player when a volume containing the played item is unmounted.
+ * @param {Event} event The unmount event.
+ */
+function onExternallyUnmounted(event) {
+  if (!selectedItemFilesystemPath)
+    return;
+  if (selectedItemFilesystemPath.indexOf(event.mountPath) == 0)
+    util.platform.closeWindow();
 }
 
 /**
@@ -179,6 +196,15 @@ function reload() {
         appWindow.show();
       });
     }
+
+    // Resolve real filesystem path of the current video.
+    selectedItemFilesystemPath = null;
+    webkitResolveLocalFileSystemURL(src,
+      function(entry) {
+        var video = document.querySelector('video');
+        if (video.src != src) return;
+        selectedItemFilesystemPath = entry.fullPath;
+      });
   });
 }
 
