@@ -214,7 +214,7 @@
 #include "webkit/plugins/npapi/webplugin_impl.h"
 
 #if defined(OS_ANDROID)
-#include "content/common/android/device_info.h"
+#include "content/common/android/device_telephony_info.h"
 #include "content/renderer/android/address_detector.h"
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
@@ -665,12 +665,12 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_ANDROID)
-  scoped_ptr<DeviceInfo> device_info(new DeviceInfo());
+  content::DeviceTelephonyInfo device_info;
 
   const std::string region_code =
       command_line.HasSwitch(switches::kNetworkCountryIso)
           ? command_line.GetSwitchValueASCII(switches::kNetworkCountryIso)
-          : device_info->GetNetworkCountryIso();
+          : device_info.GetNetworkCountryIso();
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new AddressDetector()));
   content_detectors_.push_back(linked_ptr<ContentDetector>(

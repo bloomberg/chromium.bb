@@ -10,6 +10,7 @@
 #include "content/browser/android/browser_jni_registrar.h"
 #include "content/common/android/common_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
+#include "ui/android/ui_jni_registrar.h"
 #endif
 
 int main(int argc, char** argv) {
@@ -20,6 +21,7 @@ int main(int argc, char** argv) {
   content::android::RegisterCommonJni(env);
   content::android::RegisterBrowserJni(env);
   net::android::RegisterJni(env);
+  ui::android::RegisterJni(env);
 #endif
 
   return content::UnitTestTestSuite(

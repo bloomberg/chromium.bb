@@ -5,7 +5,9 @@
 #include "ui/gfx/screen.h"
 
 #include "base/logging.h"
+#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace gfx {
 
@@ -27,8 +29,18 @@ class ScreenAndroid : public Screen {
   }
 
   gfx::Display GetPrimaryDisplay() const OVERRIDE {
-    NOTIMPLEMENTED() << "crbug.com/117839 tracks implementation";
-    return gfx::Display(0, gfx::Rect(0, 0, 1, 1));
+    gfx::DeviceDisplayInfo device_info;
+    const float device_scale_factor = device_info.GetDIPScale();
+    const gfx::Rect bounds_in_pixels =
+        gfx::Rect(
+            device_info.GetDisplayWidth(),
+            device_info.GetDisplayHeight());
+    const gfx::Rect bounds_in_dip =
+        gfx::Rect(gfx::ToCeiledSize(gfx::ScaleSize(
+            bounds_in_pixels.size(), 1.0f / device_scale_factor)));
+    gfx::Display display(0, bounds_in_dip);
+    display.set_device_scale_factor(device_scale_factor);
+    return display;
   }
 
   gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const OVERRIDE {

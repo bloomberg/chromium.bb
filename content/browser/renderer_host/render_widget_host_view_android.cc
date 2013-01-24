@@ -18,7 +18,6 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/surface_texture_transport_client_android.h"
-#include "content/common/android/device_info.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -27,6 +26,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
@@ -630,10 +630,10 @@ void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
-  DeviceInfo info;
-  const int width = info.GetWidth();
-  const int height = info.GetHeight();
-  results->deviceScaleFactor = info.GetDPIScale();
+  gfx::DeviceDisplayInfo info;
+  const int width = info.GetDisplayWidth();
+  const int height = info.GetDisplayHeight();
+  results->deviceScaleFactor = info.GetDIPScale();
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);

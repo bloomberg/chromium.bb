@@ -35,8 +35,9 @@ JavaBitmap::~JavaBitmap() {
   DCHECK(!err);
 }
 
-void RegisterBitmapAndroid(JNIEnv* env) {
-  ui::RegisterNativesImpl(env);
+// static
+bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
+  return ui::RegisterNativesImpl(env);
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size) {

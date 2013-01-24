@@ -28,7 +28,6 @@
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
 #include "jni/LibraryLoader_jni.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
 
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
@@ -76,7 +75,7 @@ static jint LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
   if (!net::android::RegisterJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
-  if (!ui::RegisterJni(env))
+  if (!ui::android::RegisterJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!content::android::RegisterCommonJni(env))
@@ -89,9 +88,6 @@ static jint LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!media::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!gfx::RegisterJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   return 0;

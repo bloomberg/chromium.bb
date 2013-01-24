@@ -30,7 +30,7 @@
     'public/android/java/src/org/chromium/content/browser/TracingIntentHandler.java',
     'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',
     'public/android/java/src/org/chromium/content/common/CommandLine.java',
-    'public/android/java/src/org/chromium/content/common/DeviceInfo.java',
+    'public/android/java/src/org/chromium/content/common/DeviceTelephonyInfo.java',
     'public/android/java/src/org/chromium/content/common/SurfaceCallback.java',
     'public/android/java/src/org/chromium/content/common/SurfaceTextureListener.java',
     'public/android/java/src/org/chromium/content/common/TraceEvent.java',

@@ -26,8 +26,8 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
-import org.chromium.content.common.DeviceInfo;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2098,8 +2098,9 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 pageTemplate,
                 "<meta name='viewport' content='width=" + viewportTagSpecifiedWidth + "' />");
 
-        DeviceInfo deviceInfo = DeviceInfo.create(getInstrumentation().getTargetContext());
-        int displayWidth = (int) (deviceInfo.getWidth() / deviceInfo.getDPIScale());
+        DeviceDisplayInfo deviceInfo =
+                DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+        int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
 
         settings.setJavaScriptEnabled(true);
         assertFalse(settings.getUseWideViewPort());

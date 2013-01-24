@@ -64,10 +64,31 @@ bool UseTouchOptimizedUI() {
 }
 #endif  // defined(OS_WIN)
 
-const float kScaleFactorScales[] = {1.0f, 1.0f, 1.4f, 1.8f, 2.0f};
+const float kScaleFactorScales[] = {1.0f, 1.0f, 1.4f, 1.5f, 1.8f, 2.0f};
 COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
+
+namespace {
+
+// Returns the scale factor closest to |scale| from the full list of factors.
+// Note that it does NOT rely on the list of supported scale factors.
+// Finding the closest match is inefficient and shouldn't be done frequently.
+ScaleFactor FindClosestScaleFactorUnsafe(float scale) {
+  float smallest_diff =  std::numeric_limits<float>::max();
+  ScaleFactor closest_match = SCALE_FACTOR_100P;
+  for (int i = SCALE_FACTOR_100P; i < NUM_SCALE_FACTORS; ++i) {
+    const ScaleFactor scale_factor = static_cast<ScaleFactor>(i);
+    float diff = std::abs(kScaleFactorScales[scale_factor] - scale);
+    if (diff < smallest_diff) {
+      closest_match = scale_factor;
+      smallest_diff = diff;
+    }
+  }
+  return closest_match;
+}
+
+}  // namespace
 
 std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
   static std::vector<ScaleFactor>* supported_scale_factors =
@@ -78,7 +99,14 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
     supported_scale_factors->push_back(SCALE_FACTOR_100P);
 #endif
 
-#if defined(OS_IOS)
+#if defined(OS_ANDROID)
+    const gfx::Display display =
+        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+    const float display_density = display.device_scale_factor();
+    const ScaleFactor closest = FindClosestScaleFactorUnsafe(display_density);
+    if (closest != SCALE_FACTOR_100P)
+      supported_scale_factors->push_back(closest);
+#elif defined(OS_IOS)
     gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
     if (display.device_scale_factor() > 1.0) {
       DCHECK_EQ(2.0, display.device_scale_factor());

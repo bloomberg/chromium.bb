@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content.common.DeviceInfo;
 
 /**
  * Test suite for viewport-related properties.

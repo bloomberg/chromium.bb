@@ -5,6 +5,8 @@
 #ifndef UI_GFX_ANDROID_JAVA_BITMAP_H_
 #define UI_GFX_ANDROID_JAVA_BITMAP_H_
 
+#include <jni.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "ui/gfx/size.h"
 
@@ -25,6 +27,9 @@ class UI_EXPORT JavaBitmap {
   // Formats are in android/bitmap.h; e.g. ANDROID_BITMAP_FORMAT_RGBA_8888
   inline int format() const { return format_; }
   inline uint32_t stride() const { return stride_; }
+
+  // Registers methods with JNI and returns true if succeeded.
+  static bool RegisterJavaBitmap(JNIEnv* env);
 
  private:
   jobject bitmap_;

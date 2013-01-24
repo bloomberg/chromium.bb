@@ -12,6 +12,11 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "ui/android/ui_jni_registrar.h"
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/bundle_locations.h"
 #endif
@@ -23,6 +28,11 @@ UITestSuite::UITestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
 void UITestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+#if defined(OS_ANDROID)
+  // Register JNI bindings for android.
+  ui::android::RegisterJni(base::android::AttachCurrentThread());
+#endif
 
   ui::RegisterPathProvider();
   gfx::RegisterPathProvider();

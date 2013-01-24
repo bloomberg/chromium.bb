@@ -28,7 +28,6 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
-#include "content/common/android/device_info.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -176,8 +175,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       switches::kEnableCssTransformPinch)) {
     dpi_scale_ = 1;
   } else {
-    scoped_ptr<content::DeviceInfo> device_info(new content::DeviceInfo());
-    dpi_scale_ = device_info->GetDPIScale();
+    const gfx::Display& display =
+        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+    dpi_scale_ = display.device_scale_factor();
   }
 
   // Currently, the only use case we have for overriding a user agent involves
