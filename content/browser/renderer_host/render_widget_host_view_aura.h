@@ -21,6 +21,7 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/compositor.h"
@@ -54,6 +55,7 @@ class RenderWidgetHostViewAura
       public ui::CompositorObserver,
       public ui::TextInputClient,
       public gfx::DisplayObserver,
+      public aura::RootWindowObserver,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
@@ -238,6 +240,10 @@ class RenderWidgetHostViewAura
   virtual void OnWindowFocused(aura::Window* gained_focus,
                                aura::Window* lost_focus) OVERRIDE;
 
+  // Overridden from aura::RootWindowObserver:
+  virtual void OnRootWindowMoved(const aura::RootWindow* root,
+                                 const gfx::Point& new_origin) OVERRIDE;
+
  protected:
   friend class RenderWidgetHostView;
 
@@ -305,10 +311,10 @@ class RenderWidgetHostViewAura
   // that we have presented the accelerated surface buffer.
   static void InsertSyncPointAndACK(const BufferPresentedParams& params);
 
-  // Called when window_ gets added to a new window tree.
-  void AddingToRootWindow();
+  // Called after |window_| is parented to a RootWindow.
+  void AddedToRootWindow();
 
-  // Called when window_ is removed from the window tree.
+  // Called prior to removing |window_| from a RootWindow.
   void RemovingFromRootWindow();
 
   // Called after commit for the last reference to the texture going away
