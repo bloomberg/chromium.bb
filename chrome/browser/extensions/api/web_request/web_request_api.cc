@@ -159,6 +159,8 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
                                int64* parent_frame_id,
                                int* tab_id,
                                int* window_id,
+                               int* render_process_host_id,
+                               int* routing_id,
                                ResourceType::Type* resource_type) {
   if (!request->GetUserData(NULL))
     return;
@@ -170,6 +172,8 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
   *is_main_frame = info->IsMainFrame();
   *parent_frame_id = info->GetParentFrameID();
   *parent_is_main_frame = info->ParentIsMainFrame();
+  *render_process_host_id = info->GetChildID();
+  *routing_id = info->GetRouteID();
 
   // Restrict the resource type to the values we care about.
   if (helpers::IsRelevantResourceType(info->GetResourceType()))
@@ -190,10 +194,13 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
   int parent_frame_id_for_extension = -1;
   int tab_id = -1;
   int window_id = -1;
+  int render_process_host_id = -1;
+  int routing_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
   ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
                             &parent_is_main_frame, &parent_frame_id, &tab_id,
-                            &window_id, &resource_type);
+                            &window_id, &render_process_host_id, &routing_id,
+                            &resource_type);
   frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
   parent_frame_id_for_extension = GetFrameId(parent_is_main_frame,
                                              parent_frame_id);
@@ -374,6 +381,8 @@ struct ExtensionWebRequestEventRouter::EventListener {
   std::string sub_event_name;
   RequestFilter filter;
   int extra_info_spec;
+  int target_process_id;
+  int target_route_id;
   base::WeakPtr<IPC::Sender> ipc_sender;
   mutable std::set<uint64> blocked_requests;
 
@@ -1134,6 +1143,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     const std::string& sub_event_name,
     const RequestFilter& filter,
     int extra_info_spec,
+    int target_process_id,
+    int target_route_id,
     base::WeakPtr<IPC::Sender> ipc_sender) {
   if (!IsWebRequestEvent(event_name))
     return false;
@@ -1145,6 +1156,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   listener.filter = filter;
   listener.extra_info_spec = extra_info_spec;
   listener.ipc_sender = ipc_sender;
+  listener.target_process_id = target_process_id;
+  listener.target_route_id = target_route_id;
 
   if (listeners_[profile][event_name].count(listener) != 0u) {
     // This is likely an abuse of the API by a malicious extension.
@@ -1215,11 +1228,14 @@ bool ExtensionWebRequestEventRouter::IsPageLoad(
   int64 parent_frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
+  int render_process_host_id = -1;
+  int routing_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
 
   ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
                             &parent_is_main_frame, &parent_frame_id,
-                            &tab_id, &window_id, &resource_type);
+                            &tab_id, &window_id, &render_process_host_id,
+                            &routing_id, &resource_type);
 
   return resource_type == ResourceType::MAIN_FRAME;
 }
@@ -1256,12 +1272,16 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     const GURL& url,
     int tab_id,
     int window_id,
+    int render_process_host_id,
+    int routing_id,
     ResourceType::Type resource_type,
     bool is_async_request,
     bool is_request_from_extension,
     int* extra_info_spec,
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
+  bool is_guest = ExtensionRendererState::GetInstance()->
+      IsGuestProcess(render_process_host_id);
   std::set<EventListener>& listeners = listeners_[profile][event_name];
   for (std::set<EventListener>::iterator it = listeners.begin();
        it != listeners.end(); ++it) {
@@ -1270,6 +1290,10 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       // via a call to RemoveEventListener. For now, just skip it.
       continue;
     }
+
+    if (is_guest && (it->target_process_id != render_process_host_id||
+                     it->target_route_id != routing_id))
+      continue;
 
     if (!it->filter.urls.is_empty() && !it->filter.urls.MatchesURL(url))
       continue;
@@ -1324,12 +1348,15 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   int64 parent_frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
+  int render_process_host_id = -1;
+  int routing_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
   const GURL& url = request->url();
 
   ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
                             &parent_is_main_frame, &parent_frame_id,
-                            &tab_id, &window_id, &resource_type);
+                            &tab_id, &window_id, &render_process_host_id,
+                            &routing_id, &resource_type);
 
   std::vector<const ExtensionWebRequestEventRouter::EventListener*>
       matching_listeners;
@@ -1344,14 +1371,16 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
 
   GetMatchingListenersImpl(
       profile, extension_info_map, false, event_name, url,
-      tab_id, window_id, resource_type, is_async_request,
-      is_request_from_extension, extra_info_spec, &matching_listeners);
+      tab_id, window_id, render_process_host_id, routing_id, resource_type,
+      is_async_request, is_request_from_extension, extra_info_spec,
+      &matching_listeners);
   void* cross_profile = GetCrossProfile(profile);
   if (cross_profile) {
     GetMatchingListenersImpl(
         cross_profile, extension_info_map, true, event_name, url, tab_id,
-        window_id, resource_type, is_async_request, is_request_from_extension,
-        extra_info_spec, &matching_listeners);
+        window_id, render_process_host_id, routing_id, resource_type,
+        is_async_request, is_request_from_extension, extra_info_spec,
+        &matching_listeners);
   }
 
   return matching_listeners;
@@ -1777,7 +1806,6 @@ void ClearCacheQuotaHeuristic::OnPageLoad(Bucket* bucket) {
 
 bool WebRequestAddEventListener::RunImpl() {
   // Argument 0 is the callback, which we don't use here.
-
   ExtensionWebRequestEventRouter::RequestFilter filter;
   DictionaryValue* value = NULL;
   error_.clear();
@@ -1834,7 +1862,7 @@ bool WebRequestAddEventListener::RunImpl() {
       ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
           profile_id(), extension_id(), extension_name,
           event_name, sub_event_name, filter,
-          extra_info_spec, ipc_sender_weak());
+          extra_info_spec, -1, -1, ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
   helpers::ClearCacheOnNavigation();

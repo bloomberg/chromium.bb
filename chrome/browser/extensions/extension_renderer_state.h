@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_RENDERER_STATE_H_
 
 #include <map>
+#include <set>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -22,6 +23,10 @@ class ExtensionRendererState {
   void Init();
   void Shutdown();
 
+  // Looks up whether the given render process is a guest renderer hosted by a
+  // <webview>.
+  bool IsGuestProcess(int render_process_host_id);
+
   // Looks up the tab and window ID for a given render view. Returns true
   // if we have the IDs in our map. Called on the IO thread.
   bool GetTabAndWindowId(
@@ -35,6 +40,7 @@ class ExtensionRendererState {
   typedef std::pair<int, int> RenderId;
   typedef std::pair<int, int> TabAndWindowId;
   typedef std::map<RenderId, TabAndWindowId> TabAndWindowIdMap;
+  typedef std::set<int> ProcessIdGuestRenderProcessSet;
 
   ExtensionRendererState();
   ~ExtensionRendererState();
@@ -45,8 +51,13 @@ class ExtensionRendererState {
   void ClearTabAndWindowId(
       int render_process_host_id, int routing_id);
 
+  // Adds or removes a <webview> guest render process from the set.
+  void AddGuestProcess(int render_process_host_id);
+  void RemoveGuestProcess(int render_process_host_id);
+
   TabObserver* observer_;
   TabAndWindowIdMap map_;
+  ProcessIdGuestRenderProcessSet guest_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRendererState);
 };
