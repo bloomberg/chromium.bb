@@ -95,8 +95,8 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     WebKitTestResultPrinter* printer = WebKitTestController::Get()->printer();
     printer->AddMessage(
         std::string("CONFIRM NAVIGATION: ") + UTF16ToUTF8(message_text));
-    WebKitTestController* controller = WebKitTestController::Get();
 #endif
+    WebKitTestController* controller = WebKitTestController::Get();
     callback.Run(
         !controller->should_stay_on_page_after_handling_before_unload(),
         string16());
