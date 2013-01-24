@@ -223,6 +223,8 @@
     'renderer/browser_plugin/browser_plugin_manager_impl.cc',
     'renderer/browser_plugin/browser_plugin_compositing_helper.h',
     'renderer/browser_plugin/browser_plugin_compositing_helper.cc',
+    'renderer/browser_plugin/browser_plugin_constants.cc',
+    'renderer/browser_plugin/browser_plugin_constants.h',
     'renderer/render_process.h',
     'renderer/render_process_impl.cc',
     'renderer/render_process_impl.h',

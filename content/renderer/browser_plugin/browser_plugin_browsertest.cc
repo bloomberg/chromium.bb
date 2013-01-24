@@ -23,23 +23,28 @@
 
 namespace {
 const char kHTMLForBrowserPluginObject[] =
-  "<object id='browserplugin' width='640px' height='480px'"
-  "  src='foo' type='%s'>";
+    "<object id='browserplugin' width='640px' height='480px'"
+    " src='foo' type='%s'>";
+
+const char kHTMLForBrowserPluginWithAllAttributes[] =
+    "<object id='browserplugin' width='640' height='480' type='%s'"
+    " autoSize='true' maxHeight='600' maxWidth='800' minHeight='240'"
+    " minWidth='320' name='Jim' partition='someid' src='foo'>";
 
 const char kHTMLForSourcelessPluginObject[] =
-  "<object id='browserplugin' width='640px' height='480px' type='%s'>";
+    "<object id='browserplugin' width='640px' height='480px' type='%s'>";
 
 const char kHTMLForPartitionedPluginObject[] =
-  "<object id='browserplugin' width='640px' height='480px'"
-  "  src='foo' type='%s' partition='someid'>";
+    "<object id='browserplugin' width='640px' height='480px'"
+    "  src='foo' type='%s' partition='someid'>";
 
 const char kHTMLForInvalidPartitionedPluginObject[] =
-  "<object id='browserplugin' width='640px' height='480px'"
-  "  type='%s' partition='persist:'>";
+    "<object id='browserplugin' width='640px' height='480px'"
+    "  type='%s' partition='persist:'>";
 
 const char kHTMLForPartitionedPersistedPluginObject[] =
-  "<object id='browserplugin' width='640px' height='480px'"
-  "  src='foo' type='%s' partition='persist:someid'>";
+    "<object id='browserplugin' width='640px' height='480px'"
+    "  src='foo' type='%s' partition='persist:someid'>";
 
 std::string GetHTMLForBrowserPluginObject() {
   return StringPrintf(kHTMLForBrowserPluginObject,
@@ -94,7 +99,7 @@ void BrowserPluginTest::TearDown() {
 
 std::string BrowserPluginTest::ExecuteScriptAndReturnString(
     const std::string& script) {
-  v8::Handle<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
+  v8::Handle<v8::Value> value = GetMainFrame()->executeScriptAndReturnValue(
       WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
   if (value.IsEmpty() || !value->IsString())
     return std::string();
@@ -108,12 +113,25 @@ std::string BrowserPluginTest::ExecuteScriptAndReturnString(
 
 int BrowserPluginTest::ExecuteScriptAndReturnInt(
     const std::string& script) {
-  v8::Handle<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
+  v8::Handle<v8::Value> value = GetMainFrame()->executeScriptAndReturnValue(
       WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
   if (value.IsEmpty() || !value->IsInt32())
     return 0;
 
   return value->Int32Value();
+}
+
+// A return value of false means that a value was not present. The return value
+// of the script is stored in |result|
+bool BrowserPluginTest::ExecuteScriptAndReturnBool(
+    const std::string& script, bool* result) {
+  v8::Handle<v8::Value> value = GetMainFrame()->executeScriptAndReturnValue(
+      WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
+  if (value.IsEmpty() || !value->IsBoolean())
+    return false;
+
+  *result = value->BooleanValue();
+  return true;
 }
 
 // This test verifies that an initial resize occurs when we instantiate the
@@ -156,6 +174,41 @@ TEST_F(BrowserPluginTest, InitialResize) {
   BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
   EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
+}
+
+// This test verifies that all attributes (present at the time of writing) are
+// parsed on initialization. However, this test does minimal checking of
+// correct behavior.
+TEST_F(BrowserPluginTest, ParseAllAttributes) {
+  std::string html = StringPrintf(kHTMLForBrowserPluginWithAllAttributes,
+                                  content::kBrowserPluginMimeType);
+  LoadHTML(html.c_str());
+  bool result;
+  bool has_value = ExecuteScriptAndReturnBool(
+      "document.getElementById('browserplugin').autoSize", &result);
+  EXPECT_TRUE(has_value);
+  EXPECT_TRUE(result);
+  int maxHeight = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').maxHeight");
+  EXPECT_EQ(600, maxHeight);
+  int maxWidth = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').maxWidth");
+  EXPECT_EQ(800, maxWidth);
+  int minHeight = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').minHeight");
+  EXPECT_EQ(240, minHeight);
+  int minWidth = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').minWidth");
+  EXPECT_EQ(320, minWidth);
+  std::string name = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').name");
+  EXPECT_STREQ("Jim", name.c_str());
+  std::string partition = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').partition");
+  EXPECT_STREQ("someid", partition.c_str());
+  std::string src = ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').src");
+  EXPECT_STREQ("foo", src.c_str());
 }
 
 // Verify that the src attribute on the browser plugin works as expected.

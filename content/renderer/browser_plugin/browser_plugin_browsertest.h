@@ -33,6 +33,7 @@ class BrowserPluginTest : public RenderViewTest {
   }
   std::string ExecuteScriptAndReturnString(const std::string& script);
   int ExecuteScriptAndReturnInt(const std::string& script);
+  bool ExecuteScriptAndReturnBool(const std::string& script, bool* result);
  private:
   ContentRendererClient content_renderer_client_;
 };
