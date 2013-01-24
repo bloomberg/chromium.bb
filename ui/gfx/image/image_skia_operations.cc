@@ -260,30 +260,37 @@ class HSLImageSource : public gfx::ImageSkiaSource {
 
 // ImageSkiaSource which uses SkBitmapOperations::CreateButtonBackground
 // to generate image reps for the target image.
-class ButtonImageSource: public BinaryImageSource {
+class ButtonImageSource: public gfx::ImageSkiaSource {
  public:
   ButtonImageSource(SkColor color,
                     const ImageSkia& image,
                     const ImageSkia& mask)
-      : BinaryImageSource(image, mask, "ButtonImageSource"),
-        color_(color) {
+      : color_(color),
+        image_(image),
+        mask_(mask) {
   }
 
   virtual ~ButtonImageSource() {
   }
 
-  // BinaryImageSource overrides:
-  virtual ImageSkiaRep CreateImageSkiaRep(
-      const ImageSkiaRep& first_rep,
-      const ImageSkiaRep& second_rep) const OVERRIDE {
-    return ImageSkiaRep(
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
+    ImageSkiaRep mask_rep = mask_.GetRepresentation(scale_factor);
+    if (image_rep.scale_factor() != mask_rep.scale_factor()) {
+      image_rep = image_.GetRepresentation(ui::SCALE_FACTOR_100P);
+      mask_rep = mask_.GetRepresentation(ui::SCALE_FACTOR_100P);
+    }
+    return gfx::ImageSkiaRep(
         SkBitmapOperations::CreateButtonBackground(color_,
-            first_rep.sk_bitmap(), second_rep.sk_bitmap()),
-        first_rep.scale_factor());
+              image_rep.sk_bitmap(), mask_rep.sk_bitmap()),
+          image_rep.scale_factor());
   }
 
  private:
   const SkColor color_;
+  const ImageSkia image_;
+  const ImageSkia mask_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonImageSource);
 };
@@ -426,7 +433,7 @@ class RotatedSource : public ImageSkiaSource {
 ImageSkia ImageSkiaOperations::CreateBlendedImage(const ImageSkia& first,
                                                   const ImageSkia& second,
                                                   double alpha) {
-  if (first.isNull() || second.isNull() || first.size() != second.size())
+  if (first.isNull() || second.isNull())
     return ImageSkia();
 
   return ImageSkia(new BlendingImageSource(first, second, alpha), first.size());
@@ -454,7 +461,7 @@ ImageSkia ImageSkiaOperations::CreateTransparentImage(const ImageSkia& image,
 // static
 ImageSkia ImageSkiaOperations::CreateMaskedImage(const ImageSkia& rgb,
                                                  const ImageSkia& alpha) {
-  if (rgb.isNull() || alpha.isNull() || rgb.size() != alpha.size())
+  if (rgb.isNull() || alpha.isNull())
     return ImageSkia();
 
   return ImageSkia(new MaskedImageSource(rgb, alpha), rgb.size());
@@ -485,7 +492,7 @@ ImageSkia ImageSkiaOperations::CreateHSLShiftedImage(
 ImageSkia ImageSkiaOperations::CreateButtonBackground(SkColor color,
                                                       const ImageSkia& image,
                                                       const ImageSkia& mask) {
-  if (image.isNull() || mask.isNull() || image.size() != mask.size())
+  if (image.isNull() || mask.isNull())
     return ImageSkia();
 
   return ImageSkia(new ButtonImageSource(color, image, mask), mask.size());
