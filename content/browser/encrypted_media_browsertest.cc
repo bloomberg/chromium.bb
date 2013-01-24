@@ -55,11 +55,6 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
                        key_system, expectation);
   }
 
-  void TestConfigChange(const char* key_system, const string16 expectation) {
-    PlayEncryptedMedia("encrypted_config_change.html", NULL, kWebMAudioVideo,
-                       key_system, expectation);
-  }
-
   void PlayEncryptedMedia(const char* html_page, const char* media_file,
                           const char* media_type, const char* key_system,
                           const string16 expectation) {
@@ -172,11 +167,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoClearAudio) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
-}
-
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
-  const string16 kExpected = ASCIIToUTF16("ENDED");
-  ASSERT_NO_FATAL_FAILURE(TestConfigChange(GetParam(), kExpected));
 }
 
 }  // namespace content
