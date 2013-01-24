@@ -3968,6 +3968,11 @@
         # Target both iPhone and iPad.
         'TARGETED_DEVICE_FAMILY': '1,2',
       }],
+      ['target_arch=="x64"', {
+        'ARCHS': [
+          'x86_64'
+         ],
+      }],
     ],
 
     # The Xcode generator will look for an xcode_settings section at the root
