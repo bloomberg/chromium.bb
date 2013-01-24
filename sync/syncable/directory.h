@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,11 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/syncable/delete_journal.h"
 #include "sync/syncable/dir_open_result.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/scoped_kernel_lock.h"
+#include "sync/syncable/syncable_delete_journal.h"
 
 namespace syncer {
 

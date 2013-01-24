@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/string_number_conversions.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
-#include "sync/syncable/delete_journal.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
