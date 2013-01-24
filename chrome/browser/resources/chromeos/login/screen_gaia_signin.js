@@ -435,7 +435,7 @@ cr.define('login', function() {
         chrome.send('launchIncognito');
       };
       $('createLocallyManagedUserLink').onclick = function() {
-        chrome.send('createLocallyManagedUser');
+        Oobe.showManagedUserCreationScreen();
       };
     },
 

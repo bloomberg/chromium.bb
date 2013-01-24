@@ -17,6 +17,7 @@
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
+/** @const */ var SCREEN_CREATE_MANAGED_USER = 'managed-user-creation';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -31,7 +32,8 @@
 /** @const */ var SIGNIN_UI_STATE = {
   HIDDEN: 0,
   GAIA_SIGNIN: 1,
-  ACCOUNT_PICKER: 2
+  ACCOUNT_PICKER: 2,
+  MANAGED_USER_CREATION: 3,
 };
 
 cr.define('cr.ui.login', function() {
@@ -73,6 +75,12 @@ cr.define('cr.ui.login', function() {
      * @type {boolean}
      */
     allowToggleVersion_: false,
+
+    /**
+     * List of parameters to showScreen calls.
+     * @type {array}
+     */
+    screenParametersHistory_: [],
 
     /**
      * Gets current screen element.
@@ -302,13 +310,21 @@ cr.define('cr.ui.login', function() {
      * @param {Object} screen Screen params dict, e.g. {id: screenId, data: {}}.
      */
     showScreen: function(screen) {
+      var screenId = screen.id;
+
+      // As for now, support "back" only for create managed user screen.
+      if (screenId != SCREEN_CREATE_MANAGED_USER) {
+        this.screenParametersHistory_ = [];
+      }
+
+      this.screenParametersHistory_.push(screen);
+
       // Make sure the screen is decorated.
       this.preloadScreen(screen);
 
       if (screen.data !== undefined && screen.data.disableAddUser)
         DisplayManager.updateAddUserButtonStatus(true);
 
-      var screenId = screen.id;
 
       // Show sign-in screen instead of account picker if pod row is empty.
       if (screenId == SCREEN_ACCOUNT_PICKER && $('pod-row').pods.length == 0) {
@@ -323,6 +339,16 @@ cr.define('cr.ui.login', function() {
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
         this.toggleStep_(index, data);
+    },
+
+    /**
+     * Shows the previous screen of workflow.
+     */
+    goBack: function() {
+      if (this.screenParametersHistory_.length >= 2) {
+        this.screenParametersHistory_.pop();
+        this.showScreen(this.screenParametersHistory_.pop());
+      }
     },
 
     /**
@@ -538,6 +564,9 @@ cr.define('cr.ui.login', function() {
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
     else if (currentScreenId == SCREEN_ACCOUNT_PICKER)
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
+    else if (currentScreenId == SCREEN_CREATE_MANAGED_USER)
+      $('login-header-bar').signinUIState =
+          SIGNIN_UI_STATE.MANAGED_USER_CREATION;
     chrome.send('showAddUser', [opt_email]);
   };
 
@@ -594,6 +623,13 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.showPasswordChangedScreen = function(showError) {
     login.PasswordChangedScreen.show(showError);
+  };
+
+  /**
+   * Shows dialog to create managed user.
+   */
+  DisplayManager.showManagedUserCreationScreen = function() {
+    login.ManagedUserCreationScreen.show();
   };
 
   /**

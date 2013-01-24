@@ -124,6 +124,7 @@ html[oobe=new] #oobe.oauth-enrollment #inner-container,
 html[oobe=new] #oobe.reset #inner-container,
 html[oobe=new] #oobe.update #inner-container,
 html[oobe=new] #oobe.user-image #inner-container,
+html[oobe=new] #oobe.managed-user-creation #inner-container,
 html[oobe=new] #oobe.tpm-error-message #inner-container,
 html[oobe=new] #oobe.password-changed #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
@@ -872,7 +873,8 @@ html[oobe=old] .step-controls {
 #reset-dot,
 #error-message-dot,
 #tpm-error-message-dot,
-#password-changed-dot {
+#password-changed-dot,
+#managed-user-creation-dot {
   display: none;
 }
 

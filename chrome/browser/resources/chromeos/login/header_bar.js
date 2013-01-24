@@ -158,11 +158,15 @@ cr.define('login', function() {
       var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
+      var managedUserCreationIsActive =
+          (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION);
 
       $('add-user-button').hidden = !accountPickerIsActive;
       $('cancel-add-user-button').hidden = accountPickerIsActive ||
           !this.allowCancel_;
-      $('guest-user-header-bar-item').hidden = gaiaIsActive || !this.showGuest_;
+      $('guest-user-header-bar-item').hidden = gaiaIsActive ||
+          managedUserCreationIsActive ||
+          !this.showGuest_;
       $('add-user-header-bar-item').hidden =
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
     },

@@ -129,16 +129,17 @@ std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
 // OobeUI ----------------------------------------------------------------------
 
 // static
-const char OobeUI::kScreenOobeNetwork[]     = "connect";
-const char OobeUI::kScreenOobeEula[]        = "eula";
-const char OobeUI::kScreenOobeUpdate[]      = "update";
-const char OobeUI::kScreenOobeEnrollment[]  = "oauth-enrollment";
-const char OobeUI::kScreenGaiaSignin[]      = "gaia-signin";
-const char OobeUI::kScreenAccountPicker[]   = "account-picker";
-const char OobeUI::kScreenErrorMessage[]    = "error-message";
-const char OobeUI::kScreenUserImagePicker[] = "user-image";
-const char OobeUI::kScreenTpmError[]        = "tpm-error-message";
-const char OobeUI::kScreenPasswordChanged[] = "password-changed";
+const char OobeUI::kScreenOobeNetwork[]         = "connect";
+const char OobeUI::kScreenOobeEula[]            = "eula";
+const char OobeUI::kScreenOobeUpdate[]          = "update";
+const char OobeUI::kScreenOobeEnrollment[]      = "oauth-enrollment";
+const char OobeUI::kScreenGaiaSignin[]          = "gaia-signin";
+const char OobeUI::kScreenAccountPicker[]       = "account-picker";
+const char OobeUI::kScreenErrorMessage[]        = "error-message";
+const char OobeUI::kScreenUserImagePicker[]     = "user-image";
+const char OobeUI::kScreenTpmError[]            = "tpm-error-message";
+const char OobeUI::kScreenPasswordChanged[]     = "password-changed";
+const char OobeUI::kScreenManagedUserCreation[] = "managed-user-creation";
 
 OobeUI::OobeUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
@@ -321,6 +322,7 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_USER_IMAGE_PICKER] = kScreenUserImagePicker;
   screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;
   screen_names_[SCREEN_PASSWORD_CHANGED] = kScreenPasswordChanged;
+  screen_names_[SCREEN_CREATE_MANAGED_USER] = kScreenManagedUserCreation;
 
   screen_ids_.clear();
   for (size_t i = 0; i < screen_names_.size(); ++i)

@@ -32,10 +32,13 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(RegularUserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD1(RegularUserLoggedInAsEphemeral, void(const std::string&));
   MOCK_METHOD0(SessionStarted, void(void));
+  MOCK_METHOD1(CreateLocallyManagedUserRecord,
+               const User*(const string16& display_name));
   MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
   MOCK_CONST_METHOD1(FindUser, const User*(const std::string&));
+  MOCK_CONST_METHOD1(FindLocallyManagedUser, const User*(const string16&));
   MOCK_METHOD2(SaveUserOAuthStatus, void(const std::string&,
                                          User::OAuthTokenStatus));
   MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,
@@ -62,6 +65,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
+  MOCK_METHOD0(CreateLocallyManagedUserRecord, void(void));
 
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.

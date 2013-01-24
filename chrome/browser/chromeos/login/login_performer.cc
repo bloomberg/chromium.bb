@@ -269,13 +269,11 @@ void LoginPerformer::PerformLogin(const std::string& username,
   }
 }
 
-void LoginPerformer::CreateLocallyManagedUser(const std::string& username,
+void LoginPerformer::CreateLocallyManagedUser(const string16& display_name,
                                               const std::string& password) {
-  // We should always add locally managed user domain.
-  // This ensures that usernames will not conflict with other user types.
-  LoginAsLocallyManagedUser(
-      username + "@" + UserManager::kLocallyManagedUserDomain,
-      password);
+  const User* user = UserManager::Get()->
+      CreateLocallyManagedUserRecord(display_name);
+  LoginAsLocallyManagedUser(user->email(), password);
 }
 
 void LoginPerformer::LoginAsLocallyManagedUser(const std::string& username,

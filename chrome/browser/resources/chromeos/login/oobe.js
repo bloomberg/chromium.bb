@@ -77,6 +77,7 @@ cr.define('cr.ui', function() {
     login.ErrorMessageScreen.register();
     login.TPMErrorMessageScreen.register();
     login.PasswordChangedScreen.register();
+    login.ManagedUserCreationScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
@@ -180,6 +181,13 @@ cr.define('cr.ui', function() {
    */
   Oobe.showScreen = function(screen) {
     Oobe.getInstance().showScreen(screen);
+  };
+
+  /**
+   * Shows the previous screen of workflow.
+   */
+  Oobe.goBack = function() {
+    Oobe.getInstance().goBack();
   };
 
   /**
@@ -403,6 +411,13 @@ cr.define('cr.ui', function() {
    */
   Oobe.showPasswordChangedScreen = function(showError) {
     DisplayManager.showPasswordChangedScreen(showError);
+  };
+
+  /**
+   * Shows dialog to create managed user.
+   */
+  Oobe.showManagedUserCreationScreen = function() {
+    DisplayManager.showManagedUserCreationScreen();
   };
 
   /**

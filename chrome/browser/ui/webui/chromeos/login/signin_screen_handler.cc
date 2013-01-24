@@ -9,6 +9,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string16.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -285,6 +287,25 @@ void SigninScreenHandler::GetLocalizedStrings(
        l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER));
   localized_strings->SetString("publicAccountEnter",
        l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_ENTER));
+
+  localized_strings->SetString("createManagedUserNameTitle",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE));
+  localized_strings->SetString("createManagedUserPasswordTitle",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE));
+  localized_strings->SetString("createManagedUserPasswordHint",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT));
+  localized_strings->SetString("createManagedUserPasswordConfirmHint",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT));
+  localized_strings->SetString("createManagedUserContinueButton",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT));
+  localized_strings->SetString("createManagedUserPasswordMismatchError",
+       l10n_util::GetStringUTF16(
+           IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR));
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     localized_strings->SetString("demoLoginMessage",
@@ -604,9 +625,6 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("createAccount",
       base::Bind(&SigninScreenHandler::HandleCreateAccount,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("createLocallyManagedUser",
-      base::Bind(&SigninScreenHandler::HandleCreateLocallyManagedUser,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("accountPickerReady",
       base::Bind(&SigninScreenHandler::HandleAccountPickerReady,
                  base::Unretained(this)));
@@ -663,6 +681,12 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("updateOfflineLogin",
       base::Bind(&SigninScreenHandler::HandleUpdateOfflineLogin,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("checkLocallyManagedUserName",
+      base::Bind(&SigninScreenHandler::HandleCheckLocallyManagedUserName,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("tryCreateLocallyManagedUser",
+      base::Bind(&SigninScreenHandler::HandleTryCreateLocallyManagedUser,
                  base::Unretained(this)));
 }
 
@@ -1257,17 +1281,6 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
     delegate_->CreateAccount();
 }
 
-void SigninScreenHandler::HandleCreateLocallyManagedUser(
-    const base::ListValue* args) {
-  // TODO(nkostylev): This should launch UI flow to set up
-  // locally managed user display name and password.
-  // TODO(nkostylev): Check that locally managed user display name is unique.
-  // TODO(nkostylev): Generate unique ID for each locally managed user.
-  //                  Display name will be defined in Local State only.
-  if (delegate_)
-    delegate_->CreateLocallyManagedUser("John Smith");
-}
-
 void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
   BaseLoginDisplayHost::default_host()->OpenProxySettings();
 }
@@ -1400,6 +1413,63 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(
     return;
   }
   offline_login_active_ = offline_login_active;
+}
+
+void SigninScreenHandler::HandleCheckLocallyManagedUserName(
+    const base::ListValue* args) {
+  DCHECK(args && args->GetSize() == 1);
+
+  string16 name;
+  if (!args->GetString(0, &name)) {
+    NOTREACHED();
+    return;
+  }
+  if (NULL != UserManager::Get()->
+          FindLocallyManagedUser(CollapseWhitespace(name, true))) {
+    web_ui()->CallJavascriptFunction(
+        "login.ManagedUserCreationScreen.managedUserNameError",
+        base::StringValue(name),
+        base::StringValue(l10n_util::GetStringFUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
+            name)));
+  } else {
+    web_ui()->CallJavascriptFunction(
+        "login.ManagedUserCreationScreen.managedUserNameOk",
+        base::StringValue(name));
+  }
+}
+
+void SigninScreenHandler::HandleTryCreateLocallyManagedUser(
+    const base::ListValue* args) {
+  DCHECK(args && args->GetSize() == 2);
+
+  string16 name;
+  std::string password;
+  if (!args->GetString(0, &name) || !args->GetString(1, &password)) {
+    NOTREACHED();
+    return;
+  }
+  name = CollapseWhitespace(name, true);
+  if (NULL != UserManager::Get()->FindLocallyManagedUser(name)) {
+    web_ui()->CallJavascriptFunction(
+        "login.ManagedUserCreationScreen.managedUserNameError",
+        base::StringValue(name),
+        base::StringValue(l10n_util::GetStringFUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
+            name)));
+    return;
+  }
+  // TODO(antrim): Any other password checks here?
+  if (password.length() == 0) {
+    web_ui()->CallJavascriptFunction(
+        "login.ManagedUserCreationScreen.showPasswordError",
+        base::StringValue(l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
+    return;
+  }
+
+  if (delegate_)
+    delegate_->CreateLocallyManagedUser(name, password);
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

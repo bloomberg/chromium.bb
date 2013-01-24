@@ -1,0 +1,61 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * This is the stylesheet used by the network drop-down control.
+ */
+
+#managed-user-creation {
+  height: 570px;
+  padding: 70px 17px 50px;
+  width: 485px;
+}
+
+#managed-user-creation-contents {
+  color: #606060;
+  margin: 20px 60px;
+}
+
+#managed-user-creation-name-title {
+  margin-top: 15px;
+}
+
+#managed-user-creation-name-block,
+#managed-user-creation-password-block {
+  margin-top: 12px;
+}
+
+#managed-user-creation-name-error-block {
+  height: 16px;
+  margin-top: 10px;
+}
+
+#managed-user-creation-password-title {
+  margin-top: 10px;
+}
+
+#managed-user-creation-password {
+  padding: 4px 6px;
+}
+#managed-user-creation-password-confirm {
+  margin-top: 12px;
+  padding: 4px 6px;
+}
+
+#managed-user-creation-password-error {
+  height: 16px;
+  margin-top: 10px;
+}
+
+#managed-user-creation-name-error,
+#managed-user-creation-password-error {
+  visibility: hidden;
+}
+
+#managed-user-creation-name-error.error,
+#managed-user-creation-password-error.error {
+  background: url('chrome://theme/IDR_WARNING') left top /24px no-repeat;
+  color: red;
+  padding-left: 28px;
+  visibility: visible;
+}

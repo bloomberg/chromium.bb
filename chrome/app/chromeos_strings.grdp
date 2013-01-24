@@ -418,6 +418,30 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_HTML" desc="Text shown on side of Google sign-in UI to create a locally managed user.">
     <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create managed user<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Text shown as a title for user name field in locally managed user creation dialog.">
+    Create an account name
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE" desc="Text shown as a title for password fields in locally managed user creation dialog.">
+    Create a password for this account
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT" desc="Text shown as a hint in the password field in locally managed user creation dialog.">
+    Enter password
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT" desc="Text shown as a hint in the password confirmation field in locally managed user creation dialog.">
+    Confirm password
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT" desc="Text shown on continue button in locally managed user creation dialog.">
+    Continue
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in locally managed user creation dialog when local account with suggested name already exists on machine.">
+    User with name <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> already exists.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR" desc="Error text shown in locally managed user creation dialog when typed passwords does not match.">
+    Passwords do not match.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT" desc="Error text shown in locally managed user creation dialog when typed password is too short.">
+    Password is too short.
+  </message>
   <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
     If you've already registered on this device, you can <ph name="LINK2_START">$1<ex>&gt;a&lt;</ex></ph>sign in as an existing user<ph name="LINK2_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>

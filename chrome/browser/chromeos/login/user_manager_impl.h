@@ -57,11 +57,15 @@ class UserManagerImpl
   virtual void RegularUserLoggedInAsEphemeral(
       const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
+  virtual const User* CreateLocallyManagedUserRecord(
+      const string16& display_name) OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
+  virtual const User* FindLocallyManagedUser(
+      const string16& display_name) const OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual void SaveUserOAuthStatus(

@@ -17,6 +17,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -56,6 +57,14 @@ const char kRegularUsers[] = "LoggedInUsers";
 
 // A vector pref of the public accounts defined on this device.
 const char kPublicAccounts[] = "PublicAccounts";
+
+// A vector pref of the locally managed accounts defined on this device, that
+// had not logged in yet.
+const char kLocallyManagedUsersFirstRun[] = "LocallyManagedUsersFirstRun";
+
+// A pref of the next id for locally managed users generation.
+const char kLocallyManagedUsersNextId[] =
+    "LocallyManagedUsersNextId";
 
 // A string pref that gets set when a public account is removed but a user is
 // currently logged into that account, requiring the account's data to be
@@ -152,6 +161,8 @@ bool ParseUserList(const ListValue& users_list,
 void UserManager::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterListPref(kRegularUsers);
   local_state->RegisterListPref(kPublicAccounts);
+  local_state->RegisterListPref(kLocallyManagedUsersFirstRun);
+  local_state->RegisterIntegerPref(kLocallyManagedUsersNextId, 0);
   local_state->RegisterStringPref(kPublicAccountPendingDataRemoval, "");
   local_state->RegisterDictionaryPref(kUserOAuthTokenStatus);
   local_state->RegisterDictionaryPref(kUserDisplayName);
@@ -274,13 +285,19 @@ void UserManagerImpl::LocallyManagedUserLoggedIn(
 
   // Remove the user from the user list.
   logged_in_user_ = RemoveRegularOrLocallyManagedUserFromList(username);
-
   // If the user was not found on the user list, create a new user.
   if (!logged_in_user_) {
     is_current_user_new_ = true;
     logged_in_user_ = User::CreateLocallyManagedUser(username);
     // Leaving OAuth token status at the default state = unknown.
     WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
+  } else {
+    ListPrefUpdate prefs_new_users_update(g_browser_process->local_state(),
+                                          kLocallyManagedUsersFirstRun);
+    if (prefs_new_users_update->Remove(base::StringValue(username), NULL)) {
+      is_current_user_new_ = true;
+      WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
+    }
   }
 
   // Add the user to the front of the user list.
@@ -366,6 +383,43 @@ void UserManagerImpl::SessionStarted() {
   }
 }
 
+const User* UserManagerImpl::CreateLocallyManagedUserRecord(
+      const string16& display_name) {
+  const User* user = FindLocallyManagedUser(display_name);
+  DCHECK(!user);
+  if (user)
+    return user;
+  std::string id;
+  int counter = g_browser_process->local_state()->
+      GetInteger(kLocallyManagedUsersNextId);
+  bool user_exists;
+  do {
+    id = base::StringPrintf("%d@%s", counter, kLocallyManagedUserDomain);
+    counter++;
+    user_exists = (NULL != FindUser(id));
+    DCHECK(!user_exists);
+    if (user_exists) {
+      LOG(ERROR) << "Locally managed user with id " << id << " already exists.";
+    }
+  } while (user_exists);
+
+  g_browser_process->local_state()->
+      SetInteger(kLocallyManagedUsersNextId, counter);
+
+  User* new_user = User::CreateLocallyManagedUser(id);
+  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
+                                    kRegularUsers);
+  prefs_users_update->Insert(0, new base::StringValue(id));
+  ListPrefUpdate prefs_new_users_update(g_browser_process->local_state(),
+                                        kLocallyManagedUsersFirstRun);
+  prefs_new_users_update->Insert(0, new base::StringValue(id));
+  users_.insert(users_.begin(), new_user);
+  SaveUserDisplayName(id, display_name);
+
+  g_browser_process->local_state()->CommitPendingWrite();
+  return new_user;
+}
+
 void UserManagerImpl::RemoveUser(const std::string& email,
                                  RemoveUserDelegate* delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -408,6 +462,19 @@ const User* UserManagerImpl::FindUser(const std::string& email) const {
   if (logged_in_user_ && logged_in_user_->email() == email)
     return logged_in_user_;
   return FindUserInList(email);
+}
+
+const User* UserManagerImpl::FindLocallyManagedUser(
+    const string16& display_name) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const UserList& users = GetUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if (((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) &&
+        ((*it)->display_name() == display_name)) {
+      return *it;
+    }
+  }
+  return NULL;
 }
 
 const User* UserManagerImpl::GetLoggedInUser() const {

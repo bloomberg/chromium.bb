@@ -50,6 +50,7 @@ class OobeUI : public OobeDisplay,
     SCREEN_USER_IMAGE_PICKER,
     SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
+    SCREEN_CREATE_MANAGED_USER,
     SCREEN_UNKNOWN
   };
 
@@ -64,6 +65,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
   static const char kScreenPasswordChanged[];
+  static const char kScreenManagedUserCreation[];
 
   explicit OobeUI(content::WebUI* web_ui);
   virtual ~OobeUI();

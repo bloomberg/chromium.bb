@@ -304,9 +304,10 @@ void ExistingUserController::CreateAccount() {
 }
 
 void ExistingUserController::CreateLocallyManagedUser(
-    const std::string& username) {
+    const string16& display_name,
+    const std::string& password) {
   // TODO(nkostylev): Check that policy allows creation of such account type.
-  if (username.empty())
+  if (display_name.empty())
     return;
 
   // Disable clicking on other windows.
@@ -319,9 +320,8 @@ void ExistingUserController::CreateLocallyManagedUser(
   login_performer_.reset(NULL);
   login_performer_.reset(new LoginPerformer(delegate));
   is_login_in_progress_ = true;
-  // Using username as the passphrase.
-  // TODO(nkostylev): UI to enter password.
-  login_performer_->CreateLocallyManagedUser(username, username);
+  login_performer_->
+      CreateLocallyManagedUser(display_name, password);
   // TODO(nkostylev): A11y message.
 }
 
@@ -690,10 +690,6 @@ void ExistingUserController::OnLoginSuccess(
     bool using_oauth) {
   is_login_in_progress_ = false;
   offline_failed_ = false;
-  bool known_user = UserManager::Get()->IsKnownUser(username);
-  bool skip_image_screen =
-      WizardController::default_controller()->skip_user_image_selection();
-  ready_for_browser_launch_ = known_user || skip_image_screen;
 
   bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION;
@@ -725,6 +721,11 @@ void ExistingUserController::OnLoginSuccess(
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
+  bool known_user = !UserManager::Get()->IsCurrentUserNew();
+  bool skip_image_screen =
+      WizardController::default_controller()->skip_user_image_selection();
+  ready_for_browser_launch_ = known_user || skip_image_screen;
+
   OptionallyShowReleaseNotes(profile);
 
   // Reenable clicking on other windows and status area.

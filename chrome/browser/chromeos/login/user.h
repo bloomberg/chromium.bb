@@ -125,7 +125,7 @@ class User {
   string16 display_name() const { return display_name_; }
 
   // The displayed (non-canonical) user email.
-  std::string display_email() const { return display_email_; }
+  virtual std::string display_email() const;
 
   // True if the user's session can be locked (i.e. the user has a password with
   // which to unlock the session).

@@ -68,6 +68,7 @@ class LocallyManagedUser : public User {
 
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
+  virtual std::string display_email() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUser);
@@ -113,6 +114,10 @@ std::string User::GetAccountName(bool use_display_email) const {
 
 bool User::HasDefaultImage() const {
   return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
+}
+
+std::string User::display_email() const {
+ return display_email_;
 }
 
 bool User::can_lock() const {
@@ -196,14 +201,16 @@ User::UserType GuestUser::GetType() const {
 
 LocallyManagedUser::LocallyManagedUser(const std::string& username)
     : User(username) {
-  size_t separator_pos = username.find('@');
-  set_display_email(username.substr(0, separator_pos));
 }
 
 LocallyManagedUser::~LocallyManagedUser() {}
 
 User::UserType LocallyManagedUser::GetType() const {
   return USER_TYPE_LOCALLY_MANAGED;
+}
+
+std::string LocallyManagedUser::display_email() const {
+  return UTF16ToUTF8(display_name());
 }
 
 RetailModeUser::RetailModeUser() : User(kRetailModeUserEMail) {

@@ -94,7 +94,8 @@ class SigninScreenHandlerDelegate {
   virtual void MigrateUserData(const std::string& old_password) = 0;
 
   // Create a new locally managed user.
-  virtual void CreateLocallyManagedUser(const std::string& username) = 0;
+  virtual void CreateLocallyManagedUser(const string16& display_name,
+                                        const std::string password) = 0;
 
   // Load wallpaper for given |username|.
   virtual void LoadWallpaper(const std::string& username) = 0;
@@ -271,7 +272,6 @@ class SigninScreenHandler
   void HandleToggleResetScreen(const base::ListValue* args);
   void HandleLaunchHelpApp(const base::ListValue* args);
   void HandleCreateAccount(const base::ListValue* args);
-  void HandleCreateLocallyManagedUser(const base::ListValue* args);
   void HandleAccountPickerReady(const base::ListValue* args);
   void HandleWallpaperReady(const base::ListValue* args);
   void HandleLoginWebuiReady(const base::ListValue* args);
@@ -291,6 +291,8 @@ class SigninScreenHandler
   void HandleShowGaiaFrameError(const base::ListValue* args);
   void HandleShowLoadingTimeoutError(const base::ListValue* args);
   void HandleUpdateOfflineLogin(const base::ListValue* args);
+  void HandleCheckLocallyManagedUserName(const base::ListValue* args);
+  void HandleTryCreateLocallyManagedUser(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);
