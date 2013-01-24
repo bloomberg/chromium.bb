@@ -395,6 +395,8 @@ void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
   // NULL so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
+  // Turn off compositing so we can display the sad graphic.
+  EnableCompositing(false);
 }
 
 void BrowserPlugin::OnGuestResponsive(int instance_id, int process_id) {
