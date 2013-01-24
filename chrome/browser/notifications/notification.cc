@@ -64,6 +64,10 @@ Notification::Notification(ui::notifications::NotificationType type,
       delegate_(delegate) {
   if (optional_fields)
     optional_fields_.reset(optional_fields->DeepCopy());
+  // "Upconvert" the string parameters to a data: URL.  Some balloon views
+  // require content URL to render anything, so this serves as a backup.
+  content_url_ = GURL(DesktopNotificationService::CreateDataUrl(
+      icon_url, title, body, dir));
 }
 
 Notification::Notification(const GURL& origin_url,
