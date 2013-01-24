@@ -12,3 +12,5 @@ Local modifications:
 -Added comment describing license. They have a comment about the license, but
 it uses an atypical format that isn't recognized by chromium's checklicense
 script.
+-Instead of using the default netrc lookup which requires HOME to be set
+(which normally isn't on Windows), specify the file using os.path.expanduser.

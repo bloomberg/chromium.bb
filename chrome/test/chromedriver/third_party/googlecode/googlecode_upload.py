@@ -175,7 +175,9 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
   """
   if user_name is None or password is None:
     from netrc import netrc
-    authenticators = netrc().authenticators("code.google.com")
+    # Chromium edit: Works on windows without requiring HOME to be set.
+    netrc_path = os.path.join(os.path.expanduser('~'), '.netrc')
+    authenticators = netrc(netrc_path).authenticators("code.google.com")
     if authenticators:
       if user_name is None:
         user_name = authenticators[0]
