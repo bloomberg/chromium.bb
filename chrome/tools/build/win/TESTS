@@ -11,4 +11,3 @@ pyautolib.py
 _pyautolib.pyd
 fonts\*
 chromedriver.exe
-chromedriver2.dll

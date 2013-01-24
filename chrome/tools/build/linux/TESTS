@@ -4,4 +4,3 @@ interactive_ui_tests
 _pyautolib.so
 pyautolib.py
 chromedriver
-libchromedriver2.so
