@@ -6726,6 +6726,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NETWORK_STATE_HANDLER_DESCRIPTION" desc="Title for the flag to enable using the new Network State Handler.">
         Enables the new Network State Handler which handles Shill communication in the Status Area without using NetworkLibrary.
       </message>
+      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable locally managed users.">
+        Enable locally managed users
+      </message>
+      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION" desc="Description for the flag to enable locally managed users.">
+        Enables support for user profiles that are managed by another user and can have restrictions applied.
+      </message>
 
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC" desc="Generic 'Automatic' experiment choice option name.">
         Automatic

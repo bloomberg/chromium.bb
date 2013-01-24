@@ -68,6 +68,7 @@ class LocallyManagedUser : public User {
 
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
+  virtual bool can_lock() const OVERRIDE;
   virtual std::string display_email() const OVERRIDE;
 
  private:
@@ -207,6 +208,10 @@ LocallyManagedUser::~LocallyManagedUser() {}
 
 User::UserType LocallyManagedUser::GetType() const {
   return USER_TYPE_LOCALLY_MANAGED;
+}
+
+bool LocallyManagedUser::can_lock() const {
+  return true;
 }
 
 std::string LocallyManagedUser::display_email() const {
