@@ -1123,13 +1123,6 @@ void ThreadProxy::renewTreePriority()
         m_layerTreeHostImpl->pinchGestureActive() ||
         m_layerTreeHostImpl->currentlyScrollingLayer();
 
-    // Notify the the client of this compositor via the output surface.
-    // TODO(epenner): Route this to compositor-thread instead of output-surface
-    // after GTFO refactor of compositor-thread (http://crbug/170828).
-    OutputSurface* output_surface = m_layerTreeHostImpl->outputSurface();
-    if (output_surface)
-        output_surface->UpdateSmoothnessTakesPriority(smoothnessTakesPriority);
-
     // Update expiration time if smoothness currently takes priority.
     if (smoothnessTakesPriority) {
         m_smoothnessTakesPriorityExpirationTime = base::TimeTicks::Now() +
@@ -1150,6 +1143,14 @@ void ThreadProxy::renewTreePriority()
         priority = NEW_CONTENT_TAKES_PRIORITY;
 
     m_layerTreeHostImpl->setTreePriority(priority);
+
+    // Notify the the client of this compositor via the output surface.
+    // TODO(epenner): Route this to compositor-thread instead of output-surface
+    // after GTFO refactor of compositor-thread (http://crbug/170828).
+    if (m_layerTreeHostImpl->outputSurface()) {
+        m_layerTreeHostImpl->outputSurface()->UpdateSmoothnessTakesPriority(
+            priority == SMOOTHNESS_TAKES_PRIORITY);
+    }
 
     // Need to make sure a delayed task is posted when we have smoothness
     // takes priority expiration time in the future.
