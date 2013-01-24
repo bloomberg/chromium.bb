@@ -164,15 +164,12 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoClearAudio) {
                          GetParam(), kExpected));
 }
 
-#if defined(OS_WIN)
+#if !defined(OS_WIN)
 // Times out on Windows. http://crbug.com/171937
-#define MAYBE_FrameChangeVideo DISABLED_FrameChangeVideo
-#else
-#define MAYBE_FrameChangeVideo FrameChangeVideo
-#endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_FrameChangeVideo) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
+#endif
 
 }  // namespace content
