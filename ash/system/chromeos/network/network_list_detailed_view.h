@@ -45,6 +45,9 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   virtual void CustomButtonPressed(views::Button* sender,
                                    const ui::Event& event) OVERRIDE;
   virtual bool CustomLinkClickedOn(views::View* sender) OVERRIDE;
+  virtual bool UpdateNetworkListEntries(
+      std::set<std::string>* new_service_paths) OVERRIDE;
+  virtual void ClearNetworkListEntries() OVERRIDE;
 
  private:
   std::string carrier_id_;
@@ -59,6 +62,9 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   TrayPopupLabelButton* other_wifi_;
   TrayPopupLabelButton* turn_on_wifi_;
   TrayPopupLabelButton* other_mobile_;
+  views::Label* scanning_view_;
+  views::Label* no_wifi_networks_view_;
+  views::Label* no_cellular_networks_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListDetailedView);
 };

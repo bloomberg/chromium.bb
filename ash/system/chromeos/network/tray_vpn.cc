@@ -110,6 +110,21 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
     return false;
   }
 
+  virtual bool UpdateNetworkListEntries(
+      std::set<std::string>* new_service_paths) OVERRIDE {
+    bool needs_relayout = false;
+    for (size_t i = 0; i < network_list().size(); ++i) {
+      const NetworkIconInfo* info = &network_list()[i];
+      if (UpdateNetworkChild(i, false, info))
+        needs_relayout = true;
+      new_service_paths->insert(info->service_path);
+    }
+    return needs_relayout;
+  }
+
+  virtual void ClearNetworkListEntries() {
+  }
+
  private:
   TrayPopupLabelButton* other_vpn_;
 

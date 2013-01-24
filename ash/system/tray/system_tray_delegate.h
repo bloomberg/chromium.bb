@@ -24,7 +24,7 @@ struct ASH_EXPORT NetworkIconInfo {
   NetworkIconInfo();
   ~NetworkIconInfo();
 
-  bool highlight() { return connected || connecting; }
+  bool highlight() const { return connected || connecting; }
 
   bool connecting;
   bool connected;

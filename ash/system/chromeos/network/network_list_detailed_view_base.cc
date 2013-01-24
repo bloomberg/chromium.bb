@@ -102,9 +102,6 @@ NetworkListDetailedViewBase::NetworkListDetailedViewBase(
       info_icon_(NULL),
       settings_(NULL),
       proxy_settings_(NULL),
-      scanning_view_(NULL),
-      no_wifi_networks_view_(NULL),
-      no_cellular_networks_view_(NULL),
       info_bubble_(NULL) {
 }
 
@@ -265,86 +262,7 @@ bool NetworkListDetailedViewBase::OrderChild(views::View* view, int index) {
 void NetworkListDetailedViewBase::RefreshNetworkList() {
   network_map_.clear();
   std::set<std::string> new_service_paths;
-
-  bool needs_relayout = false;
-
-  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
-
-  // Insert child views
-
-  int index = 0;
-
-  // Highlighted networks
-  for (size_t i = 0; i < network_list_.size(); ++i) {
-    NetworkIconInfo* info = &network_list_[i];
-    if (info->highlight()) {
-      if (UpdateNetworkChild(index++, true, info))
-        needs_relayout = true;
-      new_service_paths.insert(info->service_path);
-    }
-  }
-
-  // "Cellular Initializing" or "No celular networks"
-  bool have_cellular_network = false;
-  for (size_t i = 0; i < network_list_.size(); ++i) {
-    if (network_list_[i].is_cellular) {
-      have_cellular_network = true;
-      break;
-    }
-  }
-
-  int status_message_id = 0;
-  if (delegate->GetCellularInitializing())
-    status_message_id = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
-  else if (!have_cellular_network && delegate->GetMobileEnabled())
-    status_message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
-  if (status_message_id) {
-    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        status_message_id);
-    if (CreateOrUpdateInfoLabel(index++, text, &no_cellular_networks_view_))
-      needs_relayout = true;
-  } else if (no_cellular_networks_view_) {
-    scroll_content()->RemoveChildView(no_cellular_networks_view_);
-    no_cellular_networks_view_ = NULL;
-    needs_relayout = true;
-  }
-
-  // "Wifi Enabled / Disabled"
-  if (network_list_.empty()) {
-    int message_id = delegate->GetWifiEnabled() ?
-        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
-        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        message_id);
-    if (CreateOrUpdateInfoLabel(index++, text, &no_wifi_networks_view_))
-      needs_relayout = true;
-  } else if (no_wifi_networks_view_) {
-    scroll_content()->RemoveChildView(no_wifi_networks_view_);
-    no_wifi_networks_view_ = NULL;
-    needs_relayout = true;
-  }
-
-  // "Wifi Scanning"
-  if (delegate->GetWifiScanning()) {
-    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
-    if (CreateOrUpdateInfoLabel(index++, text, &scanning_view_))
-      needs_relayout = true;
-  } else if (scanning_view_ != NULL) {
-    scroll_content()->RemoveChildView(scanning_view_);
-    scanning_view_ = NULL;
-    needs_relayout = true;
-  }
-
-  // Un-highlighted networks
-  for (size_t i = 0; i < network_list_.size(); ++i) {
-    NetworkIconInfo* info = &network_list_[i];
-    if (!info->highlight()) {
-      if (UpdateNetworkChild(index++, false, info))
-        needs_relayout = true;
-      new_service_paths.insert(info->service_path);
-    }
-  }
+  bool needs_relayout = UpdateNetworkListEntries(&new_service_paths);
 
   // Remove old children
   std::set<std::string> remove_service_paths;
@@ -383,9 +301,7 @@ void NetworkListDetailedViewBase::ClearNetworkScrollWithEmptyNetworkList() {
   service_path_map_.clear();
   network_map_.clear();
   scroll_content()->RemoveAllChildViews(true);
-  scanning_view_ = NULL;
-  no_wifi_networks_view_ = NULL;
-  no_cellular_networks_view_ = NULL;
+  ClearNetworkListEntries();
 }
 
 void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkData() {

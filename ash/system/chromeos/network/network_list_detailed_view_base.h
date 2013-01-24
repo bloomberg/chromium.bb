@@ -46,6 +46,14 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   void RefreshNetworkScrollWithUpdatedNetworkData();
   user::LoginStatus login() const { return login_; }
   bool IsNetworkListEmpty() const;
+  bool CreateOrUpdateInfoLabel(
+      int index, const string16& text, views::Label** label);
+  bool UpdateNetworkChild(
+      int index, bool highlight, const NetworkIconInfo* info);
+
+  const std::vector<NetworkIconInfo>& network_list() const {
+    return network_list_;
+  }
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
@@ -70,16 +78,16 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
       const ui::Event& event) = 0;
   // Returns true if custom link is clicked on.
   virtual bool CustomLinkClickedOn(views::View* sender) = 0;
+  // Returns true if the scroll list needs to be relayed out.
+  virtual bool UpdateNetworkListEntries(
+      std::set<std::string>* new_service_paths) = 0;
+  virtual void ClearNetworkListEntries() = 0;
 
   void Update();
   void CreateItems();
   void AppendHeaderEntry(int header_string_id);
   void AppendNetworkExtra();
   void UpdateAvailableNetworkList();
-  bool CreateOrUpdateInfoLabel(
-      int index, const string16& text, views::Label** label);
-  bool UpdateNetworkChild(
-      int index, bool highlight, const NetworkIconInfo* info);
   bool OrderChild(views::View* view, int index);
   void RefreshNetworkList();
   // Adds a settings entry when logged in, and an entry for changing proxy
@@ -98,9 +106,6 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   TrayPopupHeaderButton* info_icon_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
-  views::Label* scanning_view_;
-  views::Label* no_wifi_networks_view_;
-  views::Label* no_cellular_networks_view_;
   views::BubbleDelegateView* info_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListDetailedViewBase);

@@ -27,7 +27,10 @@ NetworkListDetailedView::NetworkListDetailedView(SystemTrayItem* owner,
       setup_mobile_account_(NULL),
       other_wifi_(NULL),
       turn_on_wifi_(NULL),
-      other_mobile_(NULL) {
+      other_mobile_(NULL),
+      scanning_view_(NULL),
+      no_wifi_networks_view_(NULL),
+      no_cellular_networks_view_(NULL) {
 }
 
 NetworkListDetailedView::~NetworkListDetailedView() {
@@ -220,6 +223,97 @@ bool NetworkListDetailedView::CustomLinkClickedOn(views::View* sender) {
   } else {
     return false;
   }
+}
+
+bool NetworkListDetailedView::UpdateNetworkListEntries(
+    std::set<std::string>* new_service_paths) {
+  bool needs_relayout = false;
+
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+
+  // Insert child views
+
+  int index = 0;
+
+  // Highlighted networks
+  for (size_t i = 0; i < network_list().size(); ++i) {
+    const NetworkIconInfo* info = &network_list()[i];
+    if (info->highlight()) {
+      if (UpdateNetworkChild(index++, true, info))
+        needs_relayout = true;
+      new_service_paths->insert(info->service_path);
+    }
+  }
+
+  // "Cellular Initializing" or "No celular networks"
+  bool have_cellular_network = false;
+  for (size_t i = 0; i < network_list().size(); ++i) {
+    if (network_list()[i].is_cellular) {
+      have_cellular_network = true;
+      break;
+    }
+  }
+
+  int status_message_id = 0;
+  if (delegate->GetCellularInitializing())
+    status_message_id = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
+  else if (!have_cellular_network && delegate->GetMobileEnabled())
+    status_message_id = IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS;
+  if (status_message_id) {
+    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+        status_message_id);
+    if (CreateOrUpdateInfoLabel(index++, text, &no_cellular_networks_view_))
+      needs_relayout = true;
+  } else if (no_cellular_networks_view_) {
+    scroll_content()->RemoveChildView(no_cellular_networks_view_);
+    no_cellular_networks_view_ = NULL;
+    needs_relayout = true;
+  }
+
+  // "Wifi Enabled / Disabled"
+  if (network_list().empty()) {
+    int message_id = delegate->GetWifiEnabled() ?
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
+    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+        message_id);
+    if (CreateOrUpdateInfoLabel(index++, text, &no_wifi_networks_view_))
+      needs_relayout = true;
+  } else if (no_wifi_networks_view_) {
+    scroll_content()->RemoveChildView(no_wifi_networks_view_);
+    no_wifi_networks_view_ = NULL;
+    needs_relayout = true;
+  }
+
+  // "Wifi Scanning"
+  if (delegate->GetWifiScanning()) {
+    string16 text = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
+    if (CreateOrUpdateInfoLabel(index++, text, &scanning_view_))
+      needs_relayout = true;
+  } else if (scanning_view_ != NULL) {
+    scroll_content()->RemoveChildView(scanning_view_);
+    scanning_view_ = NULL;
+    needs_relayout = true;
+  }
+
+  // Un-highlighted networks
+  for (size_t i = 0; i < network_list().size(); ++i) {
+    const NetworkIconInfo* info = &network_list()[i];
+    if (!info->highlight()) {
+      if (UpdateNetworkChild(index++, false, info))
+        needs_relayout = true;
+      new_service_paths->insert(info->service_path);
+    }
+  }
+
+  return needs_relayout;
+}
+
+void NetworkListDetailedView::ClearNetworkListEntries() {
+  scanning_view_ = NULL;
+  no_wifi_networks_view_ = NULL;
+  no_cellular_networks_view_ = NULL;
 }
 
 }  // namespace tray
