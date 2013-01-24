@@ -417,7 +417,6 @@ Tab::Tab(TabController* controller)
       favicon_hiding_offset_(0),
       loading_animation_frame_(0),
       should_display_crashed_favicon_(false),
-      throbber_disabled_(false),
       theme_provider_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)),
       showing_icon_(false),
@@ -496,10 +495,18 @@ void Tab::SetData(const TabRendererData& data) {
   } else if ((data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) &&
              (old.capture_state == TabRendererData::CAPTURE_STATE_NONE)) {
     StartRecordingAnimation();
+
   } else {
     if (IsPerformingCrashAnimation())
       StopCrashAnimation();
     ResetCrashedFavicon();
+  }
+
+  if (old.mini != data_.mini) {
+    if (tab_animation_.get() && tab_animation_->is_animating()) {
+      tab_animation_->Stop();
+      tab_animation_.reset(NULL);
+    }
   }
 
   // If the favicon changed, re-compute its dominant color.
@@ -516,14 +523,6 @@ void Tab::SetData(const TabRendererData& data) {
 }
 
 void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
-  // If this is an extension app and a command line flag is set,
-  // then disable the throbber.
-  throbber_disabled_ = data().app &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsNoThrob);
-
-  if (throbber_disabled_)
-    return;
-
   if (state == data_.network_state &&
       state == TabRendererData::NETWORK_STATE_NONE) {
     // If the network state is none and hasn't changed, do nothing. Otherwise we
@@ -537,26 +536,27 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 }
 
 void Tab::StartPulse() {
-  if (!tab_animation_.get()) {
-    tab_animation_.reset(new ui::ThrobAnimation(this));
-    tab_animation_->SetSlideDuration(kPulseDurationMs);
-    if (animation_container_.get())
-      tab_animation_->SetContainer(animation_container_.get());
-  }
-  tab_animation_->Reset();
-  tab_animation_->StartThrobbing(std::numeric_limits<int>::max());
+  ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
+  animation->SetSlideDuration(kPulseDurationMs);
+  if (animation_container_.get())
+    animation->SetContainer(animation_container_.get());
+  animation->StartThrobbing(std::numeric_limits<int>::max());
+  tab_animation_.reset(animation);
 }
 
 void Tab::StopPulse() {
   if (!tab_animation_.get())
     return;
-
-  tab_animation_->Stop();  // Do stop so we get notified.
+  tab_animation_->Stop();
   tab_animation_.reset(NULL);
 }
 
 void Tab::StartMiniTabTitleAnimation() {
-  if (!mini_title_animation_.get()) {
+  // We can only do this animation if the tab is mini because we will
+  // upcast tab_animation back to MultiAnimation when we draw.
+  if (!data().mini)
+    return;
+  if (!tab_animation_.get()) {
     ui::MultiAnimation::Parts parts;
     parts.push_back(
         ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
@@ -571,19 +571,22 @@ void Tab::StartMiniTabTitleAnimation() {
     parts[0].end_time_ms = kMiniTitleChangeAnimationEnd1MS;
     parts[2].start_time_ms = kMiniTitleChangeAnimationStart3MS;
     parts[2].end_time_ms = kMiniTitleChangeAnimationEnd3MS;
-    mini_title_animation_.reset(new ui::MultiAnimation(
-        parts,
-        base::TimeDelta::FromMilliseconds(
-            kMiniTitleChangeAnimationIntervalMS)));
-    mini_title_animation_->SetContainer(animation_container());
-    mini_title_animation_->set_delegate(this);
+    base::TimeDelta timeout =
+        base::TimeDelta::FromMilliseconds(kMiniTitleChangeAnimationIntervalMS);
+    ui::MultiAnimation* animation = new ui::MultiAnimation(parts, timeout);
+    if (animation_container_.get())
+      animation->SetContainer(animation_container_.get());
+    animation->set_delegate(this);
+    tab_animation_.reset(animation);
   }
-  mini_title_animation_->Start();
+  tab_animation_->Start();
 }
 
 void Tab::StopMiniTabTitleAnimation() {
-  if (mini_title_animation_.get())
-    mini_title_animation_->Stop();
+  if (!tab_animation_.get())
+    return;
+  tab_animation_->Stop();
+  tab_animation_.reset(NULL);
 }
 
 void Tab::UpdateIconDominantColor() {
@@ -1076,10 +1079,15 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsActive()) {
     PaintActiveTabBackground(canvas);
   } else {
-    if (mini_title_animation_.get() && mini_title_animation_->is_animating())
-      PaintInactiveTabBackgroundWithTitleChange(canvas);
-    else
+    if (tab_animation_.get() &&
+        tab_animation_->is_animating() &&
+        data().mini) {
+      ui::MultiAnimation* animation =
+          static_cast<ui::MultiAnimation*>(tab_animation_.get());
+      PaintInactiveTabBackgroundWithTitleChange(canvas, animation);
+    } else {
       PaintInactiveTabBackground(canvas);
+    }
 
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
@@ -1091,7 +1099,9 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   }
 }
 
-void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
+void Tab::PaintInactiveTabBackgroundWithTitleChange(
+    gfx::Canvas* canvas,
+    ui::MultiAnimation* animation) {
   // Render the inactive tab background. We'll use this for clipping.
   gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
   PaintInactiveTabBackground(&background_canvas);
@@ -1105,12 +1115,12 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   int x1 = radius;
   int x2 = -radius;
   int x;
-  if (mini_title_animation_->current_part_index() == 0) {
-    x = mini_title_animation_->CurrentValueBetween(x0, x1);
-  } else if (mini_title_animation_->current_part_index() == 1) {
+  if (animation->current_part_index() == 0) {
+    x = animation->CurrentValueBetween(x0, x1);
+  } else if (animation->current_part_index() == 1) {
     x = x1;
   } else {
-    x = mini_title_animation_->CurrentValueBetween(x1, x2);
+    x = animation->CurrentValueBetween(x1, x2);
   }
   SkPoint center_point;
   center_point.iset(x, 0);
@@ -1133,8 +1143,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   canvas->DrawImageInt(background_image, 0, 0);
 
   // And then the gradient on top of that.
-  if (mini_title_animation_->current_part_index() == 2) {
-    uint8 alpha = mini_title_animation_->CurrentValueBetween(255, 0);
+  if (animation->current_part_index() == 2) {
+    uint8 alpha = animation->CurrentValueBetween(255, 0);
     canvas->DrawImageInt(hover_image, 0, 0, alpha);
   } else {
     canvas->DrawImageInt(hover_image, 0, 0);
@@ -1496,8 +1506,10 @@ double Tab::GetThrobValue() {
   double min = is_selected ? kSelectedTabOpacity : 0;
   double scale = is_selected ? kSelectedTabThrobScale : 1;
 
-  if (tab_animation_.get() && tab_animation_->is_animating())
-    return tab_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
+  if (!data().mini) {
+    if (tab_animation_.get() && tab_animation_->is_animating())
+      return tab_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
+  }
 
   if (hover_controller_.ShouldDraw()) {
     return kHoverOpacity * hover_controller_.GetAnimationValue() * scale +
