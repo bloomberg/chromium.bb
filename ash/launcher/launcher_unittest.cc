@@ -11,6 +11,9 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/root_window.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -126,6 +129,79 @@ TEST_F(LauncherTest, ActivateAsFallback) {
 
   wm::ActivateWindow(launcher_widget->GetNativeWindow());
   EXPECT_FALSE(launcher_widget->CanActivate());
+}
+
+void TestLauncherAlignment(aura::RootWindow* root,
+                           ShelfAlignment alignment,
+                           const std::string& expected) {
+  Shell::GetInstance()->SetShelfAlignment(alignment, root);
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(root);
+  EXPECT_EQ(expected,
+            screen->GetDisplayNearestWindow(root).work_area().ToString());
+}
+
+TEST_F(LauncherTest, TestAlignment) {
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  UpdateDisplay("400x400");
+  ASSERT_TRUE(launcher);
+  {
+    SCOPED_TRACE("Single Bottom");
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_BOTTOM,
+                          "0,0 400x352");
+  }
+  {
+    SCOPED_TRACE("Single Right");
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_RIGHT,
+                          "0,0 348x400");
+  }
+  {
+    SCOPED_TRACE("Single Left");
+    TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_LEFT,
+                          "52,0 348x400");
+  }
+  UpdateDisplay("300x300,500x500");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  {
+    SCOPED_TRACE("Primary Bottom");
+    TestLauncherAlignment(root_windows[0],
+                          SHELF_ALIGNMENT_BOTTOM,
+                          "0,0 300x252");
+  }
+  {
+    SCOPED_TRACE("Primary Right");
+    TestLauncherAlignment(root_windows[0],
+                          SHELF_ALIGNMENT_RIGHT,
+                          "0,0 248x300");
+  }
+  {
+    SCOPED_TRACE("Primary Left");
+    TestLauncherAlignment(root_windows[0],
+                          SHELF_ALIGNMENT_LEFT,
+                          "52,0 248x300");
+  }
+  if (Shell::IsLauncherPerDisplayEnabled()) {
+    {
+      SCOPED_TRACE("Secondary Bottom");
+      TestLauncherAlignment(root_windows[1],
+                            SHELF_ALIGNMENT_BOTTOM,
+                            "300,0 500x452");
+    }
+    {
+      SCOPED_TRACE("Secondary Right");
+      TestLauncherAlignment(root_windows[1],
+                            SHELF_ALIGNMENT_RIGHT,
+                            "300,0 448x500");
+    }
+    {
+      SCOPED_TRACE("Secondary Left");
+      TestLauncherAlignment(root_windows[1],
+                            SHELF_ALIGNMENT_LEFT,
+                            "352,0 448x500");
+    }
+  }
 }
 
 }  // namespace ash
