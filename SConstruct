@@ -349,6 +349,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'android', default=False,
                   desc='Build for Android target')
 
+  BitFromArgument(env, 'arm_hard_float', default=False,
+                  desc='Build for hard float ARM ABI')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -2294,6 +2297,10 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 def SetupLinuxEnvArm(env):
   jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+  if env.Bit('arm_hard_float'):
+    arm_abi = 'gnueabihf'
+  else:
+    arm_abi = 'gnueabi'
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
       print 'Not installing', dest
@@ -2304,11 +2311,12 @@ def SetupLinuxEnvArm(env):
     if not platform.machine().startswith('arm'):
       env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
   else:
-    if which('arm-linux-gnueabi-g++'):
-      arm_suffix = ''
-    elif which('arm-linux-gnueabi-g++-4.5'):
-      arm_suffix = '-4.5'
-    else:
+    arm_suffix = None
+    for suffix in ['', '-4.5', '-4.6']:
+      if which('arm-linux-%s-g++%s' % (arm_abi, suffix)):
+        arm_suffix = suffix
+        break
+    if arm_suffix is None:
       # This doesn't bail out completely here because we cannot
       # tell whether scons was run with just --mode=nacl, where
       # none of these settings will actually be used.
@@ -2317,19 +2325,19 @@ def SetupLinuxEnvArm(env):
       env.Replace(CC=bad, CXX=bad, LD=bad)
       return
 
-    env.Replace(CC='arm-linux-gnueabi-gcc' + arm_suffix,
-                CXX='arm-linux-gnueabi-g++' + arm_suffix,
-                LD='arm-linux-gnueabi-ld' + arm_suffix,
+    env.Replace(CC='arm-linux-%s-gcc%s' % (arm_abi, arm_suffix),
+                CXX='arm-linux-%s-g++%s' % (arm_abi, arm_suffix),
+                LD='arm-linux-%s-ld%s' % (arm_abi, arm_suffix),
                 EMULATOR=jail + '/run_under_qemu_arm',
                 ASFLAGS=[],
                 LIBPATH=['${LIB_DIR}',
-                         jail + '/usr/lib',
-                         jail + '/lib',
-                         jail + '/usr/lib/arm-linux-gnueabi',
-                         jail + '/lib/arm-linux-gnueabi',
+                         '%s/usr/lib' % jail,
+                         '%s/lib' % jail,
+                         '%s/usr/lib/arm-linux-%s' % (jail, arm_abi),
+                         '%s/lib/arm-linux-%s' % (jail, arm_abi),
                          ],
                 LINKFLAGS=['-Wl,-rpath-link=' + jail +
-                           '/lib/arm-linux-gnueabi']
+                           '/lib/arm-linux-' + arm_abi]
                 )
     env.Prepend(CCFLAGS=['-march=armv7-a',
                          '-marm',   # force arm32
