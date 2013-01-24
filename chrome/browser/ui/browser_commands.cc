@@ -695,12 +695,11 @@ void ShowFindBar(Browser* browser) {
   browser->GetFindBarController()->Show();
 }
 
-// TODO(markusheintz): Rename the method to something more appropriate.
-void ShowPageInfo(Browser* browser,
-                  content::WebContents* web_contents,
-                  const GURL& url,
-                  const SSLStatus& ssl,
-                  bool show_history) {
+void ShowWebsiteSettings(Browser* browser,
+                         content::WebContents* web_contents,
+                         const GURL& url,
+                         const SSLStatus& ssl,
+                         bool show_history) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
 

@@ -255,15 +255,6 @@ class BrowserWindow : public BaseWindow {
   // on the page).
   virtual void WebContentsFocused(content::WebContents* contents) = 0;
 
-  // Shows the page info using the specified information.
-  // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
-  // information for that page/frame.  If |show_history| is true, a section
-  // showing how many times that URL has been visited is added to the page info.
-  virtual void ShowPageInfo(content::WebContents* web_contents,
-                            const GURL& url,
-                            const content::SSLStatus& ssl,
-                            bool show_history) = 0;
-
   // Shows the website settings using the specified information. |url| is the
   // url of the page/frame the info applies to, |ssl| is the SSL information for
   // that page/frame.  If |show_history| is true, a section showing how many

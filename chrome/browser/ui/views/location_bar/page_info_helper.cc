@@ -40,6 +40,6 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
     return;
   }
 
-  location_bar_->delegate()->ShowPageInfo(
+  location_bar_->delegate()->ShowWebsiteSettings(
       tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
 }

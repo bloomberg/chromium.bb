@@ -78,7 +78,6 @@
 #include "chrome/browser/ui/gtk/website_settings/website_settings_popup_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1004,22 +1003,14 @@ void BrowserWindowGtk::WebContentsFocused(WebContents* contents) {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::ShowPageInfo(content::WebContents* web_contents,
-                                    const GURL& url,
-                                    const SSLStatus& ssl,
-                                    bool show_history) {
-  chrome::ShowPageInfoBubble(window_, web_contents, url, ssl, show_history,
-                             browser_.get());
-}
-
 void BrowserWindowGtk::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
-    WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
-                                  web_contents, url, ssl);
+  WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
+                                web_contents, url, ssl);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {

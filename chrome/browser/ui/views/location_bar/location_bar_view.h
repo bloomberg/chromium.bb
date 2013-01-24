@@ -105,11 +105,11 @@ class LocationBarView : public LocationBar,
     virtual ContentSettingBubbleModelDelegate*
         GetContentSettingBubbleModelDelegate() = 0;
 
-    // Shows page information in the given web contents.
-    virtual void ShowPageInfo(content::WebContents* web_contents,
-                              const GURL& url,
-                              const content::SSLStatus& ssl,
-                              bool show_history) = 0;
+    // Shows permissions and settings for the given web contents.
+    virtual void ShowWebsiteSettings(content::WebContents* web_contents,
+                                     const GURL& url,
+                                     const content::SSLStatus& ssl,
+                                     bool show_history) = 0;
 
     // Called by the location bar view when the user starts typing in the edit.
     // This forces our security style to be UNKNOWN for the duration of the

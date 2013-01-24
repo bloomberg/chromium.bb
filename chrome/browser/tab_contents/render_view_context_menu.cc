@@ -1584,8 +1584,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       NavigationEntry* nav_entry = controller->GetActiveEntry();
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
-      chrome::ShowPageInfo(browser, source_web_contents_, nav_entry->GetURL(),
-                           nav_entry->GetSSL(), true);
+      chrome::ShowWebsiteSettings(browser, source_web_contents_,
+                                  nav_entry->GetURL(), nav_entry->GetSSL(),
+                                  true);
       break;
     }
 
@@ -1625,8 +1626,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
       Browser* browser = chrome::FindBrowserWithWebContents(
           source_web_contents_);
-      chrome::ShowPageInfo(browser, source_web_contents_, params_.frame_url,
-                           params_.security_info, false);
+      chrome::ShowWebsiteSettings(browser, source_web_contents_,
+                                  params_.frame_url, params_.security_info,
+                                  false);
       break;
     }
 

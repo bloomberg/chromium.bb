@@ -104,8 +104,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
   }
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
-  chrome::ShowPageInfo(browser, tab, nav_entry->GetURL(), nav_entry->GetSSL(),
-                       true);
+  chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetURL(),
+                              nav_entry->GetSSL(), true);
   return true;
 }
 

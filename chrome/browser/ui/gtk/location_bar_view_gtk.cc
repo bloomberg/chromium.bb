@@ -1444,8 +1444,8 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
       NOTREACHED();
       return FALSE;
     }
-    chrome::ShowPageInfo(browser_, tab, nav_entry->GetURL(),
-                         nav_entry->GetSSL(), true);
+    chrome::ShowWebsiteSettings(browser_, tab, nav_entry->GetURL(),
+                                nav_entry->GetSSL(), true);
     return TRUE;
   } else if (event->button == 2) {
     // When the user middle clicks on the location icon, try to open the

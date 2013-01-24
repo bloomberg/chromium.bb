@@ -1299,7 +1299,6 @@
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
         'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
-        'browser/ui/cocoa/page_info_bubble_controller_unittest.mm',
         'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
         'browser/ui/cocoa/profile_menu_controller_unittest.mm',
         'browser/ui/cocoa/ratings_view_unittest.mm',

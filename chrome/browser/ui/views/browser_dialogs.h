@@ -54,14 +54,6 @@ void ShowChromeToMobileBubbleView(views::View* anchor_view, Browser* browser);
 void HideChromeToMobileBubbleView();
 bool IsChromeToMobileBubbleViewShowing();
 
-// Shows the page info bubble anchored to the supplied view.
-void ShowPageInfoBubble(views::View* anchor_view,
-                        content::WebContents* web_contents,
-                        const GURL& url,
-                        const content::SSLStatus& ssl,
-                        bool show_history,
-                        content::PageNavigator* navigator);
-
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
 

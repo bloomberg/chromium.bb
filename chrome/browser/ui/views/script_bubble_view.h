@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/page_info_model.h"
-#include "chrome/browser/page_info_model_observer.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/bubble/bubble_delegate.h"

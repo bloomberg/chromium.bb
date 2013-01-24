@@ -100,11 +100,11 @@ void TogglePagePinnedToStartScreen(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void ShowFindBar(Browser* browser);
-void ShowPageInfo(Browser* browser,
-                  content::WebContents* web_contents,
-                  const GURL& url,
-                  const content::SSLStatus& ssl,
-                  bool show_history);
+void ShowWebsiteSettings(Browser* browser,
+                         content::WebContents* web_contents,
+                         const GURL& url,
+                         const content::SSLStatus& ssl,
+                         bool show_history);
 void ShowChromeToMobileBubble(Browser* browser);
 void Print(Browser* browser);
 bool CanPrint(const Browser* browser);

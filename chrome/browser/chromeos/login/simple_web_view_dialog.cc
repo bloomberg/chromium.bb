@@ -289,10 +289,11 @@ SimpleWebViewDialog::GetContentSettingBubbleModelDelegate() {
   return bubble_model_delegate_.get();
 }
 
-void SimpleWebViewDialog::ShowPageInfo(content::WebContents* web_contents,
-                                       const GURL& url,
-                                       const content::SSLStatus& ssl,
-                                       bool show_history) {
+void SimpleWebViewDialog::ShowWebsiteSettings(
+    content::WebContents* web_contents,
+    const GURL& url,
+    const content::SSLStatus& ssl,
+    bool show_history) {
   NOTIMPLEMENTED();
   // TODO (ygorshenin@,markusheintz@): implement this
 }
