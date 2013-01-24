@@ -130,6 +130,7 @@ class InvalidatorRegistrarTest : public testing::Test {};
 // When we expect a death via CHECK(), we can't match against the
 // CHECK() message since they are removed in official builds.
 
+#if GTEST_HAS_DEATH_TEST
 // Having registered handlers on destruction should cause a CHECK.
 TEST_F(InvalidatorRegistrarTest, RegisteredHandlerOnDestruction) {
   scoped_ptr<InvalidatorRegistrar> registrar(new InvalidatorRegistrar());
@@ -168,6 +169,7 @@ TEST_F(InvalidatorRegistrarTest, MultipleRegistration) {
   registrar.UnregisterHandler(&handler2);
   registrar.UnregisterHandler(&handler1);
 }
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 

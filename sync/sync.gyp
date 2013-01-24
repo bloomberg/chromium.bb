@@ -218,6 +218,7 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         # TODO(akalin): Remove this (http://crbug.com/133352).
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync_core',
       ],
       'export_dependent_settings': [
@@ -241,12 +242,7 @@
         'notifier/object_id_invalidation_map.h',
       ],
       'conditions': [
-        ['OS == "ios"', {
-          'sources!': [
-            'notifier/invalidator_factory.cc',
-          ],
-        }],
-        ['OS != "android" and OS != "ios"', {
+        ['OS != "android"', {
           'sources': [
             'notifier/ack_tracker.cc',
             'notifier/ack_tracker.h',
@@ -265,11 +261,6 @@
             'notifier/sync_invalidation_listener.h',
             'notifier/sync_system_resources.cc',
             'notifier/sync_system_resources.h',
-          ],
-        }],
-        ['OS != "ios"', {
-          'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libjingle',
           ],
         }],
       ],
@@ -761,6 +752,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync_core',
         'sync_notifier',
         'test_support_sync_notifier',
@@ -774,6 +766,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync_core',
         'sync_notifier',
         'test_support_sync_notifier',
@@ -786,15 +779,7 @@
           'notifier/invalidator_factory_unittest.cc',
         ],
         'conditions': [
-          ['OS == "ios"', {
-            'sources!': [
-              # TODO(ios): Re-enable this test on iOS once there is an iOS
-              # implementation of invalidator_factory.
-              'notifier/invalidator_factory_unittest.cc',
-              'notifier/sync_notifier_factory_unittest.cc',
-            ],
-          }],
-          ['OS != "android" and OS != "ios"', {
+          ['OS != "android"', {
             'sources': [
               'notifier/ack_tracker_unittest.cc',
               'notifier/fake_invalidator_unittest.cc',
@@ -810,16 +795,6 @@
           }],
         ],
       },
-      'conditions': [
-        ['OS != "ios"', {
-          'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libjingle',
-          ],
-          'export_dependent_settings': [
-            '../third_party/libjingle/libjingle.gyp:libjingle',
-          ],
-        }],
-      ],
     },
 
     # Unit tests for the 'sync_internal_api' target.  This cannot be a static

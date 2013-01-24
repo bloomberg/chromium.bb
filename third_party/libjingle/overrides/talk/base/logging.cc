@@ -4,7 +4,7 @@
 
 #include "third_party/libjingle/overrides/talk/base/logging.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <CoreServices/CoreServices.h>
 #endif  // OS_MACOSX
 
@@ -86,7 +86,11 @@ static std::string GenerateExtra(LogErrorContext err_ctx,
         break;
       }
 #endif  // OS_WIN
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
+      case ERRCTX_OSSTATUS:
+        tmp << " " << "Unknown LibJingle error: " << err;
+        break;
+#elif defined(OS_MACOSX)
       case ERRCTX_OSSTATUS: {
         tmp << " " << nonnull(GetMacOSStatusErrorString(err), "Unknown error");
         if (const char* desc = GetMacOSStatusCommentString(err)) {
