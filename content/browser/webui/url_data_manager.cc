@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/browser/webui/url_data_manager.h"
 
 #include <vector>
 
@@ -13,33 +13,50 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "content/browser/webui/url_data_manager_backend.h"
+#include "content/browser/webui/web_ui_data_source.h"
+#include "content/browser/resource_context_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
-static base::LazyInstance<base::Lock>::Leaky
-    g_delete_lock = LAZY_INSTANCE_INITIALIZER;
+namespace {
+
+const char kURLDataManagerKeyName[] = "url_data_manager";
+
+base::LazyInstance<base::Lock>::Leaky g_delete_lock = LAZY_INSTANCE_INITIALIZER;
+
+ChromeURLDataManager* GetFromBrowserContext(BrowserContext* context) {
+  if (!context->GetUserData(kURLDataManagerKeyName)) {
+    context->SetUserData(kURLDataManagerKeyName,
+                         new ChromeURLDataManager(context));
+  }
+  return static_cast<ChromeURLDataManager*>(
+      context->GetUserData(kURLDataManagerKeyName));
+}
+
+// Invoked on the IO thread to do the actual adding of the DataSource.
+static void AddDataSourceOnIOThread(
+    content::ResourceContext* resource_context,
+    scoped_refptr<URLDataSourceImpl> data_source) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  GetURLDataManagerForResourceContext(resource_context)->AddDataSource(
+      data_source.get());
+}
+
+}  // namespace
+
 
 // static
 ChromeURLDataManager::URLDataSources* ChromeURLDataManager::data_sources_ =
     NULL;
 
-// Invoked on the IO thread to do the actual adding of the DataSource.
-static void AddDataSourceOnIOThread(
-    const base::Callback<ChromeURLDataManagerBackend*(void)>& backend,
-    scoped_refptr<URLDataSourceImpl> data_source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  backend.Run()->AddDataSource(data_source.get());
-}
-
 ChromeURLDataManager::ChromeURLDataManager(
-      const base::Callback<ChromeURLDataManagerBackend*(void)>& backend)
-    : backend_(backend) {
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
 }
 
 ChromeURLDataManager::~ChromeURLDataManager() {
@@ -50,7 +67,8 @@ void ChromeURLDataManager::AddDataSource(URLDataSourceImpl* source) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AddDataSourceOnIOThread,
-                 backend_, make_scoped_refptr(source)));
+                 browser_context_->GetResourceContext(),
+                 make_scoped_refptr(source)));
 }
 
 // static
@@ -97,18 +115,18 @@ void ChromeURLDataManager::DeleteDataSource(
 
 // static
 void ChromeURLDataManager::AddDataSource(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     content::URLDataSource* source) {
-  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(
-      new URLDataSourceImpl(source->GetSource(), source));
+  GetFromBrowserContext(browser_context)->
+      AddDataSource(new URLDataSourceImpl(source->GetSource(), source));
 }
 
 // static
 void ChromeURLDataManager::AddWebUIDataSource(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     content::WebUIDataSource* source) {
   ChromeWebUIDataSource* impl = static_cast<ChromeWebUIDataSource*>(source);
-  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(impl);
+  GetFromBrowserContext(browser_context)->AddDataSource(impl);
 }
 
 // static

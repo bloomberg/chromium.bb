@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/trace_controller_impl.h"
+#include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/compositor_util.h"
@@ -619,6 +620,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // Must happen after the I/O thread is shutdown since this class lives on the
   // I/O thread and isn't threadsafe.
   GamepadService::GetInstance()->Terminate();
+
+  ChromeURLDataManager::DeleteDataSources();
 #endif  // !defined(OS_IOS)
 
   if (parts_.get())

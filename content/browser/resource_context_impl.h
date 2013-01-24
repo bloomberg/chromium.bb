@@ -7,6 +7,8 @@
 
 #include "content/public/browser/resource_context.h"
 
+class ChromeURLDataManagerBackend;
+
 namespace content {
 
 class ChromeBlobStorageContext;
@@ -21,6 +23,9 @@ ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context);
 
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
+
+ChromeURLDataManagerBackend* GetURLDataManagerForResourceContext(
+    ResourceContext* context);
 
 // Initialize the above data on the ResourceContext from a given BrowserContext.
 void InitializeResourceContext(BrowserContext* browser_context);

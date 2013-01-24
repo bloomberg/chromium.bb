@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "content/browser/webui/web_ui_data_source.h"
 
 #include <string>
 
@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
 #include "content/public/common/content_client.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/jstemplate_builder.h"
 #include "ui/webui/web_ui_util.h"
 
@@ -92,7 +91,8 @@ void ChromeWebUIDataSource::AddString(const std::string& name,
 
 void ChromeWebUIDataSource::AddLocalizedString(const std::string& name,
                                                int ids) {
-  localized_strings_.SetString(name, l10n_util::GetStringUTF16(ids));
+  localized_strings_.SetString(
+      name, content::GetContentClient()->GetLocalizedString(ids));
 }
 
 void ChromeWebUIDataSource::AddLocalizedStrings(

@@ -47,7 +47,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -460,12 +459,6 @@ content::ResourceContext* ProfileIOData::GetResourceContext() const {
   return resource_context_.get();
 }
 
-ChromeURLDataManagerBackend*
-ProfileIOData::GetChromeURLDataManagerBackend() const {
-  LazyInitialize();
-  return chrome_url_data_manager_backend_.get();
-}
-
 ChromeURLRequestContext*
 ProfileIOData::GetMainRequestContext() const {
   LazyInitialize();
@@ -640,8 +633,6 @@ void ProfileIOData::LazyInitialize() const {
           ChromeURLRequestContext::CONTEXT_TYPE_EXTENSIONS,
           load_time_stats_));
 
-  chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend);
-
   ChromeNetworkDelegate* network_delegate =
       new ChromeNetworkDelegate(
           io_thread_globals->extension_event_router_forwarder.get(),
@@ -721,23 +712,12 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(set_protocol);
 
   set_protocol = job_factory->SetProtocolHandler(
-      chrome::kChromeDevToolsScheme,
-      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(),
-                                    network_delegate, is_incognito()));
-  DCHECK(set_protocol);
-  set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionScheme,
       CreateExtensionProtocolHandler(is_incognito(), GetExtensionInfoMap()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kExtensionResourceScheme,
       CreateExtensionResourceProtocolHandler());
-  DCHECK(set_protocol);
-  set_protocol = job_factory->SetProtocolHandler(
-      chrome::kChromeUIScheme,
-      ChromeURLDataManagerBackend::CreateProtocolHandler(
-          chrome_url_data_manager_backend_.get(),
-          is_incognito()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());

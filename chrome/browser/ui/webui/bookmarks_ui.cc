@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/theme_resources.h"

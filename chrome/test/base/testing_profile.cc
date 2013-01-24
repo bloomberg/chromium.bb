@@ -759,11 +759,6 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
-base::Callback<ChromeURLDataManagerBackend*(void)>
-    TestingProfile::GetChromeURLDataManagerBackendGetter() const {
-  return base::Callback<ChromeURLDataManagerBackend*(void)>();
-}
-
 TestingProfile::Builder::Builder()
     : build_called_(false),
       delegate_(NULL) {

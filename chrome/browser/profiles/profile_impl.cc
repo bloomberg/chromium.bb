@@ -1148,8 +1148,3 @@ void ProfileImpl::GetCacheParameters(bool is_media_context,
   *max_size = is_media_context ? prefs_->GetInteger(prefs::kMediaCacheSize) :
                                  prefs_->GetInteger(prefs::kDiskCacheSize);
 }
-
-base::Callback<ChromeURLDataManagerBackend*(void)>
-    ProfileImpl::GetChromeURLDataManagerBackendGetter() const {
-  return io_data_.GetChromeURLDataManagerBackendGetter();
-}

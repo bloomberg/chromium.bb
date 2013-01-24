@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
-#define CHROME_BROWSER_UI_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
+#ifndef CONTENT_BROWSER_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
+#define CONTENT_BROWSER_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -28,4 +28,4 @@ class SharedResourcesDataSource : public content::URLDataSource {
   DISALLOW_COPY_AND_ASSIGN(SharedResourcesDataSource);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
+#endif  // CONTENT_BROWSER_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_

@@ -10,57 +10,50 @@
 #include "grit/webui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
+class ChromeWebUIDataSourceTest : public testing::Test {
  public:
-  MockChromeWebUIDataSource()
-      : ChromeWebUIDataSource("host"),
-        result_data_(NULL) {
-  }
+  ChromeWebUIDataSourceTest() : result_data_(NULL) {}
+  virtual ~ChromeWebUIDataSourceTest() {}
+  ChromeWebUIDataSource* source() { return source_.get(); }
 
   void StartDataRequest(const std::string& path) {
-    ChromeWebUIDataSource::StartDataRequest(
+     source_->StartDataRequest(
         path,
         false,
-        base::Bind(&MockChromeWebUIDataSource::SendResult, this));
+        base::Bind(&ChromeWebUIDataSourceTest::SendResult,
+        base::Unretained(this)));
   }
 
   std::string GetMimeType(const std::string& path) const {
-    return ChromeWebUIDataSource::GetMimeType(path);
+    return source_->GetMimeType(path);
   }
 
   scoped_refptr<base::RefCountedMemory> result_data_;
 
  private:
-  // Store response for later comparisons.
-  void SendResult(base::RefCountedMemory* data) {
-    result_data_ = data;
-  }
-
-  virtual ~MockChromeWebUIDataSource() {}
-};
-
-class ChromeWebUIDataSourceTest : public testing::Test {
- public:
-  ChromeWebUIDataSourceTest() {}
-  virtual ~ChromeWebUIDataSourceTest() {}
-  MockChromeWebUIDataSource* source() { return source_.get(); }
-
- private:
   virtual void SetUp() {
-    source_ = make_scoped_refptr(new MockChromeWebUIDataSource());
+    content::WebUIDataSource* source = ChromeWebUIDataSource::Create("host");
+    ChromeWebUIDataSource* source_impl = static_cast<ChromeWebUIDataSource*>(
+        source);
+    source_ = make_scoped_refptr(source_impl);
   }
 
   virtual void TearDown() {
   }
 
-  scoped_refptr<MockChromeWebUIDataSource> source_;
+  // Store response for later comparisons.
+  void SendResult(base::RefCountedMemory* data) {
+    result_data_ = data;
+  }
+
+  scoped_refptr<ChromeWebUIDataSource> source_;
 };
 
 TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {
   source()->SetJsonPath("strings.js");
-  source()->StartDataRequest("strings.js");
+  StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
-      source()->result_data_->front()), source()->result_data_->size());
+      result_data_->front()), result_data_->size());
   EXPECT_NE(result.find("var templateData = {"), std::string::npos);
   EXPECT_NE(result.find("};"), std::string::npos);
 }
@@ -69,51 +62,51 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
   source()->SetJsonPath("strings.js");
   source()->AddString("planet", ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", IDS_OK);
-  source()->StartDataRequest("strings.js");
+  StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
-      source()->result_data_->front()), source()->result_data_->size());
+      result_data_->front()), result_data_->size());
   EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
   EXPECT_NE(result.find("\"button\":\"OK\""), std::string::npos);
 }
 
 TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
   source()->SetDefaultResource(IDR_WEBUI_I18N_PROCESS_JS);
-  source()->StartDataRequest("foobar" );
+  StartDataRequest("foobar" );
   std::string result(
-      reinterpret_cast<const char*>(source()->result_data_->front()),
-      source()->result_data_->size());
+      reinterpret_cast<const char*>(result_data_->front()),
+      result_data_->size());
   EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
-  source()->StartDataRequest("strings.js");
+  StartDataRequest("strings.js");
   result = std::string(
-      reinterpret_cast<const char*>(source()->result_data_->front()),
-      source()->result_data_->size());
+      reinterpret_cast<const char*>(result_data_->front()),
+      result_data_->size());
   EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
 }
 
 TEST_F(ChromeWebUIDataSourceTest, NamedResource) {
   source()->SetDefaultResource(IDR_WEBUI_I18N_PROCESS_JS);
   source()->AddResourcePath("foobar", IDR_WEBUI_I18N_TEMPLATE_JS);
-  source()->StartDataRequest("foobar");
+  StartDataRequest("foobar");
   std::string result(
-      reinterpret_cast<const char*>(source()->result_data_->front()),
-      source()->result_data_->size());
+      reinterpret_cast<const char*>(result_data_->front()),
+      result_data_->size());
   EXPECT_NE(result.find("var i18nTemplate"), std::string::npos);
-  source()->StartDataRequest("strings.js");
+  StartDataRequest("strings.js");
   result = std::string(
-      reinterpret_cast<const char*>(source()->result_data_->front()),
-      source()->result_data_->size());
+      reinterpret_cast<const char*>(result_data_->front()),
+      result_data_->size());
   EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
 }
 
 TEST_F(ChromeWebUIDataSourceTest, MimeType) {
   const char* html = "text/html";
   const char* js = "application/javascript";
-  EXPECT_EQ(source()->GetMimeType(""), html);
-  EXPECT_EQ(source()->GetMimeType("foo"), html);
-  EXPECT_EQ(source()->GetMimeType("foo.html"), html);
-  EXPECT_EQ(source()->GetMimeType(".js"), js);
-  EXPECT_EQ(source()->GetMimeType("foo.js"), js);
-  EXPECT_EQ(source()->GetMimeType("js"), html);
-  EXPECT_EQ(source()->GetMimeType("foojs"), html);
-  EXPECT_EQ(source()->GetMimeType("foo.jsp"), html);
+  EXPECT_EQ(GetMimeType(""), html);
+  EXPECT_EQ(GetMimeType("foo"), html);
+  EXPECT_EQ(GetMimeType("foo.html"), html);
+  EXPECT_EQ(GetMimeType(".js"), js);
+  EXPECT_EQ(GetMimeType("foo.js"), js);
+  EXPECT_EQ(GetMimeType("js"), html);
+  EXPECT_EQ(GetMimeType("foojs"), html);
+  EXPECT_EQ(GetMimeType("foo.jsp"), html);
 }

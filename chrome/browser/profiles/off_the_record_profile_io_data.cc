@@ -20,7 +20,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -50,15 +49,6 @@ OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
 OffTheRecordProfileIOData::Handle::~Handle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   io_data_->ShutdownOnUIThread();
-}
-
-base::Callback<ChromeURLDataManagerBackend*(void)>
-OffTheRecordProfileIOData::Handle::
-GetChromeURLDataManagerBackendGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
-  return base::Bind(&ProfileIOData::GetChromeURLDataManagerBackend,
-                    base::Unretained(io_data_));
 }
 
 content::ResourceContext*

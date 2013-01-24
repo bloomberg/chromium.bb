@@ -118,9 +118,6 @@ class OffTheRecordProfileImpl : public Profile,
   void UseSystemProxy();
 #endif
 
-  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
-      GetChromeURLDataManagerBackendGetter() const OVERRIDE;
-
   content::NotificationRegistrar registrar_;
 
   // The real underlying profile.

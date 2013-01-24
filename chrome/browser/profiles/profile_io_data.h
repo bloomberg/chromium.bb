@@ -79,7 +79,6 @@ class ProfileIOData {
 
   // Called by Profile.
   content::ResourceContext* GetResourceContext() const;
-  ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend() const;
 
   // These should only be called at most once each. Ownership is reversed when
   // they get called, from ProfileIOData owning ChromeURLRequestContext to vice
@@ -276,10 +275,6 @@ class ProfileIOData {
   // Called when the profile is destroyed.
   void ShutdownOnUIThread();
 
-  ChromeURLDataManagerBackend* chrome_url_data_manager_backend() const {
-    return chrome_url_data_manager_backend_.get();
-  }
-
   // A ServerBoundCertService object is created by a derived class of
   // ProfileIOData, and the derived class calls this method to set the
   // server_bound_cert_service_ member and transfers ownership to the base
@@ -449,8 +444,6 @@ class ProfileIOData {
 
   // Pointed to by URLRequestContext.
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  mutable scoped_ptr<ChromeURLDataManagerBackend>
-      chrome_url_data_manager_backend_;
   mutable scoped_ptr<net::ServerBoundCertService> server_bound_cert_service_;
   mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>

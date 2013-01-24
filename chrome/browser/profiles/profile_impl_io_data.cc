@@ -24,7 +24,6 @@
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -118,14 +117,6 @@ void ProfileImplIOData::Handle::Init(
                                              main_request_context_getter_);
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
-}
-
-base::Callback<ChromeURLDataManagerBackend*(void)>
-ProfileImplIOData::Handle::GetChromeURLDataManagerBackendGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
-  return base::Bind(&ProfileIOData::GetChromeURLDataManagerBackend,
-                    base::Unretained(io_data_));
 }
 
 content::ResourceContext*

@@ -13,11 +13,9 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "content/public/browser/browser_context.h"
 
 class ChromeAppCacheService;
-class ChromeURLDataManager;
 class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
@@ -364,15 +362,7 @@ class Profile : public content::BrowserContext {
  protected:
   // TODO(erg, willchan): Remove friendship once |ProfileIOData| is made into
   //     a |ProfileKeyedService|.
-  friend class ChromeURLDataManagerFactory;
   friend class OffTheRecordProfileImpl;
-
-  // Returns a callback to a method returning a |ChromeURLDataManagerBackend|.
-  // Used to create a |ChromeURLDataManager| for this |Profile|.
-  // TODO(erg, willchan): Remove this once |ProfileIOData| is made into a
-  //     |ProfileKeyedService|.
-  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
-      GetChromeURLDataManagerBackendGetter() const = 0;
 
  private:
   bool restored_last_session_;

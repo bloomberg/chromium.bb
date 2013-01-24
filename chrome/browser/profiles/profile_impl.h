@@ -189,9 +189,6 @@ class ProfileImpl : public Profile,
                           FilePath* cache_path,
                           int* max_size);
 
-  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
-      GetChromeURLDataManagerBackendGetter() const OVERRIDE;
-
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

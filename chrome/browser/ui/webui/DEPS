@@ -4,6 +4,10 @@ include_rules = [
 
   "+sync/js",
   "+sync/internal_api/public/util/weak_handle.h",
+  
+  # TODO(jam): temporary http://crbug.com/169170
+  "+content/browser/webui/web_ui_data_source.h",
+  "+content/browser/webui/url_data_manager.h",
 
   # Other libraries.
   "+device/bluetooth",

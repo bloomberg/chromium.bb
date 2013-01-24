@@ -35,7 +35,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -475,9 +475,4 @@ Profile* Profile::CreateOffTheRecordProfile() {
     profile = new OffTheRecordProfileImpl(this);
   profile->Init();
   return profile;
-}
-
-base::Callback<ChromeURLDataManagerBackend*(void)>
-    OffTheRecordProfileImpl::GetChromeURLDataManagerBackendGetter() const {
-  return io_data_.GetChromeURLDataManagerBackendGetter();
 }

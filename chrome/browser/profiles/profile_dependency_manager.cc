@@ -79,7 +79,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -243,7 +242,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
   ChromeGeolocationPermissionContextFactory::GetInstance();
-  ChromeURLDataManagerFactory::GetInstance();
 #if defined(ENABLE_PRINTING)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif

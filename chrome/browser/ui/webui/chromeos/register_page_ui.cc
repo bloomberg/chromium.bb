@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/url_data_source.h"

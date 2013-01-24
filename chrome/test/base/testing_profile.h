@@ -310,9 +310,6 @@ class TestingProfile : public Profile {
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
-  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
-      GetChromeURLDataManagerBackendGetter() const OVERRIDE;
-
   // The policy service. Lazily created as a stub.
   scoped_ptr<policy::PolicyService> policy_service_;
 

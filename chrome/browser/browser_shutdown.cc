@@ -29,7 +29,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -255,8 +254,6 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 #if defined(OS_CHROMEOS)
   browser::NotifyAndTerminate(false);
 #endif
-
-  ChromeURLDataManager::DeleteDataSources();
 }
 
 void ReadLastShutdownFile(

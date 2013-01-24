@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_
+#ifndef CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_BACKEND_H_
+#define CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_BACKEND_H_
 
 #include <map>
 #include <string>
@@ -11,7 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "base/supports_user_data.h"
+#include "content/browser/webui/url_data_manager.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class ChromeURLDataManagerBackend;
@@ -23,7 +24,6 @@ class RefCountedMemory;
 }
 
 namespace net {
-class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }
@@ -32,12 +32,12 @@ class URLRequestJob;
 // IO thread. In most cases you can use the API in ChromeURLDataManager and
 // ignore this class. ChromeURLDataManagerBackend is owned by
 // ChromeURLRequestContext.
-class ChromeURLDataManagerBackend {
+class ChromeURLDataManagerBackend : public base::SupportsUserData::Data {
  public:
   typedef int RequestID;
 
   ChromeURLDataManagerBackend();
-  ~ChromeURLDataManagerBackend();
+  virtual ~ChromeURLDataManagerBackend();
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
   // be set for incognito profiles.
@@ -99,7 +99,6 @@ class ChromeURLDataManagerBackend {
 // set for incognito profiles.
 net::URLRequestJobFactory::ProtocolHandler*
 CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
-                              net::NetworkDelegate* network_delegate,
                               bool is_incognito);
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_
+#endif  // CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_BACKEND_H_

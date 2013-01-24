@@ -22,6 +22,7 @@
 #include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,7 +148,9 @@ void InitializeURLRequestContext(
     net::URLRequestContextGetter* context_getter,
     AppCacheService* appcache_service,
     FileSystemContext* file_system_context,
-    ChromeBlobStorageContext* blob_storage_context) {
+    ChromeBlobStorageContext* blob_storage_context,
+    ResourceContext* resource_context,
+    bool off_the_record) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context_getter)
     return;  // tests.
@@ -185,6 +188,20 @@ void InitializeURLRequestContext(
   job_factory->AddInterceptor(
       new DeveloperProtocolHandler(appcache_service,
                                    blob_storage_context->controller()));
+
+  set_protocol = job_factory->SetProtocolHandler(
+      chrome::kChromeUIScheme,
+      ChromeURLDataManagerBackend::CreateProtocolHandler(
+          GetURLDataManagerForResourceContext(resource_context),
+          off_the_record));
+  DCHECK(set_protocol);
+
+  set_protocol = job_factory->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(
+          GetURLDataManagerForResourceContext(resource_context),
+          off_the_record));
+  DCHECK(set_protocol);
 
   // TODO(jam): Add the ProtocolHandlerRegistryIntercepter here!
 }
@@ -603,7 +620,9 @@ void StoragePartitionImplMap::PostCreateInitialization(
             make_scoped_refptr(partition->GetAppCacheService()),
             make_scoped_refptr(partition->GetFileSystemContext()),
             make_scoped_refptr(
-                ChromeBlobStorageContext::GetFor(browser_context_))));
+                ChromeBlobStorageContext::GetFor(browser_context_)),
+            browser_context_->GetResourceContext(),
+            browser_context_->IsOffTheRecord()));
 
     // We do not call InitializeURLRequestContext() for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing

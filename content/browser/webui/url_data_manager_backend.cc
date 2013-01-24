@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 
 #include <set>
 
@@ -18,11 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/browser/ui/webui/shared_resources_data_source.h"
+#include "content/browser/webui/shared_resources_data_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/url_util.h"
-#include "grit/platform_locale_settings.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -522,7 +521,6 @@ class DevToolsJobFactory
  public:
   // |is_incognito| should be set for incognito profiles.
   DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
-                     net::NetworkDelegate* network_delegate,
                      bool is_incognito);
   virtual ~DevToolsJobFactory();
 
@@ -534,7 +532,6 @@ class DevToolsJobFactory
   // |backend_| and |network_delegate_| are owned by ProfileIOData, which owns
   // this ProtocolHandler.
   ChromeURLDataManagerBackend* const backend_;
-  net::NetworkDelegate* network_delegate_;
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
@@ -543,10 +540,8 @@ class DevToolsJobFactory
 };
 
 DevToolsJobFactory::DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
-                                       net::NetworkDelegate* network_delegate,
                                        bool is_incognito)
     : backend_(backend),
-      network_delegate_(network_delegate),
       is_incognito_(is_incognito) {
   DCHECK(backend_);
 }
@@ -564,7 +559,6 @@ DevToolsJobFactory::MaybeCreateJob(
 
 net::URLRequestJobFactory::ProtocolHandler*
 CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
-                              net::NetworkDelegate* network_delegate,
                               bool is_incognito) {
-  return new DevToolsJobFactory(backend, network_delegate, is_incognito);
+  return new DevToolsJobFactory(backend, is_incognito);
 }

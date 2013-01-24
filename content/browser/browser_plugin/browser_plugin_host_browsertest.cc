@@ -818,7 +818,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
 
   {
     // Navigate the guest to an illegal chrome:// URL.
-    const string16 expected_title = ASCIIToUTF16("ERR_FAILED");
+    const string16 expected_title = ASCIIToUTF16("ERR_INVALID_URL");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(

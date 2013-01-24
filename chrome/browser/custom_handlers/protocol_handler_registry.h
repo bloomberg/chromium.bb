@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/public/browser/browser_thread.h"

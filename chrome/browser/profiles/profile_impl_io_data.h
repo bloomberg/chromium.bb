@@ -54,8 +54,6 @@ class ProfileImplIOData : public ProfileIOData {
               bool restore_old_session_cookies,
               quota::SpecialStoragePolicy* special_storage_policy);
 
-    base::Callback<ChromeURLDataManagerBackend*(void)>
-        GetChromeURLDataManagerBackendGetter() const;
     content::ResourceContext* GetResourceContext() const;
     // GetResourceContextNoInit() does not call LazyInitialize() so it can be
     // safely be used during initialization.
