@@ -474,6 +474,8 @@
           ],
           'sources': [
             'app/chrome_exe.rc',
+            'common/crash_keys.cc',
+            'common/crash_keys.h',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',
           ],
           'msvs_settings': {
@@ -550,6 +552,7 @@
                 'app/breakpad_win.cc',
                 'app/crash_analysis_win.cc',
                 'app/hard_error_handler_win.cc',
+                'common/crash_keys.cc',
                 'nacl/nacl_exe_win_64.cc',
                 '../content/app/startup_helper_win.cc',
                 '../content/common/debug_flags.cc',  # Needed for sandbox_policy.cc
