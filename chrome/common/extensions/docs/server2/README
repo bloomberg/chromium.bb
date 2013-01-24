@@ -25,9 +25,8 @@ be sufficient. If for some reason you want to test against the app engine SDK:
 Deploying the Server
 
 You will need to have access to the http://chrome-apps-doc.appspot.com app.
-Contact aa@chromium.org, erikkay@chromium.org, mihaip@chromium.org,
-miket@chromium.org, kalman@chromium.org, or ernestd@chromium.org to obtain
-access.
+Contact aa@chromium.org, erikkay@chromium.org, miket@chromium.org,
+kalman@chromium.org, or ernestd@chromium.org to obtain access.
 
 Once you have access:
 
