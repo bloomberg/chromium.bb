@@ -161,8 +161,8 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                     borderColor = DebugColors::MissingTileBorderColor();
                     borderWidth = DebugColors::MissingTileBorderWidth(layerTreeImpl());
                 } else {
-                    borderColor = DebugColors::TileBorderColor();
-                    borderWidth = DebugColors::TileBorderWidth(layerTreeImpl());
+                    borderColor = DebugColors::HighResTileBorderColor();
+                    borderWidth = DebugColors::HighResTileBorderWidth(layerTreeImpl());
                 }
                 scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
                 debugBorderQuad->SetNew(sharedQuadState, tileRect, borderColor, borderWidth);

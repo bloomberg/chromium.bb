@@ -38,11 +38,23 @@ int DebugColors::SurfaceBorderWidth(const LayerTreeImpl* tree_impl) { return Sca
 SkColor DebugColors::SurfaceReplicaBorderColor() { return SkColorSetARGB(100, 160, 0, 255); }
 int DebugColors::SurfaceReplicaBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
 
-// Tile borders are cyan.
-SkColor DebugColors::TileBorderColor() { return SkColorSetARGB(100, 80, 200, 200); }
-int DebugColors::TileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(1, tree_impl); }
-
 // ======= Tile colors =======
+
+// High-res tile borders are cyan.
+SkColor DebugColors::HighResTileBorderColor() { return SkColorSetARGB(100, 80, 200, 200); }
+int DebugColors::HighResTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(1, tree_impl); }
+
+// Low-res tile borders are purple.
+SkColor DebugColors::LowResTileBorderColor() { return SkColorSetARGB(100, 212, 83, 192); }
+int DebugColors::LowResTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
+
+// Other high-resolution tile borders are yellow.
+SkColor DebugColors::ExtraHighResTileBorderColor() { return SkColorSetARGB(100, 239, 231, 20); }
+int DebugColors::ExtraHighResTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
+
+// Other low-resolution tile borders are green.
+SkColor DebugColors::ExtraLowResTileBorderColor() { return SkColorSetARGB(100, 93, 186, 18); }
+int DebugColors::ExtraLowResTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
 
 // Missing tile borders are red.
 SkColor DebugColors::MissingTileBorderColor() { return SkColorSetARGB(100, 255, 0, 0); }

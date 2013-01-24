@@ -32,8 +32,17 @@ class DebugColors {
   static SkColor SurfaceReplicaBorderColor();
   static int SurfaceReplicaBorderWidth(const LayerTreeImpl* tree_impl);
 
-  static SkColor TileBorderColor();
-  static int TileBorderWidth(const LayerTreeImpl* tree_impl);
+  static SkColor HighResTileBorderColor();
+  static int HighResTileBorderWidth(const LayerTreeImpl* tree_impl);
+
+  static SkColor LowResTileBorderColor();
+  static int LowResTileBorderWidth(const LayerTreeImpl* tree_impl);
+
+  static SkColor ExtraHighResTileBorderColor();
+  static int ExtraHighResTileBorderWidth(const LayerTreeImpl* tree_impl);
+
+  static SkColor ExtraLowResTileBorderColor();
+  static int ExtraLowResTileBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor MissingTileBorderColor();
   static int MissingTileBorderWidth(const LayerTreeImpl* tree_impl);

@@ -95,8 +95,19 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
       SkColor color;
       float width;
       if (*iter && iter->GetResourceId()) {
-        color = DebugColors::TileBorderColor();
-        width = DebugColors::TileBorderWidth(layerTreeImpl());
+        if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
+          color = DebugColors::HighResTileBorderColor();
+          width = DebugColors::HighResTileBorderWidth(layerTreeImpl());
+        } else if (iter->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION) {
+          color = DebugColors::LowResTileBorderColor();
+          width = DebugColors::LowResTileBorderWidth(layerTreeImpl());
+        } else if (iter->contents_scale() > contentsScaleX()) {
+          color = DebugColors::ExtraHighResTileBorderColor();
+          width = DebugColors::ExtraHighResTileBorderWidth(layerTreeImpl());
+        } else {
+          color = DebugColors::ExtraLowResTileBorderColor();
+          width = DebugColors::ExtraLowResTileBorderWidth(layerTreeImpl());
+        }
       } else {
         color = DebugColors::MissingTileBorderColor();
         width = DebugColors::MissingTileBorderWidth(layerTreeImpl());
