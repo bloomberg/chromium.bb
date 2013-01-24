@@ -20,7 +20,8 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
     , background_color_(0)
     , has_transparent_background_(false)
     , scrolling_layer_id_from_previous_tree_(0)
-    , contents_textures_purged_(false) {
+    , contents_textures_purged_(false)
+    , needs_update_draw_properties_(true) {
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
@@ -74,7 +75,7 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   currently_scrolling_layer_ = NULL;
 
   render_surface_layer_list_.clear();
-  SetNeedsUpdateDrawProperties();
+  set_needs_update_draw_properties();
   return root_layer_.Pass();
 }
 
@@ -121,17 +122,28 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
 }
 
 void LayerTreeImpl::UpdateDrawProperties() {
+  if (!needs_update_draw_properties_)
+    return;
+
+  needs_update_draw_properties_ = false;
   render_surface_layer_list_.clear();
+
+  // For maxTextureSize.
+  if (!layer_tree_host_impl_->renderer())
+      return;
+
   if (!RootLayer())
     return;
 
   if (root_scroll_layer_) {
     root_scroll_layer_->setImplTransform(
         layer_tree_host_impl_->implTransform());
+    // Setting the impl transform re-sets this.
+    needs_update_draw_properties_ = false;
   }
 
   {
-    TRACE_EVENT0("cc", "LayerTreeImpl::UpdateDrawProperties");
+    TRACE_EVENT1("cc", "LayerTreeImpl::UpdateDrawProperties", "IsActive", IsActiveTree());
     LayerTreeHostCommon::calculateDrawProperties(
         RootLayer(),
         device_viewport_size(),
@@ -141,6 +153,9 @@ void LayerTreeImpl::UpdateDrawProperties() {
         settings().canUseLCDText,
         render_surface_layer_list_);
   }
+
+  DCHECK(!needs_update_draw_properties_) <<
+      "calcDrawProperties should not set_needs_update_draw_properties()";
 }
 
 static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
@@ -154,7 +169,7 @@ static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
 void LayerTreeImpl::ClearRenderSurfaces() {
   ClearRenderSurfacesOnLayerImplRecursive(RootLayer());
   render_surface_layer_list_.clear();
-  SetNeedsUpdateDrawProperties();
+  set_needs_update_draw_properties();
 }
 
 bool LayerTreeImpl::AreVisibleResourcesReady() const {
@@ -176,7 +191,7 @@ bool LayerTreeImpl::AreVisibleResourcesReady() const {
 
 const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
   // If this assert triggers, then the list is dirty.
-  DCHECK(!layer_tree_host_impl_->needsUpdateDrawProperties());
+  DCHECK(!needs_update_draw_properties_);
   return render_surface_layer_list_;
 }
 
@@ -298,10 +313,6 @@ bool LayerTreeImpl::PinchGestureActive() const {
 
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->setNeedsRedraw();
-}
-
-void LayerTreeImpl::SetNeedsUpdateDrawProperties() {
-  layer_tree_host_impl_->setNeedsUpdateDrawProperties();
 }
 
 const LayerTreeDebugState& LayerTreeImpl::debug_state() const {

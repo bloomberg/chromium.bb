@@ -79,7 +79,7 @@ void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
     child->setParent(this);
     DCHECK_EQ(layerTreeImpl(), child->layerTreeImpl());
     m_children.push_back(child.Pass());
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
 }
 
 LayerImpl* LayerImpl::childAt(size_t index) const
@@ -94,7 +94,7 @@ scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
         if (*it == child) {
             scoped_ptr<LayerImpl> ret = m_children.take(it);
             m_children.erase(it);
-            layerTreeImpl()->SetNeedsUpdateDrawProperties();
+            layerTreeImpl()->set_needs_update_draw_properties();
             return ret.Pass();
         }
     }
@@ -104,7 +104,7 @@ scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
 void LayerImpl::removeAllChildren()
 {
     m_children.clear();
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
 }
 
 void LayerImpl::clearChildList()
@@ -113,7 +113,7 @@ void LayerImpl::clearChildList()
         return;
 
     m_children.clear();
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
 }
 
 void LayerImpl::createRenderSurface()
@@ -503,13 +503,13 @@ bool LayerImpl::layerSurfacePropertyChanged() const
 void LayerImpl::noteLayerSurfacePropertyChanged()
 {
     m_layerSurfacePropertyChanged = true;
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
 }
 
 void LayerImpl::noteLayerPropertyChanged()
 {
     m_layerPropertyChanged = true;
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
 }
 
 void LayerImpl::noteLayerPropertyChangedForSubtree()
@@ -520,7 +520,7 @@ void LayerImpl::noteLayerPropertyChangedForSubtree()
 
 void LayerImpl::noteLayerPropertyChangedForDescendants()
 {
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
     for (size_t i = 0; i < m_children.size(); ++i)
         m_children[i]->noteLayerPropertyChangedForSubtree();
 }
@@ -916,7 +916,7 @@ void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
         return;
     m_maxScrollOffset = maxScrollOffset;
 
-    layerTreeImpl()->SetNeedsUpdateDrawProperties();
+    layerTreeImpl()->set_needs_update_draw_properties();
     updateScrollbarPositions();
 }
 

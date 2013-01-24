@@ -429,7 +429,7 @@ TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
     // We should be able to scroll even if the root layer loses its render surface after the most
     // recent render.
     m_hostImpl->rootLayer()->clearRenderSurface();
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
 
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
 }
@@ -551,7 +551,7 @@ TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion
     // We should be able to hit test for touch event handlers even if the root layer loses
     // its render surface after the most recent render.
     m_hostImpl->rootLayer()->clearRenderSurface();
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
 
     EXPECT_EQ(m_hostImpl->haveTouchEventHandlersAt(gfx::Point(0, 0)), false);
 }
@@ -4511,7 +4511,7 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithScaling)
     gfx::Size deviceViewport(gfx::ToFlooredSize(gfx::ScaleSize(rootSize, deviceScaleFactor)));
     m_hostImpl->setViewportSize(rootSize, deviceViewport);
     m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
     {
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -4535,7 +4535,7 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithScaling)
     contentLayer->setContentsScale(deviceScaleFactor, deviceScaleFactor);
     maskLayer->setContentBounds(contentsBounds);
     maskLayer->setContentsScale(deviceScaleFactor, deviceScaleFactor);
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
     {
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -4615,7 +4615,7 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithDifferentBounds)
     gfx::Size deviceViewport(gfx::ToFlooredSize(gfx::ScaleSize(rootSize, deviceScaleFactor)));
     m_hostImpl->setViewportSize(rootSize, deviceViewport);
     m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
     {
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -4640,7 +4640,7 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithDifferentBounds)
     gfx::Size maskSizeLarge(gfx::ToRoundedSize(gfx::ScaleSize(maskSize, deviceScaleFactor)));
     maskLayer->setContentBounds(maskSizeLarge);
     maskLayer->setContentsScale(deviceScaleFactor, deviceScaleFactor);
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
     {
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -4660,7 +4660,7 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithDifferentBounds)
     // in the mask covering the owning layer.
     maskLayer->setContentBounds(maskSize);
     maskLayer->setContentsScale(deviceScaleFactor, deviceScaleFactor);
-    m_hostImpl->setNeedsUpdateDrawProperties();
+    m_hostImpl->activeTree()->set_needs_update_draw_properties();
     {
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));

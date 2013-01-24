@@ -4,6 +4,7 @@
 
 #include "cc/layer_impl.h"
 
+#include "cc/layer_tree_impl.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -55,16 +56,16 @@ namespace {
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(codeToTest)                 \
     root->resetAllChangeTrackingForSubtree();                           \
     hostImpl.forcePrepareToDraw();                                      \
-    EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());                 \
+    EXPECT_FALSE(hostImpl.activeTree()->needs_update_draw_properties());\
     codeToTest;                                                         \
-    EXPECT_TRUE(hostImpl.needsUpdateDrawProperties());
+    EXPECT_TRUE(hostImpl.activeTree()->needs_update_draw_properties());
 
 #define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(codeToTest)              \
     root->resetAllChangeTrackingForSubtree();                           \
     hostImpl.forcePrepareToDraw();                                      \
-    EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());                 \
+    EXPECT_FALSE(hostImpl.activeTree()->needs_update_draw_properties());\
     codeToTest;                                                         \
-    EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());
+    EXPECT_FALSE(hostImpl.activeTree()->needs_update_draw_properties());
 
 TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
 {

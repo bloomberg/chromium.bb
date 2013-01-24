@@ -12,7 +12,7 @@ class LayerTreeImpl;
 class CC_EXPORT TopControlsManagerClient {
  public:
   virtual void setNeedsRedraw() = 0;
-  virtual void setNeedsUpdateDrawProperties() = 0;
+  virtual void setActiveTreeNeedsUpdateDrawProperties() = 0;
   virtual bool haveRootScrollLayer() const = 0;
   virtual float rootScrollLayerTotalScrollY() const = 0;
 

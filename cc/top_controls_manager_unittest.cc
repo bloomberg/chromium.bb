@@ -35,7 +35,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
     redraw_needed_ = true;
   }
 
-  virtual void setNeedsUpdateDrawProperties() OVERRIDE {
+  virtual void setActiveTreeNeedsUpdateDrawProperties() OVERRIDE {
     update_draw_properties_needed_ = true;
   }
 

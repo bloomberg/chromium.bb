@@ -105,7 +105,7 @@ gfx::Vector2dF TopControlsManager::ScrollInternal(
       || previous_controls_offset != controls_top_offset_
       || previous_content_offset != content_top_offset_) {
     client_->setNeedsRedraw();
-    client_->setNeedsUpdateDrawProperties();
+    client_->setActiveTreeNeedsUpdateDrawProperties();
   }
 
   return pending_delta - applied_delta;
