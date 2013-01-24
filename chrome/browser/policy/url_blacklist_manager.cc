@@ -141,6 +141,10 @@ bool URLBlacklist::IsURLBlocked(const GURL& url) const {
   return !max->allow;
 }
 
+size_t URLBlacklist::Size() const {
+  return filters_.size();
+}
+
 // static
 bool URLBlacklist::HasStandardScheme(const GURL& url) {
   return IsStandardScheme(url.scheme());
