@@ -125,6 +125,17 @@ env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test',
                        is_broken=env.Bit('bitcode'))
 env.TestBindsFixedTcpPort(node)
 
+if not env.Bit('nacl_static_link'):
+  node = env.CommandTest(
+      'gdb_execute_nacl_manifest_twice.out',
+      extra_deps=extra_deps,
+      command=['${PYTHON}', env.File('execute_nacl_manifest_twice.py'),
+               '--nexe', gdb_test_guest] + test_args)
+
+  env.AddNodeToTestSuite(node, test_suites,
+                         'run_gdb_execute_nacl_manifest_twice_test')
+  env.TestBindsFixedTcpPort(node)
+
 # GDB treats multithreaded programs specially. Provide distinct nexe for
 # multithreaded tests to isolate multiple threads-specific issues.
 gdb_test_guest_thread = env.ComponentProgram(
