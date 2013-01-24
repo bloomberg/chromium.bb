@@ -1570,9 +1570,9 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id, SpdyStatusCodes status) {
   } else {
     RecordProtocolErrorHistogram(
         PROTOCOL_ERROR_RST_STREAM_FOR_NON_ACTIVE_STREAM);
-    stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR,
-                           base::StringPrintf("SPDY stream closed: %d",
-                                              status));
+    stream->LogStreamError(
+        ERR_SPDY_PROTOCOL_ERROR,
+        base::StringPrintf("SPDY stream closed with status: %d", status));
     // TODO(mbelshe): Map from Spdy-protocol errors to something sensical.
     //                For now, it doesn't matter much - it is a protocol error.
     DeleteStream(stream_id, ERR_SPDY_PROTOCOL_ERROR);
