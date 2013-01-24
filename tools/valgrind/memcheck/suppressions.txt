@@ -6520,3 +6520,11 @@
    fun:_Znw*
    fun:_ZN8chromeos51MagnificationManagerTest_MagnificationObserver_Test8TestBodyEv
 }
+{
+   bug_171567_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN31AutofillPopupControllerUnitTestC2Ev
+   fun:_ZN53AutofillPopupControllerUnitTest_GrowPopupInSpace_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplI53AutofillPopupControllerUnitTest_GrowPopupInSpace_TestE10CreateTestEv
+}
