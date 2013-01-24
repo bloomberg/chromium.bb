@@ -7,6 +7,7 @@
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
     'TestWebKitAPI',
+    'components_unittests',
     'sandbox_linux_unittests',
     'webkit_unit_tests',
 ]
