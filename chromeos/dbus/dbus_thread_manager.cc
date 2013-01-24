@@ -185,7 +185,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_engine_factory_service_.reset(
         IBusEngineFactoryService::Create(ibus_bus_.get(), client_type));
     ibus_panel_service_.reset(
-        ibus::IBusPanelService::Create(client_type, ibus_bus_.get()));
+        ibus::IBusPanelService::Create(client_type,
+                                       ibus_bus_.get(),
+                                       ibus_input_context_client_.get()));
 
     ibus_engine_services_.clear();
   }

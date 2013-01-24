@@ -31,6 +31,13 @@ void MockIBusInputContextClient::SetInputContextHandler(
     IBusInputContextHandlerInterface* handler) {
 }
 
+void MockIBusInputContextClient::SetSetCursorLocationHandler(
+    const SetCursorLocationHandler& set_cursor_location_handler) {
+}
+
+void MockIBusInputContextClient::UnsetSetCursorLocationHandler() {
+}
+
 void MockIBusInputContextClient::ResetObjectProxy() {
   reset_object_proxy_call_caount_++;
   is_initialized_ = false;
@@ -60,7 +67,8 @@ void MockIBusInputContextClient::Reset() {
 }
 
 void MockIBusInputContextClient::SetCursorLocation(
-    int32 x, int32 y, int32 w, int32 h) {
+    const ibus::Rect& cursor_location,
+    const ibus::Rect& composition_head) {
   set_cursor_location_call_count_++;
 }
 
@@ -88,6 +96,13 @@ void MockIBusInputContextClient::SetSurroundingText(
 void MockIBusInputContextClient::PropertyActivate(
     const std::string& key,
     ibus::IBusPropertyState state) {
+}
+
+bool MockIBusInputContextClient::IsXKBLayout() {
+  return true;
+}
+
+void MockIBusInputContextClient::SetIsXKBLayout(bool is_xkb_layout) {
 }
 
 }  // namespace chromeos

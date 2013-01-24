@@ -810,7 +810,9 @@ TEST_F(InputMethodIBusTest, FocusIn_Text) {
   EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
   // Since a form has focus, IBusClient::FocusIn() should be called.
   EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(1,
+  // TODO(nona): Change following expectation to 1 once new bypass
+  //             implementation is landed.
+  EXPECT_EQ(0,
             mock_ibus_input_context_client_->set_cursor_location_call_count());
   // ui::TextInputClient::OnInputMethodChanged() should be called when
   // ui::InputMethodIBus connects/disconnects to/from ibus-daemon and the
@@ -881,7 +883,9 @@ TEST_F(InputMethodIBusTest, FocusOut_Url) {
 }
 
 // Test if the new |caret_bounds_| is correctly sent to ibus-daemon.
-TEST_F(InputMethodIBusTest, OnCaretBoundsChanged) {
+// TODO(nona): Re-enable following tests once new bypas implementation is
+//             land.
+TEST_F(InputMethodIBusTest, DISABLED_OnCaretBoundsChanged) {
   SetCreateContextSuccessHandler();
   chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
   input_type_ = TEXT_INPUT_TYPE_TEXT;

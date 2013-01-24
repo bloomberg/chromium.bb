@@ -26,6 +26,7 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
  public:
   IBusInputContextClientImpl()
       : proxy_(NULL),
+        is_xkb_layout_(true),
         weak_ptr_factory_(this) {
   }
 
@@ -48,6 +49,18 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) OVERRIDE {
     handler_ = handler;
+  }
+
+  // IBusInputContextClient override.
+  virtual void SetSetCursorLocationHandler(
+      const SetCursorLocationHandler& set_cursor_location_handler) OVERRIDE {
+    DCHECK(!set_cursor_location_handler.is_null());
+    set_cursor_location_handler_ = set_cursor_location_handler;
+  }
+
+  // IBusInputContextClient override.
+  virtual void UnsetSetCursorLocationHandler() OVERRIDE {
+    set_cursor_location_handler_.Reset();
   }
 
   // IBusInputContextClient override.
@@ -93,17 +106,10 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   }
 
   // IBusInputContextClient override.
-  virtual void SetCursorLocation(int32 x, int32 y, int32 width,
-                                 int32 height) OVERRIDE {
-    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
-                                 ibus::input_context::kSetCursorLocationMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendInt32(x);
-    writer.AppendInt32(y);
-    writer.AppendInt32(width);
-    writer.AppendInt32(height);
-    CallNoResponseMethod(&method_call,
-                         ibus::input_context::kSetCursorLocationMethod);
+  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
+                                 const ibus::Rect& composition_head) OVERRIDE {
+    if (!set_cursor_location_handler_.is_null())
+      set_cursor_location_handler_.Run(cursor_location, composition_head);
   }
 
   // IBusInputContextClient override.
@@ -159,6 +165,17 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
     CallNoResponseMethod(&method_call,
                          ibus::input_context::kPropertyActivateMethod);
   }
+
+  // IBusInputContextClient override.
+  virtual bool IsXKBLayout() OVERRIDE {
+    return is_xkb_layout_;
+  }
+
+  // IBusInputContextClient override.
+  virtual void SetIsXKBLayout(bool is_xkb_layout) OVERRIDE {
+    is_xkb_layout_ = is_xkb_layout;
+  }
+
  private:
   void CallNoResponseMethod(dbus::MethodCall* method_call,
                             const std::string& method_name) {
@@ -331,6 +348,11 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   // The pointer for input context handler. This can be NULL.
   IBusInputContextHandlerInterface* handler_;
 
+  SetCursorLocationHandler set_cursor_location_handler_;
+
+  // True if the current input method is xkb layout.
+  bool is_xkb_layout_;
+
   base::WeakPtrFactory<IBusInputContextClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientImpl);
@@ -352,6 +374,15 @@ class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
 
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void SetSetCursorLocationHandler(
+      const SetCursorLocationHandler& set_cursor_location_handler) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual void UnsetSetCursorLocationHandler() OVERRIDE {
     // TODO(nona): Implement this.
   }
 
@@ -380,7 +411,8 @@ class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
     // TODO(nona): Implement this.
   }
 
-  virtual void SetCursorLocation(int32 x, int32 y, int32 w, int32 h) OVERRIDE {
+  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
+                                 const ibus::Rect& composition_head) OVERRIDE {
     // TODO(nona): Implement this.
   }
 
@@ -402,6 +434,15 @@ class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
 
   virtual void PropertyActivate(const std::string& key,
                                 ibus::IBusPropertyState state) OVERRIDE {
+    // TODO(nona): Implement this.
+  }
+
+  virtual bool IsXKBLayout() OVERRIDE {
+    // TODO(nona): Implement this.
+    return true;
+  }
+
+  virtual void SetIsXKBLayout(bool is_xkb_layout) OVERRIDE {
     // TODO(nona): Implement this.
   }
 
