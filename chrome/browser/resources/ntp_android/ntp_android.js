@@ -582,7 +582,7 @@ cr.define('ntp', function() {
 
     cell.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
 
-    var iconUrl = item.icon || 'chrome://touch-icon/size/16/' + item.url;
+    var iconUrl = item.icon || 'chrome://touch-icon/size/16@1x/' + item.url;
     var icon = createDiv('icon', iconUrl);
     trackImageLoad(iconUrl);
     cell.appendChild(icon);
@@ -801,7 +801,7 @@ cr.define('ntp', function() {
     listItem.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
     var iconSize = item.iconSize || 64;
     var iconUrl = item.icon ||
-        'chrome://touch-icon/size/' + iconSize + '/' + item.url;
+        'chrome://touch-icon/size/' + iconSize + '@1x/' + item.url;
     listItem.appendChild(createDiv('icon', iconUrl));
     trackImageLoad(iconUrl);
     var title = createElement('span', {
