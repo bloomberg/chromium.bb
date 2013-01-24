@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -1004,6 +1005,9 @@ bool SessionService::CreateTabsAndWindows(
   // If the file is corrupt (command with wrong size, or unknown command), we
   // still return true and attempt to restore what we we can.
   VLOG(1) << "CreateTabsAndWindows";
+
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupSessionServiceCreateTabsAndWindows");
 
   for (std::vector<SessionCommand*>::const_iterator i = data.begin();
        i != data.end(); ++i) {
