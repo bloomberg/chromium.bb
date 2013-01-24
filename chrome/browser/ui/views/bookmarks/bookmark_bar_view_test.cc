@@ -1499,6 +1499,11 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu != NULL);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
+    // The menu for the first folder should be in the pressed state (since the
+    // menu is showing for it).
+    EXPECT_EQ(views::CustomButton::STATE_PRESSED,
+              GetBookmarkButton(0)->state());
+
     menu->GetMenuController()->CancelAll();
 
     Done();

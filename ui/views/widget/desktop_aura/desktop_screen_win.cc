@@ -8,6 +8,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/display.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 namespace {
@@ -58,7 +59,7 @@ HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
   return (::IsWindow(hwnd)) ?
-      aura::RootWindow::GetForAcceleratedWidget(hwnd) : NULL;
+      DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd) : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
