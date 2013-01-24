@@ -168,7 +168,9 @@ TEST(AutofillQueryXmlParserTest, ParseAutofillFlow) {
 
   std::string xml = "<autofillqueryresponse>"
                     "<field autofilltype=\"55\"/>"
-                    "<autofill_flow page_no=\"1\" total_pages=\"10\"/>"
+                    "<autofill_flow page_no=\"1\" total_pages=\"10\">"
+                    "<page_advance_button id=\"foo\"/>"
+                    "</autofill_flow>"
                     "</autofillqueryresponse>";
 
   scoped_ptr<AutofillQueryXmlParser> parse_handler(
@@ -180,6 +182,60 @@ TEST(AutofillQueryXmlParserTest, ParseAutofillFlow) {
   EXPECT_EQ(1U, field_infos.size());
   EXPECT_EQ(1, parse_handler->current_page_number());
   EXPECT_EQ(10, parse_handler->total_pages());
+  EXPECT_EQ("foo", parse_handler->proceed_element_descriptor()->descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::ID,
+            parse_handler->proceed_element_descriptor()->retrieval_method);
+
+  // Clear |field_infos| for the next test;
+  field_infos.clear();
+
+  // Test css_selector as page_advance_button.
+  xml = "<autofillqueryresponse>"
+        "<field autofilltype=\"55\"/>"
+        "<autofill_flow page_no=\"1\" total_pages=\"10\">"
+        "<page_advance_button css_selector=\"[name=&quot;foo&quot;]\"/>"
+        "</autofill_flow>"
+        "</autofillqueryresponse>";
+
+  parse_handler.reset(new AutofillQueryXmlParser(&field_infos,
+                                                 &upload_required,
+                                                 &experiment_id));
+  parser.reset(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(parse_handler->succeeded());
+  EXPECT_EQ(1U, field_infos.size());
+  EXPECT_EQ(1, parse_handler->current_page_number());
+  EXPECT_EQ(10, parse_handler->total_pages());
+  EXPECT_EQ("[name=\"foo\"]",
+            parse_handler->proceed_element_descriptor()->descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
+            parse_handler->proceed_element_descriptor()->retrieval_method);
+
+  // Clear |field_infos| for the next test;
+  field_infos.clear();
+
+  // Test first attribute is always the one set.
+  xml = "<autofillqueryresponse>"
+        "<field autofilltype=\"55\"/>"
+        "<autofill_flow page_no=\"1\" total_pages=\"10\">"
+        "<page_advance_button css_selector=\"[name=&quot;foo&quot;]\""
+        "   id=\"foo\"/>"
+        "</autofill_flow>"
+        "</autofillqueryresponse>";
+
+  parse_handler.reset(new AutofillQueryXmlParser(&field_infos,
+                                                 &upload_required,
+                                                 &experiment_id));
+  parser.reset(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(parse_handler->succeeded());
+  EXPECT_EQ(1U, field_infos.size());
+  EXPECT_EQ(1, parse_handler->current_page_number());
+  EXPECT_EQ(10, parse_handler->total_pages());
+  EXPECT_EQ("[name=\"foo\"]",
+            parse_handler->proceed_element_descriptor()->descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
+            parse_handler->proceed_element_descriptor()->retrieval_method);
 }
 
 // Test badly formed XML queries.

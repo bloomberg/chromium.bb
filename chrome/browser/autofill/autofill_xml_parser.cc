@@ -15,6 +15,8 @@ AutofillXmlParser::AutofillXmlParser()
     : succeeded_(true) {
 }
 
+AutofillXmlParser::~AutofillXmlParser() {}
+
 void AutofillXmlParser::CharacterData(
     buzz::XmlParseContext* context, const char* text, int len) {
 }
@@ -40,6 +42,8 @@ AutofillQueryXmlParser::AutofillQueryXmlParser(
   DCHECK(upload_required_);
   DCHECK(experiment_id_);
 }
+
+AutofillQueryXmlParser::~AutofillQueryXmlParser() {}
 
 void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
                                           const char* name,
@@ -111,6 +115,32 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
       else if (attribute_name.compare("total_pages") == 0)
         total_pages_ = GetIntValue(context, *attrs);
       ++attrs;
+    }
+  } else if (element.compare("page_advance_button") == 0) {
+    // |attrs| is a NULL-terminated list of (attribute, value) pairs.
+    // If both id and css_selector are set, the first one to appear will take
+    // precedence.
+    while (*attrs) {
+      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
+      ++attrs;
+      const std::string& attribute_name = attribute_qname.LocalPart();
+      buzz::QName value_qname = context->ResolveQName(*attrs, true);
+      ++attrs;
+      const std::string& attribute_value = value_qname.LocalPart();
+      if (attribute_name.compare("id") == 0 && !attribute_value.empty()) {
+        proceed_element_descriptor_.reset(new autofill::WebElementDescriptor());
+        proceed_element_descriptor_->retrieval_method =
+            autofill::WebElementDescriptor::ID;
+        proceed_element_descriptor_->descriptor = attribute_value;
+        break;
+      } else if (attribute_name.compare("css_selector") == 0 &&
+                 !attribute_value.empty()) {
+        proceed_element_descriptor_.reset(new autofill::WebElementDescriptor());
+        proceed_element_descriptor_->retrieval_method =
+            autofill::WebElementDescriptor::CSS_SELECTOR;
+        proceed_element_descriptor_->descriptor = attribute_value;
+        break;
+      }
     }
   }
 }

@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/common/autofill/web_element_descriptor.h"
 #include "googleurl/src/gurl.h"
 
 struct FormData;
@@ -132,6 +134,12 @@ class FormStructure {
   // autofillable flow.
   bool IsInAutofillableFlow() const;
 
+  // Returns the proceed element for multipage Autofill flows if the current
+  // page is part of such a flow or NULL otherwise.
+  const autofill::WebElementDescriptor* proceed_element_descriptor() const {
+    return proceed_element_descriptor_.get();
+  }
+
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;
@@ -227,6 +235,9 @@ class FormStructure {
   // Total number of pages in the autofill flow. If this form doesn't belong
   // to any autofill flow, it is set to -1.
   int total_pages_;
+
+  // Proceed element for multipage Autofill flow.
+  scoped_ptr<autofill::WebElementDescriptor> proceed_element_descriptor_;
 
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.

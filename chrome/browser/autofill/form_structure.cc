@@ -446,6 +446,11 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     form->server_experiment_id_ = experiment_id;
     form->current_page_number_ = parse_handler.current_page_number();
     form->total_pages_ = parse_handler.total_pages();
+    if (parse_handler.proceed_element_descriptor()) {
+      form->proceed_element_descriptor_.reset(
+          new autofill::WebElementDescriptor(
+              *parse_handler.proceed_element_descriptor()));
+    }
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field, ++current_info) {
