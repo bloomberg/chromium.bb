@@ -178,7 +178,7 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
 @implementation DisconnectWindow
 
 - (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(unsigned int)aStyle
+                styleMask:(NSUInteger)aStyle
                   backing:(NSBackingStoreType)bufferingType
                   defer:(BOOL)flag {
   // Pass NSBorderlessWindowMask for the styleMask to remove the title bar.
