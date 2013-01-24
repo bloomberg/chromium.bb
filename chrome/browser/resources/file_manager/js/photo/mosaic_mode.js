@@ -518,12 +518,22 @@ Mosaic.SelectionController.prototype.getLastIndex = function() {
 
 /** @override */
 Mosaic.SelectionController.prototype.getIndexBefore = function(index) {
-  return this.layoutModel_.getAdjacentIndex(index, -1);
+  return this.layoutModel_.getHorizontalAdjacentIndex(index, -1);
 };
 
 /** @override */
 Mosaic.SelectionController.prototype.getIndexAfter = function(index) {
-  return this.layoutModel_.getAdjacentIndex(index, 1);
+  return this.layoutModel_.getHorizontalAdjacentIndex(index, 1);
+};
+
+/** @override */
+Mosaic.SelectionController.prototype.getIndexAbove = function(index) {
+  return this.layoutModel_.getVerticalAdjacentIndex(index, -1);
+};
+
+/** @override */
+Mosaic.SelectionController.prototype.getIndexBelow = function(index) {
+  return this.layoutModel_.getVerticalAdjacentIndex(index, 1);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -819,7 +829,8 @@ Mosaic.Layout.prototype.invalidateFromTile_ = function(index) {
  * @param {number} direction -1 for left, 1 for right.
  * @return {number} Adjacent tile index.
  */
-Mosaic.Layout.prototype.getAdjacentIndex = function(index, direction) {
+Mosaic.Layout.prototype.getHorizontalAdjacentIndex = function(
+    index, direction) {
   var column = this.getColumnIndexByTile_(index);
   if (column < 0) {
     console.error('Cannot find column for tile #' + index);
@@ -842,6 +853,61 @@ Mosaic.Layout.prototype.getAdjacentIndex = function(index, direction) {
 
   return this.columns_[adjacentColumn].
       getEdgeTileIndex_(row.getCenterY(), -direction);
+};
+
+/**
+ * Get the index of the tile to the top or to the bottom from the given tile.
+ *
+ * @param {number} index Tile index.
+ * @param {number} direction -1 for above, 1 for below.
+ * @return {number} Adjacent tile index.
+ */
+Mosaic.Layout.prototype.getVerticalAdjacentIndex = function(
+    index, direction) {
+  var column = this.getColumnIndexByTile_(index);
+  if (column < 0) {
+    console.error('Cannot find column for tile #' + index);
+    return -1;
+  }
+
+  var row = this.columns_[column].getRowByTileIndex(index);
+  if (!row) {
+    console.error('Cannot find row for tile #' + index);
+    return -1;
+  }
+
+  // Find the first item in the next row, or the last item in the previous row.
+  var adjacentRowNeighbourIndex =
+      row.getEdgeTileIndex_(direction) + direction;
+
+  if (adjacentRowNeighbourIndex < 0 ||
+      adjacentRowNeighbourIndex > this.getTileCount() - 1)
+    return -1;
+
+  if (!this.columns_[column].hasTile(adjacentRowNeighbourIndex)) {
+    // It is not in the current column, so return it.
+    return adjacentRowNeighbourIndex;
+  } else {
+    // It is in the current column, so we have to find optically the closest
+    // tile in the adjacent row.
+    var adjacentRow = this.columns_[column].getRowByTileIndex(
+        adjacentRowNeighbourIndex);
+    var previousTileCenterX = row.getTileByIndex(index).getCenterX();
+
+    // Find the closest one.
+    var closestIndex = -1;
+    var closestDistance;
+    var adjacentRowTiles = adjacentRow.getTiles();
+    for (var t = 0; t != adjacentRowTiles.length; t++) {
+      var distance =
+          Math.abs(adjacentRowTiles[t].getCenterX() - previousTileCenterX);
+      if (closestIndex == -1 || distance < closestDistance) {
+        closestIndex = adjacentRow.getEdgeTileIndex_(-1) + t;
+        closestDistance = distance;
+      }
+    }
+    return closestIndex;
+  }
 };
 
 /**
@@ -1241,6 +1307,22 @@ Mosaic.Row.prototype.add = function(tile) {
 };
 
 /**
+ * @return {Array.<Mosaic.Tile>} Array of tiles in the row.
+ */
+Mosaic.Row.prototype.getTiles = function() { return this.tiles_ };
+
+/**
+ * Get a tile by index.
+ * @param {number} index Tile index.
+ * @return {Mosaic.Tile} Requested tile or null if not found.
+ */
+Mosaic.Row.prototype.getTileByIndex = function(index) {
+  if (!this.hasTile(index))
+    return null;
+  return this.tiles_[index - this.firstTileIndex_];
+};
+
+/**
  *
  * @return {number} Number of tiles in the row.
  */
@@ -1554,4 +1636,11 @@ Mosaic.Tile.prototype.getImageRect = function() {
   var margin = Mosaic.Layout.SPACING / 2;
   return new Rect(this.left_ - this.container_.scrollLeft, this.top_,
       this.width_, this.height_).inflate(-margin, -margin);
+};
+
+/**
+ * @return {number} X coordinate of the tile center.
+ */
+Mosaic.Tile.prototype.getCenterX = function() {
+  return this.left_ + Math.round(this.width_ / 2);
 };
