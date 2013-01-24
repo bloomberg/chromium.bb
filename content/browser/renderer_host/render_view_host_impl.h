@@ -170,9 +170,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const WebKit::WebMediaPlayerAction& action) OVERRIDE;
   virtual void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
                                            const string16& jscript) OVERRIDE;
-  virtual int ExecuteJavascriptInWebFrameNotifyResult(
-      const string16& frame_xpath,
-      const string16& jscript) OVERRIDE;
   virtual void ExecuteJavascriptInWebFrameCallbackResult(
       const string16& frame_xpath,
       const string16& jscript,

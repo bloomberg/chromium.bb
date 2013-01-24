@@ -292,14 +292,6 @@ enum NotificationType {
   // or not an editable node was focused.
   NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
 
-  // Notification posted from ExecuteJavascriptInWebFrameNotifyResult. The
-  // source is the RenderViewHost ExecuteJavascriptInWebFrameNotifyResult was
-  // invoked on. The details are a std::pair<int, Value*> with the int giving
-  // the id returned from ExecuteJavascriptInWebFrameNotifyResult and the
-  // Value the results of the javascript expression. The Value is owned by
-  // RenderViewHost and may be a Null Value.
-  NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-
   // Notification from WebContents that we have received a response from the
   // renderer in response to a dom automation controller action. The source is
   // the RenderViewHost, and the details is a DomOperationNotificationDetails.

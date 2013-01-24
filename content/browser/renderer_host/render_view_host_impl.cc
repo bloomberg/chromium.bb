@@ -710,20 +710,14 @@ void RenderViewHostImpl::ExecuteJavascriptInWebFrame(
                                      0, false));
 }
 
-int RenderViewHostImpl::ExecuteJavascriptInWebFrameNotifyResult(
-    const string16& frame_xpath,
-    const string16& jscript) {
-  static int next_id = 1;
-  Send(new ViewMsg_ScriptEvalRequest(GetRoutingID(), frame_xpath, jscript,
-                                     next_id, true));
-  return next_id++;
-}
-
 void RenderViewHostImpl::ExecuteJavascriptInWebFrameCallbackResult(
      const string16& frame_xpath,
      const string16& jscript,
      const JavascriptResultCallback& callback) {
-  int key = ExecuteJavascriptInWebFrameNotifyResult(frame_xpath, jscript);
+  static int next_id = 1;
+  int key = next_id++;
+  Send(new ViewMsg_ScriptEvalRequest(GetRoutingID(), frame_xpath, jscript,
+                                     key, true));
   javascript_callbacks_.insert(std::make_pair(key, callback));
 }
 
@@ -1912,12 +1906,7 @@ void RenderViewHostImpl::OnScriptEvalResponse(int id,
     it->second.Run(result_value);
     javascript_callbacks_.erase(it);
   } else {
-    // ExecuteJavascriptInWebFrameNotifyResult was used; broadcast result.
-    std::pair<int, const base::Value*> details(id, result_value);
-    NotificationService::current()->Notify(
-        NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-        Source<RenderViewHost>(this),
-        Details<std::pair<int, const base::Value*> >(&details));
+    NOTREACHED() << "Received script response for unknown request";
   }
 }
 

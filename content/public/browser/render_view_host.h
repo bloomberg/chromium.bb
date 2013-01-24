@@ -177,15 +177,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
                                            const string16& jscript) = 0;
 
   // Runs some javascript within the context of a frame in the page. The result
-  // is sent back via the notification NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT.
-  // This returns an int, used as a key to identify the corresponding
-  // notification.
-  // OBSOLETE. Use ExecuteJavascriptInWebFrameCallbackResult instead.
-  virtual int ExecuteJavascriptInWebFrameNotifyResult(
-      const string16& frame_xpath,
-      const string16& jscript) = 0;
-
-  // Runs some javascript within the context of a frame in the page. The result
   // is sent back via the provided callback.
   virtual void ExecuteJavascriptInWebFrameCallbackResult(
       const string16& frame_xpath,
