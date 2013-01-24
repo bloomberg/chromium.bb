@@ -67,7 +67,8 @@ size_t BrowserList::size() {
 
 // static
 void BrowserList::SetLastActive(Browser* browser) {
-  GetNativeList()->SetLastActive(browser);
+  chrome::BrowserListImpl::GetInstance(browser->host_desktop_type())->
+      SetLastActive(browser);
 }
 
 // static
