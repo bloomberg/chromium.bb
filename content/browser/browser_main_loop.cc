@@ -724,12 +724,17 @@ void BrowserMainLoop::InitializeToolkit() {
   // TODO(stevenjb): Move platform specific code into platform specific Parts
   // (Need to add InitializeToolkit stage to BrowserParts).
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
+  // g_type_init will be deprecated in 2.36. 2.35 is the development
+  // version for 2.36, hence do not call g_type_init starting 2.35.
+  // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   // Glib type system initialization. Needed at least for gconf,
   // used in net/proxy/proxy_config_service_linux.cc. Most likely
   // this is superfluous as gtk_init() ought to do this. It's
   // definitely harmless, so retained as a reminder of this
   // requirement for gconf.
   g_type_init();
+#endif
 
 #if !defined(USE_AURA)
   gfx::GtkInitFromCommandLine(parsed_command_line_);
