@@ -38,6 +38,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   ProfileInfoCache(PrefService* prefs, const FilePath& user_data_dir);
   virtual ~ProfileInfoCache();
 
+  // This |is_managed| refers to local management (formerly "managed mode"),
+  // not enterprise management.
   void AddProfileToCache(const FilePath& profile_path,
                          const string16& name,
                          const string16& username,

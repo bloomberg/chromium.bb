@@ -67,11 +67,19 @@ enum ProfileAvatar {
 
 void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager,
                                          ProfileEvent startup) {
-  size_t number_of_profiles =
-      manager->GetProfileInfoCache().GetNumberOfProfiles();
+  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
+  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
   if (startup == STARTUP_PROFILE_EVENT) {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesOnStartup",
                              number_of_profiles);
+
+    size_t number_of_managed_profiles = 0;
+    for (size_t i = 0; i < number_of_profiles; ++i) {
+      if (info_cache.ProfileIsManagedAtIndex(i))
+        ++number_of_managed_profiles;
+    }
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfilesOnStartup",
+                             number_of_managed_profiles);
   } else {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesAfterAddOrDelete",
                              number_of_profiles);
