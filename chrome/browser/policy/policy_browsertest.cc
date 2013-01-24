@@ -29,6 +29,9 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -1753,5 +1756,108 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   // BookmarkBarEnabled has policy ID 82.
   EXPECT_NE(std::string::npos, text.find("<br>82  ---"));
 }
+
+class MediaStreamDevicesControllerBrowserTest
+    : public PolicyTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  MediaStreamDevicesControllerBrowserTest() {
+    policy_value_ = GetParam();
+  }
+  virtual ~MediaStreamDevicesControllerBrowserTest() {}
+
+  void Accept(const content::MediaStreamDevices& devices) {
+    if (policy_value_) {
+      ASSERT_EQ(1U, devices.size());
+      ASSERT_EQ("fake_dev", devices[0].id);
+    } else {
+      ASSERT_EQ(0U, devices.size());
+    }
+  }
+
+  void FinishAudioTest() {
+    content::MediaStreamRequest request(0, 0, GURL(),
+                                        content::MEDIA_OPEN_DEVICE, "fake_dev",
+                                        content::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                        content::MEDIA_NO_SERVICE);
+    MediaStreamDevicesController controller(
+        browser()->profile(), request,
+        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
+    controller.DismissInfoBarAndTakeActionOnSettings();
+
+    MessageLoop::current()->QuitWhenIdle();
+  }
+
+  void FinishVideoTest() {
+    content::MediaStreamRequest request(0, 0, GURL(),
+                                        content::MEDIA_OPEN_DEVICE, "fake_dev",
+                                        content::MEDIA_NO_SERVICE,
+                                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
+    MediaStreamDevicesController controller(
+        browser()->profile(), request,
+        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
+    controller.DismissInfoBarAndTakeActionOnSettings();
+
+    MessageLoop::current()->QuitWhenIdle();
+  }
+
+  bool policy_value_;
+};
+
+IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
+                       AudioCaptureAllowed) {
+  content::MediaStreamDevices audio_devices;
+  content::MediaStreamDevice fake_audio_device(
+      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev", "Fake Audio Device");
+  audio_devices.push_back(fake_audio_device);
+
+  PolicyMap policies;
+  policies.Set(key::kAudioCaptureAllowed, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(policy_value_));
+  UpdateProviderPolicy(policies);
+
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
+
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaCaptureDevicesDispatcher::AudioCaptureDevicesChanged,
+                 dispatcher, audio_devices),
+      base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
+                 this));
+
+  MessageLoop::current()->Run();
+}
+
+IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
+                       VideoCaptureAllowed) {
+  content::MediaStreamDevices video_devices;
+  content::MediaStreamDevice fake_video_device(
+      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_dev", "Fake Video Device");
+  video_devices.push_back(fake_video_device);
+
+  PolicyMap policies;
+  policies.Set(key::kVideoCaptureAllowed, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(policy_value_));
+  UpdateProviderPolicy(policies);
+
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
+
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaCaptureDevicesDispatcher::VideoCaptureDevicesChanged,
+                 dispatcher, video_devices),
+      base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
+                 this));
+
+  MessageLoop::current()->Run();
+}
+
+INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
+                        MediaStreamDevicesControllerBrowserTest,
+                        testing::Bool());
 
 }  // namespace policy
