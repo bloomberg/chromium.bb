@@ -91,5 +91,19 @@ TEST(ONCTranslatorShillToOncTest, OpenVPN) {
   EXPECT_TRUE(test_utils::Equals(onc_network.get(), translation.get()));
 }
 
+TEST(ONCTranslatorShillToOncTest, OpenVPN_with_errors) {
+  scoped_ptr<const base::DictionaryValue> onc_network(
+      test_utils::ReadTestDictionary(
+          "translation_of_shill_openvpn_with_errors.onc"));
+
+  scoped_ptr<const base::DictionaryValue> shill_network(
+      test_utils::ReadTestDictionary("shill_openvpn_with_errors.json"));
+
+  scoped_ptr<base::DictionaryValue> translation(TranslateShillServiceToONCPart(
+      *shill_network, &kNetworkConfigurationSignature));
+
+  EXPECT_TRUE(test_utils::Equals(onc_network.get(), translation.get()));
+}
+
 }  // namespace onc
 }  // namespace chromeos

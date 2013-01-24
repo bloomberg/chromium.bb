@@ -203,7 +203,7 @@ void ExpandStringsInOncObject(
   // Recurse into nested objects.
   for (base::DictionaryValue::key_iterator it = onc_object->begin_keys();
        it != onc_object->end_keys(); ++it) {
-    base::DictionaryValue* inner_object;
+    base::DictionaryValue* inner_object = NULL;
     if (!onc_object->GetDictionaryWithoutPathExpansion(*it, &inner_object))
       continue;
 

@@ -82,11 +82,11 @@ class ONCCertificateImporterTest : public testing::Test {
                               std::string* guid) {
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
-    base::ListValue* certificates;
+    base::ListValue* certificates = NULL;
     onc->GetListWithoutPathExpansion(toplevel_config::kCertificates,
                                      &certificates);
 
-    base::DictionaryValue* certificate;
+    base::DictionaryValue* certificate = NULL;
     certificates->GetDictionary(0, &certificate);
     certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
 

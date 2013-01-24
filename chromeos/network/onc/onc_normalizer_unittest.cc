@@ -19,8 +19,8 @@ TEST(ONCNormalizerTest, NormalizeNetworkConfiguration) {
   scoped_ptr<const base::DictionaryValue> data(
       test_utils::ReadTestDictionary("settings_with_normalization.json"));
 
-  const base::DictionaryValue* original;
-  const base::DictionaryValue* expected_normalized;
+  const base::DictionaryValue* original = NULL;
+  const base::DictionaryValue* expected_normalized = NULL;
   data->GetDictionary("ethernet-and-vpn", &original);
   data->GetDictionary("ethernet-and-vpn-normalized", &expected_normalized);
 

@@ -99,7 +99,7 @@ void LocalTranslator::TranslateFields() {
 void LocalTranslator::TranslateOpenVPN() {
   // Shill supports only one RemoteCertKU but ONC a list.
   // Copy only the first entry if existing.
-  const base::ListValue* certKUs;
+  const base::ListValue* certKUs = NULL;
   std::string certKU;
   if (onc_object_->GetListWithoutPathExpansion(vpn::kRemoteCertKU, &certKUs) &&
       certKUs->GetString(0, &certKU)) {
@@ -230,7 +230,7 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
   // Recurse into nested objects.
   for (base::DictionaryValue::Iterator it(onc_object); it.HasNext();
        it.Advance()) {
-    const base::DictionaryValue* inner_object;
+    const base::DictionaryValue* inner_object = NULL;
     if (!it.value().GetAsDictionary(&inner_object))
       continue;
 
