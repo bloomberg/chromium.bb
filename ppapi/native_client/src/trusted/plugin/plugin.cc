@@ -223,13 +223,27 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
 }
 
-void HistogramEnumerateLoadStatus(PluginErrorCode error_code) {
+void HistogramEnumerateLoadStatus(PluginErrorCode error_code,
+                                  bool is_installed) {
   HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, ERROR_MAX,
+                     ERROR_UNKNOWN);
+
+  // Gather data to see if being installed changes load outcomes.
+  const char* name = is_installed ? "NaCl.LoadStatus.Plugin.InstalledApp" :
+      "NaCl.LoadStatus.Plugin.NotInstalledApp";
+  HistogramEnumerate(name, error_code, ERROR_MAX,
                      ERROR_UNKNOWN);
 }
 
-void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
+void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code,
+                                        bool is_installed) {
   HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code, NACL_ERROR_CODE_MAX,
+                     LOAD_STATUS_UNKNOWN);
+
+  // Gather data to see if being installed changes load outcomes.
+  const char* name = is_installed ? "NaCl.LoadStatus.SelLdr.InstalledApp" :
+      "NaCl.LoadStatus.SelLdr.NotInstalledApp";
+  HistogramEnumerate(name, error_code, NACL_ERROR_CODE_MAX,
                      LOAD_STATUS_UNKNOWN);
 }
 
@@ -665,6 +679,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       last_error_string_(""),
       enable_dev_interfaces_(false),
+      is_installed_(false),
       init_time_(0),
       ready_time_(0),
       nexe_size_(0),
@@ -1152,6 +1167,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
 
   if (manifest_->GetProgramURL(&program_url, &cache_identity,
                                &error_info, &is_portable)) {
+    is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
     set_nacl_ready_state(LOADING);
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
@@ -1206,6 +1222,8 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   }
   PLUGIN_PRINTF(("Plugin::RequestNaClManifest (resolved url='%s')\n",
                  nmf_resolved_url.AsString().c_str()));
+  is_installed_ = GetUrlScheme(nmf_resolved_url.AsString()) ==
+      SCHEME_CHROME_EXTENSION;
   set_manifest_base_url(nmf_resolved_url.AsString());
   set_manifest_url(url);
   // Inform JavaScript that a load is starting.
@@ -1325,7 +1343,7 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
       kProgressEventLoadEnd, url, length_computable, loaded_bytes, total_bytes);
 
   // UMA
-  HistogramEnumerateLoadStatus(ERROR_LOAD_SUCCESS);
+  HistogramEnumerateLoadStatus(ERROR_LOAD_SUCCESS, is_installed_);
 }
 
 
@@ -1355,7 +1373,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   EnqueueProgressEvent(kProgressEventLoadEnd);
 
   // UMA
-  HistogramEnumerateLoadStatus(error_info.error_code());
+  HistogramEnumerateLoadStatus(error_info.error_code(), is_installed_);
 }
 
 
@@ -1373,7 +1391,7 @@ void Plugin::ReportLoadAbort() {
   EnqueueProgressEvent(kProgressEventLoadEnd);
 
   // UMA
-  HistogramEnumerateLoadStatus(ERROR_LOAD_ABORTED);
+  HistogramEnumerateLoadStatus(ERROR_LOAD_ABORTED, is_installed_);
 }
 
 void Plugin::UpdateDownloadProgress(
@@ -1467,7 +1485,8 @@ void Plugin::EnqueueProgressEvent(const char* event_type,
 }
 
 void Plugin::ReportSelLdrLoadStatus(int status) {
-  HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status));
+  HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status),
+                                     is_installed_);
 }
 
 void Plugin::DispatchProgressEvent(int32_t result) {

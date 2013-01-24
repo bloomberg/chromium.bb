@@ -436,6 +436,17 @@ class Plugin : public pp::InstancePrivate {
   // PPAPI Dev interfaces are disabled by default.
   bool enable_dev_interfaces_;
 
+  // A flag indicating if the NaCl executable is being loaded from an installed
+  // application.  This flag is used to bucket UMA statistics more precisely to
+  // help determine whether nexe loading problems are caused by networking
+  // issues.  (Installed applications will be loaded from disk.)
+  // Unfortunately, the definition of what it means to be part of an installed
+  // application is a little murky - for example an installed application can
+  // register a mime handler that loads NaCl executables into an arbitrary web
+  // page.  As such, the flag actually means "our best guess, based on the URLs
+  // for NaCl resources that we have seen so far".
+  bool is_installed_;
+
   // If we get a DidChangeView event before the nexe is loaded, we store it and
   // replay it to nexe after it's loaded. We need to replay when this View
   // resource is non-is_null().
