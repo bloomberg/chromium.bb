@@ -1978,6 +1978,7 @@ TEST_F(QuicFramerTest, CleanTruncation) {
   close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
   close_frame.error_details = "because I can";
   ack_frame->received_info.largest_observed = 201;
+  ack_frame->sent_info.least_unacked = 0;
   for (uint64 i = 1; i < ack_frame->received_info.largest_observed; ++i) {
     ack_frame->received_info.missing_packets.insert(i);
   }
