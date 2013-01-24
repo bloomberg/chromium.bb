@@ -25,6 +25,9 @@ class TestStrip(unittest.TestCase):
     self.tempfiles = []
 
   def getTemp(self, **kwargs):
+    # Set delete=False, so that we can close the files and
+    # re-open them.  Windows sometimes does not allow you to
+    # re-open an already opened temp file.
     t = tempfile.NamedTemporaryFile(delete=False, **kwargs)
     self.tempfiles.append(t)
     return t
@@ -39,16 +42,15 @@ class TestStrip(unittest.TestCase):
     driver_log.TempFiles.wipe()
 
   def getSource(self, num):
-    t = self.getTemp(suffix='.c')
-    t.write('''
+    with self.getTemp(suffix='.c') as t:
+      t.write('''
 extern void puts(const char *);
 
 void foo%d(void) {
   puts("Hello\\n");
 }
 ''' % num)
-    t.close()
-    return t
+      return t
 
   def generateObjWithDebug(self, src, is_native):
     s = '.bc'

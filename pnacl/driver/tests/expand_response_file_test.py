@@ -21,6 +21,9 @@ class TestExpandResponseFile(unittest.TestCase):
     self.tempfiles = []
 
   def getTemp(self):
+    # Set delete=False, so that we can close the files and
+    # re-open them.  Windows sometimes does not allow you to
+    # re-open an already opened temp file.
     t = tempfile.NamedTemporaryFile(delete=False)
     self.tempfiles.append(t)
     return t
