@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -149,7 +150,8 @@ Panel::Panel(const std::string& app_name,
       native_panel_(NULL),
       attention_mode_(USE_PANEL_ATTENTION),
       expansion_state_(EXPANDED),
-      command_updater_(this) {
+      command_updater_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
 }
 
 Panel::~Panel() {
@@ -224,7 +226,8 @@ void Panel::InitCommandState() {
 }
 
 void Panel::OnNativePanelClosed() {
-  app_icon_loader_.reset();
+  // Ensure previously enqueued OnImageLoaded callbacks are ignored.
+  image_loader_ptr_factory_.InvalidateWeakPtrs();
   registrar_.RemoveAll();
   manager()->OnPanelClosed(this);
   DCHECK(!collection_);
@@ -829,24 +832,22 @@ void Panel::UpdateAppIcon() {
   if (!extension)
     return;
 
-  app_icon_loader_.reset(new ImageLoadingTracker(this));
-  app_icon_loader_->LoadImage(
+  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile());
+  loader->LoadImageAsync(
       extension,
       extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALL,
                                  ExtensionIconSet::MATCH_BIGGER),
       gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
                 extension_misc::EXTENSION_ICON_SMALL),
-      ImageLoadingTracker::CACHE);
+      base::Bind(&Panel::OnImageLoaded,
+                 image_loader_ptr_factory_.GetWeakPtr()));
 }
 
-void Panel::OnImageLoaded(const gfx::Image& image,
-                          const std::string& extension_id,
-                          int index) {
+void Panel::OnImageLoaded(const gfx::Image& image) {
   if (!image.IsEmpty()) {
     app_icon_ = image;
     native_panel_->UpdatePanelTitleBar();
   }
-  app_icon_loader_.reset();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_APP_ICON_LOADED,
