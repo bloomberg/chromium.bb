@@ -181,6 +181,7 @@ void TileManager::ManageTiles() {
 
   const TreePriority tree_priority = global_state_.tree_priority;
   TRACE_COUNTER_ID1("cc", "TreePriority", this, tree_priority);
+  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 
   // For each tree, bin into different categories of tiles.
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
