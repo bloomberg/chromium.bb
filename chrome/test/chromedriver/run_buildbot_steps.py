@@ -85,7 +85,7 @@ def main():
     sys.executable,
     os.path.join(_THIS_DIR, 'run_all_tests.py'),
   ]
-  code = 0 #util.RunCommand(cmd)
+  code = util.RunCommand(cmd)
   if code != 0:
     return code
 
