@@ -16,7 +16,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
@@ -42,6 +41,12 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
 
 #if !defined(OS_IOS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -935,8 +940,14 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
 
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged))
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged)) {
     profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, is_managed);
+#if defined(ENABLE_MANAGED_USERS)
+    ManagedUserServiceFactory::GetForProfile(profile)->Init();
+#else
+    DCHECK(!is_managed);
+#endif
+  }
 }
 
 bool ProfileManager::ShouldGoOffTheRecord() {
@@ -1022,7 +1033,12 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
     return false;
 #endif
-  return !ManagedMode::IsInManagedMode();
+#if defined(ENABLE_MANAGED_USERS)
+  if (ManagedMode::IsInManagedMode())
+    return false;
+#endif
+
+  return true;
 }
 
 void ProfileManager::AutoloadProfiles() {

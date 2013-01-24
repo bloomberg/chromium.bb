@@ -78,9 +78,9 @@ class ManagedUserService : public ProfileKeyedService,
   void SetElevatedForTesting(bool is_elevated);
 
   // Initializes this object. This method does nothing if the profile is not
-  // managed. This method should only be called for testing, to do
-  // initialization after the profile has been manually set to managed,
-  // otherwise it is called automatically,
+  // managed. This method only needs to be called if the profile is set to be
+  // managed after the ManagedUserService has been created (which happens when
+  // creating a new profile).
   void Init();
 
   // ExtensionManagementPolicy::Provider implementation:
