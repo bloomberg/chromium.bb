@@ -72,6 +72,7 @@ enum radeon_family {
     CHIP_TAHITI,
     CHIP_PITCAIRN,
     CHIP_VERDE,
+    CHIP_OLAND,
     CHIP_LAST,
 };
 
