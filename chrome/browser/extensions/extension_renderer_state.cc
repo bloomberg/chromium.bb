@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
-using content::RenderProcessHost;
 using content::RenderViewHost;
 using content::WebContents;
 
@@ -56,15 +55,6 @@ ExtensionRendererState::TabObserver::TabObserver() {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_RETARGETING,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -141,33 +131,6 @@ void ExtensionRendererState::TabObserver::Observe(
               host->GetProcess()->GetID(), host->GetRoutingID()));
       break;
     }
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* render_process_host =
-          content::Source<RenderProcessHost>(source).ptr();
-      if (!render_process_host->IsGuest())
-        return;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::AddGuestProcess,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              render_process_host->GetID()));
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* render_process_host =
-          content::Source<RenderProcessHost>(source).ptr();
-      if (!render_process_host->IsGuest())
-        return;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::RemoveGuestProcess,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              render_process_host->GetID()));
-      break;
-    }
     default:
       NOTREACHED();
       return;
@@ -222,19 +185,4 @@ bool ExtensionRendererState::GetTabAndWindowId(
     return true;
   }
   return false;
-}
-
-void ExtensionRendererState::AddGuestProcess(int render_process_host_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  guest_set_.insert(render_process_host_id);
-}
-
-void ExtensionRendererState::RemoveGuestProcess(int render_process_host_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  guest_set_.erase(render_process_host_id);
-}
-
-bool ExtensionRendererState::IsGuestProcess(int render_process_host_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return guest_set_.count(render_process_host_id) > 0;
 }

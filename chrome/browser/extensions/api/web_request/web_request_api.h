@@ -245,8 +245,6 @@ class ExtensionWebRequestEventRouter
       const std::string& sub_event_name,
       const RequestFilter& filter,
       int extra_info_spec,
-      int target_process_id,
-      int target_route_id,
       base::WeakPtr<IPC::Sender> ipc_sender);
 
   // Removes the listener for the given sub-event.
@@ -311,8 +309,6 @@ class ExtensionWebRequestEventRouter
       const GURL& url,
       int tab_id,
       int window_id,
-      int render_process_host_id,
-      int routing_id,
       ResourceType::Type resource_type,
       bool is_async_request,
       bool is_request_from_extension,
