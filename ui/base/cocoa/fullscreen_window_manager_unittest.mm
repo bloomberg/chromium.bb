@@ -4,7 +4,6 @@
 
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -17,15 +16,18 @@ TEST_F(FullscreenWindowManagerTest, EnterExit) {
           initWithWindow:test_window()
            desiredScreen:[NSScreen mainScreen]]);
 
-  SystemUIMode mode = kUIModeNormal;
-  GetSystemUIMode(&mode, NULL);
-  EXPECT_EQ(kUIModeNormal, mode);
+  NSApplicationPresentationOptions current_options =
+      [NSApp presentationOptions];
+  EXPECT_EQ(NSApplicationPresentationDefault, current_options);
 
   [manager enterFullscreenMode];
-  GetSystemUIMode(&mode, NULL);
-  EXPECT_EQ(kUIModeAllHidden, mode);
+  current_options = [NSApp presentationOptions];
+  EXPECT_EQ(static_cast<NSApplicationPresentationOptions>(
+                NSApplicationPresentationHideDock |
+                NSApplicationPresentationHideMenuBar),
+            current_options);
 
   [manager exitFullscreenMode];
-  GetSystemUIMode(&mode, NULL);
-  EXPECT_EQ(kUIModeNormal, mode);
+  current_options = [NSApp presentationOptions];
+  EXPECT_EQ(NSApplicationPresentationDefault, current_options);
 }

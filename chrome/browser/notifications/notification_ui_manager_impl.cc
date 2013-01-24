@@ -51,7 +51,6 @@ NotificationUIManagerImpl::NotificationUIManagerImpl()
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 #if defined(OS_MACOSX)
-  InitFullScreenMonitor();
   InitIdleMonitor();
 #endif
 }
@@ -60,7 +59,6 @@ NotificationUIManagerImpl::~NotificationUIManagerImpl() {
   STLDeleteElements(&show_queue_);
 #if defined(OS_MACOSX)
   StopIdleMonitor();
-  StopFullScreenMonitor();
 #endif
 }
 

@@ -7,13 +7,6 @@
 
 #include "build/build_config.h"
 
-// For MacOSX, InitFullScreenMonitor needs to be called first to setup the
-// monitor. StopFullScreenMonitor should be called if it is not needed any more.
-#if defined(OS_MACOSX)
-void InitFullScreenMonitor();
-void StopFullScreenMonitor();
-#endif
-
 bool IsFullScreenMode();
 
 #endif  // CHROME_BROWSER_FULLSCREEN_H_
