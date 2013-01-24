@@ -5,7 +5,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
@@ -603,11 +602,15 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
                    int png_output_color_type, int output_color_components,
                    FormatConverter converter,
                    const std::vector<PNGCodec::Comment>& comments) {
+  unsigned char* row_buffer = NULL;
+
   // Make sure to not declare any locals here -- locals in the presence
   // of setjmp() in C++ code makes gcc complain.
 
-  if (setjmp(png_jmpbuf(png_ptr)))
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    delete[] row_buffer;
     return false;
+  }
 
   png_set_compression_level(png_ptr, compression_level);
 
@@ -637,12 +640,12 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
     }
   } else {
     // Needs conversion using a separate buffer.
-    unsigned char* row = new unsigned char[width * output_color_components];
+    row_buffer = new unsigned char[width * output_color_components];
     for (int y = 0; y < height; y ++) {
-      converter(&input[y * row_byte_width], width, row, NULL);
-      png_write_row(png_ptr, row);
+      converter(&input[y * row_byte_width], width, row_buffer, NULL);
+      png_write_row(png_ptr, row_buffer);
     }
-    delete[] row;
+    delete[] row_buffer;
   }
 
   png_write_end(png_ptr, info_ptr);
