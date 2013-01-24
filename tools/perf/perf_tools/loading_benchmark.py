@@ -21,6 +21,17 @@ class LoadingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     # recognize loading as a toplevel action.
     tab.StopTimelineRecording()
 
+    load_timings = tab.EvaluateJavaScript("window.performance.timing")
+    load_time_ms = (
+      float(load_timings['loadEventStart']) -
+      load_timings['navigationStart'])
+    dom_content_loaded_time_ms = (
+      float(load_timings['domContentLoadedEventStart']) -
+      load_timings['navigationStart'])
+    results.Add('load_time', 'ms', load_time_ms)
+    results.Add('dom_content_loaded_time', 'ms',
+                dom_content_loaded_time_ms)
+
     events = tab.timeline_model.GetAllEvents()
 
     events_by_name = collections.defaultdict(list)
