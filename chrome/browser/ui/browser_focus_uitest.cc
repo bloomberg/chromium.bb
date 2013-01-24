@@ -63,8 +63,8 @@ using content::WebContents;
 // TODO(suzhe): http://crbug.com/60973
 #define MAYBE_FocusTraversal DISABLED_FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
-#elif defined(OS_WIN)
-// http://crbug.com/109770
+#elif defined(OS_WIN) || defined(OS_CHROMEOS)
+// http://crbug.com/109770 and http://crbug.com/62544
 #define MAYBE_FocusTraversal FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 #else
