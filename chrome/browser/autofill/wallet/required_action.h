@@ -23,6 +23,7 @@ enum RequiredAction {
   UPGRADE_MIN_ADDRESS,
   INVALID_FORM_FIELD,
   CVC_RISK_CHALLENGE,
+  PASSIVE_GAIA_AUTH,
 };
 
 // Static helper functions to determine if an RequiredAction applies to either a

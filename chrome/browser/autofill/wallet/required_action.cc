@@ -20,7 +20,8 @@ bool ActionAppliesToWalletItems(RequiredAction action) {
   return action == SETUP_WALLET ||
          action == ACCEPT_TOS ||
          action == GAIA_AUTH ||
-         action == INVALID_FORM_FIELD;
+         action == INVALID_FORM_FIELD ||
+         action == PASSIVE_GAIA_AUTH;
 }
 
 RequiredAction ParseRequiredActionFromString(const std::string& str) {
@@ -41,6 +42,8 @@ RequiredAction ParseRequiredActionFromString(const std::string& str) {
     return INVALID_FORM_FIELD;
   else if (str_lower == "cvc_risk_challenge")
     return CVC_RISK_CHALLENGE;
+  else if (str_lower == "passive_gaia_auth")
+    return PASSIVE_GAIA_AUTH;
 
   DLOG(ERROR) << "Failed to parse: \"" << str << "\" as a required action";
   return UNKNOWN_TYPE;

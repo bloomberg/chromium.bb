@@ -290,6 +290,7 @@ const char kFullWalletWithInvalidRequiredActions[] =
     "    \"  setup_wallet\","
     "    \"AcCePt_ToS  \","
     "    \"   \\tGAIA_auth   \\n\\r\","
+    "    \"PASSIVE_GAIA_AUTH\","
     "    \" 忍者の正体 \""
     "  ]"
     "}";

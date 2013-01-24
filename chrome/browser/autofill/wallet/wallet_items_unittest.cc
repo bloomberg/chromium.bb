@@ -217,7 +217,8 @@ const char kWalletItemsWithRequiredActions[] =
     "    \"  setup_wallet\","
     "    \"AcCePt_ToS  \","
     "    \"  \\tGAIA_auth   \\n\\r\","
-    "    \"INVALID_form_field\""
+    "    \"INVALID_form_field\","
+    "    \" pAsSiVe_GAIA_auth \""
     "  ]"
     "}";
 
@@ -471,6 +472,7 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
   required_actions.push_back(ACCEPT_TOS);
   required_actions.push_back(GAIA_AUTH);
   required_actions.push_back(INVALID_FORM_FIELD);
+  required_actions.push_back(PASSIVE_GAIA_AUTH);
 
   WalletItems expected(required_actions,
                        std::string(),
