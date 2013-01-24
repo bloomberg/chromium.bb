@@ -99,27 +99,6 @@ Browser* FullscreenControllerStateInteractiveTest::GetBrowser() {
 
 // Tests -----------------------------------------------------------------------
 
-// Soak tests:
-
-// Tests all states with all permutations of multiple events to detect lingering
-// state issues that would bleed over to other states.
-// I.E. for each state test all combinations of events E1, E2, E3.
-//
-// This produces coverage for event sequences that may happen normally but
-// would not be exposed by traversing to each state via TransitionToState().
-// TransitionToState() always takes the same path even when multiple paths
-// exist.
-IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
-                       DISABLED_TransitionsForEachState) {
-  // A tab is needed for tab fullscreen.
-  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
-  TestTransitionsForEachState();
-  // Progress of test can be examined via LOG(INFO) << GetAndClearDebugLog();
-}
-
-
-// Individual tests for each pair of state and event:
-
 #define TEST_EVENT_INNER(state, event, reentrant, reentrant_id) \
     IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest, \
                            DISABLED_##state##__##event##reentrant_id) { \
@@ -133,6 +112,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
 #define TEST_EVENT(state, event) \
     TEST_EVENT_INNER(state, event, false, ); \
     TEST_EVENT_INNER(state, event, true, _Reentrant);
+
+// Individual tests for each pair of state and event:
 
 TEST_EVENT(STATE_NORMAL, TOGGLE_FULLSCREEN);
 TEST_EVENT(STATE_NORMAL, TAB_FULLSCREEN_TRUE);
@@ -230,7 +211,6 @@ TEST_EVENT(STATE_TO_TAB_FULLSCREEN, BUBBLE_ALLOW);
 TEST_EVENT(STATE_TO_TAB_FULLSCREEN, BUBBLE_DENY);
 TEST_EVENT(STATE_TO_TAB_FULLSCREEN, WINDOW_CHANGE);
 
-
 // Specific one-off tests for known issues:
 
 // Used manually to determine what happens on a platform.
@@ -248,5 +228,23 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
   scoped_refptr<content::MessageLoopRunner> message_loop;
   message_loop = new content::MessageLoopRunner();
   message_loop->Run();
+}
+
+// Soak tests:
+
+// Tests all states with all permutations of multiple events to detect lingering
+// state issues that would bleed over to other states.
+// I.E. for each state test all combinations of events E1, E2, E3.
+//
+// This produces coverage for event sequences that may happen normally but
+// would not be exposed by traversing to each state via TransitionToState().
+// TransitionToState() always takes the same path even when multiple paths
+// exist.
+IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
+                       DISABLED_TransitionsForEachState) {
+  // A tab is needed for tab fullscreen.
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  TestTransitionsForEachState();
+  // Progress of test can be examined via LOG(INFO) << GetAndClearDebugLog();
 }
 
