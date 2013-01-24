@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
 
 // TODO: this ifdef will have to be updated when we have win ash bots running
 // browser_tests.
-#if defined(USE_ASH) && !defined(OS_WIN)
+#if defined(USE_ASH)
 // On Ash, this currently fails because we're currently opening new panel
 // windows as popup windows instead.
 #define MAYBE_WindowOpenPanelDetached DISABLED_WindowOpenPanelDetached
