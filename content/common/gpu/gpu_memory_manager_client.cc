@@ -26,6 +26,9 @@ GpuMemoryManagerClientState::GpuMemoryManagerClientState(
       bytes_nicetohave_limit_high_(0),
       bytes_allocation_when_visible_(0),
       bytes_allocation_when_nonvisible_(0),
+      bytes_allocation_ideal_nicetohave_(0),
+      bytes_allocation_ideal_required_(0),
+      bytes_allocation_ideal_minimum_(0),
       hibernated_(false) {
 }
 

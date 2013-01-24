@@ -108,6 +108,26 @@ class CONTENT_EXPORT GpuMemoryManager :
   void AssignSurfacesAllocationsUniform();
   void AssignNonSurfacesAllocations();
 
+  // Math helper function to compute the maximum value of cap such that
+  // sum_i min(bytes[i], cap) <= bytes_sum_limit
+  static size_t ComputeCap(std::vector<size_t> bytes, size_t bytes_sum_limit);
+
+  // Compute the allocation for clients when visible and not visible.
+  void ComputeVisibleSurfacesAllocationsNonuniform();
+  void ComputeNonvisibleSurfacesAllocationsNonuniform();
+
+  // Compute the budget for a client. Allow at most bytes_above_required_cap
+  // bytes above client_state's required level. Allow at most
+  // bytes_above_minimum_cap bytes above client_state's minimum level. Allow
+  // at most bytes_overall_cap bytes total.
+  size_t ComputeClientAllocationWhenVisible(
+      GpuMemoryManagerClientState* client_state,
+      size_t bytes_above_required_cap,
+      size_t bytes_above_minimum_cap,
+      size_t bytes_overall_cap);
+  size_t ComputeClientAllocationWhenNonvisible(
+      GpuMemoryManagerClientState* client_state);
+
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory();

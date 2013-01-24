@@ -94,6 +94,12 @@ class CONTENT_EXPORT GpuMemoryManagerClientState {
   size_t bytes_allocation_when_visible_;
   size_t bytes_allocation_when_nonvisible_;
 
+  // The ideal allocation for this client for three performance levels, used
+  // transiently during memory policy calculation.
+  size_t bytes_allocation_ideal_nicetohave_;
+  size_t bytes_allocation_ideal_required_;
+  size_t bytes_allocation_ideal_minimum_;
+
   // Set to disable allocating a frontbuffer or to disable allocations
   // for clients that don't have surfaces.
   bool hibernated_;
