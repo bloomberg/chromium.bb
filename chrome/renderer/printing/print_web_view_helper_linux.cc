@@ -57,15 +57,38 @@ bool PrintWebViewHelper::RenderPreviewPage(
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
 
-bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
+bool PrintWebViewHelper::PrintPagesNative(WebKit::WebFrame* frame,
+                                          const WebKit::WebNode& node,
+                                          int page_count,
+                                          const gfx::Size& canvas_size) {
   NativeMetafile metafile;
   if (!metafile.Init())
     return false;
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   std::vector<int> printed_pages;
-  if (!RenderPages(params, frame, node, &printed_pages, &metafile)) {
+
+  if (params.pages.empty()) {
+    for (int i = 0; i < page_count; ++i) {
+      printed_pages.push_back(i);
+    }
+  } else {
+    // TODO(vitalybuka): redesign to make more code cross platform.
+    for (size_t i = 0; i < params.pages.size(); ++i) {
+      if (params.pages[i] >= 0 && params.pages[i] < page_count) {
+        printed_pages.push_back(params.pages[i]);
+      }
+    }
+  }
+
+  if (printed_pages.empty())
     return false;
+
+  PrintMsg_PrintPage_Params page_params;
+  page_params.params = params.params;
+  for (size_t i = 0; i < printed_pages.size(); ++i) {
+    page_params.page_number = printed_pages[i];
+    PrintPageInternal(page_params, canvas_size, frame, &metafile);
   }
 
   metafile.FinishDocument();
@@ -119,55 +142,6 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
   }
   return true;
 #endif  // defined(OS_CHROMEOS)
-}
-
-bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
-                                     WebKit::WebFrame* frame,
-                                     const WebKit::WebNode& node,
-                                     std::vector<int>* printed_pages,
-                                     Metafile* metafile) {
-  PrepareFrameAndViewForPrint prepare(params.params, frame, node);
-  PrintMsg_Print_Params print_params = params.params;
-  UpdateFrameAndViewFromCssPageLayout(frame, node, &prepare, print_params,
-                                      ignore_css_margins_);
-
-  int page_count = prepare.GetExpectedPageCount();
-  if (!page_count)
-    return false;
-
-#if !defined(OS_CHROMEOS)
-  // TODO(vitalybuka): should be page_count or valid pages from params.pages.
-  // See http://crbug.com/161576
-  Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                                print_params.document_cookie,
-                                                page_count));
-#endif
-
-  if (params.pages.empty()) {
-    for (int i = 0; i < page_count; ++i) {
-      printed_pages->push_back(i);
-    }
-  } else {
-    // TODO(vitalybuka): redesign to make more code cross platform.
-    for (size_t i = 0; i < params.pages.size(); ++i) {
-      if (params.pages[i] >= 0 && params.pages[i] < page_count) {
-        printed_pages->push_back(params.pages[i]);
-      }
-    }
-  }
-
-  if (printed_pages->empty())
-    return false;
-
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-  const gfx::Size& canvas_size = prepare.GetPrintCanvasSize();
-  for (size_t i = 0; i < printed_pages->size(); ++i) {
-    page_params.page_number = (*printed_pages)[i];
-    PrintPageInternal(page_params, canvas_size, frame, metafile);
-  }
-
-  return true;
 }
 
 void PrintWebViewHelper::PrintPageInternal(

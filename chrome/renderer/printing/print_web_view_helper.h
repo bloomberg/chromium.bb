@@ -37,50 +37,7 @@ class WebView;
 namespace printing {
 
 struct PageSizeMargins;
-
-// Class that calls the Begin and End print functions on the frame and changes
-// the size of the view temporarily to support full page printing..
-// Do not serve any events in the time between construction and destruction of
-// this class because it will cause flicker.
-class PrepareFrameAndViewForPrint {
- public:
-  // Prints |frame|.  If |node| is not NULL, then only that node will be
-  // printed.
-  PrepareFrameAndViewForPrint(const PrintMsg_Print_Params& print_params,
-                              WebKit::WebFrame* frame,
-                              const WebKit::WebNode& node);
-  ~PrepareFrameAndViewForPrint();
-
-  void UpdatePrintParams(const PrintMsg_Print_Params& print_params);
-
-  int GetExpectedPageCount() const {
-    return expected_pages_count_;
-  }
-
-  bool ShouldUseBrowserOverlays() const {
-    return use_browser_overlays_;
-  }
-
-  gfx::Size GetPrintCanvasSize() const;
-
-  void FinishPrinting();
-
- private:
-  void StartPrinting(const WebKit::WebPrintParams& webkit_print_params);
-
-  WebKit::WebFrame* frame_;
-  WebKit::WebNode node_to_print_;
-  WebKit::WebView* web_view_;
-  WebKit::WebPrintParams web_print_params_;
-  gfx::Size prev_view_size_;
-  gfx::Size prev_scroll_offset_;
-  int expected_pages_count_;
-  bool use_browser_overlays_;
-  bool finished_;
-  bool should_print_backgrounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
-};
+class PrepareFrameAndViewForPrint;
 
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
@@ -226,14 +183,10 @@ class PrintWebViewHelper
   // Used only for native printing workflow.
   bool InitPrintSettings(bool fit_to_paper_size);
 
-  // Initialize print page settings with default settings and prepare the frame
-  // for print. A new PrepareFrameAndViewForPrint is created to fulfill the
-  // request and is filled into the |prepare| argument.
-  // Used only for native printing workflow.
-  bool InitPrintSettingsAndPrepareFrame(
-      WebKit::WebFrame* frame,
-      const WebKit::WebNode& node,
-      scoped_ptr<PrepareFrameAndViewForPrint>* prepare);
+  // Calculate number of pages in source document.
+  bool CalculateNumberOfPages(WebKit::WebFrame* frame,
+                              const WebKit::WebNode& node,
+                              int* number_of_pages);
 
   // Update the current print settings with new |passed_job_settings|.
   // |passed_job_settings| dictionary contains print job details such as printer
@@ -246,14 +199,17 @@ class PrintWebViewHelper
   // Return false if the user cancels or on error.
   bool GetPrintSettingsFromUser(WebKit::WebFrame* frame,
                                 const WebKit::WebNode& node,
-                                int expected_pages_count,
-                                bool use_browser_overlays);
+                                int expected_pages_count);
 
   // Page Printing / Rendering ------------------------------------------------
 
   // Prints all the pages listed in |print_pages_params_|.
   // It will implicitly revert the document to display CSS media type.
   bool PrintPages(WebKit::WebFrame* frame, const WebKit::WebNode& node);
+  bool PrintPagesNative(WebKit::WebFrame* frame,
+                        const WebKit::WebNode& node,
+                        int page_count,
+                        const gfx::Size& canvas_size);
 
   // Prints the page listed in |params|.
 #if defined(USE_X11)
@@ -282,15 +238,13 @@ class PrintWebViewHelper
                   gfx::Size* page_size_in_dpi,
                   gfx::Rect* content_area_in_dpi);
 #elif defined(OS_MACOSX)
-  void RenderPage(const PrintMsg_Print_Params& params, int page_number,
-                  WebKit::WebFrame* frame, bool is_preview,
-                  Metafile* metafile, gfx::Size* page_size,
+  void RenderPage(const PrintMsg_Print_Params& params,
+                  int page_number,
+                  WebKit::WebFrame* frame,
+                  bool is_preview,
+                  Metafile* metafile,
+                  gfx::Size* page_size,
                   gfx::Rect* content_rect);
-#elif defined(OS_POSIX)
-  bool RenderPages(const PrintMsg_PrintPages_Params& params,
-                   WebKit::WebFrame* frame, const WebKit::WebNode& node,
-                   std::vector<int>* printed_pages,
-                   Metafile* metafile);
 #endif  // defined(OS_WIN)
 
   // Renders page contents from |frame| to |content_area| of |canvas|.
@@ -319,15 +273,6 @@ class PrintWebViewHelper
       bool ignore_css_margins,
       double* scale_factor,
       PageSizeMargins* page_layout_in_points);
-
-  // Prepare the frame and view for print and then call this function to honor
-  // the CSS page layout information.
-  static void UpdateFrameAndViewFromCssPageLayout(
-      WebKit::WebFrame* frame,
-      const WebKit::WebNode& node,
-      PrepareFrameAndViewForPrint* prepare,
-      const PrintMsg_Print_Params& params,
-      bool ignore_css_margins);
 
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
