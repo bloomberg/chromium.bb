@@ -122,6 +122,8 @@
         'browser/chromeos/audio/audio_mixer_cras.h',
         'browser/chromeos/background/ash_user_wallpaper_delegate.cc',
         'browser/chromeos/background/ash_user_wallpaper_delegate.h',
+        'browser/chromeos/bluetooth/bluetooth_pairing_dialog.cc',
+        'browser/chromeos/bluetooth/bluetooth_pairing_dialog.h',
         'browser/chromeos/boot_times_loader.cc',
         'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/camera_detector.cc',

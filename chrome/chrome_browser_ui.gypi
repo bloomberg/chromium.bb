@@ -1802,6 +1802,8 @@
         'browser/ui/webui/chrome_web_ui_data_source.h',
         'browser/ui/webui/chromeos/about_network.cc',
         'browser/ui/webui/chromeos/about_network.h',
+       	'browser/ui/webui/chromeos/bluetooth_pairing_ui.cc',
+      	'browser/ui/webui/chromeos/bluetooth_pairing_ui.h',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.cc',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.h',
         'browser/ui/webui/chromeos/cryptohome_ui.cc',
