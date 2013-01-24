@@ -74,7 +74,7 @@ void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
 }
 
 void ChildHistogramMessageFilter::RecordDelta(
-    const base::Histogram& histogram,
+    const base::HistogramBase& histogram,
     const base::HistogramSamples& snapshot) {
   DCHECK_NE(0, snapshot.TotalCount());
 

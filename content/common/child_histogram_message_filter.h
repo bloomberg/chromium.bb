@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -35,7 +35,7 @@ class ChildHistogramMessageFilter : public base::HistogramFlattener,
   void SendHistograms(int sequence_number);
 
   // HistogramFlattener interface (override) methods.
-  virtual void RecordDelta(const base::Histogram& histogram,
+  virtual void RecordDelta(const base::HistogramBase& histogram,
                            const base::HistogramSamples& snapshot) OVERRIDE;
   virtual void InconsistencyDetected(
       base::Histogram::Inconsistencies problem) OVERRIDE;

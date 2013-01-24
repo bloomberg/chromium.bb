@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 
 namespace base {
@@ -22,7 +21,7 @@ class HistogramSamples;
 // error report mechanism.
 class BASE_EXPORT HistogramFlattener {
  public:
-  virtual void RecordDelta(const Histogram& histogram,
+  virtual void RecordDelta(const HistogramBase& histogram,
                            const HistogramSamples& snapshot) = 0;
 
   // Will be called each time a type of Inconsistenies is seen on a histogram,

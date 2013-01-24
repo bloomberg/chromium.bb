@@ -6,7 +6,7 @@
 #define CHROME_COMMON_METRICS_METRICS_SERVICE_BASE_H_
 
 #include "base/basictypes.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
@@ -21,7 +21,7 @@ class HistogramSamples;
 class MetricsServiceBase : public base::HistogramFlattener {
  public:
   // HistogramFlattener interface (override) methods.
-  virtual void RecordDelta(const base::Histogram& histogram,
+  virtual void RecordDelta(const base::HistogramBase& histogram,
                            const base::HistogramSamples& snapshot) OVERRIDE;
   virtual void InconsistencyDetected(
       base::Histogram::Inconsistencies problem) OVERRIDE;
