@@ -841,7 +841,9 @@ void LayerImpl::updateScrollbarPositions()
     // Get the m_currentOffset.y() value for a sanity-check on scrolling
     // benchmark metrics. Specifically, we want to make sure
     // BasicMouseWheelSmoothScrollGesture has proper scroll curves.
-    TRACE_COUNTER_ID1("gpu", "scroll_offset_y", this, currentOffset.y());
+    if (layerTreeImpl()->IsActiveTree()) {
+        TRACE_COUNTER_ID1("gpu", "scroll_offset_y", this->id(), currentOffset.y());
+    }
 }
 
 void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
