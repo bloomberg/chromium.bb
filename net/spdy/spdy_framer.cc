@@ -1140,7 +1140,7 @@ size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
   return original_len - len;
 }
 
-bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
+size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                                           size_t header_length,
                                           SpdyHeaderBlock* block) const {
   SpdyFrameReader reader(header_data, header_length);
@@ -1151,13 +1151,13 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     uint16 temp;
     if (!reader.ReadUInt16(&temp)) {
       DLOG(INFO) << "Unable to read number of headers.";
-      return false;
+      return 0;
     }
     num_headers = temp;
   } else {
     if (!reader.ReadUInt32(&num_headers)) {
       DLOG(INFO) << "Unable to read number of headers.";
-      return false;
+      return 0;
     }
   }
 
@@ -1170,7 +1170,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                             : !reader.ReadStringPiece32(&temp)) {
       DLOG(INFO) << "Unable to read header name (" << index + 1 << " of "
                  << num_headers << ").";
-      return false;
+      return 0;
     }
     std::string name = temp.as_string();
 
@@ -1179,7 +1179,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                             : !reader.ReadStringPiece32(&temp)) {
       DLOG(INFO) << "Unable to read header value (" << index + 1 << " of "
                  << num_headers << ").";
-      return false;
+      return 0;
     }
     std::string value = temp.as_string();
 
@@ -1187,13 +1187,13 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     if (block->find(name) != block->end()) {
       DLOG(INFO) << "Duplicate header '" << name << "' (" << index + 1 << " of "
                  << num_headers << ").";
-      return false;
+      return 0;
     }
 
     // Store header.
     (*block)[name] = value;
   }
-  return true;
+  return reader.GetBytesConsumed();
 }
 
 // TODO(hkhalil): Remove, or move to test utils kit.

@@ -305,8 +305,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Given a buffer containing a decompressed header block in SPDY
   // serialized format, parse out a SpdyHeaderBlock, putting the results
   // in the given header block.
-  // Returns true if successfully parsed, false otherwise.
-  bool ParseHeaderBlockInBuffer(const char* header_data,
+  // Returns number of bytes consumed if successfully parsed, 0 otherwise.
+  size_t ParseHeaderBlockInBuffer(const char* header_data,
                                 size_t header_length,
                                 SpdyHeaderBlock* block) const;
 

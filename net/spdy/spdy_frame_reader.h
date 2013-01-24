@@ -71,6 +71,9 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   // Read*() calls.
   bool IsDoneReading() const;
 
+  // Returns the number of bytes that have been consumed by the reader so far.
+  size_t GetBytesConsumed() const { return ofs_; }
+
  private:
   // Returns true if the underlying buffer has enough room to read the given
   // amount of bytes.
