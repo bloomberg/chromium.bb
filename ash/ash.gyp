@@ -632,11 +632,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.rc',
       ],
       'conditions': [
-        ['use_ibus==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:ibus',
-          ],
-        }],
         ['OS=="win"', {
           'sources/': [
             # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906

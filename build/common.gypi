@@ -38,8 +38,6 @@
           # Use OpenSSL instead of NSS. Under development: see http://crbug.com/62803
           'use_openssl%': 0,
 
-          'use_ibus%': 0,
-
           # Disable viewport meta tag by default.
           'enable_viewport%': 0,
 
@@ -94,7 +92,6 @@
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
         'use_openssl%': '<(use_openssl)',
-        'use_ibus%': '<(use_ibus)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_touch_ui%': '<(enable_touch_ui)',
@@ -166,7 +163,6 @@
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
       'use_openssl%': '<(use_openssl)',
-      'use_ibus%': '<(use_ibus)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_touch_ui%': '<(enable_touch_ui)',
@@ -666,7 +662,6 @@
     'use_aura%': '<(use_aura)',
     'use_ash%': '<(use_ash)',
     'use_openssl%': '<(use_openssl)',
-    'use_ibus%': '<(use_ibus)',
     'use_nss%': '<(use_nss)',
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',

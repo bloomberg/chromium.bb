@@ -2359,11 +2359,6 @@
             ['exclude', 'browser/upgrade_detector_impl.h'],
           ],
         }],
-        ['use_ibus==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:ibus',
-          ],
-        }],
         ['use_cups==1', {
           'dependencies': [
             '../printing/printing.gyp:cups',

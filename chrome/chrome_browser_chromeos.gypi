@@ -729,11 +729,6 @@
             ['exclude', 'browser/chromeos/extensions/zip_file_creator.cc'],
           ],
         }],
-        ['use_ibus==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:ibus',
-          ],
-        }],
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash',

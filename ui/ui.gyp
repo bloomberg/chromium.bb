@@ -609,11 +609,6 @@
             'base/linux_ui.h',
           ]
         }],
-        ['use_ibus==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:ibus',
-          ],
-        }],
         ['use_glib == 1', {
           'dependencies': [
             # font_gtk.cc uses fontconfig.
