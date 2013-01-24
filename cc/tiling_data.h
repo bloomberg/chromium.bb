@@ -19,6 +19,7 @@ namespace cc {
 
 class CC_EXPORT TilingData {
  public:
+  TilingData();
   TilingData(
       gfx::Size max_texture_size,
       gfx::Size total_size,
@@ -67,6 +68,9 @@ class CC_EXPORT TilingData {
 
     int index_x() const { return index_x_; }
     int index_y() const { return index_y_; }
+    std::pair<int, int> index() const {
+     return std::make_pair(index_x_, index_y_);
+    }
 
    private:
     void done();

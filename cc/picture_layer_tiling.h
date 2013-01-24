@@ -22,7 +22,11 @@ class PictureLayerTiling;
 
 class PictureLayerTilingClient {
   public:
-   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*, gfx::Rect) = 0;
+   // Create a tile at the given content_rect (in the contents scale of the
+   // tiling) This might return null if the client cannot create such a tile.
+   virtual scoped_refptr<Tile> CreateTile(
+     PictureLayerTiling* tiling,
+     gfx::Rect content_rect) = 0;
    virtual void UpdatePile(Tile* tile) = 0;
 };
 
@@ -30,14 +34,18 @@ class CC_EXPORT PictureLayerTiling {
  public:
   ~PictureLayerTiling();
 
+  // Create a tiling with no tiles.  CreateTiles must be called to add some.
   static scoped_ptr<PictureLayerTiling> Create(float contents_scale,
                                                gfx::Size tile_size);
   scoped_ptr<PictureLayerTiling> Clone() const;
 
-  const PictureLayerTiling& operator=(const PictureLayerTiling&);
-
+  gfx::Size layer_bounds() const { return layer_bounds_; }
   void SetLayerBounds(gfx::Size layer_bounds);
   void Invalidate(const Region& layer_invalidation);
+
+  // Add any tiles that intersect with |layer_rect|.  If any tiles already
+  // exist, then this leaves them as-is.
+  void CreateTilesFromLayerRect(gfx::Rect layer_rect);
 
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }
@@ -113,11 +121,13 @@ class CC_EXPORT PictureLayerTiling {
 
   PictureLayerTiling(float contents_scale, gfx::Size tileSize);
   Tile* TileAt(int, int) const;
+  void CreateTilesFromContentRect(gfx::Rect layer_rect);
   void CreateTile(int i, int j);
 
   PictureLayerTilingClient* client_;
   float contents_scale_;
   gfx::Size layer_bounds_;
+  // It is not legal to have a NULL tile in the tiles_ map.
   TileMap tiles_;
   TilingData tiling_data_;
   TileResolution resolution_;

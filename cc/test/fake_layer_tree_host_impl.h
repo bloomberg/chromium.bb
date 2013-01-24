@@ -14,6 +14,7 @@ namespace cc {
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
  public:
   FakeLayerTreeHostImpl(Proxy* proxy);
+  FakeLayerTreeHostImpl(const LayerTreeSettings& settings, Proxy* proxy);
   virtual ~FakeLayerTreeHostImpl();
 
   void forcePrepareToDraw() {
@@ -21,6 +22,8 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
     prepareToDraw(frameData);
     didDrawAllLayers(frameData);
   }
+
+  using LayerTreeHostImpl::activatePendingTree;
 
  private:
   FakeLayerTreeHostImplClient client_;

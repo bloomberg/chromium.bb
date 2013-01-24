@@ -62,8 +62,8 @@ void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
 
 void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
                     RenderingStats& stats) {
-  if (pile_->size() == bounds() && pending_invalidation_.IsEmpty())
-    return;
+  // Do not early-out of this function so that PicturePile::Update has a chance
+  // to record pictures due to changing visibility of this layer.
 
   pile_->Resize(bounds());
 
@@ -72,7 +72,9 @@ void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
   pile_invalidation_.Swap(pending_invalidation_);
   pending_invalidation_.Clear();
 
-  pile_->Update(client_, pile_invalidation_, stats);
+  gfx::Rect visible_layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(visibleContentRect(), 1.f / contentsScaleX()));
+  pile_->Update(client_, pile_invalidation_, visible_layer_rect, stats);
 }
 
 void PictureLayer::setIsMask(bool is_mask) {

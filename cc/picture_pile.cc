@@ -12,9 +12,13 @@ namespace {
 // Maximum number of pictures that can overlap before we collapse them into
 // a larger one.
 const int kMaxOverlapping = 2;
-// Maximum percentage area of the base picture another picture in the pile
-// can be.  If higher, we destroy the pile and recreate from scratch.
+// Maximum percentage area of the base picture another picture in the picture
+// list can be.  If higher, we destroy the list and recreate from scratch.
 const float kResetThreshold = 0.7f;
+// Layout pixel buffer around the visible layer rect to record.  Any base
+// picture that intersects the visible layer rect expanded by this distance
+// will be recorded.
+const int kPixelDistanceToRecord = 5000;
 }
 
 namespace cc {
@@ -22,23 +26,76 @@ namespace cc {
 PicturePile::PicturePile() {
 }
 
+PicturePile::~PicturePile() {
+}
+
 void PicturePile::Update(
     ContentLayerClient* painter,
     const Region& invalidation,
+    gfx::Rect visible_layer_rect,
     RenderingStats& stats) {
-  if (pile_.empty()) {
-    ResetPile(painter, stats);
-    return;
+  gfx::Rect interest_rect = visible_layer_rect;
+  interest_rect.Inset(
+      -kPixelDistanceToRecord,
+      -kPixelDistanceToRecord,
+      -kPixelDistanceToRecord,
+      -kPixelDistanceToRecord);
+  for (Region::Iterator i(invalidation); i.has_rect(); i.next()) {
+    // Inflate all recordings from invalidations with a margin so that when
+    // scaled down to at least min_contents_scale, any final pixel touched by an
+    // invalidation can be fully rasterized by this picture.
+    gfx::Rect inflated_invalidation = i.rect();
+    inflated_invalidation.Inset(
+        -buffer_pixels(),
+        -buffer_pixels(),
+        -buffer_pixels(),
+        -buffer_pixels());
+    // Split this inflated invalidation across tile boundaries and apply it
+    // to all tiles that it touches.
+    for (TilingData::Iterator iter(&tiling_, inflated_invalidation);
+         iter; ++iter) {
+      gfx::Rect tile =
+          tiling_.TileBoundsWithBorder(iter.index_x(), iter.index_y());
+      if (!tile.Intersects(interest_rect)) {
+        // This invalidation touches a tile outside the interest rect, so
+        // just remove the entire picture list.
+        picture_list_map_.erase(iter.index());
+        continue;
+      }
+
+      gfx::Rect tile_invalidation =
+          gfx::IntersectRects(inflated_invalidation, tile);
+      if (tile_invalidation.IsEmpty())
+        continue;
+      PictureListMap::iterator find = picture_list_map_.find(iter.index());
+      if (find == picture_list_map_.end())
+        continue;
+      PictureList& pic_list = find->second;
+      // Leave empty pic_lists empty in case there are multiple invalidations.
+      if (!pic_list.empty())
+        InvalidateRect(pic_list, tile_invalidation);
+    }
   }
 
-  for (Region::Iterator i(invalidation); i.has_rect(); i.next())
-    InvalidateRect(i.rect());
+  // Walk through all pictures in the rect of interest and record.
+  for (TilingData::Iterator iter(&tiling_, interest_rect); iter; ++iter) {
+    // Create a picture in this list if it doesn't exist.
+    PictureList& pic_list = picture_list_map_[iter.index()];
+    if (pic_list.empty()) {
+      gfx::Rect tile =
+          tiling_.TileBoundsWithBorder(iter.index_x(), iter.index_y());
+      scoped_refptr<Picture> base_picture = Picture::Create(tile);
+      pic_list.push_back(base_picture);
+    }
 
-  for (Pile::iterator i = pile_.begin(); i != pile_.end(); ++i) {
-    if (!(*i)->HasRecording())
-      (*i)->Record(painter, stats);
+    for (PictureList::iterator pic = pic_list.begin();
+         pic != pic_list.end(); ++pic) {
+      if (!(*pic)->HasRecording())
+        (*pic)->Record(painter, stats);
+    }
   }
-  DCHECK(!pile_.empty());
+
+  UpdateRecordedRegion();
 }
 
 class FullyContainedPredicate {
@@ -50,57 +107,47 @@ public:
   gfx::Rect layer_rect_;
 };
 
-void PicturePile::InvalidateRect(gfx::Rect invalidation) {
-  if (invalidation.IsEmpty())
-    return;
+void PicturePile::InvalidateRect(
+    PictureList& picture_list,
+    gfx::Rect invalidation) {
+  DCHECK(!picture_list.empty());
 
-  // Inflate all recordings from invalidations with a margin so that when
-  // scaled down to at least min_contents_scale, any final pixel touched by an
-  // invalidation can be fully rasterized by this picture.
-  invalidation.Inset(
-      -buffer_pixels_,
-      -buffer_pixels_,
-      -buffer_pixels_,
-      -buffer_pixels_);
-  invalidation.Intersect(gfx::Rect(size_));
-
-  std::vector<Pile::iterator> overlaps;
-  for (Pile::iterator i = pile_.begin(); i != pile_.end(); ++i) {
+  std::vector<PictureList::iterator> overlaps;
+  for (PictureList::iterator i = picture_list.begin();
+       i != picture_list.end(); ++i) {
     if ((*i)->LayerRect().Contains(invalidation) && !(*i)->HasRecording())
       return;
-    if ((*i)->LayerRect().Intersects(invalidation) && i != pile_.begin())
+    if ((*i)->LayerRect().Intersects(invalidation) && i != picture_list.begin())
       overlaps.push_back(i);
   }
 
   gfx::Rect picture_rect = invalidation;
   if (overlaps.size() >= kMaxOverlapping) {
     for (size_t j = 0; j < overlaps.size(); j++)
-      picture_rect = gfx::UnionRects(picture_rect, (*overlaps[j])->LayerRect());
+      picture_rect.Union((*overlaps[j])->LayerRect());
   }
-  if (picture_rect.size().GetArea() / static_cast<float>(size_.GetArea()) >
-      kResetThreshold)
-    picture_rect = gfx::Rect(size_);
+
+  Picture* base_picture = picture_list.front();
+  int max_pixels = kResetThreshold * base_picture->LayerRect().size().GetArea();
+  if (picture_rect.size().GetArea() > max_pixels) {
+    // This picture list will be entirely recreated, so clear it.
+    picture_list.clear();
+    return;
+  }
 
   FullyContainedPredicate pred(picture_rect);
-  pile_.erase(std::remove_if(pile_.begin(), pile_.end(), pred), pile_.end());
-
-  pile_.push_back(Picture::Create(picture_rect));
+  picture_list.erase(std::remove_if(picture_list.begin(),
+                                    picture_list.end(),
+                                    pred),
+                     picture_list.end());
+  picture_list.push_back(Picture::Create(picture_rect));
 }
 
-
-void PicturePile::ResetPile(ContentLayerClient* painter,
-                            RenderingStats& stats) {
-  pile_.clear();
-
-  scoped_refptr<Picture> base_picture = Picture::Create(gfx::Rect(size_));
-  base_picture->Record(painter, stats);
-  pile_.push_back(base_picture);
-}
 
 void PicturePile::PushPropertiesTo(PicturePileImpl* other) {
+  // TODO(enne): Don't clear clones or push anything if nothing has changed
+  // on this layer this frame.
   PicturePileBase::PushPropertiesTo(other);
-
-  // Remove all old clones.
   other->clones_.clear();
 }
 

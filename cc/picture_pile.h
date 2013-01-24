@@ -22,6 +22,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   void Update(
       ContentLayerClient* painter,
       const Region& invalidation,
+      gfx::Rect visible_layer_rect,
       RenderingStats& stats);
 
   // Update other with a shallow copy of this (main => compositor thread commit)
@@ -31,8 +32,11 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   ~PicturePile();
   friend class PicturePileImpl;
 
-  void InvalidateRect(gfx::Rect invalidation);
-  void ResetPile(ContentLayerClient* painter, RenderingStats& stats);
+  // Add an invalidation to this picture list.  If the list needs to be
+  // entirely recreated, leave it empty.  Do not call this on an empty list.
+  void InvalidateRect(
+      PictureList& picture_list,
+      gfx::Rect invalidation);
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
 };

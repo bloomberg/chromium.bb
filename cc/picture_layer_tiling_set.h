@@ -46,6 +46,9 @@ class CC_EXPORT PictureLayerTilingSet {
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
 
+  // For all tilings, create any tile that intersects |layer_rect|.
+  void CreateTilesFromLayerRect(gfx::Rect layer_rect);
+
   void UpdateTilePriorities(
       WhichTree tree,
       const gfx::Size& device_viewport,

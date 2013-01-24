@@ -108,14 +108,14 @@ void Picture::Raster(
   canvas->restore();
 }
 
-void Picture::GatherPixelRefs(const gfx::Rect& rect,
-                              std::list<skia::LazyPixelRef*>& result) {
+void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
+                              std::list<skia::LazyPixelRef*>& pixel_ref_list) {
   DCHECK(picture_);
   SkData* pixel_refs = SkPictureUtils::GatherPixelRefs(
-      picture_.get(), SkRect::MakeXYWH(rect.x(),
-                                       rect.y(),
-                                       rect.width(),
-                                       rect.height()));
+      picture_.get(), SkRect::MakeXYWH(layer_rect.x(),
+                                       layer_rect.y(),
+                                       layer_rect.width(),
+                                       layer_rect.height()));
   if (!pixel_refs)
     return;
 
@@ -129,7 +129,7 @@ void Picture::GatherPixelRefs(const gfx::Rect& rect,
   for (unsigned int i = 0; i < pixel_refs->size() / sizeof(SkPixelRef*); ++i) {
     if (*refs && (*refs)->getURI() && !strncmp(
         (*refs)->getURI(), labelLazyDecoded, 4)) {
-      result.push_back(static_cast<skia::LazyPixelRef*>(*refs));
+      pixel_ref_list.push_back(static_cast<skia::LazyPixelRef*>(*refs));
     }
     refs++;
   }

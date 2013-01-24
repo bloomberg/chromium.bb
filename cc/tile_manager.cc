@@ -397,8 +397,10 @@ void TileManager::GatherPixelRefsForTile(Tile* tile) {
   ManagedTileState& managed_state = tile->managed_state();
   if (managed_state.need_to_gather_pixel_refs) {
     base::TimeTicks gather_begin_time = base::TimeTicks::Now();
-    const_cast<PicturePileImpl *>(tile->picture_pile())->GatherPixelRefs(
-        tile->content_rect_, managed_state.pending_pixel_refs);
+    tile->picture_pile()->GatherPixelRefs(
+        tile->content_rect_,
+        tile->contents_scale_,
+        managed_state.pending_pixel_refs);
     rendering_stats_.totalImageGatheringCount++;
     rendering_stats_.totalImageGatheringTime +=
         base::TimeTicks::Now() - gather_begin_time;

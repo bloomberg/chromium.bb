@@ -23,7 +23,7 @@ struct RenderingStats;
 
 class CC_EXPORT Picture
     : public base::RefCountedThreadSafe<Picture> {
-public:
+ public:
   static scoped_refptr<Picture> Create(gfx::Rect layer_rect);
 
   const gfx::Rect& LayerRect() const { return layer_rect_; }
@@ -42,10 +42,11 @@ public:
   // Apply this contents scale and raster the content rect into the canvas.
   void Raster(SkCanvas* canvas, gfx::Rect content_rect, float contents_scale);
 
-  void GatherPixelRefs(const gfx::Rect& rect,
-                       std::list<skia::LazyPixelRef*>&);
+  void GatherPixelRefs(
+      const gfx::Rect& layer_rect,
+      std::list<skia::LazyPixelRef*>& pixel_ref_list);
 
-private:
+ protected:
   Picture(gfx::Rect layer_rect);
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.

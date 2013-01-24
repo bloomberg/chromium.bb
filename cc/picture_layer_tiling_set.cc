@@ -37,13 +37,8 @@ void PictureLayerTilingSet::CloneAll(
     const Region& invalidation) {
   tilings_.clear();
   tilings_.reserve(other.tilings_.size());
-  for (size_t i = 0; i < other.tilings_.size(); ++i) {
-    tilings_.push_back(other.tilings_[i]->Clone());
-    // Intentionally use this set's layer bounds, as it may have changed.
-    tilings_.back()->SetLayerBounds(layer_bounds_);
-    tilings_.back()->SetClient(client_);
-    tilings_.back()->Invalidate(invalidation);
-  }
+  for (size_t i = 0; i < other.tilings_.size(); ++i)
+    Clone(other.tilings_[i], invalidation);
 }
 
 void PictureLayerTilingSet::Clone(
@@ -54,8 +49,11 @@ void PictureLayerTilingSet::Clone(
     DCHECK_NE(tilings_[i]->contents_scale(), tiling->contents_scale());
 
   tilings_.push_back(tiling->Clone());
+  gfx::Size size = tilings_.back()->layer_bounds();
   tilings_.back()->SetClient(client_);
   tilings_.back()->Invalidate(invalidation);
+  // Intentionally use this set's layer bounds, as it may have changed.
+  tilings_.back()->SetLayerBounds(layer_bounds_);
 
   tilings_.sort(LargestToSmallestScaleFunctor());
 }
@@ -99,6 +97,11 @@ void PictureLayerTilingSet::Remove(PictureLayerTiling* tiling) {
 void PictureLayerTilingSet::RemoveAllTiles() {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->Reset();
+}
+
+void PictureLayerTilingSet::CreateTilesFromLayerRect(gfx::Rect layer_rect) {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->CreateTilesFromLayerRect(layer_rect);
 }
 
 PictureLayerTilingSet::Iterator::Iterator(

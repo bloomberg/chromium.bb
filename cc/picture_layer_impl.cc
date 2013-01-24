@@ -15,6 +15,7 @@
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
 #include "ui/gfx/quad_f.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace {
@@ -255,15 +256,20 @@ skia::RefPtr<SkPicture> PictureLayerImpl::getPicture() {
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
-                                                 gfx::Rect rect) {
-  TileManager* tile_manager = layerTreeImpl()->tile_manager();
+                                                 gfx::Rect content_rect) {
+  // Ensure there is a recording for this tile.
+  gfx::Rect layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(content_rect, 1.f / tiling->contents_scale()));
+  layer_rect.Intersect(gfx::Rect(bounds()));
+  if (!pile_->recorded_region().Contains(layer_rect))
+    return scoped_refptr<Tile>();
 
   return make_scoped_refptr(new Tile(
-      tile_manager,
+      layerTreeImpl()->tile_manager(),
       pile_.get(),
-      rect.size(),
+      content_rect.size(),
       GL_RGBA,
-      rect,
+      content_rect,
       tiling->contents_scale()));
 }
 
@@ -289,6 +295,23 @@ void PictureLayerImpl::SyncFromActiveLayer() {
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   tilings_->CloneAll(*other->tilings_, invalidation_);
   DCHECK(bounds() == tilings_->LayerBounds());
+
+  // It's a sad but unfortunate fact that PicturePile tiling edges do not line
+  // up with PictureLayerTiling edges.  Tiles can only be added if they are
+  // entirely covered by recordings (that may come from multiple PicturePile
+  // tiles).  This check happens in this class's CreateTile() call.  Tiles
+  // are not removed (even if they cannot be rerecorded) unless they are
+  // invalidated.
+  for (int x = 0; x < pile_->num_tiles_x(); ++x) {
+    for (int y = 0; y < pile_->num_tiles_y(); ++y) {
+      bool previously_had = other->pile_->HasRecordingAt(x, y);
+      bool now_has = pile_->HasRecordingAt(x, y);
+      if (!now_has || previously_had)
+        continue;
+      gfx::Rect layer_rect = pile_->tile_bounds(x, y);
+      tilings_->CreateTilesFromLayerRect(layer_rect);
+    }
+  }
 }
 
 void PictureLayerImpl::SyncTiling(
@@ -339,8 +362,8 @@ bool PictureLayerImpl::areVisibleResourcesReady() const {
                                            rect);
          iter;
          ++iter) {
-      // Resource not ready yet.
-      if (!*iter || !iter->GetResourceId())
+      // A null tile (i.e. no recording) is considered "ready".
+      if (*iter && !iter->GetResourceId())
         return false;
     }
     return true;
@@ -352,9 +375,16 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   if (contents_scale < layerTreeImpl()->settings().minimumContentsScale)
     return NULL;
 
+  const Region& recorded = pile_->recorded_region();
+  if (recorded.IsEmpty())
+    return NULL;
+
   PictureLayerTiling* tiling = tilings_->AddTiling(
       contents_scale,
       TileSize());
+
+  for (Region::Iterator iter(recorded); iter.has_rect(); iter.next())
+    tiling->CreateTilesFromLayerRect(iter.rect());
 
   // If a new tiling is created on the active tree, sync it to the pending tree
   // so that it can share the same tiles.

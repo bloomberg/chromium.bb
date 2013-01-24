@@ -39,8 +39,16 @@ PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
 scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   TRACE_EVENT0("cc", "PicturePileImpl::CloneForDrawing");
   scoped_refptr<PicturePileImpl> clone = Create();
-  for (Pile::const_iterator i = pile_.begin(); i != pile_.end(); ++i)
-    clone->pile_.push_back((*i)->Clone());
+  clone->tiling_ = tiling_;
+  for (PictureListMap::const_iterator map_iter = picture_list_map_.begin();
+       map_iter != picture_list_map_.end(); ++map_iter) {
+    const PictureList& this_pic_list = map_iter->second;
+    PictureList& clone_pic_list = clone->picture_list_map_[map_iter->first];
+    for (PictureList::const_iterator pic_iter = this_pic_list.begin();
+         pic_iter != this_pic_list.end(); ++pic_iter) {
+      clone_pic_list.push_back((*pic_iter)->Clone());
+    }
+  }
   clone->min_contents_scale_ = min_contents_scale_;
 
   return clone;
@@ -52,9 +60,6 @@ void PicturePileImpl::Raster(
     float contents_scale,
     RenderingStats* stats) {
 
-  if (!pile_.size())
-    return;
-
   DCHECK(contents_scale >= min_contents_scale_);
 
   base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
@@ -63,27 +68,44 @@ void PicturePileImpl::Raster(
   canvas->translate(-content_rect.x(), -content_rect.y());
   canvas->clipRect(gfx::RectToSkRect(content_rect));
 
-  // Raster through the pile top down, using clips to make sure that
-  // pictures on top are not overdrawn by pictures on the bottom.
+  gfx::Rect layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+
   Region unclipped(content_rect);
-  for (Pile::reverse_iterator i = pile_.rbegin(); i != pile_.rend(); ++i) {
-    // This is intentionally *enclosed* rect, so that the clip is aligned on
-    // integral post-scale content pixels and does not extend past the edges of
-    // the picture's layer rect.  The min_contents_scale enforces that enough
-    // buffer pixels have been added such that the enclosed rect encompasses all
-    // invalidated pixels at any larger scale level.
-    gfx::Rect content_clip = gfx::ToEnclosedRect(
-        gfx::ScaleRect((*i)->LayerRect(), contents_scale));
-    if (!unclipped.Intersects(content_clip))
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
+       tile_iter; ++tile_iter) {
+    PictureListMap::iterator map_iter =
+        picture_list_map_.find(tile_iter.index());
+    if (map_iter == picture_list_map_.end())
       continue;
-    (*i)->Raster(canvas, content_clip, contents_scale);
+    PictureList& pic_list= map_iter->second;
+    if (pic_list.empty())
+      continue;
 
-    // Don't allow pictures underneath to draw where this picture did.
-    canvas->clipRect(gfx::RectToSkRect(content_clip), SkRegion::kDifference_Op);
-    unclipped.Subtract(content_clip);
+    // Raster through the picture list top down, using clips to make sure that
+    // pictures on top are not overdrawn by pictures on the bottom.
+    for (PictureList::reverse_iterator i = pic_list.rbegin();
+         i != pic_list.rend(); ++i) {
+      // This is intentionally *enclosed* rect, so that the clip is aligned on
+      // integral post-scale content pixels and does not extend past the edges
+      // of the picture's layer rect.  The min_contents_scale enforces that
+      // enough buffer pixels have been added such that the enclosed rect
+      // encompasses all invalidated pixels at any larger scale level.
+      gfx::Rect content_clip = gfx::ToEnclosedRect(
+          gfx::ScaleRect((*i)->LayerRect(), contents_scale));
+      if (!unclipped.Intersects(content_clip))
+        continue;
+      (*i)->Raster(canvas, content_clip, contents_scale);
 
-    stats->totalPixelsRasterized +=
-        content_clip.width() * content_clip.height();
+      // Don't allow pictures underneath to draw where this picture did.
+      canvas->clipRect(
+          gfx::RectToSkRect(content_clip),
+          SkRegion::kDifference_Op);
+      unclipped.Subtract(content_clip);
+
+      stats->totalPixelsRasterized +=
+          content_clip.width() * content_clip.height();
+    }
   }
   canvas->restore();
 
@@ -91,11 +113,27 @@ void PicturePileImpl::Raster(
 }
 
 void PicturePileImpl::GatherPixelRefs(
-    const gfx::Rect& rect, std::list<skia::LazyPixelRef*>& pixel_refs) {
+    gfx::Rect content_rect,
+    float contents_scale,
+    std::list<skia::LazyPixelRef*>& pixel_refs) {
   std::list<skia::LazyPixelRef*> result;
-  for (Pile::const_iterator i = pile_.begin(); i != pile_.end(); ++i) {
-    (*i)->GatherPixelRefs(rect, result);
-    pixel_refs.splice(pixel_refs.end(), result);
+
+  gfx::Rect layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
+       tile_iter; ++tile_iter) {
+    PictureListMap::iterator map_iter =
+        picture_list_map_.find(tile_iter.index());
+    if (map_iter == picture_list_map_.end())
+      continue;
+
+    PictureList& pic_list = map_iter->second;
+    for (PictureList::const_iterator i = pic_list.begin();
+         i != pic_list.end(); ++i) {
+      (*i)->GatherPixelRefs(layer_rect, result);
+      pixel_refs.splice(pixel_refs.end(), result);
+    }
   }
 }
 
@@ -107,11 +145,7 @@ void PicturePileImpl::PushPropertiesTo(PicturePileImpl* other) {
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 
-  gfx::Rect layer_rect;
-  for (Pile::const_iterator i = pile_.begin(); i != pile_.end(); ++i) {
-    layer_rect.Union((*i)->LayerRect());
-  }
-
+  gfx::Rect layer_rect(tiling_.total_size());
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   if (layer_rect.IsEmpty())
     return picture;

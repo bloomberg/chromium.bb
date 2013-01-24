@@ -45,8 +45,8 @@ public:
   virtual skia::RefPtr<SkPicture> getPicture() OVERRIDE;
 
   // PictureLayerTilingClient overrides.
-  virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*,
-                                         gfx::Rect) OVERRIDE;
+  virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
+                                         gfx::Rect content_rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree

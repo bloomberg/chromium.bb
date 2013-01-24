@@ -19,6 +19,11 @@ static int ComputeNumTiles(int max_texture_size, int total_size, int border_texe
   return total_size > 0 ? num_tiles : 0;
 }
 
+TilingData::TilingData()
+    : border_texels_(0) {
+  RecomputeNumTiles();
+}
+
 TilingData::TilingData(
     gfx::Size max_texture_size,
     gfx::Size total_size,

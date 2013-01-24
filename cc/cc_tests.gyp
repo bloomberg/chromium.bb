@@ -38,6 +38,7 @@
       'nine_patch_layer_impl_unittest.cc',
       'nine_patch_layer_unittest.cc',
       'occlusion_tracker_unittest.cc',
+      'picture_layer_impl_unittest.cc',
       'picture_layer_tiling_set_unittest.cc',
       'picture_layer_tiling_unittest.cc',
       'prioritized_resource_unittest.cc',
