@@ -68,6 +68,7 @@ private:
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
     scoped_ptr<ScrollbarThemePainter> m_painter;
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
+    gfx::Size m_thumbSize;
     int m_scrollLayerId;
 
     unsigned m_textureFormat;

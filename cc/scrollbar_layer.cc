@@ -19,7 +19,7 @@ namespace cc {
 
 scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return ScrollbarLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+    return ScrollbarLayerImpl::create(treeImpl, id(), ScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone()))).PassAs<LayerImpl>();
 }
 
 scoped_refptr<ScrollbarLayer> ScrollbarLayer::create(
@@ -104,10 +104,8 @@ void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)
 
     ScrollbarLayerImpl* scrollbarLayer = static_cast<ScrollbarLayerImpl*>(layer);
 
-    if (!scrollbarLayer->scrollbarGeometry())
-        scrollbarLayer->setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone())));
-
     scrollbarLayer->setScrollbarData(m_scrollbar.get());
+    scrollbarLayer->setThumbSize(m_thumbSize);
 
     if (m_backTrack && m_backTrack->texture()->haveBackingTexture())
         scrollbarLayer->setBackTrackResourceId(m_backTrack->texture()->resourceId());
@@ -332,6 +330,7 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* 
 
     // Consider the thumb to be at the origin when painting.
     gfx::Rect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
+    m_thumbSize = thumbRect.size();
     gfx::Rect originThumbRect = scrollbarLayerRectToContentRect(gfx::Rect(thumbRect.size()));
     if (!originThumbRect.IsEmpty())
         updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);

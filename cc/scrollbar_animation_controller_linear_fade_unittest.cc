@@ -8,6 +8,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -24,7 +25,8 @@ protected:
     virtual void SetUp()
     {
         m_scrollLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
-        m_scrollbarLayer = ScrollbarLayerImpl::create(m_hostImpl.activeTree(), 2);
+        scoped_ptr<ScrollbarGeometryFixedThumb> geometry(ScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometry::create(false)));
+        m_scrollbarLayer = ScrollbarLayerImpl::create(m_hostImpl.activeTree(), 2, geometry.Pass());
 
         m_scrollLayer->setMaxScrollOffset(gfx::Vector2d(50, 50));
         m_scrollLayer->setBounds(gfx::Size(50, 50));

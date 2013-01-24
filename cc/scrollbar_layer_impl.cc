@@ -4,6 +4,7 @@
 
 #include "cc/scrollbar_layer_impl.h"
 
+#include "cc/layer_tree_impl.h"
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/texture_draw_quad.h"
@@ -14,17 +15,18 @@ using WebKit::WebScrollbar;
 
 namespace cc {
 
-scoped_ptr<ScrollbarLayerImpl> ScrollbarLayerImpl::create(LayerTreeImpl* treeImpl, int id)
+scoped_ptr<ScrollbarLayerImpl> ScrollbarLayerImpl::create(LayerTreeImpl* treeImpl, int id, scoped_ptr<ScrollbarGeometryFixedThumb> geometry)
 {
-    return make_scoped_ptr(new ScrollbarLayerImpl(treeImpl, id));
+    return make_scoped_ptr(new ScrollbarLayerImpl(treeImpl, id, geometry.Pass()));
 }
 
-ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
+ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id, scoped_ptr<ScrollbarGeometryFixedThumb> geometry)
     : ScrollbarLayerImplBase(treeImpl, id)
     , m_scrollbar(this)
     , m_backTrackResourceId(0)
     , m_foreTrackResourceId(0)
     , m_thumbResourceId(0)
+    , m_geometry(geometry.Pass())
     , m_currentPos(0)
     , m_totalSize(0)
     , m_maximum(0)
@@ -51,11 +53,6 @@ ScrollbarLayerImpl* ScrollbarLayerImpl::toScrollbarLayer()
     return this;
 }
 
-void ScrollbarLayerImpl::setScrollbarGeometry(scoped_ptr<ScrollbarGeometryFixedThumb> geometry)
-{
-    m_geometry = geometry.Pass();
-}
-
 void ScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)
 {
     m_scrollbarOverlayStyle = scrollbar->scrollbarOverlayStyle();
@@ -70,8 +67,19 @@ void ScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)
     m_isOverlayScrollbar = scrollbar->isOverlay();
 
     scrollbar->getTickmarks(m_tickmarks);
+}
 
-    m_geometry->update(scrollbar);
+void ScrollbarLayerImpl::setThumbSize(gfx::Size size)
+{
+    m_thumbSize = size;
+    if (!m_geometry) {
+        // In impl-side painting, the ScrollbarLayerImpl in the pending tree
+        // simply holds properties that are later pushed to the active tree's
+        // layer, but it doesn't hold geometry or append quads.
+        DCHECK(layerTreeImpl()->IsPendingTree());
+        return;
+    }
+    m_geometry->setThumbSize(size);
 }
 
 float ScrollbarLayerImpl::currentPos() const
@@ -109,7 +117,7 @@ gfx::Rect ScrollbarLayerImpl::scrollbarLayerRectToContentRect(const gfx::Rect& l
 
 scoped_ptr<LayerImpl> ScrollbarLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return ScrollbarLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+    return ScrollbarLayerImpl::create(treeImpl, id(), m_geometry.Pass()).PassAs<LayerImpl>();
 }
 
 void ScrollbarLayerImpl::pushPropertiesTo(LayerImpl* layer)
@@ -118,10 +126,8 @@ void ScrollbarLayerImpl::pushPropertiesTo(LayerImpl* layer)
 
     ScrollbarLayerImpl* scrollbarLayer = static_cast<ScrollbarLayerImpl*>(layer);
 
-    if (!scrollbarLayer->scrollbarGeometry())
-        scrollbarLayer->setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone())));
-
     scrollbarLayer->setScrollbarData(&m_scrollbar);
+    scrollbarLayer->setThumbSize(m_thumbSize);
 
     scrollbarLayer->setBackTrackResourceId(m_backTrackResourceId);
     scrollbarLayer->setForeTrackResourceId(m_foreTrackResourceId);

@@ -20,8 +20,7 @@ public:
     static scoped_ptr<ScrollbarGeometryFixedThumb> create(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
     virtual ~ScrollbarGeometryFixedThumb();
 
-    // Update thumb length from scrollbar
-    void update(WebKit::WebScrollbar*);
+    void setThumbSize(gfx::Size size) { m_thumbSize = size; }
 
     // WebScrollbarThemeGeometry interface
     virtual WebKit::WebScrollbarThemeGeometry* clone() const OVERRIDE;

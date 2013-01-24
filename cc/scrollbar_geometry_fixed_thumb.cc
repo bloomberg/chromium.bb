@@ -24,16 +24,6 @@ ScrollbarGeometryFixedThumb::~ScrollbarGeometryFixedThumb()
 {
 }
 
-void ScrollbarGeometryFixedThumb::update(WebScrollbar* scrollbar)
-{
-    int length = ScrollbarGeometryStub::thumbLength(scrollbar);
-
-    if (scrollbar->orientation() == WebScrollbar::Horizontal)
-        m_thumbSize = gfx::Size(length, scrollbar->size().height);
-    else
-        m_thumbSize = gfx::Size(scrollbar->size().width, length);
-}
-
 WebScrollbarThemeGeometry* ScrollbarGeometryFixedThumb::clone() const
 {
     ScrollbarGeometryFixedThumb* geometry = new ScrollbarGeometryFixedThumb(make_scoped_ptr(ScrollbarGeometryStub::clone()));
