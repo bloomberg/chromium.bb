@@ -6469,11 +6469,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION" desc="Description for the flag to enable experimantal form filling feature">
         Enable experimental form filling. Enables a collection of experimental features that make form filling easier.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag to enable history navigation from horizontal overscroll.">
-        Enable overscroll history navigation
+      <message name="IDS_FLAGS_DISABLE_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag to disable history navigation from horizontal overscroll.">
+        Disable overscroll history navigation
       </message>
-      <message name="IDS_FLAGS_ENABLE_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to enable history navigation from horizontal overscroll.">
-        Enables experimental history navigation in response to horizontal overscroll.
+      <message name="IDS_FLAGS_DISABLE_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to disable history navigation from horizontal overscroll.">
+        Disables experimental history navigation in response to horizontal overscroll.
       </message>
       <message name="IDS_FLAGS_SYNC_SEARCH_ENGINES_NAME" desc="Title for the flag to enable syncing the Search Engines datatype">
         Enable syncing search engines

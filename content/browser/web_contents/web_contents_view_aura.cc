@@ -716,12 +716,8 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
                                                                int delta_y) {
   if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||
       current_overscroll_gesture_ == OVERSCROLL_SOUTH) {
-    // For vertical overscroll, always do a resisted drag.
-    const float threshold = GetOverscrollConfig(
-        OVERSCROLL_CONFIG_VERT_RESIST_AFTER);
-    int scroll = GetResistedScrollAmount(abs(delta_y),
-                                         static_cast<int>(threshold));
-    return gfx::Vector2d(0, delta_y < 0 ? -scroll : scroll);
+    // Ignore vertical overscroll.
+    return gfx::Vector2d();
   }
 
   // For horizontal overscroll, scroll freely if a navigation is possible. Do a
@@ -830,8 +826,9 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
 
   RenderWidgetHostImpl* host_impl =
       RenderWidgetHostImpl::From(render_widget_host);
-  if (host_impl->overscroll_controller() && web_contents_->GetDelegate() &&
-      web_contents_->GetDelegate()->CanOverscrollContent()) {
+  if (host_impl->overscroll_controller() &&
+      (!web_contents_->GetDelegate() ||
+       web_contents_->GetDelegate()->CanOverscrollContent())) {
     host_impl->overscroll_controller()->set_delegate(this);
     if (!navigation_overlay_.get())
       navigation_overlay_.reset(new OverscrollNavigationOverlay());

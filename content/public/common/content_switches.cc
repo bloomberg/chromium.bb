@@ -769,7 +769,7 @@ const char kDisableFixedPositionCreatesStackingContext[]
 const char kEnableDeferredImageDecoding[] = "enable-deferred-image-decoding";
 
 // Enables history navigation in response to horizontal overscroll.
-const char kEnableOverscrollHistoryNavigation[] =
-    "enable-overscroll-history-navigation";
+const char kDisableOverscrollHistoryNavigation[] =
+    "disable-overscroll-history-navigation";
 
 }  // namespace switches
