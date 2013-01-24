@@ -102,6 +102,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   static bool IsInternalOutputName(const std::string& name);
 
  private:
+  // Schedules notifying OnDisplayModeChanged().
+  void WillNotifyOnDisplayChanged();
+
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
 

@@ -618,7 +618,9 @@ bool OutputConfigurator::CycleDisplayMode() {
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
-  if (!did_change)
+  if (did_change)
+    WillNotifyOnDisplayChanged();
+  else
     FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
   return did_change;
 }
@@ -715,6 +717,7 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   connected_output_count_ = outputs.size();
   if (EnterState(display, screen, window, new_state, outputs)) {
     output_state_ = new_state;
+    WillNotifyOnDisplayChanged();
   }
 
   XRRFreeScreenResources(screen);
@@ -754,6 +757,7 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
         OutputState new_state =
             GetNextState(display, screen, STATE_INVALID, outputs);
         if (EnterState(display, screen, window, new_state, outputs)) {
+          WillNotifyOnDisplayChanged();
           output_state_ = new_state;
         }
       }
@@ -768,6 +772,23 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
     // Ignore the case of RR_UnkownConnection.
   }
 
+  return true;
+}
+
+void OutputConfigurator::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void OutputConfigurator::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+// static
+bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
+  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
+}
+
+void OutputConfigurator::WillNotifyOnDisplayChanged() {
   // Sets the timer for NotifyOnDisplayChanged().  When an output state change
   // is issued, several notifications chould arrive and NotifyOnDisplayChanged()
   // should be called once for the last one.  The timer could lead at most a few
@@ -783,20 +804,6 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
         this,
         &OutputConfigurator::NotifyOnDisplayChanged);
   }
-  return true;
-}
-
-void OutputConfigurator::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void OutputConfigurator::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-// static
-bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
-  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
