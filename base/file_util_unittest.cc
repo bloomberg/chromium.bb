@@ -1503,41 +1503,6 @@ TEST_F(FileUtilTest, CopyFile) {
   EXPECT_TRUE(file_util::PathExists(dest_file2));
 }
 
-// TODO(erikkay): implement
-#if defined(OS_WIN)
-TEST_F(FileUtilTest, GetFileCreationLocalTime) {
-  FilePath file_name = temp_dir_.path().Append(L"Test File.txt");
-
-  SYSTEMTIME start_time;
-  GetLocalTime(&start_time);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  CreateTextFile(file_name, L"New file!");
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  SYSTEMTIME end_time;
-  GetLocalTime(&end_time);
-
-  SYSTEMTIME file_creation_time;
-  file_util::GetFileCreationLocalTime(file_name.value(), &file_creation_time);
-
-  FILETIME start_filetime;
-  SystemTimeToFileTime(&start_time, &start_filetime);
-  FILETIME end_filetime;
-  SystemTimeToFileTime(&end_time, &end_filetime);
-  FILETIME file_creation_filetime;
-  SystemTimeToFileTime(&file_creation_time, &file_creation_filetime);
-
-  EXPECT_EQ(-1, CompareFileTime(&start_filetime, &file_creation_filetime)) <<
-    "start time: " << FileTimeAsUint64(start_filetime) << ", " <<
-    "creation time: " << FileTimeAsUint64(file_creation_filetime);
-
-  EXPECT_EQ(-1, CompareFileTime(&file_creation_filetime, &end_filetime)) <<
-    "creation time: " << FileTimeAsUint64(file_creation_filetime) << ", " <<
-    "end time: " << FileTimeAsUint64(end_filetime);
-
-  ASSERT_TRUE(DeleteFile(file_name.value().c_str()));
-}
-#endif
-
 // file_util winds up using autoreleased objects on the Mac, so this needs
 // to be a PlatformTest.
 typedef PlatformTest ReadOnlyFileUtilTest;

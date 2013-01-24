@@ -153,18 +153,6 @@ BASE_EXPORT bool PathIsWritable(const FilePath& path);
 // Returns true if the given path exists and is a directory, false otherwise.
 BASE_EXPORT bool DirectoryExists(const FilePath& path);
 
-#if defined(OS_WIN)
-// Gets the creation time of the given file (expressed in the local timezone),
-// and returns it via the creation_time parameter.  Returns true if successful,
-// false otherwise.
-BASE_EXPORT bool GetFileCreationLocalTime(const std::wstring& filename,
-                                          LPSYSTEMTIME creation_time);
-
-// Same as above, but takes a previously-opened file handle instead of a name.
-BASE_EXPORT bool GetFileCreationLocalTimeFromHandle(HANDLE file_handle,
-                                                    LPSYSTEMTIME creation_time);
-#endif  // defined(OS_WIN)
-
 // Returns true if the contents of the two files given are equal, false
 // otherwise.  If either file can't be read, returns false.
 BASE_EXPORT bool ContentsEqual(const FilePath& filename1,
