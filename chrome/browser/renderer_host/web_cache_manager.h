@@ -191,7 +191,7 @@ class WebCacheManager : public content::NotificationObserver {
   };
 
   // Inform all |renderers| to clear their cache.
-  void ClearRendederCache(const std::set<int>& renderers,
+  void ClearRendererCache(const std::set<int>& renderers,
                           ClearCacheOccasion occation);
 
   // Check to see if any active renderers have fallen inactive.
