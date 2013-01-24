@@ -92,6 +92,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void CopyStateFromAndPrune(
       NavigationController* source) OVERRIDE;
   virtual void PruneAllButActive() OVERRIDE;
+  virtual void ClearAllScreenshots() OVERRIDE;
 
   // The session storage namespace that all child RenderViews belonging to
   // |instance| should use.

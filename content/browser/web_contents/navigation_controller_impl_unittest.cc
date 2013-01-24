@@ -3092,6 +3092,17 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
         controller.GetEntryAtIndex(i));
     EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
   }
+
+  // Clear all screenshots.
+  EXPECT_EQ(13, controller.GetEntryCount());
+  EXPECT_EQ(10, controller.screenshot_count_);
+  controller.ClearAllScreenshots();
+  EXPECT_EQ(0, controller.screenshot_count_);
+  for (int i = 0; i < controller.GetEntryCount(); ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not cleared";
+  }
 }
 
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot

@@ -1427,6 +1427,16 @@ void NavigationControllerImpl::PruneAllButActive() {
   }
 }
 
+// Implemented here and not in NavigationEntry because this controller caches
+// the total number of screen shots across all entries.
+void NavigationControllerImpl::ClearAllScreenshots() {
+  for (NavigationEntries::iterator it = entries_.begin();
+       it != entries_.end();
+       ++it)
+    ClearScreenshot(it->get());
+  DCHECK_EQ(screenshot_count_, 0);
+}
+
 void NavigationControllerImpl::SetSessionStorageNamespace(
     const std::string& partition_id,
     SessionStorageNamespace* session_storage_namespace) {

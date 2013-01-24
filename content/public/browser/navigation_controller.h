@@ -377,6 +377,10 @@ class NavigationController {
   // Removes all the entries except the active entry. If there is a new pending
   // navigation it is preserved.
   virtual void PruneAllButActive() = 0;
+
+  // Clears all screenshots associated with navigation entries in this
+  // controller. Useful to reduce memory consumption in low-memory situations.
+  virtual void ClearAllScreenshots() = 0;
 };
 
 }  // namespace content

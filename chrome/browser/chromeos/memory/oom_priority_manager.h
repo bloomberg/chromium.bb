@@ -60,6 +60,7 @@ class OomPriorityManager : public content::NotificationObserver {
   void LogMemoryAndDiscardTab();
 
  private:
+  friend class OomMemoryDetails;
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, IsReloadableUI);
 
@@ -89,6 +90,9 @@ class OomPriorityManager : public content::NotificationObserver {
   // for user triggered discards via chrome://discards/ because that allows us
   // to manually test the system.
   void RecordDiscardStatistics();
+
+  // Purges data structures in the browser that can be easily recomputed.
+  void PurgeBrowserMemory();
 
   // Returns the number of tabs open in all browser instances.
   int GetTabCount() const;

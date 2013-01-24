@@ -28,6 +28,7 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -86,6 +87,8 @@ int64 IdFromWebContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
 }
 
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // OomMemoryDetails logs details about all Chrome processes during an out-of-
 // memory event in an attempt to identify the culprit, then discards a tab and
@@ -122,14 +125,15 @@ void OomMemoryDetails::OnDetailsAvailable() {
   }
   LOG(WARNING) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
       << log_string;
-  if (g_browser_process && g_browser_process->oom_priority_manager())
-    g_browser_process->oom_priority_manager()->DiscardTab();
+  if (g_browser_process && g_browser_process->oom_priority_manager()) {
+    OomPriorityManager* manager = g_browser_process->oom_priority_manager();
+    manager->PurgeBrowserMemory();
+    manager->DiscardTab();
+  }
   // Delete ourselves so we don't have to worry about OomPriorityManager
   // deleting us when we're still working.
   Release();
 }
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // OomPriorityManager
@@ -340,6 +344,20 @@ void OomPriorityManager::RecordDiscardStatistics() {
   }
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();
+}
+
+void OomPriorityManager::PurgeBrowserMemory() {
+  // Based on experimental evidence, attempts to free memory from renderers
+  // have been too slow to use in OOM situations (V8 garbage collection) or
+  // do not lead to persistent decreased usage (image/bitmap caches). This
+  // function therefore only targets large blocks of memory in the browser.
+  for (TabContentsIterator it; !it.done(); ++it) {
+    WebContents* web_contents = *it;
+    // Screenshots can consume ~5 MB per web contents for platforms that do
+    // touch back/forward.
+    web_contents->GetController().ClearAllScreenshots();
+  }
+  // TODO(jamescook): Are there other things we could flush? Drive metadata?
 }
 
 int OomPriorityManager::GetTabCount() const {
