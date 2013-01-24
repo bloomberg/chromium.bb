@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
@@ -189,7 +190,7 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
           .AppendASCII(names_[i]).Append(relatives[j].path);
       std::string cracked_id;
       FilePath cracked_path;
-    FileSystemType cracked_type;
+      FileSystemType cracked_type;
       if (!relatives[j].valid) {
         ASSERT_FALSE(isolated_context()->CrackVirtualPath(
             virtual_path, &cracked_id, &cracked_type, &cracked_path));
@@ -202,6 +203,51 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
                 cracked_path.value());
       ASSERT_EQ(id_, cracked_id);
       ASSERT_EQ(kFileSystemTypeDragged, cracked_type);
+    }
+  }
+}
+
+TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
+  const struct {
+    FilePath::StringType path;
+    bool valid;
+  } relatives[] = {
+    { FPL("foo"), true },
+    { FPL("foo/bar"), true },
+    { FPL(".."), false },
+    { FPL("foo/.."), false },
+    { FPL("foo/../bar"), false },
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+# define SHOULD_FAIL_WITH_WIN_SEPARATORS false
+#else
+# define SHOULD_FAIL_WITH_WIN_SEPARATORS true
+#endif
+    { FPL("foo\\..\\baz"), SHOULD_FAIL_WITH_WIN_SEPARATORS },
+    { FPL("foo/..\\baz"), SHOULD_FAIL_WITH_WIN_SEPARATORS },
+  };
+
+  for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
+      SCOPED_TRACE(testing::Message() << "Testing "
+                   << kTestPaths[i].value() << " " << relatives[j].path);
+      FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
+          .AppendASCII(names_[i]).Append(relatives[j].path);
+
+      FileSystemURL cracked = isolated_context()->CreateCrackedFileSystemURL(
+          GURL("http://chromium.org"), kFileSystemTypeIsolated, virtual_path);
+
+      ASSERT_EQ(relatives[j].valid, cracked.is_valid());
+
+      if (!relatives[j].valid)
+        continue;
+      ASSERT_EQ(GURL("http://chromium.org"), cracked.origin());
+      ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
+                    .NormalizePathSeparators().value(),
+                cracked.path().value());
+      ASSERT_EQ(virtual_path.NormalizePathSeparators(), cracked.virtual_path());
+      ASSERT_EQ(id_, cracked.filesystem_id());
+      ASSERT_EQ(kFileSystemTypeDragged, cracked.type());
+      ASSERT_EQ(kFileSystemTypeIsolated, cracked.mount_type());
     }
   }
 }
@@ -225,6 +271,34 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
       id_).AppendASCII("foo");
   ASSERT_FALSE(isolated_context()->CrackVirtualPath(
       virtual_path, &cracked_id, NULL, &cracked_path));
+}
+
+TEST_F(IsolatedContextTest, CanHandleURL) {
+  const GURL test_origin("http://chromium.org");
+  const FilePath test_path(FPL("/mount"));
+
+  // Should handle isolated file system.
+  EXPECT_TRUE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeIsolated));
+
+  // Shouldn't handle the rest.
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeExternal));
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeTemporary));
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypePersistent));
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeTest));
+  // Not even if it's isolated subtype.
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeNativeLocal));
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeDragged));
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeNativeMedia));
+  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeDeviceMedia));
 }
 
 }  // namespace fileapi

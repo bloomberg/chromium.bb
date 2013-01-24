@@ -49,8 +49,8 @@ void LocalFileSystemTestOriginHelper::SetUp(
 
   // Prepare the origin's root directory.
   file_system_context_->GetMountPointProvider(type_)->
-      GetFileSystemRootPathOnFileThread(
-          FileSystemURL(origin_, type_, FilePath()), true /* create */);
+      GetFileSystemRootPathOnFileThread(CreateURL(FilePath()),
+                                        true /* create */);
 
   // Initialize the usage cache file.
   FilePath usage_cache_path = GetUsageCachePath();
@@ -77,8 +77,8 @@ void LocalFileSystemTestOriginHelper::SetUp(
   // Prepare the origin's root directory.
   FileSystemMountPointProvider* mount_point_provider =
       file_system_context_->GetMountPointProvider(type_);
-  mount_point_provider->GetFileSystemRootPathOnFileThread(
-     FileSystemURL(origin_, type_, FilePath()), true /* create */);
+  mount_point_provider->GetFileSystemRootPathOnFileThread(CreateURL(FilePath()),
+                                                          true /* create */);
 
   // Initialize the usage cache file.
   FilePath usage_cache_path = GetUsageCachePath();
@@ -93,8 +93,7 @@ void LocalFileSystemTestOriginHelper::TearDown() {
 
 FilePath LocalFileSystemTestOriginHelper::GetOriginRootPath() const {
   return file_system_context_->GetMountPointProvider(type_)->
-      GetFileSystemRootPathOnFileThread(
-          FileSystemURL(origin_, type_, FilePath()), false);
+      GetFileSystemRootPathOnFileThread(CreateURL(FilePath()), false);
 }
 
 FilePath LocalFileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
@@ -120,7 +119,7 @@ FilePath LocalFileSystemTestOriginHelper::GetUsageCachePath() const {
 
 FileSystemURL LocalFileSystemTestOriginHelper::CreateURL(const FilePath& path)
     const {
-  return FileSystemURL(origin_, type_, path);
+  return file_system_context_->CreateCrackedFileSystemURL(origin_, type_, path);
 }
 
 base::PlatformFileError LocalFileSystemTestOriginHelper::SameFileUtilCopy(

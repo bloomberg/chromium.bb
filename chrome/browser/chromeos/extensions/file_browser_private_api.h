@@ -29,6 +29,7 @@ class Value;
 
 namespace fileapi {
 class FileSystemContext;
+class FileSystemURL;
 }
 
 namespace drive {
@@ -103,7 +104,7 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
   void RespondOnUIThread(bool success);
   void RunFileWatchOperationOnFileThread(
       scoped_refptr<FileBrowserEventRouter> event_router,
-      const GURL& file_url,
+      const fileapi::FileSystemURL& file_url,
       const std::string& extension_id);
 };
 
@@ -199,12 +200,12 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 
   // Find the list of Web Intent tasks that can be used with the given file
   // types, appending them to the |result_list|.
-  bool FindWebIntentTasks(const std::vector<GURL>& file_urls,
+  bool FindWebIntentTasks(const std::vector<FilePath>& file_paths,
                           ListValue* result_list);
 
   // Find the list of app file handlers that can be used with the given file
   // types, appending them to the |result_list|.
-  bool FindAppTasks(const std::vector<GURL>& file_urls,
+  bool FindAppTasks(const std::vector<FilePath>& file_paths,
                     ListValue* result_list);
 };
 

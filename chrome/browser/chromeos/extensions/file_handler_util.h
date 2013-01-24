@@ -22,6 +22,10 @@ namespace extensions {
 class Extension;
 }  // namespace extensions
 
+namespace fileapi {
+class FileSystemURL;
+}
+
 namespace file_handler_util {
 
 // Specifies the task type for a task id that represents some file action, Drive
@@ -70,7 +74,7 @@ bool CrackTaskID(const std::string& task_id,
 // This generates a list of default tasks (tasks set as default by the user in
 // prefs) from the |common_tasks|.
 void FindDefaultTasks(Profile* profile,
-                      const std::vector<GURL>& files_list,
+                      const std::vector<FilePath>& files_list,
                       const std::set<const FileBrowserHandler*>& common_tasks,
                       std::set<const FileBrowserHandler*>* default_tasks);
 
@@ -79,13 +83,14 @@ bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
                      std::set<const FileBrowserHandler*>* common_tasks);
 
-// Finds a task for a file whose URL is |url|.
+// Finds a task for a file whose URL is |url| and whose path is |path|.
 // Returns default task if one is defined (The default task is the task that is
 // assigned to file browser task button by default). If default task is not
 // found, tries to match the url with one of the builtin tasks.
-bool GetTaskForURL(Profile* profile,
-                   const GURL& url,
-                   const FileBrowserHandler** handler);
+bool GetTaskForURLAndPath(Profile* profile,
+                          const GURL& url,
+                          const FilePath& path,
+                          const FileBrowserHandler** handler);
 
 // Used for returning success or failure from task executions.
 typedef base::Callback<void(bool)> FileTaskFinishedCallback;
@@ -103,7 +108,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
                                   const std::string& action_id);
 
   // Same as ExecuteAndNotify, but no notification is performed.
-  virtual bool Execute(const std::vector<GURL>& file_urls);
+  virtual bool Execute(const std::vector<fileapi::FileSystemURL>& file_urls);
 
   // Initiates execution of file handler task for each element of |file_urls|.
   // Return |false| if the execution cannot be initiated. Otherwise returns
@@ -111,8 +116,9 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   // been handled. If there is an error during processing the list of files, the
   // caller will be informed of the failure via |done|, and the rest of
   // the files will not be processed.
-  virtual bool ExecuteAndNotify(const std::vector<GURL>& file_urls,
-                                const FileTaskFinishedCallback& done) = 0;
+  virtual bool ExecuteAndNotify(
+      const std::vector<fileapi::FileSystemURL>& file_urls,
+      const FileTaskFinishedCallback& done) = 0;
 
  protected:
   explicit FileTaskExecutor(Profile* profile,
@@ -123,7 +129,8 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 
   // Checks if the file browser extension had file access permissions for the
   // list of files.
-  bool FileBrowserHasAccessPermissionForFiles(const std::vector<GURL>& files);
+  bool FileBrowserHasAccessPermissionForFiles(
+      const std::vector<fileapi::FileSystemURL>& files);
 
   // Returns the profile that this task was created with.
   Profile* profile() { return profile_; }

@@ -18,6 +18,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
+#include "webkit/fileapi/mount_points.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
@@ -75,13 +76,21 @@ FileSystemContext::FileSystemContext(
             this, options.is_incognito()));
   }
 #if defined(OS_CHROMEOS)
+  // TODO(tbarzic): Pass this through ctor.
+  scoped_refptr<ExternalMountPoints> external_mount_points =
+      ExternalMountPoints::CreateRefCounted();
+  // |external_provider_| will take a reference or external_mount_points so this
+  // doesn't have to retain one for itself.
   external_provider_.reset(
       new chromeos::CrosMountPointProvider(
           special_storage_policy,
-          // TODO(tbarzic): Switch this to |external_mount_points_|.
-          fileapi::ExternalMountPoints::GetSystemInstance(),
-          fileapi::ExternalMountPoints::GetSystemInstance()));
+          external_mount_points,
+          ExternalMountPoints::GetSystemInstance()));
+  url_crackers_.push_back(external_mount_points.get());
 #endif
+
+  url_crackers_.push_back(ExternalMountPoints::GetSystemInstance());
+  url_crackers_.push_back(IsolatedContext::GetInstance());
 }
 
 bool FileSystemContext::DeleteDataForOriginOnFileThread(
@@ -306,6 +315,17 @@ void FileSystemContext::set_sync_context(
   sync_context_ = sync_context;
 }
 
+FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {
+  return CrackFileSystemURL(FileSystemURL(url));
+}
+
+FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
+    const GURL& origin,
+    FileSystemType type,
+    const FilePath& path) const {
+  return CrackFileSystemURL(FileSystemURL(origin, type, path));
+}
+
 FileSystemContext::~FileSystemContext() {
   task_runners_->file_task_runner()->DeleteSoon(
       FROM_HERE, change_tracker_.release());
@@ -319,6 +339,29 @@ void FileSystemContext::DeleteOnCorrectThread() const {
   STLDeleteContainerPairSecondPointers(provider_map_.begin(),
                                        provider_map_.end());
   delete this;
+}
+
+FileSystemURL FileSystemContext::CrackFileSystemURL(
+    const FileSystemURL& url) const {
+  if (!url.is_valid())
+    return FileSystemURL();
+
+  // The returned value in case there is no crackers which can crack the url.
+  // This is valid situation for non isolated/external file systems.
+  FileSystemURL result = url;
+
+  for (size_t i = 0; i < url_crackers_.size(); ++i) {
+    if (!url_crackers_[i]->HandlesFileSystemMountType(url.type()))
+      continue;
+
+    result = url_crackers_[i]->CreateCrackedFileSystemURL(url.origin(),
+                                                          url.type(),
+                                                          url.path());
+    if (result.is_valid())
+      return result;
+  }
+
+  return result;
 }
 
 }  // namespace fileapi

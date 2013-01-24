@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_url.h"
 
 #define FPL FILE_PATH_LITERAL
 
@@ -16,6 +17,8 @@
 #else
 #define DRIVE
 #endif
+
+using fileapi::FileSystemURL;
 
 namespace {
 
@@ -220,6 +223,238 @@ TEST(ExternalMountPointsTest, GetVirtualPath) {
     FilePath expected_virtual_path(kTestCases[i].virtual_path);
     EXPECT_EQ(expected_virtual_path.NormalizePathSeparators(), virtual_path)
         << "Resolving " << kTestCases[i].local_path;
+  }
+}
+
+TEST(ExternalMountPointsTest, HandlesFileSystemMountType) {
+  scoped_refptr<fileapi::ExternalMountPoints> mount_points(
+      fileapi::ExternalMountPoints::CreateRefCounted());
+
+  const GURL test_origin("http://chromium.org");
+  const FilePath test_path(FPL("/mount"));
+
+  // Should handle External File System.
+  EXPECT_TRUE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeExternal));
+
+  // Shouldn't handle the rest.
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeIsolated));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeTemporary));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypePersistent));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeTest));
+  // Not even if it's external subtype.
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeNativeLocal));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeRestrictedNativeLocal));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeDrive));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      fileapi::kFileSystemTypeSyncable));
+}
+
+TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
+  scoped_refptr<fileapi::ExternalMountPoints> mount_points(
+      fileapi::ExternalMountPoints::CreateRefCounted());
+
+  const GURL kTestOrigin("http://chromium.org");
+
+  mount_points->RegisterFileSystem("c",
+                                   fileapi::kFileSystemTypeNativeLocal,
+                                   FilePath(DRIVE FPL("/a/b/c")));
+  mount_points->RegisterFileSystem("c(1)",
+                                   fileapi::kFileSystemTypeDrive,
+                                   FilePath(DRIVE FPL("/a/b/c(1)")));
+  mount_points->RegisterFileSystem("empty_path",
+                                   fileapi::kFileSystemTypeSyncable,
+                                   FilePath(FPL("")));
+  mount_points->RegisterFileSystem("mount",
+                                   fileapi::kFileSystemTypeDrive,
+                                   FilePath(DRIVE FPL("/root")));
+
+  // Try cracking invalid GURL.
+  FileSystemURL invalid = mount_points->CrackURL(GURL("http://chromium.og"));
+  EXPECT_FALSE(invalid.is_valid());
+
+  // Try cracking isolated path.
+  FileSystemURL isolated = mount_points->CreateCrackedFileSystemURL(
+      kTestOrigin, fileapi::kFileSystemTypeIsolated, FilePath(FPL("c")));
+  EXPECT_FALSE(isolated.is_valid());
+
+  // Try native local which is not cracked.
+  FileSystemURL native_local = mount_points->CreateCrackedFileSystemURL(
+      kTestOrigin, fileapi::kFileSystemTypeNativeLocal, FilePath(FPL("c")));
+  EXPECT_FALSE(native_local.is_valid());
+
+  struct TestCase {
+    const FilePath::CharType* const path;
+    bool expect_valid;
+    fileapi::FileSystemType expect_type;
+    const FilePath::CharType* const expect_path;
+    const char* const expect_fs_id;
+  };
+
+  const TestCase kTestCases[] = {
+    { FPL("c/d/e"),
+      true, fileapi::kFileSystemTypeNativeLocal, DRIVE FPL("/a/b/c/d/e"), "c" },
+    { FPL("c(1)/d/e"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/a/b/c(1)/d/e"), "c(1)" },
+    { FPL("c(1)"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/a/b/c(1)"), "c(1)" },
+    { FPL("empty_path/a"),
+      true, fileapi::kFileSystemTypeSyncable, FPL("a"), "empty_path" },
+    { FPL("empty_path"),
+      true, fileapi::kFileSystemTypeSyncable, FPL(""), "empty_path" },
+    { FPL("mount/a/b"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/root/a/b"), "mount" },
+    { FPL("mount"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/root"), "mount" },
+    { FPL("cc"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL(""),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL(".."),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    // Absolte paths.
+    { FPL("/c/d/e"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL("/c(1)/d/e"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL("/empty_path"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    // PAth references parent.
+    { FPL("c/d/../e"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL("/empty_path/a/../b"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+    { FPL("c/d\\e"),
+      true, fileapi::kFileSystemTypeNativeLocal, DRIVE FPL("/a/b/c/d/e"), "c" },
+    { FPL("mount\\a\\b"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/root/a/b"), "mount" },
+#endif
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    FileSystemURL cracked = mount_points->CreateCrackedFileSystemURL(
+        kTestOrigin,
+        fileapi::kFileSystemTypeExternal,
+        FilePath(kTestCases[i].path));
+
+    EXPECT_EQ(kTestCases[i].expect_valid, cracked.is_valid())
+        << "Test case index: " << i;
+
+    if (!kTestCases[i].expect_valid)
+      continue;
+
+    EXPECT_EQ(kTestOrigin, cracked.origin())
+        << "Test case index: " << i;
+    EXPECT_EQ(kTestCases[i].expect_type, cracked.type())
+        << "Test case index: " << i;
+    EXPECT_EQ(FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
+                       cracked.path())
+        << "Test case index: " << i;
+    EXPECT_EQ(FilePath(kTestCases[i].path).NormalizePathSeparators(),
+                       cracked.virtual_path())
+        << "Test case index: " << i;
+    EXPECT_EQ(kTestCases[i].expect_fs_id, cracked.filesystem_id())
+        << "Test case index: " << i;
+    EXPECT_EQ(fileapi::kFileSystemTypeExternal, cracked.mount_type())
+        << "Test case index: " << i;
+  }
+}
+
+TEST(ExternalMountPointsTest, CrackVirtualPath) {
+  scoped_refptr<fileapi::ExternalMountPoints> mount_points(
+      fileapi::ExternalMountPoints::CreateRefCounted());
+
+  const GURL kTestOrigin("http://chromium.org");
+
+  mount_points->RegisterFileSystem("c",
+                                   fileapi::kFileSystemTypeNativeLocal,
+                                   FilePath(DRIVE FPL("/a/b/c")));
+  mount_points->RegisterFileSystem("c(1)",
+                                   fileapi::kFileSystemTypeDrive,
+                                   FilePath(DRIVE FPL("/a/b/c(1)")));
+  mount_points->RegisterFileSystem("empty_path",
+                                   fileapi::kFileSystemTypeSyncable,
+                                   FilePath(FPL("")));
+  mount_points->RegisterFileSystem("mount",
+                                   fileapi::kFileSystemTypeDrive,
+                                   FilePath(DRIVE FPL("/root")));
+
+  struct TestCase {
+    const FilePath::CharType* const path;
+    bool expect_valid;
+    fileapi::FileSystemType expect_type;
+    const FilePath::CharType* const expect_path;
+    const char* const expect_name;
+  };
+
+  const TestCase kTestCases[] = {
+    { FPL("c/d/e"),
+      true, fileapi::kFileSystemTypeNativeLocal, DRIVE FPL("/a/b/c/d/e"), "c" },
+    { FPL("c(1)/d/e"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/a/b/c(1)/d/e"), "c(1)" },
+    { FPL("c(1)"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/a/b/c(1)"), "c(1)" },
+    { FPL("empty_path/a"),
+      true, fileapi::kFileSystemTypeSyncable, FPL("a"), "empty_path" },
+    { FPL("empty_path"),
+      true, fileapi::kFileSystemTypeSyncable, FPL(""), "empty_path" },
+    { FPL("mount/a/b"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/root/a/b"), "mount" },
+    { FPL("mount"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/root"), "mount" },
+    { FPL("cc"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL(""),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL(".."),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    // Absolte paths.
+    { FPL("/c/d/e"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL("/c(1)/d/e"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL("/empty_path"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    // PAth references parent.
+    { FPL("c/d/../e"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+    { FPL("/empty_path/a/../b"),
+      false, fileapi::kFileSystemTypeUnknown, FPL(""), "" },
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+    { FPL("c/d\\e"),
+      true, fileapi::kFileSystemTypeNativeLocal, DRIVE FPL("/a/b/c/d/e"), "c" },
+    { FPL("mount\\a\\b"),
+      true, fileapi::kFileSystemTypeDrive, DRIVE FPL("/root/a/b"), "mount" },
+#endif
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    std::string cracked_name;
+    fileapi::FileSystemType cracked_type;
+    FilePath cracked_path;
+    EXPECT_EQ(kTestCases[i].expect_valid,
+              mount_points->CrackVirtualPath(FilePath(kTestCases[i].path),
+                  &cracked_name, &cracked_type, &cracked_path))
+        << "Test case index: " << i;
+
+    if (!kTestCases[i].expect_valid)
+      continue;
+
+    EXPECT_EQ(kTestCases[i].expect_type, cracked_type)
+        << "Test case index: " << i;
+    EXPECT_EQ(FilePath(kTestCases[i].expect_path).NormalizePathSeparators(),
+                       cracked_path)
+        << "Test case index: " << i;
+    EXPECT_EQ(kTestCases[i].expect_name, cracked_name)
+        << "Test case index: " << i;
   }
 }
 

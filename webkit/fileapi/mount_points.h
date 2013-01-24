@@ -16,6 +16,10 @@
 class GURL;
 
 namespace fileapi {
+class FileSystemURL;
+}
+
+namespace fileapi {
 
 // Represents a set of mount points for File API.
 class WEBKIT_STORAGE_EXPORT MountPoints {
@@ -45,6 +49,23 @@ class WEBKIT_STORAGE_EXPORT MountPoints {
   // Returns false if the |mount_name| is not (no longer) registered.
   // TODO(kinuko): Probably this should be rather named RevokeMountPoint.
   virtual bool RevokeFileSystem(const std::string& mount_name) = 0;
+
+  // Returns true if the MountPoints implementation handles filesystems with
+  // the given mount type.
+  virtual bool HandlesFileSystemMountType(FileSystemType type) const = 0;
+
+  // Same as CreateCrackedFileSystemURL, but cracks FileSystemURL created
+  // from |url|.
+  virtual FileSystemURL CrackURL(const GURL& url) const = 0;
+
+  // Creates a FileSystemURL with the given origin, type and path and tries to
+  // crack it as a part of one of the registered mount points.
+  // If the the URL is not valid or does not belong to any of the mount points
+  // registered in this context, returns empty, invalid FileSystemURL.
+  virtual FileSystemURL CreateCrackedFileSystemURL(
+      const GURL& origin,
+      fileapi::FileSystemType type,
+      const FilePath& path) const = 0;
 
   // Returns the mount point root path registered for a given |mount_name|.
   // Returns false if the given |mount_name| is not valid.

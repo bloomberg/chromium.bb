@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +15,7 @@
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -31,6 +33,7 @@ class FileStreamReader;
 namespace fileapi {
 
 class ExternalFileSystemMountPointProvider;
+class ExternalMountPoints;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
 class FileSystemOperation;
@@ -40,8 +43,9 @@ class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedMountPointProvider;
 class LocalFileChangeTracker;
-class SandboxMountPointProvider;
 class LocalFileSyncContext;
+class MountPoints;
+class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;
 
@@ -138,9 +142,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       FileSystemType type,
       const DeleteFileSystemCallback& callback);
 
-  // Creates a new FileSystemOperation instance by cracking
-  // the given filesystem URL |url| to get an appropriate MountPointProvider
-  // and calling the provider's corresponding CreateFileSystemOperation method.
+  // Creates a new FileSystemOperation instance by getting an appropriate
+  // MountPointProvider for |url| and calling the provider's corresponding
+  // CreateFileSystemOperation method.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
   FileSystemOperation* CreateFileSystemOperation(
@@ -177,6 +181,14 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
 
   const FilePath& partition_path() const { return partition_path_; }
 
+  // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from |url|.
+  FileSystemURL CrackURL(const GURL& url) const;
+  // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from method
+  // arguments.
+  FileSystemURL CreateCrackedFileSystemURL(const GURL& origin,
+                                           FileSystemType type,
+                                           const FilePath& path) const;
+
  private:
   friend struct DefaultContextDeleter;
   friend class base::DeleteHelper<FileSystemContext>;
@@ -185,6 +197,15 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   ~FileSystemContext();
 
   void DeleteOnCorrectThread() const;
+
+  // For non-cracked isolated and external mount points, returns a FileSystemURL
+  // created by cracking |url|. The url is cracked using MountPoints registered
+  // as |url_crackers_|. If the url cannot be cracked, returns invalid
+  // FileSystemURL.
+  //
+  // If the original url does not point to an isolated or external filesystem,
+  // returns the original url, without attempting to crack it.
+  FileSystemURL CrackFileSystemURL(const FileSystemURL& url) const;
 
   scoped_ptr<FileSystemTaskRunners> task_runners_;
 
@@ -197,6 +218,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
 
   // Registered mount point providers.
   std::map<FileSystemType, FileSystemMountPointProvider*> provider_map_;
+
+  // MountPoints used to crack FileSystemURLs. The MountPoints are ordered
+  // in order they should try to crack a FileSystemURL.
+  std::vector<MountPoints*> url_crackers_;
 
   // The base path of the storage partition for this context.
   const FilePath partition_path_;

@@ -75,9 +75,10 @@ ACTION_P2(UpdateRemoteChangeQueue, origin, mock_remote_service) {
 }
 
 ACTION_P2(ReturnWithFakeFileAddedStatus, origin, mock_remote_service) {
-  fileapi::FileSystemURL mock_url(*origin,
-                                  fileapi::kFileSystemTypeTest,
-                                  FilePath(FILE_PATH_LITERAL("foo")));
+  fileapi::FileSystemURL mock_url =
+      fileapi::FileSystemURL::CreateForTest(*origin,
+                                            fileapi::kFileSystemTypeTest,
+                                            FilePath(FILE_PATH_LITERAL("foo")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg1,

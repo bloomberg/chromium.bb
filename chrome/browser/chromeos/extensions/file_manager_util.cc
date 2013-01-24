@@ -68,6 +68,7 @@ using content::PluginService;
 using content::UserMetricsAction;
 using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
+using fileapi::FileSystemURL;
 
 #define FILEBROWSER_EXTENSON_ID "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_EXTENSON_ID;
@@ -349,15 +350,17 @@ void ExecuteHandler(Profile* profile,
   // site for which file access permissions should be granted.
   GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
       GetSiteForExtensionId(kFileBrowserDomain);
-  fileapi::ExternalFileSystemMountPointProvider* external_provider =
+  fileapi::FileSystemContext* file_system_context =
       BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext()->external_provider();
-  if (!external_provider)
-    return;
-  external_provider->GrantFullAccessToExtension(source_url.host());
+          GetFileSystemContext();
 
-  std::vector<GURL> urls;
-  urls.push_back(url);
+  if (!file_system_context->external_provider())
+    return;
+  file_system_context->external_provider()->GrantFullAccessToExtension(
+      source_url.host());
+
+  std::vector<FileSystemURL> urls;
+  urls.push_back(file_system_context->CrackURL(url));
   scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(profile,
       source_url, kFileBrowserDomain, 0 /* no tab id */, extension_id,
       file_handler_util::kTaskFile, action_id);
@@ -439,7 +442,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
     return false;
 
   const FileBrowserHandler* handler;
-  if (!file_handler_util::GetTaskForURL(profile, url, &handler))
+  if (!file_handler_util::GetTaskForURLAndPath(profile, url, path, &handler))
     return false;
 
   std::string extension_id = handler->extension_id();
@@ -547,7 +550,7 @@ void CheckIfDirectoryExistsOnIOThread(
     const fileapi::FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  fileapi::FileSystemURL file_system_url(url);
+  fileapi::FileSystemURL file_system_url = file_system_context->CrackURL(url);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   fileapi::FileSystemOperation* operation =
       file_system_context->CreateFileSystemOperation(file_system_url, &error);

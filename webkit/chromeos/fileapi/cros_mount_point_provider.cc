@@ -89,17 +89,20 @@ FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
 
 bool CrosMountPointProvider::IsAccessAllowed(
     const fileapi::FileSystemURL& url) {
-  if (!CanHandleURL(url))
+  if (!url.is_valid())
     return false;
-
-  // No extra check is needed for isolated file systems.
-  if (url.mount_type() == fileapi::kFileSystemTypeIsolated)
-    return true;
 
   // Permit access to mount points from internal WebUI.
   const GURL& origin_url = url.origin();
   if (origin_url.SchemeIs(kChromeUIScheme))
     return true;
+
+  // No extra check is needed for isolated file systems.
+  if (url.mount_type() == fileapi::kFileSystemTypeIsolated)
+    return true;
+
+  if (!CanHandleURL(url))
+    return false;
 
   std::string extension_id = origin_url.host();
   // Check first to make sure this extension has fileBrowserHander permissions.

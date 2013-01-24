@@ -79,7 +79,7 @@ bool FileSystemDirURLRequestJob::GetCharset(std::string* charset) {
 void FileSystemDirURLRequestJob::StartAsync() {
   if (!request_)
     return;
-  url_ = FileSystemURL(request_->url());
+  url_ = file_system_context_->CrackURL(request_->url());
   base::PlatformFileError error_code;
   FileSystemOperation* operation = GetNewOperation(&error_code);
   if (error_code != base::PLATFORM_FILE_OK) {

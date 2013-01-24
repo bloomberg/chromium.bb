@@ -34,9 +34,10 @@ GURL GetSyncableFileSystemRootURI(const GURL& origin,
 FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
                                           const std::string& service_name,
                                           const FilePath& path) {
-  return FileSystemURL(origin,
-                       kFileSystemTypeExternal,
-                       FilePath::FromUTF8Unsafe(service_name).Append(path));
+  return ExternalMountPoints::GetSystemInstance()->CreateCrackedFileSystemURL(
+      origin,
+      kFileSystemTypeExternal,
+      FilePath::FromUTF8Unsafe(service_name).Append(path));
 }
 
 bool SerializeSyncableFileSystemURL(const FileSystemURL& url,
@@ -55,12 +56,14 @@ bool DeserializeSyncableFileSystemURL(
   DCHECK(serialized_url.find('\\') == std::string::npos);
 #endif  // FILE_PATH_USES_WIN_SEPARATORS
 
-  const FileSystemURL deserialized_url = FileSystemURL(GURL(serialized_url));
-  if (!deserialized_url.is_valid() ||
-      deserialized_url.type() != kFileSystemTypeSyncable)
+  FileSystemURL deserialized =
+      ExternalMountPoints::GetSystemInstance()->CrackURL(GURL(serialized_url));
+  if (!deserialized.is_valid() ||
+      deserialized.type() != kFileSystemTypeSyncable) {
     return false;
+  }
 
-  *url = deserialized_url;
+  *url = deserialized;
   return true;
 }
 

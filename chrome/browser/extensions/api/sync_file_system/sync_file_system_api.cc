@@ -86,15 +86,17 @@ bool IsValidServiceName(const std::string& service_name, std::string* error) {
 bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  fileapi::FileSystemURL file_system_url((GURL(url)));
-  if (!IsValidServiceName(file_system_url.filesystem_id(), &error_)) {
-    return false;
-  }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(
           profile(),
           render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  fileapi::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(url)));
+
+  if (!IsValidServiceName(file_system_url.filesystem_id(), &error_))
+    return false;
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -209,10 +211,16 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
 bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  fileapi::FileSystemURL file_system_url((GURL(url)));
-  if (!IsValidServiceName(file_system_url.filesystem_id(), &error_)) {
+
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(
+          profile(),
+          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  fileapi::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(url)));
+
+  if (!IsValidServiceName(file_system_url.filesystem_id(), &error_))
     return false;
-  }
 
   scoped_refptr<quota::QuotaManager> quota_manager =
       BrowserContext::GetStoragePartition(
@@ -235,7 +243,13 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
 bool SyncFileSystemGetFileSyncStatusFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  fileapi::FileSystemURL file_system_url((GURL(url)));
+
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(
+          profile(),
+          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  fileapi::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(url)));
 
   SyncFileSystemServiceFactory::GetForProfile(profile())->GetFileSyncStatus(
       file_system_url,

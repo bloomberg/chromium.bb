@@ -41,7 +41,9 @@ int UploadFileSystemFileElementReader::Init(
   // Initialize the stream reader and the length.
   stream_reader_.reset(
       file_system_context_->CreateFileStreamReader(
-          FileSystemURL(url_), range_offset_, expected_modification_time_));
+          file_system_context_->CrackURL(url_),
+          range_offset_,
+          expected_modification_time_));
   DCHECK(stream_reader_);
 
   const int result = stream_reader_->GetLength(

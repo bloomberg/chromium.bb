@@ -28,7 +28,7 @@ const char kServiceName[] = "service";
 const FilePath::CharType kPath[] = FILE_PATH_LITERAL("dir/file");
 
 FileSystemURL CreateFileSystemURL(const std::string& url) {
-  return FileSystemURL(GURL(url));
+  return ExternalMountPoints::GetSystemInstance()->CrackURL(GURL(url));
 }
 
 FilePath CreateNormalizedFilePath(const FilePath::CharType* path) {

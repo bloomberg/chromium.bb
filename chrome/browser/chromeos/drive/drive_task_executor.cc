@@ -26,9 +26,10 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
-namespace drive {
-
 using file_handler_util::FileTaskExecutor;
+using fileapi::FileSystemURL;
+
+namespace drive {
 
 DriveTaskExecutor::DriveTaskExecutor(Profile* profile,
                                      const std::string& app_id,
@@ -43,15 +44,14 @@ DriveTaskExecutor::~DriveTaskExecutor() {
 }
 
 bool DriveTaskExecutor::ExecuteAndNotify(
-    const std::vector<GURL>& file_urls,
+    const std::vector<FileSystemURL>& file_urls,
     const file_handler_util::FileTaskFinishedCallback& done) {
   std::vector<FilePath> raw_paths;
-  for (std::vector<GURL>::const_iterator iter = file_urls.begin();
-      iter != file_urls.end(); ++iter) {
-    fileapi::FileSystemURL url(*iter);
-    if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive)
+  for (std::vector<FileSystemURL>::const_iterator url = file_urls.begin();
+       url != file_urls.end(); ++url) {
+    if (!url->is_valid() || url->type() != fileapi::kFileSystemTypeDrive)
       return false;
-    raw_paths.push_back(url.virtual_path());
+    raw_paths.push_back(url->virtual_path());
   }
 
   DriveSystemService* system_service =

@@ -726,13 +726,12 @@ class HTML5FileWriter {
   }
 
   fileapi::FileSystemOperation* operation() {
-    return fs_->CreateFileSystemOperation(
-        fileapi::FileSystemURL(GURL(root_)), NULL);
+    return fs_->CreateFileSystemOperation(fs_->CrackURL(GURL(root_)), NULL);
   }
 
   void CreateFile() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    operation()->CreateFile(fileapi::FileSystemURL(GURL(root_ + filename_)),
+    operation()->CreateFile(fs_->CrackURL(GURL(root_ + filename_)),
         kExclusive, base::Bind(
             &HTML5FileWriter::CreateFileCallback, base::Unretained(this)));
   }
@@ -746,7 +745,7 @@ class HTML5FileWriter {
         blob_url(), blob_data_);
     operation()->Write(
         url_request_context_.get(),
-        fileapi::FileSystemURL(GURL(root_ + filename_)),
+        fs_->CrackURL(GURL(root_ + filename_)),
         blob_url(),
         0,  // offset
         base::Bind(&HTML5FileWriter::WriteCallback, base::Unretained(this)));

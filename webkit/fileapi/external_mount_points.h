@@ -18,6 +18,7 @@
 class FilePath;
 
 namespace fileapi {
+class FileSystemURL;
 class RemoteFileSystemProxyInterface;
 }
 
@@ -69,6 +70,7 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
                                 const FilePath& path);
 
   // MountPoints overrides.
+  virtual bool HandlesFileSystemMountType(FileSystemType type) const OVERRIDE;
   virtual bool RevokeFileSystem(const std::string& mount_name) OVERRIDE;
   virtual bool GetRegisteredPath(const std::string& mount_name,
                                  FilePath* path) const OVERRIDE;
@@ -76,6 +78,11 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
                                 std::string* mount_name,
                                 FileSystemType* type,
                                 FilePath* path) const OVERRIDE;
+  virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;
+  virtual FileSystemURL CreateCrackedFileSystemURL(
+      const GURL& origin,
+      FileSystemType type,
+      const FilePath& path) const OVERRIDE;
 
   // Retrieves the remote file system proxy for the registered file system.
   // Returns NULL if there is no file system with the given name, or if the file

@@ -174,7 +174,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   void CreateDirectoryForOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
     FilePath target = sandbox_->GetFileSystemRootPathOnFileThread(
-        fileapi::FileSystemURL(origin, type, FilePath()), true);
+        fileapi::FileSystemURL::CreateForTest(origin, type, FilePath()), true);
     EXPECT_TRUE(file_util::DirectoryExists(target));
   }
 

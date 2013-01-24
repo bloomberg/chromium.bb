@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {
 
@@ -225,6 +226,10 @@ std::string IsolatedContext::RegisterFileSystemForPath(
   return filesystem_id;
 }
 
+bool IsolatedContext::HandlesFileSystemMountType(FileSystemType type) const {
+  return type == kFileSystemTypeIsolated;
+}
+
 bool IsolatedContext::RevokeFileSystem(const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
   return UnregisterFileSystem(filesystem_id);
@@ -290,6 +295,32 @@ bool IsolatedContext::CrackVirtualPath(const FilePath& virtual_path,
     cracked_path = cracked_path.Append(*component_iter);
   *path = cracked_path;
   return true;
+}
+
+FileSystemURL IsolatedContext::CrackURL(const GURL& url) const {
+  FileSystemURL filesystem_url = FileSystemURL(url);
+  if (!filesystem_url.is_valid())
+    return FileSystemURL();
+  return CreateCrackedFileSystemURL(filesystem_url.origin(),
+                                    filesystem_url.mount_type(),
+                                    filesystem_url.path());
+}
+
+FileSystemURL IsolatedContext::CreateCrackedFileSystemURL(
+    const GURL& origin,
+    FileSystemType type,
+    const FilePath& path) const {
+  if (!HandlesFileSystemMountType(type))
+    return FileSystemURL();
+
+  std::string mount_name;
+  FileSystemType cracked_type;
+  FilePath cracked_path;
+  if (!CrackVirtualPath(path, &mount_name, &cracked_type, &cracked_path))
+    return FileSystemURL();
+
+  return FileSystemURL(origin, type, path,
+                       mount_name, cracked_type, cracked_path);
 }
 
 void IsolatedContext::RevokeFileSystemByPath(const FilePath& path_in) {

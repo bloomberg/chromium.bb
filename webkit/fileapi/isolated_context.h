@@ -20,6 +20,10 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
+class FileSystemURL;
+}
+
+namespace fileapi {
 
 // Manages isolated filesystem mount points which have no well-known names
 // and are identified by a string 'filesystem ID', which usually just looks
@@ -98,15 +102,6 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
                                         const FilePath& path,
                                         std::string* register_name);
 
-  // MountPoints override.
-  virtual bool RevokeFileSystem(const std::string& filesystem_id) OVERRIDE;
-  virtual bool GetRegisteredPath(const std::string& filesystem_id,
-                                 FilePath* path) const OVERRIDE;
-  virtual bool CrackVirtualPath(const FilePath& virtual_path,
-                                std::string* filesystem_id,
-                                FileSystemType* type,
-                                FilePath* path) const OVERRIDE;
-
   // Revokes all filesystem(s) registered for the given path.
   // This is assumed to be called when the registered path becomes
   // globally invalid, e.g. when a device for the path is detached.
@@ -133,6 +128,21 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
   // Returns false if the |filesystem_id| is not valid.
   bool GetDraggedFileInfo(const std::string& filesystem_id,
                           std::vector<MountPointInfo>* files) const;
+
+  // MountPoints overrides.
+  virtual bool HandlesFileSystemMountType(FileSystemType type) const OVERRIDE;
+  virtual bool RevokeFileSystem(const std::string& filesystem_id) OVERRIDE;
+  virtual bool GetRegisteredPath(const std::string& filesystem_id,
+                                 FilePath* path) const OVERRIDE;
+  virtual bool CrackVirtualPath(const FilePath& virtual_path,
+                                std::string* filesystem_id,
+                                FileSystemType* type,
+                                FilePath* path) const OVERRIDE;
+  virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;
+  virtual FileSystemURL CreateCrackedFileSystemURL(
+      const GURL& origin,
+      FileSystemType type,
+      const FilePath& path) const OVERRIDE;
 
   // Returns the virtual root path that looks like /<filesystem_id>.
   FilePath CreateVirtualRootPath(const std::string& filesystem_id) const;

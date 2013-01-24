@@ -79,9 +79,11 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
                            const char* buf,
                            int buf_size,
                            base::Time* modification_time) {
-    fileapi::FileSystemURL url(GURL(kFileSystemURLOrigin),
-                               kFileSystemType,
-                               FilePath().AppendASCII(filename));
+    fileapi::FileSystemURL url =
+        file_system_context_->CreateCrackedFileSystemURL(
+            GURL(kFileSystemURLOrigin),
+            kFileSystemType,
+            FilePath().AppendASCII(filename));
 
     fileapi::FileSystemFileUtil* file_util =
         file_system_context_->GetFileUtil(kFileSystemType);

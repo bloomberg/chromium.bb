@@ -429,7 +429,8 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   FileSystemUsageCache::Delete(usage_file_path);
 
   FileSystemOperationContext context(file_system_context);
-  FileSystemURL url(origin_url, type, FilePath());
+  FileSystemURL url = file_system_context->CreateCrackedFileSystemURL(
+      origin_url, type, FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
       sandbox_file_util_->CreateFileEnumerator(&context, url, true));
 

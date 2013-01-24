@@ -156,7 +156,7 @@ void FileSystemURLRequestJob::StartAsync() {
   if (!request_)
     return;
   DCHECK(!reader_.get());
-  url_ = FileSystemURL(request_->url());
+  url_ = file_system_context_->CrackURL(request_->url());
   base::PlatformFileError error_code;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url_, &error_code);

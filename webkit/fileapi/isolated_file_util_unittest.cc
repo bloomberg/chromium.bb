@@ -125,9 +125,10 @@ class IsolatedFileUtilTest : public testing::Test {
   FileSystemURL GetFileSystemURL(const FilePath& path) const {
     FilePath virtual_path = isolated_context()->CreateVirtualRootPath(
         filesystem_id()).Append(path);
-    return FileSystemURL(GURL("http://example.com"),
-                         kFileSystemTypeIsolated,
-                         virtual_path);
+    return file_system_context_->CreateCrackedFileSystemURL(
+        GURL("http://example.com"),
+        kFileSystemTypeIsolated,
+        virtual_path);
   }
 
   FileSystemURL GetOtherFileSystemURL(const FilePath& path) {

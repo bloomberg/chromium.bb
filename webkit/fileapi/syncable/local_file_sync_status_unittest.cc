@@ -20,7 +20,7 @@ const char kOther1[] = "filesystem:http://foo.com/test/dir b";
 const char kOther2[] = "filesystem:http://foo.com/temporary/dir a";
 
 FileSystemURL URL(const char* spec) {
-  return FileSystemURL(GURL(spec));
+  return FileSystemURL::CreateForTest((GURL(spec)));
 }
 
 }  // namespace

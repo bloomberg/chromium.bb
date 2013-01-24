@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/mock_blob_url_request_context.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -229,7 +230,9 @@ void CannedSyncableFileSystem::TearDown() {
 FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {
   EXPECT_TRUE(is_filesystem_set_up_);
   EXPECT_TRUE(is_filesystem_opened_);
-  return FileSystemURL(GURL(root_url_.spec() + path));
+
+  GURL url(root_url_.spec() + path);
+  return file_system_context_->CrackURL(url);
 }
 
 PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {

@@ -95,6 +95,7 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ZipFileCreator;
 using file_handler_util::FileTaskExecutor;
+using fileapi::FileSystemURL;
 using google_apis::InstalledApp;
 
 namespace {
@@ -327,8 +328,9 @@ void GetSizeStatsOnFileThread(const std::string& mount_path,
 // isn't of the type CrosMountPointProvider handles, return an empty FilePath.
 //
 // Virtual paths will look like "Downloads/foo/bar.txt" or "drive/foo/bar.txt".
-FilePath GetVirtualPathFromURL(const GURL& url) {
-  fileapi::FileSystemURL filesystem_url(url);
+FilePath GetVirtualPathFromURL(fileapi::FileSystemContext* context,
+                               const GURL& url) {
+  fileapi::FileSystemURL filesystem_url(context->CrackURL(url));
   if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
     return FilePath();
   return filesystem_url.virtual_path();
@@ -339,26 +341,28 @@ FilePath GetVirtualPathFromURL(const GURL& url) {
 //
 // Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
 // "/special/drive/foo/bar.txt".
-FilePath GetLocalPathFromURL(const GURL& url) {
-  fileapi::FileSystemURL filesystem_url(url);
+FilePath GetLocalPathFromURL(fileapi::FileSystemContext* context,
+                             const GURL& url) {
+  fileapi::FileSystemURL filesystem_url(context->CrackURL(url));
   if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
     return FilePath();
   return filesystem_url.path();
 }
 
 // Make a set of unique filename suffixes out of the list of file URLs.
-std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list) {
+std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list,
+                                        fileapi::FileSystemContext* context) {
   std::set<std::string> suffixes;
   for (size_t i = 0; i < file_url_list->GetSize(); ++i) {
-    std::string url;
-    if (!file_url_list->GetString(i, &url))
+    std::string url_str;
+    if (!file_url_list->GetString(i, &url_str))
       return std::set<std::string>();
-    FilePath path = GetVirtualPathFromURL(GURL(url));
-    if (path.empty())
+    FileSystemURL url = context->CrackURL(GURL(url_str));
+    if (!url.is_valid() || url.path().empty())
       return std::set<std::string>();
     // We'll skip empty suffixes.
-    if (!path.Extension().empty())
-      suffixes.insert(path.Extension());
+    if (!url.path().Extension().empty())
+      suffixes.insert(url.path().Extension());
   }
   return suffixes;
 }
@@ -439,6 +443,30 @@ void FillDriveFilePropertiesValue(
 
   property_dict->SetString("contentMimeType",
                            file_specific_info.content_mime_type());
+}
+
+void GetMimeTypesForFileURLs(const std::vector<FilePath>& file_paths,
+                             std::set<std::string>* mime_types) {
+  for (std::vector<FilePath>::const_iterator iter = file_paths.begin();
+       iter != file_paths.end(); ++iter) {
+    const FilePath::StringType file_extension =
+        StringToLowerASCII(iter->Extension());
+
+    // TODO(thorogood): Rearchitect this call so it can run on the File thread;
+    // GetMimeTypeFromFile requires this on Linux. Right now, we use
+    // Chrome-level knowledge only.
+    std::string mime_type;
+    if (file_extension.empty() ||
+        !net::GetWellKnownMimeTypeFromExtension(file_extension.substr(1),
+                                                &mime_type)) {
+      // If the file doesn't have an extension or its mime-type cannot be
+      // determined, then indicate that it has the empty mime-type. This will
+      // only be matched if the Web Intents accepts "*" or "*/*".
+      mime_types->insert("");
+    } else {
+      mime_types->insert(mime_type);
+    }
+  }
 }
 
 }  // namespace
@@ -674,7 +702,12 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
   if (!args_->GetString(0, &url) || url.empty())
     return false;
 
-  GURL file_watch_url(url);
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -689,9 +722,9 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
 
 void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
     scoped_refptr<FileBrowserEventRouter> event_router,
-    const GURL& file_url, const std::string& extension_id) {
-  FilePath local_path = GetLocalPathFromURL(file_url);
-  FilePath virtual_path = GetVirtualPathFromURL(file_url);
+    const FileSystemURL& file_url, const std::string& extension_id) {
+  FilePath local_path = file_url.path();
+  FilePath virtual_path = file_url.virtual_path();
   bool result = !local_path.empty() && PerformFileWatchOperation(
       event_router, local_path, virtual_path, extension_id);
 
@@ -876,40 +909,16 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   return true;
 }
 
-static void GetMimeTypesForFileURLs(const std::vector<GURL>& file_urls,
-    std::set<std::string>* mime_types) {
-  for (std::vector<GURL>::const_iterator iter = file_urls.begin();
-       iter != file_urls.end(); ++iter) {
-    const FilePath file = FilePath(GURL(iter->spec()).ExtractFileName());
-    const FilePath::StringType file_extension =
-        StringToLowerASCII(file.Extension());
-
-    // TODO(thorogood): Rearchitect this call so it can run on the File thread;
-    // GetMimeTypeFromFile requires this on Linux. Right now, we use
-    // Chrome-level knowledge only.
-    std::string mime_type;
-    if (file_extension.empty() || !net::GetWellKnownMimeTypeFromExtension(
-            file_extension.substr(1), &mime_type)) {
-      // If the file doesn't have an extension or its mime-type cannot be
-      // determined, then indicate that it has the empty mime-type. This will
-      // only be matched if the Web Intents accepts "*" or "*/*".
-      mime_types->insert("");
-    } else {
-      mime_types->insert(mime_type);
-    }
-  }
-}
-
 bool GetFileTasksFileBrowserFunction::FindAppTasks(
-    const std::vector<GURL>& file_urls,
+    const std::vector<FilePath>& file_paths,
     ListValue* result_list) {
-  DCHECK(!file_urls.empty());
+  DCHECK(!file_paths.empty());
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return false;
 
   std::set<std::string> mime_types;
-  GetMimeTypesForFileURLs(file_urls, &mime_types);
+  GetMimeTypesForFileURLs(file_paths, &mime_types);
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -958,15 +967,15 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
 // Find Web Intent platform apps that support the View task, and add them to
 // the |result_list|. These will be marked as kTaskWebIntent.
 bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
-    const std::vector<GURL>& file_urls,
+    const std::vector<FilePath>& file_paths,
     ListValue* result_list) {
-  DCHECK(!file_urls.empty());
+  DCHECK(!file_paths.empty());
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return false;
 
   std::set<std::string> mime_types;
-  GetMimeTypesForFileURLs(file_urls, &mime_types);
+  GetMimeTypesForFileURLs(file_paths, &mime_types);
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -1023,24 +1032,37 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
       mime_types_list->GetSize() != 0)
     return false;
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
   FileInfoList info_list;
   std::vector<GURL> file_urls;
+  std::vector<FilePath> file_paths;
   for (size_t i = 0; i < files_list->GetSize(); ++i) {
     FileInfo info;
-    std::string file_url;
-    if (!files_list->GetString(i, &file_url))
+    std::string file_url_str;
+    if (!files_list->GetString(i, &file_url_str))
       return false;
-    info.file_url = GURL(file_url);
-    file_urls.push_back(info.file_url);
+
     if (mime_types_list->GetSize() != 0 &&
         !mime_types_list->GetString(i, &info.mime_type))
       return false;
-    fileapi::FileSystemURL file_system_url(info.file_url);
-    if (chromeos::CrosMountPointProvider::CanHandleURL(file_system_url)) {
-      info.file_path = file_system_url.path();
-    }
+
+    GURL file_url(file_url_str);
+    fileapi::FileSystemURL file_system_url(
+        file_system_context->CrackURL(file_url));
+    if (!chromeos::CrosMountPointProvider::CanHandleURL(file_system_url))
+      continue;
+
+    file_urls.push_back(file_url);
+    file_paths.push_back(file_system_url.path());
+
+    info.file_url = file_url;
+    info.file_path = file_system_url.path();
     info_list.push_back(info);
   }
 
@@ -1063,7 +1085,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   std::set<const FileBrowserHandler*> default_tasks;
   if (!file_handler_util::FindCommonTasks(profile_, file_urls, &common_tasks))
     return false;
-  file_handler_util::FindDefaultTasks(profile_, file_urls,
+  file_handler_util::FindDefaultTasks(profile_, file_paths,
                                       common_tasks, &default_tasks);
 
   ExtensionService* service =
@@ -1106,12 +1128,12 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   // apps may accept, and all previous Drive and extension tasks. As above, we
   // know there aren't duplicates because they're entirely different kinds of
   // tasks.
-  if (!FindAppTasks(file_urls, result_list))
+  if (!FindAppTasks(file_paths, result_list))
     return false;
 
   // TODO(benwells): remove the web intents tasks once we no longer support
   // them.
-  if (!FindWebIntentTasks(file_urls, result_list))
+  if (!FindWebIntentTasks(file_paths, result_list))
     return false;
 
   if (VLOG_IS_ON(1)) {
@@ -1163,14 +1185,24 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
   if (!files_list->GetSize())
     return true;
 
-  std::vector<GURL> file_urls;
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  std::vector<FileSystemURL> file_urls;
   for (size_t i = 0; i < files_list->GetSize(); i++) {
-    std::string origin_file_url;
-    if (!files_list->GetString(i, &origin_file_url)) {
+    std::string file_url_str;
+    if (!files_list->GetString(i, &file_url_str)) {
       error_ = kInvalidFileUrl;
       return false;
     }
-    file_urls.push_back(GURL(origin_file_url));
+    FileSystemURL url = file_system_context->CrackURL(GURL(file_url_str));
+    if (!chromeos::CrosMountPointProvider::CanHandleURL(url)) {
+      error_ = kInvalidFileUrl;
+      return false;
+    }
+    file_urls.push_back(url);
   }
 
   WebContents* web_contents =
@@ -1210,7 +1242,13 @@ bool SetDefaultTaskFileBrowserFunction::RunImpl() {
   base::ListValue* file_url_list;
   if (!args_->GetList(1, &file_url_list))
     return false;
-  std::set<std::string> suffixes = GetUniqueSuffixes(file_url_list);
+
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  std::set<std::string> suffixes = GetUniqueSuffixes(file_url_list, context);
 
   // MIME types are an optional parameter.
   base::ListValue* mime_type_list;
@@ -1331,7 +1369,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
     }
 
     // Extract the path from |file_url|.
-    fileapi::FileSystemURL url(file_url);
+    fileapi::FileSystemURL url(file_system_context->CrackURL(file_url));
     if (!chromeos::CrosMountPointProvider::CanHandleURL(url))
       continue;
 
@@ -1395,11 +1433,17 @@ bool ViewFilesFunction::RunImpl() {
   std::string internal_task_id;
   args_->GetString(1, &internal_task_id);
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
   std::vector<FilePath> files;
   for (size_t i = 0; i < path_list->GetSize(); ++i) {
     std::string url_as_string;
     path_list->GetString(i, &url_as_string);
-    FilePath path = GetLocalPathFromURL(GURL(url_as_string));
+    FilePath path = GetLocalPathFromURL(file_system_context,
+                                        GURL(url_as_string));
     if (path.empty())
       return false;
     files.push_back(path);
@@ -1672,7 +1716,13 @@ void SetLastModifiedFunction::RunOperationOnFileThread(std::string file_url,
                                                        time_t timestamp) {
   bool succeeded = false;
 
-  FilePath local_path = GetLocalPathFromURL(GURL(file_url));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath local_path = GetLocalPathFromURL(file_system_context,
+                                            GURL(file_url));
   if (!local_path.empty()) {
     struct stat sb;
     if (stat(local_path.value().c_str(), &sb) == 0) {
@@ -1708,7 +1758,13 @@ bool GetSizeStatsFunction::RunImpl() {
   if (!args_->GetString(0, &mount_url))
     return false;
 
-  FilePath file_path = GetLocalPathFromURL(GURL(mount_url));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath file_path = GetLocalPathFromURL(file_system_context,
+                                           GURL(mount_url));
   if (file_path.empty())
     return false;
 
@@ -1804,7 +1860,13 @@ bool FormatDeviceFunction::RunImpl() {
     return false;
   }
 
-  FilePath file_path = GetLocalPathFromURL(GURL(volume_file_url));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath file_path = GetLocalPathFromURL(file_system_context,
+                                           GURL(volume_file_url));
   if (file_path.empty())
     return false;
 
@@ -1831,7 +1893,13 @@ bool GetVolumeMetadataFunction::RunImpl() {
     return false;
   }
 
-  FilePath file_path = GetLocalPathFromURL(GURL(volume_mount_url));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath file_path = GetLocalPathFromURL(file_system_context,
+                                           GURL(volume_mount_url));
   if (file_path.empty()) {
     error_ = "Invalid mount path.";
     return false;
@@ -2281,10 +2349,16 @@ void GetDriveFilePropertiesFunction::GetNextFileProperties() {
     return;
   }
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
   std::string file_str;
   path_list_->GetString(current_index_, &file_str);
   GURL file_url = GURL(file_str);
-  FilePath file_path = GetVirtualPathFromURL(file_url);
+  FilePath file_path = GetVirtualPathFromURL(file_system_context,
+                                             file_url);
 
   base::DictionaryValue* property_dict = new base::DictionaryValue;
   property_dict->SetString("fileUrl", file_url.spec());
@@ -2502,6 +2576,11 @@ bool GetFileLocationsFunction::RunImpl() {
   if (!args_->GetList(0, &file_urls_as_strings))
     return false;
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
   // Convert the list of strings to a list of GURLs.
   scoped_ptr<ListValue> locations(new ListValue);
   for (size_t i = 0; i < file_urls_as_strings->GetSize(); ++i) {
@@ -2509,7 +2588,8 @@ bool GetFileLocationsFunction::RunImpl() {
     if (!file_urls_as_strings->GetString(i, &file_url_as_string))
       return false;
 
-    fileapi::FileSystemURL url((GURL(file_url_as_string)));
+    fileapi::FileSystemURL url(
+        file_system_context->CrackURL(GURL(file_url_as_string)));
     if (url.type() == fileapi::kFileSystemTypeDrive)
       locations->Append(new base::StringValue("drive"));
     else
@@ -2665,12 +2745,18 @@ bool CancelFileTransfersFunction::RunImpl() {
   if (!system_service)
     return false;
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
     std::string url_as_string;
     url_list->GetString(i, &url_as_string);
 
-    FilePath file_path = GetLocalPathFromURL(GURL(url_as_string));
+    FilePath file_path = GetLocalPathFromURL(file_system_context,
+                                             GURL(url_as_string));
     if (file_path.empty())
       continue;
 
@@ -2712,8 +2798,15 @@ bool TransferFileFunction::RunImpl() {
   if (!system_service)
     return false;
 
-  FilePath source_file = GetLocalPathFromURL(GURL(source_file_url));
-  FilePath destination_file = GetLocalPathFromURL(GURL(destination_file_url));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath source_file = GetLocalPathFromURL(file_system_context,
+                                             GURL(source_file_url));
+  FilePath destination_file = GetLocalPathFromURL(file_system_context,
+                                                  GURL(destination_file_url));
   if (source_file.empty() || destination_file.empty())
     return false;
 
@@ -2961,7 +3054,13 @@ bool RequestDirectoryRefreshFunction::RunImpl() {
   if (!system_service || !system_service->file_system())
     return false;
 
-  FilePath directory_path = GetVirtualPathFromURL(GURL(file_url_as_string));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath directory_path = GetVirtualPathFromURL(file_system_context,
+                                                  GURL(file_url_as_string));
   system_service->file_system()->RequestDirectoryRefresh(directory_path);
 
   return true;
@@ -2983,7 +3082,13 @@ bool ZipSelectionFunction::RunImpl() {
   if (!args_->GetString(0, &dir_url) || dir_url.empty())
     return false;
 
-  FilePath src_dir = GetLocalPathFromURL(GURL(dir_url));
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
+          GetFileSystemContext();
+
+  FilePath src_dir = GetLocalPathFromURL(file_system_context,
+                                         GURL(dir_url));
   if (src_dir.empty())
     return false;
 
@@ -2997,7 +3102,7 @@ bool ZipSelectionFunction::RunImpl() {
   for (size_t i = 0; i < selection_urls->GetSize(); ++i) {
     std::string file_url;
     selection_urls->GetString(i, &file_url);
-    FilePath path = GetLocalPathFromURL(GURL(file_url));
+    FilePath path = GetLocalPathFromURL(file_system_context, GURL(file_url));
     if (path.empty())
       return false;
     files.push_back(path);

@@ -25,7 +25,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
  public:
   // FileTaskExecutor overrides
   virtual bool ExecuteAndNotify(
-      const std::vector<GURL>& file_urls,
+      const std::vector<fileapi::FileSystemURL>& file_urls,
       const file_handler_util::FileTaskFinishedCallback& done) OVERRIDE;
 
  private:

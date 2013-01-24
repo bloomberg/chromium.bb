@@ -105,9 +105,10 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   FileSystemURL CreateURL(const FilePath& file_path) {
-    return FileSystemURL(GURL("http://remote"),
-                         fileapi::kFileSystemTypeTemporary,
-                         file_path);
+    return file_system_context_->CreateCrackedFileSystemURL(
+        GURL("http://remote"),
+        fileapi::kFileSystemTypeTemporary,
+        file_path);
   }
 
   FileSystemOperationContext* NewOperationContext() {

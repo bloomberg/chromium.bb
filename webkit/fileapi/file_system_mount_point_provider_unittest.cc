@@ -236,9 +236,10 @@ class FileSystemMountPointProviderTest : public testing::Test {
     FilePath virtual_path = FilePath();
     if (type == kFileSystemTypeExternal)
       virtual_path = FilePath(kVirtualPath);
+    FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
+        origin_url, type, virtual_path);
     FilePath returned_root_path =
-        provider(type)->GetFileSystemRootPathOnFileThread(
-            FileSystemURL(origin_url, type, virtual_path), create);
+        provider(type)->GetFileSystemRootPathOnFileThread(url, create);
     if (root_path)
       *root_path = returned_root_path;
     return !returned_root_path.empty();

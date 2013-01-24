@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/remote_file_system_proxy.h"
 
 namespace {
@@ -154,6 +155,11 @@ bool ExternalMountPoints::RegisterRemoteFileSystem(
   return true;
 }
 
+bool ExternalMountPoints::HandlesFileSystemMountType(
+    FileSystemType type) const {
+  return type == kFileSystemTypeExternal;
+}
+
 bool ExternalMountPoints::RevokeFileSystem(const std::string& mount_name) {
   base::AutoLock locker(lock_);
   NameToInstance::iterator found = instance_map_.find(mount_name);
@@ -219,6 +225,32 @@ bool ExternalMountPoints::CrackVirtualPath(const FilePath& virtual_path,
     cracked_path = cracked_path.Append(*component_iter);
   *path = cracked_path;
   return true;
+}
+
+FileSystemURL ExternalMountPoints::CrackURL(const GURL& url) const {
+  FileSystemURL filesystem_url = FileSystemURL(url);
+  if (!filesystem_url.is_valid())
+    return FileSystemURL();
+  return CreateCrackedFileSystemURL(filesystem_url.origin(),
+                                    filesystem_url.mount_type(),
+                                    filesystem_url.path());
+}
+
+FileSystemURL ExternalMountPoints::CreateCrackedFileSystemURL(
+    const GURL& origin,
+    FileSystemType type,
+    const FilePath& path) const {
+  if (!HandlesFileSystemMountType(type))
+    return FileSystemURL();
+
+  std::string mount_name;
+  FileSystemType cracked_type;
+  FilePath cracked_path;
+  if (!CrackVirtualPath(path, &mount_name, &cracked_type, &cracked_path))
+    return FileSystemURL();
+
+  return FileSystemURL(origin, type, path,
+                       mount_name, cracked_type, cracked_path);
 }
 
 RemoteFileSystemProxyInterface* ExternalMountPoints::GetRemoteFileSystemProxy(
