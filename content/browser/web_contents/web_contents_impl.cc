@@ -673,7 +673,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
 
   prefs.deferred_image_decoding_enabled =
-      command_line.HasSwitch(switches::kEnableDeferredImageDecoding);
+      command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
+      command_line.HasSwitch(cc::switches::kEnableImplSidePainting);
 
   GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
