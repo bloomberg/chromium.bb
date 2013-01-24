@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define V8_DISABLE_DEPRECATIONS 1
+
 #include "net/proxy/proxy_resolver_v8.h"
 
 #include <algorithm>
@@ -595,7 +597,7 @@ class ProxyResolverV8::Context {
     bool success;
 
     {
-      v8::Unlocker unlocker;
+      v8::Unlocker unlocker(args.GetIsolate());
       ScopedHostResolve scoped_host_resolve(context);
 
       // We shouldn't be called with any arguments, but will not complain if
@@ -618,7 +620,7 @@ class ProxyResolverV8::Context {
     bool success;
 
     {
-      v8::Unlocker unlocker;
+      v8::Unlocker unlocker(args.GetIsolate());
       ScopedHostResolve scoped_host_resolve(context);
 
       // We shouldn't be called with any arguments, but will not complain if
@@ -645,7 +647,7 @@ class ProxyResolverV8::Context {
     bool success;
 
     {
-      v8::Unlocker unlocker;
+      v8::Unlocker unlocker(args.GetIsolate());
       ScopedHostResolve scoped_host_resolve(context);
       success = context->js_bindings_->DnsResolve(hostname, &ip_address);
     }
@@ -667,7 +669,7 @@ class ProxyResolverV8::Context {
     bool success;
 
     {
-      v8::Unlocker unlocker;
+      v8::Unlocker unlocker(args.GetIsolate());
       ScopedHostResolve scoped_host_resolve(context);
       success = context->js_bindings_->DnsResolveEx(hostname, &ip_address_list);
     }
