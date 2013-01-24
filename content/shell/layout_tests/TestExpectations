@@ -2,14 +2,6 @@
 #
 # See  http://trac.webkit.org/wiki/TestExpectations for more information on this file.
 
-# Missing plumbing for inspector extensions
-crbug.com/169781 inspector/extensions/extensions-api.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-audits-api.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-audits.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-console.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-eval.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-network.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-panel.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-reload.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-resources.html [ Timeout ]
-crbug.com/169781 inspector/extensions/extensions-sidebar.html [ Timeout ]
+# Require a local devtools frontend.
+crbug.com/171920 inspector/ [ Skip ]
+crbug.com/171920 http/tests/inspector/ [ Skip ]
