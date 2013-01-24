@@ -19,6 +19,8 @@ ProxyInfo::~ProxyInfo() {
 }
 
 void ProxyInfo::Use(const ProxyInfo& other) {
+  proxy_resolve_start_time_ = other.proxy_resolve_start_time_;
+  proxy_resolve_end_time_ = other.proxy_resolve_end_time_;
   proxy_list_ = other.proxy_list_;
   proxy_retry_info_ = other.proxy_retry_info_;
   config_id_ = other.config_id_;
@@ -65,6 +67,8 @@ void ProxyInfo::RemoveProxiesWithoutScheme(int scheme_bit_field) {
 }
 
 void ProxyInfo::Reset() {
+  proxy_resolve_start_time_ = base::TimeTicks();
+  proxy_resolve_end_time_ = base::TimeTicks();
   proxy_list_.Clear();
   proxy_retry_info_.clear();
   config_id_ = ProxyConfig::kInvalidConfigID;

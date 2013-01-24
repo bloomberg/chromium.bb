@@ -724,10 +724,10 @@ class ProxyService::PacRequest
     : public base::RefCounted<ProxyService::PacRequest> {
  public:
     PacRequest(ProxyService* service,
-             const GURL& url,
-             ProxyInfo* results,
-             const net::CompletionCallback& user_callback,
-             const BoundNetLog& net_log)
+               const GURL& url,
+               ProxyInfo* results,
+               const net::CompletionCallback& user_callback,
+               const BoundNetLog& net_log)
       : service_(service),
         user_callback_(user_callback),
         results_(results),
@@ -748,6 +748,7 @@ class ProxyService::PacRequest
 
     config_id_ = service_->config_.id();
     config_source_ = service_->config_.source();
+    proxy_resolve_start_time_ = TimeTicks::Now();
 
     return resolver()->GetProxyForURL(
         url_, results_,
@@ -808,6 +809,8 @@ class ProxyService::PacRequest
     results_->config_id_ = config_id_;
     results_->config_source_ = config_source_;
     results_->did_use_pac_script_ = true;
+    results_->proxy_resolve_start_time_ = proxy_resolve_start_time_;
+    results_->proxy_resolve_end_time_ = TimeTicks::Now();
 
     // Reset the state associated with in-progress-resolve.
     resolve_job_ = NULL;
@@ -856,6 +859,9 @@ class ProxyService::PacRequest
   ProxyConfig::ID config_id_;  // The config id when the resolve was started.
   ProxyConfigSource config_source_;  // The source of proxy settings.
   BoundNetLog net_log_;
+  // Time when the PAC is started.  Cached here since resetting ProxyInfo also
+  // clears the proxy times.
+  TimeTicks proxy_resolve_start_time_;
 };
 
 // ProxyService ---------------------------------------------------------------

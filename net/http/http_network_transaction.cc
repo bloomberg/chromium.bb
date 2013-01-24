@@ -487,6 +487,9 @@ bool HttpNetworkTransaction::GetLoadTimingInfo(
   if (!stream_ || !stream_->GetLoadTimingInfo(load_timing_info))
     return false;
 
+  load_timing_info->proxy_resolve_start =
+      proxy_info_.proxy_resolve_start_time();
+  load_timing_info->proxy_resolve_end = proxy_info_.proxy_resolve_end_time();
   load_timing_info->send_start = send_start_time_;
   load_timing_info->send_end = send_end_time_;
   load_timing_info->receive_headers_end = receive_headers_end_;

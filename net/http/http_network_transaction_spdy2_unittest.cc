@@ -133,42 +133,93 @@ bool GetHeaders(DictionaryValue* params, std::string* headers) {
   return true;
 }
 
-// |connect_time_flags| is ignored if expect_reused is true.
-void TestLoadTiming(const net::LoadTimingInfo& load_timing_info,
-                    bool expect_reused, int connect_timing_flags) {
-  EXPECT_EQ(expect_reused, load_timing_info.socket_reused);
+// Tests LoadTimingInfo in the case a socket is reused and no PAC script is
+// used.
+void TestLoadTimingReused(const net::LoadTimingInfo& load_timing_info) {
+  EXPECT_TRUE(load_timing_info.socket_reused);
   EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
 
-  if (expect_reused) {
-    net::ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
-    EXPECT_FALSE(load_timing_info.send_start.is_null());
-  } else {
-    net::ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
-                                     connect_timing_flags);
-    EXPECT_LE(load_timing_info.connect_timing.connect_end,
-              load_timing_info.send_start);
-  }
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+
+  net::ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+  EXPECT_FALSE(load_timing_info.send_start.is_null());
 
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
   EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
-
-  // Not set by these tests.
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
 
   // Set by URLRequest, at a higher level.
   EXPECT_TRUE(load_timing_info.request_start_time.is_null());
   EXPECT_TRUE(load_timing_info.request_start.is_null());
 }
 
-void TestLoadTimingReused(const net::LoadTimingInfo& load_timing_info) {
-  TestLoadTiming(load_timing_info, true,
-                 net::CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
-}
-
+// Tests LoadTimingInfo in the case a new socket is used and no PAC script is
+// used.
 void TestLoadTimingNotReused(const net::LoadTimingInfo& load_timing_info,
                              int connect_timing_flags) {
-  TestLoadTiming(load_timing_info, false, connect_timing_flags);
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+
+  net::ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                                    connect_timing_flags);
+  EXPECT_LE(load_timing_info.connect_timing.connect_end,
+            load_timing_info.send_start);
+
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+
+  // Set by URLRequest, at a higher level.
+  EXPECT_TRUE(load_timing_info.request_start_time.is_null());
+  EXPECT_TRUE(load_timing_info.request_start.is_null());
+}
+
+// Tests LoadTimingInfo in the case a socket is reused and a PAC script is
+// used.
+void TestLoadTimingReusedWithPac(const net::LoadTimingInfo& load_timing_info) {
+  EXPECT_TRUE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  net::ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+
+  EXPECT_FALSE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_LE(load_timing_info.proxy_resolve_start,
+            load_timing_info.proxy_resolve_end);
+  EXPECT_LE(load_timing_info.proxy_resolve_end,
+            load_timing_info.send_start);
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+
+  // Set by URLRequest, at a higher level.
+  EXPECT_TRUE(load_timing_info.request_start_time.is_null());
+  EXPECT_TRUE(load_timing_info.request_start.is_null());
+}
+
+// Tests LoadTimingInfo in the case a new socket is used and a PAC script is
+// used.
+void TestLoadTimingNotReusedWithPac(const net::LoadTimingInfo& load_timing_info,
+                                    int connect_timing_flags) {
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_LE(load_timing_info.proxy_resolve_start,
+            load_timing_info.proxy_resolve_end);
+  EXPECT_LE(load_timing_info.proxy_resolve_end,
+            load_timing_info.connect_timing.connect_start);
+  net::ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                                   connect_timing_flags);
+  EXPECT_LE(load_timing_info.connect_timing.connect_end,
+            load_timing_info.send_start);
+
+  EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+
+  // Set by URLRequest, at a higher level.
+  EXPECT_TRUE(load_timing_info.request_start_time.is_null());
+  EXPECT_TRUE(load_timing_info.request_start.is_null());
 }
 
 }  // namespace
@@ -1884,7 +1935,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthProxyNoKeepAlive) {
   request.load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
   // Configure against proxy server "myproxy:70".
-  SpdySessionDependencies session_deps(ProxyService::CreateFixed("myproxy:70"));
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   CapturingBoundNetLog log;
   session_deps.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
@@ -1955,6 +2007,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthProxyNoKeepAlive) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
 
+  LoadTimingInfo load_timing_info;
+  // CONNECT requests and responses are handled at the connect job level, so
+  // the transaction does not yet have a connection.
+  EXPECT_FALSE(trans->GetLoadTimingInfo(&load_timing_info));
+
   TestCompletionCallback callback2;
 
   rv = trans->RestartWithAuth(
@@ -1974,6 +2031,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthProxyNoKeepAlive) {
 
   // The password prompt info should not be set.
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
+
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
   session->CloseAllConnections();
@@ -2242,6 +2303,199 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
       entries, pos,
       NetLog::TYPE_HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       NetLog::PHASE_NONE);
+}
+
+// Test the load timing for HTTPS requests with an HTTP proxy.
+TEST_F(HttpNetworkTransactionSpdy2Test, HttpProxyLoadTimingNoPacTwoRequests) {
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://www.google.com/1");
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.google.com/2");
+
+  // Configure against proxy server "myproxy:70".
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixed("PROXY myproxy:70"));
+  CapturingBoundNetLog log;
+  session_deps.net_log = log.bound().net_log();
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+  // Since we have proxy, should try to establish tunnel.
+  MockWrite data_writes1[] = {
+    MockWrite("CONNECT www.google.com:443 HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+
+    MockWrite("GET /1 HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+
+    MockWrite("GET /2 HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads1[] = {
+    MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 1\r\n\r\n"),
+    MockRead(SYNCHRONOUS, "1"),
+
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 2\r\n\r\n"),
+    MockRead(SYNCHRONOUS, "22"),
+  };
+
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps.socket_factory->AddSocketDataProvider(&data1);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback1;
+  scoped_ptr<HttpTransaction> trans1(new HttpNetworkTransaction(session));
+
+  int rv = trans1->Start(&request1, callback1.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback1.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1 != NULL);
+  ASSERT_TRUE(response1->headers != NULL);
+  EXPECT_EQ(1, response1->headers->GetContentLength());
+
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(trans1->GetLoadTimingInfo(&load_timing_info1));
+  TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_SSL_TIMES);
+
+  trans1.reset();
+
+  TestCompletionCallback callback2;
+  scoped_ptr<HttpTransaction> trans2(new HttpNetworkTransaction(session));
+
+  rv = trans2->Start(&request2, callback2.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback2.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  ASSERT_TRUE(response2 != NULL);
+  ASSERT_TRUE(response2->headers != NULL);
+  EXPECT_EQ(2, response2->headers->GetContentLength());
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingReused(load_timing_info2);
+
+  EXPECT_EQ(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
+
+  trans2.reset();
+  session->CloseAllConnections();
+}
+
+// Test the load timing for HTTPS requests with an HTTP proxy and a PAC script.
+TEST_F(HttpNetworkTransactionSpdy2Test, HttpProxyLoadTimingWithPacTwoRequests) {
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://www.google.com/1");
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.google.com/2");
+
+  // Configure against proxy server "myproxy:70".
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+  CapturingBoundNetLog log;
+  session_deps.net_log = log.bound().net_log();
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+  // Since we have proxy, should try to establish tunnel.
+  MockWrite data_writes1[] = {
+    MockWrite("CONNECT www.google.com:443 HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Proxy-Connection: keep-alive\r\n\r\n"),
+
+    MockWrite("GET /1 HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+
+    MockWrite("GET /2 HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads1[] = {
+    MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 1\r\n\r\n"),
+    MockRead(SYNCHRONOUS, "1"),
+
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-Length: 2\r\n\r\n"),
+    MockRead(SYNCHRONOUS, "22"),
+  };
+
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps.socket_factory->AddSocketDataProvider(&data1);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback1;
+  scoped_ptr<HttpTransaction> trans1(new HttpNetworkTransaction(session));
+
+  int rv = trans1->Start(&request1, callback1.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback1.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1 != NULL);
+  ASSERT_TRUE(response1->headers != NULL);
+  EXPECT_EQ(1, response1->headers->GetContentLength());
+
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(trans1->GetLoadTimingInfo(&load_timing_info1));
+  TestLoadTimingNotReusedWithPac(load_timing_info1,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+
+  trans1.reset();
+
+  TestCompletionCallback callback2;
+  scoped_ptr<HttpTransaction> trans2(new HttpNetworkTransaction(session));
+
+  rv = trans2->Start(&request2, callback2.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback2.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  ASSERT_TRUE(response2 != NULL);
+  ASSERT_TRUE(response2->headers != NULL);
+  EXPECT_EQ(2, response2->headers->GetContentLength());
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingReusedWithPac(load_timing_info2);
+
+  EXPECT_EQ(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
+
+  trans2.reset();
+  session->CloseAllConnections();
 }
 
 // Test a simple get through an HTTPS Proxy.
@@ -4791,8 +5045,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HTTPSBadCertificateViaProxy) {
 
 // Test HTTPS connections to a site, going through an HTTPS proxy
 TEST_F(HttpNetworkTransactionSpdy2Test, HTTPSViaHttpsProxy) {
-  SpdySessionDependencies session_deps(ProxyService::CreateFixed(
-      "https://proxy:70"));
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("HTTPS proxy:70"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -4843,12 +5099,19 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HTTPSViaHttpsProxy) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
 }
 
 // Test an HTTPS Proxy's ability to redirect a CONNECT request
 TEST_F(HttpNetworkTransactionSpdy2Test, RedirectOfHttpsConnectViaHttpsProxy) {
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("https://proxy:70"));
+      ProxyService::CreateFixedFromPacResult("HTTPS proxy:70"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -4893,6 +5156,29 @@ TEST_F(HttpNetworkTransactionSpdy2Test, RedirectOfHttpsConnectViaHttpsProxy) {
   std::string url;
   EXPECT_TRUE(response->headers->IsRedirect(&url));
   EXPECT_EQ("http://login.example.com/", url);
+
+  // In the case of redirects from proxies, HttpNetworkTransaction returns
+  // timing for the proxy connection instead of the connection to the host,
+  // and no send / receive times.
+  // See HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(net::NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_LE(load_timing_info.proxy_resolve_start,
+            load_timing_info.proxy_resolve_end);
+  EXPECT_LE(load_timing_info.proxy_resolve_end,
+            load_timing_info.connect_timing.connect_start);
+  ExpectConnectTimingHasTimes(
+      load_timing_info.connect_timing,
+      CONNECT_TIMING_HAS_DNS_TIMES | CONNECT_TIMING_HAS_SSL_TIMES);
+
+  EXPECT_TRUE(load_timing_info.send_start.is_null());
+  EXPECT_TRUE(load_timing_info.send_end.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
 // Test an HTTPS (SPDY) Proxy's ability to redirect a CONNECT request
@@ -5066,7 +5352,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthSpdyProxy) {
 
   // Configure against https proxy server "myproxy:70".
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("https://myproxy:70"));
+      ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70"));
   CapturingBoundNetLog log;
   session_deps.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
@@ -5190,6 +5476,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthSpdyProxy) {
   // The password prompt info should not be set.
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+
   trans.reset();
   session->CloseAllConnections();
 }
@@ -5213,7 +5504,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, CrossOriginProxyPush) {
 
   // Configure against https proxy server "myproxy:70".
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("https://myproxy:70"));
+      ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70"));
   CapturingBoundNetLog log;
   session_deps.net_log = log.bound().net_log();
 
@@ -5288,6 +5579,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, CrossOriginProxyPush) {
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("hello!", response_data);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+
   // Verify the pushed stream.
   EXPECT_TRUE(push_response->headers != NULL);
   EXPECT_EQ(200, push_response->headers->response_code());
@@ -5295,6 +5591,14 @@ TEST_F(HttpNetworkTransactionSpdy2Test, CrossOriginProxyPush) {
   rv = ReadTransaction(push_trans.get(), &response_data);
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("pushed", response_data);
+
+  LoadTimingInfo push_load_timing_info;
+  EXPECT_TRUE(push_trans->GetLoadTimingInfo(&push_load_timing_info));
+  TestLoadTimingReusedWithPac(push_load_timing_info);
+  // The transactions should share a socket ID, despite being for different
+  // origins.
+  EXPECT_EQ(load_timing_info.socket_log_id,
+            push_load_timing_info.socket_log_id);
 
   trans.reset();
   push_trans.reset();
@@ -5858,7 +6162,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS4_HTTP_GET) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("socks4://myproxy:1080"));
+      ProxyService::CreateFixedFromPacResult("SOCKS myproxy:1080"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(CreateSession(&session_deps)));
@@ -5896,6 +6202,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS4_HTTP_GET) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
   EXPECT_EQ(OK, rv);
@@ -5909,7 +6220,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS4_SSL_GET) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("socks4://myproxy:1080"));
+      ProxyService::CreateFixedFromPacResult("SOCKS myproxy:1080"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(CreateSession(&session_deps)));
@@ -5949,8 +6262,71 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS4_SSL_GET) {
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
+
+  std::string response_text;
+  rv = ReadTransaction(trans.get(), &response_text);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("Payload", response_text);
+}
+
+TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS4_HTTP_GET_no_PAC) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixed("socks4://myproxy:1080"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(CreateSession(&session_deps)));
+
+  char write_buffer[] = { 0x04, 0x01, 0x00, 0x50, 127, 0, 0, 1, 0 };
+  char read_buffer[] = { 0x00, 0x5A, 0x00, 0x00, 0, 0, 0, 0 };
+
+  MockWrite data_writes[] = {
+    MockWrite(ASYNC, write_buffer, arraysize(write_buffer)),
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n\r\n")
+  };
+
+  MockRead data_reads[] = {
+    MockRead(ASYNC, read_buffer, arraysize(read_buffer)),
+    MockRead("HTTP/1.0 200 OK\r\n"),
+    MockRead("Content-Type: text/html; charset=iso-8859-1\r\n\r\n"),
+    MockRead("Payload"),
+    MockRead(SYNCHRONOUS, OK)
+  };
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
+                                data_writes, arraysize(data_writes));
+  session_deps.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info,
+                          CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
@@ -5965,7 +6341,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS5_HTTP_GET) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("socks5://myproxy:1080"));
+      ProxyService::CreateFixedFromPacResult("SOCKS5 myproxy:1080"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(CreateSession(&session_deps)));
@@ -6017,6 +6395,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS5_HTTP_GET) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
   EXPECT_EQ(OK, rv);
@@ -6030,7 +6413,9 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS5_SSL_GET) {
   request.load_flags = 0;
 
   SpdySessionDependencies session_deps(
-      ProxyService::CreateFixed("socks5://myproxy:1080"));
+      ProxyService::CreateFixedFromPacResult("SOCKS5 myproxy:1080"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(CreateSession(&session_deps)));
@@ -6086,6 +6471,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SOCKS5_SSL_GET) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
 
   std::string response_text;
   rv = ReadTransaction(trans.get(), &response_text);
@@ -7731,6 +8121,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   SpdySessionDependencies session_deps(new ProxyService(
       new ProxyConfigServiceFixed(proxy_config), capturing_proxy_resolver,
       NULL));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -7825,6 +8217,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
             capturing_proxy_resolver->resolved()[0].spec());
   EXPECT_EQ("https://www.google.com/",
             capturing_proxy_resolver->resolved()[1].spec());
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
 
   HttpStreamFactory::SetNextProtos(std::vector<std::string>());
   HttpStreamFactory::set_use_alternate_protocols(false);
@@ -8772,7 +9169,10 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SpdyAlternateProtocolThroughProxy) {
       MakeNextProtos(
           "http/1.1", "http1.1", "spdy/2", "spdy", NULL));
 
-  SpdySessionDependencies session_deps(ProxyService::CreateFixed("myproxy:70"));
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+  CapturingNetLog net_log;
+  session_deps.net_log = &net_log;
   HttpAuthHandlerMock::Factory* auth_factory =
       new HttpAuthHandlerMock::Factory();
   HttpAuthHandlerMock* auth_handler = new HttpAuthHandlerMock();
@@ -8910,6 +9310,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SpdyAlternateProtocolThroughProxy) {
   EXPECT_EQ("https", request_url.scheme());
   EXPECT_EQ("www.google.com", request_url.host());
 
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans_2->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
+
   HttpStreamFactory::SetNextProtos(std::vector<std::string>());
   HttpStreamFactory::set_use_alternate_protocols(false);
 }
@@ -8955,7 +9360,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, SimpleCancel) {
 
 // Test a basic GET request through a proxy.
 TEST_F(HttpNetworkTransactionSpdy2Test, ProxyGet) {
-  SpdySessionDependencies session_deps(ProxyService::CreateFixed("myproxy:70"));
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   CapturingBoundNetLog log;
   session_deps.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
@@ -8999,11 +9405,17 @@ TEST_F(HttpNetworkTransactionSpdy2Test, ProxyGet) {
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(response->was_fetched_via_proxy);
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
 }
 
 // Test a basic HTTPS GET request through a proxy.
 TEST_F(HttpNetworkTransactionSpdy2Test, ProxyTunnelGet) {
-  SpdySessionDependencies session_deps(ProxyService::CreateFixed("myproxy:70"));
+  SpdySessionDependencies session_deps(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   CapturingBoundNetLog log;
   session_deps.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
@@ -9065,6 +9477,11 @@ TEST_F(HttpNetworkTransactionSpdy2Test, ProxyTunnelGet) {
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(response->was_fetched_via_proxy);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReusedWithPac(load_timing_info,
+                                 CONNECT_TIMING_HAS_SSL_TIMES);
 }
 
 // Test a basic HTTPS GET request through a proxy, but the server hangs up
