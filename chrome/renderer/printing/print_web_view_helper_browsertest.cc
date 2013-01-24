@@ -101,6 +101,7 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
   void VerifyPageCount(int count) {
+    ProcessPendingMessages();
 #if defined(OS_CHROMEOS)
     // The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
     // always print all pages, and there are checks to that effect built into
@@ -119,6 +120,7 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
 
   // Verifies whether the pages printed or not.
   void VerifyPagesPrinted(bool printed) {
+    ProcessPendingMessages();
 #if defined(OS_CHROMEOS)
     bool did_print_msg = (render_thread_->sink().GetUniqueMessageMatching(
         PrintHostMsg_TempFileForPrintingWritten::ID) != NULL);
@@ -284,6 +286,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
 
   // Initiate printing.
   PrintWebViewHelper::Get(view_)->OnPrintPages();
+  VerifyPagesPrinted(true);
 
   // Verify output through MockPrinter.
   const MockPrinter* printer(chrome_render_thread_->printer());
@@ -348,6 +351,7 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     // Load an HTML page and print it.
     LoadHTML(kTestPages[i].page);
     PrintWebViewHelper::Get(view_)->OnPrintPages();
+    VerifyPagesPrinted(true);
 
     // MockRenderThread::Send() just calls MockRenderThread::OnReceived().
     // So, all IPC messages sent in the above RenderView::OnPrintPages() call
@@ -439,6 +443,7 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   }
 
   void VerifyPrintFailed(bool did_fail) {
+    ProcessPendingMessages();
     bool print_failed = (render_thread_->sink().GetUniqueMessageMatching(
         PrintHostMsg_PrintingFailed::ID) != NULL);
     EXPECT_EQ(did_fail, print_failed);

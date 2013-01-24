@@ -15,10 +15,8 @@
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "printing/metafile_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintParams.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/gfx/size.h"
 
 struct PrintMsg_Print_Params;
@@ -44,18 +42,12 @@ class PrepareFrameAndViewForPrint;
 // of the document and creating a new WebView with the contents.
 class PrintWebViewHelper
     : public content::RenderViewObserver,
-      public content::RenderViewObserverTracker<PrintWebViewHelper>,
-      public WebKit::WebViewClient,
-      public WebKit::WebFrameClient {
+      public content::RenderViewObserverTracker<PrintWebViewHelper> {
  public:
   explicit PrintWebViewHelper(content::RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
   void PrintNode(const WebKit::WebNode& node);
-
- protected:
-  // WebKit::WebViewClient override:
-  virtual void didStopLoading();
 
  private:
   friend class PrintWebViewHelperTestBase;
@@ -203,9 +195,7 @@ class PrintWebViewHelper
 
   // Page Printing / Rendering ------------------------------------------------
 
-  // Prints all the pages listed in |print_pages_params_|.
-  // It will implicitly revert the document to display CSS media type.
-  bool PrintPages(WebKit::WebFrame* frame, const WebKit::WebNode& node);
+  void PrintPages();
   bool PrintPagesNative(WebKit::WebFrame* frame,
                         const WebKit::WebNode& node,
                         int page_count,
@@ -259,8 +249,6 @@ class PrintWebViewHelper
                                  WebKit::WebCanvas* canvas);
 
   // Helper methods -----------------------------------------------------------
-
-  bool CopyAndPrint(WebKit::WebFrame* web_frame);
 
   bool CopyMetafileDataToSharedMem(Metafile* metafile,
                                    base::SharedMemoryHandle* shared_mem_handle);
@@ -323,7 +311,7 @@ class PrintWebViewHelper
   bool PreviewPageRendered(int page_number, Metafile* metafile);
 
   // WebView used only to print the selection.
-  WebKit::WebView* print_web_view_;
+  scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
   bool is_preview_enabled_;
