@@ -46,7 +46,7 @@
         <span class="active-tab-label"
             i18n-content="cellularDeviceTabLabel"></span>
       </span>
-      <span id="internet-nav-tab" class="tab network-details" 
+      <span id="internet-nav-tab" class="tab network-details"
           tab-contents="internet-tab">
         <span class="tab-label" i18n-content="networkTabLabel"></span>
         <span class="active-tab-label" i18n-content="networkTabLabel"></span>
@@ -214,6 +214,23 @@
     <div id="vpn-tab" class="subpages-tab-contents vpn-details">
       <section>
         <table class="option-control-table">
+          <tr class="auto-connect-network">
+            <td>
+              <div class="checkbox">
+                <span class="controlled-setting-with-label">
+                  <input id="auto-connect-network-vpn" type="checkbox">
+                  <span>
+                    <label for="auto-connect-network-vpn"
+                        i18n-content="inetAutoConnectNetwork">
+                    </label>
+                    <span class="controlled-setting-indicator"
+                        data="autoConnect" for="auto-connect-network-vpn">
+                    </span>
+                  </span>
+                </span>
+              </div>
+            </td>
+          </tr>
           <tr>
             <td class="option-name" i18n-content="inetServiceName"></td>
             <td id="inet-service-name" class="option-value"></td>
@@ -462,7 +479,7 @@
         </div>
         <table id="user-dns-settings">
           <tr>
-            <td class="spacer" width="14px"></td> 
+            <td class="spacer" width="14px"></td>
             <td>
               <div id="ipconfig-dns1" i18n-placeholder-text="userNameServer1"
                   allow-empty>

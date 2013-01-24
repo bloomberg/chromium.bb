@@ -78,9 +78,10 @@ std::string NetworkToHtmlTableHeader(const Network* network) {
       WrapWithTH("Name") +
       WrapWithTH("Active") +
       WrapWithTH("State");
+  if (network->type() != TYPE_ETHERNET)
+    str += WrapWithTH("Auto-Connect");
   if (network->type() == TYPE_WIFI ||
       network->type() == TYPE_CELLULAR) {
-    str += WrapWithTH("Auto-Connect");
     str += WrapWithTH("Strength");
   }
   if (network->type() == TYPE_WIFI) {
@@ -113,11 +114,12 @@ std::string NetworkToHtmlTableRow(const Network* network) {
       WrapWithTD(network->name()) +
       WrapWithTD(base::IntToString(network->is_active())) +
       WrapWithTD(network->GetStateString());
+  if (network->type() != TYPE_ETHERNET)
+    str += WrapWithTD(base::IntToString(network->auto_connect()));
   if (network->type() == TYPE_WIFI ||
       network->type() == TYPE_CELLULAR) {
     const WirelessNetwork* wireless =
         static_cast<const WirelessNetwork*>(network);
-    str += WrapWithTD(base::IntToString(wireless->auto_connect()));
     str += WrapWithTD(base::IntToString(wireless->strength()));
   }
   if (network->type() == TYPE_WIFI) {

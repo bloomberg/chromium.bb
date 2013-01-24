@@ -201,6 +201,7 @@ CHROMEOS_EXPORT extern const char kAuthNoCache[];
 CHROMEOS_EXPORT extern const char kAuthRetry[];
 CHROMEOS_EXPORT extern const char kAuth[];
 CHROMEOS_EXPORT extern const char kAuthenticationType[];
+CHROMEOS_EXPORT extern const char kAutoConnect[];
 CHROMEOS_EXPORT extern const char kCert[];
 CHROMEOS_EXPORT extern const char kCipher[];
 CHROMEOS_EXPORT extern const char kClientCertPattern[];

@@ -1351,12 +1351,23 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
                      property_ui_data);
 
   chromeos::NetworkPropertyUIData auto_connect_ui_data(ui_data);
+  std::string onc_path_to_auto_connect;
   if (type == chromeos::TYPE_WIFI) {
+    onc_path_to_auto_connect = base::StringPrintf(
+        "%s.%s",
+        chromeos::onc::network_config::kWiFi,
+        chromeos::onc::wifi::kAutoConnect);
+  } else if (type == chromeos::TYPE_VPN) {
+    onc_path_to_auto_connect = base::StringPrintf(
+        "%s.%s",
+        chromeos::onc::network_config::kVPN,
+        chromeos::onc::vpn::kAutoConnect);
+  }
+  if (!onc_path_to_auto_connect.empty()) {
     auto_connect_ui_data.ParseOncProperty(
-        ui_data, onc,
-        base::StringPrintf("%s.%s",
-                           chromeos::onc::network_config::kWiFi,
-                           chromeos::onc::wifi::kAutoConnect));
+        ui_data,
+        onc,
+        onc_path_to_auto_connect);
   }
   SetValueDictionary(&dictionary, kTagAutoConnect,
                      new base::FundamentalValue(network->auto_connect()),

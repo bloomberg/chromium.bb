@@ -188,6 +188,7 @@ const char kAuthNoCache[] = "AuthNoCache";
 const char kAuthRetry[] = "AuthRetry";
 const char kAuth[] = "Auth";
 const char kAuthenticationType[] = "AuthenticationType";
+const char kAutoConnect[] = "AutoConnect";
 const char kCert[] = "Cert";
 const char kCipher[] = "Cipher";
 const char kClientCertPattern[] = "ClientCertPattern";

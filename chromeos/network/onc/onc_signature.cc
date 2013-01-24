@@ -148,6 +148,7 @@ const OncFieldSignature openvpn_fields[] = {
 
 const OncFieldSignature vpn_fields[] = {
   { kRecommended, NULL, &kRecommendedSignature },
+  { vpn::kAutoConnect, flimflam::kAutoConnectProperty, &kBoolSignature },
   { vpn::kHost, flimflam::kProviderHostProperty, &kStringSignature },
   { vpn::kIPsec, NULL, &kIPsecSignature },
   { vpn::kL2TP, NULL, &kL2TPSignature },
