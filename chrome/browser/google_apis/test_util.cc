@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_server/http_response.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"

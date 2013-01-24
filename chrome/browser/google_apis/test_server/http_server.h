@@ -5,19 +5,23 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_SERVER_H_
 #define CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_SERVER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/google_apis/test_server/http_connection.h"
-#include "chrome/browser/google_apis/test_server/http_response.h"
+#include "base/memory/weak_ptr.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/tcp_listen_socket.h"
 
 namespace google_apis {
 namespace test_server {
+
+class HttpConnection;
+class HttpResponse;
+struct HttpRequest;
 
 // This class is required to be able to have composition instead of inheritance,
 class HttpListenSocket: public net::TCPListenSocket {
@@ -42,17 +46,16 @@ class HttpListenSocket: public net::TCPListenSocket {
 // void SetUp() {
 //   test_server_.reset(new HttpServer());
 //   DCHECK(test_server_.InitializeAndWaitUntilReady());
-//   test_server->RegisterRequestHandler(
+//   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
 // }
 //
-// void HandleRequest(const HttpRequest& request) {
-//   GURL absolute_url = test_server_.GetURL(request.relative_url);
+// scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+//   GURL absolute_url = test_server_->GetURL(request.relative_url);
 //   if (absolute_url.path() != "/test")
-//     return scoped_ptr<test_server::HttpResponse>();
+//     return scoped_ptr<HttpResponse>();
 //
-//   scoped_ptr<test_server::HttpResponse> http_response(
-//       new test_server::HttpResponse);
+//   scoped_ptr<HttpResponse> http_response(new HttpResponse());
 //   http_response->set_code(test_server::SUCCESS);
 //   http_response->set_content("hello");
 //   http_response->set_content_type("text/plain");
@@ -83,7 +86,7 @@ class HttpServer : private net::StreamListenSocket::Delegate {
   // Returns the base URL to the server, which looks like
   // http://127.0.0.1:<port>/, where <port> is the actual port number used by
   // the server.
-  GURL GetBaseURL() const;
+  const GURL& base_url() const { return base_url_; }
 
   // Returns a URL to the server based on the given relative URL, which
   // should start with '/'. For example: GetURL("/path?query=foo") =>
@@ -134,6 +137,7 @@ class HttpServer : private net::StreamListenSocket::Delegate {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<HttpServer> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(HttpServer);
 };
 

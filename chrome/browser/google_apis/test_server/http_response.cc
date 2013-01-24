@@ -4,11 +4,8 @@
 
 #include "chrome/browser/google_apis/test_server/http_response.h"
 
-#include <map>
-#include <string>
-
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/logging.h"
 #include "base/stringprintf.h"
 
 namespace google_apis {

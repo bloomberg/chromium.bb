@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "googleurl/src/gurl.h"
 
 namespace google_apis {
 namespace test_server {
@@ -84,13 +83,6 @@ class HttpRequestParser {
   scoped_ptr<HttpRequest> GetRequest();
 
  private:
-  scoped_ptr<HttpRequest> http_request_;
-  std::string buffer_;
-  size_t buffer_position_;  // Current position in the internal buffer.
-  State state_;
-  // Content length of the request currently being parsed.
-  size_t declared_content_length_;
-
   HttpMethod GetMethodType(const std::string& token) const;
 
   // Parses headers and returns ACCEPTED if whole request was parsed. Otherwise
@@ -105,6 +97,15 @@ class HttpRequestParser {
   // Returns an empty string for an empty line. It will assert if there is
   // no line available.
   std::string ShiftLine();
+
+  scoped_ptr<HttpRequest> http_request_;
+  std::string buffer_;
+  size_t buffer_position_;  // Current position in the internal buffer.
+  State state_;
+  // Content length of the request currently being parsed.
+  size_t declared_content_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpRequestParser);
 };
 
 }  // namespace test_server

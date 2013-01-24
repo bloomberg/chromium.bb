@@ -15,7 +15,6 @@ TEST(HttpResponseTest, GenerateResponse) {
   response.set_content("Sample content - Hello world!");
   response.set_content_type("text/plain");
   response.AddCustomHeader("Simple-Header", "Simple value.");
-  std::string response_string = response.ToResponseString();
 
   std::string kExpectedResponseString =
       "HTTP/1.1 200 OK\r\n"
@@ -25,8 +24,7 @@ TEST(HttpResponseTest, GenerateResponse) {
       "Simple-Header: Simple value.\r\n\r\n"
       "Sample content - Hello world!";
 
-  EXPECT_EQ(kExpectedResponseString,
-            response_string);
+  EXPECT_EQ(kExpectedResponseString, response.ToResponseString());
 }
 
 }  // namespace test_server

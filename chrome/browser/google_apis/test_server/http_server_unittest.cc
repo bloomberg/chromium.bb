@@ -6,6 +6,8 @@
 
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/google_apis/test_server/http_request.h"
+#include "chrome/browser/google_apis/test_server/http_response.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -113,7 +115,7 @@ class HttpServerTest : public testing::Test,
 
 TEST_F(HttpServerTest, GetBaseURL) {
   EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/", server_.port()),
-                               server_.GetBaseURL().spec());
+                               server_.base_url().spec());
 }
 
 TEST_F(HttpServerTest, GetURL) {
@@ -215,7 +217,7 @@ TEST_F(HttpServerTest, ConcurrentFetches) {
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher2));
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher3->GetStatus().status());
-  EXPECT_EQ(NOT_FOUND,fetcher3->GetResponseCode());
+  EXPECT_EQ(NOT_FOUND, fetcher3->GetResponseCode());
   EXPECT_EQ("No chocolates", GetContentFromFetcher(*fetcher3));
   EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher3));
 }

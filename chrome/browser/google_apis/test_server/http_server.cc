@@ -5,10 +5,10 @@
 #include "chrome/browser/google_apis/test_server/http_server.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/google_apis/test_server/http_connection.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,6 +52,16 @@ void HttpListenSocket::Listen() {
 
 HttpListenSocket::~HttpListenSocket() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+HttpServer::HttpServer()
+    : port_(-1),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+HttpServer::~HttpServer() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 bool HttpServer::InitializeAndWaitUntilReady() {
@@ -114,16 +124,6 @@ void HttpServer::ShutdownOnIOThread() {
   connections_.clear();
 }
 
-HttpServer::HttpServer()
-    : port_(-1),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-HttpServer::~HttpServer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void HttpServer::HandleRequest(HttpConnection* connection,
                                scoped_ptr<HttpRequest> request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -147,10 +147,6 @@ void HttpServer::HandleRequest(HttpConnection* connection,
   // connection.
   connections_.erase(connection->socket_.get());
   delete connection;
-}
-
-GURL HttpServer::GetBaseURL() const {
-  return base_url_;
 }
 
 GURL HttpServer::GetURL(const std::string& relative_url) const {

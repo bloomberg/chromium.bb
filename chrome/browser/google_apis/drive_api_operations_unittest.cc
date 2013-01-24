@@ -9,6 +9,8 @@
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/google_apis/test_server/http_request.h"
+#include "chrome/browser/google_apis/test_server/http_response.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"

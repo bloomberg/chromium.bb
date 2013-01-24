@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_CONNECTION_H_
 #define CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_CONNECTION_H_
 
-#include <string>
-
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/string_piece.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
-#include "net/base/stream_listen_socket.h"
+
+namespace net {
+class StreamListenSocket;
+}
 
 namespace google_apis {
 namespace test_server {
