@@ -16,9 +16,6 @@
 namespace aura {
 namespace test {
 
-// These functions expect a non-NULL parent. If you want to let the
-// StackingClient determine where to place the windows, there are equivalent
-// methods in AshTestBase.
 Window* CreateTestWindowWithId(int id, Window* parent);
 Window* CreateTestWindowWithBounds(const gfx::Rect& bounds, Window* parent);
 Window* CreateTestWindow(SkColor color,

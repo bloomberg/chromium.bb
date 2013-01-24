@@ -346,6 +346,13 @@ void Window::StackChildBelow(Window* child, Window* target) {
 }
 
 void Window::AddChild(Window* child) {
+  WindowObserver::HierarchyChangeParams params;
+  params.target = child;
+  params.new_parent = this;
+  params.old_parent = child->parent();
+  params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING;
+  NotifyWindowHierarchyChange(params);
+
   RootWindow* old_root = child->GetRootWindow();
 
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
@@ -367,6 +374,31 @@ void Window::AddChild(Window* child) {
     root_window->OnWindowAddedToRootWindow(child);
     child->NotifyAddedToRootWindow();
   }
+
+  params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED;
+  NotifyWindowHierarchyChange(params);
+}
+
+void Window::RemoveChild(Window* child) {
+  WindowObserver::HierarchyChangeParams params;
+  params.target = child;
+  params.new_parent = NULL;
+  params.old_parent = this;
+  params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING;
+  NotifyWindowHierarchyChange(params);
+
+  RemoveChildImpl(child, NULL);
+
+  params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED;
+  NotifyWindowHierarchyChange(params);
+}
+
+bool Window::Contains(const Window* other) const {
+  for (const Window* parent = other; parent; parent = parent->parent_) {
+    if (parent == this)
+      return true;
+  }
+  return false;
 }
 
 void Window::AddTransientChild(Window* child) {
@@ -385,18 +417,6 @@ void Window::RemoveTransientChild(Window* child) {
   transient_children_.erase(i);
   if (child->transient_parent_ == this)
     child->transient_parent_ = NULL;
-}
-
-void Window::RemoveChild(Window* child) {
-  RemoveChildImpl(child, NULL);
-}
-
-bool Window::Contains(const Window* other) const {
-  for (const Window* parent = other; parent; parent = parent->parent_) {
-    if (parent == this)
-      return true;
-  }
-  return false;
 }
 
 Window* Window::GetChildById(int id) {
@@ -903,6 +923,59 @@ void Window::NotifyAddedToRootWindow() {
   for (Window::Windows::const_iterator it = children_.begin();
        it != children_.end(); ++it) {
     (*it)->NotifyAddedToRootWindow();
+  }
+}
+
+void Window::NotifyWindowHierarchyChange(
+    const WindowObserver::HierarchyChangeParams& params) {
+  params.target->NotifyWindowHierarchyChangeDown(params);
+  switch (params.phase) {
+  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING:
+    if (params.old_parent)
+      params.old_parent->NotifyWindowHierarchyChangeUp(params);
+    break;
+  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED:
+    if (params.new_parent)
+      params.new_parent->NotifyWindowHierarchyChangeUp(params);
+    break;
+  default:
+    NOTREACHED();
+    break;
+  }
+}
+
+void Window::NotifyWindowHierarchyChangeDown(
+    const WindowObserver::HierarchyChangeParams& params) {
+  NotifyWindowHierarchyChangeAtReceiver(params);
+  for (Window::Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    (*it)->NotifyWindowHierarchyChangeDown(params);
+  }
+}
+
+void Window::NotifyWindowHierarchyChangeUp(
+    const WindowObserver::HierarchyChangeParams& params) {
+  for (Window* window = this; window; window = window->parent())
+    window->NotifyWindowHierarchyChangeAtReceiver(params);
+}
+
+void Window::NotifyWindowHierarchyChangeAtReceiver(
+    const WindowObserver::HierarchyChangeParams& params) {
+  WindowObserver::HierarchyChangeParams local_params = params;
+  local_params.receiver = this;
+
+  switch (params.phase) {
+  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING:
+    FOR_EACH_OBSERVER(WindowObserver, observers_,
+                      OnWindowHierarchyChanging(local_params));
+    break;
+  case WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED:
+    FOR_EACH_OBSERVER(WindowObserver, observers_,
+                      OnWindowHierarchyChanged(local_params));
+    break;
+  default:
+    NOTREACHED();
+    break;
   }
 }
 
