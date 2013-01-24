@@ -127,9 +127,10 @@ TEST(StackContainer, BufferAlignment) {
   aligned16->push_back(AlignedData<16>());
   EXPECT_ALIGNED(&aligned16[0], 16);
 
-#if !defined(OS_ANDROID)
-  // It seems that android doesn't respect greater than 16 byte alignment for
-  // non-POD data on the stack, even though ALIGNOF(aligned256) == 256.
+#if !defined(__GNUC__) || defined(ARCH_CPU_X86_FAMILY)
+  // It seems that non-X86 gcc doesn't respect greater than 16 byte alignment.
+  // See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33721 for details.
+  // TODO(sbc):re-enable this if GCC starts respecting higher alignments.
   StackVector<AlignedData<256>, 1> aligned256;
   aligned256->push_back(AlignedData<256>());
   EXPECT_ALIGNED(&aligned256[0], 256);
