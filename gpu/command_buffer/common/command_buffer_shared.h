@@ -30,16 +30,17 @@ public:
     base::subtle::NoBarrier_Store(&reading_, 0);
     base::subtle::NoBarrier_Store(&latest_, 0);
     base::subtle::NoBarrier_Store(&slots_[0], 0);
-    base::subtle::Acquire_Store(&slots_[1], 0);
+    base::subtle::Release_Store(&slots_[1], 0);
+    base::subtle::MemoryBarrier();
   }
 
   void Write(const T& state) {
     int towrite = !base::subtle::Acquire_Load(&reading_);
     int index = !base::subtle::Acquire_Load(&slots_[towrite]);
     states_[towrite][index] = state;
+    base::subtle::Release_Store(&slots_[towrite], index);
+    base::subtle::Release_Store(&latest_, towrite);
     base::subtle::MemoryBarrier();
-    base::subtle::Acquire_Store(&slots_[towrite], index);
-    base::subtle::Acquire_Store(&latest_, towrite);
   }
 
   // Attempt to update the state, updating only if the generation counter is
@@ -47,7 +48,8 @@ public:
   void Read(T* state) {
     base::subtle::MemoryBarrier();
     int toread = !!base::subtle::Acquire_Load(&latest_);
-    base::subtle::Acquire_Store(&reading_, toread);
+    base::subtle::Release_Store(&reading_, toread);
+    base::subtle::MemoryBarrier();
     int index = !!base::subtle::Acquire_Load(&slots_[toread]);
     if (states_[toread][index].generation - state->generation < 0x80000000U)
       *state = states_[toread][index];
