@@ -32,6 +32,7 @@
 #include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/buffered_resource_handler.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
+#include "content/browser/loader/power_save_block_resource_throttle.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -1048,6 +1049,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
                                 route_id,
                                 is_continuation_of_transferred_request,
                                 &throttles);
+  }
+
+  if (request->has_upload()) {
+    // Block power save while uploading data.
+    throttles.push_back(new PowerSaveBlockResourceThrottle("Uploading data."));
   }
 
   if (request_data.resource_type == ResourceType::MAIN_FRAME) {

@@ -516,6 +516,8 @@
     'browser/loader/doomed_resource_handler.h',
     'browser/loader/layered_resource_handler.cc',
     'browser/loader/layered_resource_handler.h',
+    'browser/loader/power_save_block_resource_throttle.cc',
+    'browser/loader/power_save_block_resource_throttle.h',
     'browser/loader/redirect_to_file_resource_handler.cc',
     'browser/loader/redirect_to_file_resource_handler.h',
     'browser/loader/resource_buffer.cc',
