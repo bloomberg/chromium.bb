@@ -48,6 +48,9 @@ TabNavigation TabNavigation::FromNavigationEntry(
   navigation.original_request_url_ = entry.GetOriginalRequestURL();
   navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
   navigation.timestamp_ = entry.GetTimestamp();
+  // If you want to navigate a named frame in Chrome, you will first need to
+  // add support for persisting it. It is currently only used for layout tests.
+  CHECK(entry.GetFrameToNavigate().empty());
   return navigation;
 }
 

@@ -182,6 +182,12 @@ class NavigationEntry {
   // resources.
   virtual void SetCanLoadLocalResources(bool allow) = 0;
   virtual bool GetCanLoadLocalResources() const = 0;
+
+  // Used to specify which frame to navigate. If empty, the main frame is
+  // navigated. This is currently not persisted in session restore, because it
+  // is currently only used in tests.
+  virtual void SetFrameToNavigate(const std::string& frame_name) = 0;
+  virtual const std::string& GetFrameToNavigate() const = 0;
 };
 
 }  // namespace content

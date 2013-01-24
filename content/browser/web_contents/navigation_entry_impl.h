@@ -73,6 +73,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual base::Time GetTimestamp() const OVERRIDE;
   virtual void SetCanLoadLocalResources(bool allow) OVERRIDE;
   virtual bool GetCanLoadLocalResources() const OVERRIDE;
+  virtual void SetFrameToNavigate(const std::string& frame_name) OVERRIDE;
+  virtual const std::string& GetFrameToNavigate() const OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -258,6 +260,10 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Set when this entry should be able to access local file:// resources. This
   // value is not needed after the entry commits and is not persisted.
   bool can_load_local_resources_;
+
+  // If not empty, the name of the frame to navigate. This field is not
+  // persisted, because it is currently only used in tests.
+  std::string frame_to_navigate_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

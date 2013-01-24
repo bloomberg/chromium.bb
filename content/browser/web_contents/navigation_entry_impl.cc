@@ -271,6 +271,14 @@ bool NavigationEntryImpl::GetCanLoadLocalResources() const {
   return can_load_local_resources_;
 }
 
+void NavigationEntryImpl::SetFrameToNavigate(const std::string& frame_name) {
+  frame_to_navigate_ = frame_name;
+}
+
+const std::string& NavigationEntryImpl::GetFrameToNavigate() const {
+  return frame_to_navigate_;
+}
+
 void NavigationEntryImpl::SetScreenshotPNGData(
     const std::vector<unsigned char>& png_data) {
   screenshot_ = png_data.empty() ? NULL : new base::RefCountedBytes(png_data);

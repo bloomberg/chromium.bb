@@ -244,6 +244,7 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   }
 
   params->can_load_local_resources = entry.GetCanLoadLocalResources();
+  params->frame_to_navigate = entry.GetFrameToNavigate();
 
   if (delegate)
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);

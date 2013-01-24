@@ -1132,8 +1132,14 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   GetContentClient()->SetActiveURL(params.url);
 
-  WebFrame* main_frame = webview()->mainFrame();
-  if (is_reload && main_frame->currentHistoryItem().isNull()) {
+  WebFrame* frame = webview()->mainFrame();
+  if (!params.frame_to_navigate.empty()) {
+    frame = webview()->findFrameByName(
+        WebString::fromUTF8(params.frame_to_navigate));
+    CHECK(frame) << "Invalid frame name passed: " << params.frame_to_navigate;
+  }
+
+  if (is_reload && frame->currentHistoryItem().isNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.  Our workaround here is a bit of
     // a hack since it means that reload after a crashed tab does not cause an
@@ -1155,9 +1161,9 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
                              ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
 
     if (reload_original_url)
-      main_frame->reloadWithOverrideURL(params.url, true);
+      frame->reloadWithOverrideURL(params.url, true);
     else
-      main_frame->reload(ignore_cache);
+      frame->reload(ignore_cache);
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
@@ -1166,13 +1172,13 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
       CHECK(item.urlString() != WebString::fromUTF8(kSwappedOutURL));
-      main_frame->loadHistoryItem(item);
+      frame->loadHistoryItem(item);
     }
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
     std::string mime_type, charset, data;
     if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
-      main_frame->loadData(
+      frame->loadData(
           WebData(data.c_str(), data.length()),
           WebString::fromUTF8(mime_type),
           WebString::fromUTF8(charset),
@@ -1190,7 +1196,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     // A session history navigation should have been accompanied by state.
     CHECK_EQ(params.page_id, -1);
 
-    if (main_frame->isViewSourceModeEnabled())
+    if (frame->isViewSourceModeEnabled())
       request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
 
     if (params.referrer.url.is_valid()) {
@@ -1224,7 +1230,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
       request.setHTTPBody(http_body);
     }
 
-    main_frame->loadRequest(request);
+    frame->loadRequest(request);
   }
 
   // In case LoadRequest failed before DidCreateDataSource was called.

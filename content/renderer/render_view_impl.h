@@ -852,6 +852,7 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndPrune);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ZoomLimit);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, NavigateFrame);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
