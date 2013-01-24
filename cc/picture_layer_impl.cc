@@ -300,7 +300,8 @@ void PictureLayerImpl::SetIsMask(bool is_mask) {
   if (is_mask_ == is_mask)
     return;
   is_mask_ = is_mask;
-  tilings_->RemoveAllTiles();
+  if (tilings_)
+    tilings_->RemoveAllTiles();
 }
 
 ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
