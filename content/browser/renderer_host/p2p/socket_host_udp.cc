@@ -16,6 +16,13 @@ namespace {
 // UDP packets cannot be bigger than 64k.
 const int kReadBufferSize = 65536;
 
+// Defines set of transient errors. These errors are ignored when we get them
+// from sendto() calls.
+bool IsTransientError(int error) {
+  return error == net::ERR_ADDRESS_UNREACHABLE ||
+      error == net::ERR_ADDRESS_INVALID;
+}
+
 }  // namespace
 
 namespace content {
@@ -92,8 +99,10 @@ void P2PSocketHostUdp::DoRead() {
     result = socket_->RecvFrom(recv_buffer_, kReadBufferSize, &recv_address_,
                                base::Bind(&P2PSocketHostUdp::OnRecv,
                                           base::Unretained(this)));
+    if (result == net::ERR_IO_PENDING)
+      return;
     DidCompleteRead(result);
-  } while (result > 0);
+  } while (state_ == STATE_OPEN);
 }
 
 void P2PSocketHostUdp::OnRecv(int result) {
@@ -123,7 +132,7 @@ void P2PSocketHostUdp::DidCompleteRead(int result) {
     }
 
     message_sender_->Send(new P2PMsg_OnDataReceived(id_, recv_address_, data));
-  } else if (result < 0 && result != net::ERR_IO_PENDING) {
+  } else if (result < 0 && !IsTransientError(result)) {
     LOG(ERROR) << "Error when reading from UDP socket: " << result;
     OnError();
   }
@@ -166,8 +175,21 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   int result = socket_->SendTo(packet.data, packet.size, packet.to,
                                base::Bind(&P2PSocketHostUdp::OnSend,
                                           base::Unretained(this)));
+
+  // sendto() may return an error, e.g. if we've received an ICMP Destination
+  // Unreachable message. When this happens try sending the same packet again,
+  // and just drop it if it fails again.
+  if (IsTransientError(result)) {
+    result = socket_->SendTo(packet.data, packet.size, packet.to,
+                             base::Bind(&P2PSocketHostUdp::OnSend,
+                                        base::Unretained(this)));
+  }
+
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
+  } else if (IsTransientError(result)) {
+    LOG(INFO) << "sendto() has failed twice returning a "
+        " transient error. Dropping the packet.";
   } else if (result < 0) {
     LOG(ERROR) << "Error when sending data in UDP socket: " << result;
     OnError();
@@ -180,11 +202,7 @@ void P2PSocketHostUdp::OnSend(int result) {
 
   send_pending_ = false;
 
-  // We may get ERR_ADDRESS_UNREACHABLE here if the peer host has a
-  // local IP address with the same subnet address as the local
-  // host. This error is ingored so that this socket can still be used
-  // to try to connect to different candidates.
-  if (result < 0 && result != net::ERR_ADDRESS_UNREACHABLE) {
+  if (result < 0 && !IsTransientError(result)) {
     OnError();
     return;
   }
