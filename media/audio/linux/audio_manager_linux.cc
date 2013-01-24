@@ -351,16 +351,11 @@ AudioParameters AudioManagerLinux::GetPreferredLowLatencyOutputStreamParameters(
   if (input_params.frames_per_buffer() < buffer_size)
     buffer_size = input_params.frames_per_buffer();
 
-  int sample_rate = GetAudioHardwareSampleRate();
-  // CRAS will sample rate convert if needed, so pass through input sample rate.
-  if (UseCras())
-    sample_rate = input_params.sample_rate();
-
   // TODO(dalecurtis): This should include bits per channel and channel layout
   // eventually.
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, input_params.channel_layout(),
-      sample_rate, 16, buffer_size);
+      input_params.sample_rate(), 16, buffer_size);
 }
 
 }  // namespace media

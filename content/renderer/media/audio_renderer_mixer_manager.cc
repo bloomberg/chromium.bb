@@ -52,12 +52,20 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     return it->second.mixer;
   }
 
+  // On Linux and ChromeOS we can rely on the playback device to handle
+  // resampling, so don't waste cycles on it here.
+#if defined(OS_LINUX)
+  int sample_rate = params.sample_rate();
+#else
+  int sample_rate = hardware_sample_rate_;
+#endif
+
   // Create output parameters based on the audio hardware configuration for
   // passing on to the output sink.  Force to 16-bit output for now since we
   // know that works well for WebAudio and WebRTC.
   media::AudioParameters output_params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.channel_layout(),
-      hardware_sample_rate_, 16, hardware_buffer_size_);
+      sample_rate, 16, hardware_buffer_size_);
 
   // If we've created invalid output parameters, simply pass on the input params
   // and let the browser side handle automatic fallback.

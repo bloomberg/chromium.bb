@@ -2664,14 +2664,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_refptr<media::AudioRendererSink> sink;
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    const bool use_mixing =
-        !cmd_line->HasSwitch(switches::kDisableRendererSideMixing);
-#else
-    const bool use_mixing =
-        cmd_line->HasSwitch(switches::kEnableRendererSideMixing);
-#endif
-    if (use_mixing) {
+    if (!cmd_line->HasSwitch(switches::kDisableRendererSideMixing)) {
       sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
           CreateInput(routing_id_);
       DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink;

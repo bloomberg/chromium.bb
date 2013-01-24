@@ -237,14 +237,9 @@ void AudioRendererImpl::OnDecoderSelected(
   int buffer_size = GetHighLatencyOutputBufferSize(sample_rate);
   AudioParameters::Format format = AudioParameters::AUDIO_PCM_LINEAR;
 
-  // On Windows and Mac we can use the low latency pipeline because they provide
-  // accurate and smooth delay information.  On other platforms like Linux there
-  // are jitter issues.
-  // TODO(dalecurtis): Fix bugs: http://crbug.com/138098 http://crbug.com/32757
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   // Either AudioOutputResampler or renderer side mixing must be enabled to use
   // the low latency pipeline.
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableRendererSideMixing) ||
       !cmd_line->HasSwitch(switches::kDisableAudioOutputResampler)) {
     // There are two cases here:
@@ -268,7 +263,6 @@ void AudioRendererImpl::OnDecoderSelected(
     format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
     buffer_size = 2048;
   }
-#endif
 
   audio_parameters_ = AudioParameters(
       format, decoder_->channel_layout(), sample_rate,
