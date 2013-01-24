@@ -47,6 +47,34 @@ Status GetContextIdForFrame(DomTracker* tracker,
   return Status(kOk);
 }
 
+const char* GetAsString(MouseEventType type) {
+  switch (type) {
+    case kPressedMouseEventType:
+      return "mousePressed";
+    case kReleasedMouseEventType:
+      return "mouseReleased";
+    case kMovedMouseEventType:
+      return "mouseMoved";
+    default:
+      return "";
+  }
+}
+
+const char* GetAsString(MouseButton button) {
+  switch (button) {
+    case kLeftMouseButton:
+      return "left";
+    case kMiddleMouseButton:
+      return "middle";
+    case kRightMouseButton:
+      return "right";
+    case kNoneMouseButton:
+      return "none";
+    default:
+      return "";
+  }
+}
+
 }  // namespace
 
 ChromeImpl::ChromeImpl(base::ProcessHandle process,
@@ -151,6 +179,22 @@ Status ChromeImpl::GetFrameByFunction(const std::string& frame,
   if (status.IsError())
     return status;
   return dom_tracker_->GetFrameIdForNode(node_id, out_frame);
+}
+
+Status ChromeImpl::DispatchMouseEvents(const std::list<MouseEvent>& events) {
+  for (std::list<MouseEvent>::const_iterator it = events.begin();
+       it != events.end(); ++it) {
+    base::DictionaryValue params;
+    params.SetString("type", GetAsString(it->type));
+    params.SetInteger("x", it->x);
+    params.SetInteger("y", it->y);
+    params.SetString("button", GetAsString(it->button));
+    params.SetInteger("clickCount", it->click_count);
+    Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
+    if (status.IsError())
+      return status;
+  }
+  return Status(kOk);
 }
 
 Status ChromeImpl::Quit() {

@@ -19,6 +19,25 @@
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
 
+namespace {
+
+Status ExecuteElementCommand(
+    base::Callback<Status(
+        Session* session,
+        const std::string&,
+        const base::DictionaryValue&,
+        scoped_ptr<base::Value>*)> command,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string id;
+  if (!params.GetString("id", &id))
+    return Status(kUnknownError, "'id' of element must be a string");
+  return command.Run(session, id, params, value);
+}
+
+}  // namespace
+
 CommandExecutorImpl::CommandExecutorImpl()
     : io_thread_("ChromeDriver IO") {}
 
@@ -63,14 +82,6 @@ void CommandExecutorImpl::Init() {
       base::Bind(execute_session_command,
           base::Bind(&ExecuteFindElements, 50)));
   command_map_.Set(
-      CommandNames::kFindChildElement,
-      base::Bind(execute_session_command,
-          base::Bind(&ExecuteFindChildElement, 50)));
-  command_map_.Set(
-      CommandNames::kFindChildElements,
-      base::Bind(execute_session_command,
-          base::Bind(&ExecuteFindChildElements, 50)));
-  command_map_.Set(
       CommandNames::kSetTimeout,
       base::Bind(execute_session_command, base::Bind(&ExecuteSetTimeout)));
   command_map_.Set(
@@ -88,6 +99,33 @@ void CommandExecutorImpl::Init() {
   Command quit_command = base::Bind(execute_session_command,
       base::Bind(&ExecuteQuit, &session_map_));
   command_map_.Set(CommandNames::kQuit, quit_command);
+
+  // Element commands.
+  command_map_.Set(
+      CommandNames::kFindChildElement,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteElementCommand,
+              base::Bind(&ExecuteFindChildElement, 50))));
+  command_map_.Set(
+      CommandNames::kFindChildElements,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteElementCommand,
+              base::Bind(&ExecuteFindChildElements, 50))));
+  command_map_.Set(
+      CommandNames::kHoverOverElement,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteElementCommand,
+              base::Bind(&ExecuteHoverOverElement))));
+  command_map_.Set(
+      CommandNames::kClickElement,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteElementCommand,
+              base::Bind(&ExecuteClickElement))));
+  command_map_.Set(
+      CommandNames::kClearElement,
+      base::Bind(execute_session_command,
+          base::Bind(&ExecuteElementCommand,
+              base::Bind(&ExecuteClearElement))));
 
   // Non-session commands.
   command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));

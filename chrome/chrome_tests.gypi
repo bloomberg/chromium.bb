@@ -731,6 +731,8 @@
         'test/chromedriver/devtools_event_listener.h',
         'test/chromedriver/dom_tracker.h',
         'test/chromedriver/dom_tracker.cc',
+        'test/chromedriver/element_util.h',
+        'test/chromedriver/element_util.cc',
         'test/chromedriver/net/net_util.cc',
         'test/chromedriver/net/net_util.h',
         'test/chromedriver/net/sync_websocket.h',
@@ -761,6 +763,8 @@
           'inputs': [
             'test/chromedriver/embed_js_in_cpp.py',
             'test/chromedriver/js/call_function.js',
+            'test/chromedriver/js/get_element_region.js',
+            'test/chromedriver/js/is_option_element_toggleable.js',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.cc',
@@ -771,6 +775,8 @@
                       '--directory',
                       '<(INTERMEDIATE_DIR)/chrome/test/chromedriver',
                       'test/chromedriver/js/call_function.js',
+                      'test/chromedriver/js/get_element_region.js',
+                      'test/chromedriver/js/is_option_element_toggleable.js',
           ],
           'message': 'Generating sources for embedding js in chromedriver',
         },

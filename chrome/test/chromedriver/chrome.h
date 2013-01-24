@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_H_
 
+#include <list>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -15,6 +16,36 @@ class Value;
 }
 
 class Status;
+
+enum MouseEventType {
+  kPressedMouseEventType = 0,
+  kReleasedMouseEventType,
+  kMovedMouseEventType
+};
+
+enum MouseButton {
+  kLeftMouseButton = 0,
+  kMiddleMouseButton,
+  kRightMouseButton,
+  kNoneMouseButton
+};
+
+struct MouseEvent {
+  MouseEvent(MouseEventType type,
+             MouseButton button,
+             int x,
+             int y,
+             int click_count)
+      : type(type), button(button), x(x), y(y), click_count(click_count) {}
+  ~MouseEvent() {}
+
+  MouseEventType type;
+  MouseButton button;
+  int x;
+  int y;
+  // |click_count| should not be negative.
+  int click_count;
+};
 
 class Chrome {
  public:
@@ -51,6 +82,9 @@ class Chrome {
                                     const std::string& function,
                                     const base::ListValue& args,
                                     std::string* out_frame) = 0;
+
+  // Dispatch a sequence of mouse events.
+  virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events) = 0;
 
   // Quits Chrome.
   virtual Status Quit() = 0;

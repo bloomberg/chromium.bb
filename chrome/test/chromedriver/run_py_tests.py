@@ -121,6 +121,40 @@ class ChromeDriverTest(unittest.TestCase):
     for item in result:
       self.assertTrue(isinstance(item, WebElement))
 
+  def testHoverOverElement(self):
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("mouseover", function() {'
+        '  document.body.appendChild(document.createElement("br"));'
+        '});'
+        'return div;')
+    div.HoverOver();
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testClickElement(self):
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("click", function() {'
+        '  var div = document.getElementsByTagName("div")[0];'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    div.Click()
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testClearElement(self):
+    text = self._driver.ExecuteScript(
+        'document.body.innerHTML = \'<input type="text" value="abc">\';'
+        'var input = document.getElementsByTagName("input")[0];'
+        'input.addEventListener("change", function() {'
+        '  document.body.appendChild(document.createElement("br"));'
+        '});'
+        'return input;')
+    text.Clear();
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
   def testGetCurrentUrl(self):
     self.assertEqual('about:blank', self._driver.GetCurrentUrl())
 

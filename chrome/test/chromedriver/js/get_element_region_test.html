@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<script src='test.js'></script>
+<script src='get_element_region.js'></script>
+<script>
+
+function testNotElement() {
+  try {
+    getElementRegion(document);
+    assert(false);
+  } catch (error) {
+    assertEquals(document + ' is not an element', error.message);
+  }
+}
+
+function testElementWithFirstClientRect() {
+  var region = getElementRegion(document.getElementById('a'));
+  assertEquals(0, region.left);
+  assertEquals(0, region.top);
+  assertEquals(100, region.width);
+  assertEquals(200, region.height);
+}
+
+function testSvgElement() {
+  var region = getElementRegion(document.getElementById('e'));
+  assertEquals(0, region.left);
+  assertEquals(0, region.top);
+  assertEquals(170, region.width);
+  assertEquals(110, region.height);
+}
+
+function testElementWithoutBoundingRectangle() {
+  var region = getElementRegion(document.getElementsByTagName('br')[0]);
+  assertEquals(0, region.left);
+  assertEquals(0, region.top);
+  assertEquals(0, region.width);
+  assertEquals(0, region.height);
+}
+
+</script>
+<body>
+<div style="border: 3px coral solid;">
+  <div id="a" style="background-color:orange;width:100px;height:200px">
+  </div>
+  <br>
+  <div>
+    <svg xmlns="http://www.w3.org/2000/svg" height="130px" width="300px">
+      <ellipse cx="150" cy="65" rx="85" ry="55" id="e">
+      </ellipse>
+    </svg>
+  </div>
+</div>
+</body>
+</html>

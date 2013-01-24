@@ -12,10 +12,10 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
+#include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/util.h"
@@ -53,77 +53,6 @@ Status CheckChromeVersion(Chrome* chrome, std::string* chrome_version) {
   }
   *chrome_version = temp_chrome_version;
   return Status(kOk);
-}
-
-Status FindElementByJs(
-    int interval_ms,
-    bool only_one,
-    bool has_root_element,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
-  std::string strategy;
-  if (!params.GetString("using", &strategy))
-    return Status(kUnknownError, "'using' must be a string");
-  std::string target;
-  if (!params.GetString("value", &target))
-    return Status(kUnknownError, "'value' must be a string");
-  std::string root_element;
-  if (has_root_element && !params.GetString("id", &root_element))
-    return Status(kUnknownError, "'id' of root element must be a string");
-
-  std::string script;
-  if (only_one)
-    script = webdriver::atoms::asString(webdriver::atoms::FIND_ELEMENT);
-  else
-    script = webdriver::atoms::asString(webdriver::atoms::FIND_ELEMENTS);
-  scoped_ptr<base::DictionaryValue> locator(new base::DictionaryValue());
-  locator->SetString(strategy, target);
-  base::ListValue arguments;
-  arguments.Append(locator.release());
-  if (has_root_element) {
-    scoped_ptr<base::DictionaryValue> id(new base::DictionaryValue());
-    id->SetString("ELEMENT", root_element);
-    arguments.Append(id.release());
-  }
-
-  base::Time start_time = base::Time::Now();
-  while (true) {
-    scoped_ptr<base::Value> temp;
-    Status status = session->chrome->CallFunction(
-        session->frame, script, arguments, &temp);
-    if (status.IsError())
-      return status;
-
-    if (!temp->IsType(base::Value::TYPE_NULL)) {
-      if (only_one) {
-        value->reset(temp.release());
-        return Status(kOk);
-      } else {
-        base::ListValue* result;
-        if (!temp->GetAsList(&result))
-          return Status(kUnknownError, "script returns unexpected result");
-
-        if (result->GetSize() > 0U) {
-          value->reset(temp.release());
-          return Status(kOk);
-        }
-      }
-    }
-
-    if ((base::Time::Now() - start_time).InMilliseconds() >=
-        session->implicit_wait) {
-      if (only_one) {
-        return Status(kNoSuchElement);
-      } else {
-        value->reset(new base::ListValue());
-        return Status(kOk);
-      }
-    }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(interval_ms));
-  }
-
-  return Status(kUnknownError);
 }
 
 }  // namespace
@@ -310,7 +239,7 @@ Status ExecuteFindElement(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return FindElementByJs(interval_ms, true, false, session, params, value);
+  return FindElement(interval_ms, true, NULL, session, params, value);
 }
 
 Status ExecuteFindElements(
@@ -318,23 +247,101 @@ Status ExecuteFindElements(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return FindElementByJs(interval_ms, false, false, session, params, value);
+  return FindElement(interval_ms, false, NULL, session, params, value);
 }
 
 Status ExecuteFindChildElement(
     int interval_ms,
     Session* session,
+    const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return FindElementByJs(interval_ms, true, true, session, params, value);
+  return FindElement(
+      interval_ms, true, &element_id, session, params, value);
 }
 
 Status ExecuteFindChildElements(
     int interval_ms,
     Session* session,
+    const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return FindElementByJs(interval_ms, false, true, session, params, value);
+  return FindElement(
+      interval_ms, false, &element_id, session, params, value);
+}
+
+Status ExecuteHoverOverElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  WebPoint location;
+  Status status = GetElementClickableLocation(
+      session, element_id, &location, NULL);
+  if (status.IsError())
+    return status;
+
+  MouseEvent move_event(
+      kMovedMouseEventType, kNoneMouseButton, location.x, location.y, 0);
+  std::list<MouseEvent> events;
+  events.push_back(move_event);
+  return session->chrome->DispatchMouseEvents(events);
+}
+
+Status ExecuteClickElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string tag_name;
+  Status status = GetElementTagName(session, element_id, &tag_name);
+  if (status.IsError())
+    return status;
+  if (tag_name == "option") {
+    bool is_toggleable;
+    status = IsOptionElementTogglable(session, element_id, &is_toggleable);
+    if (status.IsError())
+      return status;
+    if (is_toggleable)
+      return ToggleOptionElement(session, element_id);
+    else
+      return SetOptionElementSelected(session, element_id, true);
+  } else {
+    WebPoint location;
+    bool is_clickable;
+    status = GetElementClickableLocation(
+        session, element_id, &location, &is_clickable);
+    if (status.IsError())
+      return status;
+    if (!is_clickable)
+      return Status(kUnknownError, status.message());
+
+    std::list<MouseEvent> events;
+    events.push_back(
+        MouseEvent(kMovedMouseEventType, kNoneMouseButton,
+                   location.x, location.y, 0));
+    events.push_back(
+        MouseEvent(kPressedMouseEventType, kLeftMouseButton,
+                   location.x, location.y, 1));
+    events.push_back(
+        MouseEvent(kReleasedMouseEventType, kLeftMouseButton,
+                   location.x, location.y, 1));
+    return session->chrome->DispatchMouseEvents(events);
+  }
+}
+
+Status ExecuteClearElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  scoped_ptr<base::Value> result;
+  return session->chrome->CallFunction(
+      session->frame,
+      webdriver::atoms::asString(webdriver::atoms::CLEAR),
+      args, &result);
 }
 
 Status ExecuteSetTimeout(

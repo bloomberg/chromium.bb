@@ -95,6 +95,7 @@ Status ExecuteFindElements(
 Status ExecuteFindChildElement(
     int interval_ms,
     Session* session,
+    const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
@@ -102,6 +103,28 @@ Status ExecuteFindChildElement(
 Status ExecuteFindChildElements(
     int interval_ms,
     Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Move the mouse to the given element.
+Status ExecuteHoverOverElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Click on the element.
+Status ExecuteClickElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Clear a TEXTAREA or text INPUT element's value.
+Status ExecuteClearElement(
+    Session* session,
+    const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 

@@ -21,3 +21,12 @@ class WebElement(object):
   def FindElements(self, strategy, target):
     return self._Execute(
         'findChildElements', {'using': strategy, 'value': target})
+
+  def HoverOver(self):
+    self._Execute('hoverOverElement')
+
+  def Click(self):
+    self._Execute('clickElement')
+
+  def Clear(self):
+    self._Execute('clearElement')
