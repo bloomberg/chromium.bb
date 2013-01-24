@@ -22,6 +22,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "ui/base/touch/touch_device_win.h"
 #include <Windows.h>
 #endif  // defined(OS_WIN)
 
@@ -60,7 +61,7 @@ bool UseTouchOptimizedUI() {
   }
 
   // We use the touch layout only when we are running in Metro mode.
-  return base::win::IsMetroProcess() && base::win::IsTouchEnabled();
+  return base::win::IsMetroProcess() && ui::IsTouchDevicePresent();
 }
 #endif  // defined(OS_WIN)
 

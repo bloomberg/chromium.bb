@@ -111,12 +111,6 @@ wchar_t* LocalAllocAndCopyString(const string16& src) {
   return dest;
 }
 
-bool IsTouchEnabled() {
-  int value = GetSystemMetrics(SM_DIGITIZER);
-  return (value & (NID_READY | NID_INTEGRATED_TOUCH)) ==
-             (NID_READY | NID_INTEGRATED_TOUCH);
-}
-
 bool IsParentalControlActivityLoggingOn() {
   // Query this info on Windows Vista and above.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)

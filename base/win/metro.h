@@ -91,9 +91,6 @@ BASE_EXPORT void SetForceToUseTSF();
 // copying the src to it.
 BASE_EXPORT wchar_t* LocalAllocAndCopyString(const string16& src);
 
-// Returns true if the screen supports touch.
-BASE_EXPORT bool IsTouchEnabled();
-
 // Returns true if Windows Parental control activity logging is enabled. This
 // feature is available on Windows Vista and beyond.
 // This function should ideally be called on the UI thread.
