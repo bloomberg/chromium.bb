@@ -81,11 +81,14 @@ class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
   const std::string& id2_;
 };
 
+// NOTE: The tests below are DISABLED because they're flaky:
+// https://code.google.com/p/chromium/issues/detail?id=172002
+
 // Fire some mutating bookmark API events with extension 1, then fire
 // some mutating and non-mutating bookmark API events with extension
 // 2.  Only the mutating events should be recorded by the
 // syncer::ExtensionsActivityMonitor.
-TEST_F(SyncChromeExtensionsActivityMonitorTest, Basic) {
+TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Basic) {
   FireBookmarksApiEvent<extensions::BookmarksRemoveFunction>(extension1_, 1);
   FireBookmarksApiEvent<extensions::BookmarksMoveFunction>(extension1_, 1);
   FireBookmarksApiEvent<extensions::BookmarksUpdateFunction>(extension1_, 2);
@@ -116,7 +119,7 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, Basic) {
 // get the records, fire some more mutating and non-mutating events,
 // and put the old records back.  Those should be merged with the new
 // records correctly.
-TEST_F(SyncChromeExtensionsActivityMonitorTest, Put) {
+TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Put) {
   FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 5);
   FireBookmarksApiEvent<extensions::BookmarksMoveFunction>(extension2_, 8);
 
@@ -146,7 +149,7 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, Put) {
 // Fire some mutating bookmark API events and get the records multiple
 // times.  The mintor should correctly clear its records every time
 // they're returned.
-TEST_F(SyncChromeExtensionsActivityMonitorTest, MultiGet) {
+TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_MultiGet) {
   FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 5);
 
   syncer::ExtensionsActivityMonitor::Records results;
