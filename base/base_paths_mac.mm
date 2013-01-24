@@ -90,6 +90,9 @@ bool PathProviderMac(int key, FilePath* result) {
         *result = result->DirName().DirName();
       }
 #endif
+      if (result->ReferencesParent()) {
+        return file_util::AbsolutePath(result);
+      }
       return true;
     case base::DIR_USER_DESKTOP:
 #if defined(OS_IOS)
