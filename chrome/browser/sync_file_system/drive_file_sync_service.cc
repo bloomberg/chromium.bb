@@ -515,9 +515,9 @@ void DriveFileSyncService::ApplyLocalChange(
         DCHECK(has_remote_change);
         metadata.set_resource_id(remote_change.resource_id);
         metadata.set_md5_checksum(std::string());
-        metadata.set_to_be_fetched(false);
       }
       metadata.set_conflicted(true);
+      metadata.set_to_be_fetched(false);
       metadata_store_->UpdateEntry(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
@@ -1066,6 +1066,7 @@ void DriveFileSyncService::DidUploadExistingFileForLocalSync(
           metadata_store_->ReadEntry(url, &metadata);
       DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
       metadata.set_conflicted(true);
+      metadata.set_to_be_fetched(false);
       metadata_store_->UpdateEntry(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
@@ -1107,6 +1108,7 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
           metadata_store_->ReadEntry(url, &metadata);
       DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
       metadata.set_conflicted(true);
+      metadata.set_to_be_fetched(false);
       metadata_store_->UpdateEntry(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
@@ -1183,6 +1185,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     if (remote_file_change.IsAddOrUpdate()) {
       param->operation_result = fileapi::SYNC_OPERATION_NONE;
       param->drive_metadata.set_conflicted(true);
+      param->drive_metadata.set_to_be_fetched(false);
 
       metadata_store_->UpdateEntry(
           url, drive_metadata,
@@ -1230,6 +1233,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     if (local_changes.list().back().IsAddOrUpdate()) {
       param->operation_result = fileapi::SYNC_OPERATION_CONFLICTED;
       param->drive_metadata.set_conflicted(true);
+      param->drive_metadata.set_to_be_fetched(false);
 
       metadata_store_->UpdateEntry(
           url, drive_metadata,
@@ -1405,6 +1409,7 @@ void DriveFileSyncService::CompleteRemoteSync(
     // Clear |to_be_fetched| flag since we completed fetching the remote change
     // and applying it to the local file.
     DCHECK(!param->drive_metadata.conflicted());
+    param->drive_metadata.set_conflicted(false);
     param->drive_metadata.set_to_be_fetched(false);
     metadata_store_->UpdateEntry(
         param->remote_change.url, param->drive_metadata,

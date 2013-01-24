@@ -267,6 +267,7 @@ void DriveMetadataStore::UpdateEntry(
     const fileapi::SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK(!metadata.conflicted() || !metadata.to_be_fetched());
 
   std::pair<PathToMetadata::iterator, bool> result =
       metadata_map_[url.origin()].insert(std::make_pair(url.path(), metadata));
