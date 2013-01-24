@@ -5,18 +5,24 @@
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/metrics/histogram.h"
+#include "base/string_util.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/find_bar/find_match_rects_details.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/android/download_controller_android.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/page_transition_types.h"
 #include "jni/ChromeWebContentsDelegateAndroid_jni.h"
 #include "net/http/http_request_headers.h"
 #include "ui/gfx/rect.h"
@@ -27,6 +33,8 @@ using base::android::GetClass;
 using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 using content::FileChooserParams;
+using content::NavigationController;
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
@@ -51,6 +59,22 @@ ScopedJavaLocalRef<jobject> CreateAndroidRect(
 
   DCHECK(!rect_object.is_null());
   return rect_object;
+}
+
+NavigationEntry* GetActiveEntry(WebContents* web_contents) {
+  return web_contents->GetController().GetActiveEntry();
+}
+
+bool IsActiveNavigationGoogleSearch(WebContents* web_contents) {
+  NavigationEntry* entry = GetActiveEntry(web_contents);
+  content::PageTransition transition = entry->GetTransitionType();
+  if (!(transition & content::PAGE_TRANSITION_GENERATED) ||
+      !(transition & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+    return false;
+  }
+  GURL search_url = GoogleURLTracker::GoogleURL(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  return StartsWithASCII(entry->GetURL().spec(), search_url.spec(), false);
 }
 
 }  // anonymous namespace
@@ -255,6 +279,24 @@ void ChromeWebContentsDelegateAndroid::OnStartDownload(
     content::DownloadItem* download) {
   content::DownloadControllerAndroid::Get()->OnPostDownloadStarted(
       source, download);
+}
+
+void ChromeWebContentsDelegateAndroid::DidNavigateToPendingEntry(
+    content::WebContents* source) {
+  navigation_start_time_ = base::TimeTicks::Now();
+}
+
+void ChromeWebContentsDelegateAndroid::DidNavigateMainFramePostCommit(
+    content::WebContents* source) {
+  if (!IsActiveNavigationGoogleSearch(source))
+    return;
+
+  base::TimeDelta time_delta = base::TimeTicks::Now() - navigation_start_time_;
+  if (GetActiveEntry(source)->GetURL().SchemeIsSecure()) {
+    UMA_HISTOGRAM_TIMES("Omnibox.GoogleSearch.SecureSearchTime", time_delta);
+  } else {
+    UMA_HISTOGRAM_TIMES("Omnibox.GoogleSearch.SearchTime", time_delta);
+  }
 }
 
 }  // namespace android
