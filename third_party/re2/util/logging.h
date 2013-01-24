@@ -59,11 +59,8 @@ class LogMessage {
   void Flush() {
     stream() << "\n";
     string s = str_.str();
-#ifdef WIN32
-    write(2, s.data(), static_cast<unsigned int>(s.size()));
-#else
-    if(write(2, s.data(), s.size()) < 0) {}  // shut up gcc
-#endif
+    int n = (int)s.size(); // shut up msvc
+    if(write(2, s.data(), n) < 0) {}  // shut up gcc
     flushed_ = true;
   }
   ~LogMessage() {

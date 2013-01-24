@@ -9,8 +9,6 @@
 
 #include "re2/re2.h"
 
-#include <ctype.h>
-
 #include <stdio.h>
 #include <string>
 #ifdef WIN32
@@ -152,7 +150,8 @@ int RE2::Options::ParseFlags() const {
   int flags = Regexp::ClassNL;
   switch (encoding()) {
     default:
-      LOG(ERROR) << "Unknown encoding " << encoding();
+      if (log_errors())
+        LOG(ERROR) << "Unknown encoding " << encoding();
       break;
     case RE2::Options::EncodingUTF8:
       break;
@@ -554,10 +553,11 @@ bool RE2::Match(const StringPiece& text,
   }
 
   if (startpos < 0 || startpos > endpos || endpos > text.size()) {
-    LOG(ERROR) << "RE2: invalid startpos, endpos pair.";
+    if (options_.log_errors())
+      LOG(ERROR) << "RE2: invalid startpos, endpos pair.";
     return false;
   }
-  
+
   StringPiece subtext = text;
   subtext.remove_prefix(startpos);
   subtext.remove_suffix(text.size() - endpos);
@@ -673,7 +673,8 @@ bool RE2::Match(const StringPiece& text,
           LOG(INFO) << "Match " << trunc(pattern_)
                     << " [" << CEscape(subtext) << "]"
                     << " DFA inconsistency.";
-        LOG(ERROR) << "DFA inconsistency";
+        if (options_.log_errors())
+          LOG(ERROR) << "DFA inconsistency";
         return false;
       }
       if (FLAGS_trace_re2)
@@ -757,7 +758,7 @@ bool RE2::Match(const StringPiece& text,
                   << " [" << CEscape(subtext) << "]"
                   << " using OnePass.";
       if (!prog_->SearchOnePass(subtext1, text, anchor, kind, submatch, ncap)) {
-        if (!skipped_test)
+        if (!skipped_test && options_.log_errors())
           LOG(ERROR) << "SearchOnePass inconsistency";
         return false;
       }
@@ -768,7 +769,7 @@ bool RE2::Match(const StringPiece& text,
                   << " using BitState.";
       if (!prog_->SearchBitState(subtext1, text, anchor,
                                  kind, submatch, ncap)) {
-        if (!skipped_test)
+        if (!skipped_test && options_.log_errors())
           LOG(ERROR) << "SearchBitState inconsistency";
         return false;
       }
@@ -778,7 +779,7 @@ bool RE2::Match(const StringPiece& text,
                   << " [" << CEscape(subtext) << "]"
                   << " using NFA.";
       if (!prog_->SearchNFA(subtext1, text, anchor, kind, submatch, ncap)) {
-        if (!skipped_test)
+        if (!skipped_test && options_.log_errors())
           LOG(ERROR) << "SearchNFA inconsistency";
         return false;
       }
@@ -877,8 +878,10 @@ bool RE2::Rewrite(string *out, const StringPiece &rewrite,
       if (isdigit(c)) {
         int n = (c - '0');
         if (n >= veclen) {
-          LOG(ERROR) << "requested group " << n
-                     << " in regexp " << rewrite.data();
+          if (options_.log_errors()) {
+            LOG(ERROR) << "requested group " << n
+                       << " in regexp " << rewrite.data();
+          }
           return false;
         }
         StringPiece snip = vec[n];
@@ -887,7 +890,8 @@ bool RE2::Rewrite(string *out, const StringPiece &rewrite,
       } else if (c == '\\') {
         out->push_back('\\');
       } else {
-        LOG(ERROR) << "invalid rewrite pattern: " << rewrite.data();
+        if (options_.log_errors())
+          LOG(ERROR) << "invalid rewrite pattern: " << rewrite.data();
         return false;
       }
     } else {

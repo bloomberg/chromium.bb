@@ -1,8 +1,8 @@
-diff --git a/third_party/re2/re2/re2.cc b/third_party/re2/re2/re2.cc
-index 6acd802..3cc3dd4 100644
---- a/third_party/re2/re2/re2.cc
-+++ b/third_party/re2/re2/re2.cc
-@@ -38,8 +38,8 @@ const int RE2::Options::kDefaultMaxMem;  // initialized in re2.h
+diff --git a/re2/re2.cc b/re2/re2.cc
+index b9e44fc..fb43abf 100644
+--- a/re2/re2.cc
++++ b/re2/re2.cc
+@@ -56,8 +56,8 @@ RE2::Options::Options()
  
  RE2::Options::Options(RE2::CannedOptions opt)
    : encoding_(opt == RE2::Latin1 ? EncodingLatin1 : EncodingUTF8),
@@ -13,10 +13,10 @@ index 6acd802..3cc3dd4 100644
      log_errors_(opt != RE2::Quiet),
      max_mem_(kDefaultMaxMem),
      literal_(false),
-diff --git a/third_party/re2/re2/re2.h b/third_party/re2/re2/re2.h
-index 272028b..9f5b66d 100644
---- a/third_party/re2/re2/re2.h
-+++ b/third_party/re2/re2/re2.h
+diff --git a/re2/re2.h b/re2/re2.h
+index c509853..98b06b8 100644
+--- a/re2/re2.h
++++ b/re2/re2.h
 @@ -251,7 +251,7 @@ class RE2 {
    enum CannedOptions {
      DefaultOptions = 0,

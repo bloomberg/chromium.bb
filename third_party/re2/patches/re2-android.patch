@@ -1,34 +1,8 @@
-diff --git a/third_party/re2/re2/parse.cc b/third_party/re2/re2/parse.cc
-index 0cf4ab4..6423fe9 100644
---- a/third_party/re2/re2/parse.cc
-+++ b/third_party/re2/re2/parse.cc
-@@ -16,6 +16,8 @@
- // and recognizes the Perl escape sequences \d, \s, \w, \D, \S, and \W.
- // See regexp.h for rationale.
- 
-+#include <ctype.h>
-+
- #include "util/util.h"
- #include "re2/regexp.h"
- #include "re2/stringpiece.h"
-diff --git a/third_party/re2/re2/re2.cc b/third_party/re2/re2/re2.cc
-index 989add6..78978f1 100644
---- a/third_party/re2/re2/re2.cc
-+++ b/third_party/re2/re2/re2.cc
-@@ -9,6 +9,8 @@
- 
- #include "re2/re2.h"
- 
-+#include <ctype.h>
-+
- #include <stdio.h>
- #include <string>
- #ifdef WIN32
-diff --git a/third_party/re2/util/util.h b/third_party/re2/util/util.h
-index dab7e16..11b5f4a 100644
---- a/third_party/re2/util/util.h
-+++ b/third_party/re2/util/util.h
-@@ -28,6 +28,7 @@
+diff --git a/util/util.h b/util/util.h
+index 17ef824..8f54040 100644
+--- a/util/util.h
++++ b/util/util.h
+@@ -29,6 +29,7 @@
  #include <utility>
  #include <set>
  
@@ -36,7 +10,7 @@ index dab7e16..11b5f4a 100644
  #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
  
  // Use std names.
-@@ -44,7 +45,7 @@ using std::sort;
+@@ -45,7 +46,7 @@ using std::sort;
  using std::swap;
  using std::make_pair;
  
@@ -45,7 +19,7 @@ index dab7e16..11b5f4a 100644
  
  #include <tr1/unordered_set>
  using std::tr1::unordered_set;
-@@ -52,7 +53,7 @@ using std::tr1::unordered_set;
+@@ -53,7 +54,7 @@ using std::tr1::unordered_set;
  #else
  
  #include <unordered_set>

@@ -1,7 +1,7 @@
-diff --git a/third_party/re2/re2/dfa.cc b/third_party/re2/re2/dfa.cc
-index 3a6a387..32c8c33 100644
---- a/third_party/re2/re2/dfa.cc
-+++ b/third_party/re2/re2/dfa.cc
+diff --git a/re2/dfa.cc b/re2/dfa.cc
+index 2556c0f..f1fc7b0 100644
+--- a/re2/dfa.cc
++++ b/re2/dfa.cc
 @@ -27,6 +27,8 @@
  #include "util/flags.h"
  #include "util/sparse_set.h"
@@ -11,11 +11,11 @@ index 3a6a387..32c8c33 100644
  DEFINE_bool(re2_dfa_bail_when_slow, true,
              "Whether the RE2 DFA should bail out early "
              "if the NFA would be faster (for testing).");
-diff --git a/third_party/re2/util/util.h b/third_party/re2/util/util.h
-index a43ff76..63a9c6f 100644
---- a/third_party/re2/util/util.h
-+++ b/third_party/re2/util/util.h
-@@ -26,6 +26,8 @@
+diff --git a/util/util.h b/util/util.h
+index 471c64f..c46ab1b 100644
+--- a/util/util.h
++++ b/util/util.h
+@@ -27,6 +27,8 @@
  #include <utility>
  #include <set>
  
@@ -24,25 +24,7 @@ index a43ff76..63a9c6f 100644
  // Use std names.
  using std::set;
  using std::pair;
-@@ -80,17 +82,6 @@ template<bool> struct CompileAssert {};
- 
- #define arraysize(array) (sizeof(array)/sizeof((array)[0]))
- 
--// Fake lock annotations.  For real ones, see
--// http://code.google.com/p/data-race-test/
--#define ANNOTATE_PUBLISH_MEMORY_RANGE(a, b)
--#define ANNOTATE_IGNORE_WRITES_BEGIN()
--#define ANNOTATE_IGNORE_WRITES_END()
--#define ANNOTATE_BENIGN_RACE(a, b)
--#define NO_THREAD_SAFETY_ANALYSIS
--#define ANNOTATE_HAPPENS_BEFORE(x)
--#define ANNOTATE_HAPPENS_AFTER(x)
--#define ANNOTATE_UNPROTECTED_READ(x) (x)
--
- class StringPiece;
- 
- string CEscape(const StringPiece& src);
-@@ -116,8 +107,6 @@ static inline uint64 Hash64StringWithSeed(const char* s, int len, uint32 seed) {
+@@ -119,8 +121,6 @@ static inline uint64 Hash64StringWithSeed(const char* s, int len, uint32 seed) {
    return ((uint64)x << 32) | y;
  }
  
