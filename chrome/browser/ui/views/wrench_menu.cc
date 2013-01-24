@@ -623,25 +623,14 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
  private:
   void UpdateZoomControls() {
+    bool enable_increment = false;
+    bool enable_decrement = false;
+    WebContents* selected_tab = chrome::GetActiveWebContents(menu_->browser_);
     int zoom = 100;
-    // Don't override initial states of increment and decrement buttons when
-    // instant extended API is enabled and mode is NTP; they are properly
-    // updated in ToolbarView::ModeChanged() via CommandUpdater, and queried
-    // via WrenchMenuModel::IsCommandIdEnabled() when the buttons were created
-    // in CreateButtonWithAccName().
-    if (!(chrome::search::IsInstantExtendedAPIEnabled(
-              menu_->browser_->profile()) &&
-          menu_->browser_->search_model()->mode().is_ntp())) {
-      bool enable_increment = false;
-      bool enable_decrement = false;
-      WebContents* selected_tab = chrome::GetActiveWebContents(menu_->browser_);
-      if (selected_tab) {
-        zoom = selected_tab->GetZoomPercent(&enable_increment,
-                                            &enable_decrement);
-      }
-      increment_button_->SetEnabled(enable_increment);
-      decrement_button_->SetEnabled(enable_decrement);
-    }
+    if (selected_tab)
+      zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
+    increment_button_->SetEnabled(enable_increment);
+    decrement_button_->SetEnabled(enable_decrement);
     zoom_label_->SetText(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, zoom));
 
