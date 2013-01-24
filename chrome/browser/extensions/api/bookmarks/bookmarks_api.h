@@ -70,7 +70,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 };
 
 class BookmarksAPI : public ProfileKeyedAPI,
-                    public EventRouter::Observer {
+                     public EventRouter::Observer {
  public:
   explicit BookmarksAPI(Profile* profile);
   virtual ~BookmarksAPI();
@@ -82,8 +82,8 @@ class BookmarksAPI : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<BookmarksAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details)
-      OVERRIDE;
+  virtual void OnListenerAdded(
+      const EventListenerInfo& details) OVERRIDE;
 
  private:
   friend class ProfileKeyedAPIFactory<BookmarksAPI>;
@@ -302,8 +302,9 @@ class BookmarksImportFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION("bookmarks.import", BOOKMARKS_IMPORT)
 
   // BookmarkManagerIOFunction:
-  virtual void FileSelected(const FilePath& path, int index, void* params)
-      OVERRIDE;
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
 
  private:
   virtual ~BookmarksImportFunction() {}
@@ -317,8 +318,9 @@ class BookmarksExportFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION("bookmarks.export", BOOKMARKS_EXPORT)
 
   // BookmarkManagerIOFunction:
-  virtual void FileSelected(const FilePath& path, int index, void* params)
-      OVERRIDE;
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
 
  private:
   virtual ~BookmarksExportFunction() {}
