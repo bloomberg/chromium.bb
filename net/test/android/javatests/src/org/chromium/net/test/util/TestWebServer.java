@@ -88,6 +88,9 @@ public class TestWebServer {
         }
     }
 
+    // The Maps below are modified on both the client thread and the internal server thread, so
+    // need to use a lock when accessing them.
+    private final Object mLock = new Object();
     private Map<String, Response> mResponseMap = new HashMap<String, Response>();
     private Map<String, Integer> mResponseCountMap = new HashMap<String, Integer>();
     private Map<String, HttpRequest> mLastRequestMap = new HashMap<String, HttpRequest>();
@@ -157,9 +160,12 @@ public class TestWebServer {
             List<Pair<String, String>> responseHeaders,
             int status) {
         final boolean isRedirect = (status == RESPONSE_STATUS_MOVED_TEMPORARILY);
-        mResponseMap.put(requestPath, new Response(responseData, responseHeaders, isRedirect));
-        mResponseCountMap.put(requestPath, Integer.valueOf(0));
-        mLastRequestMap.put(requestPath, null);
+
+        synchronized (mLock) {
+            mResponseMap.put(requestPath, new Response(responseData, responseHeaders, isRedirect));
+            mResponseCountMap.put(requestPath, Integer.valueOf(0));
+            mLastRequestMap.put(requestPath, null);
+        }
         return getResponseUrl(requestPath);
     }
 
@@ -235,7 +241,10 @@ public class TestWebServer {
      * Get the number of requests was made at this path since it was last set.
      */
     public int getRequestCount(String requestPath) {
-        Integer count = mResponseCountMap.get(requestPath);
+        Integer count = null;
+        synchronized (mLock) {
+            count = mResponseCountMap.get(requestPath);
+        }
         if (count == null) throw new IllegalArgumentException("Path not set: " + requestPath);
         return count.intValue();
     }
@@ -244,9 +253,11 @@ public class TestWebServer {
      * Returns the last HttpRequest at this path. Can return null if it is never requested.
      */
     public HttpRequest getLastRequest(String requestPath) {
-        if (!mLastRequestMap.containsKey(requestPath))
-            throw new IllegalArgumentException("Path not set: " + requestPath);
-        return mLastRequestMap.get(requestPath);
+        synchronized (mLock) {
+            if (!mLastRequestMap.containsKey(requestPath))
+                throw new IllegalArgumentException("Path not set: " + requestPath);
+            return mLastRequestMap.get(requestPath);
+        }
     }
 
     public String getBaseUrl() {
@@ -310,9 +321,11 @@ public class TestWebServer {
     }
 
     private void servedResponseFor(String path, HttpRequest request) {
-        mResponseCountMap.put(path, Integer.valueOf(
-                mResponseCountMap.get(path).intValue() + 1));
-        mLastRequestMap.put(path, request);
+        synchronized (mLock) {
+            mResponseCountMap.put(path, Integer.valueOf(
+                    mResponseCountMap.get(path).intValue() + 1));
+            mLastRequestMap.put(path, request);
+        }
     }
 
     /**
@@ -327,7 +340,10 @@ public class TestWebServer {
         URI uri = URI.create(uriString);
         String path = uri.getPath();
 
-        Response response = mResponseMap.get(path);
+        Response response = null;
+        synchronized (mLock) {
+          response = mResponseMap.get(path);
+        }
         if (path.equals(SHUTDOWN_PREFIX)) {
             httpResponse = createResponse(HttpStatus.SC_OK);
         } else if (response == null) {
@@ -362,16 +378,21 @@ public class TestWebServer {
      */
     private HttpResponse createResponse(int status) {
         HttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_0, status, null);
+        String reason = null;
 
-        if (sReasons == null) {
-            sReasons = new Hashtable<Integer, String>();
-            sReasons.put(HttpStatus.SC_UNAUTHORIZED, "Unauthorized");
-            sReasons.put(HttpStatus.SC_NOT_FOUND, "Not Found");
-            sReasons.put(HttpStatus.SC_FORBIDDEN, "Forbidden");
-            sReasons.put(HttpStatus.SC_MOVED_TEMPORARILY, "Moved Temporarily");
+        // This synchronized silences findbugs.
+        synchronized (TestWebServer.class) {
+            if (sReasons == null) {
+                sReasons = new Hashtable<Integer, String>();
+                sReasons.put(HttpStatus.SC_UNAUTHORIZED, "Unauthorized");
+                sReasons.put(HttpStatus.SC_NOT_FOUND, "Not Found");
+                sReasons.put(HttpStatus.SC_FORBIDDEN, "Forbidden");
+                sReasons.put(HttpStatus.SC_MOVED_TEMPORARILY, "Moved Temporarily");
+            }
+            // Fill in error reason. Avoid use of the ReasonPhraseCatalog, which is
+            // Locale-dependent.
+            reason = sReasons.get(status);
         }
-        // Fill in error reason. Avoid use of the ReasonPhraseCatalog, which is Locale-dependent.
-        String reason = sReasons.get(status);
 
         if (reason != null) {
             StringBuffer buf = new StringBuffer("<html><head><title>");
