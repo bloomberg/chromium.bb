@@ -1,6 +1,6 @@
 2013-01-24  Christian Egli  <christian.egli@sbs.ch>
 
-	* tools/lou_trace.c: Fix warnings.
+	* tools/lou_trace.c: Fix warnings and run through indent.
 
 2013-01-24  David Reynolds <dkreynolds@ntlworld.com>
 
