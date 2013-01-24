@@ -98,7 +98,6 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   audio_renderer_ = media_stream_client_->GetAudioRenderer(url);
 
   if (video_frame_provider_ || audio_renderer_) {
-    SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
     GetClient()->sourceOpened();
     GetClient()->setOpaque(true);
     if (video_frame_provider_) {
@@ -284,7 +283,7 @@ float WebMediaPlayerMS::maxTimeSeekable() const {
 
 bool WebMediaPlayerMS::didLoadingProgress() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return false;
+  return true;
 }
 
 unsigned long long WebMediaPlayerMS::totalBytes() const {
