@@ -176,8 +176,7 @@ class TestSharder(BaseTestSharder):
       A SingleTestRunner object.
     """
     device_num = len(self.attached_devices)
-    shard_size = (len(self.tests) + device_num - 1) / device_num
-    shard_test_list = self.tests[index * shard_size : (index + 1) * shard_size]
+    shard_test_list = self.tests[index::device_num]
     test_filter = ':'.join(shard_test_list) + self.gtest_filter
     return SingleTestRunner(
         device,
