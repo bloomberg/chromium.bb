@@ -73,6 +73,7 @@ class ScriptExecutor {
                      FrameScope frame_scope,
                      UserScript::RunLocation run_at,
                      WorldType world_type,
+                     bool is_web_view,
                      const ExecuteScriptCallback& callback);
 
  private:

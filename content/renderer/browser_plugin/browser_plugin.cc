@@ -125,7 +125,8 @@ BrowserPlugin::BrowserPlugin(
       max_width_(0),
       min_height_(0),
       min_width_(0),
-      process_id_(-1),
+      guest_process_id_(-1),
+      guest_route_id_(-1),
       persist_storage_(false),
       valid_partition_id_(true),
       content_window_routing_id_(MSG_ROUTING_NONE),
@@ -429,7 +430,8 @@ void BrowserPlugin::OnLoadCommit(
     src_ = params.url.spec();
     UpdateDOMAttribute(kSrc, src_.c_str());
   }
-  process_id_ = params.process_id;
+  guest_process_id_ = params.process_id;
+  guest_route_id_ = params.route_id;
   current_nav_entry_index_ = params.current_entry_index;
   nav_entry_count_ = params.entry_count;
 

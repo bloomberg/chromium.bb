@@ -18,6 +18,7 @@
 #include "content/common/drag_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,6 +99,9 @@ void BrowserPluginGuest::Initialize(
       content::Source<content::WebContents>(web_contents()));
 
   OnSetSize(instance_id_, params.auto_size_params, params.resize_guest_params);
+
+  GetContentClient()->browser()->GuestWebContentsCreated(
+      web_contents(), embedder_web_contents_);
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -303,6 +307,7 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
   params.url = url;
   params.is_top_level = is_main_frame;
   params.process_id = render_view_host->GetProcess()->GetID();
+  params.route_id = render_view_host->GetRoutingID();
   params.current_entry_index =
       web_contents()->GetController().GetCurrentEntryIndex();
   params.entry_count =

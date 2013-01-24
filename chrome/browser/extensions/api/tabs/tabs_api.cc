@@ -1388,6 +1388,7 @@ bool TabsUpdateFunction::UpdateURLIfPresent(DictionaryValue* update_props,
             ScriptExecutor::TOP_FRAME,
             extensions::UserScript::DOCUMENT_IDLE,
             ScriptExecutor::MAIN_WORLD,
+            false /* is_web_view */,
             base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
@@ -2131,6 +2132,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
           frame_scope,
           run_at,
           ScriptExecutor::ISOLATED_WORLD,
+          false /* is_web_view */,
           base::Bind(&ExecuteCodeInTabFunction::OnExecuteCodeFinished, this));
   return true;
 }

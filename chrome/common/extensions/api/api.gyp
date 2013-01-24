@@ -67,6 +67,7 @@
           'tab_capture.idl',
           'tabs.json',
           'usb.idl',
+          'webview.json',
           'web_navigation.json',
           'web_request.json',
           'windows.json',

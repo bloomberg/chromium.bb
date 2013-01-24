@@ -83,6 +83,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // Whether to execute code in the main world (as opposed to an isolated
   // world).
   IPC_STRUCT_MEMBER(bool, in_main_world)
+
+  // Whether the request is coming from a <webview>.
+  IPC_STRUCT_MEMBER(bool, is_web_view)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)

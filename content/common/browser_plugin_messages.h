@@ -67,8 +67,10 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   // Indicates whether the navigation was on the top-level frame.
   IPC_STRUCT_MEMBER(bool, is_top_level)
-  // Chrome's process ID for the guest.
+  // The browser's process ID for the guest.
   IPC_STRUCT_MEMBER(int, process_id)
+  // The browser's routing ID for the guest's RenderView.
+  IPC_STRUCT_MEMBER(int, route_id)
   // The index of the current navigation entry after this navigation was
   // committed.
   IPC_STRUCT_MEMBER(int, current_entry_index)
@@ -283,7 +285,7 @@ IPC_MESSAGE_ROUTED4(BrowserPluginMsg_LoadRedirect,
                     bool /* is_top_level */)
 
 // When the guest commits a navigation, the browser process informs
-// the embedder through the BrowserPluginMsg_DidCommit message.
+// the embedder through the BrowserPluginMsg_LoadCommit message.
 IPC_MESSAGE_ROUTED2(BrowserPluginMsg_LoadCommit,
                     int /* instance_id */,
                     BrowserPluginMsg_LoadCommit_Params)

@@ -115,6 +115,7 @@ void ScriptExecutor::ExecuteScript(
     ScriptExecutor::FrameScope frame_scope,
     UserScript::RunLocation run_at,
     ScriptExecutor::WorldType world_type,
+    bool is_web_view,
     const ExecuteScriptCallback& callback) {
   ExtensionMsg_ExecuteCode_Params params;
   params.request_id = next_request_id_++;
@@ -124,6 +125,7 @@ void ScriptExecutor::ExecuteScript(
   params.all_frames = (frame_scope == ALL_FRAMES);
   params.run_at = static_cast<int>(run_at);
   params.in_main_world = (world_type == MAIN_WORLD);
+  params.is_web_view = is_web_view;
 
   // Handler handles IPCs and deletes itself on completion.
   new Handler(script_observers_, web_contents_, params, callback);

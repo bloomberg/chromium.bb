@@ -205,6 +205,21 @@ onload = function() {
           chrome.test.succeed();
         }
       }, 0);
+    },
+
+    function webViewExecuteScript() {
+      var webview = document.createElement('webview');
+      webview.addEventListener('loadstop', function() {
+        webview.executeScript(
+          {code:'document.body.style.backgroundColor = "red";'},
+          function(results) {
+            chrome.test.assertEq(1, results.length);
+            chrome.test.assertEq('red', results[0]);
+            chrome.test.succeed();
+          });
+      });
+      webview.setAttribute('src', 'data:text/html,trigger navigation');
+      document.body.appendChild(webview);
     }
   ]);
 };

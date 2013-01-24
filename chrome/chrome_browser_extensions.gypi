@@ -431,6 +431,8 @@
         'browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h',
         'browser/extensions/api/webstore_private/webstore_private_api.cc',
         'browser/extensions/api/webstore_private/webstore_private_api.h',
+        'browser/extensions/api/webview/webview_api.cc',
+        'browser/extensions/api/webview/webview_api.h',
         'browser/extensions/app_host_installer_win.cc',
         'browser/extensions/app_host_installer_win.h',
         'browser/extensions/app_launcher.cc',

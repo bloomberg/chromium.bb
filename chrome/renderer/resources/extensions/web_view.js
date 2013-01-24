@@ -71,6 +71,13 @@ function WebView(node) {
     };
   }, this);
 
+  node['executeScript'] = function(var_args) {
+    var args = [self.objectNode_.getProcessId(),
+                self.objectNode_.getRouteId()].concat(
+                    Array.prototype.slice.call(arguments));
+    chrome.webview.executeScript.apply(null, args);
+  }
+
   // Map attribute modifications on the <webview> tag to property changes in
   // the underlying <object> node.
   var handleMutation = this.handleMutation_.bind(this);

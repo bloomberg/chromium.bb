@@ -175,7 +175,8 @@ void UserScriptScheduler::ExecuteCodeImpl(
       //
       // For child frames, we just skip ones the extension doesn't have access
       // to and carry on.
-      if (!extension->CanExecuteScriptOnPage(child_frame->document().url(),
+      if (!params.is_web_view &&
+          !extension->CanExecuteScriptOnPage(child_frame->document().url(),
                                              frame_->document().url(),
                                              extension_helper->tab_id(),
                                              NULL,

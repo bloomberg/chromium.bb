@@ -42,6 +42,7 @@ const char kMethodCanGoBack[] = "canGoBack";
 const char kMethodCanGoForward[] = "canGoForward";
 const char kMethodForward[] = "forward";
 const char kMethodGetProcessId[] = "getProcessId";
+const char kMethodGetRouteId[] = "getRouteId";
 const char kMethodGo[] = "go";
 const char kMethodReload[] = "reload";
 const char kMethodStop[] = "stop";
@@ -301,6 +302,26 @@ class BrowserPluginBindingForward : public BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingForward);
 };
 
+// Note: This is a method that is used internally by the <webview> shim only.
+// This should not be exposed to developers.
+class BrowserPluginBindingGetRouteID : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingGetRouteID()
+      : BrowserPluginMethodBinding(kMethodGetRouteId, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    int route_id = bindings->instance()->guest_route_id();
+    INT32_TO_NPVARIANT(route_id, *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetRouteID);
+};
+
 class BrowserPluginBindingGetProcessID : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingGetProcessID()
@@ -310,7 +331,7 @@ class BrowserPluginBindingGetProcessID : public BrowserPluginMethodBinding {
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
-    int process_id = bindings->instance()->process_id();
+    int process_id = bindings->instance()->guest_process_id();
     INT32_TO_NPVARIANT(process_id, *result);
     return true;
   }
@@ -689,6 +710,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingCanGoForward);
   method_bindings_.push_back(new BrowserPluginBindingForward);
   method_bindings_.push_back(new BrowserPluginBindingGetProcessID);
+  method_bindings_.push_back(new BrowserPluginBindingGetRouteID);
   method_bindings_.push_back(new BrowserPluginBindingGo);
   method_bindings_.push_back(new BrowserPluginBindingReload);
   method_bindings_.push_back(new BrowserPluginBindingStop);
