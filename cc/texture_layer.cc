@@ -60,7 +60,7 @@ TextureLayer::~TextureLayer()
             layerTreeHost()->stopRateLimiter(m_client->context());
     }
     if (!m_contentCommitted)
-        m_textureMailbox.RunReleaseCallback(0);
+        m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
 }
 
 scoped_ptr<LayerImpl> TextureLayer::createLayerImpl(LayerTreeImpl* treeImpl)
@@ -128,7 +128,7 @@ void TextureLayer::setTextureMailbox(const TextureMailbox& mailbox)
         return;
     // If we never commited the mailbox, we need to release it here
     if (!m_contentCommitted)
-        m_textureMailbox.RunReleaseCallback(0);
+        m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
     m_textureMailbox = mailbox;
 
     setNeedsCommit();
@@ -187,7 +187,7 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
         TextureMailbox::ReleaseCallback callback;
         if (!m_textureMailbox.IsEmpty())
           callback = base::Bind(&postCallbackToMainThread, mainThread, m_textureMailbox.callback());
-        textureLayer->setTextureMailbox(TextureMailbox(m_textureMailbox.name(), callback));
+        textureLayer->setTextureMailbox(TextureMailbox(m_textureMailbox.name(), callback, m_textureMailbox.sync_point()));
     } else {
         textureLayer->setTextureId(m_textureId);
     }

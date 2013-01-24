@@ -7,13 +7,15 @@
 
 namespace cc {
 
-TextureMailbox::TextureMailbox() {
+TextureMailbox::TextureMailbox()
+    : sync_point_(0) {
 }
 
 TextureMailbox::TextureMailbox(
     const std::string& mailbox_name,
     const ReleaseCallback& mailbox_callback)
-    : callback_(mailbox_callback) {
+    : callback_(mailbox_callback),
+      sync_point_(0) {
   DCHECK(mailbox_name.empty() == mailbox_callback.is_null());
   if (!mailbox_name.empty()) {
     CHECK(mailbox_name.size() == sizeof(name_.name));
@@ -24,7 +26,18 @@ TextureMailbox::TextureMailbox(
 TextureMailbox::TextureMailbox(
     const Mailbox& mailbox_name,
     const ReleaseCallback& mailbox_callback)
-    : callback_(mailbox_callback) {
+    : callback_(mailbox_callback),
+      sync_point_(0) {
+  DCHECK(mailbox_name.isZero() == mailbox_callback.is_null());
+  name_.setName(mailbox_name.name);
+}
+
+TextureMailbox::TextureMailbox(
+    const Mailbox& mailbox_name,
+    const ReleaseCallback& mailbox_callback,
+    unsigned sync_point)
+    : callback_(mailbox_callback),
+      sync_point_(sync_point) {
   DCHECK(mailbox_name.isZero() == mailbox_callback.is_null());
   name_.setName(mailbox_name.name);
 }

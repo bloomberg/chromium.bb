@@ -293,7 +293,7 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
     if (!resource->mailbox.IsEmpty() && resource->external) {
         WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
         DCHECK(context3d);
-        unsigned syncPoint = 0;
+        unsigned syncPoint = resource->mailbox.sync_point();
         if (resource->glId) {
             GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
             GLC(context3d, context3d->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.data()));
@@ -425,6 +425,10 @@ const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
     if (!resource->glId && resource->external && !resource->mailbox.IsEmpty()) {
         WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
         DCHECK(context3d);
+        if (resource->mailbox.sync_point()) {
+            GLC(context3d, context3d->waitSyncPoint(resource->mailbox.sync_point()));
+            resource->mailbox.ResetSyncPoint();
+        }
         resource->glId = context3d->createTexture();
         GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.data()));

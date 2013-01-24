@@ -37,7 +37,7 @@ TextureLayerImpl::~TextureLayerImpl()
         provider->deleteResource(m_externalTextureResource);
     }
     if (m_hasPendingMailbox)
-        m_pendingTextureMailbox.RunReleaseCallback(0);
+        m_pendingTextureMailbox.RunReleaseCallback(m_pendingTextureMailbox.sync_point());
 }
 
 void TextureLayerImpl::setTextureMailbox(const TextureMailbox& mailbox)
@@ -48,7 +48,7 @@ void TextureLayerImpl::setTextureMailbox(const TextureMailbox& mailbox)
         return;
     // Two commits without a draw, ack the previous mailbox.
     if (m_hasPendingMailbox)
-        m_pendingTextureMailbox.RunReleaseCallback(0);
+        m_pendingTextureMailbox.RunReleaseCallback(m_pendingTextureMailbox.sync_point());
 
     m_pendingTextureMailbox = mailbox;
     m_hasPendingMailbox = true;

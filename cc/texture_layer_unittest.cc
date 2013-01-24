@@ -198,6 +198,8 @@ struct CommonMailboxObjects {
     CommonMailboxObjects()
         : m_mailboxName1(64, '1')
         , m_mailboxName2(64, '2')
+        , m_syncPoint1(1)
+        , m_syncPoint2(2)
     {
         m_releaseMailbox1 = base::Bind(&MockMailboxCallback::Release,
                                        base::Unretained(&m_mockCallback),
@@ -205,9 +207,12 @@ struct CommonMailboxObjects {
         m_releaseMailbox2 = base::Bind(&MockMailboxCallback::Release,
                                        base::Unretained(&m_mockCallback),
                                        m_mailboxName2);
-
-        m_mailbox1 = TextureMailbox(m_mailboxName1, m_releaseMailbox1);
-        m_mailbox2 = TextureMailbox(m_mailboxName2, m_releaseMailbox2);
+        Mailbox m1;
+        m1.setName(reinterpret_cast<const int8*>(m_mailboxName1.data()));
+        m_mailbox1 = TextureMailbox(m1, m_releaseMailbox1, m_syncPoint1);
+        Mailbox m2;
+        m2.setName(reinterpret_cast<const int8*>(m_mailboxName2.data()));
+        m_mailbox2 = TextureMailbox(m2, m_releaseMailbox2, m_syncPoint2);
     }
 
     std::string m_mailboxName1;
@@ -217,6 +222,8 @@ struct CommonMailboxObjects {
     TextureMailbox::ReleaseCallback m_releaseMailbox2;
     TextureMailbox m_mailbox1;
     TextureMailbox m_mailbox2;
+    unsigned m_syncPoint1;
+    unsigned m_syncPoint2;
 };
 
 class TextureLayerWithMailboxTest : public TextureLayerTest {
@@ -225,7 +232,8 @@ protected:
     {
         Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
         EXPECT_CALL(m_testData.m_mockCallback,
-                    Release(m_testData.m_mailboxName1, _)).Times(1);
+                    Release(m_testData.m_mailboxName1,
+                            m_testData.m_syncPoint1)).Times(1);
         TextureLayerTest::TearDown();
     }
 
@@ -250,7 +258,8 @@ TEST_F(TextureLayerWithMailboxTest, replaceMailboxOnMainThreadBeforeCommit)
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(0);
     EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
     EXPECT_CALL(m_testData.m_mockCallback,
-                Release(m_testData.m_mailboxName1, _)).Times(1);
+                Release(m_testData.m_mailboxName1,
+                        m_testData.m_syncPoint1)).Times(1);
     testLayer->setTextureMailbox(m_testData.m_mailbox2);
     Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
@@ -258,7 +267,8 @@ TEST_F(TextureLayerWithMailboxTest, replaceMailboxOnMainThreadBeforeCommit)
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(0);
     EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
     EXPECT_CALL(m_testData.m_mockCallback,
-                Release(m_testData.m_mailboxName2, _)).Times(1);
+                Release(m_testData.m_mailboxName2,
+                        m_testData.m_syncPoint2)).Times(1);
     testLayer->setTextureMailbox(TextureMailbox());
     Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
@@ -341,19 +351,22 @@ TEST_F(TextureLayerImplWithMailboxTest, testImplLayerCallbacks)
 
     // Test multiple commits without a draw.
     EXPECT_CALL(m_testData.m_mockCallback,
-                Release(m_testData.m_mailboxName1, _)).Times(1);
+                Release(m_testData.m_mailboxName1,
+                        m_testData.m_syncPoint1)).Times(1);
     implLayer->setTextureMailbox(m_testData.m_mailbox2);
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
 
     // Test resetting the mailbox.
     EXPECT_CALL(m_testData.m_mockCallback,
-                Release(m_testData.m_mailboxName2, _)).Times(1);
+                Release(m_testData.m_mailboxName2,
+                        m_testData.m_syncPoint2)).Times(1);
     implLayer->setTextureMailbox(TextureMailbox());
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
 
     // Test destructor.
     EXPECT_CALL(m_testData.m_mockCallback,
-                Release(m_testData.m_mailboxName1, _)).Times(1);
+                Release(m_testData.m_mailboxName1,
+                        m_testData.m_syncPoint1)).Times(1);
     implLayer->setTextureMailbox(m_testData.m_mailbox1);
 }
 
