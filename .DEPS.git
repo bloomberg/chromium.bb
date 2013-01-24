@@ -253,15 +253,9 @@ deps_os = {
             None,
         'src/third_party/hunspell_dictionaries':
             None,
-        'src/third_party/jsoncpp/source/include':
-            None,
-        'src/third_party/jsoncpp/source/src/lib_json':
-            None,
         'src/third_party/leveldatabase/src':
             None,
         'src/third_party/libexif/sources':
-            None,
-        'src/third_party/libjingle/source':
             None,
         'src/third_party/libjpeg_turbo':
             None,
