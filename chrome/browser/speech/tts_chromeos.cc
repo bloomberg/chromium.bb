@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
-#include "chrome/browser/speech/extension_api/tts_extension_loader_chromeos.h"
+#include "chrome/browser/speech/tts_extension_loader_chromeos.h"
+#include "chrome/browser/speech/tts_platform.h"
 
 // Chrome OS doesn't have native TTS, instead it includes a built-in
 // component extension that provides speech synthesis. This class includes
 // an implementation of LoadBuiltInTtsExtension and dummy implementations of
 // everything else.
-class ExtensionTtsPlatformImplChromeOs
-    : public ExtensionTtsPlatformImpl {
+class TtsPlatformImplChromeOs
+    : public TtsPlatformImpl {
  public:
-  // ExtensionTtsPlatformImpl overrides:
+  // TtsPlatformImpl overrides:
   virtual bool PlatformImplAvailable() OVERRIDE {
     return false;
   }
@@ -42,24 +42,24 @@ class ExtensionTtsPlatformImplChromeOs
   }
 
   // Get the single instance of this class.
-  static ExtensionTtsPlatformImplChromeOs* GetInstance();
+  static TtsPlatformImplChromeOs* GetInstance();
 
  private:
-  ExtensionTtsPlatformImplChromeOs() {}
-  virtual ~ExtensionTtsPlatformImplChromeOs() {}
+  TtsPlatformImplChromeOs() {}
+  virtual ~TtsPlatformImplChromeOs() {}
 
-  friend struct DefaultSingletonTraits<ExtensionTtsPlatformImplChromeOs>;
+  friend struct DefaultSingletonTraits<TtsPlatformImplChromeOs>;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImplChromeOs);
+  DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplChromeOs);
 };
 
 // static
-ExtensionTtsPlatformImpl* ExtensionTtsPlatformImpl::GetInstance() {
-  return ExtensionTtsPlatformImplChromeOs::GetInstance();
+TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+  return TtsPlatformImplChromeOs::GetInstance();
 }
 
 // static
-ExtensionTtsPlatformImplChromeOs*
-ExtensionTtsPlatformImplChromeOs::GetInstance() {
-  return Singleton<ExtensionTtsPlatformImplChromeOs>::get();
+TtsPlatformImplChromeOs*
+TtsPlatformImplChromeOs::GetInstance() {
+  return Singleton<TtsPlatformImplChromeOs>::get();
 }

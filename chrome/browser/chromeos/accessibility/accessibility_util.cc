@@ -25,7 +25,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -256,7 +256,7 @@ void Speak(const std::string& text) {
   utterance->set_can_enqueue(false);
   utterance->set_options(new DictionaryValue());
 
-  ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+  TtsController* controller = TtsController::GetInstance();
   controller->SpeakOrEnqueue(utterance);
 }
 

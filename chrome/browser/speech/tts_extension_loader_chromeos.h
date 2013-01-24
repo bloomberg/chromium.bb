@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_LOADER_CHROMEOS_H_
-#define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_LOADER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
+#define CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
 
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -48,4 +48,4 @@ class TtsExtensionLoaderChromeOs
   DISALLOW_COPY_AND_ASSIGN(TtsExtensionLoaderChromeOs);
 };
 
-#endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_LOADER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/tts_controller.h"
 
 #include <string>
 #include <vector>
@@ -13,10 +13,10 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
+#include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 
@@ -140,20 +140,20 @@ void Utterance::set_options(const Value* options) {
 }
 
 //
-// ExtensionTtsController
+// TtsController
 //
 
 // static
-ExtensionTtsController* ExtensionTtsController::GetInstance() {
-  return Singleton<ExtensionTtsController>::get();
+TtsController* TtsController::GetInstance() {
+  return Singleton<TtsController>::get();
 }
 
-ExtensionTtsController::ExtensionTtsController()
+TtsController::TtsController()
     : current_utterance_(NULL),
       platform_impl_(NULL) {
 }
 
-ExtensionTtsController::~ExtensionTtsController() {
+TtsController::~TtsController() {
   if (current_utterance_) {
     current_utterance_->Finish();
     delete current_utterance_;
@@ -163,7 +163,7 @@ ExtensionTtsController::~ExtensionTtsController() {
   ClearUtteranceQueue(false);  // Don't sent events.
 }
 
-void ExtensionTtsController::SpeakOrEnqueue(Utterance* utterance) {
+void TtsController::SpeakOrEnqueue(Utterance* utterance) {
   if (IsSpeaking() && utterance->can_enqueue()) {
     utterance_queue_.push(utterance);
   } else {
@@ -172,7 +172,7 @@ void ExtensionTtsController::SpeakOrEnqueue(Utterance* utterance) {
   }
 }
 
-void ExtensionTtsController::SpeakNow(Utterance* utterance) {
+void TtsController::SpeakNow(Utterance* utterance) {
   const extensions::Extension* extension;
   size_t voice_index;
   if (GetMatchingExtensionVoice(utterance, &extension, &voice_index)) {
@@ -219,7 +219,7 @@ void ExtensionTtsController::SpeakNow(Utterance* utterance) {
   current_utterance_ = utterance;
 }
 
-void ExtensionTtsController::Stop() {
+void TtsController::Stop() {
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
     ExtensionTtsEngineStop(current_utterance_);
   } else {
@@ -234,7 +234,7 @@ void ExtensionTtsController::Stop() {
   ClearUtteranceQueue(true);  // Send events.
 }
 
-void ExtensionTtsController::OnTtsEvent(int utterance_id,
+void TtsController::OnTtsEvent(int utterance_id,
                                         TtsEventType event_type,
                                         int char_index,
                                         const std::string& error_message) {
@@ -252,9 +252,9 @@ void ExtensionTtsController::OnTtsEvent(int utterance_id,
   }
 }
 
-ListValue* ExtensionTtsController::GetVoices(Profile* profile) {
+ListValue* TtsController::GetVoices(Profile* profile) {
   ListValue* result_voices = new ListValue();
-  ExtensionTtsPlatformImpl* platform_impl = GetPlatformImpl();
+  TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl && platform_impl->PlatformImplAvailable()) {
     DictionaryValue* result_voice = new DictionaryValue();
     result_voice->SetString(
@@ -294,11 +294,11 @@ ListValue* ExtensionTtsController::GetVoices(Profile* profile) {
   return result_voices;
 }
 
-bool ExtensionTtsController::IsSpeaking() {
+bool TtsController::IsSpeaking() {
   return current_utterance_ != NULL || GetPlatformImpl()->IsSpeaking();
 }
 
-void ExtensionTtsController::FinishCurrentUtterance() {
+void TtsController::FinishCurrentUtterance() {
   if (current_utterance_) {
     if (!current_utterance_->finished())
       current_utterance_->OnTtsEvent(TTS_EVENT_INTERRUPTED, kInvalidCharIndex,
@@ -308,7 +308,7 @@ void ExtensionTtsController::FinishCurrentUtterance() {
   }
 }
 
-void ExtensionTtsController::SpeakNextUtterance() {
+void TtsController::SpeakNextUtterance() {
   // Start speaking the next utterance in the queue.  Keep trying in case
   // one fails but there are still more in the queue to try.
   while (!utterance_queue_.empty() && !current_utterance_) {
@@ -318,12 +318,12 @@ void ExtensionTtsController::SpeakNextUtterance() {
   }
 }
 
-void ExtensionTtsController::RetrySpeakingQueuedUtterances() {
+void TtsController::RetrySpeakingQueuedUtterances() {
   if (current_utterance_ == NULL && !utterance_queue_.empty())
     SpeakNextUtterance();
 }
 
-void ExtensionTtsController::ClearUtteranceQueue(bool send_events) {
+void TtsController::ClearUtteranceQueue(bool send_events) {
   while (!utterance_queue_.empty()) {
     Utterance* utterance = utterance_queue_.front();
     utterance_queue_.pop();
@@ -336,17 +336,17 @@ void ExtensionTtsController::ClearUtteranceQueue(bool send_events) {
   }
 }
 
-void ExtensionTtsController::SetPlatformImpl(
-    ExtensionTtsPlatformImpl* platform_impl) {
+void TtsController::SetPlatformImpl(
+    TtsPlatformImpl* platform_impl) {
   platform_impl_ = platform_impl;
 }
 
-int ExtensionTtsController::QueueSize() {
+int TtsController::QueueSize() {
   return static_cast<int>(utterance_queue_.size());
 }
 
-ExtensionTtsPlatformImpl* ExtensionTtsController::GetPlatformImpl() {
+TtsPlatformImpl* TtsController::GetPlatformImpl() {
   if (!platform_impl_)
-    platform_impl_ = ExtensionTtsPlatformImpl::GetInstance();
+    platform_impl_ = TtsPlatformImpl::GetInstance();
   return platform_impl_;
 }

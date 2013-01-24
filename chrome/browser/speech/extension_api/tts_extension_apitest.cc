@@ -8,8 +8,8 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +27,9 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
-class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
+class MockTtsPlatformImpl : public TtsPlatformImpl {
  public:
-  MockExtensionTtsPlatformImpl()
+  MockTtsPlatformImpl()
       : ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {}
 
   virtual bool PlatformImplAvailable() {
@@ -61,7 +61,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
                     const UtteranceContinuousParameters& params) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(
-            &MockExtensionTtsPlatformImpl::SendEvent,
+            &MockTtsPlatformImpl::SendEvent,
             ptr_factory_.GetWeakPtr(),
             false, utterance_id, TTS_EVENT_END, utterance.size(),
             std::string()),
@@ -75,7 +75,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
       const UtteranceContinuousParameters& params) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(
-            &MockExtensionTtsPlatformImpl::SendEvent,
+            &MockTtsPlatformImpl::SendEvent,
             ptr_factory_.GetWeakPtr(),
             true, utterance_id, TTS_EVENT_END, utterance.size(), std::string()),
         base::TimeDelta());
@@ -89,7 +89,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
       if (i == 0 || utterance[i - 1] == ' ') {
         MessageLoop::current()->PostDelayedTask(
             FROM_HERE, base::Bind(
-                &MockExtensionTtsPlatformImpl::SendEvent,
+                &MockTtsPlatformImpl::SendEvent,
                 ptr_factory_.GetWeakPtr(),
                 false, utterance_id, TTS_EVENT_WORD, i,
                 std::string()),
@@ -103,11 +103,11 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
                  TtsEventType event_type,
                  int char_index,
                  const std::string& message) {
-    ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+    TtsController* controller = TtsController::GetInstance();
     if (wait_for_non_empty_queue && controller->QueueSize() == 0) {
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(
-              &MockExtensionTtsPlatformImpl::SendEvent,
+              &MockTtsPlatformImpl::SendEvent,
               ptr_factory_.GetWeakPtr(),
               true, utterance_id, event_type, char_index, message),
           base::TimeDelta::FromMilliseconds(100));
@@ -118,19 +118,18 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
   }
 
  private:
-  base::WeakPtrFactory<MockExtensionTtsPlatformImpl> ptr_factory_;
+  base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_;
 };
 
 class TtsApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    ExtensionTtsController::GetInstance()->SetPlatformImpl(
-        &mock_platform_impl_);
+    TtsController::GetInstance()->SetPlatformImpl(&mock_platform_impl_);
   }
 
  protected:
-  StrictMock<MockExtensionTtsPlatformImpl> mock_platform_impl_;
+  StrictMock<MockTtsPlatformImpl> mock_platform_impl_;
 };
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
@@ -168,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakFinishesImmediately) {
   EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/speak_once")) << message_;
 }
@@ -188,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakInterrupt) {
   EXPECT_CALL(mock_platform_impl_, Speak(_, "text 2", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/interrupt")) << message_;
 }
@@ -211,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakQueueInterrupt) {
   EXPECT_CALL(mock_platform_impl_, Speak(_, "text 3", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/queue_interrupt")) << message_;
 }
@@ -225,12 +224,12 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakEnqueue) {
   EXPECT_CALL(mock_platform_impl_, Speak(_, "text 1", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEventWhenQueueNotEmpty),
+                 &MockTtsPlatformImpl::SendEndEventWhenQueueNotEmpty),
           Return(true)));
   EXPECT_CALL(mock_platform_impl_, Speak(_, "text 2", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/enqueue")) << message_;
 }
@@ -246,14 +245,14 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
       .WillOnce(DoAll(
           InvokeWithoutArgs(
               CreateFunctor(&mock_platform_impl_,
-                            &MockExtensionTtsPlatformImpl::SetErrorToEpicFail)),
+                            &MockTtsPlatformImpl::SetErrorToEpicFail)),
           Return(false)));
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak(_, "second try", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/speak_error")) << message_;
 }
@@ -267,9 +266,9 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformWordCallbacks) {
   EXPECT_CALL(mock_platform_impl_, Speak(_, "one two three", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendWordEvents),
+                 &MockTtsPlatformImpl::SendWordEvents),
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/word_callbacks")) << message_;
 }
@@ -285,17 +284,17 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
     EXPECT_CALL(mock_platform_impl_, Speak(_, "native speech", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
     EXPECT_CALL(mock_platform_impl_, Speak(_, "native speech 2", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
     EXPECT_CALL(mock_platform_impl_, Speak(_, "native speech 3", _, _))
       .WillOnce(DoAll(
           Invoke(&mock_platform_impl_,
-                 &MockExtensionTtsPlatformImpl::SendEndEvent),
+                 &MockTtsPlatformImpl::SendEndEvent),
           Return(true)));
   }
 

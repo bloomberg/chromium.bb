@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/extension_api/tts_extension_loader_chromeos.h"
+#include "chrome/browser/speech/tts_extension_loader_chromeos.h"
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "grit/browser_resources.h"
 
@@ -117,6 +117,6 @@ void TtsExtensionLoaderChromeOs::OnListenerAdded(
   if (tts_state_ == TTS_LOADING) {
     LOG(INFO) << "TTS component extension loaded, retrying queued utterances.";
     tts_state_ = TTS_LOADED;
-    ExtensionTtsController::GetInstance()->RetrySpeakingQueuedUtterances();
+    TtsController::GetInstance()->RetrySpeakingQueuedUtterances();
   }
 }

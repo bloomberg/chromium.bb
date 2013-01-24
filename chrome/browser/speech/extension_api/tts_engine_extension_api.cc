@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 
@@ -285,7 +285,7 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunImpl() {
     return false;
   }
 
-  ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+  TtsController* controller = TtsController::GetInstance();
   if (event_type == constants::kEventTypeStart) {
     controller->OnTtsEvent(
         utterance_id, TTS_EVENT_START, char_index, std::string());

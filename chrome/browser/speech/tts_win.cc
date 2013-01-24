@@ -10,10 +10,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_platform.h"
 
-class ExtensionTtsPlatformImplWin : public ExtensionTtsPlatformImpl {
+class TtsPlatformImplWin : public TtsPlatformImpl {
  public:
   virtual bool PlatformImplAvailable() {
     return true;
@@ -32,13 +32,13 @@ class ExtensionTtsPlatformImplWin : public ExtensionTtsPlatformImpl {
   virtual bool SendsEvent(TtsEventType event_type);
 
   // Get the single instance of this class.
-  static ExtensionTtsPlatformImplWin* GetInstance();
+  static TtsPlatformImplWin* GetInstance();
 
   static void __stdcall SpeechEventCallback(WPARAM w_param, LPARAM l_param);
 
  private:
-  ExtensionTtsPlatformImplWin();
-  virtual ~ExtensionTtsPlatformImplWin() {}
+  TtsPlatformImplWin();
+  virtual ~TtsPlatformImplWin() {}
 
   void OnSpeechEvent();
 
@@ -51,17 +51,17 @@ class ExtensionTtsPlatformImplWin : public ExtensionTtsPlatformImpl {
   ULONG stream_number_;
   int char_position_;
 
-  friend struct DefaultSingletonTraits<ExtensionTtsPlatformImplWin>;
+  friend struct DefaultSingletonTraits<TtsPlatformImplWin>;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImplWin);
+  DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplWin);
 };
 
 // static
-ExtensionTtsPlatformImpl* ExtensionTtsPlatformImpl::GetInstance() {
-  return ExtensionTtsPlatformImplWin::GetInstance();
+TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+  return TtsPlatformImplWin::GetInstance();
 }
 
-bool ExtensionTtsPlatformImplWin::Speak(
+bool TtsPlatformImplWin::Speak(
     int utterance_id,
     const std::string& src_utterance,
     const std::string& lang,
@@ -113,7 +113,7 @@ bool ExtensionTtsPlatformImplWin::Speak(
   return (result == S_OK);
 }
 
-bool ExtensionTtsPlatformImplWin::StopSpeaking() {
+bool TtsPlatformImplWin::StopSpeaking() {
   if (speech_synthesizer_.get()) {
     // Clear the stream number so that any further events relating to this
     // utterance are ignored.
@@ -127,7 +127,7 @@ bool ExtensionTtsPlatformImplWin::StopSpeaking() {
   return true;
 }
 
-bool ExtensionTtsPlatformImplWin::IsSpeaking() {
+bool TtsPlatformImplWin::IsSpeaking() {
   if (speech_synthesizer_.get()) {
     SPVOICESTATUS status;
     HRESULT result = speech_synthesizer_->GetStatus(&status, NULL);
@@ -141,7 +141,7 @@ bool ExtensionTtsPlatformImplWin::IsSpeaking() {
   return false;
 }
 
-bool ExtensionTtsPlatformImplWin::SendsEvent(TtsEventType event_type) {
+bool TtsPlatformImplWin::SendsEvent(TtsEventType event_type) {
   return (event_type == TTS_EVENT_START ||
           event_type == TTS_EVENT_END ||
           event_type == TTS_EVENT_MARKER ||
@@ -149,8 +149,8 @@ bool ExtensionTtsPlatformImplWin::SendsEvent(TtsEventType event_type) {
           event_type == TTS_EVENT_SENTENCE);
 }
 
-void ExtensionTtsPlatformImplWin::OnSpeechEvent() {
-  ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+void TtsPlatformImplWin::OnSpeechEvent() {
+  TtsController* controller = TtsController::GetInstance();
   SPEVENT event;
   while (S_OK == speech_synthesizer_->GetEvents(1, &event, NULL)) {
     if (event.ulStreamNum != stream_number_)
@@ -186,7 +186,7 @@ void ExtensionTtsPlatformImplWin::OnSpeechEvent() {
   }
 }
 
-ExtensionTtsPlatformImplWin::ExtensionTtsPlatformImplWin()
+TtsPlatformImplWin::TtsPlatformImplWin()
   : utterance_id_(0),
     prefix_len_(0),
     stream_number_(0),
@@ -201,18 +201,18 @@ ExtensionTtsPlatformImplWin::ExtensionTtsPlatformImplWin()
         SPFEI(SPEI_END_INPUT_STREAM);
     speech_synthesizer_->SetInterest(event_mask, event_mask);
     speech_synthesizer_->SetNotifyCallbackFunction(
-        ExtensionTtsPlatformImplWin::SpeechEventCallback, 0, 0);
+        TtsPlatformImplWin::SpeechEventCallback, 0, 0);
   }
 }
 
 // static
-ExtensionTtsPlatformImplWin* ExtensionTtsPlatformImplWin::GetInstance() {
-  return Singleton<ExtensionTtsPlatformImplWin,
-                   LeakySingletonTraits<ExtensionTtsPlatformImplWin> >::get();
+TtsPlatformImplWin* TtsPlatformImplWin::GetInstance() {
+  return Singleton<TtsPlatformImplWin,
+                   LeakySingletonTraits<TtsPlatformImplWin> >::get();
 }
 
 // static
-void ExtensionTtsPlatformImplWin::SpeechEventCallback(
+void TtsPlatformImplWin::SpeechEventCallback(
     WPARAM w_param, LPARAM l_param) {
   GetInstance()->OnSpeechEvent();
 }

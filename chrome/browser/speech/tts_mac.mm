@@ -9,24 +9,23 @@
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_platform.h"
 
 #import <Cocoa/Cocoa.h>
 
-class ExtensionTtsPlatformImplMac;
+class TtsPlatformImplMac;
 
 @interface ChromeTtsDelegate : NSObject <NSSpeechSynthesizerDelegate> {
  @private
-  ExtensionTtsPlatformImplMac* ttsImplMac_;  // weak.
+  TtsPlatformImplMac* ttsImplMac_;  // weak.
 }
 
-- (id)initWithPlatformImplMac:(ExtensionTtsPlatformImplMac*)ttsImplMac;
+- (id)initWithPlatformImplMac:(TtsPlatformImplMac*)ttsImplMac;
 
 @end
 
-class ExtensionTtsPlatformImplMac : public ExtensionTtsPlatformImpl {
+class TtsPlatformImplMac : public TtsPlatformImpl {
  public:
   virtual bool PlatformImplAvailable() {
     return true;
@@ -52,11 +51,11 @@ class ExtensionTtsPlatformImplMac : public ExtensionTtsPlatformImpl {
                      const std::string& error_message);
 
   // Get the single instance of this class.
-  static ExtensionTtsPlatformImplMac* GetInstance();
+  static TtsPlatformImplMac* GetInstance();
 
  private:
-  ExtensionTtsPlatformImplMac();
-  virtual ~ExtensionTtsPlatformImplMac();
+  TtsPlatformImplMac();
+  virtual ~TtsPlatformImplMac();
 
   scoped_nsobject<NSSpeechSynthesizer> speech_synthesizer_;
   scoped_nsobject<ChromeTtsDelegate> delegate_;
@@ -64,17 +63,17 @@ class ExtensionTtsPlatformImplMac : public ExtensionTtsPlatformImpl {
   std::string utterance_;
   bool sent_start_event_;
 
-  friend struct DefaultSingletonTraits<ExtensionTtsPlatformImplMac>;
+  friend struct DefaultSingletonTraits<TtsPlatformImplMac>;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImplMac);
+  DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplMac);
 };
 
 // static
-ExtensionTtsPlatformImpl* ExtensionTtsPlatformImpl::GetInstance() {
-  return ExtensionTtsPlatformImplMac::GetInstance();
+TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+  return TtsPlatformImplMac::GetInstance();
 }
 
-bool ExtensionTtsPlatformImplMac::Speak(
+bool TtsPlatformImplMac::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
@@ -119,7 +118,7 @@ bool ExtensionTtsPlatformImplMac::Speak(
              [NSString stringWithUTF8String: utterance.c_str()]];
 }
 
-bool ExtensionTtsPlatformImplMac::StopSpeaking() {
+bool TtsPlatformImplMac::StopSpeaking() {
   if (speech_synthesizer_.get()) {
     [speech_synthesizer_ stopSpeaking];
     speech_synthesizer_.reset(nil);
@@ -127,18 +126,18 @@ bool ExtensionTtsPlatformImplMac::StopSpeaking() {
   return true;
 }
 
-bool ExtensionTtsPlatformImplMac::IsSpeaking() {
+bool TtsPlatformImplMac::IsSpeaking() {
   return [NSSpeechSynthesizer isAnyApplicationSpeaking];
 }
 
-bool ExtensionTtsPlatformImplMac::SendsEvent(TtsEventType event_type) {
+bool TtsPlatformImplMac::SendsEvent(TtsEventType event_type) {
   return (event_type == TTS_EVENT_START ||
           event_type == TTS_EVENT_END ||
           event_type == TTS_EVENT_WORD ||
           event_type == TTS_EVENT_ERROR);
 }
 
-void ExtensionTtsPlatformImplMac::OnSpeechEvent(
+void TtsPlatformImplMac::OnSpeechEvent(
     NSSpeechSynthesizer* sender,
     TtsEventType event_type,
     int char_index,
@@ -151,7 +150,7 @@ void ExtensionTtsPlatformImplMac::OnSpeechEvent(
 
   if (event_type == TTS_EVENT_END)
     char_index = utterance_.size();
-  ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+  TtsController* controller = TtsController::GetInstance();
   if (event_type == TTS_EVENT_WORD && !sent_start_event_) {
     controller->OnTtsEvent(
         utterance_id_, TTS_EVENT_START, 0, "");
@@ -161,24 +160,24 @@ void ExtensionTtsPlatformImplMac::OnSpeechEvent(
       utterance_id_, event_type, char_index, error_message);
 }
 
-ExtensionTtsPlatformImplMac::ExtensionTtsPlatformImplMac() {
+TtsPlatformImplMac::TtsPlatformImplMac() {
   utterance_id_ = -1;
   sent_start_event_ = true;
 
   delegate_.reset([[ChromeTtsDelegate alloc] initWithPlatformImplMac:this]);
 }
 
-ExtensionTtsPlatformImplMac::~ExtensionTtsPlatformImplMac() {
+TtsPlatformImplMac::~TtsPlatformImplMac() {
 }
 
 // static
-ExtensionTtsPlatformImplMac* ExtensionTtsPlatformImplMac::GetInstance() {
-  return Singleton<ExtensionTtsPlatformImplMac>::get();
+TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
+  return Singleton<TtsPlatformImplMac>::get();
 }
 
 @implementation ChromeTtsDelegate
 
-- (id)initWithPlatformImplMac:(ExtensionTtsPlatformImplMac*)ttsImplMac {
+- (id)initWithPlatformImplMac:(TtsPlatformImplMac*)ttsImplMac {
   if ((self = [super init])) {
     ttsImplMac_ = ttsImplMac;
   }

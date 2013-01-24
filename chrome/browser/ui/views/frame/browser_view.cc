@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
@@ -499,7 +499,7 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_LWIN &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled)) {
-    ExtensionTtsController::GetInstance()->Stop();
+    TtsController::GetInstance()->Stop();
     return false;
   }
 #endif

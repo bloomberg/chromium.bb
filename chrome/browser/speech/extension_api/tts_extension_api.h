@@ -9,7 +9,7 @@
 
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/tts_controller.h"
 
 class Profile;
 

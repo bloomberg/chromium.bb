@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_CONTROLLER_H_
-#define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_CONTROLLER_H_
+#ifndef CHROME_BROWSER_SPEECH_TTS_CONTROLLER_H_
+#define CHROME_BROWSER_SPEECH_TTS_CONTROLLER_H_
 
 #include <queue>
 #include <set>
@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "googleurl/src/gurl.h"
 
-class ExtensionTtsPlatformImpl;
+class TtsPlatformImpl;
 class Profile;
 
 namespace base {
@@ -184,10 +184,10 @@ class Utterance {
 // Singleton class that manages text-to-speech for the TTS and TTS engine
 // extension APIs, maintaining a queue of pending utterances and keeping
 // track of all state.
-class ExtensionTtsController {
+class TtsController {
  public:
   // Get the single instance of this class.
-  static ExtensionTtsController* GetInstance();
+  static TtsController* GetInstance();
 
   // Returns true if we're currently speaking an utterance.
   bool IsSpeaking();
@@ -219,16 +219,16 @@ class ExtensionTtsController {
   void RetrySpeakingQueuedUtterances();
 
   // For unit testing.
-  void SetPlatformImpl(ExtensionTtsPlatformImpl* platform_impl);
+  void SetPlatformImpl(TtsPlatformImpl* platform_impl);
   int QueueSize();
 
  protected:
-  ExtensionTtsController();
-  virtual ~ExtensionTtsController();
+  TtsController();
+  virtual ~TtsController();
 
  private:
   // Get the platform TTS implementation (or injected mock).
-  ExtensionTtsPlatformImpl* GetPlatformImpl();
+  TtsPlatformImpl* GetPlatformImpl();
 
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
@@ -244,7 +244,7 @@ class ExtensionTtsController {
   // Start speaking the next utterance in the queue.
   void SpeakNextUtterance();
 
-  friend struct DefaultSingletonTraits<ExtensionTtsController>;
+  friend struct DefaultSingletonTraits<TtsController>;
 
   // The current utterance being spoken.
   Utterance* current_utterance_;
@@ -254,9 +254,9 @@ class ExtensionTtsController {
 
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
-  ExtensionTtsPlatformImpl* platform_impl_;
+  TtsPlatformImpl* platform_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTtsController);
+  DISALLOW_COPY_AND_ASSIGN(TtsController);
 };
 
-#endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_CONTROLLER_H_
+#endif  // CHROME_BROWSER_SPEECH_TTS_CONTROLLER_H_

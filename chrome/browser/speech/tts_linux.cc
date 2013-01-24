@@ -5,7 +5,7 @@
 #include <math.h>
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/browser/speech/tts_platform.h"
 #include "content/public/browser/browser_thread.h"
 
 #include "library_loaders/libspeechd.h"
@@ -19,7 +19,7 @@ const char kNotSupportedError[] =
 
 }  // namespace
 
-class ExtensionTtsPlatformImplLinux : public ExtensionTtsPlatformImpl {
+class TtsPlatformImplLinux : public TtsPlatformImpl {
  public:
   virtual bool PlatformImplAvailable();
   virtual bool Speak(
@@ -33,11 +33,11 @@ class ExtensionTtsPlatformImplLinux : public ExtensionTtsPlatformImpl {
   void OnSpeechEvent(SPDNotificationType type);
 
   // Get the single instance of this class.
-  static ExtensionTtsPlatformImplLinux* GetInstance();
+  static TtsPlatformImplLinux* GetInstance();
 
  private:
-  ExtensionTtsPlatformImplLinux();
-  virtual ~ExtensionTtsPlatformImplLinux();
+  TtsPlatformImplLinux();
+  virtual ~TtsPlatformImplLinux();
 
   // Resets the connection with speech dispatcher.
   void Reset();
@@ -60,16 +60,16 @@ class ExtensionTtsPlatformImplLinux : public ExtensionTtsPlatformImpl {
   std::string utterance_;
   int utterance_id_;
 
-  friend struct DefaultSingletonTraits<ExtensionTtsPlatformImplLinux>;
+  friend struct DefaultSingletonTraits<TtsPlatformImplLinux>;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImplLinux);
+  DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplLinux);
 };
 
 // static
-SPDNotificationType ExtensionTtsPlatformImplLinux::current_notification_ =
+SPDNotificationType TtsPlatformImplLinux::current_notification_ =
     SPD_EVENT_END;
 
-ExtensionTtsPlatformImplLinux::ExtensionTtsPlatformImplLinux()
+TtsPlatformImplLinux::TtsPlatformImplLinux()
     : utterance_id_(0) {
   if (!libspeechd_loader_.Load("libspeechd.so.2"))
     return;
@@ -96,25 +96,25 @@ ExtensionTtsPlatformImplLinux::ExtensionTtsPlatformImplLinux()
   libspeechd_loader_.spd_set_notification_on(conn_, SPD_RESUME);
 }
 
-ExtensionTtsPlatformImplLinux::~ExtensionTtsPlatformImplLinux() {
+TtsPlatformImplLinux::~TtsPlatformImplLinux() {
   if (conn_) {
     libspeechd_loader_.spd_close(conn_);
     conn_ = NULL;
   }
 }
 
-void ExtensionTtsPlatformImplLinux::Reset() {
+void TtsPlatformImplLinux::Reset() {
   if (conn_)
     libspeechd_loader_.spd_close(conn_);
   conn_ = libspeechd_loader_.spd_open(
       "chrome", "extension_api", NULL, SPD_MODE_THREADED);
 }
 
-bool ExtensionTtsPlatformImplLinux::PlatformImplAvailable() {
+bool TtsPlatformImplLinux::PlatformImplAvailable() {
   return libspeechd_loader_.loaded() && (conn_ != NULL);
 }
 
-bool ExtensionTtsPlatformImplLinux::Speak(
+bool TtsPlatformImplLinux::Speak(
     int utterance_id,
     const std::string& utterance,
     const std::string& lang,
@@ -146,7 +146,7 @@ bool ExtensionTtsPlatformImplLinux::Speak(
   return true;
 }
 
-bool ExtensionTtsPlatformImplLinux::StopSpeaking() {
+bool TtsPlatformImplLinux::StopSpeaking() {
   if (!PlatformImplAvailable())
     return false;
   if (libspeechd_loader_.spd_stop(conn_) == -1) {
@@ -156,19 +156,19 @@ bool ExtensionTtsPlatformImplLinux::StopSpeaking() {
   return true;
 }
 
-bool ExtensionTtsPlatformImplLinux::IsSpeaking() {
+bool TtsPlatformImplLinux::IsSpeaking() {
   return current_notification_ == SPD_EVENT_BEGIN;
 }
 
-bool ExtensionTtsPlatformImplLinux::SendsEvent(TtsEventType event_type) {
+bool TtsPlatformImplLinux::SendsEvent(TtsEventType event_type) {
   return (event_type == TTS_EVENT_START ||
           event_type == TTS_EVENT_END ||
           event_type == TTS_EVENT_CANCELLED ||
           event_type == TTS_EVENT_MARKER);
 }
 
-void ExtensionTtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
-  ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
+  TtsController* controller = TtsController::GetInstance();
   switch (type) {
   case SPD_EVENT_BEGIN:
   case SPD_EVENT_RESUME:
@@ -190,21 +190,21 @@ void ExtensionTtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
 }
 
 // static
-void ExtensionTtsPlatformImplLinux::NotificationCallback(
+void TtsPlatformImplLinux::NotificationCallback(
     size_t msg_id, size_t client_id, SPDNotificationType type) {
   // We run Speech Dispatcher in threaded mode, so these callbacks should always
   // be in a separate thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     current_notification_ = type;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&ExtensionTtsPlatformImplLinux::OnSpeechEvent,
-        base::Unretained(ExtensionTtsPlatformImplLinux::GetInstance()),
+        base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
+        base::Unretained(TtsPlatformImplLinux::GetInstance()),
         type));
   }
 }
 
 // static
-void ExtensionTtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
+void TtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
                                                       size_t client_id,
                                                       SPDNotificationType state,
                                                       char* index_mark) {
@@ -216,19 +216,19 @@ void ExtensionTtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     current_notification_ = state;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&ExtensionTtsPlatformImplLinux::OnSpeechEvent,
-        base::Unretained(ExtensionTtsPlatformImplLinux::GetInstance()),
+        base::Bind(&TtsPlatformImplLinux::OnSpeechEvent,
+        base::Unretained(TtsPlatformImplLinux::GetInstance()),
         state));
   }
 }
 
 // static
-ExtensionTtsPlatformImplLinux* ExtensionTtsPlatformImplLinux::GetInstance() {
-  return Singleton<ExtensionTtsPlatformImplLinux,
-                   LeakySingletonTraits<ExtensionTtsPlatformImplLinux> >::get();
+TtsPlatformImplLinux* TtsPlatformImplLinux::GetInstance() {
+  return Singleton<TtsPlatformImplLinux,
+                   LeakySingletonTraits<TtsPlatformImplLinux> >::get();
 }
 
 // static
-ExtensionTtsPlatformImpl* ExtensionTtsPlatformImpl::GetInstance() {
-  return ExtensionTtsPlatformImplLinux::GetInstance();
+TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+  return TtsPlatformImplLinux::GetInstance();
 }

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_PLATFORM_H_
-#define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_PLATFORM_H_
+#ifndef CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_
+#define CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_
 
 #include <string>
 
-#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/tts_controller.h"
 
 // Abstract class that defines the native platform TTS interface,
 // subclassed by specific implementations on Win, Mac, etc.
-class ExtensionTtsPlatformImpl {
+class TtsPlatformImpl {
  public:
-  static ExtensionTtsPlatformImpl* GetInstance();
+  static TtsPlatformImpl* GetInstance();
 
   // Returns true if this platform implementation is supported and available.
   virtual bool PlatformImplAvailable() = 0;
@@ -21,7 +21,7 @@ class ExtensionTtsPlatformImpl {
   // Some platforms may provide a built-in TTS extension. Returns true
   // if the extension was not previously loaded and is now loading, and
   // false if it's already loaded or if there's no extension to load.
-  // Will call ExtensionTtsController::RetrySpeakingQueuedUtterances when
+  // Will call TtsController::RetrySpeakingQueuedUtterances when
   // the extension finishes loading.
   virtual bool LoadBuiltInTtsExtension(Profile* profile);
 
@@ -29,7 +29,7 @@ class ExtensionTtsPlatformImpl {
   // and return true on success. Utterance will always be nonempty.
   // If rate, pitch, or volume are -1.0, they will be ignored.
   //
-  // The ExtensionTtsController will only try to speak one utterance at
+  // The TtsController will only try to speak one utterance at
   // a time. If it wants to interrupt speech, it will always call Stop
   // before speaking again.
   virtual bool Speak(
@@ -58,15 +58,15 @@ class ExtensionTtsPlatformImpl {
   virtual void set_error(const std::string& error);
 
  protected:
-  ExtensionTtsPlatformImpl() {}
+  TtsPlatformImpl() {}
 
   // On some platforms this may be a leaky singleton - do not rely on the
   // destructor being called!  http://crbug.com/122026
-  virtual ~ExtensionTtsPlatformImpl() {}
+  virtual ~TtsPlatformImpl() {}
 
   std::string error_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImpl);
+  DISALLOW_COPY_AND_ASSIGN(TtsPlatformImpl);
 };
 
-#endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_PLATFORM_H_
+#endif  // CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_
