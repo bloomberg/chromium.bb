@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -297,7 +298,7 @@ class ExtensionLoadedNotificationObserver
   extensions::CommandService* command_service =
       extensions::CommandService::Get(browser_->profile());
   if (type_ == extension_installed_bubble::kPageAction) {
-    if (extension_->page_action_command() &&
+    if (extensions::CommandsInfo::GetPageActionCommand(extension_) &&
         command_service->GetPageActionCommand(
             extension_->id(),
             extensions::CommandService::ACTIVE_ONLY,
@@ -314,7 +315,7 @@ class ExtensionLoadedNotificationObserver
   extensions::CommandService* command_service =
       extensions::CommandService::Get(browser_->profile());
   if (type_ == extension_installed_bubble::kBrowserAction) {
-    if (extension_->browser_action_command() &&
+    if (extensions::CommandsInfo::GetBrowserActionCommand(extension_) &&
         command_service->GetBrowserActionCommand(
             extension_->id(),
             extensions::CommandService::ACTIVE_ONLY,

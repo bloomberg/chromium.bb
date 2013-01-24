@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 
@@ -32,7 +33,7 @@ bool OmniboxInfo::IsVerboseInstallMessage(const Extension* extension) {
   return !GetKeyword(extension).empty() ||
       extension->browser_action_info() ||
       (extension->page_action_info() &&
-       (extension->page_action_command() ||
+       (CommandsInfo::GetPageActionCommand(extension) ||
         !extension->page_action_info()->default_icon.empty()));
 }
 

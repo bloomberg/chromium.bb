@@ -1917,7 +1917,6 @@ bool Extension::LoadSharedFeatures(
     string16* error) {
   if (!LoadDescription(error) ||
       !LoadIcons(error) ||
-      !LoadCommands(error) ||
       !LoadPlugins(error) ||
       !LoadNaClModules(error) ||
       !LoadSandboxedPages(error) ||
@@ -1985,65 +1984,6 @@ bool Extension::LoadIcons(string16* error) {
       extension_misc::kNumExtensionIconSizes,
       &icons_,
       error);
-}
-
-bool Extension::LoadCommands(string16* error) {
-  if (manifest_->HasKey(keys::kCommands)) {
-    DictionaryValue* commands = NULL;
-    if (!manifest_->GetDictionary(keys::kCommands, &commands)) {
-      *error = ASCIIToUTF16(errors::kInvalidCommandsKey);
-      return false;
-    }
-
-    if (commands->size() > kMaxCommandsPerExtension) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBindingTooMany,
-          base::IntToString(kMaxCommandsPerExtension));
-      return false;
-    }
-
-    int command_index = 0;
-    for (DictionaryValue::Iterator iter(*commands); !iter.IsAtEnd();
-         iter.Advance()) {
-      ++command_index;
-
-      const DictionaryValue* command = NULL;
-      if (!iter.value().GetAsDictionary(&command)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidKeyBindingDictionary,
-            base::IntToString(command_index));
-        return false;
-      }
-
-      scoped_ptr<extensions::Command> binding(new extensions::Command());
-      if (!binding->Parse(command, iter.key(), command_index, error))
-        return false;  // |error| already set.
-
-      std::string command_name = binding->command_name();
-      if (command_name == values::kPageActionCommandEvent) {
-        page_action_command_.reset(binding.release());
-      } else if (command_name == values::kBrowserActionCommandEvent) {
-        browser_action_command_.reset(binding.release());
-      } else if (command_name == values::kScriptBadgeCommandEvent) {
-        script_badge_command_.reset(binding.release());
-      } else {
-        if (command_name[0] != '_')  // All commands w/underscore are reserved.
-          named_commands_[command_name] = *binding.get();
-      }
-    }
-  }
-
-  if (manifest_->HasKey(keys::kBrowserAction) &&
-      !browser_action_command_.get()) {
-    // If the extension defines a browser action, but no command for it, then
-    // we synthesize a generic one, so the user can configure a shortcut for it.
-    // No keyboard shortcut will be assigned to it, until the user selects one.
-    browser_action_command_.reset(
-        new extensions::Command(
-            values::kBrowserActionCommandEvent, string16(), ""));
-  }
-
-  return true;
 }
 
 bool Extension::LoadPlugins(string16* error) {

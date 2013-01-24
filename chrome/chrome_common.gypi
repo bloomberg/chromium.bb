@@ -127,6 +127,8 @@
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
         'common/descriptors_android.h',
+        'common/extensions/api/commands/commands_handler.cc',
+        'common/extensions/api/commands/commands_handler.h',
         'common/extensions/api/extension_action/script_badge_handler.cc',
         'common/extensions/api/extension_action/script_badge_handler.h',
         'common/extensions/api/extension_action/action_info.cc',

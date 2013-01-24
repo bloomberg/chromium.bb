@@ -1455,6 +1455,7 @@
         'common/content_settings_helper_unittest.cc',
         'common/content_settings_pattern_parser_unittest.cc',
         'common/content_settings_pattern_unittest.cc',
+        'common/extensions/api/commands/commands_manifest_unittest.cc',
         'common/extensions/api/extension_action/script_badge_manifest_unittest.cc',
         'common/extensions/command_unittest.cc',
         'common/extensions/csp_validator_unittest.cc',
@@ -1476,7 +1477,6 @@
         'common/extensions/manifest_tests/extension_manifests_background_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_browseraction_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_chromepermission_unittest.cc',
-        'common/extensions/manifest_tests/extension_manifests_command_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_contentscript_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_contentsecuritypolicy_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_default_unittest.cc',
@@ -1753,6 +1753,7 @@
             'browser/extensions/extension_context_menu_model_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
             'browser/extensions/permissions_updater_unittest.cc',
+            'common/extensions/extension_unittest.cc',
           ],
         }],
         ['use_ash==1', {

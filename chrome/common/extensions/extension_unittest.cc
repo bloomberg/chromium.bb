@@ -13,12 +13,14 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
@@ -120,11 +122,16 @@ static void LoadActionAndExpectError(const std::string& manifest,
 }
 
 class ExtensionTest : public testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    ManifestHandler::Register(extension_manifest_keys::kCommands,
+                              new CommandsHandler);
+  }
 };
 
 // We persist location values in the preferences, so this is a sanity test that
 // someone doesn't accidentally change them.
-TEST(ExtensionTest, LocationValuesTest) {
+TEST_F(ExtensionTest, LocationValuesTest) {
   ASSERT_EQ(0, Extension::INVALID);
   ASSERT_EQ(1, Extension::INTERNAL);
   ASSERT_EQ(2, Extension::EXTERNAL_PREF);
@@ -135,7 +142,7 @@ TEST(ExtensionTest, LocationValuesTest) {
   ASSERT_EQ(7, Extension::EXTERNAL_POLICY_DOWNLOAD);
 }
 
-TEST(ExtensionTest, LocationPriorityTest) {
+TEST_F(ExtensionTest, LocationPriorityTest) {
   for (int i = 0; i < Extension::NUM_LOCATIONS; i++) {
     Extension::Location loc = static_cast<Extension::Location>(i);
 
@@ -172,7 +179,7 @@ TEST(ExtensionTest, LocationPriorityTest) {
                 Extension::EXTERNAL_PREF));
 }
 
-TEST(ExtensionTest, GetResourceURLAndPath) {
+TEST_F(ExtensionTest, GetResourceURLAndPath) {
   scoped_refptr<Extension> extension = LoadManifestStrict("empty_manifest",
       "empty.json");
   EXPECT_TRUE(extension.get());
@@ -190,7 +197,7 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
             extension->GetResourceURL("/test.html").spec());
 }
 
-TEST(ExtensionTest, GetAbsolutePathNoError) {
+TEST_F(ExtensionTest, GetAbsolutePathNoError) {
   scoped_refptr<Extension> extension = LoadManifestStrict("absolute_path",
       "absolute.json");
   EXPECT_TRUE(extension.get());
@@ -206,7 +213,7 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
             extension->GetResource("test.js").GetFilePath().value());
 }
 
-TEST(ExtensionTest, LoadPageActionHelper) {
+TEST_F(ExtensionTest, LoadPageActionHelper) {
   scoped_ptr<ActionInfo> action;
 
   // First try with an empty dictionary.
@@ -313,7 +320,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
       action->default_popup_url.spec().c_str());
 }
 
-TEST(ExtensionTest, IdIsValid) {
+TEST_F(ExtensionTest, IdIsValid) {
   EXPECT_TRUE(Extension::IdIsValid("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
   EXPECT_TRUE(Extension::IdIsValid("pppppppppppppppppppppppppppppppp"));
   EXPECT_TRUE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmnop"));
@@ -325,7 +332,7 @@ TEST(ExtensionTest, IdIsValid) {
   EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmno0"));
 }
 
-TEST(ExtensionTest, GenerateID) {
+TEST_F(ExtensionTest, GenerateID) {
   const uint8 public_key_info[] = {
     0x30, 0x81, 0x9f, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
     0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x81, 0x8d, 0x00, 0x30, 0x81,
@@ -354,7 +361,7 @@ TEST(ExtensionTest, GenerateID) {
 
 // This test ensures that the mimetype sniffing code stays in sync with the
 // actual crx files that we test other parts of the system with.
-TEST(ExtensionTest, MimeTypeSniffing) {
+TEST_F(ExtensionTest, MimeTypeSniffing) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("extensions").AppendASCII("good.crx");
@@ -376,7 +383,7 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   EXPECT_EQ("application/octet-stream", result);
 }
 
-TEST(ExtensionTest, EffectiveHostPermissions) {
+TEST_F(ExtensionTest, EffectiveHostPermissions) {
   scoped_refptr<Extension> extension;
   URLPatternSet hosts;
 
@@ -453,7 +460,7 @@ static bool CheckSocketPermission(scoped_refptr<Extension> extension,
       APIPermission::kSocket, &param);
 }
 
-TEST(ExtensionTest, SocketPermissions) {
+TEST_F(ExtensionTest, SocketPermissions) {
   // Set feature current channel to appropriate value.
   Feature::ScopedCurrentChannel scoped_channel(
       chrome::VersionInfo::CHANNEL_DEV);
@@ -500,7 +507,7 @@ static bool SizeEquals(const SkBitmap& bitmap, const gfx::Size& size) {
   return bitmap.width() == size.width() && bitmap.height() == size.height();
 }
 
-TEST(ExtensionTest, ImageCaching) {
+TEST_F(ExtensionTest, ImageCaching) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("extensions");
@@ -574,7 +581,7 @@ TEST(ExtensionTest, ImageCaching) {
 
 // This tests the API permissions with an empty manifest (one that just
 // specifies a name and a version and nothing else).
-TEST(ExtensionTest, ApiPermissions) {
+TEST_F(ExtensionTest, ApiPermissions) {
   const struct {
     const char* permission_name;
     bool expect_success;
@@ -619,7 +626,7 @@ TEST(ExtensionTest, ApiPermissions) {
   }
 }
 
-TEST(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
+TEST_F(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-apis.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -634,7 +641,7 @@ TEST(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
             UTF16ToUTF8(warnings[5]));
 }
 
-TEST(ExtensionTest, GetPermissionMessages_ManyHosts) {
+TEST_F(ExtensionTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -643,7 +650,7 @@ TEST(ExtensionTest, GetPermissionMessages_ManyHosts) {
             UTF16ToUTF8(warnings[0]));
 }
 
-TEST(ExtensionTest, GetPermissionMessages_Plugins) {
+TEST_F(ExtensionTest, GetPermissionMessages_Plugins) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "plugins.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
@@ -658,7 +665,7 @@ TEST(ExtensionTest, GetPermissionMessages_Plugins) {
 #endif
 }
 
-TEST(ExtensionTest, WantsFileAccess) {
+TEST_F(ExtensionTest, WantsFileAccess) {
   scoped_refptr<Extension> extension;
   GURL file_url("file:///etc/passwd");
 
@@ -729,7 +736,7 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url, file_url, -1, &extension->content_scripts()[0], NULL));
 }
 
-TEST(ExtensionTest, ExtraFlags) {
+TEST_F(ExtensionTest, ExtraFlags) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("app", "manifest.json", Extension::FROM_WEBSTORE);
   EXPECT_TRUE(extension->from_webstore());
@@ -742,14 +749,15 @@ TEST(ExtensionTest, ExtraFlags) {
   EXPECT_FALSE(extension->from_webstore());
 }
 
-TEST(ExtensionTest, BrowserActionSynthesizesCommand) {
+TEST_F(ExtensionTest, BrowserActionSynthesizesCommand) {
   scoped_refptr<Extension> extension;
 
   extension = LoadManifest("api_test/browser_action/synthesized",
                            "manifest.json");
   // An extension with a browser action but no extension command specified
   // should get a command assigned to it.
-  const Command* command = extension->browser_action_command();
+  const extensions::Command* command =
+      CommandsInfo::GetBrowserActionCommand(extension);
   ASSERT_TRUE(command != NULL);
   ASSERT_EQ(ui::VKEY_UNKNOWN, command->accelerator().key_code());
 }
@@ -1023,7 +1031,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(AllowedExclusivelyOnTab(extension, no_urls, 2));
 }
 
-TEST(ExtensionTest, GenerateId) {
+TEST_F(ExtensionTest, GenerateId) {
   std::string result;
   EXPECT_TRUE(Extension::GenerateId("", &result));
 
@@ -1096,7 +1104,7 @@ static const char kValidUpdateUrl2[] =
     "https://clients2.google.com/service/update2/crx";
 }
 
-TEST(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
+TEST_F(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1104,7 +1112,7 @@ TEST(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeUserScriptValidUpdateUrl) {
+TEST_F(ExtensionTest, GetSyncTypeUserScriptValidUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1112,7 +1120,7 @@ TEST(ExtensionTest, GetSyncTypeUserScriptValidUpdateUrl) {
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
+TEST_F(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1120,7 +1128,7 @@ TEST(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
+TEST_F(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(THEME, GURL(), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1128,7 +1136,7 @@ TEST(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
+TEST_F(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1136,7 +1144,7 @@ TEST(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeExtensionExternal) {
+TEST_F(ExtensionTest, GetSyncTypeExtensionExternal) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::EXTERNAL_PREF, 0, FilePath(),
@@ -1145,7 +1153,7 @@ TEST(ExtensionTest, GetSyncTypeExtensionExternal) {
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
+TEST_F(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
@@ -1153,7 +1161,7 @@ TEST(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
+TEST_F(ExtensionTest, OnlyDisplayAppsInLauncher) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1170,7 +1178,7 @@ TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
   EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
 }
 
-TEST(ExtensionTest, DisplayInXManifestProperties) {
+TEST_F(ExtensionTest, DisplayInXManifestProperties) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "TestComponentApp");
   manifest.SetString(keys::kVersion, "0.0.0.0");
@@ -1219,7 +1227,7 @@ TEST(ExtensionTest, DisplayInXManifestProperties) {
   EXPECT_EQ(error, std::string(errors::kInvalidDisplayInNewTabPage));
 }
 
-TEST(ExtensionTest, OnlySyncInternal) {
+TEST_F(ExtensionTest, OnlySyncInternal) {
   scoped_refptr<Extension> extension_internal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1233,7 +1241,7 @@ TEST(ExtensionTest, OnlySyncInternal) {
   EXPECT_FALSE(extension_noninternal->IsSyncable());
 }
 
-TEST(ExtensionTest, DontSyncDefault) {
+TEST_F(ExtensionTest, DontSyncDefault) {
   scoped_refptr<Extension> extension_default(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
@@ -1241,7 +1249,7 @@ TEST(ExtensionTest, DontSyncDefault) {
   EXPECT_FALSE(extension_default->IsSyncable());
 }
 
-TEST(ExtensionTest, OptionalOnlyPermission) {
+TEST_F(ExtensionTest, OptionalOnlyPermission) {
   // Set feature current channel to dev because the only permission that must
   // be optional (usbDevices) is only available on dev channel.
   Feature::ScopedCurrentChannel scoped_channel(
@@ -1269,7 +1277,7 @@ TEST(ExtensionTest, OptionalOnlyPermission) {
 // These last 2 tests don't make sense on Chrome OS, where extension plugins
 // are not allowed.
 #if !defined(OS_CHROMEOS)
-TEST(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
+TEST_F(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::INTERNAL, 1, FilePath(),
@@ -1278,7 +1286,7 @@ TEST(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST(ExtensionTest, GetSyncTypeExtensionWithTwoPlugins) {
+TEST_F(ExtensionTest, GetSyncTypeExtensionWithTwoPlugins) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Extension::INTERNAL, 2, FilePath(),
