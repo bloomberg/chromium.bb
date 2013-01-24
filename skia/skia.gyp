@@ -231,6 +231,7 @@
 
         'SK_IGNORE_1XN_BITMAP_OPT',
         'SK_IGNORE_CLIP_BUG_FIX',
+        'SK_IGNORE_CONVEX_QUAD_OPT',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
