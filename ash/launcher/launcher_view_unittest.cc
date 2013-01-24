@@ -17,6 +17,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_view_test_api.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -179,81 +180,31 @@ TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
 ////////////////////////////////////////////////////////////////////////////////
 // LauncherView tests.
 
-class MockLauncherDelegate : public ash::LauncherDelegate {
- public:
-  MockLauncherDelegate() {}
-  virtual ~MockLauncherDelegate() {}
-
-  // LauncherDelegate overrides:
-  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE {}
-  virtual void ItemClicked(const ash::LauncherItem& item,
-                           int event_flags) OVERRIDE {}
-  virtual int GetBrowserShortcutResourceId() OVERRIDE {
-    return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-  }
-  virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE {
-    return string16();
-  }
-  virtual ui::MenuModel* CreateContextMenu(
-      const ash::LauncherItem& item,
-      aura::RootWindow* root_window) OVERRIDE {
-    return NULL;
-  }
-  virtual ui::MenuModel* CreateApplicationMenu(
-      const ash::LauncherItem&) OVERRIDE {
-    return NULL;
-  }
-  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE {
-    NOTREACHED();
-    return -1;
-  }
-  virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE {
-    return true;
-  }
-};
-
 class LauncherViewTest : public AshTestBase {
  public:
-  LauncherViewTest() {}
+  LauncherViewTest() : model_(NULL), launcher_view_(NULL) {}
   virtual ~LauncherViewTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
+    test::ShellTestApi test_api(Shell::GetInstance());
+    model_ = test_api.launcher_model();
+    Launcher* launcher = Launcher::ForPrimaryDisplay();
+    launcher_view_ = launcher->GetLauncherViewForTest();
 
-    model_.reset(new LauncherModel);
-
-    launcher_view_.reset(new internal::LauncherView(
-        model_.get(),
-        &delegate_,
-        Shell::GetPrimaryRootWindowController()->shelf()));
-    launcher_view_->Init();
     // The bounds should be big enough for 4 buttons + overflow chevron.
     launcher_view_->SetBounds(0, 0, 500, 50);
 
-    test_api_.reset(new LauncherViewTestAPI(launcher_view_.get()));
+    test_api_.reset(new LauncherViewTestAPI(launcher_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
   }
 
   virtual void TearDown() OVERRIDE {
-    launcher_view_.reset();
+    test_api_.reset();
     AshTestBase::TearDown();
   }
 
  protected:
-  void EnsureViewIsInWidget() {
-    widget_.reset(new views::Widget);
-    views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.transparent = true;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.parent = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        ash::internal::kShellWindowId_LauncherContainer);
-
-    widget_->Init(params);
-    widget_->SetContentsView(launcher_view_.get());
-  }
-
   LauncherID AddAppShortcut() {
     LauncherItem item;
     item.type = TYPE_APP_SHORTCUT;
@@ -347,7 +298,7 @@ class LauncherViewTest : public AshTestBase {
                             int button_index,
                             int destination_index) {
     // Add kExpectedAppIndex to each button index to allow default icons.
-    internal::LauncherButtonHost* button_host = launcher_view_.get();
+    internal::LauncherButtonHost* button_host = launcher_view_;
 
     // Mouse down.
     views::View* button =
@@ -393,10 +344,9 @@ class LauncherViewTest : public AshTestBase {
     launcher_view_->tooltip_manager()->ShowInternal();
   }
 
-  MockLauncherDelegate delegate_;
-  scoped_ptr<LauncherModel> model_;
-  scoped_ptr<views::Widget> widget_;
-  scoped_ptr<internal::LauncherView> launcher_view_;
+  LauncherModel* model_;
+  internal::LauncherView* launcher_view_;
+
   scoped_ptr<LauncherViewTestAPI> test_api_;
 
  private:
@@ -607,7 +557,7 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
 // Check that model changes are handled correctly while a launcher icon is being
 // dragged.
 TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
-  internal::LauncherButtonHost* button_host = launcher_view_.get();
+  internal::LauncherButtonHost* button_host = launcher_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -651,7 +601,7 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
 
 // Check that 2nd drag from the other pointer would be ignored.
 TEST_F(LauncherViewTest, SimultaneousDrag) {
-  internal::LauncherButtonHost* button_host = launcher_view_.get();
+  internal::LauncherButtonHost* button_host = launcher_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -737,8 +687,6 @@ TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
 }
 
 TEST_F(LauncherViewTest, LauncherTooltipTest) {
-  EnsureViewIsInWidget();
-
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -749,7 +697,7 @@ TEST_F(LauncherViewTest, LauncherTooltipTest) {
   internal::LauncherButton* app_button = GetButtonByID(app_button_id);
   internal::LauncherButton* tab_button = GetButtonByID(tab_button_id);
 
-  internal::LauncherButtonHost* button_host = launcher_view_.get();
+  internal::LauncherButtonHost* button_host = launcher_view_;
   internal::LauncherTooltipManager* tooltip_manager =
       launcher_view_->tooltip_manager();
 

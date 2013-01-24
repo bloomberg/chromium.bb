@@ -74,7 +74,8 @@ int TestLauncherDelegate::GetBrowserShortcutResourceId() {
 }
 
 string16 TestLauncherDelegate::GetTitle(const ash::LauncherItem& item) {
-  return GetWindowByID(item.id)->title();
+  aura::Window* window = GetWindowByID(item.id);
+  return window ? window->title() : string16();
 }
 
 ui::MenuModel* TestLauncherDelegate::CreateContextMenu(
