@@ -60,14 +60,6 @@ TEST_F(LauncherTest, DimmerSize) {
 // Confirm that launching a browser gets the appropriate state reflected in
 // its button.
 TEST_F(LauncherTest, OpenBrowser) {
-#if defined(OS_WIN)
-  // This test seems to tickle a race condition on Metro/Ash causing the test
-  // suite to crash.
-  // TODO(robertshield): Fix this. http://crbug.com/170418
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return;
-#endif
-
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();

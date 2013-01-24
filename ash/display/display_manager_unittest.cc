@@ -392,7 +392,17 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 }
 
-TEST_F(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
+#if defined(OS_WIN)
+// This test currently fails on Win8/Metro as it picks up the actual
+// display size. http://crbug.com/154081
+#define MAYBE_TestNativeDisplaysChangedNoInternal \
+        DISABLED_TestNativeDisplaysChangedNoInternal
+#else
+#define MAYBE_TestNativeDisplaysChangedNoInternal \
+        TestNativeDisplaysChangedNoInternal
+#endif
+
+TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Don't change the display info if all displays are disconnected.

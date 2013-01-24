@@ -870,13 +870,6 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
-#if defined(OS_WIN)
-  // This test seems to tickle a race condition on Metro/Ash causing the test
-  // suite to crash.
-  // TODO(robertshield): Fix this. http://crbug.com/170418
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return;
-#endif
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();
 
@@ -922,13 +915,6 @@ TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
-#if defined(OS_WIN)
-  // This test seems to tickle a race condition on Metro/Ash causing the test
-  // suite to crash.
-  // TODO(robertshield): Fix this. http://crbug.com/170418
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return;
-#endif
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
 
   // Create a visible window so auto-hide behavior is enforced.

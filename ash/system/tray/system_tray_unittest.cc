@@ -141,14 +141,6 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
-#if defined(OS_WIN)
-  // This test seems to tickle a race condition on Metro/Ash causing the test
-  // suite to crash.
-  // TODO(robertshield): Fix this. http://crbug.com/170418
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return;
-#endif
-
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -221,14 +213,6 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayNotifications) {
-#if defined(OS_WIN)
-  // This test seems to tickle a race condition on Metro/Ash causing the test
-  // suite to crash.
-  // TODO(robertshield): Fix this. http://crbug.com/170418
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return;
-#endif
-
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -264,13 +248,6 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
 }
 
 TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
-#if defined(OS_WIN)
-  // This test seems to tickle a race condition on Metro/Ash causing the test
-  // suite to crash.
-  // TODO(robertshield): Fix this. http://crbug.com/170418
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return;
-#endif
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 

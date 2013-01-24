@@ -643,11 +643,6 @@
             ['exclude', 'focus_cycler_unittest.cc'],
             # All tests for multiple displays: not supported on Windows Ash.
             ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
-            ['exclude', 'display/display_controller_unittest.cc'],
-            ['exclude', 'display/display_manager_unittest.cc'],
-            ['exclude', 'display/mouse_cursor_event_filter_unittest.cc'],
-            ['exclude', 'extended_desktop_unittest.cc'],
-            ['exclude', 'screen_ash_unittest.cc'],
             ['exclude', 'wm/drag_window_resizer_unittest.cc'],
           ],
         }],
