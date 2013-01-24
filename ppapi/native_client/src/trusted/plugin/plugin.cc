@@ -784,6 +784,10 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
+    } else if (pp_error == PP_ERROR_NOACCESS) {
+      error_info.SetReport(ERROR_NEXE_NOACCESS_URL,
+                           "access to nexe url was denied.");
+      ReportLoadError(error_info);
     } else {
       error_info.SetReport(ERROR_NEXE_LOAD_URL, "could not load nexe url.");
       ReportLoadError(error_info);
@@ -1052,6 +1056,10 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
+    } else if (pp_error == PP_ERROR_NOACCESS) {
+      error_info.SetReport(ERROR_MANIFEST_NOACCESS_URL,
+                           "access to manifest url was denied.");
+      ReportLoadError(error_info);
     } else {
       error_info.SetReport(ERROR_MANIFEST_LOAD_URL,
                            "could not load manifest url.");

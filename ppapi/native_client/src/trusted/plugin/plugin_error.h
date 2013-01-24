@@ -96,6 +96,8 @@ enum PluginErrorCode {
   // Remove this next code when pnacl is no longer behind a flag (when we
   // remove the --enable-pnacl flag).
   ERROR_PNACL_NOT_ENABLED = 68,
+  ERROR_MANIFEST_NOACCESS_URL = 69,
+  ERROR_NEXE_NOACCESS_URL = 70,
   // If you add a code, read the enum comment above on how to update histograms.
   ERROR_MAX
 };
