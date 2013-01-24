@@ -16,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -65,6 +66,37 @@ const EncodingTestData kEncodingTestDatas[] = {
   { "windows-1258.html", "windows-1258" }
 };
 
+class SavePackageFinishedObserver : public content::DownloadManager::Observer {
+ public:
+  SavePackageFinishedObserver(content::DownloadManager* manager,
+                              const base::Closure& callback)
+      : download_manager_(manager),
+        callback_(callback) {
+    download_manager_->AddObserver(this);
+  }
+
+  virtual ~SavePackageFinishedObserver() {
+    if (download_manager_)
+      download_manager_->RemoveObserver(this);
+  }
+
+  // DownloadManager::Observer:
+  virtual void OnSavePackageSuccessfullyFinished(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE {
+    callback_.Run();
+  }
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE {
+    download_manager_->RemoveObserver(this);
+    download_manager_ = NULL;
+  }
+
+ private:
+  content::DownloadManager* download_manager_;
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);
+};
+
 }  // namespace
 
 using content::BrowserThread;
@@ -86,13 +118,15 @@ class BrowserEncodingTest
     // We save the page as way of complete HTML file, which requires a directory
     // name to save sub resources in it. Although this test file does not have
     // sub resources, but the directory name is still required.
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-        content::NotificationService::AllSources());
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    SavePackageFinishedObserver observer(
+        content::BrowserContext::GetDownloadManager(browser()->profile()),
+        loop_runner->QuitClosure());
     chrome::GetActiveWebContents(browser())->SavePage(
         full_file_name, temp_sub_resource_dir_,
         content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
-    observer.Wait();
+    loop_runner->Run();
 
     FilePath expected_file_name = ui_test_utils::GetTestFilePath(
         FilePath(kTestDir), expected);

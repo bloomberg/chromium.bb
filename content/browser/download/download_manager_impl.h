@@ -47,6 +47,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const std::string& mime_type,
       DownloadItem::Observer* observer);
 
+  // Notifies DownloadManager about a successful completion of |download_item|.
+  void OnSavePackageSuccessfullyFinished(DownloadItem* download_item);
+
   // DownloadManager functions.
   virtual void SetDelegate(DownloadManagerDelegate* delegate) OVERRIDE;
   virtual DownloadManagerDelegate* GetDelegate() const OVERRIDE;

@@ -1246,20 +1246,21 @@ class OmniboxAcceptNotificationObserver : public content::NotificationObserver {
 };
 
 // Allows the automation provider to wait for a save package notification.
-class SavePackageNotificationObserver : public content::NotificationObserver {
+class SavePackageNotificationObserver
+: public content::DownloadManager::Observer {
  public:
   SavePackageNotificationObserver(content::DownloadManager* download_manager,
                                   AutomationProvider* automation,
                                   IPC::Message* reply_message);
   virtual ~SavePackageNotificationObserver();
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overridden from content::DownloadManager::Observer:
+  virtual void OnSavePackageSuccessfullyFinished(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
 
  private:
-  content::NotificationRegistrar registrar_;
+  content::DownloadManager* download_manager_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
 

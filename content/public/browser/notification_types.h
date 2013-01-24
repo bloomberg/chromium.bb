@@ -343,12 +343,7 @@ enum NotificationType {
   // in a Details<ChildProcessData>.
   NOTIFICATION_CHILD_INSTANCE_CREATED,
 
-  // Saved Pages -------------------------------------------------------------
-
-  // Sent when a SavePackage finishes successfully. The source is the
-  // SavePackage, and Details are a GURL containing address of downloaded
-  // page.
-  NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+  // Miscellaneous -------------------------------------------------------------
 
   // Sent before the repost form warning is brought up.
   // The source is a NavigationController.
