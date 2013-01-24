@@ -318,7 +318,8 @@ WebContentsImpl::WebContentsImpl(
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0),
-      color_chooser_(NULL) {
+      color_chooser_(NULL),
+      fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -835,6 +836,10 @@ int WebContentsImpl::GetRoutingID() const {
   return GetRenderViewHost()->GetRoutingID();
 }
 
+int WebContentsImpl::GetFullscreenWidgetRoutingID() const {
+  return fullscreen_widget_routing_id_;
+}
+
 RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
   return render_manager_.GetRenderWidgetHostView();
 }
@@ -1246,6 +1251,15 @@ void WebContentsImpl::RenderWidgetDeleted(
       created_widgets_.find(render_widget_host);
   if (iter != created_widgets_.end())
     created_widgets_.erase(iter);
+
+  if (render_widget_host &&
+      render_widget_host->GetRoutingID() == fullscreen_widget_routing_id_) {
+    FOR_EACH_OBSERVER(WebContentsObserver,
+                      observers_,
+                      DidDestroyFullscreenWidget(
+                          fullscreen_widget_routing_id_));
+    fullscreen_widget_routing_id_ = MSG_ROUTING_NONE;
+  }
 }
 
 bool WebContentsImpl::PreHandleKeyboardEvent(
@@ -1454,6 +1468,12 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
 
 void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
   ShowCreatedWidget(route_id, true, gfx::Rect());
+
+  DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
+  fullscreen_widget_routing_id_ = route_id;
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    DidShowFullscreenWidget(route_id));
 }
 
 void WebContentsImpl::ShowCreatedWidget(int route_id,

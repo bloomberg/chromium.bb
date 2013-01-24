@@ -56,6 +56,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -162,6 +163,17 @@ class BackingStoreCopier : public WebContentsObserver {
   void StartCopy(int frame_number, int desired_width, int desired_height,
                  const DoneCB& done_cb);
 
+  virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    fullscreen_widget_id_ = routing_id;
+  }
+
+  virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_EQ(fullscreen_widget_id_, routing_id);
+    fullscreen_widget_id_ = MSG_ROUTING_NONE;
+  }
+
  private:
   void LookUpAndObserveWebContents();
 
@@ -172,6 +184,10 @@ class BackingStoreCopier : public WebContentsObserver {
   // The "starting point" to find the capture source.
   const int render_process_id_;
   const int render_view_id_;
+
+  // Routing ID of any active fullscreen render widget or MSG_ROUTING_NONE
+  // otherwise.
+  int fullscreen_widget_id_;
 
   // Last known RenderView size.
   gfx::Size last_view_size_;
@@ -272,7 +288,7 @@ class VideoFrameDeliverer {
 BackingStoreCopier::BackingStoreCopier(int render_process_id,
                                        int render_view_id)
     : render_process_id_(render_process_id), render_view_id_(render_view_id),
-      rwh_for_testing_(NULL) {}
+      fullscreen_widget_id_(MSG_ROUTING_NONE), rwh_for_testing_(NULL) {}
 
 void BackingStoreCopier::LookUpAndObserveWebContents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -295,6 +311,11 @@ void BackingStoreCopier::LookUpAndObserveWebContents() {
   Observe(rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
   DVLOG_IF(1, !web_contents())
       << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
+
+  if (fullscreen_widget_id_ == MSG_ROUTING_NONE && web_contents()) {
+    fullscreen_widget_id_ = static_cast<WebContentsImpl*>(web_contents())->
+        GetFullscreenWidgetRoutingID();
+  }
 }
 
 void BackingStoreCopier::SetRenderWidgetHostForTesting(
@@ -322,7 +343,15 @@ void BackingStoreCopier::StartCopy(int frame_number,
         return;
       }
     }
-    rwh = web_contents()->GetRenderViewHost();
+
+    if (fullscreen_widget_id_ != MSG_ROUTING_NONE) {
+      RenderProcessHost* process = web_contents()->GetRenderProcessHost();
+      rwh = process ? process->GetRenderWidgetHostByID(fullscreen_widget_id_)
+                    : NULL;
+    } else {
+      rwh = web_contents()->GetRenderViewHost();
+    }
+
     if (!rwh) {
       // Transient failure state (e.g., a RenderView is being replaced).
       done_cb.Run(TRANSIENT_ERROR,

@@ -152,6 +152,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidUpdateFaviconURL(int32 page_id,
                                    const std::vector<FaviconURL>& candidates) {}
 
+  // Invoked when a pepper plugin creates and shows or destroys a fullscreen
+  // render widget.
+  virtual void DidShowFullscreenWidget(int routing_id) {}
+  virtual void DidDestroyFullscreenWidget(int routing_id) {}
+
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

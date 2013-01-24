@@ -175,6 +175,10 @@ class CONTENT_EXPORT WebContentsImpl
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder();
 
+  // Gets the current fullscreen render widget's routing ID. Returns
+  // MSG_ROUTING_NONE when there is no fullscreen render widget.
+  int GetFullscreenWidgetRoutingID() const;
+
   void DidBlock3DAPIs(const GURL& url, ThreeDAPIType requester);
 
   // WebContents ------------------------------------------------------
@@ -863,6 +867,9 @@ class CONTENT_EXPORT WebContentsImpl
   // All live RenderWidgetHostImpls that are created by this object and may
   // outlive it.
   std::set<RenderWidgetHostImpl*> created_widgets_;
+
+  // Routing id of the shown fullscreen widget or MSG_ROUTING_NONE otherwise.
+  int fullscreen_widget_routing_id_;
 
   // Maps the ids of pending favicon downloads to their callbacks
   typedef std::map<int, FaviconDownloadCallback> FaviconDownloadMap;
