@@ -42,7 +42,7 @@ deps = {
     'src/third_party/accessibility-developer-tools':
         Var('git_url') + '/external/accessibility-developer-tools.git@e2a7557c79da617d0c06d6e96ada803b8b4b3ece',
     'src/third_party/angle':
-        Var('git_url') + '/external/angleproject.git@b3b17d4e8a6f8f7c8df3f651c40fdd1bed93c169',
+        Var('git_url') + '/external/angleproject.git@0b780afcf238e6445f16ee1bf80903bcd16d1b99',
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/src':
