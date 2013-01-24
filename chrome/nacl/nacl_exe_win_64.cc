@@ -59,6 +59,9 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   base::EnableTerminationOnOutOfMemory();
   content::RegisterInvalidParamHandler();
   content::SetupCRT(command_line);
+  // Route stdio to parent console (if any) or create one.
+  if (command_line.HasSwitch(switches::kEnableLogging))
+    base::RouteStdioToConsole();
 
   // Initialize the sandbox for this process.
   bool sandbox_initialized_ok = content::InitializeSandbox(&sandbox_info);
