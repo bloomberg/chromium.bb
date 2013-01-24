@@ -147,6 +147,8 @@ class CONTENT_EXPORT RenderWidget
   virtual WebKit::WebScreenInfo screenInfo();
   virtual float deviceScaleFactor();
   virtual void resetInputMethod();
+  virtual void didHandleGestureEvent(const WebKit::WebGestureEvent& event,
+                                     bool event_cancelled);
 
   // Called when a plugin is moved.  These events are queued up and sent with
   // the next paint or scroll message to the host.

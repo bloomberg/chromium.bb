@@ -2125,18 +2125,6 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
   return did_execute_command;
 }
 
-void RenderViewImpl::didHandleGestureEvent(const WebGestureEvent& event,
-                                           bool event_swallowed) {
-#if defined(OS_ANDROID)
-  if (event.type == WebInputEvent::GestureTap ||
-      event.type == WebInputEvent::GestureLongPress) {
-    UpdateTextInputState(SHOW_IME_IF_NEEDED);
-  }
-#endif
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidHandleGestureEvent(event));
-}
-
 WebKit::WebColorChooser* RenderViewImpl::createColorChooser(
     WebKit::WebColorChooserClient* client,
     const WebKit::WebColor& initial_color) {
@@ -2550,6 +2538,14 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
   RenderWidget::didActivateCompositor(input_handler_identifier);
 
   ProcessAcceleratedPinchZoomFlags(*CommandLine::ForCurrentProcess());
+}
+
+void RenderViewImpl::didHandleGestureEvent(
+    const WebGestureEvent& event,
+    bool event_cancelled) {
+  RenderWidget::didHandleGestureEvent(event, event_cancelled);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidHandleGestureEvent(event));
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------
