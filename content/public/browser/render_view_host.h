@@ -192,13 +192,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
       const string16& jscript,
       const JavascriptResultCallback& callback) = 0;
 
-  // Runs some javascript within the context of a frame in the page. A nested
-  // message loop is run to wait for the result, which is returned. THIS SHOULD
-  // ONLY BE USED BY TESTS. TODO(avi): Move into a test file.
-  virtual base::Value* ExecuteJavascriptAndGetValue(
-      const string16& frame_xpath,
-      const string16& jscript) = 0;
-
   // Tells the renderer to perform the given action on the plugin located at
   // the given point.
   virtual void ExecutePluginActionAtLocation(

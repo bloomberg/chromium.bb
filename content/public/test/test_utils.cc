@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +43,27 @@ void RunAllPendingMessageAndSendQuit(BrowserThread::ID thread_id,
                                      const base::Closure& quit_task) {
   RunAllPendingInMessageLoop();
   BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
+}
+
+// Class used handle result callbacks for ExecuteScriptAndGetValue.
+class ScriptCallback {
+ public:
+  ScriptCallback() { }
+  virtual ~ScriptCallback() { }
+  void ResultCallback(const base::Value* result);
+
+  scoped_ptr<base::Value> result() { return result_.Pass(); }
+
+ private:
+  scoped_ptr<base::Value> result_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptCallback);
+};
+
+void ScriptCallback::ResultCallback(const base::Value* result) {
+  if (result)
+    result_.reset(result->DeepCopy());
+  MessageLoop::current()->Quit();
 }
 
 }  // namespace
@@ -92,6 +116,20 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
 base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {
   return base::Bind(&DeferredQuitRunLoop, run_loop->QuitClosure(),
                     kNumQuitDeferrals);
+}
+
+scoped_ptr<base::Value> ExecuteScriptAndGetValue(
+    RenderViewHost* render_view_host,
+    const std::string& script) {
+  ScriptCallback observer;
+
+  render_view_host->ExecuteJavascriptInWebFrameCallbackResult(
+      string16(),  // frame_xpath,
+      UTF8ToUTF16(script),
+      base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
+  MessageLoop* loop = MessageLoop::current();
+  loop->Run();
+  return observer.result().Pass();
 }
 
 MessageLoopRunner::MessageLoopRunner() {

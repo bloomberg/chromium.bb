@@ -291,10 +291,8 @@ bool IsWebGLEnabled(content::WebContents* contents) {
 }
 
 bool IsJavascriptEnabled(content::WebContents* contents) {
-  content::RenderViewHost* rvh = contents->GetRenderViewHost();
-  scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
-      string16(),
-      ASCIIToUTF16("123")));
+  scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
+      contents->GetRenderViewHost(), "123");
   int result = 0;
   if (!value->GetAsInteger(&result))
     EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());

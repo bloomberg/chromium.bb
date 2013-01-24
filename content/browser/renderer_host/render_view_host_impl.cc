@@ -727,43 +727,6 @@ void RenderViewHostImpl::ExecuteJavascriptInWebFrameCallbackResult(
   javascript_callbacks_.insert(std::make_pair(key, callback));
 }
 
-typedef std::pair<int, base::Value*> ExecuteDetailType;
-
-ExecuteNotificationObserver::ExecuteNotificationObserver(int id)
-: id_(id) {
-}
-
-ExecuteNotificationObserver::~ExecuteNotificationObserver() {
-}
-
-void ExecuteNotificationObserver::Observe(int type,
-                     const NotificationSource& source,
-                     const NotificationDetails& details) {
-  Details<ExecuteDetailType> execute_details =
-      static_cast<Details<ExecuteDetailType> >(details);
-  int id = execute_details->first;
-  if (id != id_)
-    return;
-  base::Value* value = execute_details->second;
-  if (value)
-    value_.reset(value->DeepCopy());
-  MessageLoop::current()->Quit();
-}
-
-base::Value* RenderViewHostImpl::ExecuteJavascriptAndGetValue(
-    const string16& frame_xpath,
-    const string16& jscript) {
-  int id = ExecuteJavascriptInWebFrameNotifyResult(frame_xpath, jscript);
-  ExecuteNotificationObserver observer(id);
-  NotificationRegistrar notification_registrar;
-  notification_registrar.Add(
-      &observer, NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-      Source<RenderViewHost>(this));
-  MessageLoop* loop = MessageLoop::current();
-  loop->Run();
-  return observer.value()->DeepCopy();
-}
-
 void RenderViewHostImpl::JavaScriptDialogClosed(IPC::Message* reply_msg,
                                                 bool success,
                                                 const string16& user_input) {

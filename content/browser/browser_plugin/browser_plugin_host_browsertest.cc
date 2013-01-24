@@ -275,8 +275,8 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   // Executes the javascript synchronously and makes sure the returned value is
   // freed properly.
   void ExecuteSyncJSFunction(RenderViewHost* rvh, const std::string& jscript) {
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
-        string16(), UTF8ToUTF16(jscript)));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(rvh, jscript);
   }
 
   // This helper method does the following:
@@ -390,14 +390,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
   // events.
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
-  scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-      ASCIIToUTF16("unresponsiveCalled")));
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(rvh, "unresponsiveCalled");
   bool result = false;
   ASSERT_TRUE(value->GetAsBoolean(&result));
   EXPECT_TRUE(result);
 
-  value.reset(rvh->ExecuteJavascriptAndGetValue(string16(),
-      ASCIIToUTF16("responsiveCalled")));
+  value = content::ExecuteScriptAndGetValue(rvh, "responsiveCalled");
   result = false;
   ASSERT_TRUE(value->GetAsBoolean(&result));
   EXPECT_TRUE(result);
@@ -628,14 +627,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-        ASCIIToUTF16("CanGoBack()")));
+    scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(rvh, "CanGoBack()");
     bool result = false;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_TRUE(result);
 
-    value.reset(rvh->ExecuteJavascriptAndGetValue(string16(),
-        ASCIIToUTF16("CanGoForward()")));
+    value = content::ExecuteScriptAndGetValue(rvh, "CanGoForward()");
     result = false;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_TRUE(result);
@@ -651,8 +649,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-        ASCIIToUTF16("CanGoForward()")));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(rvh, "CanGoForward()");
     bool result = true;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_FALSE(result);
@@ -668,8 +666,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-        ASCIIToUTF16("CanGoBack()")));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(rvh, "CanGoBack()");
     bool result = true;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_FALSE(result);
@@ -867,14 +865,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
   EXPECT_EQ(expected_title, actual_title);
 
   // Verify that we heard a loadRedirect during the navigation.
-  scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
-      string16(), ASCIIToUTF16("redirectOldUrl")));
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(rvh, "redirectOldUrl");
   std::string result;
   EXPECT_TRUE(value->GetAsString(&result));
   EXPECT_EQ(redirect_url.spec().c_str(), result);
 
-  value.reset(rvh->ExecuteJavascriptAndGetValue(
-      string16(), ASCIIToUTF16("redirectNewUrl")));
+  value = content::ExecuteScriptAndGetValue(rvh, "redirectNewUrl");
   EXPECT_TRUE(value->GetAsString(&result));
   EXPECT_EQ(test_server()->GetURL("files/title1.html").spec().c_str(), result);
 }
@@ -890,15 +887,14 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptDragEvents) {
 
   // Get a location in the embedder outside of the plugin.
   base::ListValue *start, *end;
-  scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-      ASCIIToUTF16("dragLocation()")));
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(rvh, "dragLocation()");
   ASSERT_TRUE(value->GetAsList(&start) && start->GetSize() == 2);
   double start_x, start_y;
   ASSERT_TRUE(start->GetDouble(0, &start_x) && start->GetDouble(1, &start_y));
 
   // Get a location in the embedder that falls inside the plugin.
-  value.reset(rvh->ExecuteJavascriptAndGetValue(string16(),
-      ASCIIToUTF16("dropLocation()")));
+  value = content::ExecuteScriptAndGetValue(rvh, "dropLocation()");
   ASSERT_TRUE(value->GetAsList(&end) && end->GetSize() == 2);
   double end_x, end_y;
   ASSERT_TRUE(end->GetDouble(0, &end_x) && end->GetDouble(1, &end_y));
@@ -1042,8 +1038,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadCommit) {
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
-  scoped_ptr<base::Value> is_top_level(rvh->ExecuteJavascriptAndGetValue(
-      string16(), ASCIIToUTF16("commitIsTopLevel")));
+  scoped_ptr<base::Value> is_top_level =
+      content::ExecuteScriptAndGetValue(rvh, "commitIsTopLevel");
   bool top_level_bool = false;
   EXPECT_TRUE(is_top_level->GetAsBoolean(&top_level_bool));
   EXPECT_EQ(true, top_level_bool);
@@ -1095,9 +1091,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusBeforeNavigation) {
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       test_guest()->web_contents()->GetRenderViewHost());
   // Verify that the guest is focused.
-  scoped_ptr<base::Value> value(
-      guest_rvh->ExecuteJavascriptAndGetValue(string16(),
-          ASCIIToUTF16("document.hasFocus()")));
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(guest_rvh, "document.hasFocus()");
   bool result = false;
   ASSERT_TRUE(value->GetAsBoolean(&result));
   EXPECT_TRUE(result);
@@ -1121,9 +1116,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_FocusPreservation) {
     SimulateSpaceKeyPress(test_embedder()->web_contents());
     test_guest()->WaitForInput();
     // Verify that the guest is focused.
-    scoped_ptr<base::Value> value(
-        guest_rvh->ExecuteJavascriptAndGetValue(string16(),
-            ASCIIToUTF16("document.hasFocus()")));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(guest_rvh, "document.hasFocus()");
     bool result = false;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_TRUE(result);
@@ -1138,9 +1132,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_FocusPreservation) {
     ExecuteSyncJSFunction(rvh, "document.getElementById('plugin').reload();");
     test_guest()->WaitForLoadStop();
     // Verify that the guest is focused.
-    scoped_ptr<base::Value> value(
-        guest_rvh->ExecuteJavascriptAndGetValue(string16(),
-            ASCIIToUTF16("document.hasFocus()")));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(guest_rvh, "document.hasFocus()");
     bool result = false;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_TRUE(result);
@@ -1162,9 +1155,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
     SimulateSpaceKeyPress(test_embedder()->web_contents());
     test_guest()->WaitForInput();
     // Verify that the guest is focused.
-    scoped_ptr<base::Value> value(
-        guest_rvh->ExecuteJavascriptAndGetValue(string16(),
-            ASCIIToUTF16("document.hasFocus()")));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(guest_rvh, "document.hasFocus()");
     bool result = false;
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_TRUE(result);
@@ -1254,8 +1246,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
       test_embedder()->web_contents()->GetRenderViewHost());
   // Verify that the plugin's name is properly initialized.
   {
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-        ASCIIToUTF16("document.getElementById('plugin').name")));
+    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
+        rvh, "document.getElementById('plugin').name");
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));
     EXPECT_EQ("start", result);
@@ -1270,8 +1262,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
-        ASCIIToUTF16("document.getElementById('plugin').name")));
+    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
+        rvh, "document.getElementById('plugin').name");
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));
     EXPECT_EQ("guest", result);

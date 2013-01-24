@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -15,9 +16,15 @@
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
-// A collections of functions designed for use with unit and browser tests.
+namespace base {
+class Value;
+}
+
+// A collection of functions designed for use with unit and browser tests.
 
 namespace content {
+
+class RenderViewHost;
 
 // Turns on nestable tasks, runs the message loop, then resets nestable tasks
 // to what they were originally. Prefer this over MessageLoop::Run for in
@@ -40,6 +47,14 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 // Get task to quit the given RunLoop. It allows a few generations of pending
 // tasks to run as opposed to run_loop->QuitClosure().
 base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
+
+// Executes the specified javascript in the top-level frame, and runs a nested
+// MessageLoop. When the result is available, it is returned.
+// This should not be used; the use of the ExecuteScript functions in
+// browser_test_utils is preferable.
+scoped_ptr<base::Value> ExecuteScriptAndGetValue(
+    RenderViewHost* render_view_host,
+    const std::string& script);
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run

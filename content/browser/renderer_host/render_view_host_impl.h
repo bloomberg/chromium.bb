@@ -43,7 +43,6 @@ struct ViewMsg_StopFinding_Params;
 
 namespace base {
 class ListValue;
-class Value;
 }
 
 namespace ui {
@@ -68,27 +67,6 @@ struct ShowDesktopNotificationHostMsgParams;
 #if defined(OS_ANDROID)
 class MediaPlayerManagerAndroid;
 #endif
-
-// NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
-// notifications.
-class ExecuteNotificationObserver : public NotificationObserver {
- public:
-  explicit ExecuteNotificationObserver(int id);
-  virtual ~ExecuteNotificationObserver();
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
-  int id() const { return id_; }
-
-  base::Value* value() const { return value_.get(); }
-
- private:
-  int id_;
-  scoped_ptr<base::Value> value_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExecuteNotificationObserver);
-};
 
 #if defined(COMPILER_MSVC)
 // RenderViewHostImpl is the bottom of a diamond-shaped hierarchy,
@@ -199,9 +177,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const string16& frame_xpath,
       const string16& jscript,
       const JavascriptResultCallback& callback) OVERRIDE;
-  virtual base::Value* ExecuteJavascriptAndGetValue(
-      const string16& frame_xpath,
-      const string16& jscript) OVERRIDE;
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const WebKit::WebPluginAction& action) OVERRIDE;

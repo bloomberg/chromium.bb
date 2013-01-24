@@ -18,6 +18,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/test_utils.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -105,7 +106,7 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 
   WebUIScreenLockerTester() {}
 
-  base::Value* ExecuteJavascriptAndGetValue(const std::string& js_text);
+  content::RenderViewHost* RenderViewHost() const;
 
   // Returns the ScreenLockerWebUI object.
   WebUIScreenLocker* webui_screen_locker() const;
@@ -117,17 +118,19 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 };
 
 void WebUIScreenLockerTester::SetPassword(const std::string& password) {
-  delete ExecuteJavascriptAndGetValue(StringPrintf(
-      "$('pod-row').pods[0].passwordElement.value = '%s';",
-      password.c_str()));
+  RenderViewHost()->ExecuteJavascriptInWebFrame(
+      string16(),
+      ASCIIToUTF16(StringPrintf(
+          "$('pod-row').pods[0].passwordElement.value = '%s';",
+          password.c_str())));
 }
 
 std::string WebUIScreenLockerTester::GetPassword() {
   std::string result;
-  base::Value* v = ExecuteJavascriptAndGetValue(
+  scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
+      RenderViewHost(),
       "$('pod-row').pods[0].passwordElement.value;");
   CHECK(v->GetAsString(&result));
-  delete v;
   return result;
 }
 
@@ -139,18 +142,19 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   ASSERT_EQ(password, GetPassword());
 
   // Verify that "signin" button is hidden.
-  base::Value* v = ExecuteJavascriptAndGetValue(
+  scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
+      RenderViewHost(),
       "$('pod-row').pods[0].signinButtonElement.hidden;");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
 
   // Attempt to sign in.
   LoginAttemptObserver login(ScreenLocker::screen_locker_);
-  v = ExecuteJavascriptAndGetValue(
+  v = content::ExecuteScriptAndGetValue(
+      RenderViewHost(),
       "$('pod-row').pods[0].activate();");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
-  delete v;
 
   // Wait for login attempt.
   login.WaitForAttempt();
@@ -167,11 +171,8 @@ views::Widget* WebUIScreenLockerTester::GetChildWidget() const {
   return webui_screen_locker()->lock_window_;
 }
 
-base::Value* WebUIScreenLockerTester::ExecuteJavascriptAndGetValue(
-    const std::string& js_text) {
-  content::RenderViewHost* rvh = webui()->GetWebContents()->GetRenderViewHost();
-  return rvh->ExecuteJavascriptAndGetValue(string16(),
-                                           ASCIIToUTF16(js_text));
+content::RenderViewHost* WebUIScreenLockerTester::RenderViewHost() const {
+  return webui()->GetWebContents()->GetRenderViewHost();
 }
 
 WebUIScreenLocker* WebUIScreenLockerTester::webui_screen_locker() const {

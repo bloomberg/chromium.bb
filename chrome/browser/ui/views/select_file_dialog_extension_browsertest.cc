@@ -130,9 +130,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   void CheckJavascriptErrors() {
     content::RenderViewHost* host = dialog_->GetRenderViewHost();
-    scoped_ptr<base::Value> value(host->ExecuteJavascriptAndGetValue(
-        string16(),
-        ASCIIToUTF16("window.JSErrorCount")));
+    scoped_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(host, "window.JSErrorCount");
     int js_error_count = 0;
     ASSERT_TRUE(value->GetAsInteger(&js_error_count));
     ASSERT_EQ(0, js_error_count);

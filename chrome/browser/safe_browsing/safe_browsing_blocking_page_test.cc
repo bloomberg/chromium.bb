@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 
 using content::BrowserThread;
 using content::InterstitialPage;
@@ -495,9 +496,8 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     // practice it spins at most once or twice.
     std::string ready_state;
     do {
-      scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
-          string16(),
-          ASCIIToUTF16("document.readyState")));
+      scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
+          rvh, "document.readyState");
       if (!value.get() || !value->GetAsString(&ready_state))
         return false;
     } while (ready_state != "complete");
@@ -508,14 +508,13 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     content::RenderViewHost* rvh = GetRenderViewHost();
     if (!rvh)
       return VISIBILITY_ERROR;
-    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
-        string16(),
-        ASCIIToUTF16(
-            "var node = document.getElementById('" + node_id + "');\n"
-            "if (node)\n"
-            "   node.offsetWidth > 0 && node.offsetHeight > 0;"
-            "else\n"
-            "  'node not found';\n")));
+    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
+        rvh,
+        "var node = document.getElementById('" + node_id + "');\n"
+        "if (node)\n"
+        "   node.offsetWidth > 0 && node.offsetHeight > 0;"
+        "else\n"
+        "  'node not found';\n");
     if (!value.get())
       return VISIBILITY_ERROR;
     bool result = false;
@@ -528,7 +527,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     content::RenderViewHost* rvh = GetRenderViewHost();
     if (!rvh)
       return false;
-    // We don't use ExecuteJavascriptAndGetValue for this one, since clicking
+    // We don't use ExecuteScriptAndGetValue for this one, since clicking
     // the button/link may navigate away before the injected javascript can
     // reply, hanging the test.
     rvh->ExecuteJavascriptInWebFrame(
