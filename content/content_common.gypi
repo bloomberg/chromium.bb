@@ -540,7 +540,6 @@
         ],
         'msvs_settings': {
           'VCLinkerTool': {
-            'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
             'DelayLoadDLLs': [
               'd3d9.dll',
               'dxva2.dll',
@@ -556,7 +555,6 @@
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/angle/include',
-        '$(DXSDK_DIR)/include',
       ],
     }],
     ['OS=="win" and directxsdk_exists=="True"', {
