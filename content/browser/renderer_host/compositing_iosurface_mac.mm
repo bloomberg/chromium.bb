@@ -134,18 +134,6 @@ bool HasPixelBufferObjectExtension() {
   return has_pbo;
 }
 
-bool IsVendorIntel() {
-  static bool initialized_is_intel = false;
-  static bool is_intel = false;
-
-  if (!initialized_is_intel) {
-    is_intel = strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)),
-                      "Intel") != NULL;
-    initialized_is_intel = true;
-  }
-  return is_intel;
-}
-
 }  // namespace
 
 CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
@@ -275,7 +263,10 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
       vsync_count_(0),
       swap_count_(0),
       vsync_interval_numerator_(0),
-      vsync_interval_denominator_(0) {
+      vsync_interval_denominator_(0),
+      initialized_is_intel_(false),
+      is_intel_(false),
+      screen_(0) {
   CVReturn ret = CVDisplayLinkSetOutputCallback(display_link_,
                                                 &DisplayLinkCallback, this);
   DCHECK(ret == kCVReturnSuccess)
@@ -400,20 +391,22 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
   }
 
   static bool initialized_workaround = false;
-  static bool use_glfinish_workaround = false;
-
+  static bool force_on_workaround = false;
+  static bool force_off_workaround = false;
   if (!initialized_workaround) {
-    use_glfinish_workaround =
-        (IsVendorIntel() ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kForceGLFinishWorkaround)) &&
-         !CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableGpuDriverBugWorkarounds);
+    force_on_workaround = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kForceGLFinishWorkaround);
+    force_off_workaround = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableGpuDriverBugWorkarounds);
 
     initialized_workaround = true;
   }
 
+  bool use_glfinish_workaround = (IsVendorIntel() || force_on_workaround) &&
+      !force_off_workaround;
+
   if (use_glfinish_workaround) {
+    TRACE_EVENT0("gpu", "glFinish");
     // http://crbug.com/123409 : work around bugs in graphics driver on
     // MacBook Air with Intel HD graphics, and possibly on other models,
     // by forcing the graphics pipeline to be completely drained at this
@@ -535,6 +528,20 @@ void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
 
   glDisableClientState(GL_VERTEX_ARRAY);
   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+bool CompositingIOSurfaceMac::IsVendorIntel() {
+  GLint screen;
+  CGLGetVirtualScreen(cglContext_, &screen);
+  if (screen != screen_)
+    initialized_is_intel_ = false;
+  screen_ = screen;
+  if (!initialized_is_intel_) {
+    is_intel_ = strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)),
+                      "Intel") != NULL;
+    initialized_is_intel_ = true;
+  }
+  return is_intel_;
 }
 
 void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {

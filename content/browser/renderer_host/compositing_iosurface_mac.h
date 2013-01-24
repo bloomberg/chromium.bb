@@ -196,6 +196,8 @@ class CompositingIOSurfaceMac {
                           bool is_vsync_disabled,
                           CVDisplayLinkRef display_link);
 
+  bool IsVendorIntel();
+
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTexture(uint64 io_surface_handle);
 
@@ -280,6 +282,10 @@ class CompositingIOSurfaceMac {
   base::TimeTicks vsync_timebase_;
   uint32 vsync_interval_numerator_;
   uint32 vsync_interval_denominator_;
+
+  bool initialized_is_intel_;
+  bool is_intel_;
+  GLint screen_;
 };
 
 }  // namespace content
