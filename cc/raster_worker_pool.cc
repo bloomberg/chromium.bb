@@ -13,6 +13,11 @@
 #include "cc/picture_pile_impl.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
+#if defined(OS_ANDROID)
+// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+#include <sys/resource.h>
+#endif
+
 namespace cc {
 
 namespace {
@@ -75,6 +80,14 @@ RasterWorkerPool::Thread::Thread(const std::string name)
 
 RasterWorkerPool::Thread::~Thread() {
   Stop();
+}
+
+void RasterWorkerPool::Thread::Init() {
+#if defined(OS_ANDROID)
+  // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+  int nice_value = 10; // Idle priority.
+  setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
+#endif
 }
 
 RasterWorkerPool::RasterWorkerPool(size_t num_raster_threads) {

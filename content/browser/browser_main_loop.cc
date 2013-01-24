@@ -55,6 +55,8 @@
 #include "base/android/jni_android.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
+// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+#include <sys/resource.h>
 #endif
 
 #if defined(OS_WIN)
@@ -634,7 +636,27 @@ void BrowserMainLoop::InitializeMainThread() {
                                            MessageLoop::current()));
 }
 
+#if defined(OS_ANDROID)
+// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+namespace {
+void SetHighThreadPriority() {
+  int nice_value = -6; // High priority.
+  setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
+}
+}
+#endif
+
 void BrowserMainLoop::BrowserThreadsStarted() {
+#if defined(OS_ANDROID)
+// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&SetHighThreadPriority));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&SetHighThreadPriority));
+#endif
+
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
 

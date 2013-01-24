@@ -22,6 +22,9 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 
+// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+#include <sys/resource.h>
+
 using base::SharedMemory;
 using base::SharedMemoryHandle;
 
@@ -95,6 +98,10 @@ class TransferThread : public base::Thread {
                                                gfx::PreferDiscreteGpu);
     bool is_current = context_->MakeCurrent(surface_);
     DCHECK(is_current);
+
+    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+    int nice_value = 10; // Idle priority.
+    setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
   }
 
   virtual void CleanUp() OVERRIDE {

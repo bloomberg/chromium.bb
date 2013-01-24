@@ -58,6 +58,8 @@ class RasterWorkerPool {
       DISALLOW_COPY_AND_ASSIGN(Task);
     };
 
+    virtual void Init() OVERRIDE;
+
     Thread(const std::string name);
     virtual ~Thread();
 

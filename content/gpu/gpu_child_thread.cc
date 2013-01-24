@@ -21,6 +21,11 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
 
+#if defined(OS_ANDROID)
+// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+#include <sys/resource.h>
+#endif
+
 namespace content {
 namespace {
 
@@ -124,6 +129,12 @@ void GpuChildThread::OnInitialize() {
     MessageLoop::current()->Quit();
     return;
   }
+
+#if defined(OS_ANDROID)
+  // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+  int nice_value = -6; // High priority
+  setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
+#endif
 
   // We don't need to pipe log messages if we are running the GPU thread in
   // the browser process.
