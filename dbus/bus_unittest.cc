@@ -108,8 +108,7 @@ TEST(BusTest, GetExportedObject) {
   bus->ShutdownAndBlock();
 }
 
-// http://crbug.com/137846
-TEST(BusTest, DISABLED_UnregisterExportedObject) {
+TEST(BusTest, UnregisterExportedObject) {
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
   thread_options.message_loop_type = MessageLoop::TYPE_IO;
@@ -126,13 +125,22 @@ TEST(BusTest, DISABLED_UnregisterExportedObject) {
       bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy1);
 
+  // Increment the reference count to the object proxy to avoid destroying it
+  // calling UnregisterExportedObject. This ensures the dbus::ExportedObject is
+  // not freed from memory. See http://crbug.com/137846 for details.
+  object_proxy1->AddRef();
+
   bus->UnregisterExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
 
-  // This should return a new object.
+  // This should return a new object because the object_proxy1 is still in
+  // alloc'ed memory.
   dbus::ExportedObject* object_proxy2 =
       bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy2);
   EXPECT_NE(object_proxy1, object_proxy2);
+
+  // Release the incremented reference.
+  object_proxy1->Release();
 
   // Shut down synchronously.
   bus->ShutdownOnDBusThreadAndBlock();
