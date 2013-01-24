@@ -20,7 +20,6 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/remove_operation_delegate.h"
 #include "webkit/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
@@ -44,8 +43,6 @@ bool IsCrossOperationAllowed(FileSystemType src_type,
 }
 
 }  // namespace
-
-// LocalFileSystemOperation::ScopedUpdateNotifier -----------------------------
 
 class LocalFileSystemOperation::ScopedUpdateNotifier {
  public:
@@ -73,8 +70,6 @@ LocalFileSystemOperation::ScopedUpdateNotifier::~ScopedUpdateNotifier() {
   operation_context_->update_observers()->Notify(
       &FileUpdateObserver::OnEndUpdate, MakeTuple(url_));
 }
-
-// LocalFileSystemOperation ---------------------------------------------------
 
 LocalFileSystemOperation::~LocalFileSystemOperation() {
 }
@@ -192,7 +187,7 @@ void LocalFileSystemOperation::DirectoryExists(const FileSystemURL& url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      operation_context(), src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidDirectoryExists,
                  base::Owned(this), callback));
 }
@@ -209,7 +204,7 @@ void LocalFileSystemOperation::FileExists(const FileSystemURL& url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      operation_context(), src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidFileExists,
                  base::Owned(this), callback));
 }
@@ -226,7 +221,7 @@ void LocalFileSystemOperation::GetMetadata(
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      operation_context(), src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidGetMetadata,
                  base::Owned(this), callback));
 }
@@ -243,7 +238,7 @@ void LocalFileSystemOperation::ReadDirectory(
   }
 
   FileSystemFileUtilProxy::ReadDirectory(
-      operation_context(), src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidReadDirectory,
                  base::Owned(this), callback));
 }
@@ -252,12 +247,18 @@ void LocalFileSystemOperation::Remove(const FileSystemURL& url,
                                       bool recursive,
                                       const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationRemove));
-  DCHECK(!remove_operation_delegate_);
-  remove_operation_delegate_.reset(new RemoveOperationDelegate(this, callback));
-  if (recursive)
-    remove_operation_delegate_->RunRecursively(url);
-  else
-    remove_operation_delegate_->Run(url);
+
+  base::PlatformFileError result = SetUp(url, &src_util_, SETUP_FOR_WRITE);
+  if (result != base::PLATFORM_FILE_OK) {
+    callback.Run(result);
+    delete this;
+    return;
+  }
+
+  FileSystemFileUtilProxy::Delete(
+      operation_context_.get(), src_util_, url, recursive,
+      base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
 }
 
 void LocalFileSystemOperation::Write(
@@ -300,7 +301,7 @@ void LocalFileSystemOperation::TouchFile(const FileSystemURL& url,
   }
 
   FileSystemFileUtilProxy::Touch(
-      operation_context(), src_util_, url,
+      operation_context_.get(), src_util_, url,
       last_access_time, last_modified_time,
       base::Bind(&LocalFileSystemOperation::DidTouchFile,
                  base::Owned(this), callback));
@@ -404,7 +405,7 @@ void LocalFileSystemOperation::SyncGetPlatformPath(const FileSystemURL& url,
     return;
   }
 
-  src_util_->GetLocalFilePath(operation_context(), url, platform_path);
+  src_util_->GetLocalFilePath(operation_context_.get(), url, platform_path);
 
   delete this;
 }
@@ -422,7 +423,7 @@ void LocalFileSystemOperation::CreateSnapshotFile(
   }
 
   FileSystemFileUtilProxy::CreateSnapshotFile(
-      operation_context(), src_util_, url,
+      operation_context_.get(), src_util_, url,
       base::Bind(&LocalFileSystemOperation::DidCreateSnapshotFile,
                  base::Owned(this), callback));
 }
@@ -449,40 +450,6 @@ void LocalFileSystemOperation::CopyInForeignFile(
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
-void LocalFileSystemOperation::RemoveFile(
-    const FileSystemURL& url,
-    const StatusCallback& callback) {
-  DCHECK(SetPendingOperationType(kOperationRemove));
-  base::PlatformFileError result = SetUp(url, &src_util_, SETUP_FOR_WRITE);
-  if (result != base::PLATFORM_FILE_OK) {
-    callback.Run(result);
-    delete this;
-    return;
-  }
-
-  FileSystemFileUtilProxy::DeleteFile(
-      operation_context(), src_util_, url,
-      base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
-}
-
-void LocalFileSystemOperation::RemoveDirectory(
-    const FileSystemURL& url,
-    const StatusCallback& callback) {
-  DCHECK(SetPendingOperationType(kOperationRemove));
-  base::PlatformFileError result = SetUp(url, &src_util_, SETUP_FOR_WRITE);
-  if (result != base::PLATFORM_FILE_OK) {
-    callback.Run(result);
-    delete this;
-    return;
-  }
-
-  FileSystemFileUtilProxy::DeleteDirectory(
-      operation_context(), src_util_, url,
-      base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
-}
-
 LocalFileSystemOperation::LocalFileSystemOperation(
     FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
@@ -490,7 +457,6 @@ LocalFileSystemOperation::LocalFileSystemOperation(
       operation_context_(operation_context.Pass()),
       src_util_(NULL),
       dest_util_(NULL),
-      overriding_operation_context_(NULL),
       is_cross_operation_(false),
       peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
@@ -508,7 +474,7 @@ void LocalFileSystemOperation::GetUsageAndQuotaThenRunTask(
       !file_system_context()->GetQuotaUtil(url.type())) {
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
-    operation_context()->set_allowed_bytes_growth(kint64max);
+    operation_context_->set_allowed_bytes_growth(kint64max);
     task.Run();
     return;
   }
@@ -533,7 +499,7 @@ void LocalFileSystemOperation::DidGetUsageAndQuotaAndRunTask(
     return;
   }
 
-  operation_context()->set_allowed_bytes_growth(quota - usage);
+  operation_context_->set_allowed_bytes_growth(quota - usage);
   task.Run();
 }
 
@@ -590,7 +556,7 @@ void LocalFileSystemOperation::DoCreateFile(
     const StatusCallback& callback,
     bool exclusive) {
   FileSystemFileUtilProxy::EnsureFileExists(
-      operation_context(),
+      operation_context_.get(),
       src_util_, url,
       base::Bind(
           exclusive ?
@@ -604,7 +570,7 @@ void LocalFileSystemOperation::DoCreateDirectory(
     const StatusCallback& callback,
     bool exclusive, bool recursive) {
   FileSystemFileUtilProxy::CreateDirectory(
-      operation_context(),
+      operation_context_.get(),
       src_util_, url, exclusive, recursive,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
@@ -614,7 +580,7 @@ void LocalFileSystemOperation::DoCopy(const FileSystemURL& src_url,
                                       const FileSystemURL& dest_url,
                                       const StatusCallback& callback) {
   FileSystemFileUtilProxy::Copy(
-      operation_context(),
+      operation_context_.get(),
       src_util_, dest_util_,
       src_url, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
@@ -626,7 +592,7 @@ void LocalFileSystemOperation::DoCopyInForeignFile(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   FileSystemFileUtilProxy::CopyInForeignFile(
-      operation_context(),
+      operation_context_.get(),
       dest_util_,
       src_local_disk_file_path, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
@@ -637,7 +603,7 @@ void LocalFileSystemOperation::DoMove(const FileSystemURL& src_url,
                                       const FileSystemURL& dest_url,
                                       const StatusCallback& callback) {
   FileSystemFileUtilProxy::Move(
-      operation_context(),
+      operation_context_.get(),
       src_util_, dest_util_,
       src_url, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
@@ -648,7 +614,7 @@ void LocalFileSystemOperation::DoTruncate(const FileSystemURL& url,
                                           const StatusCallback& callback,
                                           int64 length) {
   FileSystemFileUtilProxy::Truncate(
-      operation_context(), src_util_, url, length,
+      operation_context_.get(), src_util_, url, length,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -657,7 +623,7 @@ void LocalFileSystemOperation::DoOpenFile(const FileSystemURL& url,
                                           const OpenFileCallback& callback,
                                           int file_flags) {
   FileSystemFileUtilProxy::CreateOrOpen(
-      operation_context(), src_util_, url, file_flags,
+      operation_context_.get(), src_util_, url, file_flags,
       base::Bind(&LocalFileSystemOperation::DidOpenFile,
                  base::Owned(this), callback));
 }
@@ -743,7 +709,7 @@ void LocalFileSystemOperation::DidWrite(
   const bool complete = (
       write_status != FileWriterDelegate::SUCCESS_IO_PENDING);
   if (complete && write_status != FileWriterDelegate::ERROR_WRITE_NOT_STARTED) {
-    operation_context()->change_observers()->Notify(
+    operation_context_->change_observers()->Notify(
         &FileChangeObserver::OnModifyFile, MakeTuple(url));
   }
 
@@ -795,20 +761,14 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
       mode != SETUP_FOR_READ)
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
+  if (!file_system_context()->GetMountPointProvider(
+          url.type())->IsAccessAllowed(url))
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
   DCHECK(file_util);
   if (!*file_util)
     *file_util = file_system_context()->GetFileUtil(url.type());
   if (!*file_util)
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
-  // If this operation is created for recursive sub-operations (i.e.
-  // operation context is overridden from another operation) we skip
-  // some duplicated security checks.
-  if (overriding_operation_context_)
-    return base::PLATFORM_FILE_OK;
-
-  if (!file_system_context()->GetMountPointProvider(
-          url.type())->IsAccessAllowed(url))
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   if (mode == SETUP_FOR_READ) {
@@ -817,7 +777,7 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
     // observers) is configured for the destination URL while this method
     // could be called for both src and dest URL.
     if (!is_cross_operation_) {
-      operation_context()->access_observers()->Notify(
+      operation_context_->access_observers()->Notify(
           &FileAccessObserver::OnAccess, MakeTuple(url));
     }
     return base::PLATFORM_FILE_OK;
@@ -826,7 +786,7 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
   DCHECK(mode == SETUP_FOR_WRITE || mode == SETUP_FOR_CREATE);
 
   scoped_update_notifiers_.push_back(new ScopedUpdateNotifier(
-      operation_context(), url));
+      operation_context_.get(), url));
 
   // Any write access is disallowed on the root path.
   if (url.path().value().length() == 0 ||

@@ -314,7 +314,8 @@ void SyncableFileSystemOperation::Cancel(
 
 LocalFileSystemOperation*
 SyncableFileSystemOperation::AsLocalFileSystemOperation() {
-  return file_system_operation_;
+  NOTREACHED();
+  return NULL;
 }
 
 void SyncableFileSystemOperation::CreateSnapshotFile(

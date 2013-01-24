@@ -1046,6 +1046,9 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_FALSE(DirectoryExists(parent_dir_path));
 
+  // Remove is not a 'read' access.
+  EXPECT_EQ(0, quota_manager_proxy()->notify_storage_accessed_count());
+
   EXPECT_EQ(2, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());

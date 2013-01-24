@@ -41,18 +41,13 @@ class FileSystemFileUtilProxy {
            FileSystemFileUtil::SnapshotFilePolicy snapshot_policy)>
       SnapshotFileCallback;
 
-  // Deletes a file on the given context's task_runner.
-  static bool DeleteFile(
+  // Deletes a file or a directory on the given context's task_runner.
+  // It is an error to delete a non-empty directory with recursive=false.
+  static bool Delete(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemURL& url,
-      const StatusCallback& callback);
-
-  // Deletes a directory on the given context's task_runner.
-  static bool DeleteDirectory(
-      FileSystemOperationContext* context,
-      FileSystemFileUtil* file_util,
-      const FileSystemURL& url,
+      bool recursive,
       const StatusCallback& callback);
 
   // Creates or opens a file with the given flags by calling |file_util|'s

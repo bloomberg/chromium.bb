@@ -108,28 +108,15 @@ class ReadDirectoryHelper {
 }  // namespace
 
 // static
-bool FileSystemFileUtilProxy::DeleteFile(
+bool FileSystemFileUtilProxy::Delete(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
     const FileSystemURL& url,
+    bool recursive,
     const StatusCallback& callback) {
   return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
-      Bind(&FileSystemFileUtil::DeleteFile, Unretained(file_util),
-           context, url),
-      callback);
-}
-
-// static
-bool FileSystemFileUtilProxy::DeleteDirectory(
-    FileSystemOperationContext* context,
-    FileSystemFileUtil* file_util,
-    const FileSystemURL& url,
-    const StatusCallback& callback) {
-  return base::PostTaskAndReplyWithResult(
-      context->task_runner(), FROM_HERE,
-      Bind(&FileSystemFileUtil::DeleteDirectory, Unretained(file_util),
-           context, url),
+      Bind(&FileUtilHelper::Delete, context, file_util, url, recursive),
       callback);
 }
 
