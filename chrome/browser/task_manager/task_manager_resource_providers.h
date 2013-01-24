@@ -10,11 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/debug/stack_trace.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/process_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
@@ -36,7 +38,8 @@ class Extension;
 
 // Base class for various types of render process resources that provides common
 // functionality like stats tracking.
-class TaskManagerRendererResource : public TaskManager::Resource {
+class TaskManagerRendererResource : public TaskManager::Resource,
+                                    public content::RenderViewHostObserver {
  public:
   TaskManagerRendererResource(base::ProcessHandle process,
                               content::RenderViewHost* render_view_host);
@@ -75,6 +78,10 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                  size_t v8_memory_used) OVERRIDE;
 
+  // content::RenderViewHostObserver implementation.
+  virtual void RenderViewHostDestroyed(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
   content::RenderViewHost* render_view_host() const {
     return render_view_host_;
   }
@@ -101,6 +108,10 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   size_t v8_memory_allocated_;
   size_t v8_memory_used_;
   bool pending_v8_memory_allocated_update_;
+
+  // TODO(jochen): Remove asap after debugging http://crbug.com/165138.
+  base::debug::StackTrace creation_stack_;
+  scoped_ptr<base::debug::StackTrace> destruction_stack_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerRendererResource);
 };
