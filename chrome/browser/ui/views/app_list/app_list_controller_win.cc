@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
@@ -84,6 +85,34 @@ string16 GetAppModelId() {
             chrome::kInitialProfile);
   }
   return ShellIntegration::GetAppListAppModelIdForProfile(initial_profile_path);
+}
+
+void LaunchHostedAppInChromeOnUIThread(const std::string app_id,
+                                       Profile* profile) {
+  ExtensionService* service = profile->GetExtensionService();
+  DCHECK(service);
+  const extensions::Extension* extension = service->GetInstalledExtension(
+      app_id);
+  // There is a non-zero chance the extension was uninstalled while we were
+  // checking the default browser.
+  if (!extension)
+    return;
+
+  application_launch::OpenApplication(application_launch::LaunchParams(
+      profile, extension, NEW_FOREGROUND_TAB));
+}
+
+void LaunchHostedAppOnFileThread(const GURL launch_url,
+                                 const std::string app_id,
+                                 Profile* profile) {
+  if (ShellIntegration::GetDefaultBrowser() != ShellIntegration::IS_DEFAULT) {
+    platform_util::OpenExternal(launch_url);
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&LaunchHostedAppInChromeOnUIThread, app_id, profile));
 }
 
 class AppListControllerDelegateWin : public AppListControllerDelegate {
@@ -237,6 +266,33 @@ void AppListControllerDelegateWin::ActivateApp(
 
 void AppListControllerDelegateWin::LaunchApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
+  // Having the app launcher installed does not mean the user has Chrome
+  // installed, or set as the default browser. The behavior for app launch needs
+  // to be consistent but also respect the users default browser choice for apps
+  // which appear as web sites, and never show chrome the browser if it is not
+  // installed.
+  // The launch behavior is:
+  //   - v1 hosted apps: if chrome is not default browser, launch in default
+  //                     browser; otherwise launch in chrome
+  //   - v1 packaged apps : open in an app window
+  //   - v2 packaged apps : launch normally
+  if (extension->is_hosted_app()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&LaunchHostedAppOnFileThread,
+                   extension->GetFullLaunchURL(),
+                   extension->id(),
+                   profile));
+    return;
+  }
+
+  if (extension->is_legacy_packaged_app()) {
+    application_launch::OpenApplication(application_launch::LaunchParams(
+        profile, extension, extension_misc::LAUNCH_WINDOW, NEW_FOREGROUND_TAB));
+    return;
+  }
+
   application_launch::OpenApplication(application_launch::LaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
