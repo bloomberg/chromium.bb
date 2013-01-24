@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 """Runs each test cases as a single shard, single process execution.
-
 Similar to sharding_supervisor.py but finer grained. It runs each test case
 individually instead of running per shard. Runs multiple instances in parallel.
 """
@@ -617,7 +616,7 @@ class Runner(object):
       line = '%s (%.2fs) - retry #%d' % (test_case, duration, try_count)
     else:
       line = '%s (%.2fs)' % (test_case, duration)
-    if self.verbose or returncode or try_count > 1:
+    if self.verbose or returncode or try_count > 0:
       # Print output in one of three cases:
       #   --verbose was specified.
       #   The test failed.
