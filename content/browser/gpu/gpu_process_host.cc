@@ -977,6 +977,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kEnableGpuSandbox,
     switches::kEnableGPUServiceLogging,
     switches::kEnableLogging,
+    switches::kEnableShaderNameHashing,
     switches::kEnableVirtualGLContexts,
     switches::kGpuNoContextLost,
     switches::kGpuStartupDialog,

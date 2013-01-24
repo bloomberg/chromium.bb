@@ -2498,11 +2498,12 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().oes_egl_image_external ? 1 : 0;
   }
 
-  if (features().enable_shader_name_hashing)
-    resources.HashFunction = &CityHashForAngle;
-
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
       force_webgl_glsl_validation_ ? SH_WEBGL_SPEC : SH_GLES2_SPEC;
+  if (shader_spec == SH_WEBGL_SPEC && features().enable_shader_name_hashing)
+    resources.HashFunction = &CityHashForAngle;
+  else
+    resources.HashFunction = NULL;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
           ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
