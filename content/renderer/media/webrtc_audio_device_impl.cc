@@ -439,16 +439,6 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
     return 0;
   }
 
-  {
-    // TODO(xians): We're calling out while under a lock.  This opens up
-    // possibilities for deadlocks.  Instead lock, transfer ownership of the
-    // renderer_ pointer over to a local variable, release the lock, and call
-    // Play() using the local variable.
-    base::AutoLock auto_lock(lock_);
-    if (renderer_)
-      renderer_->Play();
-  }
-
   playing_ = true;
   start_render_time_ = base::Time::Now();
   return 0;
@@ -466,14 +456,6 @@ int32_t WebRtcAudioDeviceImpl::StopPlayout() {
   if (!start_render_time_.is_null()) {
     base::TimeDelta render_time = base::Time::Now() - start_render_time_;
     UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioRenderTime", render_time);
-  }
-
-  {
-    base::AutoLock auto_lock(lock_);
-    // TODO(xians): transfer ownership of the renderer_ pointer over to a local
-    // variable, release the lock, and call Pause() using the local variable.
-    if (renderer_)
-      renderer_->Pause();
   }
 
   playing_ = false;

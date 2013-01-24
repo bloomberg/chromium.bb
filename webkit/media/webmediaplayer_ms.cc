@@ -157,7 +157,7 @@ void WebMediaPlayerMS::pause() {
   if (video_frame_provider_)
     video_frame_provider_->Pause();
 
-  if (audio_renderer_)
+  if (audio_renderer_ && !paused_)
     audio_renderer_->Pause();
 
   paused_ = true;

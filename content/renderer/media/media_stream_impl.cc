@@ -278,16 +278,19 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
       static_cast<MediaStreamExtraData*>(descriptor.extraData());
 
   if (extra_data->remote_stream()) {
-    scoped_refptr<WebRtcAudioRenderer> renderer =
-        CreateRemoteAudioRenderer(extra_data->remote_stream());
+    WebRtcAudioDeviceImpl* audio_device =
+        dependency_factory_->GetWebRtcAudioDevice();
 
-    if (renderer &&
-        dependency_factory_->GetWebRtcAudioDevice()->SetRenderer(renderer)) {
-      return renderer;
+    // Share the existing renderer if any, otherwise create a new one.
+    scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
+    if (!renderer) {
+      renderer = CreateRemoteAudioRenderer(extra_data->remote_stream());
+
+      if (renderer && !audio_device->SetRenderer(renderer))
+        renderer = NULL;
     }
 
-    // WebRtcAudioDeviceImpl can only support one renderer.
-    return NULL;
+    return renderer;
   } else if (extra_data->local_stream()) {
     // Create the local audio renderer if the stream contains audio tracks.
     return CreateLocalAudioRenderer(extra_data->local_stream());

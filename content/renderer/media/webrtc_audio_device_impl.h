@@ -376,6 +376,10 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
     return capturer_;
   }
 
+  const scoped_refptr<WebRtcAudioRenderer>& renderer() const {
+    return renderer_;
+  }
+
   // Accessors.
   int input_buffer_size() const {
     return input_audio_parameters_.frames_per_buffer();

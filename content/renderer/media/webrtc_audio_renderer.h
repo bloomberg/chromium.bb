@@ -76,6 +76,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Protect access to |state_|.
   base::Lock lock_;
 
+  // Ref count for the MediaPlayers which are playing audio.
+  int play_ref_count_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };
 
