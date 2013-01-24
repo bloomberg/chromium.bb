@@ -50,9 +50,8 @@ def _WarnAboutManualSteps():
   print Color(
       BOLD_BLUE, '\n'.join([
           'Updates to FFmpeg require the following additional manual steps:',
-          '  - Rebuild and commit of Chrome and Chromium Windows DLLs.',
           '  - Push of new sources from Git to Subversion. See sync_svn.py.',
-          '  - Internal and external DEPS roll.',
+          '  - External DEPS roll.',
           '  - If new source files were added, generate_gyp.py must be run.\n',
           'For help, please consult the following resources:',
           '  - chromium/README.chromium help text.',
