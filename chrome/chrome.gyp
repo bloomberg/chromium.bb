@@ -528,6 +528,7 @@
           'product_name': 'app_mode_app_support',
           'dependencies': [
             '../base/base.gyp:base',
+            'common_constants.gyp:common_constants',
           ],
           'sources': [
             'common/mac/app_mode_chrome_locator.h',
