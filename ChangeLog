@@ -1,3 +1,7 @@
+2013-01-24  Christian Egli  <christian.egli@sbs.ch>
+
+	* tools/lou_trace.c: Fix warnings.
+
 2013-01-24  David Reynolds <dkreynolds@ntlworld.com>
 
 	* tables/en-gb-comp8.ctb: Add the British pound sign.

@@ -74,14 +74,14 @@ static int get_wide_input(widechar *buffer) {
   return extParseChars(get_input(), buffer);
 }
 
-static char *print_chars(widechar *buffer, int length) {
+static char *print_chars(const widechar *buffer, int length) {
   static char chars[BUFSIZE];
   strcpy(chars, &showString(buffer, length)[1]);
   chars[strlen(chars) - 1] = 0;
   return chars;
 }
 
-static char *print_dots(widechar *buffer, int length) {
+static char *print_dots(const widechar *buffer, int length) {
   static char dots[BUFSIZE];
   strcpy(dots, showDots(buffer, length));
   return dots;
@@ -108,11 +108,10 @@ static void append_string(char *destination, int *length, char *source) {
   (*length) += strlen(source);
 }
 
-static char *print_script(widechar *buffer, int length) {
+static char *print_script(const widechar *buffer, int length) {
   static char script[BUFSIZE];
   int i = 0;
   int j = 0;
-  int action = 0;
   while (i < length) {
     switch (buffer[i]) {
       case pass_first:
@@ -176,7 +175,6 @@ static char *print_script(widechar *buffer, int length) {
         break;
       case pass_endTest:
         append_char(script, &j, '\t');
-        action = 1;
         i++;
         break;
       case pass_swap:
@@ -191,8 +189,8 @@ static char *print_script(widechar *buffer, int length) {
   return script;
 }
 
-static void print_rule(TranslationTableRule *rule) {
-  char *opcode = findOpcodeName(rule->opcode);
+static void print_rule(const TranslationTableRule *rule) {
+  const char *opcode = findOpcodeName(rule->opcode);
   char *chars;
   char *dots;
   char *script;
@@ -219,7 +217,7 @@ static void main_loop(char *table) {
   widechar outbuf[BUFSIZE];
   int inlen;
   int outlen;
-  TranslationTableRule **rules = malloc(512 * sizeof(TranslationTableRule));
+  const TranslationTableRule **rules = malloc(512 * sizeof(TranslationTableRule));
   int ruleslen;
   int i;
   while (1) {
