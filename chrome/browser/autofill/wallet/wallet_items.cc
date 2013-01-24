@@ -258,12 +258,6 @@ WalletItems::~WalletItems() {}
 
 scoped_ptr<WalletItems>
     WalletItems::CreateWalletItems(const base::DictionaryValue& dictionary) {
-  std::string google_transaction_id;
-  if (!dictionary.GetString("google_transaction_id", &google_transaction_id)) {
-    DLOG(ERROR) << "Response from Google wallet missing google transaction id";
-    return scoped_ptr<WalletItems>();
-  }
-
   std::vector<RequiredAction> required_action;
   const ListValue* required_action_list;
   if (dictionary.GetList("required_action", &required_action_list)) {
@@ -281,6 +275,13 @@ scoped_ptr<WalletItems>
     }
   } else {
     DVLOG(1) << "Response from Google wallet missing required actions";
+  }
+
+  std::string google_transaction_id;
+  if (!dictionary.GetString("google_transaction_id", &google_transaction_id) &&
+      required_action.empty()) {
+    DLOG(ERROR) << "Response from Google wallet missing google transaction id";
+    return scoped_ptr<WalletItems>();
   }
 
   std::string default_instrument_id;
