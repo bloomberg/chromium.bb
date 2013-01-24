@@ -813,10 +813,8 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
       error != base::PLATFORM_FILE_OK)
     return error;
 
-  if (file_info.is_directory()) {
-    NOTREACHED();
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
+  if (file_info.is_directory())
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
 
   int64 growth = -UsageForPath(file_info.name.size()) - platform_file_info.size;
   AllocateQuota(context, growth);
