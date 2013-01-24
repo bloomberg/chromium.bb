@@ -71,6 +71,8 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   // also be used to affect the behavior of the test.
   virtual FilePath::StringType Variant() = 0;
 
+  virtual bool IsPnacl();
+
   // Map a file relative to the variant directory to a URL served by the test
   // web server.
   GURL TestURL(const FilePath::StringType& url_fragment);
@@ -109,6 +111,15 @@ class NaClBrowserTestGLibc : public NaClBrowserTestBase {
   virtual FilePath::StringType Variant() OVERRIDE;
 };
 
+class NaClBrowserTestPnacl : public NaClBrowserTestBase {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
+  virtual FilePath::StringType Variant() OVERRIDE;
+
+  virtual bool IsPnacl() OVERRIDE;
+};
+
 #if defined(ARCH_CPU_ARM_FAMILY)
 
 // There is no support for Glibc on ARM NaCl.
@@ -116,13 +127,25 @@ class NaClBrowserTestGLibc : public NaClBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body
 
-#else
+#elif defined(ADDRESS_SANITIZER)
 
-// Non-ARM platforms have both Glibc and Newlib tests
+// PNaCl's cache and PPB_FileIO currently trip up under ASAN:
+// https://code.google.com/p/chromium/issues/detail?id=171810
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \
 IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
+body
+
+#else
+
+// Otherwise, we have Glibc, Newlib and PNaCl tests
+#define NACL_BROWSER_TEST_F(suite, name, body) \
+IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
+body \
+IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
+body \
+IN_PROC_BROWSER_TEST_F(suite##Pnacl, name) \
 body
 
 #endif

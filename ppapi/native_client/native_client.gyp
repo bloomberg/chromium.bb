@@ -68,6 +68,12 @@
                 'src/untrusted/irt_stub/libppapi.a',
               ],
             },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib',
+              'files': [
+                'src/untrusted/irt_stub/libppapi.a',
+              ],
+            },
           ],
         },
         {

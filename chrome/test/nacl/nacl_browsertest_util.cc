@@ -196,6 +196,10 @@ void NaClBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(StartTestServer()) << "Cannot start test server.";
 }
 
+bool NaClBrowserTestBase::IsPnacl() {
+  return false;
+}
+
 GURL NaClBrowserTestBase::TestURL(const FilePath::StringType& url_fragment) {
   FilePath expanded_url = FilePath(FILE_PATH_LITERAL("files"));
   expanded_url = expanded_url.Append(url_fragment);
@@ -243,4 +247,17 @@ FilePath::StringType NaClBrowserTestNewlib::Variant() {
 
 FilePath::StringType NaClBrowserTestGLibc::Variant() {
   return FILE_PATH_LITERAL("glibc");
+}
+
+FilePath::StringType NaClBrowserTestPnacl::Variant() {
+  return FILE_PATH_LITERAL("pnacl");
+}
+
+bool NaClBrowserTestPnacl::IsPnacl() {
+  return true;
+}
+
+void NaClBrowserTestPnacl::SetUpCommandLine(CommandLine* command_line) {
+  NaClBrowserTestBase::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(switches::kEnablePnacl);
 }

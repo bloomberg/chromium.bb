@@ -14,6 +14,7 @@
         'nlib_target': 'libppapi_stub.a',
         'build_glibc': 1,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'include_dirs': [
         '../../../..',

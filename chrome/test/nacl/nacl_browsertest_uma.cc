@@ -34,10 +34,26 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SuccessfulLoadUMA, {
                                 LOAD_OK, 1);
 
   // Make sure we have other important histograms.
-  histograms.ExpectTotalCount("NaCl.Perf.StartupTime.LoadModule", 1);
-  histograms.ExpectTotalCount("NaCl.Perf.StartupTime.Total", 1);
-  histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
-  histograms.ExpectTotalCount("NaCl.Perf.Size.Nexe", 1);
+  if (!IsPnacl()) {
+    histograms.ExpectTotalCount("NaCl.Perf.StartupTime.LoadModule", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.StartupTime.Total", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.Size.Nexe", 1);
+  } else {
+    histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.Size.Pexe", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.Size.PNaClTranslatedNexe", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.Size.PexeNexeSizePct", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LoadCompiler", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LoadLinker", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.CompileTime", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.CompileKBPerSec", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LinkTime", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.TotalUncachedTime", 1);
+    histograms.ExpectTotalCount(
+        "NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec", 1);
+    histograms.ExpectTotalCount("NaCl.Perf.PNaClCache.IsHit", 1);
+  }
 })
 
 // TODO(ncbray) convert the rest of nacl_uma.py (currently in the NaCl repo.)
