@@ -837,7 +837,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   composition.selection = ui::Range(2, 3);
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
-  EXPECT_TRUE(model.HasSelection());
+  EXPECT_FALSE(model.HasSelection());
 
   model.GetTextRange(&range);
   EXPECT_EQ(10U, range.end());
@@ -850,8 +850,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
 
   gfx::SelectionModel selection;
   model.GetSelectionModel(&selection);
-  EXPECT_EQ(ui::Range(7, 8), selection.selection());
-  EXPECT_STR_EQ("8", model.GetSelectedText());
+  EXPECT_EQ(ui::Range(8, 8), selection.selection());
 
   EXPECT_FALSE(composition_text_confirmed_or_cleared_);
   model.CancelCompositionText();
@@ -1452,7 +1451,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
   EXPECT_TRUE(model.Undo());  // set composition should forget undone edit.
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
-  EXPECT_TRUE(model.HasSelection());
+  EXPECT_FALSE(model.HasSelection());
   EXPECT_STR_EQ("ABCDEabc", model.GetText());
 
   // Accepting composition
