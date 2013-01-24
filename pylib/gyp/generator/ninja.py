@@ -418,7 +418,8 @@ class NinjaWriter:
         gyp.msvs_emulation.VerifyMissingSources(
             sources, self.abs_build_dir, generator_flags, self.GypPathToNinja)
         pch = gyp.msvs_emulation.PrecompiledHeader(
-            self.msvs_settings, config_name, self.GypPathToNinja)
+            self.msvs_settings, config_name, self.GypPathToNinja,
+            self.GypPathToUniqueOutput, self.obj_ext)
       else:
         pch = gyp.xcode_emulation.MacPrefixHeader(
             self.xcode_settings, self.GypPathToNinja,
@@ -822,9 +823,14 @@ class NinjaWriter:
       if not case_sensitive_filesystem:
         output = output.lower()
       implicit = precompiled_header.GetObjDependencies([input], [output])
+      variables = []
+      if self.flavor == 'win':
+        variables, output, implicit = precompiled_header.GetFlagsModifications(
+            input, output, implicit, command, cflags_c, cflags_cc,
+            self.ExpandSpecial)
       self.ninja.build(output, command, input,
                        implicit=[gch for _, _, gch in implicit],
-                       order_only=predepends)
+                       order_only=predepends, variables=variables)
       outputs.append(output)
 
     self.WritePchTargets(pch_commands)
@@ -846,8 +852,6 @@ class NinjaWriter:
       }[lang]
 
       map = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }
-      if self.flavor == 'win':
-        map.update({'c': 'cc_pch', 'cc': 'cxx_pch'})
       cmd = map.get(lang)
       self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
@@ -1455,45 +1459,25 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$cflags_pch_cc -c $in -o $out'),
       depfile='$out.d')
   else:
-    # Template for compile commands mostly shared between compiling files
-    # and generating PCH. In the case of PCH, the "output" is specified by /Fp
-    # rather than /Fo (for object files), but we still need to specify an /Fo
-    # when compiling PCH.
-    cc_template = ('ninja -t msvc -o $out -e $arch '
+    cc_command = ('ninja -t msvc -o $out -e $arch '
+                  '-- '
+                  '$cc /nologo /showIncludes /FC '
+                  '@$out.rsp /c $in /Fo$out /Fd$pdbname ')
+    cxx_command = ('ninja -t msvc -o $out -e $arch '
                    '-- '
-                   '$cc /nologo /showIncludes /FC '
-                   '@$out.rsp '
-                   '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname ')
-    cxx_template = ('ninja -t msvc -o $out -e $arch '
-                    '-- '
-                    '$cxx /nologo /showIncludes /FC '
-                    '@$out.rsp '
-                    '$cflags_pch_cc /c $in %(outspec)s $pchobj /Fd$pdbname ')
+                   '$cxx /nologo /showIncludes /FC '
+                   '@$out.rsp /c $in /Fo$out /Fd$pdbname ')
     master_ninja.rule(
       'cc',
       description='CC $out',
-      command=cc_template % {'outspec': '/Fo$out'},
-      depfile='$out.d',
-      rspfile='$out.rsp',
-      rspfile_content='$defines $includes $cflags $cflags_c')
-    master_ninja.rule(
-      'cc_pch',
-      description='CC PCH $out',
-      command=cc_template % {'outspec': '/Fp$out /Fo$out.obj'},
+      command=cc_command,
       depfile='$out.d',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
-      command=cxx_template % {'outspec': '/Fo$out'},
-      depfile='$out.d',
-      rspfile='$out.rsp',
-      rspfile_content='$defines $includes $cflags $cflags_cc')
-    master_ninja.rule(
-      'cxx_pch',
-      description='CXX PCH $out',
-      command=cxx_template % {'outspec': '/Fp$out /Fo$out.obj'},
+      command=cxx_command,
       depfile='$out.d',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')
