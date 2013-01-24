@@ -49,7 +49,7 @@ function isHeartbeatMessage(msg) {
 }
 
 function failTest(msg) {
-  console.log("failTest('" + msg + "')");
+  console.log('failTest', msg);
   if (msg instanceof Event)
     failMessage = msg.target + '.' + msg.type;
   else
@@ -57,8 +57,13 @@ function failTest(msg) {
   setDocTitle('FAILED');
 }
 
+var titleChanged = false;
 function setDocTitle(title) {
-  document.title = title.toUpperCase();
+  // If document title is 'ENDED', then update it with new title to possibly
+  // mark a test as failure.  Otherwise, keep the first title change in place.
+  if (!titleChanged || document.title.toUpperCase() == 'ENDED')
+    document.title = title.toUpperCase();
+  titleChanged = true;
 }
 
 function installTitleEventHandler(element, event) {
@@ -68,19 +73,19 @@ function installTitleEventHandler(element, event) {
 }
 
 function loadEncryptedMediaFromURL(video) {
+  if (!(video && mediaFile && keySystem && KEY))
+    failTest('Missing parameters in loadEncryptedMediaFromURL().');
   return loadEncryptedMedia(video, mediaFile, keySystem, KEY);
 }
 
-function loadEncryptedMedia(video, mediaFile, keySystem, key) {
+function loadEncryptedMedia(video, mediaFile, keySystem, key,
+                            appendSourceCallbackFn) {
   var keyRequested = false;
   var sourceOpened = false;
   // Add properties to enable verification that events occurred.
   video.receivedKeyAdded = false;
   video.receivedHeartbeat = false;
   video.isHeartbeatExpected = keySystem === EXTERNAL_CLEAR_KEY_KEY_SYSTEM;
-
-  if (!(video && mediaFile && keySystem && key))
-    failTest('Missing parameters in loadEncryptedMedia().');
 
   function onSourceOpen(e) {
     if (sourceOpened)
@@ -94,7 +99,10 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
     xhr.responseType = 'arraybuffer';
     xhr.addEventListener('load', function(e) {
       srcBuffer.append(new Uint8Array(e.target.response));
-      mediaSource.endOfStream();
+      if (appendSourceCallbackFn)
+        appendSourceCallbackFn(mediaSource);
+      else
+        mediaSource.endOfStream();
     });
     xhr.send();
   }
