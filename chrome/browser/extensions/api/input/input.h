@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+class Profile;
 
 namespace extensions {
 
@@ -26,6 +29,24 @@ class SendKeyboardEventInputFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+};
+
+class InputAPI : public ProfileKeyedAPI {
+ public:
+  explicit InputAPI(Profile* profile);
+  virtual ~InputAPI();
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<InputAPI>* GetFactoryInstance();
+
+ private:
+  friend class ProfileKeyedAPIFactory<InputAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "InputAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
 };
 
 }  // namespace extensions

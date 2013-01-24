@@ -26,10 +26,6 @@
 #include "chrome/browser/rlz/rlz_extension_api.h"
 #include "chrome/common/extensions/api/generated_api.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/extensions/api/input/input.h"
-#endif  // defined(TOOLKIT_VIEWS)
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
@@ -152,11 +148,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Omnibox.
   RegisterFunction<extensions::OmniboxSendSuggestionsFunction>();
   RegisterFunction<extensions::OmniboxSetDefaultSuggestionFunction>();
-
-#if defined(TOOLKIT_VIEWS)
-  // Input.
-  RegisterFunction<extensions::SendKeyboardEventInputFunction>();
-#endif
 
 #if defined(OS_CHROMEOS)
   // Power
