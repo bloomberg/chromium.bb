@@ -51,8 +51,17 @@ def WriteFile(path, content, mode='w', atomic=False):
     raise
 
 
-def Touch(path):
-  """Simulate unix touch. Create if doesn't exist and update its timestamp."""
+def Touch(path, makedirs=False):
+  """Simulate unix touch. Create if doesn't exist and update its timestamp.
+
+  Arguments:
+    path: a string, file name of the file to touch (creating if not present).
+    makedirs: a Boolean - if set to True - create the directories in the path.
+              if they do not exist.
+  """
+  if makedirs:
+    SafeMakedirs(os.path.dirname(path))
+
   # Create the file if nonexistant.
   open(path, 'a').close()
   # Update timestamp to right now.

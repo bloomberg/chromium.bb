@@ -298,6 +298,38 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     res = commands.ArchiveTestResults(self.tempdir, test_results_dir, '')
     cros_test_lib.VerifyTarball(res, ['./', 'foo.txt'])
 
+  def testBuildFirmwareArchive(self):
+    """Verifies that firmware archiver includes proper files"""
+    # Assorted set of file names, some of which are supposed to be included in
+    # the archive.
+    fw_files = (
+      'dts/emeraldlake2.dts',
+      'image-link.rw.bin',
+      'nv_image-link.bin',
+      'pci8086,0166.rom',
+      'seabios.cbfs',
+      'u-boot.elf',
+      'u-boot_netboot.bin',
+      'updater-link.rw.sh',
+      'x86-memtest')
+    # Files which should be included in the archive.
+    fw_archived_files = (
+      'dts/emeraldlake2.dts',
+      'image-link.rw.bin',
+      'nv_image-link.bin',
+      'updater-link.rw.sh')
+    board = 'link'
+    fw_test_root = os.path.join(self.tempdir, os.path.basename(__file__))
+    fw_files_root = os.path.join(fw_test_root,
+                                 'chroot/build/%s/firmware' % board)
+    # Generate a representative set of files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(fw_files_root, fw_files)
+    # Create an archive from the simulated firmware directory
+    tarball = os.path.join(
+        fw_test_root,
+        commands.BuildFirmwareArchive(fw_test_root, board, fw_test_root))
+    # Verify the tarball contents.
+    cros_test_lib.VerifyTarball(tarball, fw_archived_files)
 
 if __name__ == '__main__':
   cros_test_lib.main()

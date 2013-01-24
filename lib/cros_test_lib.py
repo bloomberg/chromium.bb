@@ -70,7 +70,7 @@ def CreateOnDiskHierarchy(base_path, dir_struct):
     if f.endswith(os.sep):
       os.mkdir(f)
     else:
-      osutils.Touch(f)
+      osutils.Touch(f, makedirs=True)
 
 
 def _VerifyDirectoryIterables(existing, expected):
