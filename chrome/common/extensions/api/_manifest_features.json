@@ -115,16 +115,34 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "display_in_launcher": {
-    "channel": "stable",
-    "extension_types": ["packaged_app", "platform_app"],
-    "location": "component"
-  },
-  "display_in_new_tab_page": {
-    "channel": "stable",
-    "extension_types": ["packaged_app", "platform_app"],
-    "location": "component"
-  },
+  "display_in_launcher": [
+    {
+      "channel": "stable",
+      "extension_types": ["packaged_app", "platform_app"],
+      "location": "component"
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["packaged_app", "platform_app"],
+      "whitelist": [
+        "nmmhkkegccagdldgiimedpiccmgmieda"
+      ]
+    }
+  ],
+  "display_in_new_tab_page": [
+    {
+      "channel": "stable",
+      "extension_types": ["packaged_app", "platform_app"],
+      "location": "component"
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["packaged_app", "platform_app"],
+      "whitelist": [
+        "nmmhkkegccagdldgiimedpiccmgmieda"
+      ]
+    }
+  ],
   "file_browser_handlers": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
