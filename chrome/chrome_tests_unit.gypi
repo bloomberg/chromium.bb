@@ -1218,7 +1218,7 @@
         'browser/ui/cocoa/browser/avatar_button_controller_unittest.mm',
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller_unittest.mm',
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller_unittest.mm',
-	'browser/ui/cocoa/browser/password_generation_bubble_controller_unittest.mm',
+        'browser/ui/cocoa/browser/password_generation_bubble_controller_unittest.mm',
         'browser/ui/cocoa/browser_window_cocoa_unittest.mm',
         'browser/ui/cocoa/browser_window_controller_unittest.mm',
         'browser/ui/cocoa/bubble_view_unittest.mm',
@@ -2044,6 +2044,7 @@
           'dependencies': [
             'chrome_version_resources',
             'installer_util_strings',
+            'unit_tests_exe_pdb_workaround',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
@@ -2302,6 +2303,8 @@
       ],
     },
   ],
+
+
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library
     # unit_tests into an android apk for execution.
@@ -2337,6 +2340,25 @@
           'sources': [
             'unit_tests.isolate',
           ],
+        },
+      ],
+    }],
+    ['OS=="win"', {
+      'targets' : [
+        {
+          # This target is only depended upon on Windows.
+          'target_name': 'unit_tests_exe_pdb_workaround',
+          'type': 'static_library',
+          'sources': [ 'empty_pdb_workaround.cc' ],
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              # This *in the compile phase* must match the pdb name that's
+              # output by the final link. See empty_pdb_workaround.cc for
+              # more details.
+              'DebugInformationFormat': '3',
+              'ProgramDataBaseFileName': '<(PRODUCT_DIR)/unit_tests.exe.pdb',
+            },
+          },
         },
       ],
     }],
