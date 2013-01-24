@@ -454,15 +454,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
     const std::string& partition_domain,
     const std::string& partition_name,
     bool in_memory) {
-  // TODO(ajwong): ResourceContexts no longer have any storage related state.
-  // We should move this into a place where it is called once per
-  // BrowserContext creation rather than piggybacking off the default context
-  // creation.
-  if (!resource_context_initialized_) {
-    resource_context_initialized_ = true;
-    InitializeResourceContext(browser_context_);
-  }
-
   // Find the previously created partition if it's available.
   StoragePartitionConfig partition_config(
       partition_domain, partition_name, in_memory);
@@ -580,6 +571,16 @@ void StoragePartitionImplMap::ForEach(
 void StoragePartitionImplMap::PostCreateInitialization(
     StoragePartitionImpl* partition,
     bool in_memory) {
+  // TODO(ajwong): ResourceContexts no longer have any storage related state.
+  // We should move this into a place where it is called once per
+  // BrowserContext creation rather than piggybacking off the default context
+  // creation.
+  // Note: moving this into Get() before partitions_[] is set causes reentrency.
+  if (!resource_context_initialized_) {
+    resource_context_initialized_ = true;
+    InitializeResourceContext(browser_context_);
+  }
+
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
