@@ -531,7 +531,7 @@ deps_os = {
       "/trunk/deps/third_party/gold@149858",
 
     "src/third_party/libmtp":
-      "/trunk/deps/third_party/libmtp@167836",
+      "/trunk/deps/third_party/libmtp@178447",
 
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/mtpd/source":
