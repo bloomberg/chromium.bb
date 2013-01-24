@@ -96,10 +96,7 @@ bool DiscardableMemory::PurgeForTestingSupported() {
 // static
 void DiscardableMemory::PurgeForTesting() {
   int state = 0;
-  vm_purgable_control(mach_task_self(),
-                      reinterpret_cast<vm_address_t>(0U),
-                      VM_PURGABLE_PURGE_ALL,
-                      &state);
+  vm_purgable_control(mach_task_self(), 0, VM_PURGABLE_PURGE_ALL, &state);
 }
 
 }  // namespace base
