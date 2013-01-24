@@ -58,12 +58,16 @@ message SuspendImminent {
 
 // Included in calls to powerd's RegisterSuspendDelay method.
 message RegisterSuspendDelayRequest {
-  // Next ID to use: 2
+  // Next ID to use: 3
 
   // Upper bound on the amount of time that the power manager will wait for this
   // client to call HandleSuspendReadiness before suspending the system, as
   // given by base::TimeDelta::ToInternalValue().
   optional int64 timeout = 1;
+
+  // Human-readable description of the delay's purpose (e.g. the name of
+  // the daemon that requested the delay).  Only used for debugging.
+  optional string description = 2;
 }
 
 // Included in responses to powerd's RegisterSuspendDelay method.
