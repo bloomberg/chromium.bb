@@ -1535,6 +1535,10 @@ class Strace(ApiBase):
   class Tracer(ApiBase.Tracer):
     MAX_LEN = 256
 
+    def __init__(self, logname, use_sudo):
+      super(Strace.Tracer, self).__init__(logname)
+      self.use_sudo = use_sudo
+
     def trace(self, cmd, cwd, tracename, output):
       """Runs strace on an executable."""
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
@@ -1560,6 +1564,8 @@ class Strace(ApiBase):
         '-e', 'trace=%s' % traces,
         '-o', self._logname + '.' + tracename,
       ]
+      if self.use_sudo is True:
+        trace_cmd.insert(0, 'sudo')
       child = subprocess.Popen(
           trace_cmd + cmd,
           cwd=cwd,
@@ -1581,6 +1587,13 @@ class Strace(ApiBase):
             'trace': tracename,
           })
       return child.returncode, out
+
+  def __init__(self, use_sudo=None):
+    super(Strace, self).__init__()
+    self.use_sudo = use_sudo
+
+  def get_tracer(self, logname):
+    return self.Tracer(logname, self.use_sudo)
 
   @staticmethod
   def clean_trace(logname):
@@ -2206,7 +2219,7 @@ class Dtrace(ApiBase):
       */
       """
 
-    def __init__(self, logname):
+    def __init__(self, logname, use_sudo):
       """Starts the log collection with dtrace.
 
       Requires root access or chmod 4555 on dtrace. dtrace is asynchronous so
@@ -2224,7 +2237,6 @@ class Dtrace(ApiBase):
       # too fast, resulting in missing traces from the grand-children. The D
       # code manages the dtrace lifetime itself.
       trace_cmd = [
-        'sudo',
         'dtrace',
         # Use a larger buffer if getting 'out of scratch space' errors.
         # Ref: https://wikis.oracle.com/display/DTrace/Options+and+Tunables
@@ -2236,6 +2248,9 @@ class Dtrace(ApiBase):
         '-q',
         '-n', self._get_dtrace_code(),
       ]
+      if use_sudo is not False:
+        trace_cmd.insert(0, 'sudo')
+
       with open(self._logname + '.log', 'wb') as logfile:
         self._dtrace = subprocess.Popen(
             trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
@@ -2391,6 +2406,13 @@ class Dtrace(ApiBase):
             None, None, None, logname)
       with open(logname, 'wb') as logfile:
         logfile.write(''.join(lines))
+
+  def __init__(self, use_sudo=None):
+    super(Dtrace, self).__init__()
+    self.use_sudo = use_sudo
+
+  def get_tracer(self, logname):
+    return self.Tracer(logname, self.use_sudo)
 
   @staticmethod
   def clean_trace(logname):
@@ -3149,6 +3171,10 @@ class LogmanTrace(ApiBase):
           stdout=sys.stderr,
           stderr=sys.stderr)
 
+  def __init__(self, use_sudo=False):  # pylint: disable=W0613
+    super(LogmanTrace, self).__init__()
+    # Ignore use_sudo. It's irrelevant on Windows but kept to simplify the API.
+
   @staticmethod
   def clean_trace(logname):
     for ext in ('', '.csv', '.etl', '.json', '.xml', '.preprocessed'):
@@ -3205,7 +3231,7 @@ class LogmanTrace(ApiBase):
     return [context[1] for context in contexes]
 
 
-def get_api():
+def get_api(**kwargs):
   """Returns the correct implementation for the current OS."""
   if sys.platform == 'cygwin':
     raise NotImplementedError(
@@ -3218,7 +3244,7 @@ def get_api():
     'freebsd8': Dtrace,
   }
   # Defaults to strace.
-  return flavors.get(sys.platform, Strace)()
+  return flavors.get(sys.platform, Strace)(**kwargs)
 
 
 def extract_directories(root_dir, files, blacklist):
@@ -3321,6 +3347,12 @@ def CMDtrace(args):
   parser.add_option(
       '-q', '--quiet', action='store_true',
       help='Redirects traced executable output to /dev/null')
+  parser.add_option(
+      '-s', '--sudo', action='store_true',
+      help='Use sudo when shelling out the tracer tool (ignored on Windows)')
+  parser.add_option(
+      '-n', '--no-sudo', action='store_false',
+      help='Don\'t use sudo')
   options, args = parser.parse_args(args)
 
   if not args:
@@ -3329,7 +3361,9 @@ def CMDtrace(args):
   if not os.path.isabs(args[0]) and os.access(args[0], os.X_OK):
     args[0] = os.path.abspath(args[0])
 
-  api = get_api()
+  # options.sudo default value is None, which is to do whatever tracer defaults
+  # do.
+  api = get_api(use_sudo=options.sudo)
   return trace(options.log, args, os.getcwd(), api, options.quiet)[0]
 
 
