@@ -284,8 +284,14 @@ void ForwardKeyEvent(content::RenderViewHost* host, ui::KeyboardCode key_code) {
 }
 
 // Tests that backspace is not processed before it's sent to the web contents.
+// Flaky on win aura. crbug.com/170331
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_BackspaceSentToWebContent DISABLED_BackspaceSentToWebContent
+#else
+#define MAYBE_BackspaceSentToWebContent BackspaceSentToWebContent
+#endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
-                       BackspaceSentToWebContent) {
+                       MAYBE_BackspaceSentToWebContent) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
