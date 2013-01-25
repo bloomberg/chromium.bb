@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
@@ -20,11 +21,8 @@
 #include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/web_ui.h"
 
-OmniboxUIHandler::OmniboxUIHandler(Profile* profile ) {
-  controller_.reset(new AutocompleteController(profile, this,
-      chrome::search::IsInstantExtendedAPIEnabled(profile) ?
-          AutocompleteClassifier::kInstantExtendedOmniboxProviders :
-          AutocompleteClassifier::kDefaultOmniboxProviders));
+OmniboxUIHandler::OmniboxUIHandler(Profile* profile): profile_(profile) {
+  ResetController();
 }
 
 OmniboxUIHandler::~OmniboxUIHandler() {}
@@ -142,28 +140,40 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
 }
 
 void OmniboxUIHandler::StartOmniboxQuery(
-    const base::ListValue* two_element_input_string) {
-  DCHECK_EQ(2u, two_element_input_string->GetSize());
+    const base::ListValue* three_element_input_string) {
+  DCHECK_EQ(3u, three_element_input_string->GetSize());
   string16 input_string;
-  bool return_val = two_element_input_string->GetString(0, &input_string);
+  bool return_val = three_element_input_string->GetString(0, &input_string);
   DCHECK(return_val);
   bool prevent_inline_autocomplete;
   return_val =
-      two_element_input_string->GetBoolean(1, &prevent_inline_autocomplete);
+      three_element_input_string->GetBoolean(1, &prevent_inline_autocomplete);
   DCHECK(return_val);
+  int cursor_position_int;
+  return_val = three_element_input_string->GetInteger(2, &cursor_position_int);
+  DCHECK(return_val);
+  size_t cursor_position = cursor_position_int;
   string16 empty_string;
-  // Tell the autocomplete controller to start working on the
-  // input.  It's okay if the previous request hasn't yet finished;
-  // the autocomplete controller is smart enough to stop the previous
-  // query before it starts the new one.  By the way, in this call to
-  // Start(), we use the default/typical values for all parameters.
+  // Reset the controller.  If we don't do this, then the
+  // AutocompleteController might inappropriately set its |minimal_changes|
+  // variable (or something else) and some providers will short-circuit
+  // important logic and return stale results.  In short, we want the
+  // actual results to not depend on the state of the previous request.
+  ResetController();
   time_omnibox_started_ = base::Time::Now();
   controller_->Start(AutocompleteInput(
       input_string,
-      string16::npos,
+      cursor_position,
       empty_string,  // user's desired tld (top-level domain)
       prevent_inline_autocomplete,
       false,  // no preferred keyword provider
       true,  // allow exact keyword matches
       AutocompleteInput::ALL_MATCHES));  // want all matches
+}
+
+void OmniboxUIHandler::ResetController() {
+  controller_.reset(new AutocompleteController(profile_, this,
+      chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
+          AutocompleteClassifier::kInstantExtendedOmniboxProviders :
+          AutocompleteClassifier::kDefaultOmniboxProviders));
 }
