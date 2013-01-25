@@ -35,7 +35,8 @@ class SchemaBundleGenerator(object):
   """This class contains methods to generate code based on multiple schemas.
   """
 
-  def __init__(self, model, api_defs, cpp_type_generator):
+  def __init__(self, root, model, api_defs, cpp_type_generator):
+    self._root = root;
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
@@ -84,15 +85,22 @@ class SchemaBundleGenerator(object):
     c.Append('#include "base/basictypes.h"')
 
     for namespace in self._model.namespaces.values():
-      ifdefs = self._GetPlatformIfdefs(namespace)
-      if ifdefs is not None:
-        c.Append("#if %s" % ifdefs, indent_level=0)
-
       namespace_name = namespace.unix_name.replace("experimental_", "")
       implementation_header = namespace.compiler_options.get(
           "implemented_in",
           "chrome/browser/extensions/api/%s/%s_api.h" % (namespace_name,
                                                          namespace_name))
+      if not os.path.exists(
+          os.path.join(self._root, os.path.normpath(implementation_header))):
+        if "implemented_in" in namespace.compiler_options:
+          raise ValueError('Header file for namespace "%s" specified in '
+                          'compiler_options not found: %s' %
+                          (namespace.unix_name, implementation_header))
+        continue
+      ifdefs = self._GetPlatformIfdefs(namespace)
+      if ifdefs is not None:
+        c.Append("#if %s" % ifdefs, indent_level=0)
+
       c.Append('#include "%s"' % implementation_header)
 
       if ifdefs is not None:

@@ -153,7 +153,7 @@ def handle_bundle_schema(filenames, dest_dir, root, root_namespace):
         referenced_namespace.unix_name)
 
   generator = schema_bundle_generator.SchemaBundleGenerator(
-      api_model, api_defs, type_generator)
+      root, api_model, api_defs, type_generator)
   api_h_code = generator.GenerateAPIHeader().Render()
   schemas_h_code = generator.GenerateSchemasHeader().Render()
   schemas_cc_code = generator.GenerateSchemasCC().Render()
