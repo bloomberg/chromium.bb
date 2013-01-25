@@ -68,11 +68,12 @@ class CC_EXPORT TopControlsManager {
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
   bool is_overlay_mode_;
-  bool scroll_readjustment_enabled_;
+  bool in_scroll_gesture_;
   float controls_top_offset_;
   float content_top_offset_;
   float top_controls_height_;
   float previous_root_scroll_offset_;
+  float scroll_start_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TopControlsManager);
 };

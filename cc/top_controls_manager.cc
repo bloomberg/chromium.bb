@@ -34,11 +34,12 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
     : client_(client),
       animation_direction_(NO_ANIMATION),
       is_overlay_mode_(false),
-      scroll_readjustment_enabled_(false),
+      in_scroll_gesture_(false),
       top_controls_height_(top_controls_height),
       controls_top_offset_(0),
       content_top_offset_(top_controls_height),
-      previous_root_scroll_offset_(0.f) {
+      previous_root_scroll_offset_(0.f),
+      scroll_start_offset_(0.f) {
   CHECK(client_);
 }
 
@@ -52,7 +53,7 @@ void TopControlsManager::UpdateDrawPositions() {
   // If the scroll position has changed underneath us (i.e. a javascript
   // scroll), then simulate a scroll that covers the delta.
   float scroll_total_y = RootScrollLayerTotalScrollY();
-  if (scroll_readjustment_enabled_
+  if (!in_scroll_gesture_
       && scroll_total_y != previous_root_scroll_offset_) {
     ScrollBy(gfx::Vector2dF(0, scroll_total_y - previous_root_scroll_offset_));
     StartAnimationIfNecessary();
@@ -62,11 +63,23 @@ void TopControlsManager::UpdateDrawPositions() {
 
 void TopControlsManager::ScrollBegin() {
   ResetAnimations();
-  scroll_readjustment_enabled_ = false;
+  in_scroll_gesture_ = true;
+  scroll_start_offset_ = RootScrollLayerTotalScrollY() + controls_top_offset_;
 }
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
     const gfx::Vector2dF pending_delta) {
+  if (pending_delta.y() == 0)
+    return pending_delta;
+
+  float scroll_total_y = RootScrollLayerTotalScrollY();
+  if (in_scroll_gesture_ &&
+      ((pending_delta.y() > 0 && scroll_total_y < scroll_start_offset_) ||
+       (pending_delta.y() < 0 &&
+           scroll_total_y > scroll_start_offset_ + top_controls_height_))) {
+    return pending_delta;
+  }
+
   ResetAnimations();
   return ScrollInternal(pending_delta);
 }
@@ -87,7 +100,15 @@ gfx::Vector2dF TopControlsManager::ScrollInternal(
   if (scroll_total_y > 0 || (scroll_total_y == 0
       && content_top_offset_ < scroll_delta_y)) {
     is_overlay_mode_ = true;
-    content_top_offset_ = 0;
+
+    // The first case is where the page applies a scroll (javascript) and is
+    // being re-adjusted in a call to UpdateDrawPositions.  Instead of slamming
+    // the controls to the top, we adjust by the scroll delta until we reach
+    // zero as we expect.
+    if (scroll_total_y > 0 && content_top_offset_ != 0)
+      content_top_offset_ -= scroll_delta_y;
+    else
+      content_top_offset_ = 0;
   } else if (scroll_total_y <= 0 && (scroll_delta_y < 0
       || (scroll_delta_y > 0 && content_top_offset_ > 0))) {
     is_overlay_mode_ = false;
@@ -114,7 +135,7 @@ gfx::Vector2dF TopControlsManager::ScrollInternal(
 void TopControlsManager::ScrollEnd() {
   StartAnimationIfNecessary();
   previous_root_scroll_offset_ = RootScrollLayerTotalScrollY();
-  scroll_readjustment_enabled_ = true;
+  in_scroll_gesture_ = false;
 }
 
 void TopControlsManager::Animate(base::TimeTicks monotonic_time) {
