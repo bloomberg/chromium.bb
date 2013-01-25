@@ -18,12 +18,12 @@ class ProfileAuthData {
  public:
   // Transfers proxy authentication cache and optionally |transfer_cookies| and
   // server bound certs from the profile that was used for authentication.
-  // |cookies_transfered_callback| will be called on UI thread after cookie
-  // transfer part of this operation is completed.
+  // |completion_callback| will be called on UI thread after the operation is
+  // completed.
   static void Transfer(Profile* from_profile,
                        Profile* to_profile,
                        bool transfer_cookies,
-                       const base::Closure& cookies_transfered_callback);
+                       const base::Closure& completion_callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProfileAuthData);

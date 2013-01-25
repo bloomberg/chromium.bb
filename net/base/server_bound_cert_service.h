@@ -128,9 +128,20 @@ class NET_EXPORT ServerBoundCertService
   // callback will not be called.
   void CancelRequest(ServerBoundCertServiceRequest* req);
 
-  void HandleResult(const std::string& server_identifier,
-                    int error,
-                    scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert);
+  void GotServerBoundCert(const std::string& server_identifier,
+                          SSLClientCertType type,
+                          base::Time expiration_time,
+                          const std::string& key,
+                          const std::string& cert);
+  void GeneratedServerBoundCert(
+      const std::string& server_identifier,
+      int error,
+      scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert);
+  void HandleResult(int error,
+                    const std::string& server_identifier,
+                    SSLClientCertType type,
+                    const std::string& private_key,
+                    const std::string& cert);
 
   scoped_ptr<ServerBoundCertStore> server_bound_cert_store_;
   scoped_refptr<base::TaskRunner> task_runner_;

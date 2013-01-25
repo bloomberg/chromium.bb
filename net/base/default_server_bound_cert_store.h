@@ -12,10 +12,11 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/server_bound_cert_store.h"
-
-class Task;
 
 namespace net {
 
@@ -52,10 +53,10 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   virtual bool GetServerBoundCert(
       const std::string& server_identifier,
       SSLClientCertType* type,
-      base::Time* creation_time,
       base::Time* expiration_time,
       std::string* private_key_result,
-      std::string* cert_result) OVERRIDE;
+      std::string* cert_result,
+      const GetCertCallback& callback) OVERRIDE;
   virtual void SetServerBoundCert(
       const std::string& server_identifier,
       SSLClientCertType type,
@@ -63,29 +64,44 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
       base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert) OVERRIDE;
-  virtual void DeleteServerBoundCert(const std::string& server_identifier)
-      OVERRIDE;
-  virtual void DeleteAllCreatedBetween(base::Time delete_begin,
-                                       base::Time delete_end) OVERRIDE;
-  virtual void DeleteAll() OVERRIDE;
+  virtual void DeleteServerBoundCert(
+      const std::string& server_identifier,
+      const base::Closure& callback) OVERRIDE;
+  virtual void DeleteAllCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& callback) OVERRIDE;
+  virtual void DeleteAll(const base::Closure& callback) OVERRIDE;
   virtual void GetAllServerBoundCerts(
-      ServerBoundCertList* server_bound_certs) OVERRIDE;
+      const GetCertListCallback& callback) OVERRIDE;
   virtual int GetCertCount() OVERRIDE;
   virtual void SetForceKeepSessionState() OVERRIDE;
 
  private:
+  class Task;
+  class GetServerBoundCertTask;
+  class SetServerBoundCertTask;
+  class DeleteServerBoundCertTask;
+  class DeleteAllCreatedBetweenTask;
+  class GetAllServerBoundCertsTask;
+
   static const size_t kMaxCerts;
 
   // Deletes all of the certs. Does not delete them from |store_|.
   void DeleteAllInMemory();
 
   // Called by all non-static functions to ensure that the cert store has
-  // been initialized. This is not done during creating so it doesn't block
-  // the window showing.
+  // been initialized.
+  // TODO(mattm): since we load asynchronously now, maybe we should start
+  // loading immediately on construction, or provide some method to initiate
+  // loading?
   void InitIfNecessary() {
     if (!initialized_) {
-      if (store_)
+      if (store_) {
         InitStore();
+      } else {
+        loaded_ = true;
+      }
       initialized_ = true;
     }
   }
@@ -93,6 +109,29 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   // Initializes the backing store and reads existing certs from it.
   // Should only be called by InitIfNecessary().
   void InitStore();
+
+  // Callback for backing store loading completion.
+  void OnLoaded(scoped_ptr<ScopedVector<ServerBoundCert> > certs);
+
+  // Syncronous methods which do the actual work. Can only be called after
+  // initialization is complete.
+  void SyncSetServerBoundCert(
+      const std::string& server_identifier,
+      SSLClientCertType type,
+      base::Time creation_time,
+      base::Time expiration_time,
+      const std::string& private_key,
+      const std::string& cert);
+  void SyncDeleteServerBoundCert(const std::string& server_identifier);
+  void SyncDeleteAllCreatedBetween(base::Time delete_begin,
+                                   base::Time delete_end);
+  void SyncGetAllServerBoundCerts(ServerBoundCertList* cert_list);
+
+  // Add |task| to |waiting_tasks_|.
+  void EnqueueTask(scoped_ptr<Task> task);
+  // If already initialized, run |task| immediately. Otherwise add it to
+  // |waiting_tasks_|.
+  void RunOrEnqueueTask(scoped_ptr<Task> task);
 
   // Deletes the cert for the specified server, if such a cert exists, from the
   // in-memory store. Deletes it from |store_| if |store_| is not NULL.
@@ -105,12 +144,22 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
                                      ServerBoundCert* cert);
 
   // Indicates whether the cert store has been initialized. This happens
-  // Lazily in InitStoreIfNecessary().
+  // lazily in InitIfNecessary().
   bool initialized_;
+
+  // Indicates whether loading from the backend store is completed and
+  // calls may be immediately processed.
+  bool loaded_;
+
+  // Tasks that are waiting to be run once we finish loading.
+  ScopedVector<Task> waiting_tasks_;
+  base::TimeTicks waiting_tasks_start_time_;
 
   scoped_refptr<PersistentStore> store_;
 
   ServerBoundCertMap server_bound_certs_;
+
+  base::WeakPtrFactory<DefaultServerBoundCertStore> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultServerBoundCertStore);
 };
@@ -121,11 +170,14 @@ typedef base::RefCountedThreadSafe<DefaultServerBoundCertStore::PersistentStore>
 class NET_EXPORT DefaultServerBoundCertStore::PersistentStore
     : public RefcountedPersistentStore {
  public:
+  typedef base::Callback<void(scoped_ptr<ScopedVector<ServerBoundCert> >)>
+      LoadedCallback;
+
   // Initializes the store and retrieves the existing certs. This will be
   // called only once at startup. Note that the certs are individually allocated
   // and that ownership is transferred to the caller upon return.
-  virtual bool Load(
-      std::vector<ServerBoundCert*>* certs) = 0;
+  // The |loaded_callback| must not be called synchronously.
+  virtual void Load(const LoadedCallback& loaded_callback) = 0;
 
   virtual void AddServerBoundCert(const ServerBoundCert& cert) = 0;
 

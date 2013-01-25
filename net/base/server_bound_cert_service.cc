@@ -45,9 +45,25 @@ bool IsSupportedCertType(uint8 type) {
   switch(type) {
     case CLIENT_CERT_ECDSA_SIGN:
       return true;
+    // If we add any more supported types, CertIsValid will need to be updated
+    // to check that the returned type matches one of the requested types.
     default:
       return false;
   }
+}
+
+bool CertIsValid(const std::string& domain,
+                 SSLClientCertType type,
+                 base::Time expiration_time) {
+  if (expiration_time < base::Time::Now()) {
+    DVLOG(1) << "Cert store had expired cert for " << domain;
+    return false;
+  } else if (!IsSupportedCertType(type)) {
+    DVLOG(1) << "Cert store had cert of wrong type " << type << " for "
+             << domain;
+    return false;
+  }
+  return true;
 }
 
 // Used by the GetDomainBoundCertResult histogram to record the final
@@ -55,9 +71,10 @@ bool IsSupportedCertType(uint8 type) {
 enum GetCertResult {
   // Synchronously found and returned an existing domain bound cert.
   SYNC_SUCCESS = 0,
-  // Generated and returned a domain bound cert asynchronously.
+  // Retrieved or generated and returned a domain bound cert asynchronously.
   ASYNC_SUCCESS = 1,
-  // Generation request was cancelled before the cert generation completed.
+  // Retrieval/generation request was cancelled before the cert generation
+  // completed.
   ASYNC_CANCELLED = 2,
   // Cert generation failed.
   ASYNC_FAILURE_KEYGEN = 3,
@@ -204,6 +221,9 @@ class ServerBoundCertServiceRequest {
       case ERR_PRIVATE_KEY_EXPORT_FAILED:
         RecordGetDomainBoundCertResult(ASYNC_FAILURE_EXPORT_KEY);
         break;
+      case ERR_INSUFFICIENT_RESOURCES:
+        RecordGetDomainBoundCertResult(WORKER_FAILURE);
+        break;
       default:
         RecordGetDomainBoundCertResult(ASYNC_FAILURE_UNKNOWN);
         break;
@@ -295,7 +315,8 @@ class ServerBoundCertServiceWorker {
 // origin message loop.
 class ServerBoundCertServiceJob {
  public:
-  ServerBoundCertServiceJob(SSLClientCertType type) : type_(type) {
+  ServerBoundCertServiceJob(SSLClientCertType type)
+      : type_(type) {
   }
 
   ~ServerBoundCertServiceJob() {
@@ -450,38 +471,7 @@ int ServerBoundCertService::GetDomainBoundCert(
 
   requests_++;
 
-  // Check if a domain bound cert of an acceptable type already exists for this
-  // domain, and that it has not expired.
-  base::Time now = base::Time::Now();
-  base::Time creation_time;
-  base::Time expiration_time;
-  if (server_bound_cert_store_->GetServerBoundCert(domain,
-                                                   type,
-                                                   &creation_time,
-                                                   &expiration_time,
-                                                   private_key,
-                                                   cert)) {
-    if (expiration_time < now) {
-      DVLOG(1) << "Cert store had expired cert for " << domain;
-    } else if (!IsSupportedCertType(*type) ||
-               std::find(requested_types.begin(), requested_types.end(),
-                         *type) == requested_types.end()) {
-      DVLOG(1) << "Cert store had cert of wrong type " << *type << " for "
-               << domain;
-    } else {
-      DVLOG(1) << "Cert store had valid cert for " << domain
-               << " of type " << *type;
-      cert_store_hits_++;
-      RecordGetDomainBoundCertResult(SYNC_SUCCESS);
-      base::TimeDelta request_time = base::TimeTicks::Now() - request_start;
-      UMA_HISTOGRAM_TIMES("DomainBoundCerts.GetCertTimeSync", request_time);
-      RecordGetCertTime(request_time);
-      return OK;
-    }
-  }
-
-  // |server_bound_cert_store_| has no cert for this domain. See if an
-  // identical request is currently in flight.
+  // See if an identical request is currently in flight.
   ServerBoundCertServiceJob* job = NULL;
   std::map<std::string, ServerBoundCertServiceJob*>::const_iterator j;
   j = inflight_.find(domain);
@@ -503,22 +493,62 @@ int ServerBoundCertService::GetDomainBoundCert(
       return ERR_ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH;
     }
     inflight_joins_++;
-  } else {
-    // Need to make a new request.
+
+    ServerBoundCertServiceRequest* request = new ServerBoundCertServiceRequest(
+        request_start,
+        base::Bind(&RequestHandle::OnRequestComplete,
+                   base::Unretained(out_req)),
+        type, private_key, cert);
+    job->AddRequest(request);
+    out_req->RequestStarted(this, request, callback);
+    return ERR_IO_PENDING;
+  }
+
+  // Check if a domain bound cert of an acceptable type already exists for this
+  // domain, and that it has not expired.
+  base::Time expiration_time;
+  if (server_bound_cert_store_->GetServerBoundCert(
+      domain,
+      type,
+      &expiration_time,
+      private_key,
+      cert,
+      base::Bind(&ServerBoundCertService::GotServerBoundCert,
+                 weak_ptr_factory_.GetWeakPtr()))) {
+    if (*type != CLIENT_CERT_INVALID_TYPE) {
+      // Sync lookup found a cert.
+      if (CertIsValid(domain, *type, expiration_time)) {
+        DVLOG(1) << "Cert store had valid cert for " << domain
+                 << " of type " << *type;
+        cert_store_hits_++;
+        RecordGetDomainBoundCertResult(SYNC_SUCCESS);
+        base::TimeDelta request_time = base::TimeTicks::Now() - request_start;
+        UMA_HISTOGRAM_TIMES("DomainBoundCerts.GetCertTimeSync", request_time);
+        RecordGetCertTime(request_time);
+        return OK;
+      }
+    }
+
+    // Sync lookup did not find a cert, or it found an expired one.  Start
+    // generating a new one.
     ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
-            domain,
-            preferred_type,
-            base::Bind(&ServerBoundCertService::HandleResult,
-                       weak_ptr_factory_.GetWeakPtr()));
+        domain,
+        preferred_type,
+        base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
+                   weak_ptr_factory_.GetWeakPtr()));
     if (!worker->Start(task_runner_)) {
+      delete worker;
       // TODO(rkn): Log to the NetLog.
       LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
       RecordGetDomainBoundCertResult(WORKER_FAILURE);
-      return ERR_INSUFFICIENT_RESOURCES;  // Just a guess.
+      return ERR_INSUFFICIENT_RESOURCES;
     }
-    job = new ServerBoundCertServiceJob(preferred_type);
-    inflight_[domain] = job;
   }
+
+  // We are either waiting for async DB lookup, or waiting for cert generation.
+  // Create a job & request to track it.
+  job = new ServerBoundCertServiceJob(preferred_type);
+  inflight_[domain] = job;
 
   ServerBoundCertServiceRequest* request = new ServerBoundCertServiceRequest(
       request_start,
@@ -527,6 +557,51 @@ int ServerBoundCertService::GetDomainBoundCert(
   job->AddRequest(request);
   out_req->RequestStarted(this, request, callback);
   return ERR_IO_PENDING;
+}
+
+void ServerBoundCertService::GotServerBoundCert(
+    const std::string& server_identifier,
+    SSLClientCertType type,
+    base::Time expiration_time,
+    const std::string& key,
+    const std::string& cert) {
+  DCHECK(CalledOnValidThread());
+
+  std::map<std::string, ServerBoundCertServiceJob*>::iterator j;
+  j = inflight_.find(server_identifier);
+  if (j == inflight_.end()) {
+    NOTREACHED();
+    return;
+  }
+  ServerBoundCertServiceJob* job = j->second;
+
+  if (type != CLIENT_CERT_INVALID_TYPE) {
+    // Async DB lookup found a cert.
+    if (CertIsValid(server_identifier, type, expiration_time)) {
+      DVLOG(1) << "Cert store had valid cert for " << server_identifier
+               << " of type " << type;
+      cert_store_hits_++;
+      // ServerBoundCertServiceRequest::Post will do the histograms and stuff.
+      HandleResult(OK, server_identifier, type, key, cert);
+      return;
+    }
+  }
+
+  // Async lookup did not find a cert, or it found an expired one.  Start
+  // generating a new one.
+  ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
+      server_identifier,
+      job->type(),
+      base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
+                 weak_ptr_factory_.GetWeakPtr()));
+  if (!worker->Start(task_runner_)) {
+    delete worker;
+    // TODO(rkn): Log to the NetLog.
+    LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
+    HandleResult(ERR_INSUFFICIENT_RESOURCES, server_identifier,
+                 CLIENT_CERT_INVALID_TYPE, "", "");
+    return;
+  }
 }
 
 ServerBoundCertStore* ServerBoundCertService::GetCertStore() {
@@ -538,9 +613,7 @@ void ServerBoundCertService::CancelRequest(ServerBoundCertServiceRequest* req) {
   req->Cancel();
 }
 
-// HandleResult is called by ServerBoundCertServiceWorker on the origin message
-// loop. It deletes ServerBoundCertServiceJob.
-void ServerBoundCertService::HandleResult(
+void ServerBoundCertService::GeneratedServerBoundCert(
     const std::string& server_identifier,
     int error,
     scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert) {
@@ -552,7 +625,21 @@ void ServerBoundCertService::HandleResult(
     server_bound_cert_store_->SetServerBoundCert(
         cert->server_identifier(), cert->type(), cert->creation_time(),
         cert->expiration_time(), cert->private_key(), cert->cert());
+
+    HandleResult(error, server_identifier, cert->type(), cert->private_key(),
+                 cert->cert());
+  } else {
+    HandleResult(error, server_identifier, CLIENT_CERT_INVALID_TYPE, "", "");
   }
+}
+
+void ServerBoundCertService::HandleResult(
+    int error,
+    const std::string& server_identifier,
+    SSLClientCertType type,
+    const std::string& private_key,
+    const std::string& cert) {
+  DCHECK(CalledOnValidThread());
 
   std::map<std::string, ServerBoundCertServiceJob*>::iterator j;
   j = inflight_.find(server_identifier);
@@ -563,10 +650,7 @@ void ServerBoundCertService::HandleResult(
   ServerBoundCertServiceJob* job = j->second;
   inflight_.erase(j);
 
-  if (cert)
-    job->HandleResult(error, cert->type(), cert->private_key(), cert->cert());
-  else
-    job->HandleResult(error, CLIENT_CERT_INVALID_TYPE, "", "");
+  job->HandleResult(error, type, private_key, cert);
   delete job;
 }
 

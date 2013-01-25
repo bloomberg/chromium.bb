@@ -31,17 +31,18 @@ class BrowsingDataServerBoundCertHelperImpl
   // Fetch the certs. This must be called in the IO thread.
   void FetchOnIOThread();
 
+  void OnFetchComplete(
+      const net::ServerBoundCertStore::ServerBoundCertList& cert_list);
+
   // Notifies the completion callback. This must be called in the UI thread.
-  void NotifyInUIThread();
+  void NotifyInUIThread(
+      const net::ServerBoundCertStore::ServerBoundCertList& cert_list);
 
   // Delete a single cert. This must be called in IO thread.
   void DeleteOnIOThread(const std::string& server_id);
 
-  // Access to |server_bound_cert_list_| is triggered indirectly via the UI
-  // thread and guarded by |is_fetching_|. This means |server_bound_cert_list_|
-  // is only accessed while |is_fetching_| is true. The flag |is_fetching_| is
-  // only accessed on the UI thread.
-  net::ServerBoundCertStore::ServerBoundCertList server_bound_cert_list_;
+  // Called when deletion is done.
+  void DeleteCallback();
 
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset
@@ -97,20 +98,28 @@ void BrowsingDataServerBoundCertHelperImpl::FetchOnIOThread() {
       request_context_getter_->GetURLRequestContext()->
       server_bound_cert_service()->GetCertStore();
   if (cert_store) {
-    server_bound_cert_list_.clear();
-    cert_store->GetAllServerBoundCerts(&server_bound_cert_list_);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&BrowsingDataServerBoundCertHelperImpl::NotifyInUIThread,
-                   this));
+    cert_store->GetAllServerBoundCerts(base::Bind(
+        &BrowsingDataServerBoundCertHelperImpl::OnFetchComplete, this));
+  } else {
+    OnFetchComplete(net::ServerBoundCertStore::ServerBoundCertList());
   }
 }
 
-void BrowsingDataServerBoundCertHelperImpl::NotifyInUIThread() {
+void BrowsingDataServerBoundCertHelperImpl::OnFetchComplete(
+    const net::ServerBoundCertStore::ServerBoundCertList& cert_list) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataServerBoundCertHelperImpl::NotifyInUIThread,
+                 this, cert_list));
+}
+
+void BrowsingDataServerBoundCertHelperImpl::NotifyInUIThread(
+    const net::ServerBoundCertStore::ServerBoundCertList& cert_list) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(is_fetching_);
   is_fetching_ = false;
-  completion_callback_.Run(server_bound_cert_list_);
+  completion_callback_.Run(cert_list);
   completion_callback_.Reset();
 }
 
@@ -121,14 +130,21 @@ void BrowsingDataServerBoundCertHelperImpl::DeleteOnIOThread(
       request_context_getter_->GetURLRequestContext()->
       server_bound_cert_service()->GetCertStore();
   if (cert_store) {
-    cert_store->DeleteServerBoundCert(server_id);
-    // Need to close open SSL connections which may be using the channel ids we
-    // are deleting.
-    // TODO(mattm): http://crbug.com/166069 Make the server bound cert
-    // service/store have observers that can notify relevant things directly.
-    request_context_getter_->GetURLRequestContext()->ssl_config_service()->
-        NotifySSLConfigChange();
+    cert_store->DeleteServerBoundCert(
+        server_id,
+        base::Bind(&BrowsingDataServerBoundCertHelperImpl::DeleteCallback,
+                   this));
   }
+}
+
+void BrowsingDataServerBoundCertHelperImpl::DeleteCallback() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  // Need to close open SSL connections which may be using the channel ids we
+  // are deleting.
+  // TODO(mattm): http://crbug.com/166069 Make the server bound cert
+  // service/store have observers that can notify relevant things directly.
+  request_context_getter_->GetURLRequestContext()->ssl_config_service()->
+      NotifySSLConfigChange();
 }
 
 }  // namespace

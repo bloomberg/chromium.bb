@@ -321,6 +321,11 @@ class BrowsingDataRemover : public content::NotificationObserver,
   void ClearServerBoundCertsOnIOThread(
       net::URLRequestContextGetter* rq_context);
 
+  // Callback on IO Thread when server bound certs have been deleted. Clears SSL
+  // connection pool and posts to UI thread to run OnClearedServerBoundCerts.
+  void OnClearedServerBoundCertsOnIOThread(
+      net::URLRequestContextGetter* rq_context);
+
   // Callback when server bound certs have been deleted. Invokes
   // NotifyAndDeleteIfDone.
   void OnClearedServerBoundCerts();

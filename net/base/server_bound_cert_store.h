@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
@@ -65,23 +66,29 @@ class NET_EXPORT ServerBoundCertStore
 
   typedef std::list<ServerBoundCert> ServerBoundCertList;
 
+  typedef base::Callback<void(
+      const std::string&,
+      SSLClientCertType,
+      base::Time,
+      const std::string&,
+      const std::string&)> GetCertCallback;
+  typedef base::Callback<void(const ServerBoundCertList&)> GetCertListCallback;
+
   virtual ~ServerBoundCertStore() {}
 
-  // TODO(rkn): File I/O may be required, so this should have an asynchronous
-  // interface.
-  // Returns true on success. |private_key_result| stores a DER-encoded
-  // PrivateKeyInfo struct, |cert_result| stores a DER-encoded certificate,
-  // |type| is the ClientCertificateType of the returned certificate,
-  // |creation_time| stores the start of the validity period of the certificate
-  // and |expiration_time| is the expiration time of the certificate.
-  // Returns false if no server bound cert exists for the specified server.
+  // GetServerBoundCert may return the result synchronously through the
+  // output parameters, in which case it will return true.  Otherwise it will
+  // return false and the callback will be called with the result
+  // asynchronously.
+  // In either case, the type will be CLIENT_CERT_INVALID_TYPE if no cert
+  // existed for the given |server_identifier|.
   virtual bool GetServerBoundCert(
       const std::string& server_identifier,
       SSLClientCertType* type,
-      base::Time* creation_time,
       base::Time* expiration_time,
       std::string* private_key_result,
-      std::string* cert_result) = 0;
+      std::string* cert_result,
+      const GetCertCallback& callback) = 0;
 
   // Adds a server bound cert and the corresponding private key to the store.
   virtual void SetServerBoundCert(
@@ -94,26 +101,30 @@ class NET_EXPORT ServerBoundCertStore
 
   // Removes a server bound cert and the corresponding private key from the
   // store.
-  virtual void DeleteServerBoundCert(const std::string& server_identifier) = 0;
+  virtual void DeleteServerBoundCert(
+      const std::string& server_identifier,
+      const base::Closure& completion_callback) = 0;
 
   // Deletes all of the server bound certs that have a creation_date greater
   // than or equal to |delete_begin| and less than |delete_end|.  If a
   // base::Time value is_null, that side of the comparison is unbounded.
-  virtual void DeleteAllCreatedBetween(base::Time delete_begin,
-                                       base::Time delete_end) = 0;
+  virtual void DeleteAllCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion_callback) = 0;
 
   // Removes all server bound certs and the corresponding private keys from
   // the store.
-  virtual void DeleteAll() = 0;
+  virtual void DeleteAll(const base::Closure& completion_callback) = 0;
 
   // Returns all server bound certs and the corresponding private keys.
-  virtual void GetAllServerBoundCerts(
-      ServerBoundCertList* server_bound_certs) = 0;
+  virtual void GetAllServerBoundCerts(const GetCertListCallback& callback) = 0;
 
   // Helper function that adds all certs from |list| into this instance.
   void InitializeFrom(const ServerBoundCertList& list);
 
-  // Returns the number of certs in the store.
+  // Returns the number of certs in the store.  May return 0 if the backing
+  // store is not loaded yet.
   // Public only for unit testing.
   virtual int GetCertCount() = 0;
 

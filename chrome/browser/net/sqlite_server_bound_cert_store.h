@@ -28,9 +28,7 @@ class SQLiteServerBoundCertStore
                              ClearOnExitPolicy* clear_on_exit_policy);
 
   // net::DefaultServerBoundCertStore::PersistentStore:
-  virtual bool Load(
-      std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs)
-          OVERRIDE;
+  virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;
   virtual void AddServerBoundCert(
       const net::DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
   virtual void DeleteServerBoundCert(
