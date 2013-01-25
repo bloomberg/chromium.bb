@@ -476,7 +476,8 @@ void BrowserWindowCocoa::ShowChromeToMobileBubble() {
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserWindowCocoa::ShowOneClickSigninBubble(
-      const StartSyncCallback& start_sync_callback) {
+    OneClickSigninBubbleType type,
+    const StartSyncCallback& start_sync_callback) {
   OneClickSigninBubbleController* bubble_controller =
       [[OneClickSigninBubbleController alloc]
         initWithBrowserWindowController:cocoa_controller()

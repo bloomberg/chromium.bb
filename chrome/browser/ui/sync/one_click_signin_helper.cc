@@ -350,6 +350,7 @@ bool OneClickInfoBarDelegateImpl::Accept() {
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   chrome::FindBrowserWithWebContents(web_contents)->window()->
       ShowOneClickSigninBubble(
+          BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
           base::Bind(&StartSync, browser,
                      OneClickSigninHelper::AUTO_ACCEPT_NONE, session_index_,
                      email_, password_));
@@ -904,6 +905,7 @@ void OneClickSigninHelper::DidStopLoading(
     case AUTO_ACCEPT_ACCEPTED:
       SigninManager::DisableOneClickSignIn(profile);
       browser->window()->ShowOneClickSigninBubble(
+          BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG,
           base::Bind(&StartSync, browser, auto_accept_, session_index_,
                      email_, password_));
       break;

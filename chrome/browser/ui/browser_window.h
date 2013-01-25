@@ -218,6 +218,11 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowChromeToMobileBubble() = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
+  enum OneClickSigninBubbleType {
+    ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
+    ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG
+  };
+
   // Callback type used with the ShowOneClickSigninBubble() method.  If the
   // user chooses to accept the sign in, the callback is called to start the
   // sync process.
@@ -226,6 +231,7 @@ class BrowserWindow : public BaseWindow {
 
   // Shows the one-click sign in bubble.
   virtual void ShowOneClickSigninBubble(
+      OneClickSigninBubbleType type,
       const StartSyncCallback& start_sync_callback) = 0;
 #endif
 

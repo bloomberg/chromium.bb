@@ -21,6 +21,7 @@ class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
 
   OneClickSigninBubbleView* ShowOneClickSigninBubble() {
     browser()->window()->ShowOneClickSigninBubble(
+        BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
         base::Bind(&OneClickSigninBubbleViewBrowserTest::OnStartSync, this));
 
     content::RunAllPendingInMessageLoop();

@@ -831,6 +831,9 @@ For Chromium, processes used to display diagnostics information (such as this "a
 
       <!-- One click sign in infobar -->
       <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
+          You're signed in to Chromium!
+        </message>
         <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that the user can connect his profile to a Google account instead of logging in only here.">
           Use this Google Account to sync all your Chromium stuff?
         </message>

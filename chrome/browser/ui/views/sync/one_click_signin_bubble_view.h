@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -18,6 +19,7 @@
 class MessageLoop;
 
 namespace views {
+class GridLayout;
 class TextButton;
 }
 
@@ -31,7 +33,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Show the one-click signin bubble if not already showing.  The bubble
   // will be placed visually beneath |anchor_view|.  |start_sync| is called
   // to start sync.
-  static void ShowBubble(views::View* anchor_view,
+  static void ShowBubble(BrowserWindow::OneClickSigninBubbleType type,
+                         ToolbarView* toolbar_view,
                          const BrowserWindow::StartSyncCallback& start_sync);
 
   static bool IsShowing();
@@ -42,13 +45,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // method is meant to be called only from tests.
   static OneClickSigninBubbleView* view_for_testing() { return bubble_view_; }
 
- private:
-  friend class OneClickSigninBubbleViewBrowserTest;
-
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, OkButton);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, UndoButton);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, AdvancedLink);
-
+ protected:
   // Creates a OneClickSigninBubbleView.
   OneClickSigninBubbleView(
       views::View* anchor_view,
@@ -56,22 +53,44 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
 
   virtual ~OneClickSigninBubbleView();
 
-  // views::BubbleDelegateView methods:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void Init() OVERRIDE;
-
-  // views::WidgetDelegate method:
-  virtual void WindowClosing() OVERRIDE;
-
-  // views::View method:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+ private:
+  friend class OneClickSigninBubbleViewBrowserTest;
+
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, OkButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, UndoButton);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewBrowserTest, AdvancedLink);
+
+  // views::BubbleDelegateView methods:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void Init() OVERRIDE;
+
+  // Method to build the main part of the bubble.  Derived classes should
+  // reimplement this function.
+  virtual void InitContent(views::GridLayout* layout);
+
+  // Creates OK and Undo buttons to be used at the bottom of the bubble.
+  // Derived classes can reimplement to have buttons with different labels,
+  // colours, or sizes.  The caller of this function owns the returned buttons.
+  virtual void GetButtons(views::TextButton** ok_button,
+                          views::TextButton** undo_button);
+
+  // Creates advanced link to be used at the bottom of the bubble.
+  // Derived classes can reimplement.  The caller of this function owns the
+  // returned link.
+  virtual views::Link* GetAdvancedLink();
+
+  // views::WidgetDelegate method:
+  virtual void WindowClosing() OVERRIDE;
+
+  // views::View method:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // The bubble, if we're showing one.
   static OneClickSigninBubbleView* bubble_view_;
