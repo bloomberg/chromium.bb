@@ -63,12 +63,12 @@ gfx::Display& GetInvalidDisplay() {
 }
 
 #if defined(OS_CHROMEOS)
-int64 GetDisplayIdForOutput(XID output) {
+int64 GetDisplayIdForOutput(XID output, int output_index) {
   uint16 manufacturer_id = 0;
-  uint32 serial_number = 0;
+  uint16 product_code = 0;
   ui::GetOutputDeviceData(
-      output, &manufacturer_id, &serial_number, NULL);
-  return gfx::Display::GetID(manufacturer_id, serial_number);
+      output, &manufacturer_id, &product_code, NULL);
+  return gfx::Display::GetID(manufacturer_id, product_code, output_index);
 }
 #endif
 
@@ -429,7 +429,7 @@ void DisplayManager::Init() {
     for (size_t i = 0; i < output_names.size(); ++i) {
       if (chromeos::OutputConfigurator::IsInternalOutputName(
               output_names[i])) {
-        internal_display_id_ = GetDisplayIdForOutput(outputs[i]);
+        internal_display_id_ = GetDisplayIdForOutput(outputs[i], i);
         break;
       }
     }
@@ -578,13 +578,13 @@ void DisplayManager::RefreshDisplayInfo() {
   if (!ui::GetOutputDeviceHandles(&outputs))
     return;
 
-  for (size_t i = 0; i < outputs.size(); ++i) {
+  for (size_t output_index = 0; output_index < outputs.size(); ++output_index) {
     uint16 manufacturer_id = 0;
-    uint32 serial_number = 0;
+    uint16 product_code = 0;
     std::string name;
     ui::GetOutputDeviceData(
-        outputs[i], &manufacturer_id, &serial_number, &name);
-    int64 id = gfx::Display::GetID(manufacturer_id, serial_number);
+        outputs[output_index], &manufacturer_id, &product_code, &name);
+    int64 id = gfx::Display::GetID(manufacturer_id, product_code, output_index);
     if (IsInternalDisplayId(id)) {
       display_info_[id].name =
           l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
@@ -592,7 +592,8 @@ void DisplayManager::RefreshDisplayInfo() {
       display_info_[id].name = name;
     }
 
-    ui::GetOutputOverscanFlag(outputs[i], &display_info_[id].has_overscan);
+    ui::GetOutputOverscanFlag(
+        outputs[output_index], &display_info_[id].has_overscan);
   }
 #endif
 }

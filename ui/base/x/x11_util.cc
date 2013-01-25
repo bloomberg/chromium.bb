@@ -1293,7 +1293,7 @@ bool GetOutputDeviceHandles(std::vector<XID>* outputs) {
 
 bool GetOutputDeviceData(XID output,
                          uint16* manufacturer_id,
-                         uint32* serial_number,
+                         uint16* product_code,
                          std::string* human_readable_name) {
   unsigned long nitems = 0;
   unsigned char *prop = NULL;
@@ -1301,7 +1301,7 @@ bool GetOutputDeviceData(XID output,
     return false;
 
   bool result = ParseOutputDeviceData(
-      prop, nitems, manufacturer_id, serial_number, human_readable_name);
+      prop, nitems, manufacturer_id, product_code, human_readable_name);
   XFree(prop);
   return result;
 }
@@ -1309,18 +1309,18 @@ bool GetOutputDeviceData(XID output,
 bool ParseOutputDeviceData(const unsigned char* prop,
                            unsigned long nitems,
                            uint16* manufacturer_id,
-                           uint32* serial_number,
+                           uint16* product_code,
                            std::string* human_readable_name) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the details of EDID data format.  We use the following data:
   //   bytes 8-9: manufacturer EISA ID, in big-endian
-  //   bytes 12-15: represents serial number, in little-endian
+  //   bytes 10-11: represents product code, in little-endian
   //   bytes 54-125: four descriptors (18-bytes each) which may contain
   //     the display name.
   const unsigned int kManufacturerOffset = 8;
   const unsigned int kManufacturerLength = 2;
-  const unsigned int kSerialNumberOffset = 12;
-  const unsigned int kSerialNumberLength = 4;
+  const unsigned int kProductCodeOffset = 10;
+  const unsigned int kProductCodeLength = 2;
   const unsigned int kDescriptorOffset = 54;
   const unsigned int kNumDescriptors = 4;
   const unsigned int kDescriptorLength = 18;
@@ -1338,12 +1338,12 @@ bool ParseOutputDeviceData(const unsigned char* prop,
 #endif
   }
 
-  if (serial_number) {
-    if (nitems < kSerialNumberOffset + kSerialNumberLength)
+  if (product_code) {
+    if (nitems < kProductCodeOffset + kProductCodeLength)
       return false;
 
-    *serial_number = base::ByteSwapToLE32(
-        *reinterpret_cast<const uint32*>(prop + kSerialNumberOffset));
+    *product_code = base::ByteSwapToLE16(
+        *reinterpret_cast<const uint16*>(prop + kProductCodeOffset));
   }
 
   if (!human_readable_name)

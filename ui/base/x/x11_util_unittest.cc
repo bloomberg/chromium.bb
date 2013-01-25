@@ -58,23 +58,23 @@ const unsigned char kOverscanDisplay[] =
 
 TEST(X11UtilTest, ParseEDID) {
   uint16 manufacturer_id = 0;
-  uint32 serial_number = 0;
+  uint16 product_code = 0;
   std::string human_readable_name;
   EXPECT_TRUE(ParseOutputDeviceData(
       kNormalDisplay, charsize(kNormalDisplay),
-      &manufacturer_id, &serial_number, &human_readable_name));
+      &manufacturer_id, &product_code, &human_readable_name));
   EXPECT_EQ(0x22f0u, manufacturer_id);
-  EXPECT_EQ(0x01010101u, serial_number);
+  EXPECT_EQ(0x286cu, product_code);
   EXPECT_EQ("HP ZR30w", human_readable_name);
 
   manufacturer_id = 0;
-  serial_number = 0;
+  product_code = 0;
   human_readable_name.clear();
   EXPECT_TRUE(ParseOutputDeviceData(
       kInternalDisplay, charsize(kInternalDisplay),
-      &manufacturer_id, &serial_number, NULL));
+      &manufacturer_id, &product_code, NULL));
   EXPECT_EQ(0x4ca3u, manufacturer_id);
-  EXPECT_EQ(0x00000000u, serial_number);
+  EXPECT_EQ(0x3142u, product_code);
   EXPECT_EQ("", human_readable_name);
 
   // Internal display doesn't have name.
@@ -83,25 +83,25 @@ TEST(X11UtilTest, ParseEDID) {
       NULL, NULL, &human_readable_name));
 
   manufacturer_id = 0;
-  serial_number = 0;
+  product_code = 0;
   human_readable_name.clear();
   EXPECT_TRUE(ParseOutputDeviceData(
       kOverscanDisplay, charsize(kOverscanDisplay),
-      &manufacturer_id, &serial_number, &human_readable_name));
+      &manufacturer_id, &product_code, &human_readable_name));
   EXPECT_EQ(0x4c2du, manufacturer_id);
-  EXPECT_EQ(0x00000000u, serial_number);
+  EXPECT_EQ(0x08feu, product_code);
   EXPECT_EQ("SAMSUNG", human_readable_name);
 }
 
 TEST(X11UtilTest, ParseBrokenEDID) {
   uint16 manufacturer_id = 0;
-  uint32 serial_number = 0;
+  uint16 product_code = 0;
   std::string human_readable_name;
 
   // length == 0
   EXPECT_FALSE(ParseOutputDeviceData(
       kNormalDisplay, 0,
-      &manufacturer_id, &serial_number, &human_readable_name));
+      &manufacturer_id, &product_code, &human_readable_name));
 
   // name is broken. Copying kNormalDisplay and substitute its name data by
   // some control code.
@@ -114,17 +114,17 @@ TEST(X11UtilTest, ParseBrokenEDID) {
   EXPECT_FALSE(ParseOutputDeviceData(
       reinterpret_cast<const unsigned char*>(display_data.data()),
       display_data.size(),
-      &manufacturer_id, &serial_number, &human_readable_name));
+      &manufacturer_id, &product_code, &human_readable_name));
 
   // If |human_readable_name| isn't specified, it skips parsing the name.
   manufacturer_id = 0;
-  serial_number = 0;
+  product_code = 0;
   EXPECT_TRUE(ParseOutputDeviceData(
       reinterpret_cast<const unsigned char*>(display_data.data()),
       display_data.size(),
-      &manufacturer_id, &serial_number, NULL));
+      &manufacturer_id, &product_code, NULL));
   EXPECT_EQ(0x22f0u, manufacturer_id);
-  EXPECT_EQ(0x01010101u, serial_number);
+  EXPECT_EQ(0x286cu, product_code);
 }
 
 TEST(X11UtilTest, ParseOverscanFlag) {

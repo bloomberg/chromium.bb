@@ -29,8 +29,15 @@ class UI_EXPORT Display {
   static float GetForcedDeviceScaleFactor();
 
   // Returns 64-bit persistent ID for the specified manufacturer's ID and
-  // serial#.
-  static int64 GetID(uint16 manufacturer_id, uint32 serial_number);
+  // product_code, and the index of the output it is connected to.
+  // |output_index| is used to distinguish the displays of the same type. For
+  // example, swapping two identical display between two outputs will not be
+  // treated as swap. The 'serial number' field in EDID isn't used here because
+  // it is not guaranteed to have unique number and it may have the same fixed
+  // value (like 0).
+  static int64 GetID(uint16 manufacturer_id,
+                     uint16 product_code,
+                     uint8 output_index);
 
   // Sets/Gets unique identifier associated with the display.
   // -1 means invalid display and it doesn't not exit.

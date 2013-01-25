@@ -113,23 +113,26 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
   std::vector<gfx::Display> displays;
   std::set<int> y_coords;
   std::set<int64> ids;
-  for (int o = 0; o < screen_resources->noutput; o++) {
+  for (int output_index = 0; output_index < screen_resources->noutput;
+       output_index++) {
     XRROutputInfo *output_info =
         XRRGetOutputInfo(xdisplay_,
                          screen_resources,
-                         screen_resources->outputs[o]);
+                         screen_resources->outputs[output_index]);
     if (output_info->connection != RR_Connected) {
       XRRFreeOutputInfo(output_info);
       continue;
     }
     XRRCrtcInfo* crtc_info = crtc_info_map[output_info->crtc];
     if (!crtc_info) {
-      LOG(WARNING) << "Crtc not found for output: output=" << o;
+      LOG(WARNING) << "Crtc not found for output: output_index="
+                   << output_index;
       continue;
     }
     XRRModeInfo* mode = FindMode(screen_resources, crtc_info->mode);
     if (!mode) {
-      LOG(WARNING) << "Could not find a mode for the output: output=" << o;
+      LOG(WARNING) << "Could not find a mode for the output: output_index="
+                   << output_index;
       continue;
     }
     // Mirrored monitors have the same y coordinates.
@@ -148,12 +151,14 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
         gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height));
 
     uint16 manufacturer_id = 0;
-    uint32 serial_number = 0;
-    if (ui::GetOutputDeviceData(screen_resources->outputs[o], &manufacturer_id,
-                                &serial_number, NULL) && manufacturer_id != 0) {
+    uint16 product_code = 0;
+    if (ui::GetOutputDeviceData(screen_resources->outputs[output_index],
+                                &manufacturer_id, &product_code, NULL) &&
+        manufacturer_id != 0) {
       // An ID based on display's index will be assigned later if this call
       // fails.
-      int64 new_id = gfx::Display::GetID(manufacturer_id, serial_number);
+      int64 new_id = gfx::Display::GetID(
+          manufacturer_id, product_code, output_index);
       if (ids.find(new_id) == ids.end()) {
         displays.back().set_id(new_id);
         ids.insert(new_id);
