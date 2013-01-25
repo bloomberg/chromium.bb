@@ -687,6 +687,9 @@ void NetworkLibraryImplStub::SetCarrier(
       base::TimeDelta::FromMilliseconds(10000));
 }
 
+void NetworkLibraryImplStub::ResetModem() {
+}
+
 bool NetworkLibraryImplStub::IsCellularAlwaysInRoaming() {
   return false;
 }

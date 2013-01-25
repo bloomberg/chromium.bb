@@ -110,6 +110,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(SetCellularDataRoamingAllowed, void(bool));
   MOCK_METHOD2(SetCarrier, void(const std::string&,
                                 const NetworkOperationCallback&));
+  MOCK_METHOD0(ResetModem, void());
   MOCK_METHOD0(IsCellularAlwaysInRoaming, bool());
 
   MOCK_METHOD0(RequestNetworkScan, void(void));

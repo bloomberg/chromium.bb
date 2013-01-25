@@ -71,6 +71,9 @@ class MockShillDeviceClient : public ShillDeviceClient {
                                 const std::string& carrier,
                                 const base::Closure& callback,
                                 const ErrorCallback& error_callback));
+  MOCK_METHOD3(Reset, void(const dbus::ObjectPath& device_path,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback));
   MOCK_METHOD0(GetTestInterface, TestInterface*());
 };
 

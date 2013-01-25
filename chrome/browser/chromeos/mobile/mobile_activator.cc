@@ -279,6 +279,8 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
     CellularNetwork* network = FindMatchingCellularNetwork(true);
     if (network && network->activate_over_non_cellular_network()) {
       state_ = PLAN_ACTIVATION_DONE;
+      // We're done with activation, reset the cellular device.
+      lib->ResetModem();
       EvaluateCellularNetwork(network);
     } else {
       StartOTASP();

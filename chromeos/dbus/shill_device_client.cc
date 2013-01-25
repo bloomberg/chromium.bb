@@ -178,6 +178,15 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
+  virtual void Reset(const dbus::ObjectPath& device_path,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
+                                 shill::kResetFunction);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
+  }
+
   virtual TestInterface* GetTestInterface() OVERRIDE {
     return NULL;
   }
@@ -362,6 +371,14 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                           const std::string& carrier,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
+  }
+
+  virtual void Reset(const dbus::ObjectPath& device_path,
+                     const base::Closure& callback,
+                     const ErrorCallback& error_callback) OVERRIDE {
     if (callback.is_null())
       return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);

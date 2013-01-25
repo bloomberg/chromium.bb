@@ -1566,6 +1566,10 @@ class NetworkLibrary {
   virtual void SetCarrier(const std::string& carrier,
                           const NetworkOperationCallback& completed) = 0;
 
+  // Resets the cellular device, calls the closure once the transition is
+  // complete.
+  virtual void ResetModem() = 0;
+
   // Return true if GSM SIM card can work only with enabled roaming.
   virtual bool IsCellularAlwaysInRoaming() = 0;
 

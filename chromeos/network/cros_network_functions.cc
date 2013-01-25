@@ -666,4 +666,12 @@ void CrosSetCarrier(const std::string& device_path,
       base::Bind(&OnNetworkActionError, callback, device_path));
 }
 
+// Resets the device.
+void CrosReset(const std::string& device_path) {
+  DBusThreadManager::Get()->GetShillDeviceClient()->Reset(
+      dbus::ObjectPath(device_path),
+      base::Bind(&DoNothing),
+      base::Bind(&IgnoreErrors));
+}
+
 }  // namespace chromeos

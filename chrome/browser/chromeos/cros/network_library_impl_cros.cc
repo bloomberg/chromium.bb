@@ -439,6 +439,15 @@ void NetworkLibraryImplCros::SetCarrier(
   CrosSetCarrier(cellular->device_path(), carrier, completed);
 }
 
+void NetworkLibraryImplCros::ResetModem() {
+  const NetworkDevice* cellular = FindCellularDevice();
+  if (!cellular) {
+    NOTREACHED() << "Calling ResetModem method w/o cellular device.";
+    return;
+  }
+  CrosReset(cellular->device_path());
+}
+
 bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
   const NetworkDevice* cellular = FindCellularDevice();
   if (!cellular) {
