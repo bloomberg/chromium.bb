@@ -41,12 +41,12 @@ TileManagerBin BinFromTilePriority(const TilePriority& prio) {
   if (prio.time_to_needed_in_seconds() == std::numeric_limits<float>::max())
     return NEVER_BIN;
 
-  if (prio.resolution == NON_IDEAL_RESOLUTION)
-    return EVENTUALLY_BIN;
-
   if (prio.time_to_needed_in_seconds() == 0 ||
       prio.distance_to_visible_in_pixels < backfling_guard_distance_pixels)
     return NOW_BIN;
+
+  if (prio.resolution == NON_IDEAL_RESOLUTION)
+    return EVENTUALLY_BIN;
 
   if (prio.time_to_needed_in_seconds() < prepainting_window_time_seconds)
     return SOON_BIN;
