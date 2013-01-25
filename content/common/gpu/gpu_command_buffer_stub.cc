@@ -119,6 +119,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       surface_id_(surface_id),
       software_(software),
       last_flush_count_(0),
+      last_memory_allocation_valid_(false),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog),
@@ -865,14 +866,25 @@ gpu::gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
 
 void GpuCommandBufferStub::SetMemoryAllocation(
     const GpuMemoryAllocation& allocation) {
-  Send(new GpuCommandBufferMsg_SetMemoryAllocation(
-      route_id_, allocation.renderer_allocation));
-  // This can be called outside of OnMessageReceived, so the context needs to be
-  // made current before calling methods on the surface.
-  if (!surface_ || !MakeCurrent())
-    return;
-  surface_->SetFrontbufferAllocation(
-      allocation.browser_allocation.suggest_have_frontbuffer);
+  if (!last_memory_allocation_valid_ ||
+      !allocation.renderer_allocation.Equals(
+          last_memory_allocation_.renderer_allocation)) {
+    Send(new GpuCommandBufferMsg_SetMemoryAllocation(
+        route_id_, allocation.renderer_allocation));
+  }
+
+  if (!last_memory_allocation_valid_ ||
+      !allocation.browser_allocation.Equals(
+          last_memory_allocation_.browser_allocation)) {
+    // This can be called outside of OnMessageReceived, so the context needs
+    // to be made current before calling methods on the surface.
+    if (surface_ && MakeCurrent())
+      surface_->SetFrontbufferAllocation(
+          allocation.browser_allocation.suggest_have_frontbuffer);
+  }
+
+  last_memory_allocation_valid_ = true;
+  last_memory_allocation_ = allocation;
 }
 
 }  // namespace content

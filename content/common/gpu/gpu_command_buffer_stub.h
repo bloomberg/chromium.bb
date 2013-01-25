@@ -220,6 +220,10 @@ class GpuCommandBufferStub
   scoped_refptr<gfx::GLSurface> surface_;
 
   scoped_ptr<GpuMemoryManagerClientState> memory_manager_client_state_;
+  // The last memory allocation received from the GpuMemoryManager (used to
+  // elide redundant work).
+  bool last_memory_allocation_valid_;
+  GpuMemoryAllocation last_memory_allocation_;
 
   // SetParent may be called before Initialize, in which case we need to keep
   // around the parent stub, so that Initialize can set the parent correctly.
