@@ -85,6 +85,7 @@ void FencedAllocator::FreePendingToken(
 
 // Gets the max of the size of the blocks marked as free.
 unsigned int FencedAllocator::GetLargestFreeSize() {
+  FreeUnused();
   unsigned int max_size = 0;
   for (unsigned int i = 0; i < blocks_.size(); ++i) {
     Block &block = blocks_[i];
