@@ -14,14 +14,16 @@
 // The feeds are located in chrome/test/data/chromeos/drive/.
 var kDirectoryPath = 'drive/Folder';
 var kFileName = 'File.aBc';
-var kExpectedContents = 'hello, world!';
-var kWriteOffset = 12;
+// The drive service returns "x"s of the file size defined in the JSON file.
+// The file size for File.aBc is set to 13.
+var kExpectedContents = 'xxxxxxxxxxxxx';
+var kWriteOffset = 13;
 var kWriteData = '!!!';
-var kExpectedAfterWrite = 'hello, world!!!';
+var kExpectedAfterWrite = 'xxxxxxxxxxxxx!!!';
 var kTruncateShortLength = 5;
-var kExpectedAfterTruncateShort = 'hello';
+var kExpectedAfterTruncateShort = 'xxxxx';
 var kTruncateLongLength = 7;
-var kExpectedAfterTruncateLong = 'hello\0\0';
+var kExpectedAfterTruncateLong = 'xxxxx\0\0';
 var kNewDirectoryPath = 'drive/FolderNew';
 var kFileManagerExtensionId = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 

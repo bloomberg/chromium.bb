@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/google_apis/dummy_drive_service.h"
+#include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -47,15 +47,8 @@ namespace {
 // length of kTestFileContent string.
 const char kTestFileContent[] = "hello, world!";
 
-// Contains a folder entry for the folder 'Folder' that will be 'created'.
-const char kTestDirectory[] = "gdata/new_folder_entry.json";
-
 // Contains a folder named Folder that has a file File.aBc inside of it.
 const char kTestRootFeed[] = "gdata/remote_file_system_apitest_root_feed.json";
-
-// Contains metadata of the  document that will be "downloaded" in test.
-const char kTestDocumentToDownloadEntry[] =
-    "gdata/remote_file_system_apitest_document_to_download.json";
 
 // Flags used to run the tests with a COMPONENT extension.
 const int kComponentFlags = ExtensionApiTest::kFlagEnableFileAccess |
@@ -88,124 +81,12 @@ class BackgroundObserver {
   content::WindowedNotificationObserver page_closed_;
 };
 
-// Adds a next feed URL property to the given feed value.
-bool AddNextFeedURLToFeedValue(const std::string& url, base::Value* feed) {
-  DictionaryValue* feed_as_dictionary;
-  if (!feed->GetAsDictionary(&feed_as_dictionary))
-    return false;
-
-  ListValue* links;
-  if (!feed_as_dictionary->GetList("feed.link", &links))
-    return false;
-
-  DictionaryValue* link_value = new DictionaryValue();
-  link_value->SetString("href", url);
-  link_value->SetString("rel", "next");
-  link_value->SetString("type", "application/atom_xml");
-
-  links->Append(link_value);
-
-  return true;
-}
-
 // Creates a cache representation of the test file with predetermined content.
 void CreateFileWithContent(const FilePath& path, const std::string& content) {
   int content_size = static_cast<int>(content.length());
   ASSERT_EQ(content_size,
             file_util::WriteFile(path, content.c_str(), content_size));
 }
-
-// Fake google_apis::DriveServiceInterface implementation used by
-// RemoteFileSystemExtensionApiTest.
-class FakeDriveService : public google_apis::DummyDriveService {
- public:
-  // google_apis::DriveServiceInterface overrides:
-  virtual void GetResourceList(
-      const GURL& feed_url,
-      int64 start_changestamp,
-      const std::string& search_string,
-      bool shared_with_me,
-      const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE {
-    scoped_ptr<base::Value> value(
-        google_apis::test_util::LoadJSONFile(kTestRootFeed));
-    if (!search_string.empty()) {
-      // Search results will be returned in two parts:
-      // 1. Search will be given empty initial feed url. The returned feed will
-      //    have next feed URL set to mock the situation when server returns
-      //    partial result feed.
-      // 2. Search will be given next feed URL from the first call as the
-      //    initial feed url. Result feed will not have next feed url set.
-      // In both cases search will return all files and directories in test root
-      // feed.
-      if (feed_url.is_empty()) {
-        ASSERT_TRUE(
-            AddNextFeedURLToFeedValue("https://next_feed", value.get()));
-      } else {
-        EXPECT_EQ(GURL("https://next_feed"), feed_url);
-      }
-    }
-    scoped_ptr<google_apis::ResourceList> result(
-        google_apis::ResourceList::ExtractAndParse(*value));
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, google_apis::HTTP_SUCCESS, base::Passed(&result)));
-  }
-
-  virtual void GetResourceEntry(
-      const std::string& resource_id,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
-    EXPECT_EQ("file:1_file_resource_id", resource_id);
-
-    scoped_ptr<base::Value> file_to_download_value(
-        google_apis::test_util::LoadJSONFile(kTestDocumentToDownloadEntry));
-    scoped_ptr<google_apis::ResourceEntry> file_to_download(
-        google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
-
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, google_apis::HTTP_SUCCESS,
-                   base::Passed(&file_to_download)));
-  }
-
-  virtual void GetAccountMetadata(
-      const google_apis::GetAccountMetadataCallback& callback) OVERRIDE {
-    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
-        new google_apis::AccountMetadataFeed);
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, google_apis::HTTP_SUCCESS,
-                   base::Passed(&account_metadata)));
-  }
-
-  virtual void AddNewDirectory(
-      const GURL& parent_content_url,
-      const std::string& directory_name,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
-    scoped_ptr<base::Value> dir_value(
-        google_apis::test_util::LoadJSONFile(kTestDirectory));
-    scoped_ptr<google_apis::ResourceEntry> dir_resource_entry(
-        google_apis::ResourceEntry::ExtractAndParse(*dir_value));
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, google_apis::HTTP_SUCCESS,
-                   base::Passed(&dir_resource_entry)));
-  }
-
-  virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      const google_apis::DownloadActionCallback& download_action_callback,
-      const google_apis::GetContentCallback& get_content_callback) OVERRIDE {
-    EXPECT_EQ(GURL("https://file_content_url_changed"), content_url);
-    ASSERT_TRUE(content::BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&CreateFileWithContent, local_cache_path, kTestFileContent),
-        base::Bind(download_action_callback, google_apis::HTTP_SUCCESS,
-                   local_cache_path)));
-  }
-};
 
 class FileSystemExtensionApiTest : public ExtensionApiTest {
  public:
@@ -332,7 +213,7 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
 
 class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  public:
-  RemoteFileSystemExtensionApiTest() {}
+  RemoteFileSystemExtensionApiTest() : fake_drive_service_(NULL) {}
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
@@ -355,13 +236,20 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  protected:
   // DriveSystemService factory function for this test.
   drive::DriveSystemService* CreateDriveSystemService(Profile* profile) {
+    fake_drive_service_ = new google_apis::FakeDriveService;
+    fake_drive_service_->LoadResourceListForWapi(
+        kTestRootFeed);
+    fake_drive_service_->LoadAccountMetadataForWapi(
+        "gdata/account_metadata.json");
+
     return new drive::DriveSystemService(profile,
-                                         new FakeDriveService(),
+                                         fake_drive_service_,
                                          test_cache_root_.path(),
                                          NULL);
   }
 
   base::ScopedTempDir test_cache_root_;
+  google_apis::FakeDriveService* fake_drive_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
@@ -459,6 +347,9 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
+  // Configure the drive service to return only one search result at a time
+  // to simulate paginated searches.
+  fake_drive_service_->set_default_max_results(1);
   EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote_search.html",
       kComponentFlags)) << message_;
 }

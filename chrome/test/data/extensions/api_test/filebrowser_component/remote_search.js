@@ -39,7 +39,7 @@ function verifyFileAccessible(entry, successCallback, errorCallback) {
 }
 
 function verifyDirectoryAccessible(entry,
-                                   expectedChildrenNumber,
+                                   expectedNumChildren,
                                    successCallback,
                                    errorCallback) {
   chrome.test.assertTrue(!!entry.createReader);
@@ -47,7 +47,7 @@ function verifyDirectoryAccessible(entry,
   var children = [];
 
   function onDirectoryRead() {
-    chrome.test.assertEq(expectedChildrenNumber, children.length);
+    chrome.test.assertEq(expectedNumChildren, children.length);
     successCallback();
   }
 
@@ -67,13 +67,14 @@ function verifyDirectoryAccessible(entry,
   readNext();
 }
 
-function verifySearchResult(entries, nextFeed, expectedNextFeed) {
+function verifySearchResult(entries,
+                            nextFeed,
+                            expectedResult,
+                            expectedNextFeed) {
   chrome.test.assertTrue(!!entries);
-  chrome.test.assertEq(2, entries.length);
+  chrome.test.assertEq(1, entries.length);
+  chrome.test.assertEq(expectedResult, entries[0].entry.fullPath);
   chrome.test.assertEq(expectedNextFeed, nextFeed);
-
-  chrome.test.assertEq('/drive/Folder', entries[0].entry.fullPath);
-  chrome.test.assertEq('/drive/Folder/File.aBc', entries[1].entry.fullPath);
 }
 
 chrome.test.runTests([
@@ -87,7 +88,7 @@ chrome.test.runTests([
   },
   function driveSearch() {
     var params = {
-        'query': 'foo',
+        'query': 'F',  // Matches "Folder" and "File.aBc".
         'sharedWithMe': false,
         'nextFeed': ''
     };
@@ -95,21 +96,45 @@ chrome.test.runTests([
     chrome.fileBrowserPrivate.searchDrive(
         params,
         function(entries, nextFeed) {
-          verifySearchResult(entries, nextFeed, 'https://next_feed/');
+          // The first search should return the followings:
+          var expectedResult = '/drive/Folder';
+          var expectedNextFeed =
+            'http://localhost/?start-offset=1&max-results=1';
+          verifySearchResult(
+            entries, nextFeed, expectedResult, expectedNextFeed);
+          var directoryEntry = entries[0].entry;
+
           var nextParams = {
-              'query': 'foo',
+              'query': 'F',   // Matches "Folder" and "File.aBc".
               'sharedWithMe': false,
               'nextFeed': nextFeed
           };
           chrome.fileBrowserPrivate.searchDrive(
               nextParams,
               function(entries, nextFeed) {
-                verifySearchResult(entries, nextFeed, '');
+                // The second search should return the followings:
+                var expectedResult = '/drive/Folder/File.aBc';
+                var expectedNextFeed = '';
+                verifySearchResult(entries,
+                                   nextFeed,
+                                   expectedResult,
+                                   expectedNextFeed);
+                var fileEntry = entries[0].entry;
 
-                var directoryVerifier = verifyDirectoryAccessible.bind(null,
-                    entries[0].entry, 1, chrome.test.succeed, errorCallback);
+                // Check if directoryEntry ('/drive/Folder') is accessible
+                // and contains one child.
+                var expectedNumChildren = 1;
+                var directoryVerifier =
+                    verifyDirectoryAccessible.bind(null,
+                                                   directoryEntry,
+                                                   expectedNumChildren,
+                                                   chrome.test.succeed,
+                                                   errorCallback);
 
-                verifyFileAccessible(entries[1].entry, directoryVerifier,
+                // Check if the fileEntry ('/drive/Folder/File.aBc' is
+                // accessible). Note that |directoryVerifier| will be called
+                // upon success of verifyFileAccessible.
+                verifyFileAccessible(fileEntry, directoryVerifier,
                                      errorCallback);
               });
         });
