@@ -110,7 +110,13 @@
 #define GL_DEPTH_COMPONENT32_OES               0x81A7
 
 // GL_OES_packed_depth_stencil
+#ifndef GL_DEPTH24_STENCIL8_OES
 #define GL_DEPTH24_STENCIL8_OES                0x88F0
+#endif
+
+#ifndef GL_DEPTH24_STENCIL8
+#define GL_DEPTH24_STENCIL8 0x88F0
+#endif
 
 // GL_OES_compressed_ETC1_RGB8_texture
 #define GL_ETC1_RGB8_OES                       0x8D64
@@ -123,6 +129,13 @@
 #define GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM 0x78EF
 
 #define GL_GLEXT_PROTOTYPES 1
+
+/* GL_EXT_discard_framebuffer */
+#ifndef GL_EXT_discard_framebuffer
+#define GL_COLOR_EXT                           0x1800
+#define GL_DEPTH_EXT                           0x1801
+#define GL_STENCIL_EXT                         0x1802
+#endif
 
 // GL_ARB_get_program_binary
 #define PROGRAM_BINARY_RETRIEVABLE_HINT        0x8257

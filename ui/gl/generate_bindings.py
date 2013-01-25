@@ -1721,6 +1721,7 @@ def ResolveHeader(header, header_paths):
 
   # Always use a path for Chromium-specific extensions. They are extracted
   # to separate files.
+  paths.append('.')
   paths.append('../../gpu')
 
   root = os.path.abspath(os.path.dirname(__file__))

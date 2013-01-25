@@ -56,7 +56,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
-#include "gpu/GLES2/gl2chromium_constants.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
