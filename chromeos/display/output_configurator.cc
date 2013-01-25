@@ -790,9 +790,9 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
 
 void OutputConfigurator::WillNotifyOnDisplayChanged() {
   // Sets the timer for NotifyOnDisplayChanged().  When an output state change
-  // is issued, several notifications chould arrive and NotifyOnDisplayChanged()
+  // is issued, several notifications should arrive and NotifyOnDisplayChanged()
   // should be called once for the last one.  The timer could lead at most a few
-  // handreds milliseconds of delay for the notification, but it would be
+  // hundreds of milliseconds of delay for the notification, but it would be
   // unrecognizable for users.
   if (notification_timer_.get()) {
     notification_timer_->Reset();
@@ -804,6 +804,17 @@ void OutputConfigurator::WillNotifyOnDisplayChanged() {
         this,
         &OutputConfigurator::NotifyOnDisplayChanged);
   }
+}
+
+void OutputConfigurator::SuspendDisplays() {
+  // Turn displays on before suspend. At this point, the backlight is off,
+  // so we turn on the internal display so that we can resume directly into
+  // "on" state. This greatly reduces resume times.
+  ScreenPowerSet(true, true);
+  // We need to make sure that the monitor configuration we just did actually
+  // completes before we return, because otherwise the X message could be
+  // racing with the HandleSuspendReadiness message.
+  XSync(base::MessagePumpAuraX11::GetDefaultXDisplay(), 0);
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
