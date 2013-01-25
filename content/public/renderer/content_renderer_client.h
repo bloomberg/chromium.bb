@@ -134,6 +134,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if we should fork a new process for the given navigation.
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
+                          const std::string& http_method,
                           bool is_initial_navigation,
                           bool* send_referrer);
 

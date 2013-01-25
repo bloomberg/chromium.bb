@@ -539,34 +539,37 @@ TEST_F(TemplateURLTest, RLZ) {
 TEST_F(TemplateURLTest, HostAndSearchTermKey) {
   struct TestData {
     const std::string url;
+    const std::string scheme;
     const std::string host;
     const std::string path;
     const std::string search_term_key;
   } test_data[] = {
-    { "http://blah/?foo=bar&q={searchTerms}&b=x", "blah", "/", "q"},
+    { "http://blah/?foo=bar&q={searchTerms}&b=x", "http", "blah", "/", "q"},
 
     // No query key should result in empty values.
-    { "http://blah/{searchTerms}", "", "", ""},
+    { "http://blah/{searchTerms}", "", "", "", ""},
 
     // No term should result in empty values.
-    { "http://blah/", "", "", ""},
+    { "http://blah/", "", "", "", ""},
 
     // Multiple terms should result in empty values.
-    { "http://blah/?q={searchTerms}&x={searchTerms}", "", "", ""},
+    { "http://blah/?q={searchTerms}&x={searchTerms}", "", "", "", ""},
 
     // Term in the host shouldn't match.
-    { "http://{searchTerms}", "", "", ""},
+    { "http://{searchTerms}", "", "", "", ""},
 
-    { "http://blah/?q={searchTerms}", "blah", "/", "q"},
+    { "http://blah/?q={searchTerms}", "http", "blah", "/", "q"},
+    { "https://blah/?q={searchTerms}", "https", "blah", "/", "q"},
 
     // Single term with extra chars in value should match.
-    { "http://blah/?q=stock:{searchTerms}", "blah", "/", "q"},
+    { "http://blah/?q=stock:{searchTerms}", "http", "blah", "/", "q"},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     TemplateURLData data;
     data.SetURL(test_data[i].url);
     TemplateURL url(NULL, data);
+    EXPECT_EQ(test_data[i].scheme, url.url_ref().GetScheme());
     EXPECT_EQ(test_data[i].host, url.url_ref().GetHost());
     EXPECT_EQ(test_data[i].path, url.url_ref().GetPath());
     EXPECT_EQ(test_data[i].search_term_key, url.url_ref().GetSearchTermKey());
@@ -923,4 +926,96 @@ TEST_F(TemplateURLTest, HasSearchTermsReplacementKey) {
 
   EXPECT_TRUE(url.HasSearchTermsReplacementKey(
       GURL("http://bing.com/#espv")));
+}
+
+TEST_F(TemplateURLTest, IsInstantURL) {
+  TemplateURLData data;
+  data.SetURL("http://google.com/?q={searchTerms}");
+  data.instant_url = "http://google.com/instant#q={searchTerms}";
+  data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
+  data.alternate_urls.push_back(
+      "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
+  data.search_terms_replacement_key = "espv";
+  TemplateURL url(NULL, data);
+
+  EXPECT_FALSE(url.IsInstantURL(
+      GURL("http://google.com/")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?espv")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/#espv")));
+
+  EXPECT_FALSE(url.IsInstantURL(
+      GURL("http://google.com/?q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/instant?q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/instant?x=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?q=something&espv")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?q=something&espv=1")));
+
+  EXPECT_FALSE(url.IsInstantURL(
+      GURL("https://google.com/?q=something&espv=1")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?q=something&espv=0")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?espv&q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?espv=1&q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?espv=0&q=something")));
+
+  EXPECT_FALSE(url.IsInstantURL(
+      GURL("http://google.com/alt/#q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/alt/#q=something&espv")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/alt/#q=something&espv=1")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/alt/#q=something&espv=0")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/alt/#espv&q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/alt/#espv=1&q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/alt/#espv=0&q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?espv#q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?espv=1#q=something")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?q=something#espv")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/?q=something#espv=1")));
+
+  EXPECT_TRUE(url.IsInstantURL(
+      GURL("http://google.com/instant#q=something&espv=1")));
+
+  EXPECT_FALSE(url.IsInstantURL(
+      GURL("http://bing.com/?espv=1")));
+
+  EXPECT_FALSE(url.IsInstantURL(
+      GURL("http://bing.com/#espv=1")));
 }

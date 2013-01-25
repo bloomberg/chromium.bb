@@ -2976,14 +2976,9 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
     if (!should_fork) {
       // Give the embedder a chance.
-      // For now, we skip this for POST submissions.  This is because
-      // http://crbug.com/101395 is more likely to cause compatibility issues
-      // with hosted apps and extensions than WebUI pages.  We will remove this
-      // check when cross-process POST submissions are supported.
-      if (request.httpMethod() == "GET") {
-        should_fork = GetContentClient()->renderer()->ShouldFork(
-            frame, url, is_initial_navigation, &send_referrer);
-      }
+      should_fork = GetContentClient()->renderer()->ShouldFork(
+          frame, url, request.httpMethod().utf8(), is_initial_navigation,
+          &send_referrer);
     }
 
     if (should_fork) {

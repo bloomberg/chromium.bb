@@ -39,6 +39,8 @@
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/instant/instant_service.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/media/chrome_webrtc_internals.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -61,6 +63,8 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
@@ -401,6 +405,81 @@ int GetCrashSignalFD(const CommandLine& command_line) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
+// TODO(dhollowa): http://crbug.com/170390 This test exists in different places
+// in Chrome.  Follow-up to consolidate these various Instant URL checks.
+// Returns true if |url| has the same scheme, host, and path as the instant URL
+// set via --instant-url.
+bool IsForcedInstantURL(const GURL& url) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kInstantURL)) {
+    GURL instant_url(command_line->GetSwitchValueASCII(switches::kInstantURL));
+    if (url.scheme() == instant_url.scheme() &&
+        url.host() == instant_url.host() &&
+        url.path() == instant_url.path()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Determines whether the |url| is an Instant url for the default search
+// provider (set for the |profile|).
+// Also returns true if an Instant "effective url" (see below) is passed in.
+bool IsInstantURL(const GURL& url, Profile* profile) {
+  // Handle the command-line URL.
+  if (IsForcedInstantURL(url))
+    return true;
+
+  // A URL of this form has already be determined to be an Instant url,
+  // this is its "effective url".  So trivially return true.
+  if (url.SchemeIs(chrome::kChromeSearchScheme))
+    return true;
+
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (!template_url_service)
+    return false;
+
+  TemplateURL* template_url = template_url_service->GetDefaultSearchProvider();
+  if (!template_url)
+    return false;
+
+  if (template_url->instant_url().empty())
+    return false;
+
+  return template_url->IsInstantURL(url);
+}
+
+// Transforms the input |url| into its "effective url". The returned url
+// facilitates grouping process-per-site. The |url| is transformed, for
+// example, from
+//
+//   https://www.google.com/search?espv=1&q=tractors
+//
+// to the effective url
+//
+//   chrome-search://www.google.com/search?espv=1&q=tractors
+//
+// Notice the scheme change.
+// If the input is already an effective url then that same url is
+// returned.
+GURL GetEffectiveInstantURL(const GURL& url, Profile* profile) {
+  CHECK(IsInstantURL(url, profile)) << "Error granting Instant access.";
+
+  if (url.SchemeIs(chrome::kChromeSearchScheme))
+    return url;
+
+  GURL effective_url(url);
+
+  // Replace the scheme with "chrome-search:".
+  url_canon::Replacements<char> replacements;
+  std::string search_scheme(chrome::kChromeSearchScheme);
+  replacements.SetScheme(search_scheme.data(),
+                         url_parse::Component(0, search_scheme.length()));
+  effective_url = effective_url.ReplaceComponents(replacements);
+  return effective_url;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -640,6 +719,18 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
 }
 
+void ChromeContentBrowserClient::RenderProcessHostDeleted(
+    content::RenderProcessHost* host) {
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
+  if (!profile)
+    return;
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  if (instant_service)
+    instant_service->RemoveInstantProcess(host->GetID());
+}
+
 content::WebUIControllerFactory*
     ChromeContentBrowserClient::GetWebUIControllerFactory() {
   return ChromeWebUIControllerFactory::GetInstance();
@@ -648,11 +739,18 @@ content::WebUIControllerFactory*
 GURL ChromeContentBrowserClient::GetEffectiveURL(
     content::BrowserContext* browser_context, const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  // Get the effective URL for the given actual URL. If the URL is part of an
-  // installed app, the effective URL is an extension URL with the ID of that
-  // extension as the host. This has the effect of grouping apps together in
-  // a common SiteInstance.
-  ExtensionService* extension_service = !profile ? NULL :
+  if (!profile)
+    return url;
+
+  // If the input |url| is an Instant url, make its effective url distinct from
+  // other urls on the search provider's domain.
+  if (IsInstantURL(url, profile))
+    return GetEffectiveInstantURL(url, profile);
+
+  // If the input |url| is part of an installed app, the effective URL is an
+  // extension URL with the ID of that extension as the host. This has the
+  // effect of grouping apps together in a common SiteInstance.
+  ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)
     return url;
@@ -674,14 +772,22 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
 
 bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     content::BrowserContext* browser_context, const GURL& effective_url) {
-  // Non-extension URLs should generally use process-per-site-instance.
-  // Because we expect to use the effective URL, URLs for hosted apps (apart
-  // from bookmark apps) should have an extension scheme by now.
+  // Non-extension, non-Instant URLs should generally use
+  // process-per-site-instance.  Because we expect to use the effective URL,
+  // URLs for hosted apps (apart from bookmark apps) should have an extension
+  // scheme by now.
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return false;
+
+  if (IsInstantURL(effective_url, profile))
+    return true;
+
   if (!effective_url.SchemeIs(extensions::kExtensionScheme))
     return false;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* extension_service = !profile ? NULL :
+  ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)
     return false;
@@ -717,6 +823,17 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     const GURL& site_url) {
   Profile* profile =
       Profile::FromBrowserContext(process_host->GetBrowserContext());
+  // This may be NULL during tests. In that case, just assume any site can
+  // share any host.
+  if (!profile)
+    return true;
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  if (instant_service &&
+      instant_service->IsInstantProcess(process_host->GetID()))
+    return IsInstantURL(site_url, profile);
+
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extensions::ProcessMap* process_map = service->process_map();
@@ -800,6 +917,18 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   Profile* profile = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
+  if (!profile)
+    return;
+
+  // Remember the ID of the Instant process to signal the renderer process
+  // on startup in |AppendExtraCommandLineSwitches| below.
+  if (IsInstantURL(site_instance->GetSiteURL(), profile)) {
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile);
+    if (instant_service)
+      instant_service->AddInstantProcess(site_instance->GetProcess()->GetID());
+  }
+
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
@@ -954,6 +1083,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       if (!prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kRendererPrintPreview);
+
+      InstantService* instant_service =
+          InstantServiceFactory::GetForProfile(profile);
+      if (instant_service &&
+          instant_service->IsInstantProcess(process->GetID()))
+        command_line->AppendSwitch(switches::kInstantProcess);
     }
 
     if (content::IsThreadedCompositingEnabled())

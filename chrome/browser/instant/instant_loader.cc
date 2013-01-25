@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ipc/ipc_message.h"
@@ -191,7 +192,9 @@ InstantLoader::~InstantLoader() {
 
 void InstantLoader::InitContents(const content::WebContents* active_tab) {
   content::WebContents::CreateParams create_params(
-      active_tab->GetBrowserContext());
+      active_tab->GetBrowserContext(),
+      active_tab->GetSiteInstance()->GetRelatedSiteInstance(
+          GURL(instant_url_)));
   if (active_tab)
     create_params.initial_size = active_tab->GetView()->GetContainerSize();
   contents_.reset(content::WebContents::CreateWithSessionStorage(

@@ -5,6 +5,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_service.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/instant/instant_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -14,8 +16,10 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -129,8 +133,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetWithTemplateURL) {
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
-// Flakes on Windows: http://crbug.com/170677
-#if defined(OS_WIN)
+// Flakes on Windows and Mac: http://crbug.com/170677
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
 #else
 #define MAYBE_OnChangeEvent OnChangeEvent
@@ -861,8 +865,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
   EXPECT_EQ(WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
 }
 
-// Flakes on Windows: http://crbug.com/170677
-#if defined(OS_WIN)
+// Flakes on Windows and Mac: http://crbug.com/170677
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_CommitInNewTab DISABLED_CommitInNewTab
 #else
 #define MAYBE_CommitInNewTab CommitInNewTab
@@ -981,4 +985,40 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
 
   SetOmniboxTextAndWaitForInstantToShow("qu");
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, ProcessIsolation) {
+  // Prior to setup no render process is dedicated to Instant.
+  InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+  EXPECT_EQ(0, instant_service->GetInstantProcessCount());
+
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Now there should be a registered Instant render process.
+  EXPECT_LT(0, instant_service->GetInstantProcessCount());
+
+  // And the Instant preview should live inside it.
+  content::WebContents* preview = instant()->GetPreviewContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      preview->GetRenderProcessHost()->GetID()));
+
+  // Search and commit the search by pressing Alt-Enter.
+  SetOmniboxTextAndWaitForInstantToShow("tractor");
+  omnibox()->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
+
+  // The committed search results page should also live inside the
+  // Instant process.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
+
+  // Navigating away should change the process.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  EXPECT_FALSE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
 }

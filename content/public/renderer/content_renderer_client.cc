@@ -66,6 +66,7 @@ bool ContentRendererClient::HandleNavigation(
 
 bool ContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
                                        const GURL& url,
+                                       const std::string& http_method,
                                        bool is_initial_navigation,
                                        bool* send_referrer) {
   return false;

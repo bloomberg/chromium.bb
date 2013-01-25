@@ -802,9 +802,23 @@ bool ChromeContentRendererClient::AllowPopup() {
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
                                              const GURL& url,
+                                             const std::string& http_method,
                                              bool is_initial_navigation,
                                              bool* send_referrer) {
   DCHECK(!frame->parent());
+
+  // If this is the Instant process, fork all navigations originating from the
+  // renderer.  The destination page will then be bucketed back to this Instant
+  // process if it is an Instant url, or to another process if not.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess))
+    return true;
+
+  // For now, we skip the rest for POST submissions.  This is because
+  // http://crbug.com/101395 is more likely to cause compatibility issues
+  // with hosted apps and extensions than WebUI pages.  We will remove this
+  // check when cross-process POST submissions are supported.
+  if (http_method != "GET")
+    return false;
 
   // If |url| matches one of the prerendered URLs, stop this navigation and try
   // to swap in the prerendered page on the browser process. If the prerendered
