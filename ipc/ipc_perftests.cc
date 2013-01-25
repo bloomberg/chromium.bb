@@ -4,13 +4,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#elif defined(OS_POSIX)
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
 #include <algorithm>
 #include <string>
 
@@ -26,7 +19,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_test_base.h"
 
@@ -143,9 +135,9 @@ class ChannelReflectorListener : public IPC::Listener {
   EventTimeTracker latency_tracker_;
 };
 
-class ChannelPerfListener : public IPC::Listener {
+class PerformanceChannelListener : public IPC::Listener {
  public:
-  ChannelPerfListener()
+  PerformanceChannelListener()
       : channel_(NULL),
         msg_count_(0),
         msg_size_(0),
@@ -154,7 +146,7 @@ class ChannelPerfListener : public IPC::Listener {
     VLOG(1) << "Server listener up";
   }
 
-  ~ChannelPerfListener() {
+  ~PerformanceChannelListener() {
     VLOG(1) << "Server listener down";
   }
 
@@ -229,22 +221,21 @@ class ChannelPerfListener : public IPC::Listener {
 };
 
 TEST_F(IPCChannelPerfTest, Performance) {
-  // Setup IPC channel.
-  ChannelPerfListener perf_listener;
-  IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_SERVER,
-                    &perf_listener);
-  perf_listener.Init(&chan);
-  ASSERT_TRUE(chan.Connect());
+  Init("PerformanceClient");
 
-  base::ProcessHandle process_handle = SpawnChild(TEST_REFLECTOR, &chan);
-  ASSERT_TRUE(process_handle);
+  // Set up IPC channel and start client.
+  PerformanceChannelListener listener;
+  CreateChannel(&listener);
+  listener.Init(channel());
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   const size_t kMsgSizeBase = 12;
   const int kMsgSizeMaxExp = 5;
   int msg_count = 100000;
   size_t msg_size = kMsgSizeBase;
   for (int i = 1; i <= kMsgSizeMaxExp; i++) {
-    perf_listener.SetTestParams(msg_count, msg_size);
+    listener.SetTestParams(msg_count, msg_size);
 
     // This initial message will kick-start the ping-pong of messages.
     IPC::Message* message =
@@ -252,7 +243,7 @@ TEST_F(IPCChannelPerfTest, Performance) {
     message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     message->WriteInt(-1);
     message->WriteString("hello");
-    chan.Send(message);
+    sender()->Send(message);
 
     // Run message loop.
     MessageLoop::current()->Run();
@@ -265,22 +256,21 @@ TEST_F(IPCChannelPerfTest, Performance) {
   message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
   message->WriteInt(-1);
   message->WriteString("quit");
-  chan.Send(message);
+  sender()->Send(message);
 
-  // Clean up child process.
-  EXPECT_TRUE(base::WaitForSingleProcess(process_handle,
-                                         base::TimeDelta::FromSeconds(5)));
-  base::CloseProcessHandle(process_handle);
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
 }
 
 // This message loop bounces all messages back to the sender.
-MULTIPROCESS_IPC_TEST_MAIN(RunReflector) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
   MessageLoopForIO main_message_loop;
-  ChannelReflectorListener channel_reflector_listener;
-  IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_CLIENT,
-                    &channel_reflector_listener);
-  channel_reflector_listener.Init(&chan);
-  CHECK(chan.Connect());
+  ChannelReflectorListener listener;
+  IPC::Channel channel(IPCTestBase::GetChannelName("PerformanceClient"),
+                       IPC::Channel::MODE_CLIENT,
+                       &listener);
+  listener.Init(&channel);
+  CHECK(channel.Connect());
 
   MessageLoop::current()->Run();
   return 0;

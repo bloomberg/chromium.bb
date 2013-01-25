@@ -7,11 +7,7 @@
 #include <sstream>
 
 #include "base/message_loop.h"
-#include "base/process_util.h"
 #include "base/threading/platform_thread.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -246,14 +242,16 @@ class FuzzerClientListener : public SimpleListener {
   IPC::Message* last_msg_;
 };
 
-// Runs the fuzzing server child mode. Returns when the preset number
-// of messages have been received.
-MULTIPROCESS_IPC_TEST_MAIN(RunFuzzServer) {
+// Runs the fuzzing server child mode. Returns when the preset number of
+// messages have been received.
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
   MessageLoopForIO main_message_loop;
   FuzzerServerListener listener;
-  IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_CLIENT, &listener);
-  CHECK(chan.Connect());
-  listener.Init(&chan);
+  IPC::Channel channel(IPCTestBase::GetChannelName("FuzzServerClient"),
+                       IPC::Channel::MODE_CLIENT,
+                       &listener);
+  CHECK(channel.Connect());
+  listener.Init(&channel);
   MessageLoop::current()->Run();
   return 0;
 }
@@ -264,76 +262,69 @@ class IPCFuzzingTest : public IPCTestBase {
 // This test makes sure that the FuzzerClientListener and FuzzerServerListener
 // are working properly by generating two well formed IPC calls.
 TEST_F(IPCFuzzingTest, SanityTest) {
+  Init("FuzzServerClient");
+
   FuzzerClientListener listener;
-  IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_SERVER,
-                    &listener);
-  base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
-  ASSERT_TRUE(server_process);
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-  ASSERT_TRUE(chan.Connect());
-  listener.Init(&chan);
+  CreateChannel(&listener);
+  listener.Init(channel());
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   IPC::Message* msg = NULL;
   int value = 43;
   msg = new MsgClassIS(value, L"expect 43");
-  chan.Send(msg);
+  sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(value, MsgClassIS::ID));
 
   msg = new MsgClassSI(L"expect 44", ++value);
-  chan.Send(msg);
+  sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(value, MsgClassSI::ID));
 
-  EXPECT_TRUE(base::WaitForSingleProcess(
-      server_process, base::TimeDelta::FromSeconds(5)));
-  base::CloseProcessHandle(server_process);
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
 }
 
-// This test uses a payload that is smaller than expected.
-// This generates an error while unpacking the IPC buffer which in
-// In debug this triggers an assertion and in release it is ignored(!!). Right
-// after we generate another valid IPC to make sure framing is working
-// properly.
+// This test uses a payload that is smaller than expected. This generates an
+// error while unpacking the IPC buffer which in debug trigger an assertion and
+// in release is ignored (!). Right after we generate another valid IPC to make
+// sure framing is working properly.
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
+  Init("FuzzServerClient");
+
   FuzzerClientListener listener;
-  IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_SERVER,
-                    &listener);
-  base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
-  ASSERT_TRUE(server_process);
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-  ASSERT_TRUE(chan.Connect());
-  listener.Init(&chan);
+  CreateChannel(&listener);
+  listener.Init(channel());
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassIS::ID,
                                        IPC::Message::PRIORITY_NORMAL);
   msg->WriteInt(666);
-  chan.Send(msg);
+  sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMsgNotHandled(MsgClassIS::ID));
 
   msg = new MsgClassSI(L"expect one", 1);
-  chan.Send(msg);
+  sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(1, MsgClassSI::ID));
 
-  EXPECT_TRUE(base::WaitForSingleProcess(
-      server_process, base::TimeDelta::FromSeconds(5)));
-  base::CloseProcessHandle(server_process);
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
 }
 #endif
 
-// This test uses a payload that has too many arguments, but so the payload
-// size is big enough so the unpacking routine does not generate an error as
-// in the case of MsgBadPayloadShort test.
-// This test does not pinpoint a flaw (per se) as by design we don't carry
-// type information on the IPC message.
+// This test uses a payload that has too many arguments, but so the payload size
+// is big enough so the unpacking routine does not generate an error as in the
+// case of MsgBadPayloadShort test. This test does not pinpoint a flaw (per se)
+// as by design we don't carry type information on the IPC message.
 TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
+  Init("FuzzServerClient");
+
   FuzzerClientListener listener;
-  IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_SERVER,
-                    &listener);
-  base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
-  ASSERT_TRUE(server_process);
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-  ASSERT_TRUE(chan.Connect());
-  listener.Init(&chan);
+  CreateChannel(&listener);
+  listener.Init(channel());
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   IPC::Message* msg = new IPC::Message(MSG_ROUTING_CONTROL, MsgClassSI::ID,
                                        IPC::Message::PRIORITY_NORMAL);
@@ -341,18 +332,17 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
   msg->WriteInt(0);
   msg->WriteInt(0x65);  // Extra argument.
 
-  chan.Send(msg);
+  sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(0, MsgClassSI::ID));
 
   // Now send a well formed message to make sure the receiver wasn't
   // thrown out of sync by the extra argument.
   msg = new MsgClassIS(3, L"expect three");
-  chan.Send(msg);
+  sender()->Send(msg);
   EXPECT_TRUE(listener.ExpectMessage(3, MsgClassIS::ID));
 
-  EXPECT_TRUE(base::WaitForSingleProcess(
-      server_process, base::TimeDelta::FromSeconds(5)));
-  base::CloseProcessHandle(server_process);
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
 }
 
 // This class is for testing the IPC_BEGIN_MESSAGE_MAP_EX macros.

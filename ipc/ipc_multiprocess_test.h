@@ -8,15 +8,19 @@
 #include "testing/multiprocess_func_list.h"
 
 // Use this macro when your sub-process is using an IPCChannel to communicate
-// with the test process.
-// See comment below for MultiProcessTestIPCSetUp() on why this is needed.
+// with the test process. See the comment below for why this is needed.
 #define MULTIPROCESS_IPC_TEST_MAIN(test_main) \
-  MULTIPROCESS_TEST_MAIN_WITH_SETUP(test_main, MultiProcessTestIPCSetUp)
+    MULTIPROCESS_TEST_MAIN_WITH_SETUP(test_main, \
+                                      internal::MultiProcessTestIPCSetUp)
 
-// Setup function used by MULTIPROCESS_IPC_TEST_MAIN.
-// Registers the IPC channel as a global descriptor in the child process. This
-// is needed on POSIX as the IPCChannel when created looks for a specific global
-// descriptor to establish the connection to the parent process.
+namespace internal {
+
+// Setup function used by MULTIPROCESS_IPC_TEST_MAIN. Registers the IPC channel
+// as a global descriptor in the child process. This is needed on POSIX as on
+// creation the IPCChannel looks for a specific global descriptor to establish
+// the connection to the parent process.
 void MultiProcessTestIPCSetUp();
+
+}  // namespace internal
 
 #endif  // IPC_IPC_MULTIPROCESS_TEST_H_

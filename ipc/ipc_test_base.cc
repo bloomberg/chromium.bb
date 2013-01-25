@@ -4,15 +4,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#elif defined(OS_POSIX)
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
-#include <utility>
-
 #include "ipc/ipc_test_base.h"
 
 #include "base/command_line.h"
@@ -20,101 +11,112 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "ipc/ipc_descriptors.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_multiprocess_test.h"
-#include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
 
-const char kTestClientChannel[] = "T1";
-const char kReflectorChannel[] = "T2";
-const char kFuzzerChannel[] = "F3";
-const char kSyncSocketChannel[] = "S4";
+// static
+std::string IPCTestBase::GetChannelName(const std::string& test_client_name) {
+  DCHECK(!test_client_name.empty());
+  return test_client_name + "__Channel";
+}
+
+IPCTestBase::IPCTestBase()
+    : client_process_(base::kNullProcessHandle) {
+}
+
+IPCTestBase::~IPCTestBase() {
+}
 
 void IPCTestBase::SetUp() {
   MultiProcessTest::SetUp();
 
   // Construct a fresh IO Message loop for the duration of each test.
-  message_loop_ = new MessageLoopForIO();
+  DCHECK(!message_loop_.get());
+  message_loop_.reset(new MessageLoopForIO());
 }
 
 void IPCTestBase::TearDown() {
-  delete message_loop_;
-  message_loop_ = NULL;
-
+  DCHECK(message_loop_.get());
+  message_loop_.reset();
   MultiProcessTest::TearDown();
 }
 
+void IPCTestBase::Init(const std::string& test_client_name) {
+  DCHECK(!test_client_name.empty());
+  DCHECK(test_client_name_.empty());
+  test_client_name_ = test_client_name;
+}
+
+void IPCTestBase::CreateChannel(IPC::Listener* listener) {
+  return CreateChannelFromChannelHandle(GetChannelName(test_client_name_),
+                                        listener);
+}
+
+bool IPCTestBase::ConnectChannel() {
+  CHECK(channel_.get());
+  return channel_->Connect();
+}
+
+void IPCTestBase::DestroyChannel() {
+  DCHECK(channel_.get());
+  channel_.reset();
+}
+
+void IPCTestBase::CreateChannelFromChannelHandle(
+    const IPC::ChannelHandle& channel_handle,
+    IPC::Listener* listener) {
+  CHECK(!channel_.get());
+  CHECK(!channel_proxy_.get());
+  channel_.reset(new IPC::Channel(channel_handle,
+                                  IPC::Channel::MODE_SERVER,
+                                  listener));
+}
+
+void IPCTestBase::CreateChannelProxy(
+    IPC::Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner) {
+  CHECK(!channel_.get());
+  CHECK(!channel_proxy_.get());
+  channel_proxy_.reset(new IPC::ChannelProxy(GetChannelName(test_client_name_),
+                                             IPC::Channel::MODE_SERVER,
+                                             listener,
+                                             ipc_task_runner));
+}
+
+void IPCTestBase::DestroyChannelProxy() {
+  CHECK(channel_proxy_.get());
+  channel_proxy_.reset();
+}
+
+bool IPCTestBase::StartClient() {
+  DCHECK(client_process_ == base::kNullProcessHandle);
+
+  std::string test_main = test_client_name_ + "TestClientMain";
+  bool debug_on_start =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
+
 #if defined(OS_WIN)
-base::ProcessHandle IPCTestBase::SpawnChild(IPCTestBase::ChildType child_type,
-                                            IPC::Channel* channel) {
-  // kDebugChildren support.
-  bool debug_on_start =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
-
-  switch (child_type) {
-  case TEST_CLIENT:
-    return MultiProcessTest::SpawnChild("RunTestClient", debug_on_start);
-  case TEST_REFLECTOR:
-    return MultiProcessTest::SpawnChild("RunReflector", debug_on_start);
-  case FUZZER_SERVER:
-    return MultiProcessTest::SpawnChild("RunFuzzServer", debug_on_start);
-  case SYNC_SOCKET_SERVER:
-    return MultiProcessTest::SpawnChild("RunSyncSocketServer", debug_on_start);
-  default:
-    return NULL;
-  }
-}
+  client_process_ = MultiProcessTest::SpawnChild(test_main, debug_on_start);
 #elif defined(OS_POSIX)
-base::ProcessHandle IPCTestBase::SpawnChild(IPCTestBase::ChildType child_type,
-                                            IPC::Channel* channel) {
-  // kDebugChildren support.
-  bool debug_on_start =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
-
   base::FileHandleMappingVector fds_to_map;
-  const int ipcfd = channel->GetClientFileDescriptor();
-  if (ipcfd > -1) {
+  const int ipcfd = channel_.get() ? channel_->GetClientFileDescriptor() :
+                                     channel_proxy_->GetClientFileDescriptor();
+  if (ipcfd > -1)
     fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
-  }
 
-  base::ProcessHandle ret = base::kNullProcessHandle;
-  switch (child_type) {
-  case TEST_CLIENT:
-    ret = MultiProcessTest::SpawnChild("RunTestClient",
-                                       fds_to_map,
-                                       debug_on_start);
-    break;
-  case TEST_DESCRIPTOR_CLIENT:
-    ret = MultiProcessTest::SpawnChild("RunTestDescriptorClient",
-                                       fds_to_map,
-                                       debug_on_start);
-    break;
-  case TEST_DESCRIPTOR_CLIENT_SANDBOXED:
-    ret = MultiProcessTest::SpawnChild("RunTestDescriptorClientSandboxed",
-                                       fds_to_map,
-                                       debug_on_start);
-    break;
-  case TEST_REFLECTOR:
-    ret = MultiProcessTest::SpawnChild("RunReflector",
-                                       fds_to_map,
-                                       debug_on_start);
-    break;
-  case FUZZER_SERVER:
-    ret = MultiProcessTest::SpawnChild("RunFuzzServer",
-                                       fds_to_map,
-                                       debug_on_start);
-    break;
-  case SYNC_SOCKET_SERVER:
-    ret = MultiProcessTest::SpawnChild("RunSyncSocketServer",
-                                       fds_to_map,
-                                       debug_on_start);
-    break;
-  default:
-    return base::kNullProcessHandle;
-    break;
-  }
-  return ret;
+  client_process_ = MultiProcessTest::SpawnChild(test_main,
+                                                 fds_to_map,
+                                                 debug_on_start);
+#endif
+
+  return client_process_ != base::kNullProcessHandle;
 }
-#endif  // defined(OS_POSIX)
+
+bool IPCTestBase::WaitForClientShutdown() {
+  DCHECK(client_process_ != base::kNullProcessHandle);
+
+  bool rv = base::WaitForSingleProcess(client_process_,
+                                       base::TimeDelta::FromSeconds(5));
+  base::CloseProcessHandle(client_process_);
+  client_process_ = base::kNullProcessHandle;
+  return rv;
+}

@@ -12,8 +12,6 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/threading/thread.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,14 +104,16 @@ class SyncSocketServerListener : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(SyncSocketServerListener);
 };
 
-// Runs the fuzzing server child mode. Returns when the preset number
-// of messages have been received.
-MULTIPROCESS_IPC_TEST_MAIN(RunSyncSocketServer) {
+// Runs the fuzzing server child mode. Returns when the preset number of
+// messages have been received.
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SyncSocketServerClient) {
   MessageLoopForIO main_message_loop;
   SyncSocketServerListener listener;
-  IPC::Channel chan(kSyncSocketChannel, IPC::Channel::MODE_CLIENT, &listener);
-  EXPECT_TRUE(chan.Connect());
-  listener.Init(&chan);
+  IPC::Channel channel(IPCTestBase::GetChannelName("SyncSocketServerClient"),
+                       IPC::Channel::MODE_CLIENT,
+                       &listener);
+  EXPECT_TRUE(channel.Connect());
+  listener.Init(&channel);
   MessageLoop::current()->Run();
   return 0;
 }
@@ -167,11 +167,11 @@ class SyncSocketTest : public IPCTestBase {
 };
 
 TEST_F(SyncSocketTest, SanityTest) {
+  Init("SyncSocketServerClient");
+
   SyncSocketClientListener listener;
-  IPC::Channel chan(kSyncSocketChannel, IPC::Channel::MODE_SERVER,
-                    &listener);
-  base::ProcessHandle server_process = SpawnChild(SYNC_SOCKET_SERVER, &chan);
-  ASSERT_TRUE(server_process);
+  CreateChannel(&listener);
+  ASSERT_TRUE(StartClient());
   // Create a pair of SyncSockets.
   base::SyncSocket pair[2];
   base::SyncSocket::CreatePair(&pair[0], &pair[1]);
@@ -180,12 +180,12 @@ TEST_F(SyncSocketTest, SanityTest) {
   EXPECT_EQ(0U, pair[1].Peek());
   base::SyncSocket::Handle target_handle;
   // Connect the channel and listener.
-  ASSERT_TRUE(chan.Connect());
-  listener.Init(&pair[0], &chan);
+  ASSERT_TRUE(ConnectChannel());
+  listener.Init(&pair[0], channel());
 #if defined(OS_WIN)
   // On windows we need to duplicate the handle into the server process.
   BOOL retval = DuplicateHandle(GetCurrentProcess(), pair[1].handle(),
-                                server_process, &target_handle,
+                                client_process(), &target_handle,
                                 0, FALSE, DUPLICATE_SAME_ACCESS);
   EXPECT_TRUE(retval);
   // Set up a message to pass the handle to the server.
@@ -196,17 +196,15 @@ TEST_F(SyncSocketTest, SanityTest) {
   base::FileDescriptor filedesc(target_handle, false);
   IPC::Message* msg = new MsgClassSetHandle(filedesc);
 #endif  // defined(OS_WIN)
-  EXPECT_TRUE(chan.Send(msg));
+  EXPECT_TRUE(sender()->Send(msg));
   // Use the current thread as the I/O thread.
   MessageLoop::current()->Run();
   // Shut down.
   pair[0].Close();
   pair[1].Close();
-  EXPECT_TRUE(base::WaitForSingleProcess(
-      server_process, base::TimeDelta::FromSeconds(5)));
-  base::CloseProcessHandle(server_process);
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
 }
-
 
 // A blocking read operation that will block the thread until it receives
 // |length| bytes of packets or Shutdown() is called on another thread.

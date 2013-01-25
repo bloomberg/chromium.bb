@@ -11,9 +11,13 @@
 #include "ipc/ipc_descriptors.h"
 #endif
 
+namespace internal {
+
 void MultiProcessTestIPCSetUp() {
 #if defined(OS_POSIX)
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif
 }
+
+}  // namespace internal
