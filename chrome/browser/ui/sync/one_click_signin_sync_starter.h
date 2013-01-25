@@ -27,7 +27,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
     CONFIGURE_SYNC_FIRST
   };
 
-  OneClickSigninSyncStarter(Browser* browser,
+  // |profile| must not be NULL, however |browser| can be. When using the
+  // OneClickSigninSyncStarter from a browser, provide both.
+  OneClickSigninSyncStarter(Profile* profile,
+                            Browser* browser,
                             const std::string& session_index,
                             const std::string& email,
                             const std::string& password,
@@ -41,6 +44,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 
+  Profile* profile_;
   Browser* browser_;
   SigninTracker signin_tracker_;
   StartSyncMode start_mode_;

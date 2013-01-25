@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/apps_model_builder.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
 #include "chrome/browser/ui/app_list/search_builder.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -32,6 +33,9 @@ void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
                                             model->search_box(),
                                             model->results(),
                                             controller_.get()));
+
+    signin_delegate_.reset(new ChromeSigninDelegate(profile));
+
 #if defined(USE_ASH)
     app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile, model));
 #endif
@@ -42,6 +46,10 @@ void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
     app_sync_ui_state_watcher_.reset();
 #endif
   }
+}
+
+app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
+  return signin_delegate_.get();
 }
 
 void AppListViewDelegate::ActivateAppListItem(
