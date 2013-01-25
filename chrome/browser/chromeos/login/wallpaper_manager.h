@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,12 +63,16 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   static WallpaperManager* Get();
 
   WallpaperManager();
+  virtual ~WallpaperManager();
+
+  // Indicates imminent shutdown, allowing the WallpaperManager to remove any
+  // observers it has registered.
+  void Shutdown();
 
   // Registers wallpaper manager preferences.
   static void RegisterPrefs(PrefServiceSimple* local_state);
 
-  // Adds PowerManagerClient and TimeZoneSettings observers. It needs to be
-  // added after PowerManagerClient has been initialized.
+  // Adds PowerManagerClient, TimeZoneSettings and CrosSettings observers.
   void AddObservers();
 
   // Loads wallpaper asynchronously if the current wallpaper is not the
@@ -157,8 +161,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
  private:
   friend class WallpaperManagerBrowserTest;
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
-
-  virtual ~WallpaperManager();
 
   // The number of wallpapers have loaded. For test only.
   int loaded_wallpapers() const { return loaded_wallpapers_; }
@@ -266,6 +268,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                 const WallpaperInfo& info,
                                 bool update_wallpaper,
                                 const FilePath& wallpaper_path);
+
+  // True if wallpaper manager is not observering other objects.
+  bool no_observers_;
 
   // The number of loaded wallpapers.
   int loaded_wallpapers_;

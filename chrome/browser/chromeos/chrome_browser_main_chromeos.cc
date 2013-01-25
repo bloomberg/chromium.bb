@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -279,9 +279,6 @@ class DBusServices {
     DeviceSettingsService::Get()->Initialize(
         DBusThreadManager::Get()->GetSessionManagerClient(),
         OwnerKeyUtil::Create());
-
-    // Add observers for WallpaperManager. This depends on PowerManagerClient().
-    WallpaperManager::Get()->AddObservers();
   }
 
   // TODO(stevenjb): Move this into DBusServices() once the switch is no
@@ -539,6 +536,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // be placed after UserManager::SessionStarted();
   chromeos::MagnificationManager::Initialize();
 
+  // Add observers for WallpaperManager. This depends on PowerManagerClient,
+  // TimezoneSettings and CrosSettings.
+  WallpaperManager::Get()->AddObservers();
+
 #if defined(USE_LINUX_BREAKPAD)
   cros_version_loader_.GetVersion(VersionLoader::VERSION_FULL,
                                   base::Bind(&ChromeOSVersionCallback),
@@ -728,9 +729,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   chromeos::MagnificationManager::Shutdown();
 
-  // Let the UserManager unregister itself as an observer of the CrosSettings
-  // singleton before it is destroyed.
+  // Let the UserManager and WallpaperManager unregister itself as an observer
+  // of the CrosSettings singleton before it is destroyed.
   UserManager::Get()->Shutdown();
+  WallpaperManager::Get()->Shutdown();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }

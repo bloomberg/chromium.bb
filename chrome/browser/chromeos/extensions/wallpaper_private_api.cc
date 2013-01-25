@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,9 +231,12 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
   }
 
   void Start(const std::string& image_data) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     image_decoder_ = new ImageDecoder(this, image_data,
                                       ImageDecoder::ROBUST_JPEG_CODEC);
-    image_decoder_->Start();
+    scoped_refptr<base::MessageLoopProxy> task_runner =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+    image_decoder_->Start(task_runner);
   }
 
   void Cancel() {

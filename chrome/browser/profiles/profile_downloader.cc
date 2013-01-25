@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -337,7 +337,9 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     VLOG(1) << "Decoding the image...";
     scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
         this, data, ImageDecoder::DEFAULT_CODEC);
-    image_decoder->Start();
+    scoped_refptr<base::MessageLoopProxy> task_runner =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+    image_decoder->Start(task_runner);
   }
 }
 

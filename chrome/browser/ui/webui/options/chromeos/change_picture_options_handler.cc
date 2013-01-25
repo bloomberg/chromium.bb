@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
@@ -35,6 +36,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 #include "ui/webui/web_ui_util.h"
+
+using content::BrowserThread;
 
 namespace chromeos {
 namespace options {
@@ -178,6 +181,7 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
 
 void ChangePictureOptionsHandler::HandlePhotoTaken(
     const base::ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string image_url;
   if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
     NOTREACHED();
@@ -195,7 +199,9 @@ void ChangePictureOptionsHandler::HandlePhotoTaken(
     image_decoder_->set_delegate(NULL);
   image_decoder_ = new ImageDecoder(this, raw_data,
                                     ImageDecoder::DEFAULT_CODEC);
-  image_decoder_->Start();
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  image_decoder_->Start(task_runner);
 }
 
 void ChangePictureOptionsHandler::HandleCheckCameraPresence(

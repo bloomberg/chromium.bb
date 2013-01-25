@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/utility_process_host_client.h"
 
 class SkBitmap;
@@ -42,8 +43,8 @@ class ImageDecoder : public content::UtilityProcessHostClient {
                const std::string& image_data,
                ImageCodec image_codec);
 
-  // Starts image decoding.
-  void Start();
+  // Starts image decoding on current thread of |task_runner|.
+  void Start(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   const std::vector<unsigned char>& get_image_data() const {
     return image_data_;
@@ -68,7 +69,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   Delegate* delegate_;
   std::vector<unsigned char> image_data_;
   const ImageCodec image_codec_;
-  content::BrowserThread::ID target_thread_id_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };

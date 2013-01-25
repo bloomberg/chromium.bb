@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,6 +254,7 @@ class ContactResult : public SearchBuilderResult,
  protected:
   // Overridden from SearchBuilderResult:
   virtual void UpdateIcon() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     const contacts::Contact* contact = GetContact();
     if (contact && contact->has_raw_untrusted_photo()) {
       photo_decoder_ =
@@ -261,7 +262,9 @@ class ContactResult : public SearchBuilderResult,
               this,
               contact->raw_untrusted_photo(),
               ImageDecoder::DEFAULT_CODEC);
-      photo_decoder_->Start();
+      scoped_refptr<base::MessageLoopProxy> task_runner =
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      photo_decoder_->Start(task_runner);
     } else {
       SetIcon(
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

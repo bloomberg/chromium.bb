@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,8 @@ WallpaperManager* WallpaperManager::Get() {
 }
 
 WallpaperManager::WallpaperManager()
-    : loaded_wallpapers_(0),
+    : no_observers_(true),
+      loaded_wallpapers_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(wallpaper_loader_(
           new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC))),
       should_cache_wallpaper_(false),
@@ -121,6 +122,22 @@ WallpaperManager::WallpaperManager()
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
+WallpaperManager::~WallpaperManager() {
+  // TODO(bshe): Lifetime of WallpaperManager needs more consideration.
+  // http://crbug.com/171694
+  DCHECK(no_observers_);
+  ClearObsoleteWallpaperPrefs();
+  weak_factory_.InvalidateWeakPtrs();
+}
+
+void WallpaperManager::Shutdown() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  CrosSettings::Get()->RemoveSettingsObserver(
+      kAccountsPrefShowUserNamesOnSignIn, this);
+  no_observers_ = true;
+}
+
 // static
 void WallpaperManager::RegisterPrefs(PrefServiceSimple* local_state) {
   local_state->RegisterDictionaryPref(prefs::kUsersWallpaperInfo);
@@ -131,6 +148,9 @@ void WallpaperManager::RegisterPrefs(PrefServiceSimple* local_state) {
 void WallpaperManager::AddObservers() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
+  CrosSettings::Get()->AddSettingsObserver(kAccountsPrefShowUserNamesOnSignIn,
+                                           this);
+  no_observers_ = false;
 }
 
 void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
@@ -264,6 +284,13 @@ void WallpaperManager::Observe(int type,
                        weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
         should_cache_wallpaper_ = false;
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED: {
+      if (*content::Details<const std::string>(details).ptr() ==
+          kAccountsPrefShowUserNamesOnSignIn) {
+        InitializeRegisteredDeviceWallpaper();
       }
       break;
     }
@@ -553,13 +580,6 @@ void WallpaperManager::UpdateWallpaper() {
 
 // WallpaperManager, private: --------------------------------------------------
 
-WallpaperManager::~WallpaperManager() {
-  ClearObsoleteWallpaperPrefs();
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-  weak_factory_.InvalidateWeakPtrs();
-}
-
 void WallpaperManager::BatchUpdateWallpaper() {
   NOTIMPLEMENTED();
 }
@@ -650,12 +670,9 @@ void WallpaperManager::DeleteUserWallpapers(const std::string& email) {
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
-  if (CrosSettingsProvider::TEMPORARILY_UNTRUSTED ==
-      CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&WallpaperManager::InitializeRegisteredDeviceWallpaper,
-                     base::Unretained(this)))) {
+  if (UserManager::Get()->IsUserLoggedIn())
     return;
-  }
+
   bool disable_boot_animation = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableBootAnimation);
   bool show_users = true;

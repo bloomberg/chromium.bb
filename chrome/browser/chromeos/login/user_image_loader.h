@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/image_decoder.h"
 
 class MessageLoop;
@@ -30,7 +32,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   explicit UserImageLoader(ImageDecoder::ImageCodec image_codec);
 
-  // Start reading the image from |filepath| on the file thread. Calls
+  // Start reading the image from |filepath| on a worker thread pool. Calls
   // |loaded_cb| when image has been successfully loaded.
   // If |size| is positive, image is cropped and (if needed) downsized to
   // |size|x|size| pixels.
@@ -53,9 +55,11 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   virtual ~UserImageLoader();
 
-  // Method that reads the file on the file thread and starts decoding it in
-  // sandboxed process.
-  void LoadImage(const std::string& filepath, const ImageInfo& image_info);
+  // Method that reads the file on the worker thread pool and starts decoding it
+  // in a sandboxed process.
+  void LoadImage(const std::string& filepath,
+                 const ImageInfo& image_info,
+                 scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // ImageDecoder::Delegate implementation.
   virtual void OnImageDecoded(const ImageDecoder* decoder,
@@ -68,8 +72,11 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // Specify how the file should be decoded in the utility process.
   const ImageDecoder::ImageCodec image_codec_;
 
+  // Proctect image_info_map_
+  base::Lock lock_;
+
   // Holds info structures about all images we're trying to decode.
-  // Accessed only on FILE thread.
+  // Accessed on multiple worker threads.
   ImageInfoMap image_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageLoader);

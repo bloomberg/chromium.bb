@@ -19,16 +19,13 @@ ImageDecoder::ImageDecoder(Delegate* delegate,
     : delegate_(delegate),
       image_data_(image_data.begin(), image_data.end()),
       image_codec_(image_codec),
-      target_thread_id_(BrowserThread::UI) {
+      task_runner_(NULL) {
 }
 
 ImageDecoder::~ImageDecoder() {}
 
-void ImageDecoder::Start() {
-  if (!BrowserThread::GetCurrentThreadIdentifier(&target_thread_id_)) {
-    NOTREACHED();
-    return;
-  }
+void ImageDecoder::Start(scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  task_runner_ = task_runner;
   BrowserThread::PostTask(
      BrowserThread::IO, FROM_HERE,
      base::Bind(&ImageDecoder::DecodeImageInSandbox, this, image_data_));
@@ -47,13 +44,13 @@ bool ImageDecoder::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ImageDecoder::OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
-  DCHECK(BrowserThread::CurrentlyOn(target_thread_id_));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (delegate_)
     delegate_->OnImageDecoded(this, decoded_image);
 }
 
 void ImageDecoder::OnDecodeImageFailed() {
-  DCHECK(BrowserThread::CurrentlyOn(target_thread_id_));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (delegate_)
     delegate_->OnDecodeImageFailed(this);
 }
@@ -61,8 +58,8 @@ void ImageDecoder::OnDecodeImageFailed() {
 void ImageDecoder::DecodeImageInSandbox(
     const std::vector<unsigned char>& image_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UtilityProcessHost* utility_process_host = UtilityProcessHost::Create(
-      this, BrowserThread::GetMessageLoopProxyForThread(target_thread_id_));
+  UtilityProcessHost* utility_process_host;
+  utility_process_host = UtilityProcessHost::Create(this, task_runner_.get());
   utility_process_host->EnableZygote();
   if (image_codec_ == ROBUST_JPEG_CODEC) {
     utility_process_host->Send(
