@@ -556,6 +556,8 @@ extern const char kExtensionInstallDenyList[];
 extern const char kExtensionInstallForceList[];
 extern const char kExtensionStorageGarbageCollect[];
 
+extern const char kAppLauncherIsEnabled[];
+
 extern const char kNtpTipsResourceServer[];
 
 extern const char kNtpCollapsedForeignSessions[];

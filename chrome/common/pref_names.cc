@@ -1580,6 +1580,10 @@ const char kExtensionInstallForceList[] = "extensions.install.forcelist";
 const char kExtensionStorageGarbageCollect[] =
     "extensions.storage.garbagecollect";
 
+// Local state caching knowledge of whether the app launcher is installed.
+const char kAppLauncherIsEnabled[] =
+    "extensions.app_launcher.should_show_apps_page";
+
 // Keeps track of which sessions are collapsed in the Other Devices menu.
 const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
 
