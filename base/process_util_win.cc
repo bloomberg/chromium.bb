@@ -504,7 +504,7 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   DWORD tmp_exit_code = 0;
 
   if (!::GetExitCodeProcess(handle, &tmp_exit_code)) {
-    NOTREACHED();
+    DLOG_GETLASTERROR(FATAL) << "GetExitCodeProcess() failed";
     if (exit_code) {
       // This really is a random number.  We haven't received any
       // information about the exit code, presumably because this
@@ -529,10 +529,14 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
       return TERMINATION_STATUS_STILL_RUNNING;
     }
 
-    DCHECK_EQ(WAIT_OBJECT_0, wait_result);
+    if (wait_result == WAIT_FAILED) {
+      DLOG_GETLASTERROR(ERROR) << "WaitForSingleObject() failed";
+    } else {
+      DCHECK_EQ(WAIT_OBJECT_0, wait_result);
 
-    // Strange, the process used 0x103 (STILL_ACTIVE) as exit code.
-    NOTREACHED();
+      // Strange, the process used 0x103 (STILL_ACTIVE) as exit code.
+      NOTREACHED();
+    }
 
     return TERMINATION_STATUS_ABNORMAL_TERMINATION;
   }
