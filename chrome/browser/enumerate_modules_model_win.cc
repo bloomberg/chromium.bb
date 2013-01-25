@@ -247,6 +247,9 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // sgprxy.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
   { "005965ea", "bc5673f2", "", "", "", INVESTIGATING },
 
+  // sprotector.dll, "". Different location each report.
+  { "24555d74", "", "", "", "", kUninstallLink },
+
   // swi_filter_0001.dll (Sophos Web Intelligence),
   // "%programfiles%\\sophos\\sophos anti-virus\\web intelligence\\".
   // A small random sample all showed version 1.0.5.0.
