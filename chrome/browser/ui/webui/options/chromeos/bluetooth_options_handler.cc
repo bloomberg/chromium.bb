@@ -183,7 +183,7 @@ void BluetoothOptionsHandler::RegisterMessages() {
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {
-  device::BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+  device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothOptionsHandler::InitializeAdapter,
                  weak_ptr_factory_.GetWeakPtr()));
 }

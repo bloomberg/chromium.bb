@@ -39,8 +39,6 @@ class BluetoothExtensionFunction : public AsyncExtensionFunction {
   // automatically once |adapter| has been initialized.
   virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) = 0;
 
-  base::WeakPtrFactory<BluetoothExtensionFunction> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(BluetoothExtensionFunction);
 };
 

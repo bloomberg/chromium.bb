@@ -22,6 +22,8 @@ class BluetoothDevice;
 class BluetoothAdapterWin : public BluetoothAdapter,
                             public BluetoothTaskManagerWin::Observer {
  public:
+  typedef base::Callback<void()> InitCallback;
+
   // BluetoothAdapter override
   virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
@@ -52,7 +54,7 @@ class BluetoothAdapterWin : public BluetoothAdapter,
  protected:
   friend class BluetoothAdapterWinTest;
 
-  BluetoothAdapterWin();
+  BluetoothAdapterWin(const InitCallback& init_callback);
   virtual ~BluetoothAdapterWin();
 
  private:
@@ -60,6 +62,8 @@ class BluetoothAdapterWin : public BluetoothAdapter,
 
   void TrackDefaultAdapter();
 
+  InitCallback init_callback_;
+  bool initialized_;
   bool powered_;
 
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;

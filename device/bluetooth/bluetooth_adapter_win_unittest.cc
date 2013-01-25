@@ -23,13 +23,21 @@ namespace device {
 class BluetoothAdapterWinTest : public testing::Test {
  public:
   BluetoothAdapterWinTest()
-      : adapter_(new BluetoothAdapterWin()),
-        adapter_win_(static_cast<BluetoothAdapterWin*>(adapter_.get())) {
+      : adapter_(new BluetoothAdapterWin(
+          base::Bind(&BluetoothAdapterWinTest::RunInitCallback,
+                     base::Unretained(this)))),
+        adapter_win_(static_cast<BluetoothAdapterWin*>(adapter_.get())),
+        init_callback_called_(false) {
+  }
+
+  void RunInitCallback() {
+    init_callback_called_ = true;
   }
 
  protected:
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterWin* adapter_win_;
+  bool init_callback_called_;
 };
 
 TEST_F(BluetoothAdapterWinTest, AdapterNotPresent) {
@@ -46,5 +54,13 @@ TEST_F(BluetoothAdapterWinTest, AdapterPresent) {
   EXPECT_TRUE(adapter_win_->IsPresent());
 }
 
+TEST_F(BluetoothAdapterWinTest, AdapterInitialized) {
+  EXPECT_FALSE(adapter_win_->IsInitialized());
+  EXPECT_FALSE(init_callback_called_);
+  BluetoothTaskManagerWin::AdapterState state;
+  adapter_win_->AdapterStateChanged(state);
+  EXPECT_TRUE(adapter_win_->IsInitialized());
+  EXPECT_TRUE(init_callback_called_);
+}
 
 }  // namespace device
