@@ -14,7 +14,6 @@
 
 class AppListControllerDelegate;
 class AppsModelBuilder;
-class Profile;
 class SearchBuilder;
 
 #if defined(USE_ASH)
@@ -30,7 +29,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
  private:
   // Overridden from app_list::AppListViewDelegate:
   virtual void SetModel(app_list::AppListModel* model) OVERRIDE;
-  virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE;
   virtual void ActivateAppListItem(app_list::AppListItemModel* item,
                                    int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE;
@@ -44,7 +42,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
 
-  scoped_ptr<app_list::SigninDelegate> signin_delegate_;
   scoped_ptr<AppsModelBuilder> apps_builder_;
   scoped_ptr<SearchBuilder> search_builder_;
   scoped_ptr<AppListControllerDelegate> controller_;

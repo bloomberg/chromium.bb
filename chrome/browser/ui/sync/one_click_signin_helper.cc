@@ -83,16 +83,15 @@ void AddEmailToOneClickRejectedList(Profile* profile,
 }
 
 // Start syncing with the given user information.
-void StartSync(Profile* profile,
-               Browser* browser,
+void StartSync(Browser* browser,
                OneClickSigninHelper::AutoAccept auto_accept,
                const std::string& session_index,
                const std::string& email,
                const std::string& password,
                OneClickSigninSyncStarter::StartSyncMode start_mode) {
   // The starter deletes itself once its done.
-  new OneClickSigninSyncStarter(profile, browser, session_index, email,
-                                password, start_mode);
+  new OneClickSigninSyncStarter(browser, session_index, email, password,
+                                start_mode);
 
   int action = one_click_signin::HISTOGRAM_MAX;
   switch (auto_accept) {
@@ -351,7 +350,7 @@ bool OneClickInfoBarDelegateImpl::Accept() {
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   chrome::FindBrowserWithWebContents(web_contents)->window()->
       ShowOneClickSigninBubble(
-          base::Bind(&StartSync, profile, browser,
+          base::Bind(&StartSync, browser,
                      OneClickSigninHelper::AUTO_ACCEPT_NONE, session_index_,
                      email_, password_));
   button_pressed_ = true;
@@ -905,17 +904,17 @@ void OneClickSigninHelper::DidStopLoading(
     case AUTO_ACCEPT_ACCEPTED:
       SigninManager::DisableOneClickSignIn(profile);
       browser->window()->ShowOneClickSigninBubble(
-          base::Bind(&StartSync, profile, browser, auto_accept_, session_index_,
+          base::Bind(&StartSync, browser, auto_accept_, session_index_,
                      email_, password_));
       break;
     case AUTO_ACCEPT_CONFIGURE:
       SigninManager::DisableOneClickSignIn(profile);
-      StartSync(profile, browser, auto_accept_, session_index_, email_,
-                password_, OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+      StartSync(browser, auto_accept_, session_index_, email_, password_,
+                OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT:
-      StartSync(profile, browser, auto_accept_, session_index_, email_,
-                password_, source_ == SyncPromoUI::SOURCE_SETTINGS ?
+      StartSync(browser, auto_accept_, session_index_, email_, password_,
+                source_ == SyncPromoUI::SOURCE_SETTINGS ?
                     OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
                     OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
 
