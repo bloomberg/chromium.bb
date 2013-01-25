@@ -135,6 +135,28 @@
             "Authentication": "None"
         }
     },
+    "network-with-client-cert-pattern": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "SSID": "ssid",
+            "Security": "WPA-EAP",
+            "EAP": {
+                "Outer": "EAP-TLS",
+                "Identity": "abc ${LOGIN_ID}@my.domain.com",
+                "ClientCertType": "Pattern",
+                "ClientCertPattern": {
+                    "IssuerCARef": [
+                        "{58ac1967-a0e7-49e9-be68-123abc}"
+                    ],
+                    "EnrollmentURI": [
+                        "chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html" 
+                    ]
+                }
+            }
+        }
+    },
     "toplevel-empty": {
         "Type": "UnencryptedConfiguration",
         "NetworkConfigurations": [ ]
@@ -147,6 +169,22 @@
             "Name": "eth0",
             "Ethernet": {
                 "Authentication": "None"
+            }
+          }
+        ]
+    },
+    "toplevel-with-vpn": {
+        "Type": "UnencryptedConfiguration",
+        "NetworkConfigurations":
+        [ { "GUID": "guid",
+            "Type": "VPN",
+            "Name": "name",
+            "VPN": {
+                "Host": "host",
+                "Type": "OpenVPN",
+                "OpenVPN": {
+                  "ClientCertType": "None"
+                }
             }
           }
         ]
@@ -183,4 +221,25 @@
           }
         ]
     },
+    "toplevel-server-and-ca-cert-dropped": {
+      "Type": "UnencryptedConfiguration",
+      "Certificates":
+      [ { "GUID": "3",
+          "PKCS12": "abc" ,
+          "Type": "Client" } ]
+    },
+    "toplevel-with-server-and-ca-cert": {
+      "Type": "UnencryptedConfiguration",
+      "Certificates":
+      [ { "Trust": ["Web"],
+          "GUID": "1",
+          "Type": "Authority",
+          "X509": "abc" },
+        { "GUID": "2",
+          "Type": "Server",
+          "X509": "abc" },
+        { "GUID": "3",
+          "PKCS12": "abc" ,
+          "Type": "Client" } ]
+    }
 }

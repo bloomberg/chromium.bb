@@ -324,8 +324,7 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifiWithCertPattern) {
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
-  onc::CertificateImporter importer(onc::ONC_SOURCE_USER_IMPORT,
-                                    false /* don't allow webtrust */);
+  onc::CertificateImporter importer(true /* allow webtrust */);
   ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
             importer.ParseAndStoreCertificates(*certificates));
 
@@ -354,8 +353,7 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectVPNWithCertPattern) {
   onc_root->GetListWithoutPathExpansion(onc::toplevel_config::kCertificates,
                                         &certificates);
 
-  onc::CertificateImporter importer(onc::ONC_SOURCE_USER_IMPORT,
-                                    false /* don't allow webtrust */);
+  onc::CertificateImporter importer(true /* allow webtrust */);
   ASSERT_EQ(onc::CertificateImporter::IMPORT_OK,
             importer.ParseAndStoreCertificates(*certificates));
 

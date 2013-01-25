@@ -38,11 +38,11 @@ class CHROMEOS_EXPORT CertificateImporter {
     IMPORT_FAILED,
   };
 
-  // Certificates pushed from a policy source with Web trust are only imported
-  // with ParseCertificate() if the |allow_web_trust_from_policy| permission is
-  // granted.
-  CertificateImporter(ONCSource onc_source,
-                      bool allow_web_trust_from_policy);
+  // During import with ParseCertificate(), Web trust is only applied to Server
+  // and Authority certificates with the Trust attribute "Web" if the
+  // |allow_web_trust| permission is granted, otherwise the attribute is
+  // ignored.
+  explicit CertificateImporter(bool allow_web_trust);
 
   // Parses and stores the certificates in |onc_certificates| into the
   // certificate store. If the "Remove" field of a certificate is enabled, then
@@ -75,12 +75,9 @@ class CHROMEOS_EXPORT CertificateImporter {
   bool ParseClientCertificate(const std::string& guid,
                               const base::DictionaryValue& certificate);
 
-  // Where the ONC blob comes from.
-  ONCSource onc_source_;
-
-  // Whether certificates with Web trust should be stored when pushed from a
-  // policy source.
-  bool allow_web_trust_from_policy_;
+  // Whether certificates with Trust attribute "Web" should be stored with web
+  // trust.
+  bool allow_web_trust_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateImporter);
 };

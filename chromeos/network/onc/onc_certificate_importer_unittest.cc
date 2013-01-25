@@ -90,8 +90,7 @@ class ONCCertificateImporterTest : public testing::Test {
     certificates->GetDictionary(0, &certificate);
     certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
 
-    CertificateImporter importer(ONC_SOURCE_USER_IMPORT,
-                                 false /* don't allow web trust */);
+    CertificateImporter importer(true /* allow web trust */);
     EXPECT_EQ(CertificateImporter::IMPORT_OK,
               importer.ParseAndStoreCertificates(*certificates));
 

@@ -119,12 +119,12 @@
   </p>
 
   <p>
-    GUIDs are meant to be stable and unique. When they refer to the same entity,
-    they should be the same between ONC files. No two different networks or
-    certificates should have the same GUID, similarly a network and certificate
-    should not have the same GUID. A single ONC file should not contain the same
-    entity twice (with the same GUID). Failing any of these tests indicates the
-    ONC file is not valid.
+    GUIDs are non-empty strings that are meant to be stable and unique. When
+    they refer to the same entity, they should be the same between ONC files. No
+    two different networks or certificates should have the same GUID, similarly
+    a network and certificate should not have the same GUID. A single ONC file
+    should not contain the same entity twice (with the same GUID). Failing any
+    of these tests indicates the ONC file is not valid.
   </p>
 
   <p>
@@ -245,8 +245,9 @@
         (required)
         <span class="type">string</span>
       </span>
-      a unique identifier for this network connection, which exists to make it
-      possible to update previously imported configurations
+      A unique identifier for this network connection, which exists to make it
+      possible to update previously imported configurations. Must be a non-empty
+      string.
     </dd>
 
     <dt class="field">IPConfigs</dt>
@@ -1586,7 +1587,7 @@
         (required)
         <span class="type">string</span>
       </span>
-      unique identification for certificate
+      A unique identifier for this certificate. Must be a non-empty string.
     </dd>
 
     <dt class="field">PKCS12</dt>

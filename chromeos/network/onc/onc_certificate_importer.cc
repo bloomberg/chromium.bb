@@ -34,11 +34,8 @@ const char kX509CertificateHeader[] = "X509 CERTIFICATE";
 namespace chromeos {
 namespace onc {
 
-CertificateImporter::CertificateImporter(
-    ONCSource onc_source,
-    bool allow_web_trust_from_policy)
-    : onc_source_(onc_source),
-      allow_web_trust_from_policy_(allow_web_trust_from_policy) {
+CertificateImporter::CertificateImporter(bool allow_web_trust)
+    : allow_web_trust_(allow_web_trust) {
 }
 
 CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
@@ -46,10 +43,8 @@ CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
   size_t successful_imports = 0;
   for (size_t i = 0; i < certificates.GetSize(); ++i) {
     const base::DictionaryValue* certificate = NULL;
-    if (!certificates.GetDictionary(i, &certificate)) {
-      ONC_LOG_ERROR("Certificate data malformed");
-      continue;
-    }
+    certificates.GetDictionary(i, &certificate);
+    DCHECK(certificate != NULL);
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << *certificate;
 
@@ -62,22 +57,21 @@ CertificateImporter::ParseResult CertificateImporter::ParseAndStoreCertificates(
     }
   }
 
-  if (successful_imports == certificates.GetSize())
+  if (successful_imports == certificates.GetSize()) {
     return IMPORT_OK;
-  else if (successful_imports == 0)
+  } else if (successful_imports == 0) {
     return IMPORT_FAILED;
-  else
+  } else {
     return IMPORT_INCOMPLETE;
+  }
 }
 
 bool CertificateImporter::ParseAndStoreCertificate(
     const base::DictionaryValue& certificate) {
   // Get out the attributes of the given certificate.
   std::string guid;
-  if (!certificate.GetString(certificate::kGUID, &guid) || guid.empty()) {
-    ONC_LOG_ERROR("Certificate missing GUID identifier");
-    return false;
-  }
+  certificate.GetString(certificate::kGUID, &guid);
+  DCHECK(!guid.empty());
 
   bool remove = false;
   if (certificate.GetBoolean(kRemove, &remove) && remove) {
@@ -92,13 +86,14 @@ bool CertificateImporter::ParseAndStoreCertificate(
   // Not removing, so let's get the data we need to add this certificate.
   std::string cert_type;
   certificate.GetString(certificate::kType, &cert_type);
-  if (cert_type == certificate::kServer || cert_type == certificate::kAuthority)
+  if (cert_type == certificate::kServer ||
+      cert_type == certificate::kAuthority) {
     return ParseServerOrCaCertificate(cert_type, guid, certificate);
-
-  if (cert_type == certificate::kClient)
+  } else if (cert_type == certificate::kClient) {
     return ParseClientCertificate(guid, certificate);
+  }
 
-  ONC_LOG_ERROR("Certificate of unknown type: " + cert_type);
+  NOTREACHED();
   return false;
 }
 
@@ -164,22 +159,14 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     const std::string& cert_type,
     const std::string& guid,
     const base::DictionaryValue& certificate) {
-  // Device policy can't import certificates.
-  if (onc_source_ == ONC_SOURCE_DEVICE_POLICY) {
-    // This isn't a parsing error.
-    ONC_LOG_WARNING("Refusing to import certificate from device policy.");
-    return true;
-  }
-
   bool web_trust = false;
   const base::ListValue* trust_list = NULL;
   if (certificate.GetList(certificate::kTrust, &trust_list)) {
     for (size_t i = 0; i < trust_list->GetSize(); ++i) {
       std::string trust_type;
-      if (!trust_list->GetString(i, &trust_type)) {
-        ONC_LOG_ERROR("Certificate trust is invalid");
-        return false;
-      }
+      if (!trust_list->GetString(i, &trust_type))
+        NOTREACHED();
+
       if (trust_type == certificate::kWeb) {
         // "Web" implies that the certificate is to be trusted for SSL
         // identification.
@@ -191,10 +178,7 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     }
   }
 
-  // Web trust is only granted to certificates imported for a managed user
-  // on a managed device.
-  if (onc_source_ == ONC_SOURCE_USER_POLICY &&
-      web_trust && !allow_web_trust_from_policy_) {
+  if (web_trust && !allow_web_trust_) {
     LOG(WARNING) << "Web trust not granted for certificate: " << guid;
     web_trust = false;
   }
@@ -295,10 +279,11 @@ bool CertificateImporter::ParseServerOrCaCertificate(
   net::NSSCertDatabase::TrustBits trust = web_trust ?
                                           net::NSSCertDatabase::TRUSTED_SSL :
                                           net::NSSCertDatabase::TRUST_DEFAULT;
-  if (cert_type == certificate::kServer)
+  if (cert_type == certificate::kServer) {
     success = cert_database->ImportServerCert(cert_list, trust, &failures);
-  else  // Authority cert
+  } else {  // Authority cert
     success = cert_database->ImportCACerts(cert_list, trust, &failures);
+  }
 
   if (!failures.empty()) {
     ONC_LOG_ERROR("Error (" + net::ErrorToString(failures[0].net_error) +

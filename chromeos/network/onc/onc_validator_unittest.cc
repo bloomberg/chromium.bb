@@ -29,14 +29,6 @@ class ONCValidatorTest : public ::testing::Test {
   void Validate(bool strict,
                 scoped_ptr<base::DictionaryValue> onc_object,
                 const OncValueSignature* signature,
-                bool managed_onc) {
-    Validate(strict, onc_object.Pass(), signature, managed_onc,
-             ONC_SOURCE_NONE);
-  }
-
-  void Validate(bool strict,
-                scoped_ptr<base::DictionaryValue> onc_object,
-                const OncValueSignature* signature,
                 bool managed_onc,
                 ONCSource onc_source) {
     scoped_ptr<Validator> validator;
@@ -84,20 +76,24 @@ struct OncParams {
   // may be used as a filename or as a dictionary key.
   OncParams(const std::string& location_of_object,
             const OncValueSignature* onc_signature,
-            bool is_managed_onc)
+            bool is_managed_onc,
+            ONCSource onc_source = ONC_SOURCE_NONE)
       : location(location_of_object),
         signature(onc_signature),
-        is_managed(is_managed_onc) {
+        is_managed(is_managed_onc),
+        onc_source(onc_source) {
   }
 
   std::string location;
   const OncValueSignature* signature;
   bool is_managed;
+  ONCSource onc_source;
 };
 
 ::std::ostream& operator<<(::std::ostream& os, const OncParams& onc) {
   return os << "(" << onc.location << ", " << onc.signature << ", "
-            << (onc.is_managed ? "managed" : "unmanaged") << ")";
+            << (onc.is_managed ? "managed" : "unmanaged") << ", "
+            << GetSourceAsString(onc.onc_source) << ")";
 }
 
 }  // namespace
@@ -106,28 +102,7 @@ struct OncParams {
 // ONC toplevel object.
 TEST_F(ONCValidatorTest, EmptyUnencryptedConfiguration) {
   Validate(true, ReadDictionaryFromJson(kEmptyUnencryptedConfiguration),
-           &kToplevelConfigurationSignature, false);
-  ExpectValid();
-}
-
-// Ensure that VPN is rejected in device policies.
-TEST_F(ONCValidatorTest, VPNInDevicePolicyInvalid) {
-  Validate(true, test_utils::ReadTestDictionary("valid_openvpn.onc"),
-           &kNetworkConfigurationSignature, true, ONC_SOURCE_DEVICE_POLICY);
-  ExpectInvalid();
-}
-
-// Ensure that client certificate patterns are rejected in device policies.
-TEST_F(ONCValidatorTest, ClientCertPatternInDevicePolicyInvalid) {
-  Validate(true, test_utils::ReadTestDictionary("valid_wifi_clientcert.onc"),
-           &kNetworkConfigurationSignature, true, ONC_SOURCE_DEVICE_POLICY);
-  ExpectInvalid();
-}
-
-// Check that at least one configuration is accepted for device policies.
-TEST_F(ONCValidatorTest, ValidNetworkInDevicePolicy) {
-  Validate(true, test_utils::ReadTestDictionary("valid_wifi_psk.onc"),
-           &kNetworkConfigurationSignature, true, ONC_SOURCE_DEVICE_POLICY);
+           &kToplevelConfigurationSignature, false, ONC_SOURCE_NONE);
   ExpectValid();
 }
 
@@ -140,14 +115,14 @@ class ONCValidatorValidTest : public ONCValidatorTest,
 TEST_P(ONCValidatorValidTest, StrictValidationValid) {
   OncParams onc = GetParam();
   Validate(true, test_utils::ReadTestDictionary(onc.location), onc.signature,
-           onc.is_managed);
+           onc.is_managed, onc.onc_source);
   ExpectValid();
 }
 
 TEST_P(ONCValidatorValidTest, LiberalValidationValid) {
   OncParams onc = GetParam();
   Validate(false, test_utils::ReadTestDictionary(onc.location), onc.signature,
-           onc.is_managed);
+           onc.is_managed, onc.onc_source);
   ExpectValid();
 }
 
@@ -164,6 +139,12 @@ INSTANTIATE_TEST_CASE_P(
                       OncParams("managed_toplevel2.onc",
                                 &kToplevelConfigurationSignature,
                                 true),
+                      // Check that at least one configuration is accepted for
+                      // device policies.
+                      OncParams("managed_toplevel_wifi_peap.onc",
+                                &kToplevelConfigurationSignature,
+                                true,
+                                ONC_SOURCE_DEVICE_POLICY),
                       OncParams("toplevel_wifi_wpa_psk.onc",
                                 &kToplevelConfigurationSignature,
                                 false),
@@ -226,7 +207,7 @@ class ONCValidatorTestRepairable
 TEST_P(ONCValidatorTestRepairable, StrictValidation) {
   OncParams onc = GetParam().first;
   Validate(true, GetDictionaryFromTestFile(onc.location), onc.signature,
-           onc.is_managed);
+           onc.is_managed, onc.onc_source);
   std::string location_of_repaired =
       GetParam().second.location_of_strict_repaired;
   if (location_of_repaired.empty())
@@ -238,7 +219,7 @@ TEST_P(ONCValidatorTestRepairable, StrictValidation) {
 TEST_P(ONCValidatorTestRepairable, LiberalValidation) {
   OncParams onc = GetParam().first;
   Validate(false, GetDictionaryFromTestFile(onc.location), onc.signature,
-           onc.is_managed);
+           onc.is_managed, onc.onc_source);
   std::string location_of_repaired =
       GetParam().second.location_of_liberal_repaired;
   if (location_of_repaired.empty())
@@ -311,7 +292,18 @@ INSTANTIATE_TEST_CASE_P(
          std::make_pair(OncParams("network-with-illegal-recommended",
                                   &kNetworkConfigurationSignature,
                                   false),
-                        RepairParams("network-repaired", "network-repaired"))));
+                        RepairParams("network-repaired", "network-repaired")),
+         std::make_pair(OncParams("toplevel-with-vpn",
+                                  &kToplevelConfigurationSignature,
+                                  false,
+                                  ONC_SOURCE_DEVICE_POLICY),
+                        RepairParams("toplevel-empty", "toplevel-empty")),
+         std::make_pair(OncParams("toplevel-with-server-and-ca-cert",
+                                  &kToplevelConfigurationSignature,
+                                  true,
+                                  ONC_SOURCE_DEVICE_POLICY),
+                        RepairParams("toplevel-server-and-ca-cert-dropped",
+                                     "toplevel-server-and-ca-cert-dropped"))));
 
 // Strict and liberal validator both repair, but with different results.
 INSTANTIATE_TEST_CASE_P(
@@ -345,6 +337,10 @@ INSTANTIATE_TEST_CASE_P(
                         RepairParams("", "")),
          std::make_pair(OncParams("managed-network-wrong-type",
                                   &kNetworkConfigurationSignature, true),
+                        RepairParams("", "")),
+         std::make_pair(OncParams("network-with-client-cert-pattern",
+                                  &kNetworkConfigurationSignature, true,
+                                  ONC_SOURCE_DEVICE_POLICY),
                         RepairParams("", ""))));
 
 }  // namespace onc

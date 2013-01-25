@@ -210,6 +210,9 @@ class CHROMEOS_EXPORT Validator : public Mapper {
                                   int lower_bound,
                                   int upper_bound);
 
+  bool FieldExistsAndIsEmpty(const base::DictionaryValue& object,
+                             const std::string& field_name);
+
   bool RequireField(const base::DictionaryValue& dict, const std::string& key);
 
   bool CertPatternInDevicePolicy(const std::string& cert_type);
