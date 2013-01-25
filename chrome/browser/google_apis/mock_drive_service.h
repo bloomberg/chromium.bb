@@ -65,17 +65,17 @@ class MockDriveService : public DriveServiceInterface {
           const std::string& new_name,
           const EntryActionCallback& callback));
   MOCK_METHOD3(AddResourceToDirectory,
-      void(const GURL& parent_content_url,
+      void(const std::string& parent_resource_id,
           const GURL& edit_url,
           const EntryActionCallback& callback));
   MOCK_METHOD3(RemoveResourceFromDirectory,
-      void(const GURL& parent_content_url,
+      void(const std::string& parent_resource_id,
           const std::string& resource_id,
           const EntryActionCallback& callback));
   MOCK_METHOD3(AddNewDirectory,
-      void(const GURL& parent_content_url,
-           const std::string& directory_name,
-           const GetResourceEntryCallback& callback));
+      void(const std::string& parent_resource_id,
+          const std::string& directory_name,
+          const GetResourceEntryCallback& callback));
   MOCK_METHOD5(
       DownloadFile,
       void(const FilePath& virtual_path,
@@ -146,19 +146,19 @@ class MockDriveService : public DriveServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS.
   void AddResourceToDirectoryStub(
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const GURL& edit_url,
       const EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
   void RemoveResourceFromDirectoryStub(
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const std::string& resource_id,
       const EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and the current value of
   // |directory_data_|.
-  void CreateDirectoryStub(const GURL& parent_content_url,
+  void CreateDirectoryStub(const std::string& parent_resource_id,
                            const std::string& directory_name,
                            const GetResourceEntryCallback& callback);
 

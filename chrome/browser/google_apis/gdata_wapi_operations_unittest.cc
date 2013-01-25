@@ -228,14 +228,15 @@ class GDataWapiOperationsTest : public testing::Test {
 
         return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/file_entry.json"));
-      } else if (resource_id == "folder:root" &&
+      } else if (resource_id == "folder:root/contents" &&
                  request.method == test_server::METHOD_POST) {
         // This is a request for creating a directory in the root directory.
         // TODO(satorux): we should generate valid JSON data for the newly
         // created directory but for now, just return "directory_entry.json"
         return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/directory_entry.json"));
-      } else if (resource_id == "folder:root/file:2_file_resource_id" &&
+      } else if (resource_id ==
+                 "folder:root/contents/file:2_file_resource_id" &&
                  request.method == test_server::METHOD_DELETE) {
         // This is a request for deleting a file from the root directory.
         // TODO(satorux): Investigate what's returned from the server, and
@@ -626,7 +627,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
       base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data),
-      test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
+      "folder:root",
       "new directory");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
@@ -635,7 +636,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot?v=3&alt=json",
+  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/contents?v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
 
@@ -795,7 +796,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
           *url_generator_,
           base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
-          test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
+          "folder:root",
           test_server_.GetURL(
               "/feeds/default/private/full/file:2_file_resource_id"));
 
@@ -805,7 +806,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot?v=3&alt=json",
+  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/contents?v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
 
@@ -829,7 +830,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
           *url_generator_,
           base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
-          test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
+          "folder:root",
           "file:2_file_resource_id");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
@@ -839,7 +840,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   // DELETE method should be used, without the body content.
   EXPECT_EQ(test_server::METHOD_DELETE, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/"
+  EXPECT_EQ("/feeds/default/private/full/folder%3Aroot/contents/"
             "file%3A2_file_resource_id?v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);

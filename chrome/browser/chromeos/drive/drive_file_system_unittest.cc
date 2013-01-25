@@ -1743,7 +1743,9 @@ TEST_F(DriveFileSystemTest, FindFirstMissingParentDirectory) {
   EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/New Folder 1")),
             result.first_missing_parent_path);
-  EXPECT_TRUE(result.last_dir_content_url.is_empty());  // root directory.
+  // "fake_root" is a resource id for the root directory in the
+  // FakeDriveService.
+  EXPECT_EQ("fake_root", result.last_dir_resource_id);
 
   // Missing folders in subdir of an existing folder.
   FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
@@ -1755,7 +1757,7 @@ TEST_F(DriveFileSystemTest, FindFirstMissingParentDirectory) {
   EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
             result.first_missing_parent_path);
-  EXPECT_FALSE(result.last_dir_content_url.is_empty());  // non-root dir.
+  EXPECT_NE("fake_root", result.last_dir_resource_id);
 
   // Missing two folders on the path.
   FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
@@ -1767,7 +1769,7 @@ TEST_F(DriveFileSystemTest, FindFirstMissingParentDirectory) {
   EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
             result.first_missing_parent_path);
-  EXPECT_FALSE(result.last_dir_content_url.is_empty());  // non-root dir.
+  EXPECT_NE("fake_root", result.last_dir_resource_id);
 
   // Folders on top of an existing file.
   file_system_->FindFirstMissingParentDirectory(
@@ -2224,7 +2226,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> resource_entry;
   fake_drive_service_->AddNewDirectory(
-      GURL(),  // Add to the root directory.
+      fake_drive_service_->GetRootResourceId(),  // Add to the root directory.
       "New Directory 1!",
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,

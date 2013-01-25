@@ -177,7 +177,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
     // Initializes the struct.
     void Init(FindFirstMissingParentDirectoryError error,
               FilePath first_missing_parent_path,
-              GURL last_dir_content_url);
+              const std::string& last_dir_resource_id);
 
     FindFirstMissingParentDirectoryError error;
     // The following two fields are provided when |error| is set to
@@ -188,10 +188,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
     // parent path.
     FilePath first_missing_parent_path;
 
-    // The content URL of the last found directory. In the above example, the
-    // content URL of "drive/foo/bar". Note that this value is empty if the
-    // last found directory is the root of Drive.
-    GURL last_dir_content_url;
+    // The resource id of the last found directory. In the above example, the
+    // resource id of "drive/foo/bar".
+    std::string last_dir_resource_id;
   };
 
   // Callback for FindFirstMissingParentDirectory().

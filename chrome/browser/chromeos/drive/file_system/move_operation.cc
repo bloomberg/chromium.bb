@@ -252,7 +252,7 @@ void MoveOperation::RemoveEntryFromDirectoryAfterEntryInfoPair(
 
   // The entry is moved to the root directory.
   drive_scheduler_->RemoveResourceFromDirectory(
-      GURL(dir_proto->content_url()),
+      dir_proto->resource_id(),
       entry_proto->resource_id(),
       base::Bind(&MoveOperation::MoveEntryToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -309,7 +309,7 @@ void MoveOperation::AddEntryToDirectoryAfterGetEntryInfoPair(
   const FilePath& file_path = result->first.path;
   const FilePath& dir_path = result->second.path;
   drive_scheduler_->AddResourceToDirectory(
-      GURL(dir_proto->content_url()),
+      dir_proto->resource_id(),
       GURL(src_proto->edit_url()),
       base::Bind(&MoveOperation::MoveEntryToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),

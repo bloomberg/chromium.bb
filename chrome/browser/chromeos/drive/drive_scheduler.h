@@ -125,18 +125,18 @@ class DriveScheduler
                       const google_apis::EntryActionCallback& callback);
 
   // Adds a AddResourceToDirectory operation to the queue.
-  void AddResourceToDirectory(const GURL& parent_content_url,
+  void AddResourceToDirectory(const std::string& parent_resource_id,
                               const GURL& edit_url,
                               const google_apis::EntryActionCallback& callback);
 
   // Adds a RemoveResourceFromDirectory operation to the queue.
   void RemoveResourceFromDirectory(
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback);
 
   // Adds a AddNewDirectory operation to the queue.
-  void AddNewDirectory(const GURL& parent_content_url,
+  void AddNewDirectory(const std::string& parent_resource_id,
                        const std::string& directory_name,
                        const google_apis::GetResourceEntryCallback& callback);
 
@@ -201,7 +201,7 @@ class DriveScheduler
     //   TYPE_ADD_NEW_DIRECTORY
     //   TYPE_ADD_RESOURCE_TO_DIRECTORY
     //   TYPE_REMOVE_RESOURCE_FROM_DIRECTORY
-    GURL parent_content_url;
+    std::string parent_resource_id;
     std::string directory_name;
 
     // Callback for operations that take a GetResourceListCallback.

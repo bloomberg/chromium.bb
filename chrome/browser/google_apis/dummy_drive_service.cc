@@ -80,17 +80,17 @@ void DummyDriveService::RenameResource(const GURL& edit_url,
                                        const EntryActionCallback& callback) {}
 
 void DummyDriveService::AddResourceToDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const GURL& edit_url,
     const EntryActionCallback& callback) {}
 
 void DummyDriveService::RemoveResourceFromDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {}
 
 void DummyDriveService::AddNewDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& directory_name,
     const GetResourceEntryCallback& callback) {}
 

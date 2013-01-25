@@ -219,7 +219,7 @@ class DeleteResourceOperation : public EntryActionOperation {
 class CreateDirectoryOperation : public GetDataOperation {
  public:
   // A new directory will be created under a directory specified by
-  // |parent_content_url|. If this parameter is empty, a new directory will
+  // |parent_resource_id|. If this parameter is empty, a new directory will
   // be created in the root directory.
   // |callback| must not be null.
   CreateDirectoryOperation(
@@ -227,7 +227,7 @@ class CreateDirectoryOperation : public GetDataOperation {
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const std::string& directory_name);
   virtual ~CreateDirectoryOperation();
 
@@ -240,7 +240,7 @@ class CreateDirectoryOperation : public GetDataOperation {
 
  private:
   const GDataWapiUrlGenerator url_generator_;
-  const GURL parent_content_url_;
+  const std::string parent_resource_id_;
   const std::string directory_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
@@ -349,7 +349,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const GURL& edit_url);
   virtual ~AddResourceToDirectoryOperation();
 
@@ -362,7 +362,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 
  private:
   const GDataWapiUrlGenerator url_generator_;
-  const GURL parent_content_url_;
+  const std::string parent_resource_id_;
   const GURL edit_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryOperation);
@@ -380,7 +380,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const std::string& resource_id);
   virtual ~RemoveResourceFromDirectoryOperation();
 
@@ -393,7 +393,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  private:
   const GDataWapiUrlGenerator url_generator_;
   const std::string resource_id_;
-  const GURL parent_content_url_;
+  const std::string parent_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryOperation);
 };

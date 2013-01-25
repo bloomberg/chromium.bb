@@ -378,7 +378,7 @@ void GDataWapiService::DeleteResource(
 }
 
 void GDataWapiService::AddNewDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& directory_name,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -390,7 +390,7 @@ void GDataWapiService::AddNewDirectory(
                                    url_generator_,
                                    base::Bind(&ParseResourceEntryAndRun,
                                               callback),
-                                   parent_content_url,
+                                   parent_resource_id,
                                    directory_name));
 }
 
@@ -427,7 +427,7 @@ void GDataWapiService::RenameResource(
 }
 
 void GDataWapiService::AddResourceToDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const GURL& edit_url,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -438,12 +438,12 @@ void GDataWapiService::AddResourceToDirectory(
                                           url_request_context_getter_,
                                           url_generator_,
                                           callback,
-                                          parent_content_url,
+                                          parent_resource_id,
                                           edit_url));
 }
 
 void GDataWapiService::RemoveResourceFromDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -454,7 +454,7 @@ void GDataWapiService::RemoveResourceFromDirectory(
                                                url_request_context_getter_,
                                                url_generator_,
                                                callback,
-                                               parent_content_url,
+                                               parent_resource_id,
                                                resource_id));
 }
 

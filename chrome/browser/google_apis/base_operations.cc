@@ -119,7 +119,13 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
   re_authenticate_callback_ = callback;
 
   GURL url = GetURL();
-  DCHECK(!url.is_empty());
+  if (url.is_empty()) {
+    // Error is found on generating the url. Send the error message to the
+    // callback, and then return immediately without trying to connect
+    // to the server.
+    RunCallbackOnPrematureFailure(GDATA_OTHER_ERROR);
+    return;
+  }
   DVLOG(1) << "URL: " << url.spec();
 
   url_fetcher_.reset(

@@ -18,6 +18,7 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
+using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -298,6 +299,7 @@ TEST_F(DriveFileSyncClientTest, GetSyncRoot) {
 }
 
 TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
+  const std::string kRootResourceId = "folder:root";
   scoped_ptr<base::Value> not_found_result_value(
       google_apis::test_util::LoadJSONFile(
           "sync_file_system/sync_root_not_found.json").Pass());
@@ -322,12 +324,13 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&not_found_result)));
 
+  // Expect to call GetRootResourceId from GetDriveDirectoryForSyncRoot.
+  EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
+      .WillOnce(Return(kRootResourceId));
+
   // Expected to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
   EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(
-                  GURL(),  // content_url
-                  kSyncRootDirectoryName,
-                  _))
+              AddNewDirectory(kRootResourceId, kSyncRootDirectoryName, _))
       .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
                                                 base::Passed(&created_result)));
 
@@ -415,19 +418,10 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&not_found_result)));
 
-  // Expected to call GetResourceEntry from GetDriveDirectoryForOrigin.
-  EXPECT_CALL(*mock_drive_service(),
-              GetResourceEntry(kParentResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(
-          google_apis::HTTP_SUCCESS,
-          base::Passed(&got_parent_result)));
-
   std::string dir_title(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
   // Expected to call AddNewDirectory from GetDriveDirectoryForOrigin.
   EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(GURL("https://sync_root_content_url"),
-                              dir_title,
-                              _))
+              AddNewDirectory(kParentResourceId, dir_title, _))
       .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
                                                 base::Passed(&created_result)));
 

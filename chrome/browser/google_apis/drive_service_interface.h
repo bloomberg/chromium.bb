@@ -211,31 +211,31 @@ class DriveServiceInterface {
                               const EntryActionCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
-  // |edit_url| to a collection with a content link |parent_content_url|.
+  // |edit_url| to a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void AddResourceToDirectory(const GURL& parent_content_url,
+  virtual void AddResourceToDirectory(const std::string& parent_resource_id,
                                       const GURL& edit_url,
                                       const EntryActionCallback& callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its
-  // |resource_id| from a collection with a content link
-  // |parent_content_url|. Upon completion, invokes |callback| with
-  // results on the calling thread.
+  // |resource_id| from a collection represented by the |parent_resource_id|.
+  // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual void RemoveResourceFromDirectory(
-      const GURL& parent_content_url,
+      const std::string& parent_resource_id,
       const std::string& resource_id,
       const EntryActionCallback& callback) = 0;
 
   // Adds new collection with |directory_name| under parent directory
-  // identified with |parent_content_url|. If |parent_content_url| is empty,
-  // the new collection will be created in the root. Upon completion,
-  // invokes |callback| and passes newly created entry on the calling thread.
+  // identified with |parent_resource_id|. |parent_resource_id| can be the
+  // value returned by GetRootResourceId to represent the root directory.
+  // Upon completion, invokes |callback| and passes newly created entry on
+  // the calling thread.
   // This function cannot be named as "CreateDirectory" as it conflicts with
   // a macro on Windows.
   // |callback| must not be null.
-  virtual void AddNewDirectory(const GURL& parent_content_url,
+  virtual void AddNewDirectory(const std::string& parent_resource_id,
                                const std::string& directory_name,
                                const GetResourceEntryCallback& callback) = 0;
 

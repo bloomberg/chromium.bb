@@ -81,6 +81,15 @@ class GDataWapiUrlGenerator {
   // Generates a URL for getting the resource entry of the given resource ID.
   GURL GenerateResourceEntryUrl(const std::string& resource_id) const;
 
+  // Generates a URL for editing the contents in the directory specified
+  // by the given resource ID.
+  GURL GenerateContentUrl(const std::string& resource_id) const;
+
+  // Generates a URL to remove an entry specified by |resource_id| from
+  // the directory specified by the given |parent_resource_id|.
+  GURL GenerateResourceUrlForRemoval(const std::string& parent_resource_id,
+                                     const std::string& resource_id) const;
+
   // Generates a URL for getting the root resource list feed.
   // Used to make changes in the root directory (ex. create a directory in the
   // root directory)
@@ -88,9 +97,6 @@ class GDataWapiUrlGenerator {
 
   // Generates a URL for getting the account metadata feed.
   GURL GenerateAccountMetadataUrl() const;
-
-  // Generates a URL for getting the root directory's content URL.
-  GURL GenerateRootContentUrl() const;
 
  private:
   const GURL base_url_;

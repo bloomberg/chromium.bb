@@ -23,6 +23,15 @@ const char kGetResourceListURLForAllDocuments[] =
 const char kGetResourceListURLForDirectoryFormat[] =
     "/feeds/default/private/full/%s/contents/-/mine";
 
+// Content URL for modification in a particular directory specifyied by "%s"
+// which will be replaced with its resource id.
+const char kContentURLFormat[] = "/feeds/default/private/full/%s/contents";
+
+// Content URL for removing a resource specified by the latter "%s" from the
+// directory specified by the former "%s".
+const char kResourceURLForRemovalFormat[] =
+    "/feeds/default/private/full/%s/contents/%s";
+
 // URL requesting single resource entry whose resource id is specified by "%s".
 const char kGetResourceEntryURLFormat[] = "/feeds/default/private/full/%s";
 
@@ -31,10 +40,6 @@ const char kResourceListRootURL[] = "/feeds/default/private/full";
 
 // Metadata feed with things like user quota.
 const char kAccountMetadataURL[] = "/feeds/metadata/default";
-
-// URL for the content_url of the root directory.
-const char kRootContentURL[] =
-    "/feeds/default/private/full/folder%3Aroot/contents";
 
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
@@ -157,16 +162,41 @@ GURL GDataWapiUrlGenerator::GenerateResourceEntryUrl(
   return AddStandardUrlParams(result);
 }
 
+GURL GDataWapiUrlGenerator::GenerateContentUrl(
+    const std::string& resource_id) const {
+  if (resource_id.empty()) {
+    // |resource_id| must not be empty. Return an empty GURL as an error.
+    return GURL();
+  }
+
+  GURL result = base_url_.Resolve(
+      base::StringPrintf(kContentURLFormat,
+                         net::EscapePath(resource_id).c_str()));
+  return AddStandardUrlParams(result);
+}
+
+GURL GDataWapiUrlGenerator::GenerateResourceUrlForRemoval(
+    const std::string& parent_resource_id,
+    const std::string& resource_id) const {
+  if (resource_id.empty() || parent_resource_id.empty()) {
+    // Both |resource_id| and |parent_resource_id| must be non-empty.
+    // Return an empty GURL as an error.
+    return GURL();
+  }
+
+  GURL result = base_url_.Resolve(
+      base::StringPrintf(kResourceURLForRemovalFormat,
+                         net::EscapePath(parent_resource_id).c_str(),
+                         net::EscapePath(resource_id).c_str()));
+  return AddStandardUrlParams(result);
+}
+
 GURL GDataWapiUrlGenerator::GenerateResourceListRootUrl() const {
   return AddStandardUrlParams(base_url_.Resolve(kResourceListRootURL));
 }
 
 GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl() const {
   return AddMetadataUrlParams(base_url_.Resolve(kAccountMetadataURL));
-}
-
-GURL GDataWapiUrlGenerator::GenerateRootContentUrl() const {
-  return base_url_.Resolve(kRootContentURL);
 }
 
 }  // namespace google_apis

@@ -189,7 +189,7 @@ void DriveScheduler::RenameResource(
 }
 
 void DriveScheduler::AddResourceToDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const GURL& edit_url,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -197,7 +197,7 @@ void DriveScheduler::AddResourceToDirectory(
 
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_ADD_RESOURCE_TO_DIRECTORY));
-  new_job->parent_content_url = parent_content_url;
+  new_job->parent_resource_id = parent_resource_id;
   new_job->edit_url = edit_url;
   new_job->entry_action_callback = callback;
 
@@ -207,14 +207,14 @@ void DriveScheduler::AddResourceToDirectory(
 }
 
 void DriveScheduler::RemoveResourceFromDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_REMOVE_RESOURCE_FROM_DIRECTORY));
-  new_job->parent_content_url = parent_content_url;
+  new_job->parent_resource_id = parent_resource_id;
   new_job->resource_id = resource_id;
   new_job->entry_action_callback = callback;
 
@@ -224,13 +224,13 @@ void DriveScheduler::RemoveResourceFromDirectory(
 }
 
 void DriveScheduler::AddNewDirectory(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& directory_name,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_ADD_NEW_DIRECTORY));
-  new_job->parent_content_url = parent_content_url;
+  new_job->parent_resource_id = parent_resource_id;
   new_job->directory_name = directory_name;
   new_job->get_resource_entry_callback = callback;
 
@@ -373,7 +373,7 @@ void DriveScheduler::DoJobLoop() {
 
     case TYPE_ADD_RESOURCE_TO_DIRECTORY: {
       drive_service_->AddResourceToDirectory(
-          queue_entry->parent_content_url,
+          queue_entry->parent_resource_id,
           queue_entry->edit_url,
           base::Bind(&DriveScheduler::OnEntryActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -383,7 +383,7 @@ void DriveScheduler::DoJobLoop() {
 
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY: {
       drive_service_->RemoveResourceFromDirectory(
-          queue_entry->parent_content_url,
+          queue_entry->parent_resource_id,
           queue_entry->resource_id,
           base::Bind(&DriveScheduler::OnEntryActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -393,7 +393,7 @@ void DriveScheduler::DoJobLoop() {
 
     case TYPE_ADD_NEW_DIRECTORY: {
       drive_service_->AddNewDirectory(
-          queue_entry->parent_content_url,
+          queue_entry->parent_resource_id,
           queue_entry->directory_name,
           base::Bind(&DriveScheduler::OnGetResourceEntryJobDone,
                      weak_ptr_factory_.GetWeakPtr(),

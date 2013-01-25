@@ -166,6 +166,21 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceEntryUrl) {
       url_generator_.GenerateResourceEntryUrl("XXX").spec());
 }
 
+TEST_F(GDataWapiUrlGeneratorTest, GenerateContentUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/"
+      "folder%3Aroot/contents?v=3&alt=json",
+      url_generator_.GenerateContentUrl("folder:root").spec());
+}
+
+TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceUrlForRemoval) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/"
+      "folder%3Aroot/contents/file%3AABCDE?v=3&alt=json",
+      url_generator_.GenerateResourceUrlForRemoval(
+          "folder:root", "file:ABCDE").spec());
+}
+
 TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListRootUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full?v=3&alt=json",

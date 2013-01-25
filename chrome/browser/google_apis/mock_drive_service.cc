@@ -139,7 +139,7 @@ void MockDriveService::RenameResourceStub(
 }
 
 void MockDriveService::AddResourceToDirectoryStub(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const GURL& edit_url,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
@@ -148,7 +148,7 @@ void MockDriveService::AddResourceToDirectoryStub(
 }
 
 void MockDriveService::RemoveResourceFromDirectoryStub(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
@@ -157,7 +157,7 @@ void MockDriveService::RemoveResourceFromDirectoryStub(
 }
 
 void MockDriveService::CreateDirectoryStub(
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& directory_name,
     const GetResourceEntryCallback& callback) {
   scoped_ptr<ResourceEntry> resource_entry =

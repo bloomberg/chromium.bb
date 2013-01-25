@@ -183,7 +183,7 @@ struct DriveFileSystem::FindFirstMissingParentDirectoryParams {
   std::vector<FilePath::StringType> path_parts;
   size_t index;
   FilePath current_path;
-  GURL last_dir_content_url;
+  std::string last_dir_resource_id;
   const FindFirstMissingParentDirectoryCallback callback;
 };
 
@@ -196,10 +196,10 @@ FindFirstMissingParentDirectoryResult()
 void DriveFileSystem::FindFirstMissingParentDirectoryResult::Init(
     FindFirstMissingParentDirectoryError in_error,
     FilePath in_first_missing_parent_path,
-    GURL in_last_dir_content_url) {
+    const std::string& in_last_dir_resource_id) {
   error = in_error;
   first_missing_parent_path = in_first_missing_parent_path;
-  last_dir_content_url = in_last_dir_content_url;
+  last_dir_resource_id = in_last_dir_resource_id;
 }
 
 DriveFileSystem::FindFirstMissingParentDirectoryResult::
@@ -682,7 +682,7 @@ void DriveFileSystem::CreateDirectoryAfterFindFirstMissingPath(
   }
 
   scheduler_->AddNewDirectory(
-      result.last_dir_content_url,
+      result.last_dir_resource_id,
       result.first_missing_parent_path.BaseName().AsUTF8Unsafe(),
       base::Bind(&DriveFileSystem::AddNewDirectory,
                  ui_weak_ptr_,
@@ -1705,7 +1705,7 @@ void DriveFileSystem::FindFirstMissingParentDirectoryInternal(
   // Terminate recursion if we're at the last element.
   if (params->index == params->path_parts.size()) {
     FindFirstMissingParentDirectoryResult result;
-    result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, FilePath(), GURL());
+    result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, FilePath(), "");
     params->callback.Run(result);
     return;
   }
@@ -1734,16 +1734,16 @@ void DriveFileSystem::ContinueFindFirstMissingParentDirectory(
     // Found the missing parent.
     result.Init(FIND_FIRST_FOUND_MISSING,
                 params->current_path,
-                params->last_dir_content_url);
+                params->last_dir_resource_id);
     params->callback.Run(result);
   } else if (error != DRIVE_FILE_OK ||
              !entry_proto->file_info().is_directory()) {
     // Unexpected error, or found a file when we were expecting a directory.
-    result.Init(FIND_FIRST_FOUND_INVALID, FilePath(), GURL());
+    result.Init(FIND_FIRST_FOUND_INVALID, FilePath(), "");
     params->callback.Run(result);
   } else {
     // This parent exists, so recursively look at the next element.
-    params->last_dir_content_url = GURL(entry_proto->content_url());
+    params->last_dir_resource_id = entry_proto->resource_id();
     params->index++;
     FindFirstMissingParentDirectoryInternal(params.Pass());
   }

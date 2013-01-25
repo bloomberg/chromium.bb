@@ -278,11 +278,11 @@ CreateDirectoryOperation::CreateDirectoryOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& directory_name)
     : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
-      parent_content_url_(parent_content_url),
+      parent_resource_id_(parent_resource_id),
       directory_name_(directory_name) {
   DCHECK(!callback.is_null());
 }
@@ -290,10 +290,7 @@ CreateDirectoryOperation::CreateDirectoryOperation(
 CreateDirectoryOperation::~CreateDirectoryOperation() {}
 
 GURL CreateDirectoryOperation::GetURL() const {
-  if (!parent_content_url_.is_empty())
-    return GDataWapiUrlGenerator::AddStandardUrlParams(parent_content_url_);
-
-  return url_generator_.GenerateResourceListRootUrl();
+  return url_generator_.GenerateContentUrl(parent_resource_id_);
 }
 
 URLFetcher::RequestType
@@ -477,11 +474,11 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const GURL& edit_url)
     : EntryActionOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
-      parent_content_url_(parent_content_url),
+      parent_resource_id_(parent_resource_id),
       edit_url_(edit_url) {
   DCHECK(!callback.is_null());
 }
@@ -489,9 +486,7 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
 AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
 
 GURL AddResourceToDirectoryOperation::GetURL() const {
-  GURL parent = parent_content_url_.is_empty() ?
-      url_generator_.GenerateRootContentUrl() : parent_content_url_;
-  return GDataWapiUrlGenerator::AddStandardUrlParams(parent);
+  return url_generator_.GenerateContentUrl(parent_resource_id_);
 }
 
 URLFetcher::RequestType
@@ -524,12 +519,12 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
-    const GURL& parent_content_url,
+    const std::string& parent_resource_id,
     const std::string& document_resource_id)
     : EntryActionOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(document_resource_id),
-      parent_content_url_(parent_content_url) {
+      parent_resource_id_(parent_resource_id) {
   DCHECK(!callback.is_null());
 }
 
@@ -537,14 +532,8 @@ RemoveResourceFromDirectoryOperation::~RemoveResourceFromDirectoryOperation() {
 }
 
 GURL RemoveResourceFromDirectoryOperation::GetURL() const {
-  GURL parent = parent_content_url_.is_empty() ?
-      url_generator_.GenerateRootContentUrl() : parent_content_url_;
-
-  std::string escaped_resource_id = net::EscapePath(resource_id_);
-  GURL edit_url(base::StringPrintf("%s/%s",
-                                   parent.spec().c_str(),
-                                   escaped_resource_id.c_str()));
-  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url);
+  return url_generator_.GenerateResourceUrlForRemoval(
+      parent_resource_id_, resource_id_);
 }
 
 URLFetcher::RequestType

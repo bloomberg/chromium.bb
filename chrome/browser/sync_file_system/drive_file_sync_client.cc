@@ -165,20 +165,15 @@ void DriveFileSyncClient::DidGetDirectory(
   google_apis::ResourceEntry* entry = GetDocumentByTitleAndParent(
       feed->entries(), parent_link, ASCIIToUTF16(directory_name));
   if (!entry) {
-    if (parent_resource_id.empty()) {
-      // Use empty content URL for root directory.
-      drive_service_->AddNewDirectory(
-          GURL(),  // parent_content_url
-          directory_name,
-          base::Bind(&DriveFileSyncClient::DidCreateDirectory,
-                     AsWeakPtr(), callback));
-      return;
-    }
-    drive_service_->GetResourceEntry(
-        parent_resource_id,
-        base::Bind(
-            &DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory,
-            AsWeakPtr(), directory_name, callback));
+    // If the |parent_resource_id| is empty, create a directory under the root
+    // directory. So here we use the result of GetRootResourceId() for such a
+    // case.
+    drive_service_->AddNewDirectory(
+        parent_resource_id.empty() ?
+            drive_service_->GetRootResourceId() : parent_resource_id,
+        directory_name,
+        base::Bind(&DriveFileSyncClient::DidCreateDirectory,
+                   AsWeakPtr(), callback));
     return;
   }
 
@@ -187,26 +182,6 @@ void DriveFileSyncClient::DidGetDirectory(
   DCHECK_EQ(ASCIIToUTF16(directory_name), entry->title());
 
   callback.Run(error, entry->resource_id());
-}
-
-void DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory(
-    const std::string& directory_name,
-    const ResourceIdCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
-  DCHECK(CalledOnValidThread());
-
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(error, std::string());
-    return;
-  }
-  DCHECK(entry);
-
-  drive_service_->AddNewDirectory(
-      entry->content_url(),
-      directory_name,
-      base::Bind(&DriveFileSyncClient::DidCreateDirectory,
-                 AsWeakPtr(), callback));
 }
 
 void DriveFileSyncClient::DidCreateDirectory(

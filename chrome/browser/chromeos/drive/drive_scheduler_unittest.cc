@@ -243,7 +243,7 @@ TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->AddResourceToDirectory(
-      GURL("https://dir_1_self_link/folder:1_folder_resource_id"),
+      "folder:1_folder_resource_id",
       GURL("https://file1_link_self/file:2_file_resource_id"),
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
@@ -259,7 +259,7 @@ TEST_F(DriveSchedulerTest, RemoveResourceFromDirectory) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->RemoveResourceFromDirectory(
-      GURL("https://dir_1_self_link/folder:1_folder_resource_id"),
+      "folder:1_folder_resource_id",
       "file:subdirectory_file_1_id",  // resource ID
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
@@ -276,7 +276,7 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
   scoped_ptr<google_apis::ResourceEntry> entry;
 
   scheduler_->AddNewDirectory(
-      GURL(),  // Root directory.
+      fake_drive_service_->GetRootResourceId(),  // Root directory.
       "New Directory",
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,

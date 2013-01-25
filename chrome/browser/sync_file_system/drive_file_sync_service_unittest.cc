@@ -459,8 +459,8 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
 TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
+  // The root id is in the "sync_root_entry.json" file.
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
-  const GURL kSyncRootContentURL("https://sync_root_content_url/");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
 
@@ -489,21 +489,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
       .RetiresOnSaturation();
 
   // If the directory for the origin is missing, DriveFileSyncService should
-  // attempt to create it. And as a preparation, it should fetch the content url
-  // of the parent directory.
-  //
-  // |sync_root_entry| contains kSyncRootContentURL which is to be added as
-  // a new origin directory under the root directory.
-  scoped_ptr<Value> sync_root_entry_value(LoadJSONFile(
-      "sync_file_system/sync_root_entry.json"));
-  scoped_ptr<google_apis::ResourceEntry> sync_root_entry
-      = google_apis::ResourceEntry::ExtractAndParse(*sync_root_entry_value);
-  EXPECT_CALL(*mock_drive_service(),
-              GetResourceEntry(kSyncRootResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(
-          google_apis::HTTP_SUCCESS,
-          base::Passed(&sync_root_entry)));
-
+  // attempt to create it.
   scoped_ptr<Value> origin_directory_created_value(LoadJSONFile(
       "sync_file_system/origin_directory_created.json"));
   scoped_ptr<google_apis::ResourceEntry> origin_directory_created
@@ -512,7 +498,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   std::string dirname =
       DriveFileSyncClient::OriginToDirectoryTitle(kOrigin);
   EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(kSyncRootContentURL, dirname, _))
+              AddNewDirectory(kSyncRootResourceId, dirname, _))
       .WillOnce(InvokeGetResourceEntryCallback2(
           google_apis::HTTP_SUCCESS,
           base::Passed(&origin_directory_created)));
