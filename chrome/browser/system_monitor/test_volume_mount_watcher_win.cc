@@ -13,6 +13,24 @@ namespace test {
 
 namespace {
 
+std::vector<FilePath> NoAttachedDevices() {
+  std::vector<FilePath> result;
+  return result;
+}
+
+std::vector<FilePath> FakeGetAttachedDevices() {
+  std::vector<FilePath> result;
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(0));  // A
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(1));  // B
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(2));  // C
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(3));  // D
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(5));  // F
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(7));  // H
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(13));  // N
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(25));  // Z
+  return result;
+}
+
 // Gets the details of the mass storage device specified by the |device_path|.
 // |device_path| inputs of 'A:\' - 'Z:\' are valid. 'N:\' is not removable.
 bool GetMassStorageDeviceDetails(const FilePath& device_path,
@@ -38,42 +56,78 @@ bool GetMassStorageDeviceDetails(const FilePath& device_path,
   return true;
 }
 
-// Returns a list of attached device locations.
-std::vector<FilePath> GetTestAttachedDevices() {
-  std::vector<FilePath> result;
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(0));
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(1));
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(2));
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(3));
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(5));
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(7));
-  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(25));
-  return result;
-}
-
 }  // namespace
 
 // TestVolumeMountWatcherWin ---------------------------------------------------
 
-TestVolumeMountWatcherWin::TestVolumeMountWatcherWin()
-    : pre_attach_devices_(false) {
+TestVolumeMountWatcherWin::TestVolumeMountWatcherWin() {
+  get_attached_devices_callback_ = base::Bind(&NoAttachedDevices);
+  get_device_details_callback_ = base::Bind(&GetMassStorageDeviceDetails);
+}
+
+TestVolumeMountWatcherWin::~TestVolumeMountWatcherWin() {
+}
+
+void TestVolumeMountWatcherWin::AddDeviceForTesting(
+    const FilePath& device_path,
+    const std::string& device_id,
+    const std::string& unique_id,
+    const string16& device_name,
+    bool removable) {
+  VolumeMountWatcherWin::MountPointInfo info;
+  info.device_id = device_id;
+  info.location = device_path.value();
+  info.unique_id = unique_id;
+  info.name = device_name;
+  info.removable = removable;
+  HandleDeviceAttachEventOnUIThread(device_path, info);
+}
+
+void TestVolumeMountWatcherWin::SetAttachedDevicesFake() {
+  get_attached_devices_callback_ = base::Bind(&FakeGetAttachedDevices);
+}
+
+void TestVolumeMountWatcherWin::FlushWorkerPoolForTesting() {
+  device_info_worker_pool_->FlushForTesting();
+}
+
+void TestVolumeMountWatcherWin::DeviceCheckComplete(
+    const FilePath& device_path) {
+  devices_checked_.push_back(device_path);
+  if (device_check_complete_event_.get())
+    device_check_complete_event_->Wait();
+  VolumeMountWatcherWin::DeviceCheckComplete(device_path);
+}
+
+void TestVolumeMountWatcherWin::BlockDeviceCheckForTesting() {
+  device_check_complete_event_.reset(new base::WaitableEvent(false, false));
+}
+
+void TestVolumeMountWatcherWin::ReleaseDeviceCheck() {
+  device_check_complete_event_->Signal();
 }
 
 bool TestVolumeMountWatcherWin::GetDeviceInfo(const FilePath& device_path,
                                               string16* device_location,
                                               std::string* unique_id,
                                               string16* name,
-                                              bool* removable) {
-  return GetMassStorageDeviceDetails(device_path, device_location, unique_id,
-                                     name, removable);
+                                              bool* removable) const {
+  return VolumeMountWatcherWin::GetDeviceInfo(
+      device_path, device_location, unique_id, name, removable);
 }
 
 std::vector<FilePath> TestVolumeMountWatcherWin::GetAttachedDevices() {
-  return pre_attach_devices_ ?
-      GetTestAttachedDevices() : std::vector<FilePath>();
+  return get_attached_devices_callback_.Run();
 }
 
-TestVolumeMountWatcherWin::~TestVolumeMountWatcherWin() {
+bool TestVolumeMountWatcherWin::GetRawDeviceInfo(
+    const FilePath& device_path,
+    string16* device_location,
+    std::string* unique_id,
+    string16* name,
+    bool* removable) {
+  return GetMassStorageDeviceDetails(
+      device_path, device_location, unique_id, name, removable);
 }
 
 }  // namespace test

@@ -17,8 +17,7 @@ TestRemovableDeviceNotificationsWindowWin::
     TestVolumeMountWatcherWin* volume_mount_watcher,
     TestPortableDeviceWatcherWin* portable_device_watcher)
     : RemovableDeviceNotificationsWindowWin(volume_mount_watcher,
-                                            portable_device_watcher),
-      volume_mount_watcher_(volume_mount_watcher) {
+                                            portable_device_watcher) {
   DCHECK(volume_mount_watcher_);
   DCHECK(portable_device_watcher);
 }
@@ -27,16 +26,15 @@ TestRemovableDeviceNotificationsWindowWin::
     ~TestRemovableDeviceNotificationsWindowWin() {
 }
 
-void TestRemovableDeviceNotificationsWindowWin::InitWithTestData(
-    bool pre_attach_devices) {
-  volume_mount_watcher_->set_pre_attach_devices(pre_attach_devices);
-  Init();
-}
-
 void TestRemovableDeviceNotificationsWindowWin::InjectDeviceChange(
     UINT event_type,
     DWORD data) {
   OnDeviceChange(event_type, data);
+}
+
+VolumeMountWatcherWin*
+TestRemovableDeviceNotificationsWindowWin::volume_mount_watcher() {
+  return volume_mount_watcher_.get();
 }
 
 }  // namespace test

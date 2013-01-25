@@ -28,12 +28,11 @@ class TestRemovableDeviceNotificationsWindowWin
 
   virtual ~TestRemovableDeviceNotificationsWindowWin();
 
-  void InitWithTestData(bool pre_attach_devices);
   void InjectDeviceChange(UINT event_type, DWORD data);
 
- private:
-  scoped_refptr<TestVolumeMountWatcherWin> volume_mount_watcher_;
+  VolumeMountWatcherWin* volume_mount_watcher();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TestRemovableDeviceNotificationsWindowWin);
 };
 

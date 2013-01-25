@@ -16,7 +16,8 @@ namespace chrome {
 // device using the existence of DCIM directory.
 // Returns true, if it is a media device otherwise return false.
 // Mac OS X behaves similarly, but this is not the only heuristic it uses.
-// TODO(vandebo) Try to figure out how Mac OS X decides this.
+// TODO(vandebo) Try to figure out how Mac OS X decides this, and rename
+// to avoid confusion with MediaStorageUtil::IsMediaDevice.
 bool IsMediaDevice(const FilePath::StringType& mount_point);
 
 // Constructs the device product name from |vendor_name| and |model_name|.

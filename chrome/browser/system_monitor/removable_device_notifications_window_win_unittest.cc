@@ -11,8 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/portable_device_watcher_win.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
@@ -64,7 +66,9 @@ class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
                          string16* storage_object_id);
 
   scoped_ptr<TestRemovableDeviceNotificationsWindowWin> window_;
-  scoped_refptr<TestVolumeMountWatcherWin> volume_mount_watcher_;
+
+  // Weak pointer; owned by the device notifications class.
+  TestVolumeMountWatcherWin* volume_mount_watcher_;
 
  private:
   MessageLoopForUI message_loop_;
@@ -89,8 +93,8 @@ void RemovableDeviceNotificationsWindowWinTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;
   window_.reset(new TestRemovableDeviceNotificationsWindowWin(
-      volume_mount_watcher_.get(), new TestPortableDeviceWatcherWin));
-  window_->InitWithTestData(false);
+      volume_mount_watcher_, new TestPortableDeviceWatcherWin));
+  window_->Init();
   RunUntilIdle();
   system_monitor_.AddDevicesChangedObserver(&observer_);
 }
@@ -105,7 +109,7 @@ void RemovableDeviceNotificationsWindowWinTest::
   std::string unique_id;
   string16 device_name;
   bool removable;
-  ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
+  ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
       drive, NULL, &unique_id, &device_name, &removable));
   if (removable) {
     MediaStorageUtil::Type type =
@@ -119,24 +123,35 @@ void RemovableDeviceNotificationsWindowWinTest::
 
 void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
   window_.reset();
-  {
-    testing::InSequence sequence;
-    ASSERT_TRUE(volume_mount_watcher_.get());
-    volume_mount_watcher_->set_pre_attach_devices(true);
-    std::vector<FilePath> initial_devices =
-        volume_mount_watcher_->GetAttachedDevices();
-    for (std::vector<FilePath>::const_iterator it = initial_devices.begin();
-         it != initial_devices.end(); ++it) {
-      AddMassStorageDeviceAttachExpectation(*it);
-    }
+  volume_mount_watcher_ = new TestVolumeMountWatcherWin;
+  volume_mount_watcher_->SetAttachedDevicesFake();
+  std::vector<FilePath> initial_devices =
+      volume_mount_watcher_->GetAttachedDevices();
+  for (std::vector<FilePath>::const_iterator it = initial_devices.begin();
+       it != initial_devices.end(); ++it) {
+    AddMassStorageDeviceAttachExpectation(*it);
   }
+
   window_.reset(new TestRemovableDeviceNotificationsWindowWin(
-      volume_mount_watcher_.get(), new TestPortableDeviceWatcherWin));
-  window_->InitWithTestData(true);
+      volume_mount_watcher_, new TestPortableDeviceWatcherWin));
+  window_->Init();
+
+  EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
+
+  // This dance is because attachment bounces through a couple of
+  // closures, which need to be executed to finish the process.
   RunUntilIdle();
+  volume_mount_watcher_->FlushWorkerPoolForTesting();
+  RunUntilIdle();
+
+  std::vector<FilePath> checked_devices =
+      volume_mount_watcher_->devices_checked();
+  sort(checked_devices.begin(), checked_devices.end());
+  EXPECT_EQ(initial_devices, checked_devices);
 }
 
 void RemovableDeviceNotificationsWindowWinTest::RunUntilIdle() {
+  volume_mount_watcher_->FlushWorkerPoolForTesting();
   message_loop_.RunUntilIdle();
 }
 
@@ -148,7 +163,6 @@ void RemovableDeviceNotificationsWindowWinTest::
   volume_broadcast.dbcv_unitmask = 0x0;
   volume_broadcast.dbcv_flags = 0x0;
   {
-    testing::InSequence sequence;
     for (DeviceIndices::const_iterator it = device_indices.begin();
          it != device_indices.end(); ++it) {
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
@@ -158,6 +172,8 @@ void RemovableDeviceNotificationsWindowWinTest::
   }
   window_->InjectDeviceChange(DBT_DEVICEARRIVAL,
                               reinterpret_cast<DWORD>(&volume_broadcast));
+  RunUntilIdle();
+  volume_mount_watcher_->FlushWorkerPoolForTesting();
   RunUntilIdle();
 }
 
@@ -169,13 +185,12 @@ void RemovableDeviceNotificationsWindowWinTest::
   volume_broadcast.dbcv_unitmask = 0x0;
   volume_broadcast.dbcv_flags = 0x0;
   {
-    testing::InSequence sequence;
     for (DeviceIndices::const_iterator it = device_indices.begin();
          it != device_indices.end(); ++it) {
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
       std::string unique_id;
       bool removable;
-      ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
+      ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
           VolumeMountWatcherWin::DriveNumberToFilePath(*it), NULL, &unique_id,
           NULL, &removable));
       if (removable) {
@@ -253,12 +268,37 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, RandomMessage) {
 
 TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttached) {
   DeviceIndices device_indices;
-  device_indices.push_back(1);
-  device_indices.push_back(5);
-  device_indices.push_back(7);
-  device_indices.push_back(13);
-
+  device_indices.push_back(1);  // B
+  device_indices.push_back(5);  // F
+  device_indices.push_back(7);  // H
+  device_indices.push_back(13);  // N
   DoMassStorageDeviceAttachedTest(device_indices);
+
+  string16 location;
+  std::string unique_id;
+  string16 name;
+  bool removable;
+  EXPECT_TRUE(window_->volume_mount_watcher()->GetDeviceInfo(
+      FilePath(ASCIIToUTF16("F:\\")),
+      &location, &unique_id, &name, &removable));
+  EXPECT_EQ(ASCIIToUTF16("F:\\"), location);
+  EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
+
+  base::SystemMonitor::RemovableStorageInfo info;
+  EXPECT_FALSE(window_->GetDeviceInfoForPath(FilePath(ASCIIToUTF16("G:\\")),
+                                             &info));
+  EXPECT_TRUE(window_->GetDeviceInfoForPath(FilePath(ASCIIToUTF16("F:\\")),
+                                            &info));
+  base::SystemMonitor::RemovableStorageInfo info1;
+  EXPECT_TRUE(window_->GetDeviceInfoForPath(
+      FilePath(ASCIIToUTF16("F:\\subdir")), &info1));
+  base::SystemMonitor::RemovableStorageInfo info2;
+  EXPECT_TRUE(window_->GetDeviceInfoForPath(
+      FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info1.name);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info2.name);
 }
 
 TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttachedHighBoundary) {
@@ -285,8 +325,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttachedAdjacentBits) {
   DoMassStorageDeviceAttachedTest(device_indices);
 }
 
-// Disabled until http://crbug.com/155910 is resolved.
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DevicesDetached) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetached) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
@@ -295,34 +334,31 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DevicesDetached) {
   device_indices.push_back(7);
   device_indices.push_back(13);
 
-  DoMassStorageDeviceAttachedTest(device_indices);
+  DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-// Disabled until http://crbug.com/155910 is resolved.
 TEST_F(RemovableDeviceNotificationsWindowWinTest,
-       DISABLED_DevicesDetachedHighBoundary) {
+       DevicesDetachedHighBoundary) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
   device_indices.push_back(25);
 
-  DoMassStorageDeviceAttachedTest(device_indices);
+  DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-// Disabled until http://crbug.com/155910 is resolved.
 TEST_F(RemovableDeviceNotificationsWindowWinTest,
-       DISABLED_DevicesDetachedLowBoundary) {
+       DevicesDetachedLowBoundary) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
   device_indices.push_back(0);
 
-  DoMassStorageDeviceAttachedTest(device_indices);
+  DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-// Disabled until http://crbug.com/155910 is resolved.
 TEST_F(RemovableDeviceNotificationsWindowWinTest,
-       DISABLED_DevicesDetachedAdjacentBits) {
+       DevicesDetachedAdjacentBits) {
   PreAttachDevices();
 
   DeviceIndices device_indices;
@@ -331,11 +367,61 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest,
   device_indices.push_back(2);
   device_indices.push_back(3);
 
-  DoMassStorageDeviceAttachedTest(device_indices);
+  DoMassStorageDevicesDetachedTest(device_indices);
 }
 
-// Disabled until http://crbug.com/155910 is resolved.
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DeviceInfoForPath) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest,
+       DuplicateAttachCheckSuppressed) {
+  volume_mount_watcher_->BlockDeviceCheckForTesting();
+  FilePath kAttachedDevicePath =
+      VolumeMountWatcherWin::DriveNumberToFilePath(8);  // I:
+  AddMassStorageDeviceAttachExpectation(kAttachedDevicePath);
+
+  DEV_BROADCAST_VOLUME volume_broadcast;
+  volume_broadcast.dbcv_size = sizeof(volume_broadcast);
+  volume_broadcast.dbcv_devicetype = DBT_DEVTYP_VOLUME;
+  volume_broadcast.dbcv_flags = 0x0;
+  volume_broadcast.dbcv_unitmask = 0x100;  // I: drive
+  window_->InjectDeviceChange(DBT_DEVICEARRIVAL,
+                              reinterpret_cast<DWORD>(&volume_broadcast));
+
+  EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
+
+  // Re-attach the same volume. We haven't released the mock device check
+  // event, so there'll be pending calls in the UI thread to finish the
+  // device check notification, blocking the duplicate device injection.
+  window_->InjectDeviceChange(DBT_DEVICEARRIVAL,
+                              reinterpret_cast<DWORD>(&volume_broadcast));
+
+  EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
+  volume_mount_watcher_->ReleaseDeviceCheck();
+  RunUntilIdle();
+  volume_mount_watcher_->ReleaseDeviceCheck();
+
+  // Now let all attach notifications finish running. We'll only get one
+  // finish-attach call.
+  volume_mount_watcher_->FlushWorkerPoolForTesting();
+  RunUntilIdle();
+
+  std::vector<FilePath> checked_devices =
+      volume_mount_watcher_->devices_checked();
+  ASSERT_EQ(1u, checked_devices.size());
+  EXPECT_EQ(kAttachedDevicePath, checked_devices[0]);
+
+  // We'll receive a duplicate check now that the first check has fully cleared.
+  window_->InjectDeviceChange(DBT_DEVICEARRIVAL,
+                              reinterpret_cast<DWORD>(&volume_broadcast));
+  volume_mount_watcher_->FlushWorkerPoolForTesting();
+  volume_mount_watcher_->ReleaseDeviceCheck();
+  RunUntilIdle();
+
+  checked_devices = volume_mount_watcher_->devices_checked();
+  ASSERT_EQ(2u, checked_devices.size());
+  EXPECT_EQ(kAttachedDevicePath, checked_devices[0]);
+  EXPECT_EQ(kAttachedDevicePath, checked_devices[1]);
+}
+
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
   PreAttachDevices();
 
   // An invalid path.
@@ -351,9 +437,10 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DeviceInfoForPath) {
 
   std::string unique_id;
   string16 device_name;
+  string16 location;
   bool removable;
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-      removable_device, NULL, &unique_id, &device_name, &removable));
+      removable_device, &location, &unique_id, &device_name, &removable));
   EXPECT_TRUE(removable);
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id);
@@ -366,7 +453,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DeviceInfoForPath) {
   EXPECT_TRUE(window_->GetDeviceInfoForPath(fixed_device, &device_info));
 
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-      fixed_device, NULL, &unique_id, &device_name, &removable));
+      fixed_device, &location, &unique_id, &device_name, &removable));
   EXPECT_FALSE(removable);
   device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::FIXED_MASS_STORAGE, unique_id);

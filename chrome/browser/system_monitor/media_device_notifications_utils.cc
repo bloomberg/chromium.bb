@@ -14,7 +14,7 @@
 namespace chrome {
 
 bool IsMediaDevice(const FilePath::StringType& mount_point) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   FilePath dcim_path(mount_point);
   FilePath::StringType dcim_dir(kDCIMDirectoryName);

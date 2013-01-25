@@ -80,7 +80,7 @@ class RemovableDeviceNotificationsWindowWin
   HWND window_;
 
   // The volume mount point watcher, used to manage the mounted devices.
-  scoped_refptr<VolumeMountWatcherWin> volume_mount_watcher_;
+  scoped_ptr<VolumeMountWatcherWin> volume_mount_watcher_;
 
   // The portable device watcher, used to manage media transfer protocol
   // devices.
