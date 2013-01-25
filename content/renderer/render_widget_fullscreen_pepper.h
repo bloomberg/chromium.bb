@@ -97,6 +97,7 @@ class RenderWidgetFullscreenPepper :
 
   // RenderWidget overrides.
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
+  virtual void Composite() OVERRIDE;
 
  private:
   // Creates the GL context for compositing.

@@ -139,15 +139,6 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void composite(bool finish) {
-    if (!widget_->plugin())
-      return;
-
-    WebGraphicsContext3DCommandBufferImpl* context = widget_->context();
-    DCHECK(context);
-    unsigned int texture = widget_->plugin()->GetBackingTextureId();
-    context->bindTexture(GL_TEXTURE_2D, texture);
-    context->drawArrays(GL_TRIANGLES, 0, 3);
-    widget_->SwapBuffers();
   }
 
   virtual void themeChanged() {
@@ -517,6 +508,21 @@ WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
 
 bool RenderWidgetFullscreenPepper::SupportsAsynchronousSwapBuffers() {
   return context_ != NULL;
+}
+
+// Fullscreen pepper widgets composite themselves into the plugin's backing
+// texture (as opposed to using the cc library to composite as normal
+// content::RenderWidgets do), so to produce a composited frame we just have to
+// draw this texture and swap.
+void RenderWidgetFullscreenPepper::Composite() {
+  if (!plugin_)
+    return;
+
+  DCHECK(context_);
+  unsigned int texture = plugin_->GetBackingTextureId();
+  context_->bindTexture(GL_TEXTURE_2D, texture);
+  context_->drawArrays(GL_TRIANGLES, 0, 3);
+  SwapBuffers();
 }
 
 void RenderWidgetFullscreenPepper::CreateContext() {

@@ -247,6 +247,7 @@ class CONTENT_EXPORT RenderWidget
   void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const WebKit::WebRect& pos);
+  virtual void Composite();
 
   // Set the background of the render widget to a bitmap. The bitmap will be
   // tiled in both directions if it isn't big enough to fill the area. This is

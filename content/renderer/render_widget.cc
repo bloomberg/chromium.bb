@@ -1145,7 +1145,7 @@ void RenderWidget::DoDeferredUpdate() {
     // If it needs to (e.g. composited UI), the GPU process does its own ACK
     // with the browser for the GPU surface.
     pending_update_params_->needs_ack = false;
-    webwidget_->composite(false);
+    Composite();
   }
 
   // If we're holding a pending input event ACK, send the ACK before sending the
@@ -1155,7 +1155,7 @@ void RenderWidget::DoDeferredUpdate() {
   if (pending_input_event_ack_.get())
     Send(pending_input_event_ack_.release());
 
-  // If composite() called SwapBuffers, pending_update_params_ will be reset (in
+  // If Composite() called SwapBuffers, pending_update_params_ will be reset (in
   // OnSwapBuffersPosted), meaning a message has been added to the
   // updates_pending_swap_ queue, that will be sent later. Otherwise, we send
   // the message now.
@@ -1169,6 +1169,12 @@ void RenderWidget::DoDeferredUpdate() {
   // If we're software rendering then we're done initiating the paint.
   if (!is_accelerated_compositing_active_)
     DidInitiatePaint();
+}
+
+void RenderWidget::Composite() {
+  DCHECK(is_accelerated_compositing_active_);
+  DCHECK(web_layer_tree_view_);
+  web_layer_tree_view_->composite();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
