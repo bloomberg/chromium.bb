@@ -70,9 +70,8 @@ class BASE_EXPORT DiscardableMemory {
   // after every successful lock call.
   void Unlock();
 
-  // Return the memory address held by this object. When this object is locked,
-  // this call will return the address in caller's address space. Otherwise,
-  // this call returns NULL.
+  // Return the memory address held by this object. The object must be locked
+  // before calling this. Otherwise, this will cause a DCHECK error.
   void* Memory() const;
 
   // Testing utility calls.

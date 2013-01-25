@@ -118,6 +118,8 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual WebKit::WebThread* createThread(const char* name);
   virtual WebKit::WebThread* currentThread();
   virtual WebKit::WebCompositorSupport* compositorSupport();
+  virtual WebKit::WebDiscardableMemory* allocateAndLockDiscardableMemory(
+      size_t bytes);
 
 
   // Embedder functions. The following are not implemented by the glue layer and

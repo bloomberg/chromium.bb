@@ -314,6 +314,8 @@
         'simple_webmimeregistry_impl.h',
         'touch_fling_gesture_curve.cc',
         'touch_fling_gesture_curve.h',
+        'web_discardable_memory_impl.cc',
+        'web_discardable_memory_impl.h',
         'webclipboard_impl.cc',
         'webclipboard_impl.h',
         'webcookie.cc',
