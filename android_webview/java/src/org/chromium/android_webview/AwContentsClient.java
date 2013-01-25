@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
+import android.webkit.ValueCallback;
 
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -208,7 +209,9 @@ public abstract class AwContentsClient extends ContentViewClient {
     //--------------------------------------------------------------------------------------------
 
     // TODO(boliu): Make this abstract.
-    public void doUpdateVisitedHistory(String url, boolean isReload) {}
+    public void getVisitedHistory(ValueCallback<String[]> callback) {}
+
+    public abstract void doUpdateVisitedHistory(String url, boolean isReload);
 
     public abstract void onProgressChanged(int progress);
 

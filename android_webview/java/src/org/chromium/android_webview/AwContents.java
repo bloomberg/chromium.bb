@@ -98,6 +98,7 @@ public class AwContents {
     private final AwSettings mSettings;
     private boolean mIsPaused;
     private Bitmap mFavicon;
+    private boolean mHasRequestedVisitedHistoryFromClient;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData;
@@ -367,6 +368,22 @@ public class AwContents {
         return mFavicon;
     }
 
+    private void requestVisitedHistoryFromClient() {
+        ValueCallback<String[]> callback = new ValueCallback<String[]>() {
+            @Override
+            public void onReceiveValue(final String[] value) {
+                ThreadUtils.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mNativeAwContents == 0) return;
+                        nativeAddVisitedLinks(mNativeAwContents, value);
+                    }
+                });
+            }
+        };
+        mContentsClient.getVisitedHistory(callback);
+    }
+
     /**
      * Load url without fixing up the url string. Consumers of ContentView are responsible for
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
@@ -396,6 +413,14 @@ public class AwContents {
             // getUrl returns a sanitized address in the same format that will be used for
             // callbacks, so it's safe to use string comparison as an equality check later on.
             mInterceptNavigationDelegate.onUrlLoadRequested(mContentViewCore.getUrl());
+        }
+
+        // The behavior of WebViewClassic uses the populateVisitedLinks callback in WebKit.
+        // Chromium does not use this use code path and the best emulation of this behavior to call
+        // request visited links once on the first URL load of the WebView.
+        if (!mHasRequestedVisitedHistoryFromClient) {
+          mHasRequestedVisitedHistoryFromClient = true;
+          requestVisitedHistoryFromClient();
         }
     }
 
@@ -964,6 +989,8 @@ public class AwContents {
             AwContentsIoThreadClient ioThreadClient);
     private native void nativeSetInterceptNavigationDelegate(int nativeAwContents,
             InterceptNavigationDelegate navigationInterceptionDelegate);
+
+    private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
 
     private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas);
     private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);

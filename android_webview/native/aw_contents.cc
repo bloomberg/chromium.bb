@@ -6,6 +6,7 @@
 
 #include <sys/system_properties.h>
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
@@ -25,6 +26,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
+#include "base/string16.h"
 #include "base/supports_user_data.h"
 #include "cc/layer.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -609,6 +611,25 @@ void AwContents::SetInterceptNavigationDelegate(JNIEnv* env,
   InterceptNavigationDelegate::Associate(
       web_contents_.get(),
       make_scoped_ptr(new InterceptNavigationDelegate(env, delegate)));
+}
+
+void AwContents::AddVisitedLinks(JNIEnv* env,
+                                   jobject obj,
+                                   jobjectArray jvisited_links) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::vector<string16> visited_link_strings;
+  base::android::AppendJavaStringArrayToStringVector(
+      env, jvisited_links, &visited_link_strings);
+
+  std::vector<GURL> visited_link_gurls;
+  for (std::vector<string16>::const_iterator itr = visited_link_strings.begin();
+       itr != visited_link_strings.end();
+       ++itr) {
+    visited_link_gurls.push_back(GURL(*itr));
+  }
+
+  AwBrowserContext::FromWebContents(web_contents_.get())
+      ->AddVisitedURLs(visited_link_gurls);
 }
 
 static jint Init(JNIEnv* env,

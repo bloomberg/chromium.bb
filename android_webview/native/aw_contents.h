@@ -88,6 +88,7 @@ class AwContents : public FindHelper::Listener,
   void SetIoThreadClient(JNIEnv* env, jobject obj, jobject client);
   void SetInterceptNavigationDelegate(JNIEnv* env, jobject obj,
                                       jobject delegate);
+  void AddVisitedLinks(JNIEnv* env, jobject obj, jobjectArray jvisited_links);
   base::android::ScopedJavaLocalRef<jbyteArray> GetCertificate(
       JNIEnv* env, jobject obj);
   void RequestNewHitTestDataAt(JNIEnv* env, jobject obj, jint x, jint y);

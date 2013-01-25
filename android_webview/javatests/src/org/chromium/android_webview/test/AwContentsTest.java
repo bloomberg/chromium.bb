@@ -284,6 +284,57 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         }
     }
 
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testGetVisitedHistoryExerciseCodePath() throws Throwable {
+        // Due to security/privacy restrictions around the :visited css property, it is not
+        // possible test this end to end without using the flaky and brittle capturing picture of
+        // the web page. So we are doing the next best thing, exercising all the code paths.
+
+        mContentsClient.mSaveGetVisitedHistoryCallback = true;
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        final String path = "/testGetVisitedHistoryExerciseCodePath.html";
+        final String visitedLinks[] = {"http://foo.com", "http://bar.com", null};
+        final String html = "<a src=\"http://foo.com\">foo</a><a src=\"http://bar.com\">bar</a>";
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String pageUrl = webServer.setResponse(path, html, null);
+
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            assertNotNull(mContentsClient.mGetVisitedHistoryCallback);
+
+            mContentsClient.mGetVisitedHistoryCallback.onReceiveValue(visitedLinks);
+            mContentsClient.mGetVisitedHistoryCallback.onReceiveValue(null);
+
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    /*
+     * @Feature({"AndroidWebView"})
+     * @SmallTest
+     * Exercising code after destroy causes gpu related crashes. See crbug.com/172184.
+     */
+    @DisabledTest
+    public void testGetVisitedHistoryCallbackAfterDestroy() throws Throwable {
+        mContentsClient.mSaveGetVisitedHistoryCallback = true;
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        assertNotNull(mContentsClient.mGetVisitedHistoryCallback);
+
+        awContents.destroy();
+        mContentsClient.mGetVisitedHistoryCallback.onReceiveValue(new String[] {"abc.def"});
+        mContentsClient.mGetVisitedHistoryCallback.onReceiveValue(null);
+    }
+
     private void autoLoginTestHelper(final String testName, final String xAutoLoginHeader,
             final String expectedRealm, final String expectedAccount, final String expectedArgs)
             throws Throwable {
