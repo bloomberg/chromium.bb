@@ -9,7 +9,6 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
-#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,9 +20,11 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 
 // static
 ManagedMode* ManagedMode::GetInstance() {
@@ -49,9 +50,13 @@ void ManagedMode::InitImpl(Profile* profile) {
   // CommandLinePrefStore so we can change it at runtime.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoManaged)) {
     SetInManagedMode(NULL);
+    content::RecordAction(
+        UserMetricsAction("ManagedMode_StartupNoManagedSwitch"));
   } else if (IsInManagedModeImpl() ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kManaged)) {
     SetInManagedMode(original_profile);
+    content::RecordAction(
+        UserMetricsAction("ManagedMode_StartupManagedSwitch"));
   }
 }
 
