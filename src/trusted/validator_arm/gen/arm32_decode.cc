@@ -35,7 +35,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
-  , Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_instance_()
+  , Actual_Unnamed_case_1_instance_()
   , Binary2RegisterBitRangeMsbGeLsb_instance_()
   , Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_()
   , Binary3RegisterOpAltA_instance_()
@@ -1899,7 +1899,7 @@ const ClassDecoder& Arm32DecoderState::decode_multiply_and_multiply_accumulate(
 
   if ((inst.Bits() & 0x00D00000)  ==
           0x00500000 /* op(23:20)=01x1 */) {
-    return Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
