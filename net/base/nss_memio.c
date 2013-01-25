@@ -402,6 +402,14 @@ int memio_GetReadParams(memio_Private *secret, char **buf)
     return memio_buffer_unused_contiguous(mb);
 }
 
+int memio_GetReadableBufferSize(memio_Private *secret)
+{
+    struct memio_buffer* mb = &((PRFilePrivate *)secret)->readbuf;
+    PR_ASSERT(mb->bufsize);
+
+    return memio_buffer_used_contiguous(mb);
+}
+
 void memio_PutReadResult(memio_Private *secret, int bytes_read)
 {
     struct memio_buffer* mb = &((PRFilePrivate *)secret)->readbuf;

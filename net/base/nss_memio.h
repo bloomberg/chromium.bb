@@ -63,6 +63,11 @@ int memio_GetReadRequest(memio_Private *secret);
  */
 int memio_GetReadParams(memio_Private *secret, char **buf);
 
+/* Ask memio how many bytes are contained in the internal buffer.
+ * Returns bytes available to read, or 0 if none available.
+ */
+int memio_GetReadableBufferSize(memio_Private *secret);
+
 /* Tell memio how many bytes were read from the network.
  * If bytes_read is 0, causes EOF to be reported to
  * NSS after it reads the last byte from the circular buffer.

@@ -1182,6 +1182,7 @@
         'browser/net/load_timing_observer_browsertest.cc',
         'browser/net/predictor_browsertest.cc',
         'browser/net/proxy_browsertest.cc',
+        'browser/net/websocket_browsertest.cc',
         'browser/page_cycler/page_cycler_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/cloud_policy_browsertest.cc',

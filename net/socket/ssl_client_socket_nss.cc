@@ -642,6 +642,11 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
 
+  // Called on the network task runner.
+  bool IsConnected();
+  bool HasPendingAsyncOperation();
+  bool HasUnhandledReceivedData();
+
  private:
   friend class base::RefCountedThreadSafe<Core>;
   ~Core();
@@ -774,6 +779,9 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
 
   void OnGetDomainBoundCertComplete(int result);
   void OnHandshakeStateUpdated(const HandshakeState& state);
+  void OnNSSBufferUpdated(int amount_in_read_buffer);
+  void DidNSSRead(int result);
+  void DidNSSWrite(int result);
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are called on both the network task runner and the NSS
@@ -816,6 +824,12 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // The service for retrieving Channel ID keys.  May be NULL.
   ServerBoundCertService* server_bound_cert_service_;
   ServerBoundCertService::RequestHandle domain_bound_cert_request_handle_;
+
+  // The information about NSS task runner.
+  int unhandled_buffer_size_;
+  bool nss_waiting_read_;
+  bool nss_waiting_write_;
+  bool nss_is_closed_;
 
   ////////////////////////////////////////////////////////////////////////////
   // Members that are ONLY accessed on the NSS task runner:
@@ -896,6 +910,10 @@ SSLClientSocketNSS::Core::Core(
       transport_(transport),
       weak_net_log_factory_(net_log),
       server_bound_cert_service_(server_bound_cert_service),
+      unhandled_buffer_size_(0),
+      nss_waiting_read_(false),
+      nss_waiting_write_(false),
+      nss_is_closed_(false),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       nss_fd_(NULL),
@@ -1089,11 +1107,17 @@ int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
     DCHECK(OnNetworkTaskRunner());
     DCHECK(!detached_);
     DCHECK(transport_);
+    DCHECK(!nss_waiting_read_);
 
+    nss_waiting_read_ = true;
     bool posted = nss_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(IgnoreResult(&Core::Read), this, make_scoped_refptr(buf),
                    buf_len, callback));
+    if (!posted) {
+      nss_is_closed_ = true;
+      nss_waiting_read_ = false;
+    }
     return posted ? ERR_IO_PENDING : ERR_ABORTED;
   }
 
@@ -1110,14 +1134,21 @@ int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
 
   int rv = DoReadLoop(OK);
   if (rv == ERR_IO_PENDING) {
+    if (OnNetworkTaskRunner())
+      nss_waiting_read_ = true;
     user_read_callback_ = callback;
   } else {
     user_read_buf_ = NULL;
     user_read_buf_len_ = 0;
 
     if (!OnNetworkTaskRunner()) {
+      PostOrRunCallback(FROM_HERE, base::Bind(&Core::DidNSSRead, this, rv));
       PostOrRunCallback(FROM_HERE, base::Bind(callback, rv));
       return ERR_IO_PENDING;
+    } else {
+      DCHECK(!nss_waiting_read_);
+      if (rv <= 0)
+        nss_is_closed_ = true;
     }
   }
 
@@ -1130,13 +1161,18 @@ int SSLClientSocketNSS::Core::Write(IOBuffer* buf, int buf_len,
     DCHECK(OnNetworkTaskRunner());
     DCHECK(!detached_);
     DCHECK(transport_);
+    DCHECK(!nss_waiting_write_);
 
+    nss_waiting_write_ = true;
     bool posted = nss_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(IgnoreResult(&Core::Write), this, make_scoped_refptr(buf),
                    buf_len, callback));
-    int rv = posted ? ERR_IO_PENDING : ERR_ABORTED;
-    return rv;
+    if (!posted) {
+      nss_is_closed_ = true;
+      nss_waiting_write_ = false;
+    }
+    return posted ? ERR_IO_PENDING : ERR_ABORTED;
   }
 
   DCHECK(OnNSSTaskRunner());
@@ -1152,18 +1188,40 @@ int SSLClientSocketNSS::Core::Write(IOBuffer* buf, int buf_len,
 
   int rv = DoWriteLoop(OK);
   if (rv == ERR_IO_PENDING) {
+    if (OnNetworkTaskRunner())
+      nss_waiting_write_ = true;
     user_write_callback_ = callback;
   } else {
     user_write_buf_ = NULL;
     user_write_buf_len_ = 0;
 
     if (!OnNetworkTaskRunner()) {
+      PostOrRunCallback(FROM_HERE, base::Bind(&Core::DidNSSWrite, this, rv));
       PostOrRunCallback(FROM_HERE, base::Bind(callback, rv));
       return ERR_IO_PENDING;
+    } else {
+      DCHECK(!nss_waiting_write_);
+      if (rv < 0)
+        nss_is_closed_ = true;
     }
   }
 
   return rv;
+}
+
+bool SSLClientSocketNSS::Core::IsConnected() {
+  DCHECK(OnNetworkTaskRunner());
+  return !nss_is_closed_;
+}
+
+bool SSLClientSocketNSS::Core::HasPendingAsyncOperation() {
+  DCHECK(OnNetworkTaskRunner());
+  return nss_waiting_read_ || nss_waiting_write_;
+}
+
+bool SSLClientSocketNSS::Core::HasUnhandledReceivedData() {
+  DCHECK(OnNetworkTaskRunner());
+  return unhandled_buffer_size_ != 0;
 }
 
 bool SSLClientSocketNSS::Core::OnNSSTaskRunner() const {
@@ -2044,6 +2102,13 @@ int SSLClientSocketNSS::Core::DoPayloadRead() {
   DCHECK_GT(user_read_buf_len_, 0);
 
   int rv = PR_Read(nss_fd_, user_read_buf_->data(), user_read_buf_len_);
+  // Update NSSTaskRunner status because PR_Read may consume |nss_bufs_|, then
+  // following |amount_in_read_buffer| may be changed here.
+  int amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(&Core::OnNSSBufferUpdated, this, amount_in_read_buffer));
+
   if (client_auth_cert_needed_) {
     // We don't need to invalidate the non-client-authenticated SSL session
     // because the server will renegotiate anyway.
@@ -2081,7 +2146,17 @@ int SSLClientSocketNSS::Core::DoPayloadWrite() {
 
   DCHECK(user_write_buf_);
 
+  int old_amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
   int rv = PR_Write(nss_fd_, user_write_buf_->data(), user_write_buf_len_);
+  int new_amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
+  // PR_Write could potentially consume the unhandled data in the memio read
+  // buffer if a renegotiation is in progress. If the buffer is consumed,
+  // notify the latest buffer size to NetworkRunner.
+  if (old_amount_in_read_buffer != new_amount_in_read_buffer) {
+    PostOrRunCallback(
+        FROM_HERE,
+        base::Bind(&Core::OnNSSBufferUpdated, this, new_amount_in_read_buffer));
+  }
   if (rv >= 0) {
     PostOrRunCallback(
         FROM_HERE,
@@ -2287,10 +2362,18 @@ void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
 
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
-  base::Closure c = base::Bind(
-      base::ResetAndReturn(&user_read_callback_),
-      rv);
-  PostOrRunCallback(FROM_HERE, c);
+  int amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
+  // This is used to curry the |amount_int_read_buffer| and |user_cb| back to
+  // the network task runner.
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(&Core::OnNSSBufferUpdated, this, amount_in_read_buffer));
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(&Core::DidNSSRead, this, rv));
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(base::ResetAndReturn(&user_read_callback_), rv));
 }
 
 void SSLClientSocketNSS::Core::DoWriteCallback(int rv) {
@@ -2302,10 +2385,20 @@ void SSLClientSocketNSS::Core::DoWriteCallback(int rv) {
   // up front.
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  base::Closure c = base::Bind(
-      base::ResetAndReturn(&user_write_callback_),
-      rv);
-  PostOrRunCallback(FROM_HERE, c);
+  // Update buffer status because DoWriteLoop called DoTransportIO which may
+  // perform read operations.
+  int amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
+  // This is used to curry the |amount_int_read_buffer| and |user_cb| back to
+  // the network task runner.
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(&Core::OnNSSBufferUpdated, this, amount_in_read_buffer));
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(&Core::DidNSSWrite, this, rv));
+  PostOrRunCallback(
+      FROM_HERE,
+      base::Bind(base::ResetAndReturn(&user_write_callback_), rv));
 }
 
 SECStatus SSLClientSocketNSS::Core::ClientChannelIDHandler(
@@ -2565,9 +2658,9 @@ int SSLClientSocketNSS::Core::DoBufferSend(IOBuffer* send_buffer, int len) {
     return ERR_ABORTED;
 
   int rv = transport_->socket()->Write(
-        send_buffer, len,
-        base::Bind(&Core::BufferSendComplete,
-                   base::Unretained(this)));
+      send_buffer, len,
+      base::Bind(&Core::BufferSendComplete,
+                 base::Unretained(this)));
 
   if (!OnNSSTaskRunner() && rv != ERR_IO_PENDING) {
     nss_task_runner_->PostTask(
@@ -2610,7 +2703,29 @@ int SSLClientSocketNSS::Core::DoGetDomainBoundCert(
 
 void SSLClientSocketNSS::Core::OnHandshakeStateUpdated(
     const HandshakeState& state) {
+  DCHECK(OnNetworkTaskRunner());
   network_handshake_state_ = state;
+}
+
+void SSLClientSocketNSS::Core::OnNSSBufferUpdated(int amount_in_read_buffer) {
+  DCHECK(OnNetworkTaskRunner());
+  unhandled_buffer_size_ = amount_in_read_buffer;
+}
+
+void SSLClientSocketNSS::Core::DidNSSRead(int result) {
+  DCHECK(OnNetworkTaskRunner());
+  DCHECK(nss_waiting_read_);
+  nss_waiting_read_ = false;
+  if (result <= 0)
+    nss_is_closed_ = true;
+}
+
+void SSLClientSocketNSS::Core::DidNSSWrite(int result) {
+  DCHECK(OnNetworkTaskRunner());
+  DCHECK(nss_waiting_write_);
+  nss_waiting_write_ = false;
+  if (result < 0)
+    nss_is_closed_ = true;
 }
 
 void SSLClientSocketNSS::Core::BufferSendComplete(int result) {
@@ -2922,29 +3037,21 @@ void SSLClientSocketNSS::Disconnect() {
 }
 
 bool SSLClientSocketNSS::IsConnected() const {
-  // Ideally, we should also check if we have received the close_notify alert
-  // message from the server, and return false in that case.  We're not doing
-  // that, so this function may return a false positive.  Since the upper
-  // layer (HttpNetworkTransaction) needs to handle a persistent connection
-  // closed by the server when we send a request anyway, a false positive in
-  // exchange for simpler code is a good trade-off.
   EnterFunction("");
-  bool ret = completed_handshake_ && transport_->socket()->IsConnected();
+  bool ret = completed_handshake_ &&
+             (core_->HasPendingAsyncOperation() ||
+              (core_->IsConnected() && core_->HasUnhandledReceivedData()) ||
+              transport_->socket()->IsConnected());
   LeaveFunction("");
   return ret;
 }
 
 bool SSLClientSocketNSS::IsConnectedAndIdle() const {
-  // Unlike IsConnected, this method doesn't return a false positive.
-  //
-  // Strictly speaking, we should check if we have received the close_notify
-  // alert message from the server, and return false in that case.  Although
-  // the close_notify alert message means EOF in the SSL layer, it is just
-  // bytes to the transport layer below, so
-  // transport_->socket()->IsConnectedAndIdle() returns the desired false
-  // when we receive close_notify.
   EnterFunction("");
-  bool ret = completed_handshake_ && transport_->socket()->IsConnectedAndIdle();
+  bool ret = completed_handshake_ &&
+             !core_->HasPendingAsyncOperation() &&
+             !(core_->IsConnected() && core_->HasUnhandledReceivedData()) &&
+             transport_->socket()->IsConnectedAndIdle();
   LeaveFunction("");
   return ret;
 }
