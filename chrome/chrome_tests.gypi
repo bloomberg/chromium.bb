@@ -1321,6 +1321,7 @@
         'browser/ui/webui/options/edit_dictionary_browsertest.js',
         'browser/ui/webui/options/font_settings_browsertest.js',
         'browser/ui/webui/options/language_options_browsertest.js',
+        'browser/ui/webui/options/language_options_dictionary_download_browsertest.js',
         'browser/ui/webui/options/options_browsertest.js',
         'browser/ui/webui/options/options_ui_browsertest.cc',
         'browser/ui/webui/options/options_ui_browsertest.h',
@@ -1661,6 +1662,9 @@
             # TODO(rouslan): This test depends on the custom dictionary UI,
             # which is disabled on Mac.
             'browser/ui/webui/options/edit_dictionary_browsertest.js',
+            # TODO(rouslan): This test depends on hunspell and we cannot run it
+            # on Mac, which does use hunspell by default.
+            'browser/ui/webui/options/language_options_dictionary_download_browsertest.js',
             # ProcessSingletonMac doesn't do anything.
             'browser/process_singleton_browsertest.cc',
             # This test depends on GetCommandLineForRelaunch, which is not

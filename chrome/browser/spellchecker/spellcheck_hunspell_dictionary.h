@@ -8,9 +8,10 @@
 #include "chrome/browser/spellchecker/spellcheck_dictionary.h"
 
 #include "base/file_path.h"
-#include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/platform_file.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
@@ -24,8 +25,25 @@ class URLRequestContextGetter;
 // Defines the browser-side hunspell dictionary and provides access to it.
 class SpellcheckHunspellDictionary
     : public SpellcheckDictionary,
-      public net::URLFetcherDelegate {
+      public net::URLFetcherDelegate,
+      public base::SupportsWeakPtr<SpellcheckHunspellDictionary> {
  public:
+  // Interface to implement for observers of the Hunspell dictionary.
+  class Observer {
+   public:
+    // The dictionary has been initialized.
+    virtual void OnHunspellDictionaryInitialized() = 0;
+
+    // Dictionary download began.
+    virtual void OnHunspellDictionaryDownloadBegin() = 0;
+
+    // Dictionary download succeeded.
+    virtual void OnHunspellDictionaryDownloadSuccess() = 0;
+
+    // Dictionary download failed.
+    virtual void OnHunspellDictionaryDownloadFailure() = 0;
+  };
+
   // TODO(rlp): Passing in the host is very temporary. In the next CL this
   // will be removed.
   SpellcheckHunspellDictionary(
@@ -55,6 +73,10 @@ class SpellcheckHunspellDictionary
   // If |dictionary_file_| is missing, we attempt to download it.
   void DownloadDictionary();
 
+  // Retry downloading |dictionary_file_|.
+  void RetryDownloadDictionary(
+      net::URLRequestContextGetter* request_context_getter);
+
   // Saves |data_| to disk. Run on the file thread.
   void SaveDictionaryData(std::string* data);
   void SaveDictionaryDataComplete();
@@ -67,14 +89,36 @@ class SpellcheckHunspellDictionary
   // Returns true if the dictionary is ready to use.
   virtual bool IsReady() const;
 
-  void InformProfileOfInitialization();
-
   // TODO(rlp): Return by value.
   const base::PlatformFile& GetDictionaryFile() const;
   const std::string& GetLanguage() const;
   bool IsUsingPlatformChecker() const;
 
+  // Add an observer for Hunspell dictionary events.
+  void AddObserver(Observer* observer);
+
+  // Remove an observer for Hunspell dictionary events.
+  void RemoveObserver(Observer* observer);
+
+  // Whether dictionary is being downloaded.
+  bool IsDownloadInProgress();
+
+  // Whether dictionary download failed.
+  bool IsDownloadFailure();
+
  private:
+  enum DownloadStatus {
+    DOWNLOAD_NONE,
+    DOWNLOAD_IN_PROGRESS,
+    DOWNLOAD_FAILED,
+  };
+
+  // Notify listeners that the dictionary has been initialized.
+  void InformListenersOfInitialization();
+
+  // Notify listeners that the dictionary download failed.
+  void InformListenersOfDownloadFailure();
+
   // The desired location of the dictionary file, whether or not it exists yet.
   FilePath bdict_file_path_;
 
@@ -105,6 +149,12 @@ class SpellcheckHunspellDictionary
   base::WeakPtrFactory<SpellcheckHunspellDictionary> weak_ptr_factory_;
 
   SpellcheckService* spellcheck_service_;
+
+  // Observers of Hunspell dictionary events.
+  ObserverList<Observer> observers_;
+
+  // Status of the dictionary download.
+  DownloadStatus download_status_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckHunspellDictionary);
 };

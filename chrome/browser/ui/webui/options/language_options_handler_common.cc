@@ -17,6 +17,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -77,6 +80,14 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SPELLCHECK));
   localized_strings->SetString("enable_auto_spell_correction",
           l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION));
+  localized_strings->SetString("downloading_dictionary",
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOADING));
+  localized_strings->SetString("download_failed",
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAILED));
+  localized_strings->SetString("retry_button",
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOAD_RETRY));
+  localized_strings->SetString("download_fail_help",
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAIL_HELP));
 #endif  // !OS_MACOSX
   localized_strings->SetString("add_language_title",
           l10n_util::GetStringUTF16(IDS_OPTIONS_LANGUAGES_ADD_TITLE));
@@ -104,6 +115,12 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       enable_spelling_auto_correct);
 }
 
+void LanguageOptionsHandlerCommon::Uninitialize() {
+  if (hunspell_dictionary_.get())
+    hunspell_dictionary_->RemoveObserver(this);
+  hunspell_dictionary_.reset();
+}
+
 void LanguageOptionsHandlerCommon::RegisterMessages() {
   web_ui()->RegisterMessageCallback("languageOptionsOpen",
       base::Bind(
@@ -117,15 +134,39 @@ void LanguageOptionsHandlerCommon::RegisterMessages() {
       base::Bind(
           &LanguageOptionsHandlerCommon::UiLanguageChangeCallback,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("retryDictionaryDownload",
+      base::Bind(
+          &LanguageOptionsHandlerCommon::RetrySpellcheckDictionaryDownload,
+          base::Unretained(this)));
+}
+
+void LanguageOptionsHandlerCommon::OnHunspellDictionaryInitialized() {
+}
+
+void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadBegin() {
+  web_ui()->CallJavascriptFunction(
+      "options.LanguageOptions.onDictionaryDownloadBegin",
+      StringValue(GetHunspellDictionary()->GetLanguage()));
+}
+
+void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadSuccess() {
+  web_ui()->CallJavascriptFunction(
+      "options.LanguageOptions.onDictionaryDownloadSuccess",
+      StringValue(GetHunspellDictionary()->GetLanguage()));
+}
+
+void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadFailure() {
+  web_ui()->CallJavascriptFunction(
+      "options.LanguageOptions.onDictionaryDownloadFailure",
+      StringValue(GetHunspellDictionary()->GetLanguage()));
 }
 
 DictionaryValue* LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {
   DictionaryValue* dictionary = new DictionaryValue();
   const std::vector<std::string>& available_locales =
       l10n_util::GetAvailableLocales();
-  for (size_t i = 0; i < available_locales.size(); ++i) {
+  for (size_t i = 0; i < available_locales.size(); ++i)
     dictionary->SetBoolean(available_locales[i], true);
-  }
   return dictionary;
 }
 
@@ -142,6 +183,13 @@ DictionaryValue* LanguageOptionsHandlerCommon::GetSpellCheckLanguageCodeSet() {
 void LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback(
     const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_Open"));
+  RefreshHunspellDictionary();
+  if (hunspell_dictionary_->IsDownloadInProgress())
+    OnHunspellDictionaryDownloadBegin();
+  else if (hunspell_dictionary_->IsDownloadFailure())
+    OnHunspellDictionaryDownloadFailure();
+  else
+    OnHunspellDictionaryDownloadSuccess();
 }
 
 void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
@@ -164,6 +212,29 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
   const std::string action = base::StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
   content::RecordComputedAction(action);
+  RefreshHunspellDictionary();
+}
+
+void LanguageOptionsHandlerCommon::RetrySpellcheckDictionaryDownload(
+    const ListValue* args) {
+  GetHunspellDictionary()->RetryDownloadDictionary(
+      Profile::FromWebUI(web_ui())->GetRequestContext());
+}
+
+void LanguageOptionsHandlerCommon::RefreshHunspellDictionary() {
+  if (hunspell_dictionary_.get())
+    hunspell_dictionary_->RemoveObserver(this);
+  hunspell_dictionary_.reset();
+  hunspell_dictionary_ = SpellcheckServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()))->GetHunspellDictionary()->AsWeakPtr();
+  hunspell_dictionary_->AddObserver(this);
+}
+
+base::WeakPtr<SpellcheckHunspellDictionary>&
+    LanguageOptionsHandlerCommon::GetHunspellDictionary() {
+  if (!hunspell_dictionary_.get())
+    RefreshHunspellDictionary();
+  return hunspell_dictionary_;
 }
 
 }  // namespace options

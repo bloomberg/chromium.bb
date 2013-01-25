@@ -42,13 +42,25 @@
           <span id="language-options-ui-language-message" hidden></span>
         </div>
 </if>
-        <div class="language-options-contents">
+        <div id="language-options-spellcheck" class="language-options-contents">
           <button id="language-options-spell-check-language-button"
               i18n-content="use_this_for_spell_checking">
           </button>
-          <span id="language-options-spell-check-language-message"
-              hidden>
+          <span id="language-options-spell-check-language-message" hidden>
           </span>
+          <span id="language-options-dictionary-downloading-message"
+              i18n-content="downloading_dictionary" hidden>
+          </span>
+        </div>
+        <div id="language-options-dictionary-download-failed-message"
+            class="language-options-notification" hidden>
+          <div i18n-content="download_failed"></div>
+          <div id="language-options-dictionary-download-fail-help-message"
+            i18n-content="download_fail_help" hidden>
+          </div>
+          <button id="dictionary-download-retry-button"
+              i18n-content="retry_button">
+          </button>
         </div>
         <div id="language-options-ui-notification-bar"
              class="language-options-notification" hidden>

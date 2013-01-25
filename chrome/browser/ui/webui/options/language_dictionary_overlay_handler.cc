@@ -44,12 +44,6 @@ void LanguageDictionaryOverlayHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_LANGUAGE_DICTIONARY_OVERLAY_NO_MATCHES));
 }
 
-void LanguageDictionaryOverlayHandler::InitializeHandler() {
-}
-
-void LanguageDictionaryOverlayHandler::InitializePage() {
-}
-
 void LanguageDictionaryOverlayHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "addDictionaryWord",

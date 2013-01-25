@@ -21,6 +21,7 @@
 }
 
 .language-options-contents  {
+  min-height: 28px;
   padding: 0 12px 4px;
 }
 
@@ -72,11 +73,14 @@
   margin-top: 24px;
 }
 
-.language-options-notification {
-  background-color: rgb(255, 242, 158);
-  border-bottom: 1px solid #ccc;
-  border-top: 1px solid #ccc;
+.language-options-notification  {
+  background-color: rgb(255, 247, 193);
+  margin: 0 0 4px;
   padding: 8px 30px 8px 12px;
+}
+
+.language-options-notification > div {
+  margin-bottom: 4px;
 }
 
 #language-options-input-method-list button {
@@ -90,7 +94,7 @@
 #language-options-list {
   -webkit-box-flex: 1;
   outline: none;
-  padding: 1px 0 0;
+  padding: 0;
   width: 100%;
 }
 
@@ -121,10 +125,6 @@
   pointer-events: none;
   position: fixed;
   z-index: 10;
-}
-
-#language-options-ui-restart-button {
-  margin-top: 4px;
 }
 
 /* In ChromeOS we present the language choices as a big page of links. */

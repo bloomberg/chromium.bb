@@ -12374,6 +12374,18 @@ The following application will be launched if you accept this request:
         <message name="IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION" desc="The documentation string of the 'Enable auto spell correction' option">
           Enable automatic spell correction
         </message>
+        <message name="IDS_OPTIONS_DICTIONARY_DOWNLOADING" desc="The informational message to notify that download of dictionary for spellchecking is in progress.">
+          Downloading spell check dictionary...
+        </message>
+        <message name="IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAILED" desc="The error message to notify that download of dictionary for spellchecking failed.">
+          Spell check dictionary download failed.
+        </message>
+        <message name="IDS_OPTIONS_DICTIONARY_DOWNLOAD_RETRY" desc="The button label to retry downloading the dictionary for spellchecking.">
+          Retry
+        </message>
+        <message name="IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAIL_HELP" desc="The help message to guide the user if download of dictionary for spellchecking failed multiple times.">
+          Please check with your network administrator to make sure that the firewall is not blocking downloads from Google servers.
+        </message>
       </if>
 
       <!-- General app failure messages -->

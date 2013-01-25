@@ -20,8 +20,6 @@ class LanguageDictionaryOverlayHandler
   // Overridden from OptionsPageUIHandler:
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
   virtual void Uninitialize() OVERRIDE;
 
