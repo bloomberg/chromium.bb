@@ -51,6 +51,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   WebRuntimeFeatures::enableInputTypeTime(true);
   WebRuntimeFeatures::enableInputTypeWeek(true);
   DisableAppCacheLogging();
+  EnableDevToolsFrontendTesting();
 }
 
 ShellRenderProcessObserver::~ShellRenderProcessObserver() {

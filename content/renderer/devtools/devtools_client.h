@@ -27,12 +27,14 @@ class RenderViewImpl;
 // corresponding DevToolsAgent object.
 // TODO(yurys): now the client is almost empty later it will delegate calls to
 // code in glue
-class DevToolsClient : public RenderViewObserver,
-                       public WebKit::WebDevToolsFrontendClient {
+class CONTENT_EXPORT DevToolsClient
+  : public RenderViewObserver,
+    NON_EXPORTED_BASE(public WebKit::WebDevToolsFrontendClient) {
  public:
   explicit DevToolsClient(RenderViewImpl* render_view);
   virtual ~DevToolsClient();
 
+  static void EnableDevToolsFrontendTesting();
  private:
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -55,6 +57,7 @@ class DevToolsClient : public RenderViewObserver,
   virtual void addFileSystem() OVERRIDE;
   virtual void removeFileSystem(
       const WebKit::WebString& fileSystemPath) OVERRIDE;
+  virtual bool isUnderTest() OVERRIDE;
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
 

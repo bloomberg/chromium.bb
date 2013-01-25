@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "content/renderer/devtools/devtools_client.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -49,6 +50,10 @@ void SetMockGamepads(const WebGamepads& pads) {
 
 void DisableAppCacheLogging() {
   RendererWebApplicationCacheHostImpl::DisableLoggingForTesting();
+}
+
+void EnableDevToolsFrontendTesting() {
+  DevToolsClient::EnableDevToolsFrontendTesting();
 }
 
 }  // namespace content

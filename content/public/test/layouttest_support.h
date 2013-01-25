@@ -32,6 +32,9 @@ void SetMockGamepads(const WebKit::WebGamepads& pads);
 // Disable logging to the console from the appcache system.
 void DisableAppCacheLogging();
 
+// Enable testing support in the devtools client.
+void EnableDevToolsFrontendTesting();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
