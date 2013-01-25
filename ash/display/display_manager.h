@@ -59,6 +59,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   bool IsInternalDisplayId(int64 id) const;
 
+  uint64 internal_display_id() const { return internal_display_id_; }
+
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
 
