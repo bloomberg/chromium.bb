@@ -4713,31 +4713,6 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
-// Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1
-//
-// Actual:
-//   {defs: {},
-//    safety: [true => UNDEFINED]}
-
-RegisterList Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // true => UNDEFINED
-  if (true)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //
 // Actual:

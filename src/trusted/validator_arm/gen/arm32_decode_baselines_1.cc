@@ -1588,6 +1588,42 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110oooonnnnddddccccooo0mmmm,
+//    rule: CDP,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // CLZ_cccc000101101111dddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -2304,6 +2340,78 @@ safety(Instruction inst) const {
 
 
 RegisterList LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
+//    rule: LDC_immediate,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw11111ddddcccciiiiiiii,
+//    rule: LDC_literal,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
@@ -5361,6 +5469,79 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// MCRR_cccc11000100ttttttttccccoooommmm_case_0:
+//
+//   {arch: v5TE,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc11000100ttttttttccccoooommmm,
+//    rule: MCRR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MCRR_cccc11000100ttttttttccccoooommmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MCRR_cccc11000100ttttttttccccoooommmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MCRR_cccc11000100ttttttttccccoooommmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
+//    rule: MCR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0:
 //
 //   {NZCV: 16,
@@ -5885,6 +6066,42 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
+//    rule: MRC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0:
 //
 //   {arch: v6,
@@ -5916,6 +6133,43 @@ safety(Instruction inst) const {
 
 
 RegisterList MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MRRC_cccc11000101ttttttttccccoooommmm_case_0:
+//
+//   {arch: v5TE,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc11000101ttttttttccccoooommmm,
+//    rule: MRRC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MRRC_cccc11000101ttttttttccccoooommmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MRRC_cccc11000101ttttttttccccoooommmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MRRC_cccc11000101ttttttttccccoooommmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

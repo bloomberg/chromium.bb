@@ -911,6 +911,29 @@ class CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0
       CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0);
 };
 
+// CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110oooonnnnddddccccooo0mmmm,
+//    rule: CDP,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0);
+};
+
 // CLZ_cccc000101101111dddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -1360,6 +1383,52 @@ class LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0);
+};
+
+// LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
+//    rule: LDC_immediate,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0);
+};
+
+// LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw11111ddddcccciiiiiiii,
+//    rule: LDC_literal,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0);
 };
 
 // LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0:
@@ -2885,6 +2954,53 @@ class MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0
       MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0);
 };
 
+// MCRR_cccc11000100ttttttttccccoooommmm_case_0:
+//
+//   {arch: v5TE,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc11000100ttttttttccccoooommmm,
+//    rule: MCRR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class MCRR_cccc11000100ttttttttccccoooommmm_case_0
+     : public ClassDecoder {
+ public:
+  MCRR_cccc11000100ttttttttccccoooommmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      MCRR_cccc11000100ttttttttccccoooommmm_case_0);
+};
+
+// MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
+//    rule: MCR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0
+     : public ClassDecoder {
+ public:
+  MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0);
+};
+
 // MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0:
 //
 //   {NZCV: 16,
@@ -3182,6 +3298,29 @@ class MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0
       MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0);
 };
 
+// MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
+//    rule: MRC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0
+     : public ClassDecoder {
+ public:
+  MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0);
+};
+
 // MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0:
 //
 //   {arch: v6,
@@ -3204,6 +3343,30 @@ class MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0);
+};
+
+// MRRC_cccc11000101ttttttttccccoooommmm_case_0:
+//
+//   {arch: v5TE,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc11000101ttttttttccccoooommmm,
+//    rule: MRRC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class MRRC_cccc11000101ttttttttccccoooommmm_case_0
+     : public ClassDecoder {
+ public:
+  MRRC_cccc11000101ttttttttccccoooommmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      MRRC_cccc11000101ttttttttccccoooommmm_case_0);
 };
 
 // MRS_cccc00010r001111dddd000000000000_case_0:

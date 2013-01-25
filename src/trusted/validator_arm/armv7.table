@@ -663,6 +663,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *Undefined
   baseline := Undefined;
   defs := {};
+  uses := {};
   safety := true => UNDEFINED;
 +--
 | op(23:20)
@@ -1873,47 +1874,71 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                rule := BL_BLX_immediate;
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- coprocessor_instructions_and_supervisor_call (See Section A5.6)
+*Nop
+  defs := {};
+  uses := {};
+*Undefined *Nop
+  baseline := Undefined;
+  safety := true => UNDEFINED;
+*Forbidden *Nop
+  baseline := Forbidden;
+  safety := true => FORBIDDEN;
++--
 # Note: We currently only allow floating point (and advanced SIMD)
 # coprocessor operations (coproc=101x).
 # Note: Column op1 is repeated so that the first three rows can define
 # (anded) multiple test conditions for this row.
 |  coproc(11:8) op1(25:20) op(4) Rn(19:16) op1_repeated(25:20)
-|  -            00000x     -     -          -      = UndefinedCondDecoder => Undefined
-                                                     Undefined_A5_6
-                                                     cccc1100000xnnnnxxxxccccxxxoxxxx
-|  -            11xxxx     -     -          -      = ForbiddenCondDecoder => Forbidden
-                                                     Svc_Rule_A1
-                                                     cccc1111iiiiiiiiiiiiiiiiiiiiiiii
-| ~101x         0xxxx0     -     -         ~000x00 = ForbiddenCondDecoder => Forbidden
-                                                     Stc_Rule_A2
-                                                     cccc110pudw0nnnnddddcccciiiiiiii
-|  "            0xxxx1     -    ~1111      ~000x01 = ForbiddenCondDecoder => Forbidden
-                                                     Ldc_immediate_Rule_A1
-                                                     cccc110pudw1nnnnddddcccciiiiiiii
-|  "            "          -     1111       "      = ForbiddenCondDecoder => Forbidden
-                                                     Ldc_literal_Rule_A1
-                                                     cccc110pudw11111ddddcccciiiiiiii
-|  "            000100     -     -          -      = ForbiddenCondDecoder => Forbidden
-                                                     Mcrr_Rule_A1
-                                                     cccc11000100ttttttttccccoooommmm (v5TE)
-|  "            000101     -     -          -      = ForbiddenCondDecoder => Forbidden
-                                                     Mrrc_Rule_A1
-                                                     cccc11000101ttttttttccccoooommmm (v5TE)
-|  "            10xxxx     0     -          -      = ForbiddenCondDecoder => Forbidden
-                                                     Cdp_Rule_A1
-                                                     cccc1110oooonnnnddddccccooo0mmmm
-|  "            10xxx0     1     -          -      = ForbiddenCondDecoder => Forbidden
-                                                     Mcr_Rule_A1
-                                                     cccc1110ooo0nnnnttttccccooo1mmmm
-|  "            10xxx1     1     -          -      = ForbiddenCondDecoder => Forbidden
-                                                     Mrc_Rule_A1
-                                                     cccc1110ooo1nnnnttttccccooo1mmmm
-|  101x         0xxxxx     -     -         ~000x0x -> extension_register_load_store_instructions
-|  "            00010x     -     -          -      -> transfer_between_arm_core_and_extension_registers_64_bit
-|  "            10xxxx     0     -          -      -> floating_point_data_processing_instructions
-|  "            10xxxx     1     -          -      -> transfer_between_arm_core_and_extension_register_8_16_and_32_bit
+|  -            00000x     -     -          -      =
+         *Undefined  # No rule defined in table.
+          pattern := cccc1100000xnnnnxxxxccccxxxoxxxx;
+|  -            11xxxx     -     -          -      =
+         *Forbidden
+          pattern := cccc1111iiiiiiiiiiiiiiiiiiiiiiii;
+          rule := SVC;
+| ~101x         0xxxx0     -     -         ~000x00 =
+         *Forbidden
+          pattern := cccc110pudw0nnnnddddcccciiiiiiii;
+          rule := STC;
+|  "            0xxxx1     -    ~1111      ~000x01 =
+          *Forbidden
+           pattern := cccc110pudw1nnnnddddcccciiiiiiii;
+           rule := LDC_immediate;
+|  "            "          -     1111       "      =
+          *Forbidden
+           pattern := cccc110pudw11111ddddcccciiiiiiii;
+           rule := LDC_literal;
+|  "            000100     -     -          -      =
+          *Forbidden
+           pattern := cccc11000100ttttttttccccoooommmm;
+           rule := MCRR;
+           arch := v5TE;
+|  "            000101     -     -          -      =
+          *Forbidden
+           pattern := cccc11000101ttttttttccccoooommmm;
+           rule := MRRC;
+           arch := v5TE;
+|  "            10xxxx     0     -          -      =
+          *Forbidden
+           pattern := cccc1110oooonnnnddddccccooo0mmmm;
+           rule := CDP;
+|  "            10xxx0     1     -          -      =
+          *Forbidden
+           pattern := cccc1110ooo0nnnnttttccccooo1mmmm;
+           rule := MCR;
+|  "            10xxx1     1     -          -      =
+          *Forbidden
+           pattern := cccc1110ooo1nnnnttttccccooo1mmmm;
+           rule := MRC;
+|  101x         0xxxxx     -     -         ~000x0x ->
+           extension_register_load_store_instructions
+|  "            00010x     -     -          -      ->
+           transfer_between_arm_core_and_extension_registers_64_bit
+|  "            10xxxx     0     -          -      ->
+           floating_point_data_processing_instructions
+|  "            10xxxx     1     -          -      ->
+           transfer_between_arm_core_and_extension_register_8_16_and_32_bit
 +--
 
 # TODO(karl): Add uses to corresponding classes.

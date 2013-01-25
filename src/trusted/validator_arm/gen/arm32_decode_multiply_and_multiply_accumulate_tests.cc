@@ -101,13 +101,14 @@ bool Binary4RegisterDualResultTesterCase0
 }
 
 // op(23:20)=0101
-//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
 //       safety: [true => UNDEFINED],
-//       true: true}
+//       true: true,
+//       uses: {}}
 class UnsafeCondDecoderTesterCase1
     : public UnsafeCondDecoderTester {
  public:
@@ -211,13 +212,14 @@ bool Binary4RegisterDualOpTesterCase2
 }
 
 // op(23:20)=0111
-//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
 //       safety: [true => UNDEFINED],
-//       true: true}
+//       true: true,
+//       uses: {}}
 class UnsafeCondDecoderTesterCase3
     : public UnsafeCondDecoderTester {
  public:
@@ -839,13 +841,14 @@ class Binary4RegisterDualResultTester_Case0
 };
 
 // op(23:20)=0101
-//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
 //       safety: [true => UNDEFINED],
-//       true: true}
+//       true: true,
+//       uses: {}}
 class UndefinedTester_Case1
     : public UnsafeCondDecoderTesterCase1 {
  public:
@@ -880,13 +883,14 @@ class Binary4RegisterDualOpTester_Case2
 };
 
 // op(23:20)=0111
-//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
 //       safety: [true => UNDEFINED],
-//       true: true}
+//       true: true,
+//       uses: {}}
 class UndefinedTester_Case3
     : public UnsafeCondDecoderTesterCase3 {
  public:
@@ -1151,18 +1155,19 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // op(23:20)=0101
-//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0,
 //       pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
-//       true: true}
+//       true: true,
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        UndefinedTester_Case1_TestCase1) {
   UndefinedTester_Case1 baseline_tester;
-  NamedActual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_None actual;
+  NamedActual_Unnamed_case_1_None actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00000101xxxxxxxxxxxx1001xxxx");
 }
@@ -1192,18 +1197,19 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // op(23:20)=0111
-//    = {actual: Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0,
 //       pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //       safety: [true => UNDEFINED],
-//       true: true}
+//       true: true,
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        UndefinedTester_Case3_TestCase3) {
   UndefinedTester_Case3 baseline_tester;
-  NamedActual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1_None actual;
+  NamedActual_Unnamed_case_1_None actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00000111xxxxxxxxxxxx1001xxxx");
 }

@@ -1446,6 +1446,16 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110oooonnnnddddccccooo0mmmm,
+//    rule: CDP,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
 //   {arch: v7,
 //    baseline: Forbidden,
 //    cond: cond(31:28),
@@ -1481,6 +1491,26 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
+//    rule: LDC_immediate,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw11111ddddcccciiiiiiii,
+//    rule: LDC_literal,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
 //   {arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
@@ -1503,6 +1533,27 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
+//   {arch: v5TE,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc11000100ttttttttccccoooommmm,
+//    rule: MCRR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
+//    rule: MCR,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
 //   {arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
@@ -1514,12 +1565,33 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
+//    rule: MRC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
 //   {arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    pattern: 111111000101ssssttttiiiiiiiiiiii,
 //    rule: MRRC2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {arch: v5TE,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc11000101ttttttttccccoooommmm,
+//    rule: MRRC,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -1578,6 +1650,26 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    defs: {},
 //    pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
 //    rule: STC2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw0nnnnddddcccciiiiiiii,
+//    rule: STC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
+//    rule: SVC,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -7176,6 +7268,33 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    safety: [true => UNDEFINED],
 //    true: true,
 //    uses: {}}
+//
+// Baseline:
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
+//    safety: [true => UNDEFINED],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
+//    safety: [true => UNDEFINED],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
+//    safety: [true => UNDEFINED],
+//    true: true,
+//    uses: {}}
 class Actual_Unnamed_case_1
      : public ClassDecoder {
  public:
@@ -7187,39 +7306,6 @@ class Actual_Unnamed_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_Unnamed_case_1);
-};
-
-// Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1
-//
-// Actual:
-//   {defs: {},
-//    safety: [true => UNDEFINED]}
-//
-// Baseline:
-//   {baseline: Undefined,
-//    constraints: ,
-//    defs: {},
-//    pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
-//    safety: [true => UNDEFINED],
-//    true: true}
-//
-// Baseline:
-//   {baseline: Undefined,
-//    constraints: ,
-//    defs: {},
-//    pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
-//    safety: [true => UNDEFINED],
-//    true: true}
-class Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1
-     : public ClassDecoder {
- public:
-  Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      Actual_Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_1);
 };
 
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1

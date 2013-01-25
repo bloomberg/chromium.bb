@@ -487,6 +487,29 @@ class STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0
       STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0);
 };
 
+// STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc110pudw0nnnnddddcccciiiiiiii,
+//    rule: STC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0);
+};
+
 // STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0:
 //
 //   {None: 32,
@@ -1466,6 +1489,29 @@ class SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0);
+};
+
+// SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
+//    rule: SVC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0);
 };
 
 // SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_0:
@@ -2931,7 +2977,8 @@ class Unnamed_case_1
 //    defs: {},
 //    pattern: cccc00000101xxxxxxxxxxxx1001xxxx,
 //    safety: [true => UNDEFINED],
-//    true: true}
+//    true: true,
+//    uses: {}}
 class Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0
      : public ClassDecoder {
  public:
@@ -2939,6 +2986,7 @@ class Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0);
@@ -2951,7 +2999,8 @@ class Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0
 //    defs: {},
 //    pattern: cccc00000111xxxxxxxxxxxx1001xxxx,
 //    safety: [true => UNDEFINED],
-//    true: true}
+//    true: true,
+//    uses: {}}
 class Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0
      : public ClassDecoder {
  public:
@@ -2959,9 +3008,32 @@ class Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0);
+};
+
+// Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0:
+//
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
+//    safety: [true => UNDEFINED],
+//    true: true,
+//    uses: {}}
+class Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0);
 };
 
 // VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0:

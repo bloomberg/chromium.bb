@@ -607,21 +607,21 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
 
   if ((inst.Bits() & 0x03E00000)  ==
           0x00000000 /* op1(25:20)=00000x */) {
-    return UndefinedCondDecoder_Undefined_A5_6_instance_;
+    return Undefined_None_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000A00 /* coproc(11:8)=~101x */ &&
       (inst.Bits() & 0x03F00000)  ==
           0x00400000 /* op1(25:20)=000100 */) {
-    return ForbiddenCondDecoder_Mcrr_Rule_A1_instance_;
+    return Forbidden_MCRR_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000A00 /* coproc(11:8)=~101x */ &&
       (inst.Bits() & 0x03F00000)  ==
           0x00500000 /* op1(25:20)=000101 */) {
-    return ForbiddenCondDecoder_Mrrc_Rule_A1_instance_;
+    return Forbidden_MRRC_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -630,7 +630,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
           0x02000000 /* op1(25:20)=10xxx0 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000010 /* op(4)=1 */) {
-    return ForbiddenCondDecoder_Mcr_Rule_A1_instance_;
+    return Forbidden_MCR_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -639,7 +639,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
           0x02100000 /* op1(25:20)=10xxx1 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000010 /* op(4)=1 */) {
-    return ForbiddenCondDecoder_Mrc_Rule_A1_instance_;
+    return Forbidden_MRC_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -648,7 +648,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
           0x00000000 /* op1(25:20)=0xxxx0 */ &&
       (inst.Bits() & 0x03B00000)  !=
           0x00000000 /* op1_repeated(25:20)=~000x00 */) {
-    return ForbiddenCondDecoder_Stc_Rule_A2_instance_;
+    return Forbidden_STC_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -659,7 +659,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
           0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x03B00000)  !=
           0x00100000 /* op1_repeated(25:20)=~000x01 */) {
-    return ForbiddenCondDecoder_Ldc_immediate_Rule_A1_instance_;
+    return Forbidden_LDC_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -670,7 +670,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x03B00000)  !=
           0x00100000 /* op1_repeated(25:20)=~000x01 */) {
-    return ForbiddenCondDecoder_Ldc_literal_Rule_A1_instance_;
+    return Forbidden_LDC_literal_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -679,7 +679,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
           0x02000000 /* op1(25:20)=10xxxx */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* op(4)=0 */) {
-    return ForbiddenCondDecoder_Cdp_Rule_A1_instance_;
+    return Forbidden_CDP_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  ==
@@ -718,7 +718,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
 
   if ((inst.Bits() & 0x03000000)  ==
           0x03000000 /* op1(25:20)=11xxxx */) {
-    return ForbiddenCondDecoder_Svc_Rule_A1_instance_;
+    return Forbidden_SVC_instance_;
   }
 
   // Catch any attempt to fall through...
