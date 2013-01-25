@@ -169,6 +169,7 @@ bool CommandBufferService::RegisterTransferBuffer(
 
 void CommandBufferService::SetToken(int32 token) {
   token_ = token;
+  UpdateState();
 }
 
 void CommandBufferService::SetParseError(error::Error error) {
