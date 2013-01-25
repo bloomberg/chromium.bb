@@ -106,8 +106,7 @@ void OAuth2LoginManager::RemoveLegacyTokens() {
 
 void OAuth2LoginManager::StoreOAuth2Tokens(
     const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
-  TokenService* token_service =
-      TokenServiceFactory::GetForProfile(user_profile_);
+  TokenService* token_service = SetupTokenService();
   token_service->UpdateCredentialsWithOAuth2(oauth2_tokens);
 }
 

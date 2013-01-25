@@ -51,7 +51,7 @@ void OAuth2TokenFetcher::Start() {
         CrosLibrary::Get()->GetNetworkLibrary()->active_network();
     if (!network || !network->connected() || network->restricted_pool()) {
       // If network is offline, defer the token fetching until online.
-      VLOG(1) << "Network is offline.  Deferring OAuth1 token fetch.";
+      VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
       BrowserThread::PostDelayedTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&OAuth2TokenFetcher::Start, AsWeakPtr()),
