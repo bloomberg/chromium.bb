@@ -242,6 +242,7 @@ void InstalledLoader::LoadAllExtensions() {
   int legacy_packaged_app_count = 0;
   int platform_app_count = 0;
   int user_script_count = 0;
+  int content_pack_count = 0;
   int extension_user_count = 0;
   int extension_external_count = 0;
   int theme_count = 0;
@@ -325,6 +326,9 @@ void InstalledLoader::LoadAllExtensions() {
     if (extension_action_manager->GetBrowserAction(**ex))
       ++browser_action_count;
 
+    if ((*ex)->is_content_pack())
+      ++content_pack_count;
+
     extension_service_->RecordPermissionMessagesHistogram(
         *ex, "Extensions.Permissions_Load");
   }
@@ -358,6 +362,7 @@ void InstalledLoader::LoadAllExtensions() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadContentPack", content_pack_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.DisabledForPermissions",
                            disabled_for_permissions_count);
 }

@@ -694,6 +694,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
 
   // Content pack related.
+  bool is_content_pack() const;
   ExtensionResource GetContentPackSiteList() const;
 
   GURL GetBackgroundURL() const;

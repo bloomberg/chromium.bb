@@ -1287,8 +1287,12 @@ bool Extension::is_theme() const {
   return manifest()->is_theme();
 }
 
+bool Extension::is_content_pack() const {
+  return !content_pack_site_list_.empty();
+}
+
 ExtensionResource Extension::GetContentPackSiteList() const {
-  if (content_pack_site_list_.empty())
+  if (!is_content_pack())
     return ExtensionResource();
 
   return GetResource(content_pack_site_list_);
