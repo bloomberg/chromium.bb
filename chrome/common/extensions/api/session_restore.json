@@ -1,0 +1,69 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "sessionRestore",
+    "dependencies": [ "tabs", "windows" ],
+    "types": [
+      {
+        "id": "ClosedEntry",
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 0, "description": "The ID of the browser session."},
+          "timestamp": {"type": "integer", "description": "The time when the window or tab was closed, represented in milliseconds since the epoch"},
+          "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The closed $ref:tabs.Tab, if this entry describes a tab. Either this or $ref:ClosedEntry.window will be set."},
+          "window": {"$ref": "windows.Window", "optional": true, "description": "The closed $ref:windows.Window, if this entry describes a window. Either this or $ref:ClosedEntry.tab will be set."}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "getRecentlyClosed",
+        "type": "function",
+        "description": "Gets the list of recently closed tabs and/or windows.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "options",
+            "optional": true, 
+            "properties": {
+              "maxResults": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 25,
+                "optional": true,
+                "description": "The maximum number of entries to be fetched in the requested list. Omit to fetch the maximum number of entries (25)."
+              },
+              "entryType": {
+                "type": "string",
+                "enum": ["tab", "window"],
+                "optional": true,
+                "description": "The type of entry to fetch. Omit to fetch all types of entries."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "entries", "type": "array", "items": { "$ref": "ClosedEntry" }, "description": "The list of closed entries in reverse order that they were closed (the most recently closed tab or window will be at index <code>0</code>). If <code>entryType</code> is specified the entries will be only of that type, otherwise the entries may contain either tabs or windows.List of $ref:ClosedEntry representing the closed tab/window for the session."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "restore",
+        "type": "function",
+        "description": "Reopens a $ref:ClosedEntry, with an optional callback to run when the entry has been restored.",
+        "parameters": [
+          {"type": "integer", "name": "id", "optional": true, "description": "The id of the $ref:ClosedEntry to restore."},
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      }
+    ]
+  }
+]

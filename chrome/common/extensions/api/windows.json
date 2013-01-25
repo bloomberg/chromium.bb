@@ -14,22 +14,24 @@
         "id": "Window",
         "type": "object",
         "properties": {
-          "id": {"type": "integer", "minimum": 0, "description": "The ID of the window. Window IDs are unique within a browser session."},
+          "id": {"type": "integer", "optional": true, "minimum": 0, "description": "The ID of the window. Window IDs are unique within a browser session. Under some circumstances a Window may not be assigned an ID, for example when querying closed windows from the $ref:sessionRestore API."},
           "focused": {"type": "boolean", "description": "Whether the window is currently the focused window."},
-          "top": {"type": "integer", "description": "The offset of the window from the top edge of the screen in pixels."},
-          "left": {"type": "integer", "description": "The offset of the window from the left edge of the screen in pixels."},
-          "width": {"type": "integer", "description": "The width of the window in pixels."},
-          "height": {"type": "integer", "description": "The height of the window in pixels."},
+          "top": {"type": "integer", "optional": true, "description": "The offset of the window from the top edge of the screen in pixels. Under some circumstances a Window may not be assigned top property, for example when querying closed windows from the $ref:sessionRestore API."},
+          "left": {"type": "integer", "optional": true, "description": "The offset of the window from the left edge of the screen in pixels. Under some circumstances a Window may not be assigned left property, for example when querying closed windows from the $ref:sessionRestore API."},
+          "width": {"type": "integer", "optional": true, "description": "The width of the window in pixels. Under some circumstances a Window may not be assigned width property, for example when querying closed windows from the $ref:sessionRestore API."},
+          "height": {"type": "integer", "optional": true, "description": "The height of the window in pixels. Under some circumstances a Window may not be assigned height property, for example when querying closed windows from the $ref:sessionRestore API."},
           "tabs": {"type": "array", "items": { "$ref": "tabs.Tab" }, "optional": true, "description": "Array of $ref:tabs.Tab objects representing the current tabs in the window."},
           "incognito": {"type": "boolean", "description": "Whether the window is incognito."},
           "type": {
             "type": "string",
-            "description": "The type of browser window this is.",
+            "optional": true,
+            "description": "The type of browser window this is. Under some circumstances a Window may not be assigned type property, for example when querying closed windows from the $ref:sessionRestore API.",
             "enum": ["normal", "popup", "panel", "app"]
           },
           "state": {
             "type": "string",
-            "description": "The state of this browser window.",
+            "optional": true,
+            "description": "The state of this browser window. Under some circumstances a Window may not be assigned state property, for example when querying closed windows from the $ref:sessionRestore API.",
             "enum": ["normal", "minimized", "maximized", "fullscreen"]
           },
           "alwaysOnTop": {"type": "boolean", "description": "Whether the window is set to be always on top."}

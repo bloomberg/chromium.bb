@@ -94,6 +94,7 @@ class APIPermission {
     kPushMessaging,
     kRtcPrivate,
     kSerial,
+    kSessionRestore,
     kSocket,
     kStorage,
     kSyncFileSystem,
