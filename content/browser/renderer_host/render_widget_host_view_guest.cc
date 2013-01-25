@@ -155,49 +155,39 @@ gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
 void RenderWidgetHostViewGuest::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::Focus() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::Blur() {
-  NOTIMPLEMENTED();
 }
 
 bool RenderWidgetHostViewGuest::HasFocus() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool RenderWidgetHostViewGuest::IsSurfaceAvailableForCopy() const {
-  NOTIMPLEMENTED();
   return true;
 }
 
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
@@ -205,12 +195,10 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
     WebKit::WebTextDirection start_direction,
     const gfx::Rect& end_rect,
     WebKit::WebTextDirection end_direction) {
-  NOTIMPLEMENTED();
 }
 
 BackingStore* RenderWidgetHostViewGuest::AllocBackingStore(
     const gfx::Size& size) {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
@@ -219,114 +207,90 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Size& /* dst_size */,
     const base::Callback<void(bool)>& callback,
     skia::PlatformBitmap* output) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfaceSuspend() {
-  NOTIMPLEMENTED();
 }
 
 bool RenderWidgetHostViewGuest::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::OnAcceleratedCompositingStateChange() {
-  NOTIMPLEMENTED();
 }
 
 bool RenderWidgetHostViewGuest::LockMouse() {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void RenderWidgetHostViewGuest::UnlockMouse() {
-  NOTIMPLEMENTED();
 }
 
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewGuest::SetActive(bool active) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetTakesFocusOnlyOnMouseDown(bool flag) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetWindowVisibility(bool visible) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::WindowFrameChanged() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
-  NOTIMPLEMENTED();
 }
 
 bool RenderWidgetHostViewGuest::SupportsSpeech() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void RenderWidgetHostViewGuest::SpeakSelection() {
-  NOTIMPLEMENTED();
 }
 
 bool RenderWidgetHostViewGuest::IsSpeaking() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void RenderWidgetHostViewGuest::StopSpeaking() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::AboutToWaitForBackingStoreMsg() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::PluginFocusChanged(bool focused,
                                                    int plugin_id) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::StartPluginIme() {
-  NOTIMPLEMENTED();
 }
 
 bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
     const NativeWebKeyboardEvent& event) {
-  NOTIMPLEMENTED();
   return false;
 }
 
 gfx::PluginWindowHandle
 RenderWidgetHostViewGuest::AllocateFakePluginWindowHandle(
     bool opaque, bool root) {
-  NOTIMPLEMENTED();
   return 0;
 }
 
 void RenderWidgetHostViewGuest::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfaceSetIOSurface(
@@ -334,7 +298,6 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceSetIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfaceSetTransportDIB(
@@ -342,29 +305,24 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceSetTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
-  NOTIMPLEMENTED();
 }
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 void RenderWidgetHostViewGuest::StartContentIntent(const GURL& content_url) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetCachedBackgroundColor(SkColor color) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
     const gfx::Rect& target_rect,
     const SkBitmap& zoomed_bitmap) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::SetCachedPageScaleFactorLimits(
     float minimum_scale,
     float maximum_scale) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::UpdateFrameInfo(
@@ -375,45 +333,37 @@ void RenderWidgetHostViewGuest::UpdateFrameInfo(
     const gfx::Size& content_size,
     const gfx::Vector2dF& controls_offset,
     const gfx::Vector2dF& content_offset) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::HasTouchEventHandlers(bool need_touch_events) {
-  NOTIMPLEMENTED();
 }
 #endif  // defined(OS_ANDROID)
 
 #if defined(TOOLKIT_GTK)
 GdkEventButton* RenderWidgetHostViewGuest::GetLastMouseDown() {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
 gfx::NativeView RenderWidgetHostViewGuest::BuildInputMethodsGtkMenu() {
-  NOTIMPLEMENTED();
   return gfx::NativeView();
 }
 
 void RenderWidgetHostViewGuest::CreatePluginContainer(
     gfx::PluginWindowHandle id) {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::DestroyPluginContainer(
     gfx::PluginWindowHandle id) {
-  NOTIMPLEMENTED();
 }
 #endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void RenderWidgetHostViewGuest::WillWmDestroy() {
-  NOTIMPLEMENTED();
 }
 #endif
 
 #if defined(OS_POSIX) || defined(USE_AURA)
 void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  NOTIMPLEMENTED();
 }
 #endif  // defined(OS_POSIX) || defined(USE_AURA)
 

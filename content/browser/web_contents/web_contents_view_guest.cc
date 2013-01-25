@@ -101,7 +101,6 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
 
 #if defined(OS_MACOSX)
 void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
-  NOTIMPLEMENTED();
 }
 #endif
 
@@ -121,20 +120,16 @@ void WebContentsViewGuest::RestoreFocus() {
 }
 
 void WebContentsViewGuest::SetPageTitle(const string16& title) {
-  NOTIMPLEMENTED();
 }
 
 void WebContentsViewGuest::OnTabCrashed(base::TerminationStatus status,
                                         int error_code) {
-  NOTIMPLEMENTED();
 }
 
 void WebContentsViewGuest::Focus() {
-  NOTIMPLEMENTED();
 }
 
 void WebContentsViewGuest::StoreFocus() {
-  NOTIMPLEMENTED();
 }
 
 WebDropData* WebContentsViewGuest::GetDropData() const {
@@ -143,7 +138,6 @@ WebDropData* WebContentsViewGuest::GetDropData() const {
 }
 
 void WebContentsViewGuest::CloseTabAfterEventTracking() {
-  NOTIMPLEMENTED();
 }
 
 void WebContentsViewGuest::UpdateDragCursor(WebDragOperation operation) {
@@ -151,11 +145,9 @@ void WebContentsViewGuest::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void WebContentsViewGuest::GotFocus() {
-  NOTIMPLEMENTED();
 }
 
 void WebContentsViewGuest::TakeFocus(bool reverse) {
-  NOTIMPLEMENTED();
 }
 
 void WebContentsViewGuest::ShowContextMenu(
