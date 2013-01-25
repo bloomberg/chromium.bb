@@ -118,6 +118,7 @@ GEN_OTHER_LIST = (['arm32_decode.cc', 'arm32_decode.h',
                    'arm32_decode_baselines.h',
                    'arm32_decode_named.cc' ,
                    'arm32_decode_named_classes.h',
+                   'arm32_decode_named_bases.h',
                    'arm32_decode_named_decoder.h'] +
                   GenerateBaselineFiles('arm32_decode_baselines_%s.h') +
                   GenerateBaselineFiles('arm32_decode_baselines_%s.cc'))

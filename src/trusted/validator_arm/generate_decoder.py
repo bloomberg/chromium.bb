@@ -123,6 +123,10 @@ def main(argv):
       dgen_test_output.generate_named_classes_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
+    elif output_filename.endswith('_named_bases.h'):
+      dgen_test_output.generate_named_bases_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     elif output_filename.endswith('_named_decoder.h'):
       dgen_test_output.generate_named_decoder_h(
           decoder, decoder_name, _localize_filename(output_filename),

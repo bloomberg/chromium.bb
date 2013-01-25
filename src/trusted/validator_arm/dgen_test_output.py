@@ -279,6 +279,91 @@ def _generate_baseline_and_actual(code, symbol, decoder,
         out.write(actual_code % values)
         generated_symbols.add(sym_name)
 
+# Defines the header for decoder_bases.h
+NAMED_BASES_H_HEADER="""%(FILE_HEADER)s
+%(NOT_TCB_MESSAGE)s
+
+#ifndef %(IFDEF_NAME)s
+#define %(IFDEF_NAME)s
+
+#include "native_client/src/trusted/validator_arm/actual_classes.h"
+#include "native_client/src/trusted/validator_arm/baseline_classes.h"
+#include "native_client/src/trusted/validator_arm/named_class_decoder.h"
+#include "%(FILENAME_BASE)s_baselines.h"
+
+namespace nacl_arm_test {
+"""
+
+GENERATED_BASELINE_HEADER="""
+/*
+ * Define named class decoders for each automatically generated baseline
+ * decoder.
+ */
+"""
+
+NAMED_GEN_BASE_DECLARE="""class Named%(gen_base)s
+    : public NamedClassDecoder {
+ public:
+  Named%(gen_base)s()
+    : NamedClassDecoder(decoder_, "%(gen_base)s")
+  {}
+
+ private:
+  nacl_arm_dec::%(gen_base)s decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(Named%(gen_base)s);
+};
+
+"""
+
+NAMED_BASES_H_FOOTER="""
+} // namespace nacl_arm_test
+#endif  // %(IFDEF_NAME)s
+"""
+
+NAMED_BASES_H_SUFFIX = '_named_bases.h'
+
+def generate_named_bases_h(decoder, decoder_name, filename, out, cl_args):
+  """Defines named classes needed for testing generated baselines.
+
+  Args:
+    tables: list of Table objects to process.
+    decoder_name: The name of the decoder state to build.
+    filename: The (localized) name for the .h file.
+    out: a COutput object to write to.
+    cl_args: A dictionary of additional command line arguments.
+  """
+  global _cl_args
+  if not decoder.primary: raise Exception('No tables provided.')
+  assert filename.endswith(NAMED_BASES_H_SUFFIX)
+  _cl_args = cl_args
+
+  decoder = dgen_baselines.AddBaselinesToDecoder(decoder)
+
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
+      'IFDEF_NAME' : dgen_output.ifdef_name(filename),
+      'FILENAME_BASE': filename[:-len(NAMED_BASES_H_SUFFIX)],
+      'decoder_name': decoder_name,
+      }
+  out.write(NAMED_BASES_H_HEADER % values)
+  _generate_generated_baseline(decoder, out)
+  out.write(NAMED_BASES_H_FOOTER % values)
+
+def _generate_generated_baseline(decoder, out):
+  """ Generates code to define the given symbol. Does so for
+      the generated baseline decoders, filtering using actions.
+  """
+  generated_symbols = set()
+  values = {}
+  out.write(GENERATED_BASELINE_HEADER % values)
+  for d in decoder.action_filter(['generated_baseline']).decoders():
+    gen_base = d.find('generated_baseline')
+    if gen_base and gen_base not in generated_symbols:
+      values['gen_base'] = gen_base
+      out.write(NAMED_GEN_BASE_DECLARE % values)
+      generated_symbols.add(gen_base)
+
 # Defines the header for decoder_named_classes.h
 NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
@@ -290,6 +375,7 @@ NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 #include "%(FILENAME_BASE)s_actuals.h"
+#include "%(FILENAME_BASE)s_named_bases.h"
 """
 
 RULE_CLASSES_HEADER="""
@@ -670,6 +756,7 @@ TEST_CC_HEADER="""%(FILE_HEADER)s
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 #include "native_client/src/trusted/validator_arm/arm_helpers.h"
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode_named_bases.h"
 
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;

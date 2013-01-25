@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_actuals.h"
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode_named_bases.h"
 
 /*
  * Define rule decoder classes.
