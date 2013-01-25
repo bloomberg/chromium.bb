@@ -13,22 +13,21 @@ class SmoothnessMeasurement(object):
       js = f.read()
       tab.ExecuteJavaScript(js)
 
-  def bindToScrollInteraction(self):
-    tab = self._tab
-    if tab.EvaluateJavaScript('window.__scrollingInteraction === undefined'):
-      raise Exception('bindToScrollInteraction requires ' +
-                      'window.__scrollingInteraction to be set.')
+  def Start(self):
+    self._tab.ExecuteJavaScript(
+        'window.__renderingStats = new __RenderingStats();'
+        'window.__renderingStats.start()')
 
+  def Stop(self):
+    self._tab.ExecuteJavaScript('window.__renderingStats.stop()')
+
+  def BindToInteraction(self, interaction):
     # Make the scroll test start and stop measurement automatically.
-    tab.ExecuteJavaScript("""
-        window.__renderingStats = new __RenderingStats();
-        window.__scrollingInteraction.beginMeasuringHook = function() {
-            window.__renderingStats.start();
-        };
-        window.__scrollingInteraction.endMeasuringHook = function() {
-            window.__renderingStats.stop();
-        };
-    """)
+    self._tab.ExecuteJavaScript(
+        'window.__renderingStats = new __RenderingStats();')
+    interaction.BindMeasurementJavaScript(self._tab,
+                                          'window.__renderingStats.start();',
+                                          'window.__renderingStats.stop();')
 
   @property
   def start_values(self):
