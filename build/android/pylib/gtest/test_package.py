@@ -104,7 +104,8 @@ class TestPackage(object):
           external_storage + '/paks/chrome_100_percent.pak')
       self.adb.PushIfNeeded(self.test_suite_dirname + '/test_data',
                             external_storage + '/test_data')
-    if self.test_suite_basename == 'content_unittests':
+    if self.test_suite_basename in ('content_unittests',
+                                    'components_unittests'):
       self.adb.PushIfNeeded(
           self.test_suite_dirname + '/content_resources.pak',
           external_storage + '/paks/content_resources.pak')

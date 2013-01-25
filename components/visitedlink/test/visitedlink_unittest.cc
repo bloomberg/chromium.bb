@@ -13,8 +13,6 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -496,10 +494,9 @@ TEST_F(VisitedLinkTest, Listener) {
   EXPECT_EQ(2, listener->reset_count());
 }
 
-// TODO(boliu): Inherit content::TestBrowserContext when componentized.
-class VisitCountingProfile : public TestingProfile {
+class VisitCountingContext : public content::TestBrowserContext {
  public:
-  VisitCountingProfile()
+  VisitCountingContext()
       : add_count_(0),
         add_event_count_(0),
         reset_event_count_(0),
@@ -553,19 +550,19 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
   virtual int VisibleWidgetCount() const OVERRIDE { return widgets_; }
 
   virtual bool Send(IPC::Message* msg) OVERRIDE {
-    VisitCountingProfile* counting_profile =
-        static_cast<VisitCountingProfile*>(
+    VisitCountingContext* counting_context =
+        static_cast<VisitCountingContext*>(
             GetBrowserContext());
 
     if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
       PickleIterator iter(*msg);
       std::vector<uint64> fingerprints;
       CHECK(IPC::ReadParam(msg, &iter, &fingerprints));
-      counting_profile->CountAddEvent(fingerprints.size());
+      counting_context->CountAddEvent(fingerprints.size());
     } else if (msg->type() == ChromeViewMsg_VisitedLink_Reset::ID) {
-      counting_profile->CountResetEvent();
+      counting_context->CountResetEvent();
     } else if (msg->type() == ChromeViewMsg_VisitedLink_NewTable::ID) {
-      counting_profile->CountNewTable();
+      counting_context->CountNewTable();
     }
 
     delete msg;
@@ -593,23 +590,22 @@ class VisitedLinkRenderProcessHostFactory
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkRenderProcessHostFactory);
 };
 
-// TODO(boliu): Inherit content::RenderViewHostTestHarness when componentized.
-class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
+class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
  public:
   VisitedLinkEventsTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
   virtual ~VisitedLinkEventsTest() {}
   virtual void SetUp() {
-    browser_context_.reset(new VisitCountingProfile());
-    master_.reset(new VisitedLinkMaster(profile(), &delegate_, true));
+    browser_context_.reset(new VisitCountingContext());
+    master_.reset(new VisitedLinkMaster(context(), &delegate_, true));
     master_->Init();
     SetRenderProcessHostFactory(&vc_rph_factory_);
     content::RenderViewHostTestHarness::SetUp();
   }
 
-  VisitCountingProfile* profile() const {
-    return static_cast<VisitCountingProfile*>(browser_context_.get());
+  VisitCountingContext* context() const {
+    return static_cast<VisitCountingContext*>(browser_context_.get());
   }
 
   VisitedLinkMaster* master() const {
@@ -648,14 +644,14 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 
   // Make sure that coalescing actually occurs. There should be no links or
   // events received by the renderer.
-  EXPECT_EQ(0, profile()->add_count());
-  EXPECT_EQ(0, profile()->add_event_count());
+  EXPECT_EQ(0, context()->add_count());
+  EXPECT_EQ(0, context()->add_event_count());
 
   WaitForCoalescense();
 
   // We now should have 3 entries added in 1 event.
-  EXPECT_EQ(3, profile()->add_count());
-  EXPECT_EQ(1, profile()->add_event_count());
+  EXPECT_EQ(3, context()->add_count());
+  EXPECT_EQ(1, context()->add_event_count());
 
   // Test whether the coalescing continues by adding a few more URLs.
   master()->AddURL(GURL("http://google.com/chrome/"));
@@ -665,8 +661,8 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   WaitForCoalescense();
 
   // We should have 6 entries added in 2 events.
-  EXPECT_EQ(6, profile()->add_count());
-  EXPECT_EQ(2, profile()->add_event_count());
+  EXPECT_EQ(6, context()->add_count());
+  EXPECT_EQ(2, context()->add_event_count());
 
   // Test whether duplicate entries produce add events.
   master()->AddURL(GURL("http://acidtests.org/"));
@@ -674,8 +670,8 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   WaitForCoalescense();
 
   // We should have no change in results.
-  EXPECT_EQ(6, profile()->add_count());
-  EXPECT_EQ(2, profile()->add_event_count());
+  EXPECT_EQ(6, context()->add_count());
+  EXPECT_EQ(2, context()->add_event_count());
 
   // Ensure that the coalescing does not resume after resetting.
   master()->AddURL(GURL("http://build.chromium.org/"));
@@ -684,9 +680,9 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   WaitForCoalescense();
 
   // We should have no change in results except for one new reset event.
-  EXPECT_EQ(6, profile()->add_count());
-  EXPECT_EQ(2, profile()->add_event_count());
-  EXPECT_EQ(1, profile()->reset_event_count());
+  EXPECT_EQ(6, context()->add_count());
+  EXPECT_EQ(2, context()->add_event_count());
+  EXPECT_EQ(1, context()->reset_event_count());
 }
 
 TEST_F(VisitedLinkEventsTest, Basics) {
@@ -702,16 +698,16 @@ TEST_F(VisitedLinkEventsTest, Basics) {
   WaitForCoalescense();
 
   // We now should have 1 add event.
-  EXPECT_EQ(1, profile()->add_event_count());
-  EXPECT_EQ(0, profile()->reset_event_count());
+  EXPECT_EQ(1, context()->add_event_count());
+  EXPECT_EQ(0, context()->reset_event_count());
 
   master()->DeleteAllURLs();
 
   WaitForCoalescense();
 
   // We should have no change in add results, plus one new reset event.
-  EXPECT_EQ(1, profile()->add_event_count());
-  EXPECT_EQ(1, profile()->reset_event_count());
+  EXPECT_EQ(1, context()->add_event_count());
+  EXPECT_EQ(1, context()->reset_event_count());
 }
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
@@ -730,15 +726,15 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   WaitForCoalescense();
 
   // We shouldn't have any events.
-  EXPECT_EQ(0, profile()->add_event_count());
-  EXPECT_EQ(0, profile()->reset_event_count());
+  EXPECT_EQ(0, context()->add_event_count());
+  EXPECT_EQ(0, context()->reset_event_count());
 
   // Simulate the tab becoming active.
   RenderViewHostTester::For(rvh())->SimulateWasShown();
 
   // We should now have 3 add events, still no reset events.
-  EXPECT_EQ(1, profile()->add_event_count());
-  EXPECT_EQ(0, profile()->reset_event_count());
+  EXPECT_EQ(1, context()->add_event_count());
+  EXPECT_EQ(0, context()->reset_event_count());
 
   // Deactivate the tab again.
   RenderViewHostTester::For(rvh())->SimulateWasHidden();
@@ -750,21 +746,21 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   WaitForCoalescense();
 
   // Again, no change in events until tab is active.
-  EXPECT_EQ(1, profile()->add_event_count());
-  EXPECT_EQ(0, profile()->reset_event_count());
+  EXPECT_EQ(1, context()->add_event_count());
+  EXPECT_EQ(0, context()->reset_event_count());
 
   // Activate the tab.
   RenderViewHostTester::For(rvh())->SimulateWasShown();
 
   // We should have only one more reset event.
-  EXPECT_EQ(1, profile()->add_event_count());
-  EXPECT_EQ(1, profile()->reset_event_count());
+  EXPECT_EQ(1, context()->add_event_count());
+  EXPECT_EQ(1, context()->reset_event_count());
 }
 
 // Tests that VisitedLink ignores renderer process creation notification for a
-// different profile.
+// different context.
 TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
-  VisitCountingProfile different_context;
+  VisitCountingContext different_context;
   VisitRelayingRenderProcessHost different_process_host(&different_context);
 
   content::NotificationService::current()->Notify(

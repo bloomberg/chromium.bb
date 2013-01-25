@@ -1650,11 +1650,6 @@
         '../webkit/glue/web_intent_service_data_unittest.cc',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
-
-        # TODO(boliu): Move this to components_unittests target under
-        # components/.
-        '../components/auto_login_parser/auto_login_parser_unittest.cc',
-        '../components/visitedlink/test/visitedlink_unittest.cc',
       ],
       'conditions': [
         ['OS!="ios"', {
