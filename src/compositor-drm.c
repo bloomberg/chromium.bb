@@ -1017,7 +1017,7 @@ on_drm_input(int fd, uint32_t mask, void *data)
 }
 
 static int
-init_egl(struct drm_compositor *ec, struct udev_device *device)
+init_drm(struct drm_compositor *ec, struct udev_device *device)
 {
 	const char *filename, *sysnum;
 	int fd;
@@ -1042,6 +1042,13 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	weston_log("using %s\n", filename);
 
 	ec->drm.fd = fd;
+
+	return 0;
+}
+
+static int
+init_egl(struct drm_compositor *ec)
+{
 	ec->gbm = gbm_create_device(ec->drm.fd);
 
 	if (gl_renderer_create(&ec->base, ec->gbm, gl_renderer_opaque_attribs,
@@ -2237,7 +2244,12 @@ drm_compositor_create(struct wl_display *display,
 	}
 	path = udev_device_get_syspath(drm_device);
 
-	if (init_egl(ec, drm_device) < 0) {
+	if (init_drm(ec, drm_device) < 0) {
+		weston_log("failed to initialize kms\n");
+		goto err_udev_dev;
+	}
+
+	if (init_egl(ec) < 0) {
 		weston_log("failed to initialize egl\n");
 		goto err_udev_dev;
 	}
