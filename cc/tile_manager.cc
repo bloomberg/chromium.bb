@@ -150,8 +150,11 @@ public:
   bool operator() (const Tile* a, const Tile* b) const {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
-    if (ams.bin != bms.bin)
-      return ams.bin < bms.bin;
+    if (ams.bin[HIGH_PRIORITY_BIN] != bms.bin[HIGH_PRIORITY_BIN])
+      return ams.bin[HIGH_PRIORITY_BIN] < bms.bin[HIGH_PRIORITY_BIN];
+
+    if (ams.bin[LOW_PRIORITY_BIN] != bms.bin[LOW_PRIORITY_BIN])
+      return ams.bin[LOW_PRIORITY_BIN] < bms.bin[LOW_PRIORITY_BIN];
 
     if (ams.resolution != bms.resolution)
       return ams.resolution < bms.resolution;
@@ -188,22 +191,27 @@ void TileManager::ManageTiles() {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
 
-    TilePriority prio;
+    TilePriority prio[NUM_BIN_PRIORITIES];
     switch (tree_priority) {
       case SAME_PRIORITY_FOR_BOTH_TREES:
-        prio = tile->combined_priority();
+        prio[HIGH_PRIORITY_BIN] = prio[LOW_PRIORITY_BIN] =
+            tile->combined_priority();
         break;
       case SMOOTHNESS_TAKES_PRIORITY:
-        prio = tile->priority(ACTIVE_TREE);
+        prio[HIGH_PRIORITY_BIN] = tile->priority(ACTIVE_TREE);
+        prio[LOW_PRIORITY_BIN] = tile->priority(PENDING_TREE);
         break;
       case NEW_CONTENT_TAKES_PRIORITY:
-        prio = tile->priority(PENDING_TREE);
+        prio[HIGH_PRIORITY_BIN] = tile->priority(PENDING_TREE);
+        prio[LOW_PRIORITY_BIN] = tile->priority(ACTIVE_TREE);
         break;
     }
 
-    mts.resolution = prio.resolution;
-    mts.time_to_needed_in_seconds = prio.time_to_needed_in_seconds();
-    mts.bin = BinFromTilePriority(prio);
+    mts.resolution = prio[HIGH_PRIORITY_BIN].resolution;
+    mts.time_to_needed_in_seconds =
+        prio[HIGH_PRIORITY_BIN].time_to_needed_in_seconds();
+    mts.bin[HIGH_PRIORITY_BIN] = BinFromTilePriority(prio[HIGH_PRIORITY_BIN]);
+    mts.bin[LOW_PRIORITY_BIN] = BinFromTilePriority(prio[LOW_PRIORITY_BIN]);
     mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());
   }
 
@@ -233,7 +241,8 @@ void TileManager::ManageTiles() {
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
-    mts.bin = bin_map[mts.bin];
+    for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
+      mts.bin[i] = bin_map[mts.bin[i]];
   }
 
   SortTiles();
@@ -326,7 +335,8 @@ void TileManager::AssignGpuMemoryToTiles() {
     ManagedTileState& managed_tile_state = tile->managed_state();
     if (!managed_tile_state.can_be_freed)
       continue;
-    if (managed_tile_state.bin == NEVER_BIN) {
+    if (managed_tile_state.bin[HIGH_PRIORITY_BIN] == NEVER_BIN &&
+        managed_tile_state.bin[LOW_PRIORITY_BIN] == NEVER_BIN) {
       managed_tile_state.can_use_gpu_memory = false;
       FreeResourcesForTile(tile);
       continue;

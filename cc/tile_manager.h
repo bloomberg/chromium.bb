@@ -41,6 +41,12 @@ enum TileManagerBin {
   NUM_BINS = 4
 };
 
+enum TileManagerBinPriority {
+  HIGH_PRIORITY_BIN = 0,
+  LOW_PRIORITY_BIN = 1,
+  NUM_BIN_PRIORITIES = 2
+};
+
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
@@ -58,7 +64,7 @@ class CC_EXPORT ManagedTileState {
   std::list<skia::LazyPixelRef*> pending_pixel_refs;
 
   // Ephemeral state, valid only during Manage.
-  TileManagerBin bin;
+  TileManagerBin bin[NUM_BIN_PRIORITIES];
   // The bin that the tile would have if the GPU memory manager had a maximally permissive policy,
   // send to the GPU memory manager to determine policy.
   TileManagerBin gpu_memmgr_stats_bin;
