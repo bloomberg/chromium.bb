@@ -659,7 +659,7 @@ bool BrowserPlugin::CanGoForward() const {
 
 bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
                                           std::string* error_message) {
-  if (navigate_src_sent_) {
+  if (allocate_instance_id_sent_) {
     *error_message = browser_plugin::kErrorAlreadyNavigated;
     return false;
   }
