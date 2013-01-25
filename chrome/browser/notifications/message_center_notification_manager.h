@@ -90,8 +90,6 @@ class MessageCenterNotificationManager
   void AddProfileNotification(ProfileNotification* profile_notification);
   void RemoveProfileNotification(ProfileNotification* profile_notification);
 
-  ProfileNotification* FindProfileNotification(const std::string& id) const;
-
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };
 

@@ -7,14 +7,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 
@@ -140,42 +135,22 @@ bool MessageCenterNotificationManager::UpdateNotification(
 
 void MessageCenterNotificationManager::DisableExtension(
     const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  std::string extension_id = profile_notification->GetExtensionId();
-  DCHECK(!extension_id.empty());  // or UI should not have enabled the command.
-  profile_notification->profile()->GetExtensionService()->DisableExtension(
-      extension_id, extensions::Extension::DISABLE_USER_ACTION);
+  NOTIMPLEMENTED();
 }
 
 void MessageCenterNotificationManager::DisableNotificationsFromSource(
     const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  // UI should not have enabled the command if there is no valid source.
-  DCHECK(profile_notification->notification().origin_url().is_valid());
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(
-          profile_notification->profile());
-  service->DenyPermission(profile_notification->notification().origin_url());
+  NOTIMPLEMENTED();
 }
 
 void MessageCenterNotificationManager::NotificationRemoved(
     const std::string& notification_id) {
-  RemoveProfileNotification(FindProfileNotification(notification_id));
+  NOTIMPLEMENTED();
 }
 
 void MessageCenterNotificationManager::ShowSettings(
     const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile_notification->profile(),
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (profile_notification->GetExtensionId().empty())
-    chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  else
-    chrome::ShowExtensions(browser);
+  NOTIMPLEMENTED();
 }
 
 void MessageCenterNotificationManager::ShowSettingsDialog(
@@ -185,13 +160,12 @@ void MessageCenterNotificationManager::ShowSettingsDialog(
 
 void MessageCenterNotificationManager::OnClicked(
     const std::string& notification_id) {
-  FindProfileNotification(notification_id)->notification().Click();
+  NOTIMPLEMENTED();
 }
 
 void MessageCenterNotificationManager::OnButtonClicked(
     const std::string& notification_id, int button_index) {
-  FindProfileNotification(notification_id)->notification().ButtonClick(
-      button_index);
+  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -241,14 +215,4 @@ void MessageCenterNotificationManager::RemoveProfileNotification(
   message_center_->RemoveNotification(id);
   profile_notifications_.erase(id);
   delete profile_notification;
-}
-
-MessageCenterNotificationManager::ProfileNotification*
-    MessageCenterNotificationManager::FindProfileNotification(
-        const std::string& id) const {
-  NotificationMap::const_iterator iter = profile_notifications_.find(id);
-  // If the notification is shown in UI, it must be in the map.
-  DCHECK(iter != profile_notifications_.end());
-  DCHECK((*iter).second);
-  return (*iter).second;
 }
