@@ -806,7 +806,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void GetCompositionCharacterBounds(
       std::vector<gfx::Rect>* character_bounds) OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
-  virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;
 
  protected:
   RenderViewImpl(RenderViewImplParams* params);

@@ -446,10 +446,6 @@ class CONTENT_EXPORT RenderWidget
   // at the given point.
   virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const;
 
-  // Should return true if the underlying WebWidget is responsible for
-  // the scheduling of compositing requests.
-  virtual bool WebWidgetHandlesCompositorScheduling() const;
-
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32 routing_id_;
