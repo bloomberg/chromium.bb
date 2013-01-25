@@ -67,7 +67,8 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : BrowserMainParts() {
+    : BrowserMainParts(),
+      delegate_(NULL) {
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
@@ -94,14 +95,14 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ShellViewsDelegate;
 
-  ash::shell::ShellDelegateImpl* delegate = new ash::shell::ShellDelegateImpl;
-  ash::Shell::CreateInstance(delegate);
+  delegate_ = new ash::shell::ShellDelegateImpl;
+  ash::Shell::CreateInstance(delegate_);
   ash::Shell::GetInstance()->set_browser_context(browser_context_.get());
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
   gfx::Screen* screen = Shell::GetInstance()->GetScreen();
   screen->AddObserver(window_watcher_.get());
-  delegate->SetWatcher(window_watcher_.get());
+  delegate_->SetWatcher(window_watcher_.get());
 
   ash::shell::InitWindowTypeLauncher();
 
@@ -121,6 +122,8 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   screen->RemoveObserver(window_watcher_.get());
 
   window_watcher_.reset();
+  delegate_->SetWatcher(NULL);
+  delegate_ = NULL;
   ash::Shell::DeleteInstance();
   aura::Env::DeleteInstance();
 }

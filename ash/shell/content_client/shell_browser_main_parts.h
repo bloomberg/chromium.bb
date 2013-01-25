@@ -21,6 +21,7 @@ struct MainFunctionParams;
 namespace ash {
 namespace shell {
 
+class ShellDelegateImpl;
 class WindowWatcher;
 
 class ShellBrowserMainParts : public content::BrowserMainParts {
@@ -43,6 +44,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<content::ShellBrowserContext> browser_context_;
   scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
+  ShellDelegateImpl* delegate_;  // owned by Shell
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

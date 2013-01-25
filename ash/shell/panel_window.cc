@@ -4,8 +4,10 @@
 
 #include "ash/shell/panel_window.h"
 
+#include "ash/shell.h"
 #include "ash/wm/panel_frame_view.h"
 #include "base/utf_string_conversions.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
@@ -23,6 +25,7 @@ namespace ash {
 views::Widget* PanelWindow::CreatePanelWindow(const gfx::Rect& rect) {
   PanelWindow* panel_window = new PanelWindow("Example Panel Window");
   panel_window->params().bounds = rect;
+  panel_window->params().context = Shell::GetPrimaryRootWindow();
   return panel_window->CreateWidget();
 }
 

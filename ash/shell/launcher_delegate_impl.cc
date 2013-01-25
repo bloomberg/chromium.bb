@@ -55,7 +55,7 @@ ui::MenuModel* LauncherDelegateImpl::CreateApplicationMenu(
 }
 
 ash::LauncherID LauncherDelegateImpl::GetIDByWindow(aura::Window* window) {
-  return watcher_->GetIDByWindow(window);
+  return watcher_ ? watcher_->GetIDByWindow(window) : 0;
 }
 
 bool LauncherDelegateImpl::IsDraggable(const ash::LauncherItem& item) {

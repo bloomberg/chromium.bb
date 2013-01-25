@@ -52,6 +52,9 @@ class ASH_EXPORT PanelLayoutManager
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
 
+  // Call Shutdown() before deleting children of panel_container.
+  void Shutdown();
+
   void StartDragging(aura::Window* panel);
   void FinishDragging();
 

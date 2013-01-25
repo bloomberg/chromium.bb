@@ -412,6 +412,12 @@ void RootWindowController::CloseChildWindows() {
     status_area_widget_ = NULL;
   }
 
+  // panel_layout_manager_ needs to be shut down before windows are destroyed.
+  if (panel_layout_manager_) {
+    panel_layout_manager_->Shutdown();
+    panel_layout_manager_ = NULL;
+  }
+
   // Closing the windows frees the workspace controller.
   if (shelf_)
     shelf_->set_workspace_controller(NULL);

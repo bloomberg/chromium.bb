@@ -156,6 +156,10 @@ PanelLayoutManager::~PanelLayoutManager() {
       RemoveObserver(this);
 }
 
+void PanelLayoutManager::Shutdown() {
+  callout_widget_.reset();
+}
+
 void PanelLayoutManager::StartDragging(aura::Window* panel) {
   DCHECK(!dragged_panel_);
   DCHECK(panel->parent() == panel_container_);
@@ -191,7 +195,7 @@ void PanelLayoutManager::OnWindowResized() {
 }
 
 void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  if (child == callout_widget_->GetNativeWindow())
+  if (callout_widget_ && child == callout_widget_->GetNativeWindow())
     return;
   panel_windows_.push_back(child);
   child->AddObserver(this);
@@ -446,7 +450,8 @@ void PanelLayoutManager::UpdateCallout(aura::Window* active_panel) {
   // a callout as well.
   if (!active_panel ||
       launcher_->GetScreenBoundsOfItemIconForWindow(active_panel).IsEmpty()) {
-    callout_widget_->Hide();
+    if (callout_widget_)
+      callout_widget_->Hide();
     return;
   }
   MessageLoop::current()->PostTask(
@@ -457,6 +462,8 @@ void PanelLayoutManager::UpdateCallout(aura::Window* active_panel) {
 }
 
 void PanelLayoutManager::ShowCalloutHelper(aura::Window* active_panel) {
+  if (!callout_widget_)
+    return;
   DCHECK(active_panel);
   gfx::Rect bounds = active_panel->GetBoundsInRootWindow();
   gfx::Rect icon_bounds =
