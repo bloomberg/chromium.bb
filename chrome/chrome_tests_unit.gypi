@@ -1590,6 +1590,10 @@
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
 
+        # Duplicate these tests here because PathService has more items in
+        # unit_tests than in base_unittests.
+        '../base/path_service_unittest.cc',
+
         # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
         # Prefs move is complete and dependencies have been broken.
         '../base/prefs/json_pref_store_unittest.cc',

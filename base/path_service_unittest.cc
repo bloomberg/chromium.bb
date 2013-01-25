@@ -28,6 +28,7 @@ namespace {
 bool ReturnsValidPath(int dir_type) {
   FilePath path;
   bool result = PathService::Get(dir_type, &path);
+
   // Some paths might not exist on some platforms in which case confirming
   // |result| is true and !path.empty() is the best we can do.
   bool check_path_exists = true;
@@ -60,6 +61,16 @@ bool ReturnsValidPath(int dir_type) {
     if (base::win::GetVersion() < base::win::VERSION_WIN7)
       check_path_exists = false;
   }
+#endif
+#if defined(OS_MAC)
+  if (dir_type != base::DIR_EXE && dir_type != base::DIR_MODULE &&
+      dir_type != base::FILE_EXE && dir_type != base::FILE_MODULE) {
+    if (path.ReferencesParent())
+      return false;
+  }
+#else
+  if (path.ReferencesParent())
+    return false;
 #endif
   return result && !path.empty() && (!check_path_exists ||
                                      file_util::PathExists(path));
