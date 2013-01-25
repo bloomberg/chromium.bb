@@ -223,7 +223,7 @@ void PrintPreviewDialogController::PrintPreview(WebContents* tab) {
   if (!tab_controller)
     return;
   if (!tab_controller->GetOrCreatePreviewTab(tab))
-    printing::PrintViewManager::FromWebContents(tab)->PrintPreviewDone();
+    PrintViewManager::FromWebContents(tab)->PrintPreviewDone();
 }
 
 WebContents* PrintPreviewDialogController::GetOrCreatePreviewDialog(
@@ -385,7 +385,7 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
           transition_type == content::PAGE_TRANSITION_AUTO_TOPLEVEL &&
           nav_type == content::NAVIGATION_TYPE_NEW_PAGE) {
         waiting_for_new_preview_page_ = false;
-        SetInitiatorTabURLAndTitle(preview_tab);
+        SaveInitiatorTabTitle(preview_tab);
         return;
       }
 
@@ -435,7 +435,7 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewTab(
                                  initiator_tab);
   WebContents* preview_tab = constrained_delegate->GetWebContents();
   EnableInternalPDFPluginForTab(preview_tab);
-  printing::PrintViewManager::CreateForWebContents(preview_tab);
+  PrintViewManager::CreateForWebContents(preview_tab);
 
   // Add an entry to the map.
   preview_tab_map_[preview_tab] = initiator_tab;
@@ -447,16 +447,14 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewTab(
   return preview_tab;
 }
 
-void PrintPreviewDialogController::SetInitiatorTabURLAndTitle(
-    WebContents* preview_tab) {
-  WebContents* initiator_tab = GetInitiatorTab(preview_tab);
-  if (initiator_tab && preview_tab->GetWebUI()) {
+void PrintPreviewDialogController::SaveInitiatorTabTitle(
+    WebContents* preview_dialog) {
+  WebContents* initiator_tab = GetInitiatorTab(preview_dialog);
+  if (initiator_tab && preview_dialog->GetWebUI()) {
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        preview_tab->GetWebUI()->GetController());
-    print_preview_ui->SetInitiatorTabURLAndTitle(
-        initiator_tab->GetURL().spec(),
-        printing::PrintViewManager::FromWebContents(
-            initiator_tab)->RenderSourceName());
+        preview_dialog->GetWebUI()->GetController());
+    print_preview_ui->SetInitiatorTabTitle(
+        PrintViewManager::FromWebContents(initiator_tab)->RenderSourceName());
   }
 }
 
@@ -504,8 +502,7 @@ void PrintPreviewDialogController::RemoveInitiatorTab(
   preview_tab_map_[preview_tab] = NULL;
   RemoveObservers(initiator_tab);
 
-  printing::PrintViewManager::FromWebContents(initiator_tab)->
-      PrintPreviewDone();
+  PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewDone();
 
   // Initiator tab is closed. Close the print preview tab too.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
@@ -519,8 +516,7 @@ void PrintPreviewDialogController::RemovePreviewTab(WebContents* preview_tab) {
   WebContents* initiator_tab = GetInitiatorTab(preview_tab);
   if (initiator_tab) {
     RemoveObservers(initiator_tab);
-    printing::PrintViewManager::FromWebContents(initiator_tab)->
-        PrintPreviewDone();
+    PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewDone();
   }
 
   // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to abort

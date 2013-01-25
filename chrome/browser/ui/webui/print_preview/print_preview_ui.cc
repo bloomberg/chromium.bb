@@ -386,10 +386,8 @@ int PrintPreviewUI::GetAvailableDraftPageCount() {
   return print_preview_data_service()->GetAvailableDraftPageCount(id_);
 }
 
-void PrintPreviewUI::SetInitiatorTabURLAndTitle(
-    const std::string& initiator_url,
+void PrintPreviewUI::SetInitiatorTabTitle(
     const string16& job_title) {
-  initiator_url_ = initiator_url;
   initiator_tab_title_ = job_title;
 }
 

@@ -52,8 +52,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   int GetAvailableDraftPageCount();
 
   // Setters
-  void SetInitiatorTabURLAndTitle(const std::string& initiator_url,
-                                  const string16& initiator_tab_title);
+  void SetInitiatorTabTitle(const string16& initiator_tab_title);
 
   string16 initiator_tab_title() { return initiator_tab_title_; }
 
@@ -166,10 +165,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Weak pointer to the WebUI handler.
   PrintPreviewHandler* handler_;
-
-  // Store the |initiator_url| in order to display an accurate error message
-  // when the initiator tab is closed/crashed.
-  std::string initiator_url_;
 
   // Indicates whether the source document can be modified.
   bool source_is_modifiable_;

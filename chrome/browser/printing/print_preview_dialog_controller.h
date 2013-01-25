@@ -114,9 +114,9 @@ class PrintPreviewDialogController
   content::WebContents* CreatePrintPreviewTab(
       content::WebContents* initiator_tab);
 
-  // Helper function to store the initiator tab(title and url) information
-  // in PrintPreviewUI.
-  void SetInitiatorTabURLAndTitle(content::WebContents* preview_tab);
+  // Helper function to store the title of the initiator tab associated with
+  // |preview_dialog| in |preview_dialog|'s PrintPreviewUI.
+  void SaveInitiatorTabTitle(content::WebContents* preview_dialog);
 
   // Adds/Removes observers for notifications from |tab|.
   void AddObservers(content::WebContents* tab);
