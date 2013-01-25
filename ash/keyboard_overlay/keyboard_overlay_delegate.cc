@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
@@ -77,6 +78,7 @@ void KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.context = Shell::GetPrimaryRootWindow();
   params.delegate = view;
   widget->Init(params);
 
