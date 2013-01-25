@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/synchronization/waitable_event.h"
@@ -65,6 +66,7 @@ Thread::Thread(const char* name)
 
 Thread::~Thread() {
   Stop();
+  ThreadIdNameManager::GetInstance()->RemoveName(thread_id_);
 }
 
 bool Thread::Start() {

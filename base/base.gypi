@@ -468,6 +468,8 @@
           'threading/thread_checker_impl.h',
           'threading/thread_collision_warner.cc',
           'threading/thread_collision_warner.h',
+          'threading/thread_id_name_manager.cc',
+          'threading/thread_id_name_manager.h',
           'threading/thread_local.h',
           'threading/thread_local_posix.cc',
           'threading/thread_local_storage.h',

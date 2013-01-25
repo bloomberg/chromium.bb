@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/safe_strerror_posix.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 
@@ -45,12 +45,6 @@ void InitThreading();
 #endif
 
 namespace {
-
-#if !defined(OS_MACOSX)
-// Mac name code is in in platform_thread_mac.mm.
-LazyInstance<ThreadLocalPointer<char> >::Leaky
-    current_thread_name = LAZY_INSTANCE_INITIALIZER;
-#endif
 
 struct ThreadParams {
   PlatformThread::Delegate* delegate;
@@ -205,9 +199,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
 #if defined(OS_LINUX)
 // static
 void PlatformThread::SetName(const char* name) {
-  // have to cast away const because ThreadLocalPointer does not support const
-  // void*
-  current_thread_name.Pointer()->Set(const_cast<char*>(name));
+  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
   // On linux we can get the thread names to show up in the debugger by setting
@@ -232,9 +224,7 @@ void PlatformThread::SetName(const char* name) {
 #else
 // static
 void PlatformThread::SetName(const char* name) {
-  // have to cast away const because ThreadLocalPointer does not support const
-  // void*
-  current_thread_name.Pointer()->Set(const_cast<char*>(name));
+  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
   // (This should be relatively simple to implement for the BSDs; I
@@ -242,14 +232,10 @@ void PlatformThread::SetName(const char* name) {
 }
 #endif  // defined(OS_LINUX)
 
-
-#if !defined(OS_MACOSX)
-// Mac is implemented in platform_thread_mac.mm.
 // static
 const char* PlatformThread::GetName() {
-  return current_thread_name.Pointer()->Get();
+  return ThreadIdNameManager::GetInstance()->GetName(CurrentId());
 }
-#endif
 
 // static
 bool PlatformThread::Create(size_t stack_size, Delegate* delegate,

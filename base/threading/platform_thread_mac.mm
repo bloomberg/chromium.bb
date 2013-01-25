@@ -12,17 +12,10 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/tracked_objects.h"
 
 namespace base {
-
-namespace {
-
-LazyInstance<ThreadLocalPointer<char> >::Leaky
-    current_thread_name = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 // If Cocoa is to be used on more than one thread, it must know that the
 // application is multithreaded.  Since it's possible to enter Cocoa code
@@ -47,7 +40,7 @@ void InitThreading() {
 
 // static
 void PlatformThread::SetName(const char* name) {
-  current_thread_name.Pointer()->Set(const_cast<char*>(name));
+  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
   // pthread_setname_np is only available in 10.6 or later, so test
@@ -65,11 +58,6 @@ void PlatformThread::SetName(const char* name) {
   // pthread_setname() fails (harmlessly) in the sandbox, ignore when it does.
   // See http://crbug.com/47058
   dynamic_pthread_setname_np(shortened_name.c_str());
-}
-
-// static
-const char* PlatformThread::GetName() {
-  return current_thread_name.Pointer()->Get();
 }
 
 namespace {

@@ -7,7 +7,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 
@@ -16,8 +16,6 @@
 namespace base {
 
 namespace {
-
-static ThreadLocalPointer<char> current_thread_name;
 
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
@@ -116,7 +114,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
 
 // static
 void PlatformThread::SetName(const char* name) {
-  current_thread_name.Set(const_cast<char*>(name));
+  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
 
   // On Windows only, we don't need to tell the profiler about the "BrokerEvent"
   // thread, as it exists only in the chrome.exe image, and never spawns or runs
@@ -139,7 +137,7 @@ void PlatformThread::SetName(const char* name) {
 
 // static
 const char* PlatformThread::GetName() {
-  return current_thread_name.Get();
+  return ThreadIdNameManager::GetInstance()->GetName(CurrentId());
 }
 
 // static

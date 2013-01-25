@@ -79,15 +79,18 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    old_thread_name_ = PlatformThread::GetName();
+    const char* name = PlatformThread::GetName();
+    old_thread_name_ = name ? strdup(name) : NULL;
   }
   virtual void TearDown() OVERRIDE {
     if (TraceLog::GetInstance())
       EXPECT_FALSE(TraceLog::GetInstance()->IsEnabled());
-    PlatformThread::SetName(old_thread_name_ ? old_thread_name_  : "");
+    PlatformThread::SetName(old_thread_name_ ? old_thread_name_ : "");
+    free(old_thread_name_);
+    old_thread_name_ = NULL;
   }
 
-  const char* old_thread_name_;
+  char* old_thread_name_;
   ListValue trace_parsed_;
   base::debug::TraceResultBuffer trace_buffer_;
   base::debug::TraceResultBuffer::SimpleOutput json_output_;

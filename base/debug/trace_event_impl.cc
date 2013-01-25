@@ -65,7 +65,9 @@ const int g_category_categories_exhausted = 1;
 const int g_category_metadata = 2;
 int g_category_index = 3; // skip initial 3 categories
 
-// The most-recently captured name of the current thread
+// The name of the current thread. This is used to decide if the current
+// thread name has changed. We combine all the seen thread names into the
+// output name for the thread.
 LazyInstance<ThreadLocalPointer<const char> >::Leaky
     g_current_thread_name = LAZY_INSTANCE_INITIALIZER;
 
