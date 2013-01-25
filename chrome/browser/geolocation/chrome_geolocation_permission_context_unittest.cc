@@ -440,13 +440,15 @@ TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
   EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
   RequestGeolocationPermission(RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->GetInfoBarCount());
-  ConfirmInfoBarDelegate* infobar_0 =
+  ConfirmInfoBarDelegate* infobar =
       infobar_service()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(infobar_0);
+  ASSERT_TRUE(infobar);
   // Accept the frame
-  infobar_0->Accept();
+  infobar->Accept();
   CheckTabContentsState(requesting_frame, CONTENT_SETTING_ALLOW);
   CheckPermissionMessageSent(0, true);
+  infobar_service()->RemoveInfoBar(infobar);
+  delete infobar;
 
   // Make sure the setting is not stored.
   EXPECT_EQ(CONTENT_SETTING_ASK,
