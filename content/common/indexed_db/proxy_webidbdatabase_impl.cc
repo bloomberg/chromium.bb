@@ -135,7 +135,7 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::createTransaction(
       &ipc_transaction_id));
   if (!transaction_id)
     return NULL;
-  return new RendererWebIDBTransactionImpl(ipc_transaction_id);
+  return new RendererWebIDBTransactionImpl();
 }
 
 void RendererWebIDBDatabaseImpl::createTransaction(

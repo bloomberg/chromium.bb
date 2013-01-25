@@ -183,8 +183,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void CursorDestroyed(int32 ipc_cursor_id);
   void DatabaseDestroyed(int32 ipc_database_id);
 
-  static int32 TransactionId(const WebKit::WebIDBTransaction& transaction);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, ValueSizeTest);
 

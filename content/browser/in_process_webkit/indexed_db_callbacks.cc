@@ -71,18 +71,15 @@ void IndexedDBCallbacksDatabase::onSuccess(
 
 void IndexedDBCallbacksDatabase::onUpgradeNeeded(
     long long old_version,
-    WebKit::WebIDBTransaction* transaction,
+    WebKit::WebIDBTransaction*,
     WebKit::WebIDBDatabase* database) {
-  int32 ipc_transaction_id = dispatcher_host()->Add(transaction,
-                                                    ipc_thread_id(),
-                                                    origin_url_);
   dispatcher_host()->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id = dispatcher_host()->Add(database, ipc_thread_id(),
                                                  origin_url_);
   ipc_database_id_ = ipc_database_id;
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksUpgradeNeeded(
-          ipc_thread_id(), ipc_response_id(), ipc_transaction_id,
+          ipc_thread_id(), ipc_response_id(), 0,
           ipc_database_id,
           old_version));
 }

@@ -154,20 +154,6 @@ int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database,
   return ipc_database_id;
 }
 
-int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction,
-                                   int32 ipc_thread_id,
-                                   const GURL& url) {
-  if (!transaction_dispatcher_host_.get()) {
-    delete idb_transaction;
-    return 0;
-  }
-  int32 id = transaction_dispatcher_host_->map_.Add(idb_transaction);
-  idb_transaction->setCallbacks(
-      new IndexedDBTransactionCallbacks(this, ipc_thread_id, id));
-  transaction_dispatcher_host_->old_transaction_url_map_[id] = url;
-  return id;
-}
-
 void IndexedDBDispatcherHost::RegisterTransactionId(
     int64 host_transaction_id,
     const GURL& url)
@@ -448,12 +434,11 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransactionOld(
 
   int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
 
-  WebIDBTransaction* transaction = database->createTransaction(
+  database->createTransaction(
       host_transaction_id, object_stores, mode);
   parent_->RegisterTransactionId(host_transaction_id,
                                  database_url_map_[ipc_database_id]);
-  *ipc_transaction_id = parent_->Add(transaction, ipc_thread_id,
-                                     database_url_map_[ipc_database_id]);
+  *ipc_transaction_id = 0;
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(

@@ -16,36 +16,23 @@ using WebKit::WebString;
 
 namespace content {
 
-RendererWebIDBTransactionImpl::RendererWebIDBTransactionImpl(
-    int32 ipc_transaction_id)
-    : ipc_transaction_id_(ipc_transaction_id) {
+RendererWebIDBTransactionImpl::RendererWebIDBTransactionImpl() {
 }
 
 RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
-  // It's not possible for there to be pending callbacks that address this
-  // object since inside WebKit, they hold a reference to the object wich owns
-  // this object. But, if that ever changed, then we'd need to invalidate
-  // any such pointers.
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionDestroyed(
-      ipc_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::commit() {
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionCommit(
-      ipc_transaction_id_));
+    NOTIMPLEMENTED();
 }
 
 void RendererWebIDBTransactionImpl::abort() {
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionAbort(
-      ipc_transaction_id_));
+    NOTIMPLEMENTED();
 }
 
 void RendererWebIDBTransactionImpl::setCallbacks(
     WebIDBTransactionCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,
-                                                 ipc_transaction_id_);
+    NOTIMPLEMENTED();
 }
 
 }  // namespace content

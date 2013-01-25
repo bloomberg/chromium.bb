@@ -18,17 +18,14 @@ namespace content {
 
 class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
  public:
-  explicit RendererWebIDBTransactionImpl(int32 ipc_transaction_id);
+  explicit RendererWebIDBTransactionImpl();
   virtual ~RendererWebIDBTransactionImpl();
 
   virtual void commit();
   virtual void abort();
   virtual void setCallbacks(WebKit::WebIDBTransactionCallbacks*);
 
-  int ipc_id() const { return ipc_transaction_id_; }
-
  private:
-  int32 ipc_transaction_id_;
 };
 
 }  // namespace content

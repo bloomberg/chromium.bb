@@ -78,9 +78,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32 Add(WebKit::WebIDBDatabase* idb_database,
             int32 ipc_thread_id,
             const GURL& origin_url);
-  int32 Add(WebKit::WebIDBTransaction* idb_transaction,
-            int32 ipc_thread_id,
-            const GURL& origin_url);
   int32 Add(WebKit::WebDOMStringList* domStringList);
 
   void RegisterTransactionId(int64 host_transaction_id, const GURL& origin_url);

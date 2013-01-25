@@ -474,13 +474,6 @@ void IndexedDBDispatcher::DatabaseDestroyed(int32 ipc_database_id) {
   databases_.erase(ipc_database_id);
 }
 
-int32 IndexedDBDispatcher::TransactionId(
-    const WebIDBTransaction& transaction) {
-  const RendererWebIDBTransactionImpl* impl =
-      static_cast<const RendererWebIDBTransactionImpl*>(&transaction);
-  return impl->ipc_id();
-}
-
 void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 ipc_thread_id,
                                                int32 ipc_response_id,
                                                int32 ipc_object_id) {
@@ -657,7 +650,7 @@ void IndexedDBDispatcher::OnUpgradeNeeded(int32 ipc_thread_id,
   databases_[ipc_database_id] = new RendererWebIDBDatabaseImpl(ipc_database_id);
   callbacks->onUpgradeNeeded(
       old_version,
-      new RendererWebIDBTransactionImpl(ipc_transaction_id),
+      new RendererWebIDBTransactionImpl(),
       databases_[ipc_database_id]);
 }
 
