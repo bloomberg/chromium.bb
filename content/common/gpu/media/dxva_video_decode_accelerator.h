@@ -148,6 +148,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Helper for handling the Flush operation.
   void FlushInternal();
 
+  // Helper for handling the Decode operation.
+  void DecodeInternal(const base::win::ScopedComPtr<IMFSample>& input_sample);
+
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
 
@@ -216,7 +219,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   static bool pre_sandbox_init_done_;
 
   // List of input samples waiting to be processed.
-  typedef std::list<media::BitstreamBuffer> PendingInputs;
+  typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
   PendingInputs pending_input_buffers_;
 
   // Callback to set the correct gl context.
