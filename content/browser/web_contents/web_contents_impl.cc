@@ -408,6 +408,11 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
   create_params.routing_id = routing_id;
   new_contents->Init(create_params);
 
+  // We are instantiating a WebContents for browser plugin. Set its subframe bit
+  // to true.
+  static_cast<RenderViewHostImpl*>(
+      new_contents->GetRenderViewHost())->set_is_subframe(true);
+
   return new_contents;
 }
 

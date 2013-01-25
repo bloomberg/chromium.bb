@@ -233,6 +233,10 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // because it is overridden by TestRenderViewHost.
   virtual bool IsRenderViewLive() const = 0;
 
+  // Returns true if the RenderView is responsible for displaying a subframe
+  // in a different process from its parent page.
+  virtual bool IsSubframe() const = 0;
+
   // Let the renderer know that the menu has been closed.
   virtual void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) = 0;

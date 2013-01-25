@@ -1877,15 +1877,14 @@ void TaskManagerGuestResourceProvider::StartUpdating() {
   for (RenderProcessHost::iterator i(
            RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* host = i.GetCurrentValue();
-    if (host->IsGuest()) {
-      RenderProcessHost::RenderWidgetHostsIterator iter =
-          host->GetRenderWidgetHostsIterator();
-      for (; !iter.IsAtEnd(); iter.Advance()) {
-        const RenderWidgetHost* widget = iter.GetCurrentValue();
-        Add(RenderViewHost::From(
-                const_cast<RenderWidgetHost*>(widget)));
-      }
+    RenderProcessHost::RenderWidgetHostsIterator iter =
+        i.GetCurrentValue()->GetRenderWidgetHostsIterator();
+    for (; !iter.IsAtEnd(); iter.Advance()) {
+      const RenderWidgetHost* widget = iter.GetCurrentValue();
+      RenderViewHost* rvh =
+          RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+      if (rvh->IsSubframe())
+        Add(rvh);
     }
   }
 
@@ -1939,7 +1938,7 @@ void TaskManagerGuestResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   WebContents* web_contents = content::Source<WebContents>(source).ptr();
-  if (!web_contents || !web_contents->GetRenderProcessHost()->IsGuest())
+  if (!web_contents || !web_contents->GetRenderViewHost()->IsSubframe())
     return;
 
   switch (type) {

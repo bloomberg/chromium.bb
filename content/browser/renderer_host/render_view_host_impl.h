@@ -191,6 +191,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void InsertCSS(const string16& frame_xpath,
                          const std::string& css) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
+  virtual bool IsSubframe() const OVERRIDE;
   virtual void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
@@ -391,6 +392,12 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // User rotated the screen. Calls the "onorientationchange" Javascript hook.
   void SendOrientationChangeEvent(int orientation);
+
+  // Sets a bit indicating whether the RenderView is responsible for displaying
+  // a subframe in a different process from its parent page.
+  void set_is_subframe(bool is_subframe) {
+    is_subframe_ = is_subframe;
+  }
 
   const std::string& frame_tree() const {
     return frame_tree_;
@@ -607,6 +614,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Whether this RenderViewHost is currently swapped out, such that the view is
   // being rendered by another process.
   bool is_swapped_out_;
+
+  // Whether this RenderView is responsible for displaying a subframe in a
+  // different process from its parent page.
+  bool is_subframe_;
 
   // If we were asked to RunModal, then this will hold the reply_msg that we
   // must return to the renderer to unblock it.

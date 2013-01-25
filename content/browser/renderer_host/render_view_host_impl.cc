@@ -166,6 +166,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
       is_swapped_out_(swapped_out),
+      is_subframe_(false),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_beforeunload_ack_(false),
@@ -283,6 +284,10 @@ bool RenderViewHostImpl::CreateRenderView(
 
 bool RenderViewHostImpl::IsRenderViewLive() const {
   return GetProcess()->HasConnection() && renderer_initialized_;
+}
+
+bool RenderViewHostImpl::IsSubframe() const {
+  return is_subframe_;
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
