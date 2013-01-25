@@ -1181,7 +1181,7 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
     # Now check the results.
     json_file = stage._upload_queue.get()
-    self.assertEquals(json_file, [stage._METADATA_JSON])
+    self.assertEquals(json_file, [constants.METADATA_JSON])
     json_file = os.path.join(stage._archive_path, json_file[0])
     json_data = json.loads(osutils.ReadFile(json_file))
 

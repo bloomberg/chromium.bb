@@ -1456,7 +1456,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
   _VERSION_NOT_SET = '_not_set_version_'
   _BUILDBOT_ARCHIVE = 'buildbot_archive'
   _TRYBOT_ARCHIVE = 'trybot_archive'
-  _METADATA_JSON = 'metadata.json'
 
   @classmethod
   def GetArchiveRoot(cls, buildroot, trybot=False):
@@ -1696,7 +1695,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """Create a JSON of various metadata describing this build."""
     config = self._build_config
 
-    target = os.path.join(self._archive_path, self._METADATA_JSON)
+    target = os.path.join(self._archive_path, constants.METADATA_JSON)
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
         os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
         ignore_missing=True)
@@ -1718,7 +1717,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
           toolchain.FilterToolchains(toolchains, 'default', True).keys() +
           toolchain.FilterToolchains(toolchains, 'default', False).keys())
     osutils.WriteFile(target, json.dumps(json_input))
-    self._upload_queue.put([self._METADATA_JSON])
+    self._upload_queue.put([constants.METADATA_JSON])
 
   @staticmethod
   def _SingleMatchGlob(path_pattern):
