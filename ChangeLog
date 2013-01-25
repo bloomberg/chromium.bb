@@ -1,3 +1,9 @@
+2013-01-25  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/no-no-g0.utb: Corrections for double angle quotation
+	mark. Thanks to Knut Arne Bjørndal <bob+liblouis@cakebox.net> for
+	the patch.
+
 2013-01-24  Christian Egli  <christian.egli@sbs.ch>
 
 	* tools/lou_trace.c: Fix warnings and run through indent.

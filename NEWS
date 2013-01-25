@@ -13,6 +13,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      Joseph Lee
    - Corrections to apostrophes in the Computer Spanish 8 dots Braille
      table (Es-Es-G0.utb). Thanks to Juan C. Buno.
+   - Corrections for double angle quotation marks in the Norwegian
+     Grade 0 Braille Table. Thanks to Knut Arne Bjørndal.
 
 ** Bug Fixes
 

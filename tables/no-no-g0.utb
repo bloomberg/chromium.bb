@@ -107,7 +107,7 @@ sign ¥ 45-13456				yen	sign																		x00A5
 sign § 346						section sign																x00A7
 sign © 236-14-356		copyright			x00A9
 # sign « 45-2356				left-pointing double angle quotation mark		x00AB
-sign « 256				left-pointing double angle quotation mark		x00AB
+punctuation « 256				left-pointing double angle quotation mark		x00AB
 sign ° 5-356					degree sign																	x00B0
 
 sign ² 4-6-126				superscript 2 sign													x00B2
@@ -115,7 +115,7 @@ sign ³ 4-6-146				superscript 3 sign													x00B3
 sign \x00B4 6					acute sign dec-180
 sign ¹ 1-27						superscript 1 sign													x00B9
 # sign » 2356-12				right-pointing double angle quotation mark	x00BB
-sign » 256				right-pointing double angle quotation mark	x00BB
+punctuation » 256				right-pointing double angle quotation mark	x00BB
 math ¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
 
 math ½ 6-16-34-126		vulgar fraction one half									x00BD
