@@ -11,6 +11,10 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
+namespace fileapi {
+class ExternalMountPoints;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -43,6 +47,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   typedef base::Callback<void(StoragePartition*)> StoragePartitionCallback;
 
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
+
+  // Returns BrowserContext specific external mount points. It may return NULL
+  // if the context doesn't have any BrowserContext specific external mount
+  // points. Currenty, non-NULL value is returned only on ChromeOS.
+  static fileapi::ExternalMountPoints* GetMountPoints(BrowserContext* context);
 
   static content::StoragePartition* GetStoragePartition(
       BrowserContext* browser_context, SiteInstance* site_instance);

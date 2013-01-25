@@ -9,6 +9,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -36,6 +37,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
 
     file_system_context_ = new fileapi::FileSystemContext(
         fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+        ExternalMountPoints::CreateRefCounted().get(),
         NULL,
         NULL,
         temp_dir_.path(),

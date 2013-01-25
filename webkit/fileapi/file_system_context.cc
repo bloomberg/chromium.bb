@@ -55,6 +55,7 @@ void DidOpenFileSystem(
 
 FileSystemContext::FileSystemContext(
     scoped_ptr<FileSystemTaskRunners> task_runners,
+    ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     const FilePath& partition_path,
@@ -68,6 +69,7 @@ FileSystemContext::FileSystemContext(
               partition_path,
               options)),
       isolated_provider_(new IsolatedMountPointProvider(partition_path)),
+      external_mount_points_(external_mount_points),
       partition_path_(partition_path) {
   DCHECK(task_runners_.get());
 
@@ -75,20 +77,18 @@ FileSystemContext::FileSystemContext(
     quota_manager_proxy->RegisterClient(CreateQuotaClient(
             this, options.is_incognito()));
   }
+
 #if defined(OS_CHROMEOS)
-  // TODO(tbarzic): Pass this through ctor.
-  scoped_refptr<ExternalMountPoints> external_mount_points =
-      ExternalMountPoints::CreateRefCounted();
-  // |external_provider_| will take a reference or external_mount_points so this
-  // doesn't have to retain one for itself.
+  DCHECK(external_mount_points);
   external_provider_.reset(
       new chromeos::CrosMountPointProvider(
           special_storage_policy,
           external_mount_points,
           ExternalMountPoints::GetSystemInstance()));
-  url_crackers_.push_back(external_mount_points.get());
 #endif
 
+  if (external_mount_points)
+    url_crackers_.push_back(external_mount_points);
   url_crackers_.push_back(ExternalMountPoints::GetSystemInstance());
   url_crackers_.push_back(IsolatedContext::GetInstance());
 }

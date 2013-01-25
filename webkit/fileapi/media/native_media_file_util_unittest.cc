@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -112,6 +113,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     file_system_context_ =
         new FileSystemContext(
             FileSystemTaskRunners::CreateMockTaskRunners(),
+            ExternalMountPoints::CreateRefCounted().get(),
             storage_policy,
             NULL,
             data_dir_.path(),

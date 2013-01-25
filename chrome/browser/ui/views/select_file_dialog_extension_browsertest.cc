@@ -29,8 +29,6 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/fileapi/external_mount_points.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
 
 using content::BrowserContext;
 
@@ -117,15 +115,14 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   // Creates a file system mount point for a directory.
   void AddMountPoint(const FilePath& path) {
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
-            GetFileSystemContext()->external_provider();
-
+    std::string mount_point_name = path.BaseName().AsUTF8Unsafe();
+    fileapi::ExternalMountPoints* mount_points =
+        BrowserContext::GetMountPoints(browser()->profile());
     // The Downloads mount point already exists so it must be removed before
     // adding the test mount point (which will also be mapped as Downloads).
-    fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
-        path.BaseName().AsUTF8Unsafe());
-    EXPECT_TRUE(provider->AddLocalMountPoint(path));
+    mount_points->RevokeFileSystem(mount_point_name);
+    EXPECT_TRUE(mount_points->RegisterFileSystem(
+        mount_point_name, fileapi::kFileSystemTypeNativeLocal, path));
   }
 
   void CheckJavascriptErrors() {

@@ -14,6 +14,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -78,6 +79,7 @@ class IsolatedFileUtilTest : public testing::Test {
 
     file_system_context_ = new FileSystemContext(
         FileSystemTaskRunners::CreateMockTaskRunners(),
+        ExternalMountPoints::CreateRefCounted().get(),
         make_scoped_refptr(new quota::MockSpecialStoragePolicy()),
         NULL /* quota_manager */,
         partition_dir_.path(),

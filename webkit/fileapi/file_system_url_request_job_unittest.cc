@@ -28,6 +28,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -65,6 +66,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     file_system_context_ =
         new FileSystemContext(
             FileSystemTaskRunners::CreateMockTaskRunners(),
+            ExternalMountPoints::CreateRefCounted().get(),
             special_storage_policy_, NULL,
             temp_dir_.path(),
             CreateDisallowFileAccessOptions());

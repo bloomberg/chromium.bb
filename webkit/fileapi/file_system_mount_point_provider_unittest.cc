@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -213,6 +214,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
   void SetupNewContext(const FileSystemOptions& options) {
     file_system_context_ = new FileSystemContext(
         FileSystemTaskRunners::CreateMockTaskRunners(),
+        ExternalMountPoints::CreateRefCounted().get(),
         special_storage_policy_,
         NULL,
         data_dir_.path(),

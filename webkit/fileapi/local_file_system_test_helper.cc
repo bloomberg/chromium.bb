@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -67,6 +68,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
   special_storage_policy->SetAllUnlimited(unlimited_quota);
   file_system_context_ = new FileSystemContext(
       FileSystemTaskRunners::CreateMockTaskRunners(),
+      ExternalMountPoints::CreateRefCounted().get(),
       special_storage_policy,
       quota_manager_proxy,
       base_dir,

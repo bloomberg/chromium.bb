@@ -62,15 +62,6 @@ class SystemMountPointsLazyWrapper {
         "oem",
         fileapi::kFileSystemTypeRestrictedNativeLocal,
         FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
-
-    // TODO(tbarzic): Move this out of here.
-    FilePath home_path;
-    if (PathService::Get(base::DIR_HOME, &home_path)) {
-      system_mount_points_->RegisterFileSystem(
-          "Downloads",
-          fileapi::kFileSystemTypeNativeLocal,
-          home_path.AppendASCII("Downloads"));
-    }
 #endif  // defined(OS_CHROMEOS)
   }
 

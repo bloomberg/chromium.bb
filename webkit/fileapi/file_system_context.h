@@ -62,8 +62,15 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // task_runners->file_task_runner()->RunsTasksOnCurrentThread()
   // returns false if the current task is not running on the thread that allows
   // blocking file operations (like SequencedWorkerPool implementation does).
+  //
+  // |external_mount_points| contains non-system external mount points available
+  // in the context. If not NULL, it will be used during URL cracking. On
+  // ChromeOS, it will be passed to external_mount_point_provider.
+  // |external_mount_points| may be NULL only on platforms different from
+  // ChromeOS (i.e. platforms that don't use external_mount_point_provider).
   FileSystemContext(
       scoped_ptr<FileSystemTaskRunners> task_runners,
+      ExternalMountPoints* external_mount_points,
       quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
       const FilePath& partition_path,
@@ -218,6 +225,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
 
   // Registered mount point providers.
   std::map<FileSystemType, FileSystemMountPointProvider*> provider_map_;
+
+  // External mount points visible in the file system context (excluding system
+  // external mount points).
+  scoped_refptr<ExternalMountPoints> external_mount_points_;
 
   // MountPoints used to crack FileSystemURLs. The MountPoints are ordered
   // in order they should try to crack a FileSystemURL.

@@ -5,6 +5,7 @@
 #include "content/public/browser/browser_context.h"
 
 #if !defined(OS_IOS)
+#include "base/path_service.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -23,6 +24,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/fileapi/external_mount_points.h"
 #endif // !OS_IOS
 
 using base::UserDataAdapter;
@@ -34,8 +36,9 @@ namespace content {
 namespace {
 
 // Key names on BrowserContext.
-const char* kDownloadManagerKeyName = "download_manager";
-const char* kStorageParitionMapKeyName = "content_storage_partition_map";
+const char kDownloadManagerKeyName[] = "download_manager";
+const char kMountPointsKey[] = "mount_points";
+const char kStorageParitionMapKeyName[] = "content_storage_partition_map";
 
 StoragePartitionImplMap* GetStoragePartitionMap(
     BrowserContext* browser_context) {
@@ -128,6 +131,40 @@ DownloadManager* BrowserContext::GetDownloadManager(
 
   return UserDataAdapter<DownloadManager>::Get(
       context, kDownloadManagerKeyName);
+}
+
+// static
+fileapi::ExternalMountPoints* BrowserContext::GetMountPoints(
+    BrowserContext* context) {
+  // Ensure that these methods are called on the UI thread, except for
+  // unittests where a UI thread might not have been created.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+
+#if defined(OS_CHROMEOS)
+  if (!context->GetUserData(kMountPointsKey)) {
+    scoped_refptr<fileapi::ExternalMountPoints> mount_points =
+        fileapi::ExternalMountPoints::CreateRefCounted();
+    context->SetUserData(
+        kMountPointsKey,
+        new UserDataAdapter<fileapi::ExternalMountPoints>(
+            mount_points));
+
+    // Add Downloads mount point.
+    FilePath home_path;
+    if (PathService::Get(base::DIR_HOME, &home_path)) {
+      mount_points->RegisterFileSystem(
+          "Downloads",
+          fileapi::kFileSystemTypeNativeLocal,
+          home_path.AppendASCII("Downloads"));
+    }
+  }
+
+  return UserDataAdapter<fileapi::ExternalMountPoints>::Get(
+      context, kMountPointsKey);
+#else
+  return NULL;
+#endif
 }
 
 StoragePartition* BrowserContext::GetStoragePartition(

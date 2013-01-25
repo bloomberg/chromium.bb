@@ -32,10 +32,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/external_mount_points.h"
 
 using content::BrowserContext;
 using extensions::Extension;
@@ -110,15 +108,12 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
   }
 
   // Adds a local mount point at at mount point /tmp.
-  void AddTmpMountPoint(const std::string& extension_id) {
-    Profile* profile = browser()->profile();
-
-    GURL site = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->GetSiteForExtensionId(extension_id);
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetStoragePartitionForSite(profile, site)->
-            GetFileSystemContext()->external_provider();
-    provider->AddLocalMountPoint(mount_point_dir_);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserContext::GetMountPoints(browser()->profile())->RegisterFileSystem(
+        "tmp",
+        fileapi::kFileSystemTypeNativeLocal,
+        mount_point_dir_);
+    ExtensionApiTest::SetUpOnMainThread();
   }
 
   bool RunFileBrowserHandlerTest(const std::string& test_page,
@@ -139,11 +134,6 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
         test_data_dir_.AppendASCII(file_browser_name));
     if (!file_browser)
       return false;
-
-    // Add test mount point to file browser's and file handler's context.
-    AddTmpMountPoint(file_browser->id());
-    if (file_handler)
-      AddTmpMountPoint(file_handler->id());
 
     // Run the test.
     ResultCatcher catcher;
@@ -194,15 +184,13 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
     ExtensionApiTest::TearDown();
   }
 
-  void AddRestrictedMountPoint(const std::string& extension_id) {
-    Profile* profile = browser()->profile();
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserContext::GetMountPoints(browser()->profile())->RegisterFileSystem(
+        "mount",
+        fileapi::kFileSystemTypeRestrictedNativeLocal,
+        mount_point_dir_);
 
-    GURL site = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->GetSiteForExtensionId(extension_id);
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetStoragePartitionForSite(profile, site)->
-            GetFileSystemContext()->external_provider();
-    provider->AddRestrictedLocalMountPoint(mount_point_dir_);
+    ExtensionApiTest::SetUpOnMainThread();
   }
 
  protected:
@@ -272,8 +260,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestLazy) {
 
   ASSERT_TRUE(file_handler) << message_;
 
-  AddTmpMountPoint(file_handler->id());
-
   ASSERT_TRUE(RunFileBrowserHandlerTest("read.html",
                                         "filebrowser_component",
                                         ""))
@@ -315,8 +301,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
 
   ASSERT_TRUE(file_handler) << message_;
 
-  AddTmpMountPoint(file_handler->id());
-
   ASSERT_TRUE(RunFileBrowserHandlerTest("write.html",
                                         "filebrowser_component",
                                         ""))
@@ -326,8 +310,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
 IN_PROC_BROWSER_TEST_F(RestrictedFileSystemExtensionApiTest, Basic) {
   const Extension* file_browser = LoadExtensionAsComponent(
       test_data_dir_.AppendASCII("filebrowser_component"));
-
-  AddRestrictedMountPoint(file_browser->id());
 
   ResultCatcher catcher;
   GURL url = file_browser->GetResourceURL("restricted.html");

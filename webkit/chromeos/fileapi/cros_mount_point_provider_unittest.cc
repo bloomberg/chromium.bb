@@ -39,14 +39,14 @@ TEST(CrosMountPointProviderTest, DefaultMountPoints) {
       storage_policy,
       mount_points.get(),
       fileapi::ExternalMountPoints::GetSystemInstance());
-  // By default there should be 4 mount points.
   std::vector<FilePath> root_dirs = provider.GetRootDirectories();
   std::set<FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
-  EXPECT_EQ(4u, root_dirs.size());
+
+  // By default there should be 3 mount points (in system mount points):
+  EXPECT_EQ(3u, root_dirs.size());
   EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/media/removable"))));
   EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/media/archive"))));
   EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/usr/share/oem"))));
-  // Fourth mount point is Downloads, but its local path is device specific.
 }
 
 TEST(CrosMountPointProviderTest, GetRootDirectories) {

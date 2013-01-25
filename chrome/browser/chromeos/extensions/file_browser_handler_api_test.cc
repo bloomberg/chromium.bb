@@ -22,9 +22,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_system_types.h"
 
 namespace utils = extension_function_test_utils;
 
@@ -177,14 +176,10 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
 
   // Creates new, test mount point.
   void AddTmpMountPoint(const std::string& extension_id) {
-    Profile* profile = browser()->profile();
-
-    GURL site = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->GetSiteForExtensionId(extension_id);
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetStoragePartitionForSite(profile, site)->
-            GetFileSystemContext()->external_provider();
-    provider->AddLocalMountPoint(tmp_mount_point_);
+    BrowserContext::GetMountPoints(browser()->profile())->RegisterFileSystem(
+        "tmp",
+        fileapi::kFileSystemTypeNativeLocal,
+        tmp_mount_point_);
   }
 
   FilePath GetFullPathOnTmpMountPoint(const FilePath& relative_path) {

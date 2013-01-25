@@ -167,6 +167,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   // its construction.
   scoped_refptr<fileapi::FileSystemContext> filesystem_context =
       CreateFileSystemContext(partition_path, in_memory,
+                              BrowserContext::GetMountPoints(context),
                               context->GetSpecialStoragePolicy(),
                               quota_manager->proxy());
 

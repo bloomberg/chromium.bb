@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -123,6 +124,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     // another OFU.  We need to pass in the context to skip all that.
     file_system_context_ = new FileSystemContext(
         FileSystemTaskRunners::CreateMockTaskRunners(),
+        ExternalMountPoints::CreateRefCounted().get(),
         storage_policy,
         quota_manager_->proxy(),
         data_dir_.path(),

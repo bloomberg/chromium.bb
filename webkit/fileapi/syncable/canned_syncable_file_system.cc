@@ -205,6 +205,7 @@ void CannedSyncableFileSystem::SetUp() {
           io_task_runner_,
           file_task_runner_,
           file_task_runner_)),
+      ExternalMountPoints::CreateRefCounted().get(),
       storage_policy,
       quota_manager_->proxy(),
       data_dir_.path(),
