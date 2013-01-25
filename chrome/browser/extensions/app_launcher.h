@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 
-class PrefServiceSimple;
-
 namespace extensions {
 
 // Called on the UI thread after determining if the launcher is enabled. A
@@ -19,15 +17,8 @@ typedef base::Callback<void(bool)> OnAppLauncherEnabledCompleted;
 // Determine whether the app launcher is enabled or not. This may involve a trip
 // to a blocking thread. |completion_callback| is called when an answer is
 // ready. This needs to be called on the UI thread.
-void UpdateIsAppLauncherEnabled(
+void GetIsAppLauncherEnabled(
     const OnAppLauncherEnabledCompleted& completion_callback);
-
-// returns value of pref. 'was app launcher enabled last time i checked'.
-bool IsAppLauncherEnabled();
-
-namespace app_launcher {
-void RegisterPrefs(PrefServiceSimple* pref_service);
-}
 
 }  // namespace extensions
 

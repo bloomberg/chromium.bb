@@ -188,7 +188,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                   cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-    extensions::UpdateIsAppLauncherEnabled(
+    extensions::GetIsAppLauncherEnabled(
         base::Bind(&OnAppLauncherEnabledCompleted, extension, browser, icon,
                    use_bubble));
     return;

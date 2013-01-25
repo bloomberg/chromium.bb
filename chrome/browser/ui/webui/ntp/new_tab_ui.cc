@@ -19,7 +19,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -295,12 +294,13 @@ void NewTabUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 
 // static
 bool NewTabUI::ShouldShowApps() {
-#if defined(OS_ANDROID)
+#if defined(USE_ASH) || defined(OS_ANDROID)
   // Ash shows apps in app list thus should not show apps page in NTP4.
   // Android does not have apps.
   return false;
 #else
-  return !extensions::IsAppLauncherEnabled();
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kShowAppListShortcut);
 #endif
 }
 
