@@ -20,7 +20,7 @@ vars = {
 
   "libjingle_revision": "270",
   "libphonenumber_revision": "456",
-  "libvpx_revision": "178115",
+  "libvpx_revision": "178936",
   "lss_revision": "17",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
