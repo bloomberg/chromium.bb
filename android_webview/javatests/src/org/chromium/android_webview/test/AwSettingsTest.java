@@ -16,6 +16,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -2010,8 +2011,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences", "AppCache"})
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences", "AppCache"})
+     * This test is flaky but the root cause is not found yet. See crbug.com/171765.
+     */
+    @DisabledTest
     public void testAppCacheWithTwoViews() throws Throwable {
         // We don't use the test helper here, because making sure that AppCache
         // is disabled takes a lot of time, so running through the usual drill
