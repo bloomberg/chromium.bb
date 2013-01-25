@@ -209,7 +209,7 @@ void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   ChromeBrowserMainPartsPosix::PreMainMessageLoopStart();
 
-  // Tell Cooca to finish its initialization, which we want to do manually
+  // Tell Cocoa to finish its initialization, which we want to do manually
   // instead of calling NSApplicationMain(). The primary reason is that NSAM()
   // never returns, which would leave all the objects currently on the stack
   // in scoped_ptrs hanging and never cleaned up. We then load the main nib
