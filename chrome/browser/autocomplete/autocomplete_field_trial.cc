@@ -45,11 +45,11 @@ const base::FieldTrial::Probability
 // will decide what behavior (if any) to change based on the group.
 const int kSuggestFieldTrialNumberOfGroups = 20;
 
-// For History Quick Provider new scoring field trial, put 25% ( = 25/100 )
+// For History Quick Provider new scoring field trial, put 0% ( = 0/100 )
 // of the users in the new scoring experiment group.
 const base::FieldTrial::Probability kHQPNewScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHQPNewScoringFieldTrialExperimentFraction = 25;
+    kHQPNewScoringFieldTrialExperimentFraction = 0;
 
 // For HistoryURL provider cull redirects field trial, put 0% ( = 0/100 )
 // of the users in the don't-cull-redirects experiment group.
@@ -71,19 +71,19 @@ const base::FieldTrial::Probability
 
 // For the field trial that removes searching/scoring URLs from
 // HistoryURL provider and adds a HistoryURL-provider-like scoring
-// mode to HistoryQuick provider, put 25% ( = 25/100 ) of the users in
+// mode to HistoryQuick provider, put 0% ( = 0/100 ) of the users in
 // the experiment group.
 const base::FieldTrial::Probability
     kHQPReplaceHUPScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHQPReplaceHUPScoringFieldTrialExperimentFraction = 25;
+    kHQPReplaceHUPScoringFieldTrialExperimentFraction = 0;
 
 // For the field trial that ignores all mid-term matches in HistoryQuick
-// provider, put 25% ( = 25/100 ) of the users in the experiment group.
+// provider, put 0% ( = 0/100 ) of the users in the experiment group.
 const base::FieldTrial::Probability
     kHQPOnlyCountMatchesAtWordBoundariesFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentFraction = 25;
+    kHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentFraction = 0;
 
 
 // Field trial IDs.
