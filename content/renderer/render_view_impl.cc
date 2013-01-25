@@ -1849,8 +1849,10 @@ WebView* RenderViewImpl::createView(
   params.frame_name = frame_name;
   params.opener_frame_id = creator->identifier();
   params.opener_url = creator->document().url();
-  params.opener_security_origin =
-      creator->document().securityOrigin().toString().utf8();
+  GURL security_url(creator->document().securityOrigin().toString().utf8());
+  if (!security_url.is_valid())
+    security_url = GURL();
+  params.opener_security_origin = security_url;
   params.opener_suppressed = creator->willSuppressOpenerInNewFrame();
   params.disposition = NavigationPolicyToDisposition(policy);
   if (!request.isNull())

@@ -1056,8 +1056,10 @@ void RenderViewHostImpl::CreateNewWindow(
   ViewHostMsg_CreateWindow_Params validated_params(params);
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  // TODO(cevans): also validate opener_url, opener_security_origin.
   FilterURL(policy, GetProcess(), false, &validated_params.target_url);
+  FilterURL(policy, GetProcess(), false, &validated_params.opener_url);
+  FilterURL(policy, GetProcess(), true,
+            &validated_params.opener_security_origin);
 
   delegate_->CreateNewWindow(route_id, validated_params,
                              session_storage_namespace);
