@@ -17,7 +17,7 @@ from lxml import etree
 
 
 def ConvertXMLToStatesList(dfa_tree):
-  """Reads state transtions from ragel XML file and returns python structure.
+  """Reads state transitions from ragel XML file and returns python structure.
 
   Converts lxml-parsed XML to list of states (connected by forward_transitions
   and back_transitions).
@@ -31,12 +31,12 @@ def ConvertXMLToStatesList(dfa_tree):
 
   class State(object):
     __slots__ = [
-        # Array of forward transtions (always 256 elements in size) for the
+        # List of forward transitions (always 256 elements in size) for the
         # state:
         #   Nth element is used if byte N is encountered by a DFA
         #   If byte is not accepted then transtion is None
         'forward_transitions',
-        # Backward transtions:
+        # Backward transitions:
         #   List of transitions which can bring us to a given state
         'back_transitions',
         # True if state is an accepting state
@@ -133,7 +133,7 @@ def ConvertXMLToStatesList(dfa_tree):
           state.forward_transitions[byte] = transition
 
     # State actions are only ever used in validator to detect error conditions
-    # in non-final states.  Check that it's always so.
+    # in non-accepting states.  Check that it's always so.
     state_actions = xml_state.xpath('state_actions')
     if state.is_accepting or state_id == error_state_id:
       assert len(state_actions) == 0
@@ -160,7 +160,7 @@ def CheckForProperCleanup(states):
   Triggers an assert error if this rule is violated.
 
   Args:
-      states: arrays of State structures (as produced by ConvertXMLToStatesList)
+      states: list of State structures (as produced by ConvertXMLToStatesList)
   Returns:
       None
   """
@@ -187,7 +187,7 @@ def CheckDFAActions(start_state, states):
        known as "superinstruction").  We list all these superinstructions here.
 
   For each "dangerous" path CollectSandboxing function is called. As a result,
-  it prints list of superinstructions found and, more importantly, generates an
+  it returns list of superinstructions found and, more importantly, generates an
   assert error if DFA does not satisfy the requirements listed above.
 
   Note that situation when one register is restricted and then used by the next
@@ -198,19 +198,24 @@ def CheckDFAActions(start_state, states):
 
   Args:
       start_state: start state of the DFA
-      states: arrays of State structures (as produced by ConvertXMLToStatesList)
+      states: list of State structures (as produced by ConvertXMLToStatesList)
   Returns:
-      None
+      List of collected dangerous paths (each one is represented by a list of
+      transitions)
   """
 
+  collected_dangerous_paths = []
   for state in states:
     if state.is_accepting and state is not start_state:
-      CheckPathActions(start_state, state, start_state, [], [])
+      CheckPathActions(start_state, state, start_state, [], [],
+                       collected_dangerous_paths)
+  return collected_dangerous_paths
 
 
 def CheckPathActions(start_state,
                      state, main_state,
-                     transitions, main_transitions):
+                     transitions, main_transitions,
+                     collected_dangerous_paths):
   """Identify all "dangerous" paths that start with given prefix and check
   actions along them.
 
@@ -220,8 +225,8 @@ def CheckPathActions(start_state,
   In this traversal we rely on the fact that all such sandboxing instructions
   are "regular" (that is, are safe by themselves).
 
-  This functions prints all the superinstructions which include "dangerous"
-  instructions which start from "transitions" list and continue to "state".
+  This functions adds all the dangerous paths to the collected_dangerous_paths
+  list.
 
   Args:
       start_state: start state of the DFA
@@ -230,6 +235,9 @@ def CheckPathActions(start_state,
       transitions: list of transitions (path prefix collected so far)
       main_transitions: list of transitions (parallel path prefix starting from
                         start_state collected so far)
+      collected_dangerous_paths: list to which we add dangerous instructions
+                                 (each one is represented by a list of
+                                 transitions)
   Returns:
       None
   """
@@ -255,19 +263,21 @@ def CheckPathActions(start_state,
           main_transition.action_table != transition.action_table):
         transitions.append(transition)
         CheckDangerousInstructionPath(start_state, transition.to_state,
-                                      transitions)
+                                      transitions, collected_dangerous_paths)
         transitions.pop()
       else:
         transitions.append(transition)
         main_transitions.append(main_transition)
         CheckPathActions(start_state,
                          transition.to_state, main_transition.to_state,
-                         transitions, main_transitions)
+                         transitions, main_transitions,
+                         collected_dangerous_paths)
         main_transitions.pop()
         transitions.pop()
 
 
-def CheckDangerousInstructionPath(start_state, state, transitions):
+def CheckDangerousInstructionPath(start_state, state, transitions,
+                                  collected_dangerous_paths):
   """Enumerate all "dangerous" paths starting from given prefix and check them.
 
   We assume that we already diverged from the parallel path, so there is no need
@@ -285,33 +295,39 @@ def CheckDangerousInstructionPath(start_state, state, transitions):
   In validator's DFA it must finish at start_state and it needs some sandboxing.
   That is: it requires some fixed set of bytes present first for the DFA to
   recognize it as valid.  There are endless number of such possible sandboxing
-  byte sequences but we only print the minimal ones (see the CollectSandboxing
+  byte sequences but we only list the minimal ones (see the CollectSandboxing
   for the exact definition of what "minimal" means).  If it finishes in some
   other state (not in the start_state) then this function will stop at assert
-  and if DFA is correct then it prints all the possible sandboxing sequences
-  on stdout.
+  and if DFA is correct then it adds all the possible sandboxing sequences
+  to the collected_superinstructions set.
+
+  This functions adds all the dangerous paths to the collected_dangerous_paths
+  list.
 
   Args:
       start_state: start state of the DFA
       state: state to consider
       transitions: transitions collected so far
+      collected_dangerous_paths: list to which we add dangerous instructions
+                                 (each one is represented by a list of
+                                 transitions)
   Returns:
       None
   """
 
   if state.is_accepting:
     assert state is start_state
-    CollectSandboxing(start_state, transitions)
+    collected_dangerous_paths.append(list(transitions))
   else:
     for transition in state.forward_transitions:
       if transition is not None:
         transitions.append(transition)
         CheckDangerousInstructionPath(start_state, transition.to_state,
-                                      transitions)
+                                      transitions, collected_dangerous_paths)
         transitions.pop()
 
 
-def CollectSandboxing(start_state, transitions):
+def CollectSandboxing(start_state, transitions, collected_superinstructions):
   """Collect sandboxing for the given "dangerous" instruction.
 
   Definition: sandboxing sequence for a given set of transitions is a sequence
@@ -321,22 +337,21 @@ def CollectSandboxing(start_state, transitions):
   Many sandboxing sequences are suffixes of other sandboxing sequences.  For
   example sequence of bytes accept correspond to the sequence of instructions
   "and $~0x1f,%eax; and $~0x1f,%ebx; add %r15,%rbx; jmp *%rbx" is one such
-  sequence (for the transtions which accept "jmp *%rbx"), but it includes a
+  sequence (for the transitions which accept "jmp *%rbx"), but it includes a
   shorter one: "and $~0x1f,%ebx; add %r15,%rbx; jmp *%rbx".
 
   If any sandboxing sequence is suffix of some other sandboxing sequence and it
   triggers different actions then this function should assert, otherwise it
-  prints all the minimal sandboxing sequences (sandboxings which are not
-  suffixes of any other sandboxing sequences).
-
-  It uses the following approach: if given sandboxing can be recognized starting
-  from start_state and it can be recognized from some other state then we print
-  it once, it needs some additional instructions then we go deeper.
+  adds all the minimal sandboxing sequences (sandboxings which are not
+  suffixes of any other sandboxing sequences) to the collected_superinstructions
+  set.
 
   Args:
       start_state: start state of the DFA
       transitions: transitions collected so far
                    note: we go back in graph here, not forward
+      collected_superinstructions: list to which we add superinstructions (each
+                                   one is represented by a list of transitions)
   Returns:
       None
   """
@@ -352,30 +367,21 @@ def CollectSandboxing(start_state, transitions):
         break
       else:
         assert main_transition.action_table == transition.action_table
+        assert (main_transition.to_state.is_accepting ==
+                transition.to_state.is_accepting)
         main_state = main_transition.to_state
     else:
-      # Found the transition, but is it canonical one?
-      assert main_state is start_state
-      assert transitions[-1].to_state is start_state
-      if transitions[0].from_state is start_state:
-        print('.byte', ', '.join([str(t.byte) for t in transitions]))
-      else:
-        # This sequence was found in "shadow DFA".  Identical one should exist
-        # in the main DFA - and will be printed at some point.
-        main_state = start_state
-        for transition in transitions:
-          main_transition = main_state.forward_transitions[transition.byte]
-          assert main_transition.action_table == transition.action_table
-          main_state = main_transition.to_state
+      # Transition is recognized from the initial path
+      collected_superinstructions.append(list(transitions))
       return
+  assert len(transitions[0].from_state.back_transitions) > 0
   for transition in transitions[0].from_state.back_transitions:
     transitions.insert(0, transition)
-    CollectSandboxing(start_state, transitions)
+    CollectSandboxing(start_state, transitions, collected_superinstructions)
     transitions.pop(0)
 
 
 def main(argv):
-
   # Options processing
   parser = optparse.OptionParser(__doc__)
 
@@ -413,7 +419,21 @@ def main(argv):
 
   CheckForProperCleanup(states)
 
-  CheckDFAActions(states[start_state], states)
+  collected_dangerous_paths = CheckDFAActions(states[start_state], states)
+
+  all_superinstructions = set()
+  for dangerous_paths in collected_dangerous_paths:
+    superinstructions = []
+    CollectSandboxing(states[start_state], dangerous_paths, superinstructions)
+    assert len(superinstructions) > 0
+    for superinstruction in superinstructions:
+      all_superinstructions.add(
+          '.byte ' + ', '.join(['0x{0:02x}'.format(transition.byte)
+                              for transition in superinstruction]))
+
+  for superinstruction in sorted(all_superinstructions):
+    print(superinstruction)
+
 
 if __name__ == '__main__':
   exitcode = main(sys.argv)
