@@ -9,3 +9,7 @@ msw@chromium.org
 
 # RenderText and related classes.
 xji@chromium.org
+
+# Display and related classes.
+per-file display*=oshima@chromium.org
+per-file screen*=oshima@chromium.org
