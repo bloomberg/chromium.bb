@@ -12,3 +12,5 @@ fun:*ThreadData*Initialize*
 src:base/metrics/histogram_samples.cc
 src:base/metrics/sample_vector.cc
 
+# See http://crbug.com/172104
+fun:*v8*internal*ThreadEntry*
