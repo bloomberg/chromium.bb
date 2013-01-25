@@ -12,8 +12,8 @@ include_rules = [
   # and please do not introduce more #includes of these files.
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/favicon/favicon_service_factory.h",
-  "!chrome/browser/history/history.h",
   "!chrome/browser/history/history_notifications.h",
+  "!chrome/browser/history/history_service.h",
   "!chrome/browser/history/history_service_factory.h",
   "!chrome/browser/history/history_types.h",
   "!chrome/browser/history/query_parser.h",

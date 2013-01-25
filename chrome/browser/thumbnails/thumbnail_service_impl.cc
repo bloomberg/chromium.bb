@@ -5,7 +5,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 

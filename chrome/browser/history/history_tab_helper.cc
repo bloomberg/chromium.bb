@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/prerender/prerender_contents.h"

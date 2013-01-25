@@ -4,8 +4,8 @@
 
 #include "chrome/browser/history/android/android_history_provider_service.h"
 
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 

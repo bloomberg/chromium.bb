@@ -4,11 +4,11 @@
 
 #include <iostream>
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
@@ -17,8 +17,8 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::ContainerEq;
 using testing::Pointee;

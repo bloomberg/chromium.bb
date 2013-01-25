@@ -10,7 +10,7 @@
 #include "base/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "googleurl/src/gurl.h"

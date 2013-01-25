@@ -16,7 +16,7 @@
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_registrar.h"

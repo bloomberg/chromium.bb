@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_H_
+#ifndef CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_
+#define CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_
 
 #include <set>
 #include <vector>
@@ -18,8 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "base/time.h"
 #include "base/threading/thread_checker.h"
+#include "base/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
@@ -1111,4 +1111,4 @@ class HistoryService : public CancelableRequestProvider,
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_H_
+#endif  // CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_

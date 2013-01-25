@@ -22,7 +22,7 @@
 //                                      -> SQLite connection to Thumbnails
 //                                         (and favicons)
 
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"

@@ -10,7 +10,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/profiles/profile.h"

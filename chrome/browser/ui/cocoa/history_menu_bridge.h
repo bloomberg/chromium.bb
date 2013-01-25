@@ -13,7 +13,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/common/cancelable_request.h"
 #import "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"

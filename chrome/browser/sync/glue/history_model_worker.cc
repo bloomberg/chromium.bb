@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::WaitableEvent;

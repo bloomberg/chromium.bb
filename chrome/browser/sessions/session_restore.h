@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/base/window_open_disposition.h"

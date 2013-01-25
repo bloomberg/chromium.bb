@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 //  These are only used for commented out tests.  If someone wants to enable
 //  them, they should be moved to chrome first.
-//  #include "chrome/browser/history/history.h"
+//  #include "chrome/browser/history/history_service.h"
 //  #include "chrome/browser/profiles/profile_manager.h"
 //  #include "chrome/browser/sessions/session_service.h"
 //  #include "chrome/browser/sessions/session_service_factory.h"

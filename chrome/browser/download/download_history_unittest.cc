@@ -10,7 +10,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/download_row.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread.h"

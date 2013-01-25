@@ -33,7 +33,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/download_row.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"

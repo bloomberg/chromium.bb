@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/history_provider.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service.h"
 
 // HistoryContentsProvider is an AutocompleteProvider that provides results from
 // the contents (body and/or title) of previously visited pages.
