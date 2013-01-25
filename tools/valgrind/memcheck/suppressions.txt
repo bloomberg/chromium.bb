@@ -6333,6 +6333,17 @@
    fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
 }
 {
+   bug_166819b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK3sql10Connection21GetUntrackedStatementEPKc
+   fun:_ZNK3sql10Connection21DoesTableOrIndexExistEPKcS2_
+   fun:_ZNK3sql10Connection14DoesTableExistEPKc
+   fun:_ZN7history17ShortcutsDatabase11EnsureTableEv
+   fun:_ZN7history17ShortcutsDatabase4InitEv
+   fun:_ZN7history16ShortcutsBackend12InitInternalEv
+}
+{
    bug_166976a
    Memcheck:Leak
    fun:_Znw*
