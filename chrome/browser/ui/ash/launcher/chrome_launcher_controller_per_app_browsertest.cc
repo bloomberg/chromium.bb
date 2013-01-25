@@ -730,16 +730,16 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, RefocusFilterLaunch) {
   controller->SetRefocusURLPatternForTest(
       shortcut_id, GURL("http://www.example.com/path1/*"));
 
-  // Create new tab owned by app.
+  // Create new tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      GURL("http://www.example.com/path2/bar.html"),
+      GURL("http://www.example2.com/path2/bar.html"),
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(++tab_count, tab_strip->count());
   WebContents* first_tab = tab_strip->GetActiveWebContents();
-  // Confirm app is active.
-  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  // Confirm app is not active.
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(shortcut_id)->status);
 
   // Activating app should launch new tab, because second tab isn't
   // in its refocus url path.
