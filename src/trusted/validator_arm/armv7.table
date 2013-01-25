@@ -2341,48 +2341,55 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:        = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- unconditional_instructions (See Section A5.7)
+*Nop
+  defs := {};
+  uses := {};
+*Undefined *Nop
+  baseline := Undefined;
+  safety := true => UNDEFINED;
+*Forbidden *Nop
+  baseline := Forbidden;
+  safety := true => FORBIDDEN;
++--
 | op1(27:20) op(4) Rn(19:16) op1_repeated(27:20)
-| 0xxx_xxxx  -     -         - -> memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
-| 100x_x1x0  -     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Srs_Rule_B6_1_10_A1_B6_20
-                                 1111100pu1w0110100000101000iiiii (v6)
-| 100x_x0x1  -     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Rfe_Rule_B6_1_10_A1_B6_16
-                                 1111100pu0w1nnnn0000101000000000 (v6)
-| 101x_xxxx  -     -         - = ForbiddenUncondDecoder => Forbidden
-                                 # Forbidden because it switches to Thumb.
-                                 Blx_Rule_23_A2_P58
-                                 1111101hiiiiiiiiiiiiiiiiiiiiiiii (v5)
-| 110x_xxx0   -     -        ~1100_0x00
-                               = ForbiddenUncondDecoder => Forbidden
-                                 Stc2_Rule_188_A2_P372
-                                 1111110pudw0nnnniiiiiiiiiiiiiiii (v5)
-| 110x_xxx1  -     ~1111     ~1100_0x01
-                               = ForbiddenUncondDecoder => Forbidden
-                                 Ldc2_Rule_51_A2_P106
-                                 1111110pudw1nnnniiiiiiiiiiiiiiii (v5)
-| 110x_xxx1  -     1111      ~1100_0x01
-                               = ForbiddenUncondDecoder => Forbidden
-                                 Ldc2_Rule_52_A2_P108
-                                 1111110pudw11111iiiiiiiiiiiiiiii (v5)
-| 1100_0100  -     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Mcrr2_Rule_93_A2_P188
-                                 111111000100ssssttttiiiiiiiiiiii (v6)
-| 1100_0101  -     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Mrrc2_Rule_101_A2_P204
-                                 111111000101ssssttttiiiiiiiiiiii (v6)
-| 1110_xxxx  0     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Cdp2_Rule_28_A2_P68
-                                 11111110iiiiiiiiiiiiiiiiiii0iiii (v5)
-| 1110_xxx0  1     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Mcr2_Rule_92_A2_P186
-                                 11111110iii0iiiittttiiiiiii1iiii (v5)
-| 1110_xxx1  1     -         - = ForbiddenUncondDecoder => Forbidden
-                                 Mrc2_Rule_100_A2_P202
-                                 11111110iii1iiiittttiiiiiii1iiii (v5)
-| else:                        = Undefined
+| 0xxx_xxxx  -     -         - -> 
+        memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
+| 100x_x1x0  -     -         - =
+       *Forbidden  pattern := 1111100pu1w0110100000101000iiiii;
+        rule := SRS;  arch := v6;
+| 100x_x0x1  -     -         - =
+       *Forbidden  pattern := 1111100pu0w1nnnn0000101000000000;
+        rule := RFE;  arch := v6;
+| 101x_xxxx  -     -         - =
+       *Forbidden  pattern := 1111101hiiiiiiiiiiiiiiiiiiiiiiii;
+        # Forbidden because it switches to Thumb.
+        rule := BLX_immediate;  arch := v5;
+| 110x_xxx0   -     -        ~1100_0x00 =
+       *Forbidden  pattern := 1111110pudw0nnnniiiiiiiiiiiiiiii;
+        rule := STC2;  arch := v5;
+| 110x_xxx1  -     ~1111     ~1100_0x01 =
+       *Forbidden  pattern := 1111110pudw1nnnniiiiiiiiiiiiiiii;
+        rule := LDC2_immediate;  arch := v5;
+| 110x_xxx1  -     1111      ~1100_0x01 =
+       *Forbidden  pattern := 1111110pudw11111iiiiiiiiiiiiiiii;
+        rule := LDC2_literal;  arch := v5;
+| 1100_0100  -     -         - =
+       *Forbidden  pattern := 111111000100ssssttttiiiiiiiiiiii;
+        rule := MCRR2;  arch := v6;
+| 1100_0101  -     -         - =
+       *Forbidden  pattern := 111111000101ssssttttiiiiiiiiiiii;
+        rule := MRRC2;  arch := v6;
+| 1110_xxxx  0     -         - =
+       *Forbidden  pattern := 11111110iiiiiiiiiiiiiiiiiii0iiii;
+        rule := CDP2;  arch := v5;
+| 1110_xxx0  1     -         - =
+       *Forbidden  pattern := 11111110iii0iiiittttiiiiiii1iiii;
+        rule := MCR2;  arch := v5;
+| 1110_xxx1  1     -         - =
+       *Forbidden  pattern := 11111110iii1iiiittttiiiiiii1iiii;
+        rule := MRC2;  arch := v5;
+| else:                        = *Undefined
 +--
 
 # TODO(karl): Add uses to corresponding classes.

@@ -284,6 +284,30 @@ class SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0
       SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0);
 };
 
+// SRS_1111100pu1w0110100000101000iiiii_case_0:
+//
+//   {arch: v6,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 1111100pu1w0110100000101000iiiii,
+//    rule: SRS,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class SRS_1111100pu1w0110100000101000iiiii_case_0
+     : public ClassDecoder {
+ public:
+  SRS_1111100pu1w0110100000101000iiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      SRS_1111100pu1w0110100000101000iiiii_case_0);
+};
+
 // SSAT16_cccc01101010iiiidddd11110011nnnn_case_0:
 //
 //   {Pc: 15,
@@ -437,6 +461,30 @@ class SSUB8_cccc01100001nnnndddd11111111mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       SSUB8_cccc01100001nnnndddd11111111mmmm_case_0);
+};
+
+// STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0:
+//
+//   {arch: v5,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
+//    rule: STC2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0);
 };
 
 // STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0:
@@ -2853,6 +2901,27 @@ class Unnamed_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Unnamed_case_0);
+};
+
+// Unnamed_case_1:
+//
+//   {baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    safety: [true => UNDEFINED],
+//    true: true,
+//    uses: {}}
+class Unnamed_case_1
+     : public ClassDecoder {
+ public:
+  Unnamed_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_case_1);
 };
 
 // Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0:

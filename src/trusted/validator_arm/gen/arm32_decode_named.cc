@@ -4740,47 +4740,47 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
 
   if ((inst.Bits() & 0x0FF00000)  ==
           0x0C400000 /* op1(27:20)=11000100 */) {
-    return ForbiddenUncondDecoder_Mcrr2_Rule_93_A2_P188_instance_;
+    return Forbidden_MCRR2_instance_;
   }
 
   if ((inst.Bits() & 0x0FF00000)  ==
           0x0C500000 /* op1(27:20)=11000101 */) {
-    return ForbiddenUncondDecoder_Mrrc2_Rule_101_A2_P204_instance_;
+    return Forbidden_MRRC2_instance_;
   }
 
   if ((inst.Bits() & 0x0E500000)  ==
           0x08100000 /* op1(27:20)=100xx0x1 */ &&
       (inst.Bits() & 0x0000FFFF)  ==
           0x00000A00 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000 */) {
-    return ForbiddenUncondDecoder_Rfe_Rule_B6_1_10_A1_B6_16_instance_;
+    return Forbidden_RFE_instance_;
   }
 
   if ((inst.Bits() & 0x0E500000)  ==
           0x08400000 /* op1(27:20)=100xx1x0 */ &&
       (inst.Bits() & 0x000FFFE0)  ==
           0x000D0500 /* $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx */) {
-    return ForbiddenUncondDecoder_Srs_Rule_B6_1_10_A1_B6_20_instance_;
+    return Forbidden_SRS_instance_;
   }
 
   if ((inst.Bits() & 0x0F100000)  ==
           0x0E000000 /* op1(27:20)=1110xxx0 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000010 /* op(4)=1 */) {
-    return ForbiddenUncondDecoder_Mcr2_Rule_92_A2_P186_instance_;
+    return Forbidden_MCR2_instance_;
   }
 
   if ((inst.Bits() & 0x0F100000)  ==
           0x0E100000 /* op1(27:20)=1110xxx1 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000010 /* op(4)=1 */) {
-    return ForbiddenUncondDecoder_Mrc2_Rule_100_A2_P202_instance_;
+    return Forbidden_MRC2_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
           0x0C000000 /* op1(27:20)=110xxxx0 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C000000 /* op1_repeated(27:20)=~11000x00 */) {
-    return ForbiddenUncondDecoder_Stc2_Rule_188_A2_P372_instance_;
+    return Forbidden_STC2_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
@@ -4789,7 +4789,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
           0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C100000 /* op1_repeated(27:20)=~11000x01 */) {
-    return ForbiddenUncondDecoder_Ldc2_Rule_51_A2_P106_instance_;
+    return Forbidden_LDC2_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
@@ -4798,19 +4798,19 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C100000 /* op1_repeated(27:20)=~11000x01 */) {
-    return ForbiddenUncondDecoder_Ldc2_Rule_52_A2_P108_instance_;
+    return Forbidden_LDC2_literal_instance_;
   }
 
   if ((inst.Bits() & 0x0F000000)  ==
           0x0E000000 /* op1(27:20)=1110xxxx */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* op(4)=0 */) {
-    return ForbiddenUncondDecoder_Cdp2_Rule_28_A2_P68_instance_;
+    return Forbidden_CDP2_instance_;
   }
 
   if ((inst.Bits() & 0x0E000000)  ==
           0x0A000000 /* op1(27:20)=101xxxxx */) {
-    return ForbiddenUncondDecoder_Blx_Rule_23_A2_P58_instance_;
+    return Forbidden_BLX_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x08000000)  ==
