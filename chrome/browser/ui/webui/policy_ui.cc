@@ -368,9 +368,12 @@ void PolicyUIHandler::RegisterMessages() {
               user_manager->GetLoggedInUser()->email(), local_account_service));
     }
   } else {
-    user_status_provider_.reset(
-        new CloudPolicyCoreStatusProvider(
-            connector->GetUserCloudPolicyManager()->core()));
+    policy::CloudPolicyManager* user_cloud_policy_manager =
+        connector->GetUserCloudPolicyManager();
+    if (user_cloud_policy_manager) {
+      user_status_provider_.reset(
+          new CloudPolicyCoreStatusProvider(user_cloud_policy_manager->core()));
+    }
   }
 #else
   policy::CloudPolicyManager* user_cloud_policy_manager =
