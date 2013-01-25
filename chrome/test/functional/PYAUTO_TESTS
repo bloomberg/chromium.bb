@@ -67,11 +67,17 @@
       # ==================================================
       # crbug.com/145006
       '-about_plugins_ui.ChromeAboutPluginsUITest.testEnableAndDisableFlashPlugin',
+      # crbug.com/100365
+      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
+      # crbug.com/171828
+      '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/124280
       '-downloads.DownloadsTest.testPauseAndResume',
       # The source is behind.  Waiting for dev to automate the update.
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
+      # crbug.com/151972
+      '-extensions.ExtensionsTest.testGetExtensionPermissions',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/132665
@@ -141,7 +147,6 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       # crbug.com/105948
-      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       # crbug.com/169512
       '-downloads.DownloadsTest.testDownloadsPersistence',
@@ -161,6 +166,8 @@
       '-instant.InstantTest.testInstantCaseSensitivity',
       # crbug.com/125424
       '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
+      # crbug.com/171490
+      '-passwords.PasswordTest.testPasswdInfoNotStoredWhenAutocompleteOff',
       # crbug.com/117569
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # crbug.com/98526
@@ -189,6 +196,8 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
+      # crbug.com/168809
+      '-instant.InstantTest.testInstantCaseSensitivity',
       # crbug.com/121484
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
@@ -217,8 +226,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/100365
-      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/91033
