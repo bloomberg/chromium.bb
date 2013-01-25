@@ -204,7 +204,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim) {
+// http://crbug.com/172256
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_Shim DISABLED_Shim
+#else
+#define MAYBE_Shim Shim
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view")) << message_;
 }
 
