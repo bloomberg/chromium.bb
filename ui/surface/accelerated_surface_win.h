@@ -139,6 +139,10 @@ class SURFACE_EXPORT AcceleratedPresenter
   // last hidden.
   bool hidden_;
 
+  // Set to true if the first present after the tab is unhidden needs to be done
+  // with GDI.
+  bool do_present_with_GDI_;
+
   // These are used to detect when the window is resizing. For some reason,
   // presenting with D3D while the window resizes causes those parts not
   // drawn with D3D (e.g. with GDI) to flicker visible / invisible.

@@ -28,6 +28,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/accelerated_surface_transformer_win.h"
 #include "ui/surface/d3d9_utils_win.h"
+#include "ui/surface/surface_switches.h"
 
 namespace d3d_utils = ui_surface_d3d9_utils;
 
@@ -38,6 +39,16 @@ UINT GetPresentationInterval() {
     return D3DPRESENT_INTERVAL_IMMEDIATE;
   else
     return D3DPRESENT_INTERVAL_ONE;
+}
+
+bool DoFirstShowPresentWithGDI() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDoFirstShowPresentWithGDI);
+}
+
+bool DoAllShowPresentWithGDI() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDoAllShowPresentWithGDI);
 }
 
 }  // namespace
@@ -240,7 +251,9 @@ AcceleratedPresenter::AcceleratedPresenter(gfx::PluginWindowHandle window)
     : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
       window_(window),
       event_(false, false),
-      hidden_(true) {
+      hidden_(true),
+      do_present_with_GDI_(DoAllShowPresentWithGDI() ||
+                           DoFirstShowPresentWithGDI()) {
 }
 
 // static
@@ -743,6 +756,13 @@ bool AcceleratedPresenter::CheckDirect3DWillWork() {
   if (window_size != last_window_size_ && last_window_size_.GetArea() != 0) {
     last_window_size_ = window_size;
     last_window_resize_time_ = base::Time::Now();
+    return false;
+  }
+
+  if (do_present_with_GDI_ && hidden_) {
+    if (DoFirstShowPresentWithGDI())
+      do_present_with_GDI_ = false;
+
     return false;
   }
 

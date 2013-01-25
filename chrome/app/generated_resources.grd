@@ -6274,6 +6274,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Force compositing mode' lab.">
         Uses GPU accelerated compositing on all pages, not just those that include GPU-accelerated layers.
       </message>
+      <message name="IDS_FLAGS_PRESENT_WITH_GDI_NAME" desc="Name of the 'First Present With GDI' experiment.">
+        Do SHOW Presents with GDI.
+      </message>
+      <message name="IDS_FLAGS_PRESENT_WITH_GDI_DESCRIPTION" desc="Description of the 'First Present With GDI' experiment.">
+        Speculative fix for http://crbug.com/169848
+      </message>
+      <message name="IDS_FLAGS_PRESENT_WITH_GDI_FIRST_SHOW" desc="Description of the 'First Show Present With GDI' experiment.">
+        First
+      </message>
+      <message name="IDS_FLAGS_PRESENT_WITH_GDI_ALL_SHOW" desc="Description of the 'All Show Present With GDI' experiment.">
+        All
+      </message>
       <message name="IDS_FLAGS_FORCE_HIGH_DPI_NAME" desc="Name of the 'Force high DPI mode' lab.">
         Force high DPI mode
       </message>

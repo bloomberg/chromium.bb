@@ -76,6 +76,8 @@
         'io_surface_support_mac.cc',
         'io_surface_support_mac.h',
         'surface_export.h',
+        'surface_switches.h',
+        'surface_switches.cc',
         'transport_dib.h',
         'transport_dib_android.cc',
         'transport_dib_linux.cc',
