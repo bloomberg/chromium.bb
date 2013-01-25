@@ -676,7 +676,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
 def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   """Makes sure there are no abbreviations in the name of PNG files.
   """
-  pattern = input_api.re.compile(r'.*_[a-z]_|.*_[a-z].png$')
+  pattern = input_api.re.compile(r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$')
   errors = []
   for f in input_api.AffectedFiles(include_deletes=False):
     if pattern.match(f.LocalPath()):
