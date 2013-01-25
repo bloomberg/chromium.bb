@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string16.h"
@@ -457,7 +458,8 @@ string16 CreateProfileShortcutFlags(const FilePath& profile_path) {
 
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
-  return BrowserDistribution::GetDistribution()->CanCreateDesktopShortcuts();
+  return BrowserDistribution::GetDistribution()->CanCreateDesktopShortcuts() &&
+         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir);
 }
 
 // static
