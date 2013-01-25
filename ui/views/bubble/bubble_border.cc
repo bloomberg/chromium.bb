@@ -402,19 +402,19 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   const int height = bottom - top;
   const int width = right - left;
 
-  const ArrowLocation arrow_location = paint_arrow_ ? arrow_location_ : NONE;
-
   // |arrow_offset| is offset of arrow from the beginning of the edge.
   int arrow_offset = GetArrowOffset(view.size());
-  if (!is_arrow_at_center(arrow_location)) {
-    if (is_arrow_on_horizontal(arrow_location) &&
-        !is_arrow_on_left(arrow_location)) {
+  if (!is_arrow_at_center(arrow_location_)) {
+    if (is_arrow_on_horizontal(arrow_location_) &&
+        !is_arrow_on_left(arrow_location_)) {
       arrow_offset = view.width() - arrow_offset - 1;
-    } else if (!is_arrow_on_horizontal(arrow_location) &&
-               !is_arrow_on_top(arrow_location)) {
+    } else if (!is_arrow_on_horizontal(arrow_location_) &&
+               !is_arrow_on_top(arrow_location_)) {
       arrow_offset = view.height() - arrow_offset - 1;
     }
   }
+
+  const ArrowLocation arrow_location = paint_arrow_ ? arrow_location_ : NONE;
 
   // Left edge.
   if (arrow_location == LEFT_TOP ||

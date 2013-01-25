@@ -193,6 +193,10 @@ void TrayBrightness::DestroyDetailedView() {
 void TrayBrightness::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
+bool TrayBrightness::ShouldHideArrow() const {
+  return true;
+}
+
 bool TrayBrightness::ShouldShowLauncher() const {
   return false;
 }

@@ -95,6 +95,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     SkColor arrow_color;
     views::BubbleBorder::ArrowLocation arrow_location;
     int arrow_offset;
+    bool hide_arrow;  // hides arrow, but may still use "arrow geometry"
     views::BubbleBorder::Shadow shadow;
   };
 

@@ -75,6 +75,10 @@ void SystemTrayItem::HideNotificationView() {
   system_tray()->HideNotificationView(this);
 }
 
+bool SystemTrayItem::ShouldHideArrow() const {
+  return false;
+}
+
 bool SystemTrayItem::ShouldShowLauncher() const {
   return true;
 }

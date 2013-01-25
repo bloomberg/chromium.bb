@@ -251,6 +251,10 @@ void TrayVolume::DestroyDetailedView() {
     volume_view_ = NULL;
 }
 
+bool TrayVolume::ShouldHideArrow() const {
+  return true;
+}
+
 bool TrayVolume::ShouldShowLauncher() const {
   return false;
 }

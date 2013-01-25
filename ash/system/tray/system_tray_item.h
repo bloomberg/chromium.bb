@@ -98,6 +98,9 @@ class ASH_EXPORT SystemTrayItem {
   // Hides the notification for this item.
   void HideNotificationView();
 
+  // Returns true if item should hide the arrow.
+  virtual bool ShouldHideArrow() const;
+
   // Returns true if this item needs to force the launcher to be visible when
   // the launcher is in the auto-hide state. Default is true.
   virtual bool ShouldShowLauncher() const;
