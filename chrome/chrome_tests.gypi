@@ -1185,6 +1185,7 @@
         'browser/net/predictor_browsertest.cc',
         'browser/net/proxy_browsertest.cc',
         'browser/net/websocket_browsertest.cc',
+        'browser/notifications/message_center_notifications_browsertest.cc',
         'browser/page_cycler/page_cycler_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/cloud_policy_browsertest.cc',
@@ -1717,6 +1718,11 @@
         ['enable_app_list==0', {
           'sources/': [
             ['exclude', '^browser/ui/app_list/'],
+          ],
+        }],
+        ['enable_message_center==0', {
+          'sources!': [
+            'browser/notifications/message_center_notifications_browsertest.cc',
           ],
         }],
       ],  # conditions
