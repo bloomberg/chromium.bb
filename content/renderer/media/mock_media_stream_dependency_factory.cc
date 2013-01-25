@@ -34,6 +34,15 @@ class MockMediaStreamTrackList
     return tracks_[index];
   }
 
+  virtual TrackType* Find(const std::string& id) OVERRIDE {
+    for (size_t i = 0; i < tracks_.size(); ++i) {
+      if (tracks_.at(i)->id() == id) {
+        return tracks_.at(i);
+      }
+    }
+    return NULL;
+  }
+
   void AddTrack(TrackType* track) {
     tracks_.push_back(track);
   }

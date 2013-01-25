@@ -35,6 +35,26 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     }
     return NULL;
   }
+  virtual webrtc::MediaStreamTrackInterface* FindAudioTrack(
+      const std::string& id) OVERRIDE {
+    for (size_t i = 0; i < streams_.size(); ++i) {
+      webrtc::MediaStreamTrackInterface* track =
+          streams_.at(i)->audio_tracks()->Find(id);
+      if (track)
+        return track;
+    }
+    return NULL;
+  }
+  virtual webrtc::MediaStreamTrackInterface* FindVideoTrack(
+      const std::string& id) OVERRIDE{
+    for (size_t i = 0; i < streams_.size(); ++i) {
+      webrtc::MediaStreamTrackInterface* track =
+          streams_.at(i)->video_tracks()->Find(id);
+      if (track)
+        return track;
+    }
+    return NULL;
+  }
   void AddStream(MediaStreamInterface* stream) {
     streams_.push_back(stream);
   }
@@ -151,18 +171,11 @@ void MockPeerConnectionImpl::RemoveStream(
 }
 
 
-bool MockPeerConnectionImpl::CanSendDtmf(
-    const webrtc::AudioTrackInterface* track) {
+webrtc::DtmfSender* MockPeerConnectionImpl::CreateDtmfSender(
+    webrtc::AudioTrackInterface* track,
+    webrtc::DtmfSenderObserverInterface* observer) {
   NOTIMPLEMENTED();
-  return false;
-}
-
-bool MockPeerConnectionImpl::SendDtmf(
-    const webrtc::AudioTrackInterface* send_track,
-    const std::string& tones, int duration,
-    const webrtc::AudioTrackInterface* play_track) {
-  NOTIMPLEMENTED();
-  return false;
+  return NULL;
 }
 
 talk_base::scoped_refptr<webrtc::DataChannelInterface>

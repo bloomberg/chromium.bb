@@ -622,6 +622,8 @@
             '<(libjingle_source)/talk/app/webrtc/mediastreamtrackproxy.cc',
             '<(libjingle_source)/talk/app/webrtc/mediastreamtrackproxy.h',
             '<(libjingle_source)/talk/app/webrtc/notifier.h',
+            '<(libjingle_source)/talk/app/webrtc/dtmfsender.cc',
+            '<(libjingle_source)/talk/app/webrtc/dtmfsender.h',
             '<(libjingle_source)/talk/app/webrtc/peerconnection.cc',
             '<(libjingle_source)/talk/app/webrtc/peerconnection.h',
             '<(libjingle_source)/talk/app/webrtc/peerconnectionfactory.cc',
