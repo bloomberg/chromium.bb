@@ -66,12 +66,19 @@ void ConfigureInputBuffer(
   PP_DCHECK(encrypted_buffer.size() >=
             static_cast<uint32_t>(input_buffer->data_size));
   input_buffer->data_offset = encrypted_block_info.data_offset;
-  input_buffer->key_id = encrypted_block_info.key_id;
-  input_buffer->key_id_size = encrypted_block_info.key_id_size;
-  input_buffer->iv = encrypted_block_info.iv;
-  input_buffer->iv_size = encrypted_block_info.iv_size;
-  input_buffer->num_subsamples = encrypted_block_info.num_subsamples;
 
+  PP_DCHECK(encrypted_block_info.key_id_size <=
+            arraysize(encrypted_block_info.key_id));
+  input_buffer->key_id_size = encrypted_block_info.key_id_size;
+  input_buffer->key_id = input_buffer->key_id_size > 0 ?
+      encrypted_block_info.key_id : NULL;
+
+  PP_DCHECK(encrypted_block_info.iv_size <= arraysize(encrypted_block_info.iv));
+  input_buffer->iv_size = encrypted_block_info.iv_size;
+  input_buffer->iv = encrypted_block_info.iv_size > 0 ?
+      encrypted_block_info.iv : NULL;
+
+  input_buffer->num_subsamples = encrypted_block_info.num_subsamples;
   if (encrypted_block_info.num_subsamples > 0) {
     subsamples->reserve(encrypted_block_info.num_subsamples);
 
