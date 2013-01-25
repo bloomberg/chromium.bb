@@ -70,6 +70,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, CheckStackedPanelProperties) {
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel1->CanResizeByMouse());
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel2->CanResizeByMouse());
 
+  EXPECT_EQ(panel::TOP_ROUNDED, panel1_testing->GetWindowCornerStyle());
+  EXPECT_EQ(panel::BOTTOM_ROUNDED, panel2_testing->GetWindowCornerStyle());
+
   Panel::AttentionMode expected_attention_mode =
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION);
@@ -138,6 +141,9 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   EXPECT_EQ(panel::NOT_RESIZABLE, panel1->CanResizeByMouse());
   EXPECT_EQ(panel::NOT_RESIZABLE, panel2->CanResizeByMouse());
+
+  EXPECT_EQ(panel::TOP_ROUNDED, panel1_testing->GetWindowCornerStyle());
+  EXPECT_EQ(panel::BOTTOM_ROUNDED, panel2_testing->GetWindowCornerStyle());
 
   Panel::AttentionMode expected_attention_mode =
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |

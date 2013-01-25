@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_
 
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
@@ -37,6 +38,7 @@ class PanelFrameView : public views::NonClientFrameView,
   void UpdateIcon();
   void UpdateThrobber();
   void UpdateTitlebarMinimizeRestoreButtonVisibility();
+  void SetWindowCornerStyle(panel::CornerStyle corner_style);
 
   // Returns the size of the non-client area, that is, the window size minus
   // the size of the client area.
@@ -50,6 +52,7 @@ class PanelFrameView : public views::NonClientFrameView,
   views::ImageButton* restore_button() const { return restore_button_; }
   TabIconView* title_icon() const { return title_icon_; }
   views::Label* title_label() const { return title_label_; }
+  panel::CornerStyle corner_style() const { return corner_style_; }
 
  private:
   // Overridden from views::NonClientFrameView:
@@ -113,6 +116,7 @@ class PanelFrameView : public views::NonClientFrameView,
   views::ImageButton* restore_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;
+  panel::CornerStyle corner_style_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };

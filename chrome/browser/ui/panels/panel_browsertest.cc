@@ -309,6 +309,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   EXPECT_EQ(panel::NOT_RESIZABLE, panel2->CanResizeByMouse());
   EXPECT_EQ(panel::NOT_RESIZABLE, panel3->CanResizeByMouse());
 
+  EXPECT_EQ(panel::TOP_ROUNDED, panel1_testing->GetWindowCornerStyle());
+  EXPECT_EQ(panel::TOP_ROUNDED, panel1_testing->GetWindowCornerStyle());
+  EXPECT_EQ(panel::TOP_ROUNDED, panel3_testing->GetWindowCornerStyle());
+
   EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel1->attention_mode());
   EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel2->attention_mode());
   EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel3->attention_mode());

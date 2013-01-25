@@ -104,6 +104,7 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
       panel::TitlebarButtonType button_type) const OVERRIDE;
+  virtual panel::CornerStyle GetWindowCornerStyle() const OVERRIDE;
 
   PanelView* panel_view_;
 };
@@ -212,6 +213,10 @@ bool NativePanelTestingWin::IsButtonVisible(
       NOTREACHED();
   }
   return false;
+}
+
+panel::CornerStyle NativePanelTestingWin::GetWindowCornerStyle() const {
+  return panel_view_->GetFrameView()->corner_style();
 }
 
 }  // namespace
@@ -549,6 +554,10 @@ void PanelView::EnableResizeByMouse(bool enable) {
 
 void PanelView::UpdatePanelMinimizeRestoreButtonVisibility() {
   GetFrameView()->UpdateTitlebarMinimizeRestoreButtonVisibility();
+}
+
+void PanelView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
+  GetFrameView()->SetWindowCornerStyle(corner_style);
 }
 
 void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,

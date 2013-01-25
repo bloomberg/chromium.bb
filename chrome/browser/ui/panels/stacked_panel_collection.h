@@ -90,6 +90,8 @@ class StackedPanelCollection : public PanelCollection {
   void MinimizeAll();
   void RestoreAll();
 
+  void UpdatePanelCornerStyle(Panel* panel);
+
   PanelManager* panel_manager_;
 
   NativePanelStack* native_stack_;  // Weak, owns us.

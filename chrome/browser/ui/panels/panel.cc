@@ -819,6 +819,10 @@ void Panel::MoveByInstantly(const gfx::Vector2d& delta_origin) {
   SetPanelBoundsInstantly(bounds);
 }
 
+void Panel::SetWindowCornerStyle(panel::CornerStyle corner_style) {
+  native_panel_->SetWindowCornerStyle(corner_style);
+}
+
 const extensions::Extension* Panel::GetExtension() const {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile())->extension_service();

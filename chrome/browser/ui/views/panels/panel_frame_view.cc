@@ -25,7 +25,9 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
+#include "base/win/scoped_gdi_object.h"
 #include "ui/base/win/shell.h"
+#include "ui/gfx/path_win.h"
 #endif
 
 namespace {
@@ -80,55 +82,96 @@ const SkColor kDividerColor = SkColorSetRGB(0xb5, 0xb5, 0xb5);
 const SkColor kDividerColor = SkColorSetRGB(0x2a, 0x2c, 0x2c);
 #endif
 
-struct EdgeResources {
-  gfx::ImageSkia* top_left;
-  gfx::ImageSkia* top;
-  gfx::ImageSkia* top_right;
-  gfx::ImageSkia* right;
-  gfx::ImageSkia* bottom_right;
-  gfx::ImageSkia* bottom;
-  gfx::ImageSkia* bottom_left;
-  gfx::ImageSkia* left;
-
-  EdgeResources(int top_left_id, int top_id, int top_right_id, int right_id,
-                int bottom_right_id, int bottom_id, int bottom_left_id,
-                int left_id)
-      : top_left(NULL),
-        top(NULL),
-        top_right(NULL),
-        right(NULL),
-        bottom_right(NULL),
-        bottom(NULL),
-        bottom_left(NULL),
-        left(NULL) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    top_left = rb.GetImageSkiaNamed(top_left_id);
-    top = rb.GetImageSkiaNamed(top_id);
-    top_right = rb.GetImageSkiaNamed(top_right_id);
-    right = rb.GetImageSkiaNamed(right_id);
-    bottom_right = rb.GetImageSkiaNamed(bottom_right_id);
-    bottom = rb.GetImageSkiaNamed(bottom_id);
-    bottom_left = rb.GetImageSkiaNamed(bottom_left_id);
-    left = rb.GetImageSkiaNamed(left_id);
-  }
-};
-
 gfx::ImageSkia* CreateImageForColor(SkColor color) {
   gfx::Canvas canvas(gfx::Size(1, 1), ui::SCALE_FACTOR_100P, true);
   canvas.DrawColor(color);
   return new gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
-const EdgeResources& GetFrameEdges() {
-  static EdgeResources* edges = NULL;
-  if (!edges) {
-    edges = new EdgeResources(
-        IDR_WINDOW_TOP_LEFT_CORNER, IDR_WINDOW_TOP_CENTER,
-        IDR_WINDOW_TOP_RIGHT_CORNER, IDR_WINDOW_RIGHT_SIDE,
-        IDR_PANEL_BOTTOM_RIGHT_CORNER, IDR_WINDOW_BOTTOM_CENTER,
-        IDR_PANEL_BOTTOM_LEFT_CORNER, IDR_WINDOW_LEFT_SIDE);
+const gfx::ImageSkia& GetTopLeftCornerImage(panel::CornerStyle corner_style) {
+  static gfx::ImageSkia* rounded_image = NULL;
+  static gfx::ImageSkia* non_rounded_image = NULL;
+  if (!rounded_image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_LEFT_CORNER);
+    non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_TOP_LEFT_CORNER);
   }
-  return *edges;
+  return (corner_style & panel::TOP_ROUNDED) ? *rounded_image
+                                             : *non_rounded_image;
+}
+
+const gfx::ImageSkia& GetTopRightCornerImage(panel::CornerStyle corner_style) {
+  static gfx::ImageSkia* rounded_image = NULL;
+  static gfx::ImageSkia* non_rounded_image = NULL;
+  if (!rounded_image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
+    non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_TOP_RIGHT_CORNER);
+  }
+  return (corner_style & panel::TOP_ROUNDED) ? *rounded_image
+                                             : *non_rounded_image;
+}
+
+const gfx::ImageSkia& GetBottomLeftCornerImage(
+    panel::CornerStyle corner_style) {
+  static gfx::ImageSkia* rounded_image = NULL;
+  static gfx::ImageSkia* non_rounded_image = NULL;
+  if (!rounded_image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
+    non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_BOTTOM_LEFT_CORNER);
+  }
+  return (corner_style & panel::BOTTOM_ROUNDED) ? *rounded_image
+                                                : *non_rounded_image;
+}
+
+const gfx::ImageSkia& GetBottomRightCornerImage(
+    panel::CornerStyle corner_style) {
+  static gfx::ImageSkia* rounded_image = NULL;
+  static gfx::ImageSkia* non_rounded_image = NULL;
+  if (!rounded_image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+    non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_BOTTOM_RIGHT_CORNER);
+  }
+  return (corner_style & panel::BOTTOM_ROUNDED) ? *rounded_image
+                                                : *non_rounded_image;
+}
+
+const gfx::ImageSkia& GetTopEdgeImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    image = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_CENTER);
+  }
+  return *image;
+}
+
+const gfx::ImageSkia& GetBottomEdgeImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    image = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_CENTER);
+  }
+  return *image;
+}
+
+const gfx::ImageSkia& GetLeftEdgeImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    image = rb.GetImageSkiaNamed(IDR_WINDOW_LEFT_SIDE);
+  }
+  return *image;
+}
+
+const gfx::ImageSkia& GetRightEdgeImage() {
+  static gfx::ImageSkia* image = NULL;
+  if (!image) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    image = rb.GetImageSkiaNamed(IDR_WINDOW_RIGHT_SIDE);
+  }
+  return *image;
 }
 
 const gfx::Font& GetTitleFont() {
@@ -179,7 +222,8 @@ PanelFrameView::PanelFrameView(PanelView* panel_view)
       minimize_button_(NULL),
       restore_button_(NULL),
       title_icon_(NULL),
-      title_label_(NULL) {
+      title_label_(NULL),
+      corner_style_(panel::ALL_ROUNDED) {
 }
 
 PanelFrameView::~PanelFrameView() {
@@ -257,6 +301,28 @@ void PanelFrameView::UpdateTitlebarMinimizeRestoreButtonVisibility() {
   // mouse is clicked but not moved.
   minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
   restore_button_->SetState(views::CustomButton::STATE_NORMAL);
+}
+
+void PanelFrameView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
+  corner_style_ = corner_style;
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Changing the window region is going to force a paint. Only change the
+  // window region if the region really differs.
+  HWND native_window = panel_view_->GetNativePanelWindow();
+  base::win::ScopedRegion current_region(::CreateRectRgn(0, 0, 0, 0));
+  int current_region_result = ::GetWindowRgn(native_window, current_region);
+
+  gfx::Path window_mask;
+  GetWindowMask(size(), &window_mask);
+  base::win::ScopedRegion new_region(gfx::CreateHRGNFromSkPath(window_mask));
+
+  if (current_region_result == ERROR ||
+      !::EqualRgn(current_region, new_region)) {
+    // SetWindowRgn takes ownership of the new_region.
+    ::SetWindowRgn(native_window, new_region.release(), TRUE);
+  }
+#endif
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {
@@ -346,19 +412,41 @@ int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void PanelFrameView::GetWindowMask(const gfx::Size& size,
                                    gfx::Path* window_mask) {
-  window_mask->moveTo(0, 3);
-  window_mask->lineTo(1, 2);
-  window_mask->lineTo(1, 1);
-  window_mask->lineTo(2, 1);
-  window_mask->lineTo(3, 0);
-  window_mask->lineTo(SkIntToScalar(size.width() - 3), 0);
-  window_mask->lineTo(SkIntToScalar(size.width() - 2), 1);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 1);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 2);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 3);
-  window_mask->lineTo(SkIntToScalar(size.width()),
-                      SkIntToScalar(size.height()));
-  window_mask->lineTo(0, SkIntToScalar(size.height()));
+  int width = size.width();
+  int height = size.height();
+
+  if (corner_style_ & panel::TOP_ROUNDED) {
+    window_mask->moveTo(0, 3);
+    window_mask->lineTo(1, 2);
+    window_mask->lineTo(1, 1);
+    window_mask->lineTo(2, 1);
+    window_mask->lineTo(3, 0);
+    window_mask->lineTo(SkIntToScalar(width - 3), 0);
+    window_mask->lineTo(SkIntToScalar(width - 2), 1);
+    window_mask->lineTo(SkIntToScalar(width - 1), 1);
+    window_mask->lineTo(SkIntToScalar(width - 1), 2);
+    window_mask->lineTo(SkIntToScalar(width - 1), 3);
+  } else {
+    window_mask->moveTo(0, 0);
+    window_mask->lineTo(width, 0);
+  }
+
+  if (corner_style_ & panel::BOTTOM_ROUNDED) {
+    window_mask->lineTo(SkIntToScalar(width - 1), SkIntToScalar(height - 4));
+    window_mask->lineTo(SkIntToScalar(width - 2), SkIntToScalar(height - 3));
+    window_mask->lineTo(SkIntToScalar(width - 2), SkIntToScalar(height - 2));
+    window_mask->lineTo(SkIntToScalar(width - 3), SkIntToScalar(height - 2));
+    window_mask->lineTo(SkIntToScalar(width - 4), SkIntToScalar(height - 1));
+    window_mask->lineTo(3, SkIntToScalar(height - 1));
+    window_mask->lineTo(2, SkIntToScalar(height - 2));
+    window_mask->lineTo(1, SkIntToScalar(height - 2));
+    window_mask->lineTo(1, SkIntToScalar(height - 3));
+    window_mask->lineTo(0, SkIntToScalar(height - 4));
+  } else {
+    window_mask->lineTo(SkIntToScalar(width), SkIntToScalar(height));
+    window_mask->lineTo(0, SkIntToScalar(height));
+  }
+
   window_mask->close();
 }
 
@@ -667,43 +755,54 @@ void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
   if (paint_state_ != PAINT_AS_MINIMIZED)
     return;
 
+  const gfx::ImageSkia& top_left_image = GetTopLeftCornerImage(corner_style_);
+  const gfx::ImageSkia& top_right_image = GetTopRightCornerImage(corner_style_);
+  const gfx::ImageSkia& bottom_left_image =
+      GetBottomLeftCornerImage(corner_style_);
+  const gfx::ImageSkia& bottom_right_image =
+      GetBottomRightCornerImage(corner_style_);
+  const gfx::ImageSkia& top_image = GetTopEdgeImage();
+  const gfx::ImageSkia& bottom_image = GetRightEdgeImage();
+  const gfx::ImageSkia& left_image = GetLeftEdgeImage();
+  const gfx::ImageSkia& right_image = GetRightEdgeImage();
+
   // Draw the top border.
-  const EdgeResources& frame_edges = GetFrameEdges();
-  canvas->DrawImageInt(*(frame_edges.top_left), 0, 0);
-  canvas->TileImageInt(
-      *(frame_edges.top), frame_edges.top_left->width(), 0,
-      width() - frame_edges.top_right->width(), frame_edges.top->height());
-  canvas->DrawImageInt(
-      *(frame_edges.top_right),
-      width() - frame_edges.top_right->width(), 0);
+  canvas->DrawImageInt(top_left_image, 0, 0);
+  canvas->TileImageInt(top_image,
+                       top_left_image.width(),
+                       0,
+                       width() - top_right_image.width(),
+                       top_image.height());
+  canvas->DrawImageInt(top_right_image, width() - top_right_image.width(), 0);
 
   // Draw the right border.
-  canvas->TileImageInt(
-      *(frame_edges.right), width() - frame_edges.right->width(),
-      frame_edges.top_right->height(), frame_edges.right->width(),
-      height() - frame_edges.top_right->height() -
-          frame_edges.bottom_right->height());
+  canvas->TileImageInt(right_image,
+                       width() - right_image.width(),
+                       top_right_image.height(),
+                       right_image.width(),
+                       height() - top_right_image.height() -
+                           bottom_right_image.height());
 
   // Draw the bottom border.
-  canvas->DrawImageInt(
-      *(frame_edges.bottom_right),
-      width() - frame_edges.bottom_right->width(),
-      height() - frame_edges.bottom_right->height());
-  canvas->TileImageInt(
-      *(frame_edges.bottom), frame_edges.bottom_left->width(),
-      height() - frame_edges.bottom->height(),
-      width() - frame_edges.bottom_left->width() -
-          frame_edges.bottom_right->width(),
-      frame_edges.bottom->height());
-  canvas->DrawImageInt(
-      *(frame_edges.bottom_left), 0,
-      height() - frame_edges.bottom_left->height());
+  canvas->DrawImageInt(bottom_right_image,
+                       width() - bottom_right_image.width(),
+                       height() - bottom_right_image.height());
+  canvas->TileImageInt(bottom_image,
+                       bottom_left_image.width(),
+                       height() - bottom_image.height(),
+                       width() - bottom_left_image.width() -
+                           bottom_right_image.width(),
+                       bottom_image.height());
+  canvas->DrawImageInt(bottom_left_image,
+                       0,
+                       height() - bottom_left_image.height());
 
   // Draw the left border.
-  canvas->TileImageInt(
-      *(frame_edges.left), 0, frame_edges.top_left->height(),
-      frame_edges.left->width(),
-      height() - frame_edges.top_left->height() -
-          frame_edges.bottom_left->height());
+  canvas->TileImageInt(left_image,
+                       0,
+                       top_left_image.height(),
+                       left_image.width(),
+                       height() - top_left_image.height() -
+                           bottom_left_image.height());
 #endif
 }

@@ -38,7 +38,8 @@ PanelCocoa::PanelCocoa(Panel* panel, const gfx::Rect& bounds)
       bounds_(bounds),
       always_on_top_(false),
       is_shown_(false),
-      attention_request_id_(0) {
+      attention_request_id_(0),
+      corner_style_(panel::ALL_ROUNDED) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithPanel:this];
 }
 
@@ -237,6 +238,12 @@ void PanelCocoa::UpdatePanelMinimizeRestoreButtonVisibility() {
   [controller_ updateTitleBarMinimizeRestoreButtonVisibility];
 }
 
+void PanelCocoa::SetWindowCornerStyle(panel::CornerStyle corner_style) {
+  corner_style_ = corner_style;
+
+  // TODO(dimich): investigate how to support it on Mac.
+}
+
 void PanelCocoa::PanelExpansionStateChanging(
     Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
   [controller_ updateWindowLevel:(new_state != Panel::EXPANDED)];
@@ -300,6 +307,7 @@ class CocoaNativePanelTesting : public NativePanelTesting {
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
       panel::TitlebarButtonType button_type) const OVERRIDE;
+  virtual panel::CornerStyle GetWindowCornerStyle() const OVERRIDE;
 
  private:
   PanelTitlebarViewCocoa* titlebar() const;
@@ -394,4 +402,8 @@ bool CocoaNativePanelTesting::IsButtonVisible(
       NOTREACHED();
   }
   return false;
+}
+
+panel::CornerStyle CocoaNativePanelTesting::GetWindowCornerStyle() const {
+  return native_panel_window_->corner_style_;
 }

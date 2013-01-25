@@ -223,6 +223,7 @@ void DetachedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->SetAlwaysOnTop(false);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
+  panel->SetWindowCornerStyle(panel::ALL_ROUNDED);
 }
 
 void DetachedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {

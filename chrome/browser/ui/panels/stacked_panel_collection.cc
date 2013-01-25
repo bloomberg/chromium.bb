@@ -75,10 +75,17 @@ void StackedPanelCollection::AddPanel(Panel* panel,
                                       PositioningMask positioning_mask) {
   DCHECK_NE(this, panel->collection());
   panel->set_collection(this);
-  if (positioning_mask & PanelCollection::TOP_POSITION)
+  Panel* adjacent_panel = NULL;
+  if (positioning_mask & PanelCollection::TOP_POSITION) {
+    adjacent_panel = top_panel();
     panels_.push_front(panel);
-  else
+  } else {
+    adjacent_panel = bottom_panel();
     panels_.push_back(panel);
+  }
+
+  if (adjacent_panel)
+    UpdatePanelCornerStyle(adjacent_panel);
 
   if ((positioning_mask & NO_LAYOUT_REFRESH) == 0)
     RefreshLayout();
@@ -87,8 +94,21 @@ void StackedPanelCollection::AddPanel(Panel* panel,
 }
 
 void StackedPanelCollection::RemovePanel(Panel* panel) {
+  bool is_top = panel == top_panel();
+  bool is_bottom = panel == bottom_panel();
+
   panel->set_collection(NULL);
   panels_.remove(panel);
+
+  if (is_top) {
+    Panel* new_top_panel = top_panel();
+    if (new_top_panel)
+      UpdatePanelCornerStyle(new_top_panel);
+  } else if (is_bottom) {
+    Panel* new_bottom_panel = bottom_panel();
+    if (new_bottom_panel)
+      UpdatePanelCornerStyle(new_bottom_panel);
+  }
 
   RefreshLayout();
 
@@ -264,6 +284,7 @@ void StackedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->SetAlwaysOnTop(false);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
+  UpdatePanelCornerStyle(panel);
 }
 
 void StackedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
@@ -311,4 +332,19 @@ void StackedPanelCollection::MoveAllDraggingPanelsInstantly(
     if (panel->in_preview_mode())
       panel->MoveByInstantly(delta_origin);
   }
+}
+
+void StackedPanelCollection::UpdatePanelCornerStyle(Panel* panel) {
+  panel::CornerStyle corner_style;
+  bool at_top = panel == top_panel();
+  bool at_bottom = panel == bottom_panel();
+  if (at_top && at_bottom)
+    corner_style = panel::ALL_ROUNDED;
+  else if (at_top)
+    corner_style = panel::TOP_ROUNDED;
+  else if (at_bottom)
+    corner_style = panel::BOTTOM_ROUNDED;
+  else
+    corner_style = panel::NOT_ROUNDED;
+  panel->SetWindowCornerStyle(corner_style);
 }

@@ -45,6 +45,8 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
 
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
 
+  EXPECT_EQ(panel::ALL_ROUNDED, panel_testing->GetWindowCornerStyle());
+
   Panel::AttentionMode expected_attention_mode =
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                          Panel::USE_SYSTEM_ATTENTION);

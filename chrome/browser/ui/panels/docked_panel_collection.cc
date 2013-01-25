@@ -761,6 +761,7 @@ void DockedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->SetAlwaysOnTop(true);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
+  panel->SetWindowCornerStyle(panel::TOP_ROUNDED);
 }
 
 void DockedPanelCollection::ScheduleLayoutRefresh() {

@@ -302,6 +302,9 @@ class Panel : public BaseWindow,
   // Moves the panel by delta instantly.
   void MoveByInstantly(const gfx::Vector2d& delta_origin);
 
+  // Applies |corner_style| to the panel window.
+  void SetWindowCornerStyle(panel::CornerStyle corner_style);
+
  protected:
   // Panel can only be created using PanelManager::CreatePanel() or subclass.
   // |app_name| is the default title for Panels when the page content does not

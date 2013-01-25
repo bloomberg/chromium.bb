@@ -62,6 +62,14 @@ enum Resizability {
   RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM
 };
 
+// Describes how 4 corners of a panel should be painted.
+enum CornerStyle {
+  NOT_ROUNDED = 0,
+  TOP_ROUNDED = 0x1,
+  BOTTOM_ROUNDED = 0x2,
+  ALL_ROUNDED = TOP_ROUNDED | BOTTOM_ROUNDED
+};
+
 }  // namespace panel
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_CONSTANTS_H_

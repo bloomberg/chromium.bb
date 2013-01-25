@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
 
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 class NativePanelTesting;
@@ -78,6 +79,9 @@ class NativePanel {
   // Updates the visibility of the minimize and restore buttons.
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() = 0;
 
+  // Sets how the panel window displays its 4 corners, rounded or not.
+  virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) = 0;
+
   // Create testing interface for native panel. (Keep this last to separate
   // it from regular API.)
   virtual NativePanelTesting* CreateNativePanelTesting() = 0;
@@ -121,6 +125,8 @@ class NativePanelTesting {
   virtual bool IsWindowSizeKnown() const = 0;
   virtual bool IsAnimatingBounds() const = 0;
   virtual bool IsButtonVisible(panel::TitlebarButtonType button_type) const = 0;
+
+  virtual panel::CornerStyle GetWindowCornerStyle() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
