@@ -83,6 +83,8 @@
         'shell/shell_content_renderer_client.h',
         'shell/shell_devtools_delegate.cc',
         'shell/shell_devtools_delegate.h',
+        'shell/shell_devtools_frontend.cc',
+        'shell/shell_devtools_frontend.h',
         'shell/shell_download_manager_delegate.cc',
         'shell/shell_download_manager_delegate.h',
         'shell/shell_javascript_dialog_creator.cc',

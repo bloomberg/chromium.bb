@@ -7,8 +7,6 @@
 #import  <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
-#include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -19,7 +17,7 @@
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_devtools_frontend.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -262,18 +260,7 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
       break;
     }
     case ShellContextMenuItemInspectTag: {
-      ShellContentBrowserClient* browser_client =
-          static_cast<ShellContentBrowserClient*>(
-            GetContentClient()->browser());
-      ShellDevToolsDelegate* delegate =
-          browser_client->shell_browser_main_parts()->devtools_delegate();
-      GURL url = delegate->devtools_http_handler()->GetFrontendURL(
-          DevToolsAgentHost::GetFor(web_contents_->GetRenderViewHost()));
-      Shell::CreateNewWindow(web_contents_->GetBrowserContext(),
-                             url,
-                             NULL,
-                             MSG_ROUTING_NONE,
-                             gfx::Size());
+      ShellDevToolsFrontend::Show(web_contents_);
       break;
     }
   }

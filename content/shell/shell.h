@@ -41,6 +41,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
+class ShellDevToolsFrontend;
 class ShellJavaScriptDialogCreator;
 class SiteInstance;
 class WebContents;
@@ -207,7 +208,7 @@ class Shell : public WebContentsDelegate,
 
   scoped_ptr<WebContents> web_contents_;
 
-  Shell* dev_tools_;
+  ShellDevToolsFrontend* devtools_frontend_;
 
   bool is_fullscreen_;
 

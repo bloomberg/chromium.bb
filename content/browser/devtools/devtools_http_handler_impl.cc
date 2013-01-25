@@ -242,6 +242,10 @@ GURL DevToolsHttpHandlerImpl::GetFrontendURL(DevToolsAgentHost* agent_host) {
   net::IPEndPoint ip_address;
   if (server_->GetLocalAddress(&ip_address))
     return GURL();
+  if (!agent_host) {
+    return GURL(std::string("http://") + ip_address.ToString() +
+        overridden_frontend_url_);
+  }
   std::string host = ip_address.ToString();
   std::string id = binding_->GetIdentifier(agent_host);
   return GURL(std::string("http://") +
