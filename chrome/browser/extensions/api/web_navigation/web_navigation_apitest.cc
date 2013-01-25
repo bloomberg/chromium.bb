@@ -403,7 +403,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
+// Timing out. crbug.com/172258
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
+                       DISABLED_ServerRedirectSingleProcess) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
