@@ -119,6 +119,7 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
     internal::kShellWindowId_SystemModalContainer,
     internal::kShellWindowId_LockSystemModalContainer,
     internal::kShellWindowId_InputMethodContainer,
+    internal::kShellWindowId_UnparentedControlContainer,
   };
   // For workspace windows we need to manually reparent the windows. This way
   // workspace can move the windows to the appropriate workspace.
