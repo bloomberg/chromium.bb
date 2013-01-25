@@ -131,7 +131,7 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
   for (size_t i = 0; i < *num_consumed; ++i) {
     const QuicFrame& frame = frames[i];
     if (!writer.WriteUInt8(frame.type)) {
-          return NULL;
+      return NULL;
     }
 
     switch (frame.type) {
@@ -161,7 +161,7 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
         break;
       case CONNECTION_CLOSE_FRAME:
         if (!AppendConnectionCloseFramePayload(
-            *frame.connection_close_frame, &writer)) {
+                *frame.connection_close_frame, &writer)) {
           return NULL;
         }
         break;
@@ -350,7 +350,7 @@ bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
     return false;
   }
 
-  uint8 flags =static_cast<uint8>(header.public_header.flags);
+  uint8 flags = static_cast<uint8>(header.public_header.flags);
   if (!writer->WriteUInt8(flags)) {
     return false;
   }
@@ -920,8 +920,8 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
   // See if the next thing is a gap in the missing packets: if it's a
   // non-missing packet we can return it.
   if (it != missing_packets.end() && previous_missing + 1 != *it) {
-      return *it - 1;
-    }
+    return *it - 1;
+  }
 
   // Otherwise return the largest missing packet, as indirectly observed.
   return *largest_written;

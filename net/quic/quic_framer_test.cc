@@ -21,6 +21,7 @@ using base::hash_set;
 using base::StringPiece;
 using std::make_pair;
 using std::map;
+using std::numeric_limits;
 using std::string;
 using std::vector;
 

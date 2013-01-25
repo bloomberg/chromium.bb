@@ -37,7 +37,7 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called if an error is detected in the QUIC protocol.
   virtual void OnError(QuicFramer* framer) = 0;
 
-  // Called when a new packet has been recieved, before it
+  // Called when a new packet has been received, before it
   // has been validated or processed.
   virtual void OnPacket(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address) = 0;
