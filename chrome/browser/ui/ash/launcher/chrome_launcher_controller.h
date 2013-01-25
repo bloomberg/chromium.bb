@@ -12,6 +12,7 @@
 #include "ash/shelf_types.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/ui/ash/app_icon_loader.h"
 
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
@@ -46,7 +47,8 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
 class ChromeLauncherController
-    : public ash::LauncherDelegate {
+    : public ash::LauncherDelegate,
+      public ash::AppIconLoader::Delegate {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -74,25 +76,6 @@ class ChromeLauncherController
     // Returns true if |id| is valid. Used during restore to ignore no longer
     // valid extensions.
     virtual bool IsValidID(const std::string& id) = 0;
-  };
-
-  // Interface used to load app icons. This is in it's own class so that it can
-  // be mocked.
-  class AppIconLoader {
-   public:
-    virtual ~AppIconLoader() {}
-
-    // Fetches the image for the specified id. When done (which may be
-    // synchronous), this should invoke SetAppImage() on the LauncherUpdater.
-    virtual void FetchImage(const std::string& id) = 0;
-
-    // Clears the image for the specified id.
-    virtual void ClearImage(const std::string& id) = 0;
-
-    // Updates the image for the specified id. This is called to re-create
-    // app icon with latest app state (enabled or disabled/terminiated).
-    // SetAppImage() is called when done.
-    virtual void UpdateImage(const std::string& id) = 0;
   };
 
   ChromeLauncherController() {}
@@ -186,11 +169,6 @@ class ChromeLauncherController
   virtual ash::LauncherID GetLauncherIDForAppID(const std::string& app_id) = 0;
   virtual std::string GetAppIDForLauncherID(ash::LauncherID id) = 0;
 
-  // Sets the image for an app tab. This is intended to be invoked from the
-  // AppIconLoader.
-  virtual void SetAppImage(const std::string& app_id,
-                           const gfx::ImageSkia& image) = 0;
-
   // Set the image for a specific launcher item (e.g. when set by the app).
   virtual void SetLauncherItemImage(ash::LauncherID launcher_id,
                                     const gfx::ImageSkia& image) = 0;
@@ -278,6 +256,10 @@ class ChromeLauncherController
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE = 0;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE = 0;
 
+  // ash::AppIconLoader overrides:
+  virtual void SetAppImage(const std::string& app_id,
+                           const gfx::ImageSkia& image) OVERRIDE = 0;
+
  protected:
   friend class BrowserLauncherItemControllerTest;
   friend class LauncherPlatformAppBrowserTest;
@@ -295,7 +277,7 @@ class ChromeLauncherController
   // Sets the AppTabHelper/AppIconLoader, taking ownership of the helper class.
   // These are intended for testing.
   virtual void SetAppTabHelperForTest(AppTabHelper* helper) = 0;
-  virtual void SetAppIconLoaderForTest(AppIconLoader* loader) = 0;
+  virtual void SetAppIconLoaderForTest(ash::AppIconLoader* loader) = 0;
   virtual const std::string& GetAppIdFromLauncherIdForTest(
       ash::LauncherID id) = 0;
 

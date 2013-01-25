@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/launcher_app_icon_loader.h"
+#include "chrome/browser/ui/ash/app_icon_loader_impl.h"
 
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,19 +26,23 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
 
 }  // namespace
 
+namespace ash {
 
-LauncherAppIconLoader::LauncherAppIconLoader(
+AppIconLoaderImpl::AppIconLoaderImpl(
     Profile* profile,
-    ChromeLauncherController* controller)
+    int icon_size,
+    AppIconLoader::Delegate* delegate)
     : profile_(profile),
-      host_(controller) {
+      delegate_(delegate),
+      icon_size_(icon_size) {
+
 }
 
-LauncherAppIconLoader::~LauncherAppIconLoader() {
+AppIconLoaderImpl::~AppIconLoaderImpl() {
   STLDeleteContainerPairFirstPointers(map_.begin(), map_.end());
 }
 
-void LauncherAppIconLoader::FetchImage(const std::string& id) {
+void AppIconLoaderImpl::FetchImage(const std::string& id) {
   for (ImageToExtensionIDMap::const_iterator i = map_.begin();
        i != map_.end(); ++i) {
     if (i->second == id)
@@ -52,7 +56,7 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
   extensions::IconImage* image = new extensions::IconImage(
       extension,
       extension->icons(),
-      extension_misc::EXTENSION_ICON_SMALL,
+      icon_size_,
       extensions::Extension::GetDefaultIcon(true),
       this);
   // |map_| takes ownership of |image|.
@@ -64,7 +68,7 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
   image->image_skia().EnsureRepsForSupportedScaleFactors();
 }
 
-void LauncherAppIconLoader::ClearImage(const std::string& id) {
+void AppIconLoaderImpl::ClearImage(const std::string& id) {
   for (ImageToExtensionIDMap::iterator i = map_.begin();
        i != map_.end(); ++i) {
     if (i->second == id) {
@@ -75,7 +79,7 @@ void LauncherAppIconLoader::ClearImage(const std::string& id) {
   }
 }
 
-void LauncherAppIconLoader::UpdateImage(const std::string& id) {
+void AppIconLoaderImpl::UpdateImage(const std::string& id) {
   for (ImageToExtensionIDMap::iterator i = map_.begin();
        i != map_.end(); ++i) {
     if (i->second == id) {
@@ -85,7 +89,7 @@ void LauncherAppIconLoader::UpdateImage(const std::string& id) {
   }
 }
 
-void LauncherAppIconLoader::OnExtensionIconImageChanged(
+void AppIconLoaderImpl::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
   ImageToExtensionIDMap::iterator i = map_.find(image);
   if (i == map_.end())
@@ -94,8 +98,8 @@ void LauncherAppIconLoader::OnExtensionIconImageChanged(
   BuildImage(i->second, i->first->image_skia());
 }
 
-void LauncherAppIconLoader::BuildImage(const std::string& id,
-                                       const gfx::ImageSkia& icon) {
+void AppIconLoaderImpl::BuildImage(const std::string& id,
+                                   const gfx::ImageSkia& icon) {
   gfx::ImageSkia image = icon;
 
   const ExtensionService* service =
@@ -106,6 +110,7 @@ void LauncherAppIconLoader::BuildImage(const std::string& id,
     image = gfx::ImageSkiaOperations::CreateHSLShiftedImage(image, shift);
   }
 
-  host_->SetAppImage(id, image);
+  delegate_->SetAppImage(id, image);
 }
 
+}  // namespace ash

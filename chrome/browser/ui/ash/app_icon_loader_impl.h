@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
+#ifndef CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_IMPL_H_
+#define CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_IMPL_H_
 
 #include <map>
 #include <string>
 
 #include "chrome/browser/extensions/extension_icon_image.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/app_icon_loader.h"
 
 class Profile;
 
@@ -17,14 +17,16 @@ namespace extensions {
 class Extension;
 }
 
+namespace ash {
 
-// Default implementation of LauncherUpdater::AppIconLoader that interacts
-// with the ExtensionService and ImageLoadingTracker to load images.
-class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
-                              public extensions::IconImage::Observer {
+// Default implementation of ash::AppIconLoader that interacts with the
+// ExtensionService and ImageLoadingTracker to load images.
+class AppIconLoaderImpl : public AppIconLoader,
+                          public extensions::IconImage::Observer {
  public:
-  LauncherAppIconLoader(Profile* profile, ChromeLauncherController* host);
-  virtual ~LauncherAppIconLoader();
+  AppIconLoaderImpl(Profile* profile, int icon_size,
+                    AppIconLoader::Delegate* delegate);
+  virtual ~AppIconLoaderImpl();
 
   // AppIconLoader overrides:
   virtual void FetchImage(const std::string& id) OVERRIDE;
@@ -43,13 +45,17 @@ class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
 
   Profile* profile_;
 
-  // ChromeLauncherController we're associated with (and owned by).
-  ChromeLauncherController* host_;
+  // The delegate object which receives the icon images. No ownership.
+  AppIconLoader::Delegate* delegate_;
 
   // Maps from IconImage pointer to the extension id.
   ImageToExtensionIDMap map_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherAppIconLoader);
+  const int icon_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppIconLoaderImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
+}  // namespace ash
+
+#endif  // CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_IMPL_H_

@@ -9,6 +9,7 @@
 
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
+#include "chrome/browser/ui/ash/app_icon_loader.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -17,7 +18,8 @@
 class BalloonCollectionImplAsh
     : public BalloonCollectionImpl,
       public message_center::MessageCenter::Delegate,
-      public message_center::NotifierSettingsView::Delegate {
+      public message_center::NotifierSettingsView::Delegate,
+      public ash::AppIconLoader::Delegate {
  public:
   BalloonCollectionImplAsh();
   virtual ~BalloonCollectionImplAsh();
@@ -45,6 +47,10 @@ class BalloonCollectionImplAsh
   virtual void SetNotifierEnabled(const std::string& id, bool enabled) OVERRIDE;
   virtual void OnNotifierSettingsClosing(
       message_center::NotifierSettingsView* view) OVERRIDE;
+
+  // Overridden from ash::AppIconLoader::Delegate.
+  virtual void SetAppImage(const std::string& id,
+                           const gfx::ImageSkia& image) OVERRIDE;
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
@@ -78,6 +84,8 @@ class BalloonCollectionImplAsh
   // The view displaying notifier settings. NULL if the settings are not
   // visible.
   message_center::NotifierSettingsView* settings_view_;
+
+  scoped_ptr<ash::AppIconLoader> app_icon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImplAsh);
 };
