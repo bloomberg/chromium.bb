@@ -862,9 +862,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
+// http://crbug.com/172336
+#if defined(OS_WIN)
+#define MAYBE_TabClosingWhenRemovingExtension \
+    DISABLED_TabClosingWhenRemovingExtension
+#else
+#define MAYBE_TabClosingWhenRemovingExtension TabClosingWhenRemovingExtension
+#endif
 // Makes sure TabClosing is sent when uninstalling an extension that is an app
 // tab.
-IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
   ASSERT_TRUE(test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(test_server()->GetURL("empty.html"));
