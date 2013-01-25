@@ -192,7 +192,7 @@ if ragel_involved:
             action=InjectGeneratedFileHeader),
         xml_file)
 
-  (decoder32, _) = MakeAutomaton(
+  (decoder32, decoder32_xml) = MakeAutomaton(
       '32', 'decoder',
       'check_access,opcode,parse_operands_states',
       '-T0')
@@ -201,7 +201,7 @@ if ragel_involved:
       ('check_access,opcode,parse_operands,parse_operands_states,'
        'instruction_name,nacl-forbidden'),
       '-G2')
-  (decoder64, _) = MakeAutomaton(
+  (decoder64, decoder64_xml) = MakeAutomaton(
       '64', 'decoder',
       'check_access,opcode,parse_operands_states',
       '-T0')
@@ -237,8 +237,6 @@ if ragel_involved:
       source=['obtain_binutils.py'],
       action='${PYTHON} ${SOURCES[0]} ${TARGETS[0]} ${TARGETS[1]}')
 
-  check_decoders = []
-
   for bits in ('32', '64'):
     (one_valid_instr_rl,) = env.AutoDepsCommand(
         'one_valid_instruction_x86_%s.rl' % bits,
@@ -262,11 +260,14 @@ if ragel_involved:
             'unreviewed/parse_instruction.rl',
             byte_machines])
 
+  check_decoders = []
+
+  for bits, xml in [('32', decoder32_xml), ('64', decoder64_xml)]:
     check_decoder = env.AutoDepsCommand(
         'check_decoder_test_results_%s' % bits,
         ['${PYTHON}',
          env.File('check_decoder.py'),
-         one_instr_xml,
+         xml,
          '--gas', gas,
          '--objdump', objdump,
          '--decoder', decoder_test,

@@ -277,8 +277,11 @@ _again:
 		case 2003: goto tr1086;
 		case 2076: goto tr1159;
 		case 3: goto st3;
+		case 927: goto tr10;
 		case 4: goto st4;
+		case 928: goto tr11;
 		case 5: goto st5;
+		case 929: goto tr12;
 		case 6: goto st6;
 		case 920: goto tr3;
 		case 932: goto tr15;
@@ -358,8 +361,11 @@ _again:
 		case 2160: goto tr1243;
 		case 2162: goto tr1245;
 		case 13: goto st13;
+		case 945: goto tr28;
 		case 14: goto st14;
+		case 946: goto tr29;
 		case 15: goto st15;
+		case 947: goto tr30;
 		case 16: goto st16;
 		case 950: goto tr33;
 		case 938: goto tr21;
@@ -390,8 +396,11 @@ _again:
 		case 954: goto tr37;
 		case 957: goto tr40;
 		case 22: goto st22;
+		case 962: goto tr45;
 		case 23: goto st23;
+		case 963: goto tr46;
 		case 24: goto st24;
+		case 964: goto tr47;
 		case 25: goto st25;
 		case 967: goto tr50;
 		case 955: goto tr38;
@@ -427,8 +436,11 @@ _again:
 		case 1197: goto tr280;
 		case 1293: goto tr376;
 		case 30: goto st30;
+		case 970: goto tr53;
 		case 31: goto st31;
+		case 971: goto tr54;
 		case 32: goto st32;
+		case 972: goto tr55;
 		case 33: goto st33;
 		case 974: goto tr57;
 		case 0: goto st0;
@@ -447,8 +459,11 @@ _again:
 		case 1065: goto tr148;
 		case 1068: goto tr151;
 		case 38: goto st38;
+		case 1029: goto tr112;
 		case 39: goto st39;
+		case 1030: goto tr113;
 		case 40: goto st40;
+		case 1031: goto tr114;
 		case 41: goto st41;
 		case 1073: goto tr156;
 		case 1034: goto tr117;
@@ -473,8 +488,11 @@ _again:
 		case 1047: goto tr130;
 		case 1054: goto tr137;
 		case 48: goto st48;
+		case 1048: goto tr131;
 		case 49: goto st49;
+		case 1049: goto tr132;
 		case 50: goto st50;
+		case 1050: goto tr133;
 		case 51: goto st51;
 		case 1039: goto tr122;
 		case 1053: goto tr136;
@@ -584,8 +602,11 @@ _again:
 		case 2012: goto tr1095;
 		case 2078: goto tr1161;
 		case 66: goto st66;
+		case 1092: goto tr175;
 		case 67: goto st67;
+		case 1093: goto tr176;
 		case 68: goto st68;
+		case 1094: goto tr177;
 		case 69: goto st69;
 		case 1084: goto tr167;
 		case 1097: goto tr180;
@@ -618,8 +639,11 @@ _again:
 		case 74: goto st74;
 		case 75: goto st75;
 		case 76: goto st76;
+		case 1100: goto tr183;
 		case 77: goto st77;
+		case 1101: goto tr184;
 		case 78: goto st78;
+		case 1102: goto tr185;
 		case 79: goto st79;
 		case 999: goto tr82;
 		case 1333: goto tr416;
@@ -657,8 +681,11 @@ _again:
 		case 1381: goto tr464;
 		case 1408: goto tr491;
 		case 88: goto st88;
+		case 1140: goto tr223;
 		case 89: goto st89;
+		case 1141: goto tr224;
 		case 90: goto st90;
+		case 1142: goto tr225;
 		case 91: goto st91;
 		case 92: goto st92;
 		case 93: goto st93;
@@ -673,8 +700,11 @@ _again:
 		case 1816: goto tr899;
 		case 1813: goto tr896;
 		case 96: goto st96;
+		case 1148: goto tr231;
 		case 97: goto st97;
+		case 1149: goto tr232;
 		case 98: goto st98;
+		case 1150: goto tr233;
 		case 99: goto st99;
 		case 2316: goto tr1399;
 		case 100: goto st100;
@@ -688,8 +718,11 @@ _again:
 		case 1199: goto tr282;
 		case 1202: goto tr285;
 		case 104: goto st104;
+		case 1207: goto tr290;
 		case 105: goto st105;
+		case 1208: goto tr291;
 		case 106: goto st106;
+		case 1209: goto tr292;
 		case 107: goto st107;
 		case 1212: goto tr295;
 		case 1200: goto tr283;
@@ -714,8 +747,11 @@ _again:
 		case 1216: goto tr299;
 		case 1219: goto tr302;
 		case 114: goto st114;
+		case 1225: goto tr308;
 		case 115: goto st115;
+		case 1226: goto tr309;
 		case 116: goto st116;
+		case 1227: goto tr310;
 		case 117: goto st117;
 		case 1230: goto tr313;
 		case 1217: goto tr300;
@@ -738,8 +774,11 @@ _again:
 		case 1815: goto tr898;
 		case 1831: goto tr914;
 		case 124: goto st124;
+		case 1244: goto tr327;
 		case 125: goto st125;
+		case 1245: goto tr328;
 		case 126: goto st126;
+		case 1246: goto tr329;
 		case 127: goto st127;
 		case 1236: goto tr319;
 		case 1249: goto tr332;
@@ -782,8 +821,11 @@ _again:
 		case 1263: goto tr346;
 		case 1266: goto tr349;
 		case 141: goto st141;
+		case 1270: goto tr353;
 		case 142: goto st142;
+		case 1271: goto tr354;
 		case 143: goto st143;
+		case 1272: goto tr355;
 		case 144: goto st144;
 		case 1275: goto tr358;
 		case 1264: goto tr347;
@@ -809,8 +851,11 @@ _again:
 		case 162: goto st162;
 		case 1192: goto tr275;
 		case 163: goto st163;
+		case 1305: goto tr388;
 		case 164: goto st164;
+		case 1306: goto tr389;
 		case 165: goto st165;
+		case 1307: goto tr390;
 		case 166: goto st166;
 		case 167: goto st167;
 		case 168: goto st168;
@@ -833,8 +878,11 @@ _again:
 		case 1350: goto tr433;
 		case 1353: goto tr436;
 		case 178: goto st178;
+		case 1358: goto tr441;
 		case 179: goto st179;
+		case 1359: goto tr442;
 		case 180: goto st180;
+		case 1360: goto tr443;
 		case 181: goto st181;
 		case 1363: goto tr446;
 		case 1351: goto tr434;
@@ -853,8 +901,11 @@ _again:
 		case 1367: goto tr450;
 		case 1370: goto tr453;
 		case 187: goto st187;
+		case 1374: goto tr457;
 		case 188: goto st188;
+		case 1375: goto tr458;
 		case 189: goto st189;
+		case 1376: goto tr459;
 		case 190: goto st190;
 		case 1379: goto tr462;
 		case 1368: goto tr451;
@@ -881,8 +932,11 @@ _again:
 		case 1386: goto tr469;
 		case 1389: goto tr472;
 		case 201: goto st201;
+		case 1393: goto tr476;
 		case 202: goto st202;
+		case 1394: goto tr477;
 		case 203: goto st203;
+		case 1395: goto tr478;
 		case 204: goto st204;
 		case 1398: goto tr481;
 		case 1387: goto tr470;
@@ -893,12 +947,19 @@ _again:
 		case 207: goto st207;
 		case 1323: goto tr406;
 		case 208: goto st208;
+		case 1400: goto tr483;
 		case 209: goto st209;
+		case 1401: goto tr484;
 		case 210: goto st210;
+		case 1402: goto tr485;
 		case 211: goto st211;
+		case 1403: goto tr486;
 		case 212: goto st212;
+		case 1404: goto tr487;
 		case 213: goto st213;
+		case 1405: goto tr488;
 		case 214: goto st214;
+		case 1406: goto tr489;
 		case 215: goto st215;
 		case 216: goto st216;
 		case 217: goto st217;
@@ -983,15 +1044,21 @@ _again:
 		case 253: goto st253;
 		case 1443: goto tr526;
 		case 254: goto st254;
+		case 1444: goto tr527;
 		case 255: goto st255;
+		case 1445: goto tr528;
 		case 256: goto st256;
+		case 1446: goto tr529;
 		case 257: goto st257;
 		case 1440: goto tr523;
 		case 258: goto st258;
 		case 1447: goto tr530;
 		case 259: goto st259;
+		case 1448: goto tr531;
 		case 260: goto st260;
+		case 1449: goto tr532;
 		case 261: goto st261;
+		case 1450: goto tr533;
 		case 262: goto st262;
 		case 2355: goto tr1438;
 		case 263: goto st263;
@@ -1012,6 +1079,7 @@ _again:
 		case 1569: goto tr652;
 		case 1587: goto tr670;
 		case 268: goto st268;
+		case 1481: goto tr564;
 		case 269: goto st269;
 		case 270: goto st270;
 		case 271: goto st271;
@@ -1043,6 +1111,7 @@ _again:
 		case 1576: goto tr659;
 		case 1580: goto tr663;
 		case 289: goto st289;
+		case 1542: goto tr625;
 		case 290: goto st290;
 		case 1459: goto tr542;
 		case 291: goto st291;
@@ -1056,8 +1125,11 @@ _again:
 		case 1547: goto tr630;
 		case 1550: goto tr633;
 		case 295: goto st295;
+		case 1555: goto tr638;
 		case 296: goto st296;
+		case 1556: goto tr639;
 		case 297: goto st297;
+		case 1557: goto tr640;
 		case 298: goto st298;
 		case 1560: goto tr643;
 		case 1548: goto tr631;
@@ -1076,8 +1148,11 @@ _again:
 		case 1582: goto tr665;
 		case 1585: goto tr668;
 		case 304: goto st304;
+		case 1572: goto tr655;
 		case 305: goto st305;
+		case 1573: goto tr656;
 		case 306: goto st306;
+		case 1574: goto tr657;
 		case 307: goto st307;
 		case 1565: goto tr648;
 		case 1577: goto tr660;
@@ -1260,8 +1335,11 @@ _again:
 		case 1712: goto tr795;
 		case 1689: goto tr772;
 		case 403: goto st403;
+		case 1690: goto tr773;
 		case 404: goto st404;
+		case 1691: goto tr774;
 		case 405: goto st405;
+		case 1692: goto tr775;
 		case 406: goto st406;
 		case 1681: goto tr764;
 		case 1873: goto tr956;
@@ -1605,8 +1683,11 @@ _again:
 		case 1975: goto tr1058;
 		case 1916: goto tr999;
 		case 568: goto st568;
+		case 1917: goto tr1000;
 		case 569: goto st569;
+		case 1918: goto tr1001;
 		case 570: goto st570;
+		case 1919: goto tr1002;
 		case 571: goto st571;
 		case 1898: goto tr981;
 		case 572: goto st572;
@@ -2364,6 +2445,7 @@ tr13:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -2402,6 +2484,7 @@ tr14:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -2606,6 +2689,7 @@ tr31:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -2645,6 +2729,7 @@ tr32:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -2816,6 +2901,7 @@ tr48:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -2856,6 +2942,7 @@ tr49:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -2896,6 +2983,7 @@ tr52:
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(current_position);
   }
+	{}
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -2931,6 +3019,7 @@ tr56:
     SET_IMM_TYPE(IMM32);
     SET_IMM_PTR(current_position - 3);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -3305,6 +3394,7 @@ tr115:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -3339,6 +3429,7 @@ tr116:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -3592,6 +3683,7 @@ tr172:
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(current_position);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -3626,6 +3718,7 @@ tr186:
     Rel32Operand(current_position + 1, data, jump_dests, size,
                  &instruction_info_collected);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -3934,6 +4027,7 @@ tr226:
     SET_IMM_TYPE(IMM32);
     SET_IMM_PTR(current_position - 3);
   }
+	{}
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -3969,6 +4063,7 @@ tr230:
     Rel8Operand(current_position + 1, data, jump_dests, size,
                 &instruction_info_collected);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -4003,6 +4098,7 @@ tr234:
     SET_IMM_TYPE(IMM32);
     SET_IMM_PTR(current_position - 3);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -4188,6 +4284,7 @@ tr305:
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(current_position);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -4311,6 +4408,7 @@ tr356:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -4347,6 +4445,7 @@ tr357:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -4602,6 +4701,7 @@ tr391:
     Rel32Operand(current_position + 1, data, jump_dests, size,
                  &instruction_info_collected);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -4915,6 +5015,7 @@ tr479:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -4950,6 +5051,7 @@ tr480:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -4985,6 +5087,7 @@ tr490:
     SET_IMM_TYPE(IMM64);
     SET_IMM_PTR(current_position - 7);
   }
+	{}
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -5241,6 +5344,7 @@ tr565:
     SET_IMM_TYPE(IMM16);
     SET_IMM_PTR(current_position - 1);
   }
+	{}
 	{
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
@@ -5309,6 +5413,7 @@ tr626:
     SET_IMM_TYPE(IMM16);
     SET_IMM_PTR(current_position - 1);
   }
+	{}
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
@@ -6761,16 +6866,25 @@ st3:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof3;
 case 3:
+	goto tr10;
+tr10:
+	{}
 	goto st4;
 st4:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof4;
 case 4:
+	goto tr11;
+tr11:
+	{}
 	goto st5;
 st5:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof5;
 case 5:
+	goto tr12;
+tr12:
+	{}
 	goto st6;
 st6:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7309,16 +7423,25 @@ st13:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof13;
 case 13:
+	goto tr28;
+tr28:
+	{}
 	goto st14;
 st14:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof14;
 case 14:
+	goto tr29;
+tr29:
+	{}
 	goto st15;
 st15:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof15;
 case 15:
+	goto tr30;
+tr30:
+	{}
 	goto st16;
 st16:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7578,16 +7701,25 @@ st22:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof22;
 case 22:
+	goto tr45;
+tr45:
+	{}
 	goto st23;
 st23:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof23;
 case 23:
+	goto tr46;
+tr46:
+	{}
 	goto st24;
 st24:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof24;
 case 24:
+	goto tr47;
+tr47:
+	{}
 	goto st25;
 st25:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7677,6 +7809,7 @@ tr460:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -7687,6 +7820,7 @@ tr461:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -7842,6 +7976,7 @@ tr293:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -7852,6 +7987,7 @@ tr294:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -7914,16 +8050,25 @@ st30:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof30;
 case 30:
+	goto tr53;
+tr53:
+	{}
 	goto st31;
 st31:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof31;
 case 31:
+	goto tr54;
+tr54:
+	{}
 	goto st32;
 st32:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof32;
 case 32:
+	goto tr55;
+tr55:
+	{}
 	goto st33;
 st33:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8069,16 +8214,25 @@ st38:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof38;
 case 38:
+	goto tr112;
+tr112:
+	{}
 	goto st39;
 st39:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof39;
 case 39:
+	goto tr113;
+tr113:
+	{}
 	goto st40;
 st40:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof40;
 case 40:
+	goto tr114;
+tr114:
+	{}
 	goto st41;
 st41:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8197,6 +8351,7 @@ tr134:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -8207,6 +8362,7 @@ tr135:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -8272,16 +8428,25 @@ st48:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof48;
 case 48:
+	goto tr131;
+tr131:
+	{}
 	goto st49;
 st49:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof49;
 case 49:
+	goto tr132;
+tr132:
+	{}
 	goto st50;
 st50:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof50;
 case 50:
+	goto tr133;
+tr133:
+	{}
 	goto st51;
 st51:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8712,6 +8877,7 @@ tr178:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -8722,6 +8888,7 @@ tr179:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -8836,6 +9003,7 @@ tr1290:
     SET_IMM2_TYPE(IMM8);
     SET_IMM2_PTR(current_position);
   }
+	{}
 	goto st64;
 st64:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9022,16 +9190,25 @@ st66:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof66;
 case 66:
+	goto tr175;
+tr175:
+	{}
 	goto st67;
 st67:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof67;
 case 67:
+	goto tr176;
+tr176:
+	{}
 	goto st68;
 st68:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof68;
 case 68:
+	goto tr177;
+tr177:
+	{}
 	goto st69;
 st69:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9246,16 +9423,25 @@ st76:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof76;
 case 76:
+	goto tr183;
+tr183:
+	{}
 	goto st77;
 st77:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof77;
 case 77:
+	goto tr184;
+tr184:
+	{}
 	goto st78;
 st78:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof78;
 case 78:
+	goto tr185;
+tr185:
+	{}
 	goto st79;
 st79:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9447,6 +9633,7 @@ tr444:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -9457,6 +9644,7 @@ tr445:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -9520,16 +9708,25 @@ st88:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof88;
 case 88:
+	goto tr223;
+tr223:
+	{}
 	goto st89;
 st89:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof89;
 case 89:
+	goto tr224;
+tr224:
+	{}
 	goto st90;
 st90:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof90;
 case 90:
+	goto tr225;
+tr225:
+	{}
 	goto st91;
 st91:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9613,6 +9810,7 @@ tr330:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -9623,6 +9821,7 @@ tr331:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -9667,16 +9866,25 @@ st96:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof96;
 case 96:
+	goto tr231;
+tr231:
+	{}
 	goto st97;
 st97:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof97;
 case 97:
+	goto tr232;
+tr232:
+	{}
 	goto st98;
 st98:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof98;
 case 98:
+	goto tr233;
+tr233:
+	{}
 	goto st99;
 st99:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9786,16 +9994,25 @@ st104:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof104;
 case 104:
+	goto tr290;
+tr290:
+	{}
 	goto st105;
 st105:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof105;
 case 105:
+	goto tr291;
+tr291:
+	{}
 	goto st106;
 st106:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof106;
 case 106:
+	goto tr292;
+tr292:
+	{}
 	goto st107;
 st107:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9897,6 +10114,7 @@ tr311:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -9907,6 +10125,7 @@ tr312:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -10012,16 +10231,25 @@ st114:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof114;
 case 114:
+	goto tr308;
+tr308:
+	{}
 	goto st115;
 st115:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof115;
 case 115:
+	goto tr309;
+tr309:
+	{}
 	goto st116;
 st116:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof116;
 case 116:
+	goto tr310;
+tr310:
+	{}
 	goto st117;
 st117:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10200,16 +10428,25 @@ st124:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof124;
 case 124:
+	goto tr327;
+tr327:
+	{}
 	goto st125;
 st125:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof125;
 case 125:
+	goto tr328;
+tr328:
+	{}
 	goto st126;
 st126:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof126;
 case 126:
+	goto tr329;
+tr329:
+	{}
 	goto st127;
 st127:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10319,6 +10556,7 @@ tr336:
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(current_position);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -10402,6 +10640,7 @@ tr341:
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(current_position);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -10648,16 +10887,25 @@ st141:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof141;
 case 141:
+	goto tr353;
+tr353:
+	{}
 	goto st142;
 st142:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof142;
 case 142:
+	goto tr354;
+tr354:
+	{}
 	goto st143;
 st143:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof143;
 case 143:
+	goto tr355;
+tr355:
+	{}
 	goto st144;
 st144:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10902,16 +11150,25 @@ st163:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof163;
 case 163:
+	goto tr388;
+tr388:
+	{}
 	goto st164;
 st164:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof164;
 case 164:
+	goto tr389;
+tr389:
+	{}
 	goto st165;
 st165:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof165;
 case 165:
+	goto tr390;
+tr390:
+	{}
 	goto st166;
 st166:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11125,16 +11382,25 @@ st178:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof178;
 case 178:
+	goto tr441;
+tr441:
+	{}
 	goto st179;
 st179:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof179;
 case 179:
+	goto tr442;
+tr442:
+	{}
 	goto st180;
 st180:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof180;
 case 180:
+	goto tr443;
+tr443:
+	{}
 	goto st181;
 st181:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11279,16 +11545,25 @@ st187:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof187;
 case 187:
+	goto tr457;
+tr457:
+	{}
 	goto st188;
 st188:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof188;
 case 188:
+	goto tr458;
+tr458:
+	{}
 	goto st189;
 st189:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof189;
 case 189:
+	goto tr459;
+tr459:
+	{}
 	goto st190;
 st190:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11496,16 +11771,25 @@ st201:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof201;
 case 201:
+	goto tr476;
+tr476:
+	{}
 	goto st202;
 st202:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof202;
 case 202:
+	goto tr477;
+tr477:
+	{}
 	goto st203;
 st203:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof203;
 case 203:
+	goto tr478;
+tr478:
+	{}
 	goto st204;
 st204:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11582,36 +11866,57 @@ st208:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof208;
 case 208:
+	goto tr483;
+tr483:
+	{}
 	goto st209;
 st209:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof209;
 case 209:
+	goto tr484;
+tr484:
+	{}
 	goto st210;
 st210:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof210;
 case 210:
+	goto tr485;
+tr485:
+	{}
 	goto st211;
 st211:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof211;
 case 211:
+	goto tr486;
+tr486:
+	{}
 	goto st212;
 st212:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof212;
 case 212:
+	goto tr487;
+tr487:
+	{}
 	goto st213;
 st213:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof213;
 case 213:
+	goto tr488;
+tr488:
+	{}
 	goto st214;
 st214:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof214;
 case 214:
+	goto tr489;
+tr489:
+	{}
 	goto st215;
 st215:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12464,22 +12769,31 @@ st254:
 		goto _test_eof254;
 case 254:
 	if ( (*( current_position)) == 0u )
-		goto st255;
-	goto st202;
+		goto tr527;
+	goto tr476;
+tr527:
+	{}
+	goto st255;
 st255:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof255;
 case 255:
 	if ( (*( current_position)) == 0u )
-		goto st256;
-	goto st203;
+		goto tr528;
+	goto tr477;
+tr528:
+	{}
+	goto st256;
 st256:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof256;
 case 256:
 	if ( (*( current_position)) == 0u )
-		goto st257;
-	goto st204;
+		goto tr529;
+	goto tr478;
+tr529:
+	{}
+	goto st257;
 st257:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof257;
@@ -12518,22 +12832,31 @@ st259:
 		goto _test_eof259;
 case 259:
 	if ( (*( current_position)) == 0u )
-		goto st260;
-	goto st202;
+		goto tr531;
+	goto tr476;
+tr531:
+	{}
+	goto st260;
 st260:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof260;
 case 260:
 	if ( (*( current_position)) == 0u )
-		goto st261;
-	goto st203;
+		goto tr532;
+	goto tr477;
+tr532:
+	{}
+	goto st261;
 st261:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof261;
 case 261:
 	if ( (*( current_position)) == 0u )
-		goto st262;
-	goto st204;
+		goto tr533;
+	goto tr478;
+tr533:
+	{}
+	goto st262;
 st262:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof262;
@@ -12630,6 +12953,7 @@ tr641:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -12640,6 +12964,7 @@ tr642:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -12702,6 +13027,9 @@ st268:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof268;
 case 268:
+	goto tr564;
+tr564:
+	{}
 	goto st269;
 st269:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12947,6 +13275,7 @@ tr658:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -12957,6 +13286,7 @@ tr659:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -12983,6 +13313,9 @@ st289:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof289;
 case 289:
+	goto tr625;
+tr625:
+	{}
 	goto st290;
 st290:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13092,16 +13425,25 @@ st295:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof295;
 case 295:
+	goto tr638;
+tr638:
+	{}
 	goto st296;
 st296:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof296;
 case 296:
+	goto tr639;
+tr639:
+	{}
 	goto st297;
 st297:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof297;
 case 297:
+	goto tr640;
+tr640:
+	{}
 	goto st298;
 st298:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13250,16 +13592,25 @@ st304:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof304;
 case 304:
+	goto tr655;
+tr655:
+	{}
 	goto st305;
 st305:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof305;
 case 305:
+	goto tr656;
+tr656:
+	{}
 	goto st306;
 st306:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof306;
 case 306:
+	goto tr657;
+tr657:
+	{}
 	goto st307;
 st307:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13717,6 +14068,7 @@ tr698:
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(current_position);
   }
+	{}
 	{
     Process1OperandZeroExtends(&restricted_register,
                                &instruction_info_collected, rex_prefix,
@@ -15054,6 +15406,7 @@ tr776:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -15064,6 +15417,7 @@ tr771:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -15170,16 +15524,25 @@ st403:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof403;
 case 403:
+	goto tr773;
+tr773:
+	{}
 	goto st404;
 st404:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof404;
 case 404:
+	goto tr774;
+tr774:
+	{}
 	goto st405;
 st405:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof405;
 case 405:
+	goto tr775;
+tr775:
+	{}
 	goto st406;
 st406:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -17685,6 +18048,7 @@ tr1003:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -17695,6 +18059,7 @@ tr998:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(current_position);
   }
+	{}
 	{
     CheckAccess(instruction_start - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
@@ -17787,16 +18152,25 @@ st568:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof568;
 case 568:
+	goto tr1000;
+tr1000:
+	{}
 	goto st569;
 st569:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof569;
 case 569:
+	goto tr1001;
+tr1001:
+	{}
 	goto st570;
 st570:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof570;
 case 570:
+	goto tr1002;
+tr1002:
+	{}
 	goto st571;
 st571:
 	if ( ++( current_position) == ( end_of_bundle) )

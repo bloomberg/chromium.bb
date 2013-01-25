@@ -18,21 +18,8 @@ import tempfile
 from lxml import etree
 
 
-ANYFIELD_BEGIN_ACTIONS = [
-    'disp8_operand_begin', 'disp32_operand_begin', 'disp64_operand_begin',
-    'rel8_operand_begin', 'rel16_operand_begin', 'rel32_operand_begin',
-    'imm8_operand_begin', 'imm16_operand_begin', 'imm32_operand_begin',
-    'imm64_operand_begin'
-]
-
-ANYFIELD_END_ACTIONS = [
-    'disp8_operand_end', 'disp32_operand_end', 'disp64_operand_end',
-    'rel8_operand_end', 'rel16_operand_end', 'rel32_operand_end',
-    'imm8_operand_end', 'imm16_operand_end', 'imm32_operand_end',
-    'imm64_operand_end'
-]
-
-ANY_ACTIONS = set(ANYFIELD_BEGIN_ACTIONS + ANYFIELD_END_ACTIONS)
+# TODO(shcherbina): get rid of it once parsers are merged.
+ANY_ACTIONS = set(['any_byte'])
 
 
 def IncludesActionFrom(dfa_tree, action_table_id, action_list):
@@ -41,13 +28,16 @@ def IncludesActionFrom(dfa_tree, action_table_id, action_list):
     return False
   (action_table,) = dfa_tree.xpath('//action_table[@id="%s"]' % action_table_id)
   actions = action_table.text.split(' ')
+  action_names = []
   for action_id in actions:
     (action,) = dfa_tree.xpath('//action[@id="%s"]' % action_id)
     action_name = action.get('name')
     assert action_name is not None, 'name of action "%s" not found' % action_id
+    action_names.append(action_name)
+
+  for action_name in action_names:
     if action_name in action_list:
       return True
-  return False
 
 
 class DfaState(object):
@@ -67,14 +57,13 @@ class DfaState(object):
     if self._num_suffixes is not None:
       return self._num_suffixes
     else:
-      count = 0
       if self.is_final:
-        count += 1
+        return 1
       if self.any_byte:
-        count += self.transitions[0].num_suffixes
+        count = self.transitions[0].num_suffixes
       else:
-        count += sum(next_state.num_suffixes
-                   for next_state in self.transitions.values())
+        count = sum(next_state.num_suffixes
+                    for next_state in self.transitions.values())
       self._num_suffixes = count
       return count
 
@@ -100,6 +89,10 @@ def ReadStates(dfa_tree):
       range_begin, range_end, next_state, action_table_id = t.text.split(' ')
       range_begin = int(range_begin)
       range_end = int(range_end) + 1
+
+      if next_state == 'x':
+        continue
+
       next_state = int(next_state)
 
       for byte in xrange(range_begin, range_end):
@@ -118,9 +111,8 @@ def ReadStates(dfa_tree):
         if state_actions:
           (state_actions,) = state_actions
           to_action, from_action, eof_action = state_actions.text.split()
-          assert from_action == eof_action == 'x'
-          if IncludesActionFrom(dfa_tree, to_action, any_actions):
-            state.any_byte = True
+          assert to_action == from_action == 'x'
+          assert eof_action == '0'
         break
 
     states.append(state)
@@ -229,7 +221,7 @@ class WorkerState(object):
         if line1 != line2:
           print 'objdump: %r' % line1
           print 'decoder: %r' % line2
-          raise AssertionError("%r != %r" % (line1, line2))
+          raise AssertionError('%r != %r' % (line1, line2))
 
       return_code = objdump_proc.wait()
       assert return_code == 0
@@ -302,14 +294,17 @@ def main():
 
   initial_state = states[entry]
 
-  # Check that accepting states do not have outgoing transitions (that is,
-  # that instructions form prefix code).
-  for state in states:
-    if state.is_final:
-      assert len(state.transitions) == 0, state.id
+  # Decoder is supposed to have one initial state.
+  accepting_states = [state for state in states if state.is_final]
+  assert accepting_states == [initial_state]
 
-  assert not initial_state.is_final
   assert not initial_state.any_byte
+
+  # We can't just write 'initial_state.num_suffixes' because
+  # initial state is accepting.
+  total_instructions = sum(st.num_suffixes
+                           for st in initial_state.transitions.values())
+  print total_instructions, 'instructions total'
 
   # We parallelize by first two bytes.
   tasks = []

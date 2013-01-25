@@ -852,28 +852,34 @@
 %%{
   machine relative_fields_parsing;
 
-  rel8  = any @rel8_operand;
-  rel16 = any{2} @rel16_operand;
-  rel32 = any{4} @rel32_operand;
+  rel8  = any @rel8_operand $any_byte;
+  rel16 = any{2} @rel16_operand $any_byte;
+  rel32 = any{4} @rel32_operand $any_byte;
 }%%
 
 %%{
   machine displacement_fields_parsing;
 
-  disp8  = any @disp8_operand;
-  disp32 = any{4} @disp32_operand;
-  disp64 = any{8} @disp64_operand;
+  # This action is used to mark transitions corresponding to immediates,
+  # displacements and relative jump targets - stuff that we don't have to
+  # enumerate in enumeration tests.
+  # TODO(shcherbina): find appropriate place for this action.
+  action any_byte {}
+
+  disp8  = any @disp8_operand $any_byte;
+  disp32 = any{4} @disp32_operand $any_byte;
+  disp64 = any{8} @disp64_operand $any_byte;
 }%%
 
 %%{
   machine immediate_fields_parsing_common;
 
-  imm8 = any @imm8_operand;
-  imm16 = any{2} @imm16_operand;
-  imm32 = any{4} @imm32_operand;
-  imm64 = any{8} @imm64_operand;
-  imm8n2 = any @imm8_second_operand;
-  imm16n2 = any{2} @imm16_second_operand;
+  imm8 = any @imm8_operand $any_byte;
+  imm16 = any{2} @imm16_operand $any_byte;
+  imm32 = any{4} @imm32_operand $any_byte;
+  imm64 = any{8} @imm64_operand $any_byte;
+  imm8n2 = any @imm8_second_operand $any_byte;
+  imm16n2 = any{2} @imm16_second_operand $any_byte;
 }%%
 
 %%{
