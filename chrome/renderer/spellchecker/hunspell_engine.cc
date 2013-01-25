@@ -111,18 +111,19 @@ void HunspellEngine::RemoveWordsFromHunspell(
 }
 
 bool HunspellEngine::CheckSpelling(const string16& word_to_check, int tag) {
-  bool word_correct = false;
+  // Assume all words that cannot be checked are valid. Since Chrome can't
+  // offer suggestions on them, either, there's no point in flagging them to
+  // the user.
+  bool word_correct = true;
   std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
-  // Hunspell shouldn't let us exceed its max, but check just in case
-  if (word_to_check_utf8.length() < kMaxCheckedLen) {
+
+  // Limit the size of checked words.
+  if (word_to_check_utf8.length() <= kMaxCheckedLen) {
+    // If |hunspell_| is NULL here, an error has occurred, but it's better
+    // to check rather than crash.
     if (hunspell_.get()) {
-      // |hunspell_->spell| returns 0 if the word is spelled correctly and
-      // non-zero otherwise.
+      // |hunspell_->spell| returns 0 if the word is misspelled.
       word_correct = (hunspell_->spell(word_to_check_utf8.c_str()) != 0);
-    } else {
-      // If |hunspell_| is NULL here, an error has occurred, but it's better
-      // to check rather than crash.
-      word_correct = true;
     }
   }
 
