@@ -268,7 +268,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        Song ASC
+        MSung GB18030
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
@@ -292,7 +292,7 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        PMingLiU
+        MSung B5HK
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for

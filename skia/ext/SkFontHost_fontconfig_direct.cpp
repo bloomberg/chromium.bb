@@ -44,6 +44,10 @@ enum FontEquivClass
     SIMSUN,
     NSIMSUN,
     SIMHEI,
+    PMINGLIU,
+    MINGLIU,
+    PMINGLIUHK,
+    MINGLIUHK,
 };
 
 // Match the font name against a whilelist of fonts, returning the equivalence
@@ -118,11 +122,13 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         // 宋体
         { SIMSUN, "Simsun" },
         { SIMSUN, "\xe5\xae\x8b\xe4\xbd\x93" },
+        { SIMSUN, "MSung GB18030" },
         { SIMSUN, "Song ASC" },
 
         // 新宋体
         { NSIMSUN, "NSimsun" },
         { NSIMSUN, "\xe6\x96\xb0\xe5\xae\x8b\xe4\xbd\x93" },
+        { NSIMSUN, "MSung GB18030" },
         { NSIMSUN, "N Song ASC" },
 
         // 黑体
@@ -130,6 +136,26 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { SIMHEI, "\xe9\xbb\x91\xe4\xbd\x93" },
         { SIMHEI, "MYingHeiGB18030" },
         { SIMHEI, "MYingHeiB5HK" },
+
+	// 新細明體 
+	{ PMINGLIU, "PMingLiU"},
+	{ PMINGLIU, "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94" },
+	{ PMINGLIU, "MSung B5HK"},
+
+	// 細明體 
+	{ MINGLIU, "MingLiU"},
+	{ MINGLIU, "\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94" },
+	{ MINGLIU, "MSung B5HK"},
+
+	// 新細明體 
+	{ PMINGLIUHK, "PMingLiU_HKSCS"},
+	{ PMINGLIUHK, "\xe6\x96\xb0\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94_HKSCS" },
+	{ PMINGLIUHK, "MSung B5HK"},
+
+	// 細明體 
+	{ MINGLIUHK, "MingLiU_HKSCS"},
+	{ MINGLIUHK, "\xe7\xb4\xb0\xe6\x98\x8e\xe9\xab\x94_HKSCS" },
+	{ MINGLIUHK, "MSung B5HK"},
     };
 
     static const size_t kFontCount =
