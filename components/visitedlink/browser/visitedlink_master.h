@@ -61,7 +61,8 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   };
 
   VisitedLinkMaster(content::BrowserContext* browser_context,
-                    VisitedLinkDelegate* delegate);
+                    VisitedLinkDelegate* delegate,
+                    bool persist_to_disk);
 
   // In unit test mode, we allow the caller to optionally specify the database
   // filename so that it can be run from a unit test. The directory where this
@@ -80,6 +81,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // testing except when you want to test the rebuild process explicitly.
   VisitedLinkMaster(Listener* listener,
                     VisitedLinkDelegate* delegate,
+                    bool persist_to_disk,
                     bool suppress_rebuild,
                     const FilePath& filename,
                     int32 default_table_size);
@@ -195,6 +197,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // File I/O functions
   // ------------------
+  // These functions are only called if |persist_to_disk_| is true.
 
   // Posts the given task to the blocking worker pool with our options.
   void PostIOTask(const tracked_objects::Location& from_here,
@@ -373,15 +376,19 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // std::vector<Fingerprint> removed_since_rebuild_;
 
   // The currently open file with the table in it. This may be NULL if we're
-  // rebuilding and haven't written a new version yet. Writing to the file may
-  // be safely ignored in this case. Also |file_| may be non-NULL but point to
-  // a NULL pointer. That would mean that opening of the file is already
-  // scheduled in a background thread and any writing to the file can also be
-  // scheduled to the background thread as it's guaranteed to be executed after
-  // the opening.
+  // rebuilding and haven't written a new version yet or if |persist_to_disk_|
+  // is false. Writing to the file may be safely ignored in this case. Also
+  // |file_| may be non-NULL but point to a NULL pointer. That would mean that
+  // opening of the file is already scheduled in a background thread and any
+  // writing to the file can also be scheduled to the background thread as it's
+  // guaranteed to be executed after the opening.
   // The class owns both the |file_| pointer and the pointer pointed
   // by |*file_|.
   FILE** file_;
+
+  // If true, will try to persist the hash table to disk. Will rebuild from
+  // VisitedLinkDelegate::RebuildTable if there are disk corruptions.
+  bool persist_to_disk_;
 
   // Shared memory consists of a SharedHeader followed by the table.
   base::SharedMemory *shared_memory_;

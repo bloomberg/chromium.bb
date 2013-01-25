@@ -85,7 +85,7 @@ class VisitedLink : public testing::Test {
 TEST_F(VisitedLink, TestAddAndQuery) {
   // init
   VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
-                           NULL, true, db_path_, 0);
+                           NULL, true, true, db_path_, 0);
   ASSERT_TRUE(master.Init());
 
   PerfTimeLogger timer("Visited_link_add_and_query");
@@ -116,7 +116,7 @@ TEST_F(VisitedLink, TestLoad) {
     PerfTimeLogger table_initialization_timer("Table_initialization");
 
     VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
-                             NULL, true, db_path_, 0);
+                             NULL, true, true, db_path_, 0);
 
     // time init with empty table
     PerfTimeLogger initTimer("Empty_visited_link_init");
@@ -156,6 +156,7 @@ TEST_F(VisitedLink, TestLoad) {
       VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                                NULL,
                                true,
+                               true,
                                db_path_,
                                0);
       bool success = master.Init();
@@ -171,6 +172,7 @@ TEST_F(VisitedLink, TestLoad) {
 
       VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                                NULL,
+                               true,
                                true,
                                db_path_,
                                0);

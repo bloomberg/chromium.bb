@@ -233,7 +233,7 @@ HistoryService::HistoryService(Profile* profile)
       thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
       visitedlink_master_(new components::VisitedLinkMaster(
-          profile, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+          profile, ALLOW_THIS_IN_INITIALIZER_LIST(this), true)),
       backend_loaded_(false),
       current_backend_id_(-1),
       bookmark_service_(NULL),

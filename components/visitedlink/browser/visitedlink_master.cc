@@ -180,21 +180,25 @@ class VisitedLinkMaster::TableBuilder
 // VisitedLinkMaster ----------------------------------------------------------
 
 VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
-                                     VisitedLinkDelegate* delegate)
+                                     VisitedLinkDelegate* delegate,
+                                     bool persist_to_disk)
     : browser_context_(browser_context),
       delegate_(delegate),
       listener_(new VisitedLinkEventListener(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this), browser_context)) {
+          ALLOW_THIS_IN_INITIALIZER_LIST(this), browser_context)),
+      persist_to_disk_(persist_to_disk) {
   InitMembers();
 }
 
 VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      VisitedLinkDelegate* delegate,
+                                     bool persist_to_disk,
                                      bool suppress_rebuild,
                                      const FilePath& filename,
                                      int32 default_table_size)
     : browser_context_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      persist_to_disk_(persist_to_disk) {
   listener_.reset(listener);
   DCHECK(listener_.get());
   InitMembers();
@@ -236,9 +240,12 @@ bool VisitedLinkMaster::Init() {
   // but it does need to happen early on in startup.
   //   http://code.google.com/p/chromium/issues/detail?id=24163
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  if (!InitFromFile())
-    return InitFromScratch(suppress_rebuild_);
-  return true;
+
+  if (persist_to_disk_) {
+    if (InitFromFile())
+      return true;
+  }
+  return InitFromScratch(suppress_rebuild_);
 }
 
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
@@ -280,6 +287,7 @@ VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
 
 void VisitedLinkMaster::PostIOTask(const tracked_objects::Location& from_here,
                                    const base::Closure& task) {
+  DCHECK(persist_to_disk_);
   BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(sequence_token_,
                                                             from_here, task);
 }
@@ -288,8 +296,10 @@ void VisitedLinkMaster::AddURL(const GURL& url) {
   Hash index = TryToAddURL(url);
   if (!table_builder_ && index != null_hash_) {
     // Not rebuilding, so we want to keep the file on disk up-to-date.
-    WriteUsedItemCountToFile();
-    WriteHashRangeToFile(index, index);
+    if (persist_to_disk_) {
+      WriteUsedItemCountToFile();
+      WriteHashRangeToFile(index, index);
+    }
     ResizeTableIfNecessary();
   }
 }
@@ -303,7 +313,7 @@ void VisitedLinkMaster::AddURLs(const std::vector<GURL>& url) {
   }
 
   // Keeps the file on disk up-to-date.
-  if (!table_builder_)
+  if (!table_builder_ && persist_to_disk_)
     WriteFullTable();
 }
 
@@ -318,7 +328,7 @@ void VisitedLinkMaster::DeleteAllURLs() {
 
   // Resize it if it is now too empty. Resize may write the new table out for
   // us, otherwise, schedule writing the new table to disk ourselves.
-  if (!ResizeTableIfNecessary())
+  if (!ResizeTableIfNecessary() && persist_to_disk_)
     WriteFullTable();
 
   listener_->Reset();
@@ -424,7 +434,7 @@ void VisitedLinkMaster::DeleteFingerprintsFromCurrentTable(
     return;  // The resize function wrote the new table to disk for us.
 
   // Nobody wrote this out for us, write the full file to disk.
-  if (bulk_write)
+  if (bulk_write && persist_to_disk_)
     WriteFullTable();
 }
 
@@ -439,7 +449,7 @@ bool VisitedLinkMaster::DeleteFingerprint(Fingerprint fingerprint,
 
   // First update the header used count.
   used_items_--;
-  if (update_file)
+  if (update_file && persist_to_disk_)
     WriteUsedItemCountToFile();
 
   Hash deleted_hash = HashFingerprint(fingerprint);
@@ -483,7 +493,7 @@ bool VisitedLinkMaster::DeleteFingerprint(Fingerprint fingerprint,
   }
 
   // Write the affected range to disk [deleted_hash, end_range].
-  if (update_file)
+  if (update_file && persist_to_disk_)
     WriteHashRangeToFile(deleted_hash, end_range);
 
   return true;
@@ -502,6 +512,8 @@ void VisitedLinkMaster::WriteFullTable() {
   // We should pick up the most common types of these failures when we notice
   // that the file size is different when we load it back in, and then we will
   // regenerate the table.
+  DCHECK(persist_to_disk_);
+
   if (!file_) {
     file_ = static_cast<FILE**>(calloc(1, sizeof(*file_)));
     FilePath filename;
@@ -528,6 +540,7 @@ void VisitedLinkMaster::WriteFullTable() {
 
 bool VisitedLinkMaster::InitFromFile() {
   DCHECK(file_ == NULL);
+  DCHECK(persist_to_disk_);
 
   FilePath filename;
   GetDatabaseFileName(&filename);
@@ -573,7 +586,7 @@ bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
   DebugValidate();
 #endif
 
-  if (suppress_rebuild) {
+  if (suppress_rebuild && persist_to_disk_) {
     // When we disallow rebuilds (normally just unit tests), just use the
     // current empty table.
     WriteFullTable();
@@ -592,6 +605,8 @@ bool VisitedLinkMaster::ReadFileHeader(FILE* file,
                                        int32* num_entries,
                                        int32* used_count,
                                        uint8 salt[LINK_SALT_LENGTH]) {
+  DCHECK(persist_to_disk_);
+
   // Get file size.
   // Note that there is no need to seek back to the original location in the
   // file since ReadFromFile() [which is the next call accessing the file]
@@ -712,7 +727,7 @@ void VisitedLinkMaster::FreeURLTable() {
     delete shared_memory_;
     shared_memory_ = NULL;
   }
-  if (!file_)
+  if (!persist_to_disk_ || !file_)
     return;
   PostIOTask(FROM_HERE, base::Bind(&AsyncClose, file_));
   // AsyncClose() will close the file and free the memory pointed by |file_|.
@@ -778,7 +793,8 @@ void VisitedLinkMaster::ResizeTable(int32 new_size) {
 #endif
 
   // The new table needs to be written to disk.
-  WriteFullTable();
+  if (persist_to_disk_)
+    WriteFullTable();
 }
 
 uint32 VisitedLinkMaster::NewTableSizeForCount(int32 item_count) const {
@@ -859,7 +875,8 @@ void VisitedLinkMaster::OnTableRebuildComplete(
       // Send an update notification to all child processes.
       listener_->NewTable(shared_memory_);
 
-      WriteFullTable();
+      if (persist_to_disk_)
+        WriteFullTable();
     }
   }
   table_builder_ = NULL;  // Will release our reference to the builder.
@@ -875,6 +892,7 @@ void VisitedLinkMaster::WriteToFile(FILE** file,
                                     off_t offset,
                                     void* data,
                                     int32 data_size) {
+  DCHECK(persist_to_disk_);
 #ifndef NDEBUG
   posted_asynchronous_operation_ = true;
 #endif
@@ -884,12 +902,15 @@ void VisitedLinkMaster::WriteToFile(FILE** file,
 }
 
 void VisitedLinkMaster::WriteUsedItemCountToFile() {
+  DCHECK(persist_to_disk_);
   if (!file_)
     return;  // See comment on the file_ variable for why this might happen.
   WriteToFile(file_, kFileHeaderUsedOffset, &used_items_, sizeof(used_items_));
 }
 
 void VisitedLinkMaster::WriteHashRangeToFile(Hash first_hash, Hash last_hash) {
+  DCHECK(persist_to_disk_);
+
   if (!file_)
     return;  // See comment on the file_ variable for why this might happen.
   if (last_hash < first_hash) {
@@ -913,6 +934,7 @@ bool VisitedLinkMaster::ReadFromFile(FILE* file,
                                      off_t offset,
                                      void* data,
                                      size_t data_size) {
+  DCHECK(persist_to_disk_);
 #ifndef NDEBUG
   // Since this function is synchronous, we require that no asynchronous
   // operations could possibly be pending.

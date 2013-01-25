@@ -149,6 +149,7 @@ class VisitedLinkTest : public testing::Test {
     // Initialize the visited link system.
     master_.reset(new VisitedLinkMaster(new TrackingVisitedLinkEventListener(),
                                         &delegate_,
+                                        true,
                                         suppress_rebuild, visited_file_,
                                         initial_size));
     return master_->Init();
@@ -601,7 +602,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   virtual ~VisitedLinkEventsTest() {}
   virtual void SetUp() {
     browser_context_.reset(new VisitCountingProfile());
-    master_.reset(new VisitedLinkMaster(profile(), &delegate_));
+    master_.reset(new VisitedLinkMaster(profile(), &delegate_, true));
     master_->Init();
     SetRenderProcessHostFactory(&vc_rph_factory_);
     content::RenderViewHostTestHarness::SetUp();
