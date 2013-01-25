@@ -49,6 +49,9 @@ typedef base::Callback<void(
 // Called when a download delayed by the delegate has completed.
 typedef base::Callback<void(bool)> DownloadOpenDelayedCallback;
 
+// Called with the reuslt of CheckForFileExistence().
+typedef base::Callback<void(bool result)> CheckForFileExistenceCallback;
+
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {
  public:
@@ -122,6 +125,11 @@ class CONTENT_EXPORT DownloadManagerDelegate {
 
   // Shows the download via the OS shell.
   virtual void ShowDownloadInShell(DownloadItem* download) {}
+
+  // Checks whether a downloaded file still exists.
+  virtual void CheckForFileExistence(
+      DownloadItem* download,
+      const CheckForFileExistenceCallback& callback) {}
 
  protected:
   virtual ~DownloadManagerDelegate();

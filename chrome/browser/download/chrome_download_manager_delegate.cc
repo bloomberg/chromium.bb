@@ -533,6 +533,15 @@ void ChromeDownloadManagerDelegate::ShowDownloadInShell(
   platform_util::ShowItemInFolder(download->GetFullPath());
 }
 
+void ChromeDownloadManagerDelegate::CheckForFileExistence(
+    DownloadItem* download,
+    const content::CheckForFileExistenceCallback& callback) {
+  BrowserThread::PostTaskAndReplyWithResult(BrowserThread::FILE, FROM_HERE,
+                                            base::Bind(&file_util::PathExists,
+                                                       download->GetFullPath()),
+                                            callback);
+}
+
 void ChromeDownloadManagerDelegate::ClearLastDownloadPath() {
   last_download_path_.clear();
 }

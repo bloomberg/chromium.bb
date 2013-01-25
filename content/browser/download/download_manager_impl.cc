@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
-#include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -404,31 +403,22 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (download_item->IsComplete() &&
-      !download_item->GetFileExternallyRemoved()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadManagerImpl::CheckForFileRemovalOnFileThread,
-                   this, download_item->GetId(),
-                   download_item->GetTargetFilePath()));
+      !download_item->GetFileExternallyRemoved() &&
+      delegate_) {
+    delegate_->CheckForFileExistence(
+        download_item,
+        base::Bind(&DownloadManagerImpl::OnFileExistenceChecked,
+                   this, download_item->GetId()));
   }
 }
 
-void DownloadManagerImpl::CheckForFileRemovalOnFileThread(
-    int32 download_id, const FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!file_util::PathExists(path)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManagerImpl::OnFileRemovalDetected,
-                   this,
-                   download_id));
-  }
-}
-
-void DownloadManagerImpl::OnFileRemovalDetected(int32 download_id) {
+void DownloadManagerImpl::OnFileExistenceChecked(int32 download_id,
+                                                 bool result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (ContainsKey(downloads_, download_id))
-    downloads_[download_id]->OnDownloadedFileRemoved();
+  if (!result) {  // File does not exist.
+    if (ContainsKey(downloads_, download_id))
+      downloads_[download_id]->OnDownloadedFileRemoved();
+  }
 }
 
 BrowserContext* DownloadManagerImpl::GetBrowserContext() const {

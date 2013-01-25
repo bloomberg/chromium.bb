@@ -88,6 +88,9 @@ class ChromeDownloadManagerDelegate
       const content::SavePackagePathPickedCallback& callback) OVERRIDE;
   virtual void OpenDownload(content::DownloadItem* download) OVERRIDE;
   virtual void ShowDownloadInShell(content::DownloadItem* download) OVERRIDE;
+  virtual void CheckForFileExistence(
+      content::DownloadItem* download,
+      const content::CheckForFileExistenceCallback& callback) OVERRIDE;
 
   // Clears the last directory chosen by the user in response to a file chooser
   // prompt. Called when clearing recent history.
