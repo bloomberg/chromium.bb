@@ -1001,3 +1001,10 @@
   fun:ThreadWatcherTest_MultipleThreadsResponding_Test::TestBody
   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
+{
+  bug_172297
+  ThreadSanitizer:Race
+  fun:CustomThreadWatcher::UpdateState
+  fun:*
+  fun:base::internal::RunnableAdapter::Run
+}
