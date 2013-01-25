@@ -1008,3 +1008,10 @@
   fun:*
   fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_172306
+  ThreadSanitizer:Race
+  fun:ThreadWatcher::OnPongMessage
+  fun:CustomThreadWatcher::OnPongMessage
+  fun:base::internal::RunnableAdapter::Run
+}
