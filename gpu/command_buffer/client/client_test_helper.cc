@@ -30,6 +30,10 @@ CommandBuffer::State MockCommandBufferBase::GetLastState() {
   return state_;
 }
 
+int32 MockCommandBufferBase::GetLastToken() {
+  return state_.token;
+}
+
 void MockCommandBufferBase::SetGetOffset(int32 get_offset) {
   state_.get_offset = get_offset;
 }

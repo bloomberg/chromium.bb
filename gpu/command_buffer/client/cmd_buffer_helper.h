@@ -124,7 +124,7 @@ class GPU_EXPORT CommandBufferHelper {
   }
 
   int32 last_token_read() const {
-    return command_buffer_->GetLastState().token;
+    return command_buffer_->GetLastToken();
   }
 
   int32 get_offset() const {

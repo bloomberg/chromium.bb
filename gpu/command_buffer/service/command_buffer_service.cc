@@ -54,6 +54,10 @@ CommandBufferService::State CommandBufferService::GetLastState() {
   return GetState();
 }
 
+int32 CommandBufferService::GetLastToken() {
+  return GetState().token;
+}
+
 void CommandBufferService::UpdateState() {
   if (shared_state_) {
     CommandBufferService::State state = GetState();

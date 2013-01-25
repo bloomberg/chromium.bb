@@ -29,6 +29,7 @@ class MockCommandBufferBase : public CommandBuffer {
   virtual bool Initialize() OVERRIDE;
   virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
+  virtual int32 GetLastToken() OVERRIDE;
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
   virtual void SetGetBuffer(int transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;

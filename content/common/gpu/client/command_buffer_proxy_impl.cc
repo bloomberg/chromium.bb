@@ -178,6 +178,11 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::GetLastState() {
   return last_state_;
 }
 
+int32 CommandBufferProxyImpl::GetLastToken() {
+  TryUpdateState();
+  return last_state_.token;
+}
+
 void CommandBufferProxyImpl::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;

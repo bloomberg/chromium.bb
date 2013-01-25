@@ -84,6 +84,12 @@ gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
   return last_state_;
 }
 
+int32 PpapiCommandBufferProxy::GetLastToken() {
+  // Note: The locking command buffer wrapper does not take a global lock before
+  // calling this function.
+  return last_state_.token;
+}
+
 void PpapiCommandBufferProxy::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;

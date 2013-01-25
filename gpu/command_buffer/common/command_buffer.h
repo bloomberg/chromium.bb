@@ -83,6 +83,13 @@ class GPU_EXPORT CommandBuffer {
   // Returns the last state without synchronizing with the service.
   virtual State GetLastState() = 0;
 
+  // Returns the last token without synchronizing with the service. Note that
+  // while you could just call GetLastState().token, GetLastState needs to be
+  // fast as it is called for every command where GetLastToken is only called
+  // by code that needs to know the last token so it can be slower but more up
+  // to date than GetLastState.
+  virtual int32 GetLastToken() = 0;
+
   // The writer calls this to update its put offset. This ensures the reader
   // sees the latest added commands, and will eventually process them. On the
   // service side, commands are processed up to the given put_offset before

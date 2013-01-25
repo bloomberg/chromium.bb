@@ -130,6 +130,9 @@ class Graphics3D::LockingCommandBuffer : public gpu::CommandBuffer {
     // MaybeLock lock(need_to_lock_);
     return gpu_command_buffer_->GetLastState();
   }
+  virtual int32 GetLastToken() OVERRIDE {
+    return GetLastState().token;
+  }
   virtual void Flush(int32 put_offset) OVERRIDE {
     MaybeLock lock(need_to_lock_);
     gpu_command_buffer_->Flush(put_offset);

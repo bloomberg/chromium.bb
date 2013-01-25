@@ -40,6 +40,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   virtual bool Initialize();
   virtual State GetState();
   virtual State GetLastState();
+  virtual int32 GetLastToken();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetBuffer(int32 transfer_buffer_id);

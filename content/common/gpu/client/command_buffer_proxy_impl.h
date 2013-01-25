@@ -70,6 +70,7 @@ class CommandBufferProxyImpl
   virtual bool Initialize() OVERRIDE;
   virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
+  virtual int32 GetLastToken() OVERRIDE;
   virtual void Flush(int32 put_offset) OVERRIDE;
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
   virtual void SetGetBuffer(int32 shm_id) OVERRIDE;
