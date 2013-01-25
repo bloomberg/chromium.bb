@@ -36,3 +36,6 @@ ExtensionWebRequestTest.*
 *FLAKY_*
 *FAILS_*
 
+# http://crbug.com/172109
+StatisticsRecorderTest.RegisterHistogram
+
