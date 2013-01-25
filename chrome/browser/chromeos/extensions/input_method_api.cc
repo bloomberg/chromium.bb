@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 
+#include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -45,6 +47,9 @@ InputMethodAPI::InputMethodAPI(Profile* profile)
     : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, event_names::kOnInputMethodChanged);
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<GetInputMethodFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {
@@ -69,6 +74,14 @@ void InputMethodAPI::OnListenerAdded(
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter());
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<InputMethodAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<InputMethodAPI>* InputMethodAPI::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 }  // namespace extensions

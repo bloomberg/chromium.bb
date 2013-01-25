@@ -92,7 +92,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/input_method_api_factory.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #if defined(FILE_MANAGER_EXTENSION)
@@ -269,7 +269,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
 #if defined(OS_CHROMEOS)
   extensions::InputImeAPI::GetFactoryInstance();
-  extensions::InputMethodAPIFactory::GetInstance();
+  extensions::InputMethodAPI::GetFactoryInstance();
 #endif
   extensions::ManagedModeAPI::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();

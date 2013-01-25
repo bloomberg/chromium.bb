@@ -7,9 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 
 namespace chromeos {
 class ExtensionInputMethodEventRouter;
@@ -31,7 +31,7 @@ class GetInputMethodFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.get", INPUTMETHODPRIVATE_GET)
 };
 
-class InputMethodAPI : public ProfileKeyedService,
+class InputMethodAPI : public ProfileKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:
   explicit InputMethodAPI(Profile* profile);
@@ -41,7 +41,10 @@ class InputMethodAPI : public ProfileKeyedService,
   // Window System) id.
   static std::string GetInputMethodForXkb(const std::string& xkb_id);
 
-  // ProfileKeyedService implementation.
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<InputMethodAPI>* GetFactoryInstance();
+
+  // ProfileKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.
@@ -49,11 +52,21 @@ class InputMethodAPI : public ProfileKeyedService,
       OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<InputMethodAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "InputMethodAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
+
   Profile* const profile_;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
       input_method_event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodAPI);
 };
 
 }  // namespace extensions

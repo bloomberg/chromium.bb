@@ -677,8 +677,6 @@
             'browser/chromeos/extensions/file_browser_private_api_factory.h',
             'browser/chromeos/extensions/input_method_api.cc',
             'browser/chromeos/extensions/input_method_api.h',
-            'browser/chromeos/extensions/input_method_api_factory.cc',
-            'browser/chromeos/extensions/input_method_api_factory.h',
             'browser/chromeos/extensions/media_player_api.cc',
             'browser/chromeos/extensions/media_player_api.h',
             'browser/chromeos/extensions/wallpaper_manager_util.cc',

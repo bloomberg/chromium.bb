@@ -29,7 +29,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
-#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/power/power_api.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
@@ -205,9 +204,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<WallpaperGetThumbnailFunction>();
   RegisterFunction<WallpaperSaveThumbnailFunction>();
   RegisterFunction<WallpaperGetOfflineWallpaperListFunction>();
-
-  // InputMethod
-  RegisterFunction<extensions::GetInputMethodFunction>();
 
   // Echo
   RegisterFunction<GetRegistrationCodeFunction>();
