@@ -183,20 +183,17 @@ class InstantController {
   // Helper for OmniboxFocusChanged. Commit or discard the preview.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
-  // Creates a new loader if necessary, using the instant_url property of the
-  // |template_url| (for example, if the Instant URL has changed since the last
-  // time the loader was created). If |fallback_to_local| is true will use
-  // kLocalOmniboxPopupURL as the fallback url (in extended mode) in case
-  // the |template_url| doesn't have a valid Instant URL. Returns true if an
-  // instant URL could be determined.
-  bool ResetLoader(const TemplateURL* template_url,
-                   const content::WebContents* active_tab,
-                   bool fallback_to_local);
+  // Ensures that |loader_| uses the Instant URL returned by GetInstantURL(),
+  // creating a new loader if necessary. In extended mode, will fallback to
+  // using the kLocalOmniboxPopupURL as the Instant URL in case GetInstantURL()
+  // returns false. Returns true if an Instant URL could be determined.
+  bool EnsureLoaderIsCurrent();
 
-  // Ensures that the |loader_| uses the default Instant URL, recreating it if
-  // necessary, and returns true. Returns false if the Instant URL could not be
-  // determined or the active tab is NULL (browser is shutting down).
-  bool CreateDefaultLoader();
+  // Recreates the |loader_| with the input |instant_url|. The caller should
+  // ensure that the |loader_| is not already on the stack since it is deleted
+  // in this call.
+  void CreateLoader(const std::string& instant_url,
+                    const content::WebContents* active_tab);
 
   // Called when the |loader_| might be stale. If it's actually stale, and the
   // omnibox doesn't have focus, and the preview isn't showing, the |loader_| is
@@ -206,10 +203,6 @@ class InstantController {
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.
   void ResetInstantTab();
-
-  // Called by Update() to ensure we have an Instant page that can process
-  // |match|. Returns true if we should continue with the Update().
-  bool ResetLoaderForMatch(const AutocompleteMatch& match);
 
   // Hide the preview. Also sends an onchange event (with blank query) to the
   // preview, telling it to clear out results for any old queries.
@@ -228,11 +221,17 @@ class InstantController {
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();
 
-  // If |template_url| is a valid TemplateURL for use with Instant, fills in
-  // |instant_url| and returns true; returns false otherwise.
-  // Note: If the command-line switch kInstantURL is set, this method uses its
-  // value for |instant_url| and returns true without examining |template_url|.
-  bool GetInstantURL(const TemplateURL* template_url,
+  // Determines the Instant URL based on a number of factors:
+  // If |extended_enabled_|:
+  //   - If |use_local_preview_only_| is true return kLocalOmniboxPopupURL, else
+  //   - If the Instant URL is specified by command line, returns it, else
+  //   - If the default Instant URL is present returns it.
+  // If !|extended_enabled_|:
+  //   - If the Instant URL is specified by command line, returns it, else
+  //   - If the default Instant URL is present returns it.
+  //
+  // Returns true if a valid Instant URL could be found that is not blacklisted.
+  bool GetInstantURL(const content::WebContents* active_tab,
                      std::string* instant_url) const;
 
   chrome::BrowserInstantController* const browser_;

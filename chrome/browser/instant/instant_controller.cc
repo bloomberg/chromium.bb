@@ -250,7 +250,16 @@ bool InstantController::Update(const AutocompleteMatch& match,
   last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type) &&
                            !user_text.empty();
 
-  if (!ResetLoaderForMatch(match)) {
+  // In non extended mode, Instant is disabled for URLs and keyword mode.
+  if (!extended_enabled_ &&
+      (!last_match_was_search_ ||
+       match.type == AutocompleteMatch::SEARCH_OTHER_ENGINE)) {
+    HideLoader();
+    return false;
+  }
+
+  // If we have an |instant_tab_| use it, else ensure we have a loader.
+  if (!instant_tab_ && !EnsureLoaderIsCurrent()) {
     HideLoader();
     return false;
   }
@@ -614,7 +623,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
   // Try to create another loader immediately so that it is ready for the next
   // user interaction.
-  CreateDefaultLoader();
+  EnsureLoaderIsCurrent();
 
   return true;
 }
@@ -647,7 +656,7 @@ void InstantController::OmniboxFocusChanged(
   // search engine, in anticipation of the user typing a query. If the reverse
   // happened, commit or discard the preview.
   if (state != OMNIBOX_FOCUS_NONE && old_focus_state == OMNIBOX_FOCUS_NONE)
-    CreateDefaultLoader();
+    EnsureLoaderIsCurrent();
   else if (state == OMNIBOX_FOCUS_NONE && old_focus_state != OMNIBOX_FOCUS_NONE)
     OmniboxLostFocus(view_gaining_focus);
 }
@@ -699,7 +708,7 @@ void InstantController::SetInstantEnabled(bool instant_enabled) {
   HideInternal();
   loader_.reset();
   if (extended_enabled_ || instant_enabled_)
-    CreateDefaultLoader();
+    EnsureLoaderIsCurrent();
   if (instant_tab_)
     instant_tab_->SetDisplayInstantResults(instant_enabled_);
 }
@@ -835,7 +844,7 @@ void InstantController::InstantSupportDetermined(
       HideInternal();
       delete loader_->ReleaseContents();
       MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
-      CreateDefaultLoader();
+      EnsureLoaderIsCurrent();
     }
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
@@ -884,7 +893,7 @@ void InstantController::InstantLoaderRenderViewGone() {
   delete loader_->ReleaseContents();
   // Delay deletion as we have gotten here from an InstantLoader method.
   MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
-  CreateDefaultLoader();
+  EnsureLoaderIsCurrent();
 }
 
 void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
@@ -951,21 +960,29 @@ void InstantController::NavigateToURL(const GURL& url,
   browser_->OpenURLInCurrentTab(url, transition);
 }
 
-bool InstantController::ResetLoader(const TemplateURL* template_url,
-                                    const content::WebContents* active_tab,
-                                    bool fallback_to_local) {
-  std::string instant_url;
-  if (!GetInstantURL(template_url, &instant_url)) {
-    if (!fallback_to_local || !extended_enabled_)
-      return false;
+bool InstantController::EnsureLoaderIsCurrent() {
+  // If there's no active tab, the browser is closing.
+  const content::WebContents* active_tab = browser_->GetActiveWebContents();
+  if (!active_tab)
+    return false;
 
+  std::string instant_url;
+  if (!GetInstantURL(active_tab, &instant_url)) {
     // If we are in extended mode, fallback to the local popup.
-    instant_url = kLocalOmniboxPopupURL;
+    if (extended_enabled_)
+      instant_url = kLocalOmniboxPopupURL;
+    else
+      return false;
   }
 
-  if (loader_ && loader_->instant_url() == instant_url)
-    return true;
+  if (!loader_ || loader_->instant_url() != instant_url)
+    CreateLoader(instant_url, active_tab);
 
+  return true;
+}
+
+void InstantController::CreateLoader(const std::string& instant_url,
+                                     const content::WebContents* active_tab) {
   HideInternal();
   loader_.reset(new InstantLoader(this, instant_url));
   loader_->InitContents(active_tab);
@@ -983,21 +1000,6 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
   stale_loader_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kStaleLoaderTimeoutMS), this,
       &InstantController::OnStaleLoader);
-
-  return true;
-}
-
-bool InstantController::CreateDefaultLoader() {
-  // If there's no active tab, the browser is closing.
-  const content::WebContents* active_tab = browser_->GetActiveWebContents();
-  if (!active_tab)
-    return false;
-
-  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(active_tab->GetBrowserContext()))->
-      GetDefaultSearchProvider();
-
-  return ResetLoader(template_url, active_tab, true);
 }
 
 void InstantController::OnStaleLoader() {
@@ -1012,7 +1014,7 @@ void InstantController::OnStaleLoader() {
       omnibox_focus_state_ == OMNIBOX_FOCUS_NONE &&
       model_.mode().is_default()) {
     loader_.reset();
-    CreateDefaultLoader();
+    EnsureLoaderIsCurrent();
   }
 }
 
@@ -1033,39 +1035,6 @@ void InstantController::ResetInstantTab() {
   } else {
     instant_tab_.reset();
   }
-}
-
-bool InstantController::ResetLoaderForMatch(const AutocompleteMatch& match) {
-  // If we are on a search results page, we'll use that instead of a loader.
-  // TODO(sreeram): If |instant_tab_|'s URL is not the same as the instant_url
-  // of |match|, we shouldn't use the committed tab.
-  if (instant_tab_)
-    return true;
-
-  // If there's no active tab, the browser is closing.
-  const content::WebContents* active_tab = browser_->GetActiveWebContents();
-  if (!active_tab)
-    return false;
-
-  // Try to create a loader for the instant_url in the TemplateURL of |match|.
-  // Do not fallback to the local preview because if the keyword specific
-  // instant URL fails, we want to first try the default instant URL which
-  // happens in the CreateDefaultLoader call below.
-  const TemplateURL* template_url = match.GetTemplateURL(
-      Profile::FromBrowserContext(active_tab->GetBrowserContext()), false);
-  if (ResetLoader(template_url, active_tab, false))
-    return true;
-
-  // In non-extended mode, stop if we couldn't get a loader for the |match|.
-  if (!extended_enabled_)
-    return false;
-
-  // If the match is a query, it is for a non-Instant search engine; stop.
-  if (last_match_was_search_)
-    return false;
-
-  // The match is a URL, or a blank query. Try the default search engine.
-  return CreateDefaultLoader();
 }
 
 void InstantController::HideLoader() {
@@ -1174,56 +1143,64 @@ void InstantController::SendPopupBoundsToPage() {
   loader_->SetPopupBounds(intersection);
 }
 
-bool InstantController::GetInstantURL(const TemplateURL* template_url,
+bool InstantController::GetInstantURL(const content::WebContents* active_tab,
                                       std::string* instant_url) const {
+  DCHECK(active_tab);
+  instant_url->clear();
+
   if (extended_enabled_ && use_local_preview_only_) {
     *instant_url = kLocalOmniboxPopupURL;
     return true;
   }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kInstantURL)) {
-    *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);
-    return template_url != NULL;
-  }
+  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(active_tab->GetBrowserContext()))->
+      GetDefaultSearchProvider();
 
+  // TODO(shishir): Add logging when false is returned.
   if (!template_url)
     return false;
 
-  const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
-  if (!instant_url_ref.IsValid())
-    return false;
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kInstantURL))
+    *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);
 
-  // Even if the URL template doesn't have search terms, it may have other
-  // components (such as {google:baseURL}) that need to be replaced.
-  *instant_url = instant_url_ref.ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(string16()));
-
-  // Extended mode should always use HTTPS. TODO(sreeram): This section can be
-  // removed if TemplateURLs supported "https://{google:host}/..." instead of
-  // only supporting "{google:baseURL}...".
-  if (extended_enabled_) {
-    GURL url_obj(*instant_url);
-    if (!url_obj.is_valid())
+  if (instant_url->empty()) {
+    const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
+    if (!instant_url_ref.IsValid())
       return false;
 
-    // Extended mode won't work properly unless the TemplateURL supports the
-    // param to enable it on the server.
-    if (!template_url->HasSearchTermsReplacementKey(url_obj))
-      return false;
+    // Even if the URL template doesn't have search terms, it may have other
+    // components (such as {google:baseURL}) that need to be replaced.
+    *instant_url = instant_url_ref.ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(string16()));
 
-    if (!url_obj.SchemeIsSecure()) {
-      std::string new_scheme = "https";
-      std::string new_port = "443";
-      GURL::Replacements secure;
-      secure.SetSchemeStr(new_scheme);
-      secure.SetPortStr(new_port);
-      url_obj = url_obj.ReplaceComponents(secure);
-
+    // Extended mode should always use HTTPS. TODO(sreeram): This section can be
+    // removed if TemplateURLs supported "https://{google:host}/..." instead of
+    // only supporting "{google:baseURL}...".
+    if (extended_enabled_) {
+      GURL url_obj(*instant_url);
       if (!url_obj.is_valid())
         return false;
 
-      *instant_url = url_obj.spec();
+      // Extended mode won't work properly unless the TemplateURL supports the
+      // param to enable it on the server.
+      if (!template_url->HasSearchTermsReplacementKey(url_obj))
+        return false;
+
+      if (!url_obj.SchemeIsSecure()) {
+        std::string new_scheme = "https";
+        std::string new_port = "443";
+        GURL::Replacements secure;
+        secure.SetSchemeStr(new_scheme);
+        secure.SetPortStr(new_port);
+        url_obj = url_obj.ReplaceComponents(secure);
+
+        if (!url_obj.is_valid())
+          return false;
+
+        *instant_url = url_obj.spec();
+      }
     }
   }
 
