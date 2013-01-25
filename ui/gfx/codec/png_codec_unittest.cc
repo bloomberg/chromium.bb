@@ -154,31 +154,7 @@ bool EncodeImage(const std::vector<unsigned char>& input,
                  const int interlace_type = PNG_INTERLACE_NONE,
                  std::vector<png_color>* palette = 0,
                  std::vector<unsigned char>* palette_alpha = 0) {
-  struct ScopedPNGStructs {
-    ScopedPNGStructs(png_struct** s, png_info** i) : s_(s), i_(i) {}
-    ~ScopedPNGStructs() { png_destroy_write_struct(s_, i_); }
-    png_struct** s_;
-    png_info** i_;
-  };
-
   DCHECK(output);
-  png_struct* png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-                                                NULL, NULL, NULL);
-  if (!png_ptr)
-    return false;
-
-  png_infop info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr) {
-    png_destroy_write_struct(&png_ptr, NULL);
-    return false;
-  }
-
-  ScopedPNGStructs scoped_png_structs(&png_ptr, &info_ptr);
-
-  if (setjmp(png_jmpbuf(png_ptr)))
-    return false;
-
-  png_set_error_fn(png_ptr, NULL, LogLibPNGError, LogLibPNGWarning);
 
   int input_rowbytes = 0;
   int transforms = PNG_TRANSFORM_IDENTITY;
@@ -213,10 +189,27 @@ bool EncodeImage(const std::vector<unsigned char>& input,
       break;
   };
 
+  png_struct* png_ptr =
+      png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!png_ptr)
+    return false;
+  png_infop info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr) {
+    png_destroy_write_struct(&png_ptr, NULL);
+    return false;
+  }
+
   std::vector<png_bytep> row_pointers(height);
-  for (int y = 0 ; y < height; y++) {
+  for (int y = 0 ; y < height; ++y) {
     row_pointers[y] = const_cast<unsigned char*>(&input[y * input_rowbytes]);
   }
+
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    return false;
+  }
+
+  png_set_error_fn(png_ptr, NULL, LogLibPNGError, LogLibPNGWarning);
   png_set_rows(png_ptr, info_ptr, &row_pointers[0]);
   png_set_write_fn(png_ptr, output, WriteImageData, FlushImageData);
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, output_color_type,
@@ -225,16 +218,15 @@ bool EncodeImage(const std::vector<unsigned char>& input,
   if (output_color_type == COLOR_TYPE_PALETTE) {
     png_set_PLTE(png_ptr, info_ptr, &palette->front(), palette->size());
     if (palette_alpha) {
-      png_set_tRNS(png_ptr,
-                   info_ptr,
-                   &palette_alpha->front(),
-                   palette_alpha->size(),
-                   NULL);
+      unsigned char* alpha_data = &palette_alpha->front();
+      size_t alpha_size = palette_alpha->size();
+      png_set_tRNS(png_ptr, info_ptr, alpha_data, alpha_size, NULL);
     }
   }
 
   png_write_png(png_ptr, info_ptr, transforms, NULL);
 
+  png_destroy_write_struct(&png_ptr, &info_ptr);
   return true;
 }
 
