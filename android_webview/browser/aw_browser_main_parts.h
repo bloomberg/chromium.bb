@@ -26,6 +26,7 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   // Overriding methods from content::BrowserMainParts.
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual int PreCreateThreads() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
 
  private:

@@ -73,6 +73,10 @@ int AwBrowserMainParts::PreCreateThreads() {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
+void AwBrowserMainParts::PreMainMessageLoopRun() {
+  browser_context_->PreMainMessageLoopRun();
+}
+
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop.

@@ -5,6 +5,8 @@ include_rules = [
 
   "+components/auto_login_parser",
   "+components/navigation_interception",
+  "+components/visitedlink/browser",
+
   "+content/public/browser",
 
   # Temporary until we bundle our own favicon. See

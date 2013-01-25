@@ -11,6 +11,13 @@
 #include "base/callback_forward.h"
 #include "base/threading/non_thread_safe.h"
 
+class GURL;
+
+namespace content {
+struct FrameNavigateParams;
+struct LoadCommittedDetails;
+}  // namespace content
+
 namespace android_webview {
 
 // Provides RenderViewHost wrapper functionality for sending WebView-specific
@@ -53,6 +60,9 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void DidNavigateAnyFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);

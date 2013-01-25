@@ -10,6 +10,10 @@
 #include "base/compiler_specific.h"
 #include "android_webview/renderer/aw_render_process_observer.h"
 
+namespace components {
+class VisitedLinkSlave;
+}  // namespace components
+
 namespace android_webview {
 
 class AwContentRendererClient : public content::ContentRendererClient {
@@ -35,6 +39,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
 
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
+  scoped_ptr<components::VisitedLinkSlave> visited_link_slave_;
 };
 
 }  // namespace android_webview

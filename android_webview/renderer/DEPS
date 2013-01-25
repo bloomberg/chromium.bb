@@ -3,6 +3,8 @@ include_rules = [
   "+android_webview/common",
   "+android_webview/renderer",
 
+  "+components/visitedlink/renderer",
+
   "+content/public/renderer",
  
   "+third_party/WebKit/Source/WebKit/chromium/public",
