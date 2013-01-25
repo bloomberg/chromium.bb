@@ -2124,6 +2124,7 @@ void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
     ShowDevToolsContainer();
   } else if (new_devtools_window) {
     UpdateDevToolsSplitPosition();
+    contents_split_->Layout();
   }
 }
 
