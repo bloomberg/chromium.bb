@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_download_observer.h"
+#include "chrome/browser/chromeos/drive/drive_download_handler.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -44,14 +42,6 @@ const DriveUserData* GetDriveUserData(const DownloadItem* download) {
       download->GetUserData(&kDrivePathKey));
 }
 
-DriveSystemService* GetSystemService(Profile* profile) {
-  DCHECK(profile);
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile);
-  DCHECK(system_service);
-  return system_service;
-}
-
 // Creates a temporary file |drive_tmp_download_path| in
 // |drive_tmp_download_dir|. Must be called on a thread that allows file
 // operations.
@@ -66,64 +56,6 @@ FilePath GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir) {
   return drive_tmp_download_path;
 }
 
-// Substitutes virtual drive path for local temporary path.
-void SubstituteDriveDownloadPathInternal(
-    Profile* profile,
-    const DriveDownloadObserver::SubstituteDriveDownloadPathCallback&
-        callback) {
-  DCHECK(profile);
-  DVLOG(1) << "SubstituteDriveDownloadPathInternal";
-
-  const FilePath drive_tmp_download_dir = GetSystemService(profile)->cache()->
-      GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS);
-
-  // Swap the drive path with a local path. Local path must be created
-  // on a blocking thread.
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_dir),
-      callback);
-}
-
-// Callback for DriveFileSystem::CreateDirectory.
-void OnCreateDirectory(
-    Profile* profile,
-    const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
-    DriveFileError error) {
-  DCHECK(profile);
-  DVLOG(1) << "OnCreateDirectory " << error;
-  if (error == DRIVE_FILE_OK) {
-    SubstituteDriveDownloadPathInternal(profile, callback);
-  } else {
-    LOG(WARNING) << "Failed to create directory, error = " << error;
-    callback.Run(FilePath());
-  }
-}
-
-// Callback for DriveFileSystem::GetEntryInfoByPath.
-void OnEntryFound(
-    Profile* profile,
-    const FilePath& drive_dir_path,
-    const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(profile);
-  if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
-    // Destination Drive directory doesn't exist, so create it.
-    const bool is_exclusive = false, is_recursive = true;
-    GetSystemService(profile)->file_system()->CreateDirectory(
-        drive_dir_path, is_exclusive, is_recursive,
-        base::Bind(&OnCreateDirectory, profile, callback));
-  } else if (error == DRIVE_FILE_OK) {
-    SubstituteDriveDownloadPathInternal(profile, callback);
-  } else {
-    LOG(WARNING) << "Failed to get entry info for path: "
-                 << drive_dir_path.value() << ", error = " << error;
-    callback.Run(FilePath());
-  }
-}
-
 // Moves downloaded file to Drive.
 void MoveDownloadedFile(const FilePath& downloaded_file,
                         DriveFileError error,
@@ -135,7 +67,7 @@ void MoveDownloadedFile(const FilePath& downloaded_file,
 
 }  // namespace
 
-DriveDownloadObserver::DriveDownloadObserver(
+DriveDownloadHandler::DriveDownloadHandler(
     FileWriteHelper* file_write_helper,
     DriveFileSystemInterface* file_system)
     : file_write_helper_(file_write_helper),
@@ -143,10 +75,17 @@ DriveDownloadObserver::DriveDownloadObserver(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-DriveDownloadObserver::~DriveDownloadObserver() {
+DriveDownloadHandler::~DriveDownloadHandler() {
 }
 
-void DriveDownloadObserver::Initialize(
+// static
+DriveDownloadHandler* DriveDownloadHandler::GetForProfile(Profile* profile) {
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile);
+  return system_service ? system_service->download_handler() : NULL;
+}
+
+void DriveDownloadHandler::Initialize(
     DownloadManager* download_manager,
     const FilePath& drive_tmp_download_path) {
   DCHECK(!drive_tmp_download_path.empty());
@@ -155,11 +94,10 @@ void DriveDownloadObserver::Initialize(
   drive_tmp_download_path_ = drive_tmp_download_path;
 }
 
-// static
-void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
-    const FilePath& drive_path, content::DownloadItem* download,
+void DriveDownloadHandler::SubstituteDriveDownloadPath(
+    const FilePath& drive_path,
+    content::DownloadItem* download,
     const SubstituteDriveDownloadPathCallback& callback) {
-  DCHECK(profile);
   DVLOG(1) << "SubstituteDriveDownloadPath " << drive_path.value();
 
   SetDownloadParams(drive_path, download);
@@ -174,17 +112,19 @@ void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
         util::ExtractDrivePath(drive_path.DirName());
     // Ensure the directory exists. This also forces DriveFileSystem to
     // initialize DriveRootDirectory.
-    GetSystemService(profile)->file_system()->GetEntryInfoByPath(
+    file_system_->GetEntryInfoByPath(
         drive_dir_path,
-        base::Bind(&OnEntryFound, profile, drive_dir_path, callback));
+        base::Bind(&DriveDownloadHandler::OnEntryFound,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   drive_dir_path,
+                   callback));
   } else {
     callback.Run(drive_path);
   }
 }
 
-// static
-void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
-                                              DownloadItem* download) {
+void DriveDownloadHandler::SetDownloadParams(const FilePath& drive_path,
+                                             DownloadItem* download) {
   if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
@@ -203,8 +143,7 @@ void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
   }
 }
 
-// static
-FilePath DriveDownloadObserver::GetDrivePath(const DownloadItem* download) {
+FilePath DriveDownloadHandler::GetDrivePath(const DownloadItem* download) {
   const DriveUserData* data = GetDriveUserData(download);
   // If data is NULL, we've somehow lost the drive path selected by the file
   // picker.
@@ -212,14 +151,13 @@ FilePath DriveDownloadObserver::GetDrivePath(const DownloadItem* download) {
   return data ? util::ExtractDrivePath(data->file_path()) : FilePath();
 }
 
-// static
-bool DriveDownloadObserver::IsDriveDownload(const DownloadItem* download) {
+bool DriveDownloadHandler::IsDriveDownload(const DownloadItem* download) {
   // We use the existence of the DriveUserData object in download as a
   // signal that this is a DriveDownload.
-  return !!GetDriveUserData(download);
+  return GetDriveUserData(download) != NULL;
 }
 
-void DriveDownloadObserver::OnDownloadUpdated(
+void DriveDownloadHandler::OnDownloadUpdated(
     DownloadManager* manager, DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -251,7 +189,46 @@ void DriveDownloadObserver::OnDownloadUpdated(
   }
 }
 
-void DriveDownloadObserver::UploadDownloadItem(DownloadItem* download) {
+void DriveDownloadHandler::OnEntryFound(
+    const FilePath& drive_dir_path,
+    const SubstituteDriveDownloadPathCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
+    // Destination Drive directory doesn't exist, so create it.
+    const bool is_exclusive = false, is_recursive = true;
+    file_system_->CreateDirectory(
+        drive_dir_path, is_exclusive, is_recursive,
+        base::Bind(&DriveDownloadHandler::OnCreateDirectory,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  } else if (error == DRIVE_FILE_OK) {
+    // Directory is already ready.
+    OnCreateDirectory(callback, DRIVE_FILE_OK);
+  } else {
+    LOG(WARNING) << "Failed to get entry info for path: "
+                 << drive_dir_path.value() << ", error = " << error;
+    callback.Run(FilePath());
+  }
+}
+
+void DriveDownloadHandler::OnCreateDirectory(
+    const SubstituteDriveDownloadPathCallback& callback,
+    DriveFileError error) {
+  DVLOG(1) << "OnCreateDirectory " << error;
+  if (error == DRIVE_FILE_OK) {
+    base::PostTaskAndReplyWithResult(
+        BrowserThread::GetBlockingPool(),
+        FROM_HERE,
+        base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_path_),
+        callback);
+  } else {
+    LOG(WARNING) << "Failed to create directory, error = " << error;
+    callback.Run(FilePath());
+  }
+}
+
+void DriveDownloadHandler::UploadDownloadItem(DownloadItem* download) {
   DCHECK(download->IsComplete());
   file_write_helper_->PrepareWritableFileAndRun(
       GetDrivePath(download),

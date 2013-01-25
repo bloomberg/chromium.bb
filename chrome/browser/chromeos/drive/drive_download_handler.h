@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_HANDLER_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
@@ -19,16 +19,20 @@ class DownloadManager;
 
 namespace drive {
 
+class DriveEntryProto;
 class DriveFileSystemInterface;
 class FileWriteHelper;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
-class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
+class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
  public:
-  DriveDownloadObserver(FileWriteHelper* file_write_helper,
-                        DriveFileSystemInterface* file_system);
-  virtual ~DriveDownloadObserver();
+  DriveDownloadHandler(FileWriteHelper* file_write_helper,
+                       DriveFileSystemInterface* file_system);
+  virtual ~DriveDownloadHandler();
+
+  // Utility method to get DriveDownloadHandler with profile.
+  static DriveDownloadHandler* GetForProfile(Profile* profile);
 
   // Become an observer of DownloadManager.
   void Initialize(content::DownloadManager* download_manager,
@@ -39,8 +43,7 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
   typedef base::Callback<void(const FilePath&)>
       SubstituteDriveDownloadPathCallback;
 
-  static void SubstituteDriveDownloadPath(
-      Profile* profile,
+  void SubstituteDriveDownloadPath(
       const FilePath& drive_path,
       content::DownloadItem* download,
       const SubstituteDriveDownloadPathCallback& callback);
@@ -48,22 +51,34 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
   // Sets drive path, for example, '/special/drive/MyFolder/MyFile',
   // to external data in |download|. Also sets display name and
   // makes |download| a temporary.
-  static void SetDownloadParams(const FilePath& drive_path,
-                                content::DownloadItem* download);
+  void SetDownloadParams(const FilePath& drive_path,
+                         content::DownloadItem* download);
 
   // Gets the drive_path from external data in |download|.
   // GetDrivePath may return an empty path in case SetDrivePath was not
   // previously called or there was some other internal error
   // (there is a DCHECK for this).
-  static FilePath GetDrivePath(const content::DownloadItem* download);
+  FilePath GetDrivePath(const content::DownloadItem* download);
 
   // Checks if there is a Drive upload associated with |download|
-  static bool IsDriveDownload(const content::DownloadItem* download);
+  bool IsDriveDownload(const content::DownloadItem* download);
 
  private:
   // AllDownloadItemNotifier::Observer
   virtual void OnDownloadUpdated(content::DownloadManager* manager,
                                  content::DownloadItem* download) OVERRIDE;
+
+  // Callback for DriveFileSystem::GetEntryInfoByPath().
+  // Used to implement SubstituteDriveDownloadPath().
+  void OnEntryFound(const FilePath& drive_dir_path,
+                    const SubstituteDriveDownloadPathCallback& callback,
+                    DriveFileError error,
+                    scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Callback for DriveFileSystem::CreateDirectory().
+  // Used to implement SubstituteDriveDownloadPath().
+  void OnCreateDirectory(const SubstituteDriveDownloadPathCallback& callback,
+                         DriveFileError error);
 
   // Starts the upload of a downloaded/downloading file.
   void UploadDownloadItem(content::DownloadItem* download);
@@ -79,11 +94,11 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveDownloadObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveDownloadHandler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveDownloadObserver);
+  DISALLOW_COPY_AND_ASSIGN(DriveDownloadHandler);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_HANDLER_H_

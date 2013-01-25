@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/file_util_icu.h"
-#include "chrome/browser/chromeos/drive/drive_download_observer.h"
+#include "chrome/browser/chromeos/drive/drive_download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
@@ -26,9 +26,13 @@ void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item,
                                                    const FilePath& path) {
   // For Drive downloads, |path| is the virtual gdata path instead of the
   // temporary local one.
-  if (drive::DriveDownloadObserver::IsDriveDownload(item)) {
+  Profile* profile =
+      Profile::FromBrowserContext(download_manager_->GetBrowserContext());
+  drive::DriveDownloadHandler* drive_download_handler =
+      drive::DriveDownloadHandler::GetForProfile(profile);
+  if (drive_download_handler && drive_download_handler->IsDriveDownload(item)) {
     set_suggested_path(drive::util::GetSpecialRemoteRootPath().Append(
-        drive::DriveDownloadObserver::GetDrivePath(item)));
+        drive_download_handler->GetDrivePath(item)));
   } else {
     DownloadFilePicker::InitSuggestedPath(item, path);
   }
@@ -57,11 +61,17 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
   if (download_manager_) {
     Profile* profile =
         Profile::FromBrowserContext(download_manager_->GetBrowserContext());
-    DownloadItem* download = download_manager_->GetDownload(download_id_);
-    drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
-        profile, path, download,
-        base::Bind(&DownloadFilePickerChromeOS::OnFileSelected,
-                   base::Unretained(this)));
+    drive::DriveDownloadHandler* drive_download_handler =
+        drive::DriveDownloadHandler::GetForProfile(profile);
+    if (drive_download_handler) {
+      DownloadItem* download = download_manager_->GetDownload(download_id_);
+      drive_download_handler->SubstituteDriveDownloadPath(
+          path, download,
+          base::Bind(&DownloadFilePickerChromeOS::OnFileSelected,
+                     base::Unretained(this)));
+    } else {
+      OnFileSelected(path);
+    }
   } else {
     OnFileSelected(FilePath());
   }

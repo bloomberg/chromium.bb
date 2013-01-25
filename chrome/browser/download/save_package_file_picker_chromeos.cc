@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/drive_download_observer.h"
+#include "chrome/browser/chromeos/drive/drive_download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -23,17 +23,21 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
-// Trampoline callback between GetDriveTempDownloadPath() and |callback|.
+// Trampoline callback between SubstituteDriveDownloadPath() and |callback|.
 void ContinueSettingUpDriveDownload(
     const content::SavePackagePathPickedCallback& callback,
+    Profile* profile,
     const FilePath& drive_path,
     const FilePath& drive_tmp_download_path) {
   if (drive_tmp_download_path.empty())  // Substitution failed.
     return;
 
-  callback.Run(drive_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
-               base::Bind(&drive::DriveDownloadObserver::SetDownloadParams,
-                          drive_path));
+  callback.Run(
+      drive_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
+      base::Bind(&drive::DriveDownloadHandler::SetDownloadParams,
+                 base::Unretained(
+                     drive::DriveDownloadHandler::GetForProfile(profile)),
+                 drive_path));
 }
 
 }  // namespace
@@ -96,13 +100,19 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
 
   if (drive::util::IsUnderDriveMountPoint(selected_path)) {
     // Here's a map to the callback chain:
-    // GetDriveTempDownloadPath ->
+    // SubstituteDriveDownloadPath ->
     //   ContinueSettingUpDriveDownload ->
     //     callback_ = SavePackage::OnPathPicked ->
     //       download_created_callback = OnSavePackageDownloadCreated
-    drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
-        profile, selected_path, NULL,
-        base::Bind(&ContinueSettingUpDriveDownload, callback_, selected_path));
+    drive::DriveDownloadHandler* drive_download_handler =
+        drive::DriveDownloadHandler::GetForProfile(profile);
+    DCHECK(drive_download_handler);
+    drive_download_handler->
+        SubstituteDriveDownloadPath(selected_path, NULL,
+                                    base::Bind(&ContinueSettingUpDriveDownload,
+                                               callback_,
+                                               profile,
+                                               selected_path));
   } else {
     callback_.Run(selected_path, content::SAVE_PAGE_TYPE_AS_MHTML,
                   content::SavePackageDownloadCreatedCallback());

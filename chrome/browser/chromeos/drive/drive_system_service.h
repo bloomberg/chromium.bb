@@ -27,7 +27,7 @@ class DriveUploader;
 namespace drive {
 
 class DriveCache;
-class DriveDownloadObserver;
+class DriveDownloadHandler;
 class DriveFileSystemInterface;
 class DriveWebAppsRegistry;
 class DriveSyncClient;
@@ -68,6 +68,7 @@ class DriveSystemService : public ProfileKeyedService,
   DriveCache* cache() { return cache_.get(); }
   DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
+  DriveDownloadHandler* download_handler() { return download_handler_.get(); }
   google_apis::DriveUploader* uploader() { return uploader_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
   EventLogger* event_logger() { return event_logger_.get(); }
@@ -135,7 +136,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
-  scoped_ptr<DriveDownloadObserver> download_observer_;
+  scoped_ptr<DriveDownloadHandler> download_handler_;
   scoped_ptr<DriveSyncClient> sync_client_;
   scoped_ptr<DrivePrefetcher> prefetcher_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;

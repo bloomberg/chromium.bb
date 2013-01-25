@@ -61,7 +61,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_download_observer.h"
+#include "chrome/browser/chromeos/drive/drive_download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
@@ -785,20 +785,24 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   }
 
 #if defined (OS_CHROMEOS)
-  drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
-      profile_, suggested_path, download,
-      base::Bind(
-          &ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback,
-          this, download->GetId(), callback, should_prompt, is_forced_path,
-          danger_type));
-#else
+  drive::DriveDownloadHandler* drive_download_handler =
+      drive::DriveDownloadHandler::GetForProfile(profile_);
+  if (drive_download_handler) {
+    drive_download_handler->SubstituteDriveDownloadPath(
+        suggested_path, download,
+        base::Bind(
+            &ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback,
+            this, download->GetId(), callback, should_prompt, is_forced_path,
+            danger_type));
+    return;
+  }
+#endif
   GetReservedPath(
       *download, suggested_path, download_prefs_->DownloadPath(),
       !is_forced_path,
       base::Bind(&ChromeDownloadManagerDelegate::OnPathReservationAvailable,
                  this, download->GetId(), callback, should_prompt,
                  danger_type));
-#endif
 }
 
 #if defined (OS_CHROMEOS)

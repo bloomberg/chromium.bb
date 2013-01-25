@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/drive_download_observer.h"
+#include "chrome/browser/chromeos/drive/drive_download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
@@ -146,8 +146,8 @@ DriveSystemService::DriveSystemService(
                                          webapps_registry(),
                                          blocking_task_runner_));
   file_write_helper_.reset(new FileWriteHelper(file_system()));
-  download_observer_.reset(new DriveDownloadObserver(file_write_helper(),
-                                                     file_system()));
+  download_handler_.reset(new DriveDownloadHandler(file_write_helper(),
+                                                   file_system()));
   sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
   prefetcher_.reset(new DrivePrefetcher(file_system(),
                                         event_logger(),
@@ -302,10 +302,9 @@ void DriveSystemService::OnCacheInitialized(bool success) {
   content::DownloadManager* download_manager =
     g_browser_process->download_status_updater() ?
         BrowserContext::GetDownloadManager(profile_) : NULL;
-  download_observer_->Initialize(
+  download_handler_->Initialize(
       download_manager,
-      cache_->GetCacheDirectoryPath(
-          DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
 
   // Register for Google Drive invalidation notifications.
   ProfileSyncService* profile_sync_service =
