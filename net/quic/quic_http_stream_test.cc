@@ -19,6 +19,10 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
+#include "net/spdy/spdy_frame_builder.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/spdy_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,8 +81,8 @@ class TestCollector : public QuicReceiptMetricsCollector {
 // is received.
 class AutoClosingStream : public QuicHttpStream {
  public:
-  explicit AutoClosingStream(QuicReliableClientStream* stream)
-      : QuicHttpStream(stream) {
+  AutoClosingStream(QuicReliableClientStream* stream, bool use_spdy)
+      : QuicHttpStream(stream, use_spdy) {
   }
 
   virtual int OnDataReceived(const char* data, int length) {
@@ -89,10 +93,9 @@ class AutoClosingStream : public QuicHttpStream {
 
 }  // namespace
 
-class QuicHttpStreamTest : public ::testing::Test {
+class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
  protected:
   const static bool kFin = true;
-  const static bool kNoFin = false;
   // Holds a packet to be written to the wire, and the IO mode that should
   // be used by the mock socket when performing the write.
   struct PacketToWrite {
@@ -176,9 +179,45 @@ class QuicHttpStreamTest : public ::testing::Test {
     EXPECT_TRUE(session_->IsCryptoHandshakeComplete());
     QuicReliableClientStream* stream =
         session_->CreateOutgoingReliableStream();
-    stream_.reset(use_closing_stream_ ? new AutoClosingStream(stream) :
-                  new QuicHttpStream(stream));
-   }
+    stream_.reset(use_closing_stream_ ?
+                  new AutoClosingStream(stream, GetParam()) :
+                  new QuicHttpStream(stream, GetParam()));
+  }
+
+  void SetRequestString(const std::string& method, const std::string& path) {
+    if (GetParam() == true) {
+      SpdyHeaderBlock headers;
+      headers[":method"] = method;
+      headers[":host"] = "www.google.com";
+      headers[":path"] = path;
+      headers[":scheme"] = "http";
+      headers[":version"] = "HTTP/1.1";
+      request_data_ = SerializeHeaderBlock(headers);
+    } else {
+      request_data_ = method + " " + path + " HTTP/1.1\r\n\r\n";
+    }
+  }
+
+  void SetResponseString(const std::string& status, const std::string& body) {
+    if (GetParam() == true) {
+      SpdyHeaderBlock headers;
+      headers[":status"] = status;
+      headers[":version"] = "HTTP/1.1";
+      headers["content-type"] = "text/plain";
+      response_data_ = SerializeHeaderBlock(headers) + body;
+    } else {
+      response_data_ = "HTTP/1.1 " + status + " \r\n"
+          "Content-Type: text/plain\r\n\r\n" + body;
+    }
+  }
+
+  std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers) {
+    size_t len = SpdyFramer::GetSerializedLength(3, &headers);
+    SpdyFrameBuilder builder(len);
+    SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
+    scoped_ptr<SpdyFrame> frame(builder.take());
+    return std::string(frame->data(), len);
+  }
 
   // Returns a newly created packet to send kData on stream 1.
   QuicEncryptedPacket* ConstructDataPacket(
@@ -231,6 +270,8 @@ class QuicHttpStreamTest : public ::testing::Test {
   HttpRequestHeaders headers_;
   HttpResponseInfo response_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
+  std::string request_data_;
+  std::string response_data_;
 
  private:
   void InitializeHeader(QuicPacketSequenceNumber sequence_number) {
@@ -260,25 +301,31 @@ class QuicHttpStreamTest : public ::testing::Test {
   std::vector<PacketToWrite> writes_;
 };
 
-TEST_F(QuicHttpStreamTest, RenewStreamForAuth) {
+// All tests are run with two different serializations, HTTP/SPDY
+INSTANTIATE_TEST_CASE_P(QuicHttpStreamTests,
+                        QuicHttpStreamTest,
+                        ::testing::Values(true, false));
+
+TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
   EXPECT_EQ(NULL, stream_->RenewStreamForAuth());
 }
 
-TEST_F(QuicHttpStreamTest, CanFindEndOfResponse) {
+TEST_P(QuicHttpStreamTest, CanFindEndOfResponse) {
   EXPECT_TRUE(stream_->CanFindEndOfResponse());
 }
 
-TEST_F(QuicHttpStreamTest, IsMoreDataBuffered) {
+TEST_P(QuicHttpStreamTest, IsMoreDataBuffered) {
   EXPECT_FALSE(stream_->IsMoreDataBuffered());
 }
 
-TEST_F(QuicHttpStreamTest, IsConnectionReusable) {
+TEST_P(QuicHttpStreamTest, IsConnectionReusable) {
   EXPECT_FALSE(stream_->IsConnectionReusable());
 }
 
-TEST_F(QuicHttpStreamTest, GetRequest) {
+TEST_P(QuicHttpStreamTest, GetRequest) {
+  SetRequestString("GET", "/");
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0,
-                                            "GET / HTTP/1.1\r\n\r\n"));
+                                            request_data_));
   AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 2));
   Initialize();
 
@@ -299,10 +346,9 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
             stream_->ReadResponseHeaders(callback_.callback()));
 
   // Send the response without a body.
-  const char kResponseHeaders[] = "HTTP/1.1 404 OK\r\n"
-      "Content-Type: text/plain\r\n\r\n";
+  SetResponseString("404 Not Found", "");
   scoped_ptr<QuicEncryptedPacket> resp(
-      ConstructDataPacket(2, kFin, 0, kResponseHeaders));
+      ConstructDataPacket(2, kFin, 0, response_data_));
   ProcessPacket(*resp);
 
   // Now that the headers have been processed, the callback will return.
@@ -319,9 +365,9 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
   EXPECT_TRUE(AtEof());
 }
 
-TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0,
-                                            "GET / HTTP/1.1\r\n\r\n"));
+TEST_P(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
+  SetRequestString("GET", "/");
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0, request_data_));
   AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 2));
   Initialize();
 
@@ -342,16 +388,15 @@ TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
             stream_->ReadResponseHeaders(callback_.callback()));
 
   // Send the response with a body.
-  const char kResponseHeaders[] = "HTTP/1.1 404 OK\r\n"
-      "Content-Type: text/plain\r\n\r\nhello world!";
+  SetResponseString("200 OK", "hello world!");
   scoped_ptr<QuicEncryptedPacket> resp(
-      ConstructDataPacket(2, kFin, 0, kResponseHeaders));
+      ConstructDataPacket(2, kFin, 0, response_data_));
   ProcessPacket(*resp);
 
   // Now that the headers have been processed, the callback will return.
   EXPECT_EQ(OK, callback_.WaitForResult());
   ASSERT_TRUE(response_.headers != NULL);
-  EXPECT_EQ(404, response_.headers->response_code());
+  EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
 
   // There is no body, so this should return immediately.
@@ -363,10 +408,10 @@ TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
   EXPECT_TRUE(AtEof());
 }
 
-TEST_F(QuicHttpStreamTest, SendPostRequest) {
-  const char kRequestData[] = "POST / HTTP/1.1\r\n\r\n";
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kNoFin, 0, kRequestData));
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, strlen(kRequestData),
+TEST_P(QuicHttpStreamTest, SendPostRequest) {
+  SetRequestString("POST", "/");
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, !kFin, 0, request_data_));
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, request_data_.length(),
                                             kUploadData));
   AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 3));
 
@@ -392,10 +437,9 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   ProcessPacket(*ack);
 
   // Send the response headers (but not the body).
-  const char kResponseHeaders[] = "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/plain\r\n\r\n";
+  SetResponseString("200 OK", "");
   scoped_ptr<QuicEncryptedPacket> resp(
-      ConstructDataPacket(2, kNoFin, 0, kResponseHeaders));
+      ConstructDataPacket(2, !kFin, 0, response_data_));
   ProcessPacket(*resp);
 
   // Since the headers have already arrived, this should return immediately.
@@ -407,7 +451,7 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   // Send the response body.
   const char kResponseBody[] = "Hello world!";
   scoped_ptr<QuicEncryptedPacket> resp_body(
-      ConstructDataPacket(3, kFin, strlen(kResponseHeaders), kResponseBody));
+      ConstructDataPacket(3, kFin, response_data_.length(), kResponseBody));
   ProcessPacket(*resp_body);
 
   // Since the body has already arrived, this should return immediately.
@@ -419,10 +463,10 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   EXPECT_TRUE(AtEof());
 }
 
-TEST_F(QuicHttpStreamTest, DestroyedEarly) {
-  const char kRequest[] = "GET / HTTP/1.1\r\n\r\n";
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0, kRequest));
-  AddWrite(SYNCHRONOUS, ConstructRstPacket(2, 3, strlen(kRequest)));
+TEST_P(QuicHttpStreamTest, DestroyedEarly) {
+  SetRequestString("GET", "/");
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0, request_data_));
+  AddWrite(SYNCHRONOUS, ConstructRstPacket(2, 3, request_data_.length()));
   AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 2));
   use_closing_stream_ = true;
   Initialize();
@@ -430,7 +474,6 @@ TEST_F(QuicHttpStreamTest, DestroyedEarly) {
   request_.method = "GET";
   request_.url = GURL("http://www.google.com/");
 
-  //stream_.reset(new TestStream(session_->CreateOutgoingReliableStream()));
   EXPECT_EQ(OK, stream_->InitializeStream(&request_, net_log_,
                                          callback_.callback()));
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,

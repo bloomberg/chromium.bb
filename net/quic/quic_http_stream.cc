@@ -14,13 +14,16 @@
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_utils.h"
 #include "net/socket/next_proto.h"
+#include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_http_utils.h"
 
 namespace net {
 
 static const size_t kHeaderBufInitialSize = 4096;
 
-QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
+QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream,
+                               bool use_spdy)
     : io_state_(STATE_NONE),
       stream_(stream),
       request_info_(NULL),
@@ -28,6 +31,7 @@ QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
       response_info_(NULL),
       response_status_(OK),
       response_headers_received_(false),
+      use_spdy_(use_spdy),
       read_buf_(new GrowableIOBuffer()),
       user_buffer_len_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -59,12 +63,22 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CHECK(response);
 
   // Store the serialized request headers.
-  // TODO(rch): use SPDY serialization
-  std::string path = HttpUtil::PathForRequest(request_info_->url);
-  std::string first_line = base::StringPrintf("%s %s HTTP/1.1\r\n",
-                                              request_info_->method.c_str(),
-                                              path.c_str());
-  request_ = first_line + request_headers.ToString();
+  if (use_spdy_) {
+    SpdyHeaderBlock headers;
+    CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
+                                     &headers, 3, /*direct=*/true);
+    size_t len = SpdyFramer::GetSerializedLength(3, &headers);
+    SpdyFrameBuilder builder(len);
+    SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
+    scoped_ptr<SpdyFrame> frame(builder.take());
+    request_ = std::string(frame->data(), len);
+  } else {
+    std::string path = HttpUtil::PathForRequest(request_info_->url);
+    std::string first_line = base::StringPrintf("%s %s HTTP/1.1\r\n",
+                                                request_info_->method.c_str(),
+                                                path.c_str());
+    request_ = first_line + request_headers.ToString();
+  }
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;
@@ -427,6 +441,32 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
 }
 
 int QuicHttpStream::ParseResponseHeaders() {
+  if (use_spdy_) {
+    size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
+    SpdyFramer framer(3);
+    SpdyHeaderBlock headers;
+    size_t len = framer.ParseHeaderBlockInBuffer(
+        read_buf_->StartOfBuffer(), read_buf_->offset(), &headers);
+
+    if (len == 0) {
+      return ERR_IO_PENDING;
+    }
+
+    // Save the remaining received data.
+    size_t delta = read_buf_len - len;
+    if (delta > 0) {
+      BufferResponseBody(read_buf_->data(), delta);
+    }
+
+    SpdyHeadersToHttpResponse(headers, 3, response_info_);
+    // Put the peer's IP address and port into the response.
+    IPEndPoint address = stream_->GetPeerAddress();
+    response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+    response_info_->vary_data.Init(*request_info_, *response_info_->headers);
+    response_headers_received_ = true;
+
+    return OK;
+  }
   int end_offset = HttpUtil::LocateEndOfHeaders(read_buf_->StartOfBuffer(),
                                                 read_buf_->offset(), 0);
 

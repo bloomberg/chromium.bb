@@ -300,7 +300,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
   QuicClientSession* session = active_sessions_[host_port_proxy_pair];
   DCHECK(session);
   return scoped_ptr<QuicHttpStream>(
-      new QuicHttpStream(session->CreateOutgoingReliableStream()));
+      new QuicHttpStream(session->CreateOutgoingReliableStream(), true));
 }
 
 void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {
@@ -330,6 +330,9 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
 void QuicStreamFactory::CloseAllSessions(int error) {
   while (!active_sessions_.empty()) {
     active_sessions_.begin()->second->CloseSessionOnError(error);
+  }
+  while (!all_sessions_.empty()) {
+    (*all_sessions_.begin())->CloseSessionOnError(error);
   }
   DCHECK(all_sessions_.empty());
 }

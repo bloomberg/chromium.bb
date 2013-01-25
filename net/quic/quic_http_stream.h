@@ -21,7 +21,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
       public QuicReliableClientStream::Delegate,
       public HttpStream {
  public:
-  explicit QuicHttpStream(QuicReliableClientStream* stream);
+  QuicHttpStream(QuicReliableClientStream* stream, bool use_spdy);
 
   virtual ~QuicHttpStream();
 
@@ -112,6 +112,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   int response_status_;
 
   bool response_headers_received_;
+
+  // True if the request and response bodies should be serialized via SPDY.
+  bool use_spdy_;
 
   // Serialized HTTP request.
   std::string request_;
