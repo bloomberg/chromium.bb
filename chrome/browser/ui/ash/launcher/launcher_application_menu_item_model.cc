@@ -39,6 +39,7 @@ void LauncherApplicationMenuItemModel::ExecuteCommand(int command_id) {
 }
 
 void LauncherApplicationMenuItemModel::Build() {
+  AddSeparator(ui::SPACING_SEPARATOR);
   for (size_t i = 0; i < launcher_items_.size(); i++) {
     ChromeLauncherAppMenuItem* item = launcher_items_[i];
     // The first item is the context menu, the others are the running apps.

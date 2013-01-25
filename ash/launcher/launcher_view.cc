@@ -55,12 +55,60 @@ const int kMinimumDragDistance = 8;
 // Size between the buttons.
 const int kButtonSpacing = 4;
 
+// Additional spacing for the left and right side of icons.
+const int kHorizontalIconSpacing = 8;
+
 // The proportion of the launcher space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
 // is contention for the space.
 const float kReservedNonPanelIconProportion = 0.67f;
 
+// This is the command id of the menu item which contains the name of the menu.
+const int kCommandIdOfMenuName = 0;
+
 namespace {
+
+// The MenuModelAdapter gets slightly changed to adapt the menu appearance to
+// our requirements.
+class LauncherMenuModelAdapter
+    : public views::MenuModelAdapter {
+ public:
+  explicit LauncherMenuModelAdapter(ui::MenuModel* menu_model);
+
+  // Overriding MenuModelAdapter's MenuDelegate implementation.
+  virtual const gfx::Font* GetLabelFont(int command_id) const OVERRIDE;
+  virtual void GetHorizontalIconMargins(int id,
+                                        int icon_size,
+                                        int* left_margin,
+                                        int* right_margin) const OVERRIDE;
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
+};
+
+
+LauncherMenuModelAdapter::LauncherMenuModelAdapter(ui::MenuModel* menu_model)
+    : MenuModelAdapter(menu_model) {}
+
+const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
+    int command_id) const {
+  if (command_id != kCommandIdOfMenuName)
+    return MenuModelAdapter::GetLabelFont(command_id);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return &rb.GetFont(ui::ResourceBundle::BoldFont);
+}
+
+void LauncherMenuModelAdapter::GetHorizontalIconMargins(
+    int command_id,
+    int icon_size,
+    int* left_margin,
+    int* right_margin) const {
+  *left_margin = kHorizontalIconSpacing;
+  *right_margin = (command_id != kCommandIdOfMenuName) ?
+      kHorizontalIconSpacing : -icon_size;
+}
 
 // Custom FocusSearch used to navigate the launcher in the order items are in
 // the ViewModel.
@@ -1235,7 +1283,7 @@ void LauncherView::ShowContextMenuForView(views::View* source,
 void LauncherView::ShowMenu(ui::MenuModel* menu_model,
                             views::View* source,
                             const gfx::Point& point) {
-  views::MenuModelAdapter menu_model_adapter(menu_model);
+  LauncherMenuModelAdapter menu_model_adapter(menu_model);
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter.CreateMenu()));
   // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building

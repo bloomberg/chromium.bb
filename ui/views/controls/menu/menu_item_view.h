@@ -503,6 +503,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   int top_margin_;
   int bottom_margin_;
 
+  // Horizontal icon margins in pixels, which can differ between MenuItems.
+  // These values will be set in the layout process.
+  int left_icon_margin_;
+  int right_icon_margin_;
+
   // |menu_position_| is the requested position with respect to the bounds.
   // |actual_menu_position_| is used by the controller to cache the
   // position of the menu being shown.
