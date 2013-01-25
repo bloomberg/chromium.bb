@@ -3207,6 +3207,7 @@ usage(int error_code)
 		"  --connector=ID\tBring up only this connector\n"
 		"  --seat=SEAT\t\tThe seat that weston should run on\n"
 		"  --tty=TTY\t\tThe tty to use\n"
+		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --current-mode\tPrefer current KMS mode over EDID preferred mode\n\n");
 
 	fprintf(stderr,
