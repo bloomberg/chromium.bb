@@ -4,33 +4,6 @@
 
 #include "ui/compositor/transform_animation_curve_adapter.h"
 
-using WebKit::WebTransformationMatrix;
-
-namespace {
-// TODO(ajuma): Remove this once the return type of
-// cc::TransformAnimationCurve::getValue is changed to gfx::Transform.
-WebTransformationMatrix convertTransformToWebTransformationMatrix(
-    const gfx::Transform& transform) {
-  return WebTransformationMatrix(transform.matrix().getDouble(0, 0),
-                                 transform.matrix().getDouble(1, 0),
-                                 transform.matrix().getDouble(2, 0),
-                                 transform.matrix().getDouble(3, 0),
-                                 transform.matrix().getDouble(0, 1),
-                                 transform.matrix().getDouble(1, 1),
-                                 transform.matrix().getDouble(2, 1),
-                                 transform.matrix().getDouble(3, 1),
-                                 transform.matrix().getDouble(0, 2),
-                                 transform.matrix().getDouble(1, 2),
-                                 transform.matrix().getDouble(2, 2),
-                                 transform.matrix().getDouble(3, 2),
-                                 transform.matrix().getDouble(0, 3),
-                                 transform.matrix().getDouble(1, 3),
-                                 transform.matrix().getDouble(2, 3),
-                                 transform.matrix().getDouble(3, 3));
-
-}
-}  // namespace
-
 namespace ui {
 
 TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
@@ -62,12 +35,12 @@ scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::clone() const {
   return to_return.PassAs<cc::AnimationCurve>();
 }
 
-WebTransformationMatrix TransformAnimationCurveAdapter::getValue(
+gfx::Transform TransformAnimationCurveAdapter::getValue(
     double t) const {
   if (t >= duration_.InSecondsF())
-    return convertTransformToWebTransformationMatrix(target_value_);
+    return target_value_;
   if (t <= 0.0)
-    return convertTransformToWebTransformationMatrix(initial_value_);
+    return initial_value_;
   double progress = t / duration_.InSecondsF();
 
   gfx::DecomposedTransform to_return;
@@ -75,8 +48,7 @@ WebTransformationMatrix TransformAnimationCurveAdapter::getValue(
                                  decomposed_initial_value_,
                                  decomposed_target_value_,
                                  Tween::CalculateValue(tween_type_, progress));
-  return convertTransformToWebTransformationMatrix(
-      gfx::ComposeTransform(to_return));
+  return gfx::ComposeTransform(to_return);
 }
 
 }  // namespace ui

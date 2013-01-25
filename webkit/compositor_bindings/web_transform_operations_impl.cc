@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
+#include "webkit/compositor_bindings/web_transformation_matrix_util.h"
 
 namespace webkit {
 
@@ -44,7 +45,8 @@ void WebTransformOperationsImpl::appendPerspective(double depth) {
 
 void WebTransformOperationsImpl::appendMatrix(
     const WebKit::WebTransformationMatrix& matrix) {
-  transform_operations_.AppendMatrix(matrix);
+  transform_operations_.AppendMatrix(
+      WebTransformationMatrixUtil::ToTransform(matrix));
 }
 
 void WebTransformOperationsImpl::appendIdentity() {

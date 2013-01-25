@@ -6,8 +6,7 @@
 #include <limits>
 
 #include "cc/transform_operation.h"
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/vector3d_f.h"
 
 namespace {
 const double kAngleEpsilon = 1e-4;
@@ -16,7 +15,7 @@ const double kAngleEpsilon = 1e-4;
 namespace cc {
 
 bool TransformOperation::IsIdentity() const {
-  return matrix.isIdentity();
+  return matrix.IsIdentity();
 }
 
 static bool IsOperationIdentity(const TransformOperation* operation) {
@@ -73,6 +72,12 @@ static bool ShareSameAxis(const TransformOperation* from,
 }
 
 static double BlendDoubles(double from, double to, double progress) {
+  if (progress <= 0.0)
+    return from;
+
+  if (progress >= 1.0)
+    return to;
+
   return from * (1 - progress) + to * progress;
 }
 
@@ -80,7 +85,7 @@ bool TransformOperation::BlendTransformOperations(
     const TransformOperation* from,
     const TransformOperation* to,
     double progress,
-    WebTransformationMatrix& result) {
+    gfx::Transform& result) {
   if (IsOperationIdentity(from) && IsOperationIdentity(to))
     return true;
 
@@ -99,7 +104,7 @@ bool TransformOperation::BlendTransformOperations(
     double to_x = IsOperationIdentity(to) ? 0 : to->translate.x;
     double to_y = IsOperationIdentity(to) ? 0 : to->translate.y;
     double to_z = IsOperationIdentity(to) ? 0 : to->translate.z;
-    result.translate3d(BlendDoubles(from_x, to_x, progress),
+    result.Translate3d(BlendDoubles(from_x, to_x, progress),
                        BlendDoubles(from_y, to_y, progress),
                        BlendDoubles(from_z, to_z, progress));
     break;
@@ -111,17 +116,17 @@ bool TransformOperation::BlendTransformOperations(
     double from_angle = 0;
     double to_angle = IsOperationIdentity(to) ? 0 : to->rotate.angle;
     if (ShareSameAxis(from, to, axis_x, axis_y, axis_z, from_angle))
-      result.rotate3d(axis_x, axis_y, axis_z,
-                      BlendDoubles(from_angle, to_angle, progress));
+      result.RotateAbout(gfx::Vector3dF(axis_x, axis_y, axis_z),
+                         BlendDoubles(from_angle, to_angle, progress));
     else {
-      WebTransformationMatrix to_matrix;
+      gfx::Transform to_matrix;
       if (!IsOperationIdentity(to))
         to_matrix = to->matrix;
-      WebTransformationMatrix from_matrix;
+      gfx::Transform from_matrix;
       if (!IsOperationIdentity(from))
         from_matrix = from->matrix;
       result = to_matrix;
-      if (!result.blend(from_matrix, progress))
+      if (!result.Blend(from_matrix, progress))
         return false;
     }
     break;
@@ -133,7 +138,7 @@ bool TransformOperation::BlendTransformOperations(
     double to_x = IsOperationIdentity(to) ? 1 : to->scale.x;
     double to_y = IsOperationIdentity(to) ? 1 : to->scale.y;
     double to_z = IsOperationIdentity(to) ? 1 : to->scale.z;
-    result.scale3d(BlendDoubles(from_x, to_x, progress),
+    result.Scale3d(BlendDoubles(from_x, to_x, progress),
                    BlendDoubles(from_y, to_y, progress),
                    BlendDoubles(from_z, to_z, progress));
     break;
@@ -143,8 +148,8 @@ bool TransformOperation::BlendTransformOperations(
     double from_y = IsOperationIdentity(from) ? 0 : from->skew.y;
     double to_x = IsOperationIdentity(to) ? 0 : to->skew.x;
     double to_y = IsOperationIdentity(to) ? 0 : to->skew.y;
-    result.skewX(BlendDoubles(from_x, to_x, progress));
-    result.skewY(BlendDoubles(from_y, to_y, progress));
+    result.SkewX(BlendDoubles(from_x, to_x, progress));
+    result.SkewY(BlendDoubles(from_y, to_y, progress));
     break;
   }
   case TransformOperation::TransformOperationPerspective: {
@@ -152,19 +157,19 @@ bool TransformOperation::BlendTransformOperations(
         std::numeric_limits<double>::max() : from->perspective_depth;
     double to_perspective_depth = IsOperationIdentity(to) ?
         std::numeric_limits<double>::max() : to->perspective_depth;
-    result.applyPerspective(
+    result.ApplyPerspectiveDepth(
         BlendDoubles(from_perspective_depth, to_perspective_depth, progress));
     break;
   }
   case TransformOperation::TransformOperationMatrix: {
-    WebTransformationMatrix to_matrix;
+    gfx::Transform to_matrix;
     if (!IsOperationIdentity(to))
       to_matrix = to->matrix;
-    WebTransformationMatrix from_matrix;
+    gfx::Transform from_matrix;
     if (!IsOperationIdentity(from))
       from_matrix = from->matrix;
     result = to_matrix;
-    if (!result.blend(from_matrix, progress))
+    if (!result.Blend(from_matrix, progress))
       return false;
     break;
   }

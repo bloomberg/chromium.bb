@@ -7,16 +7,13 @@
 #include "cc/transform_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
-
-using WebKit::WebTransformationMatrix;
 
 namespace cc {
 namespace {
 
-void expectTranslateX(double translateX, const WebTransformationMatrix& matrix)
+void expectTranslateX(double translateX, const gfx::Transform& transform)
 {
-    EXPECT_FLOAT_EQ(translateX, matrix.m41());
+    EXPECT_FLOAT_EQ(translateX, transform.matrix().getDouble(0, 3));
 }
 
 // Tests that a float animation with one keyframe works as expected.
@@ -161,8 +158,8 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
     expectTranslateX(4, curve->getValue(0.5));
 
     // There is a discontinuity at 1. Any value between 4 and 6 is valid.
-    WebTransformationMatrix value = curve->getValue(1);
-    EXPECT_TRUE(value.m41() >= 4 && value.m41() <= 6);
+    gfx::Transform value = curve->getValue(1);
+    EXPECT_TRUE(value.matrix().getDouble(0, 3) >= 4 && value.matrix().getDouble(0, 3) <= 6);
 
     expectTranslateX(6, curve->getValue(1.5));
     expectTranslateX(6, curve->getValue(2));

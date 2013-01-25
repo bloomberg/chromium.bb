@@ -9,10 +9,6 @@ namespace gfx {
 class Transform;
 }
 
-namespace WebKit {
-class WebTransformationMatrix;
-}
-
 namespace cc {
 
 // These are macros instead of functions so that we get useful line numbers where a test failed.
@@ -63,9 +59,6 @@ do { \
 // http://llvm.org/bugs/show_bug.cgi?id=13651 and http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54337
 void ExpectTransformationMatrixEq(const gfx::Transform& expected,
                                   const gfx::Transform& actual);
-
-void ExpectTransformationMatrixEq(const WebKit::WebTransformationMatrix& expected,
-                                  const WebKit::WebTransformationMatrix& actual);
 
 #define EXPECT_TRANSFORMATION_MATRIX_EQ(expected, actual)            \
     {                                                                \

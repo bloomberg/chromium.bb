@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -45,7 +45,7 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
 public:
     virtual ~TransformAnimationCurve() { }
 
-    virtual WebKit::WebTransformationMatrix getValue(double t) const = 0;
+    virtual gfx::Transform getValue(double t) const = 0;
 
     // Partial Animation implementation.
     virtual Type type() const OVERRIDE;

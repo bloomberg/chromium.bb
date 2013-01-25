@@ -99,7 +99,7 @@ public:
     virtual scoped_ptr<AnimationCurve> clone() const OVERRIDE;
 
     // TransformAnimationCurve implementation
-    virtual WebKit::WebTransformationMatrix getValue(double t) const OVERRIDE;
+    virtual gfx::Transform getValue(double t) const OVERRIDE;
 
 private:
     KeyframedTransformAnimationCurve();

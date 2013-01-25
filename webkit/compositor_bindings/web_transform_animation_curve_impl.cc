@@ -9,6 +9,7 @@
 #include "cc/transform_operations.h"
 #include "webkit/compositor_bindings/web_animation_curve_common.h"
 #include "webkit/compositor_bindings/web_transform_operations_impl.h"
+#include "webkit/compositor_bindings/web_transformation_matrix_util.h"
 
 namespace WebKit {
 
@@ -47,7 +48,7 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe, d
 
 WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(double time) const
 {
-    return m_curve->getValue(time);
+    return webkit::WebTransformationMatrixUtil::ToWebTransformationMatrix(m_curve->getValue(time));
 }
 
 scoped_ptr<cc::AnimationCurve> WebTransformAnimationCurveImpl::cloneToAnimationCurve() const

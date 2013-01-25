@@ -5,7 +5,7 @@
 #ifndef CC_TRANSFORM_OPERATION_H_
 #define CC_TRANSFORM_OPERATION_H
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -25,7 +25,7 @@ struct TransformOperation {
   }
 
   Type type;
-  WebKit::WebTransformationMatrix matrix;
+  gfx::Transform matrix;
 
   union {
     double perspective_depth;
@@ -55,7 +55,7 @@ struct TransformOperation {
   static bool BlendTransformOperations(const TransformOperation* from,
                                        const TransformOperation* to,
                                        double progress,
-                                       WebKit::WebTransformationMatrix& result);
+                                       gfx::Transform& result);
 };
 
 }  // namespace cc

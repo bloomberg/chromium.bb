@@ -111,9 +111,9 @@ double FakeTransformTransition::duration() const
     return m_duration;
 }
 
-WebKit::WebTransformationMatrix FakeTransformTransition::getValue(double time) const
+gfx::Transform FakeTransformTransition::getValue(double time) const
 {
-    return WebKit::WebTransformationMatrix();
+    return gfx::Transform();
 }
 
 scoped_ptr<cc::AnimationCurve> FakeTransformTransition::clone() const

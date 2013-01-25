@@ -43,6 +43,8 @@
       'web_solid_color_layer_impl.h',
       'web_transform_operations_impl.cc',
       'web_transform_operations_impl.h',
+      'web_transformation_matrix_util.cc',
+      'web_transformation_matrix_util.h',
       'web_video_layer_impl.cc',
       'web_video_layer_impl.h',
       'web_transform_animation_curve_impl.cc',

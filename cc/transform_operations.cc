@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/transform_operations.h"
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/vector3d_f.h"
 
 namespace cc {
 
@@ -18,17 +17,17 @@ TransformOperations::TransformOperations(const TransformOperations& other) {
 TransformOperations::~TransformOperations() {
 }
 
-WebTransformationMatrix TransformOperations::Apply() const {
-  WebTransformationMatrix to_return;
+gfx::Transform TransformOperations::Apply() const {
+  gfx::Transform to_return;
   for (size_t i = 0; i < operations_.size(); ++i)
-    to_return.multiply(operations_[i].matrix);
+    to_return.PreconcatTransform(operations_[i].matrix);
   return to_return;
 }
 
-WebTransformationMatrix TransformOperations::Blend(
+gfx::Transform TransformOperations::Blend(
     const TransformOperations& from, double progress) const {
-  WebTransformationMatrix to_return;
-  BlendInternal(from, progress, to_return);
+  gfx::Transform to_return;
+  BlendInternal(from, progress, &to_return);
   return to_return;
 }
 
@@ -51,13 +50,13 @@ bool TransformOperations::MatchesTypes(const TransformOperations& other) const {
 
 bool TransformOperations::CanBlendWith(
     const TransformOperations& other) const {
-  WebTransformationMatrix dummy;
-  return BlendInternal(other, 0.5, dummy);
+  gfx::Transform dummy;
+  return BlendInternal(other, 0.5, &dummy);
 }
 
 void TransformOperations::AppendTranslate(double x, double y, double z) {
   TransformOperation to_add;
-  to_add.matrix.translate3d(x, y, z);
+  to_add.matrix.Translate3d(x, y, z);
   to_add.type = TransformOperation::TransformOperationTranslate;
   to_add.translate.x = x;
   to_add.translate.y = y;
@@ -68,7 +67,7 @@ void TransformOperations::AppendTranslate(double x, double y, double z) {
 void TransformOperations::AppendRotate(double x, double y, double z,
                                        double degrees) {
   TransformOperation to_add;
-  to_add.matrix.rotate3d(x, y, z, degrees);
+  to_add.matrix.RotateAbout(gfx::Vector3dF(x, y, z), degrees);
   to_add.type = TransformOperation::TransformOperationRotate;
   to_add.rotate.axis.x = x;
   to_add.rotate.axis.y = y;
@@ -79,7 +78,7 @@ void TransformOperations::AppendRotate(double x, double y, double z,
 
 void TransformOperations::AppendScale(double x, double y, double z) {
   TransformOperation to_add;
-  to_add.matrix.scale3d(x, y, z);
+  to_add.matrix.Scale3d(x, y, z);
   to_add.type = TransformOperation::TransformOperationScale;
   to_add.scale.x = x;
   to_add.scale.y = y;
@@ -89,8 +88,8 @@ void TransformOperations::AppendScale(double x, double y, double z) {
 
 void TransformOperations::AppendSkew(double x, double y) {
   TransformOperation to_add;
-  to_add.matrix.skewX(x);
-  to_add.matrix.skewY(y);
+  to_add.matrix.SkewX(x);
+  to_add.matrix.SkewY(y);
   to_add.type = TransformOperation::TransformOperationSkew;
   to_add.skew.x = x;
   to_add.skew.y = y;
@@ -99,13 +98,13 @@ void TransformOperations::AppendSkew(double x, double y) {
 
 void TransformOperations::AppendPerspective(double depth) {
   TransformOperation to_add;
-  to_add.matrix.applyPerspective(depth);
+  to_add.matrix.ApplyPerspectiveDepth(depth);
   to_add.type = TransformOperation::TransformOperationPerspective;
   to_add.perspective_depth = depth;
   operations_.push_back(to_add);
 }
 
-void TransformOperations::AppendMatrix(const WebTransformationMatrix& matrix) {
+void TransformOperations::AppendMatrix(const gfx::Transform& matrix) {
   TransformOperation to_add;
   to_add.matrix = matrix;
   to_add.type = TransformOperation::TransformOperationMatrix;
@@ -126,7 +125,7 @@ bool TransformOperations::IsIdentity() const {
 
 bool TransformOperations::BlendInternal(const TransformOperations& from,
                                         double progress,
-                                        WebTransformationMatrix& result) const {
+                                        gfx::Transform* result) const {
   bool from_identity = from.IsIdentity();
   bool to_identity = IsIdentity();
   if (from_identity && to_identity)
@@ -137,21 +136,21 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
         std::max(from_identity ? 0 : from.operations_.size(),
                  to_identity ? 0 : operations_.size());
     for (size_t i = 0; i < num_operations; ++i) {
-      WebTransformationMatrix blended;
+      gfx::Transform blended;
       if (!TransformOperation::BlendTransformOperations(
           from_identity ? 0 : &from.operations_[i],
           to_identity ? 0 : &operations_[i],
           progress,
           blended))
           return false;
-      result.multiply(blended);
+      result->PreconcatTransform(blended);
     }
     return true;
   }
 
-  result = Apply();
-  WebTransformationMatrix from_transform = from.Apply();
-  return result.blend(from_transform, progress);
+  *result = Apply();
+  gfx::Transform from_transform = from.Apply();
+  return result->Blend(from_transform, progress);
 }
 
 }  // namespace cc

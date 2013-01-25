@@ -37,7 +37,7 @@ public:
     virtual ~FakeTransformTransition();
 
     virtual double duration() const OVERRIDE;
-    virtual WebKit::WebTransformationMatrix getValue(double time) const OVERRIDE;
+    virtual gfx::Transform getValue(double time) const OVERRIDE;
 
     virtual scoped_ptr<cc::AnimationCurve> clone() const OVERRIDE;
 

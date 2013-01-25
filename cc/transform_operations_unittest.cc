@@ -6,9 +6,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/transform_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
-
-using WebKit::WebTransformationMatrix;
+#include "ui/gfx/vector3d_f.h"
 
 namespace cc {
 namespace {
@@ -126,12 +124,12 @@ void GetIdentityOperations(ScopedVector<TransformOperations>* operations) {
   operations->push_back(to_add);
 
   to_add = new TransformOperations();
-  to_add->AppendMatrix(WebTransformationMatrix());
+  to_add->AppendMatrix(gfx::Transform());
   operations->push_back(to_add);
 
   to_add = new TransformOperations();
-  to_add->AppendMatrix(WebTransformationMatrix());
-  to_add->AppendMatrix(WebTransformationMatrix());
+  to_add->AppendMatrix(gfx::Transform());
+  to_add->AppendMatrix(gfx::Transform());
   operations->push_back(to_add);
 }
 
@@ -151,8 +149,8 @@ TEST(TransformOperationTest, ApplyTranslate) {
   double z = 3;
   TransformOperations operations;
   operations.AppendTranslate(x, y, z);
-  WebTransformationMatrix expected;
-  expected.translate3d(x, y, z);
+  gfx::Transform expected;
+  expected.Translate3d(x, y, z);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.Apply());
 }
 
@@ -163,8 +161,8 @@ TEST(TransformOperationTest, ApplyRotate) {
   double degrees = 80;
   TransformOperations operations;
   operations.AppendRotate(x, y, z, degrees);
-  WebTransformationMatrix expected;
-  expected.rotate3d(x, y, z, degrees);
+  gfx::Transform expected;
+  expected.RotateAbout(gfx::Vector3dF(x, y, z), degrees);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.Apply());
 }
 
@@ -174,8 +172,8 @@ TEST(TransformOperationTest, ApplyScale) {
   double z = 3;
   TransformOperations operations;
   operations.AppendScale(x, y, z);
-  WebTransformationMatrix expected;
-  expected.scale3d(x, y, z);
+  gfx::Transform expected;
+  expected.Scale3d(x, y, z);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.Apply());
 }
 
@@ -184,9 +182,9 @@ TEST(TransformOperationTest, ApplySkew) {
   double y = 2;
   TransformOperations operations;
   operations.AppendSkew(x, y);
-  WebTransformationMatrix expected;
-  expected.skewX(x);
-  expected.skewY(y);
+  gfx::Transform expected;
+  expected.SkewX(x);
+  expected.SkewY(y);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.Apply());
 }
 
@@ -194,8 +192,8 @@ TEST(TransformOperationTest, ApplyPerspective) {
   double depth = 800;
   TransformOperations operations;
   operations.AppendPerspective(depth);
-  WebTransformationMatrix expected;
-  expected.applyPerspective(depth);
+  gfx::Transform expected;
+  expected.ApplyPerspectiveDepth(depth);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.Apply());
 }
 
@@ -203,8 +201,8 @@ TEST(TransformOperationTest, ApplyMatrix) {
   double dx = 1;
   double dy = 2;
   double dz = 3;
-  WebTransformationMatrix expected_matrix;
-  expected_matrix.translate3d(dx, dy, dz);
+  gfx::Transform expected_matrix;
+  expected_matrix.Translate3d(dx, dy, dz);
   TransformOperations matrix_transform;
   matrix_transform.AppendMatrix(expected_matrix);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_matrix, matrix_transform.Apply());
@@ -223,14 +221,14 @@ TEST(TransformOperationTest, ApplyOrder) {
   operations.AppendScale(sx, sy, sz);
   operations.AppendTranslate(dx, dy, dz);
 
-  WebTransformationMatrix expected_scale_matrix;
-  expected_scale_matrix.scale3d(sx, sy, sz);
+  gfx::Transform expected_scale_matrix;
+  expected_scale_matrix.Scale3d(sx, sy, sz);
 
-  WebTransformationMatrix expected_translate_matrix;
-  expected_translate_matrix.translate3d(dx, dy, dz);
+  gfx::Transform expected_translate_matrix;
+  expected_translate_matrix.Translate3d(dx, dy, dz);
 
-  WebTransformationMatrix expected_combined_matrix = expected_scale_matrix;
-  expected_combined_matrix.multiply(expected_translate_matrix);
+  gfx::Transform expected_combined_matrix = expected_scale_matrix;
+  expected_combined_matrix.PreconcatTransform(expected_translate_matrix);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_combined_matrix, operations.Apply());
 }
@@ -260,38 +258,38 @@ TEST(TransformOperationTest, BlendOrder) {
   operations_to.AppendScale(sx2, sy2, sz2);
   operations_to.AppendTranslate(dx2, dy2, dz2);
 
-  WebTransformationMatrix scale_from;
-  scale_from.scale3d(sx1, sy1, sz1);
-  WebTransformationMatrix translate_from;
-  translate_from.translate3d(dx1, dy1, dz1);
+  gfx::Transform scale_from;
+  scale_from.Scale3d(sx1, sy1, sz1);
+  gfx::Transform translate_from;
+  translate_from.Translate3d(dx1, dy1, dz1);
 
-  WebTransformationMatrix scale_to;
-  scale_to.scale3d(sx2, sy2, sz2);
-  WebTransformationMatrix translate_to;
-  translate_to.translate3d(dx2, dy2, dz2);
+  gfx::Transform scale_to;
+  scale_to.Scale3d(sx2, sy2, sz2);
+  gfx::Transform translate_to;
+  translate_to.Translate3d(dx2, dy2, dz2);
 
   double progress = 0.25;
 
-  WebTransformationMatrix blended_scale = scale_to;
-  blended_scale.blend(scale_from, progress);
+  gfx::Transform blended_scale = scale_to;
+  blended_scale.Blend(scale_from, progress);
 
-  WebTransformationMatrix blended_translate = translate_to;
-  blended_translate.blend(translate_from, progress);
+  gfx::Transform blended_translate = translate_to;
+  blended_translate.Blend(translate_from, progress);
 
-  WebTransformationMatrix expected = blended_scale;
-  expected.multiply(blended_translate);
+  gfx::Transform expected = blended_scale;
+  expected.PreconcatTransform(blended_translate);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations_to.Blend(operations_from, progress));
 }
 
 static void CheckProgress(double progress,
-              const WebTransformationMatrix& from_matrix,
-              const WebTransformationMatrix& to_matrix,
+              const gfx::Transform& from_matrix,
+              const gfx::Transform& to_matrix,
               const TransformOperations& from_transform,
               const TransformOperations& to_transform) {
-  WebTransformationMatrix expected_matrix = to_matrix;
-  expected_matrix.blend(from_matrix, progress);
+  gfx::Transform expected_matrix = to_matrix;
+  expected_matrix.Blend(from_matrix, progress);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_matrix, to_transform.Blend(from_transform, progress));
 }
@@ -303,8 +301,8 @@ TEST(TransformOperationTest, BlendProgress) {
   TransformOperations operations_from;
   operations_from.AppendScale(sx, sy, sz);
 
-  WebTransformationMatrix matrix_from;
-  matrix_from.scale3d(sx, sy, sz);
+  gfx::Transform matrix_from;
+  matrix_from.Scale3d(sx, sy, sz);
 
   sx = 4;
   sy = 8;
@@ -312,8 +310,8 @@ TEST(TransformOperationTest, BlendProgress) {
   TransformOperations operations_to;
   operations_to.AppendScale(sx, sy, sz);
 
-  WebTransformationMatrix matrix_to;
-  matrix_to.scale3d(sx, sy, sz);
+  gfx::Transform matrix_to;
+  matrix_to.Scale3d(sx, sy, sz);
 
   CheckProgress(-1, matrix_from, matrix_to, operations_from, operations_to);
   CheckProgress(0, matrix_from, matrix_to, operations_from, operations_to);
@@ -348,18 +346,18 @@ TEST(TransformOperationTest, BlendWhenTypesDoNotMatch) {
   operations_to.AppendTranslate(dx2, dy2, dz2);
   operations_to.AppendScale(sx2, sy2, sz2);
 
-  WebTransformationMatrix from;
-  from.scale3d(sx1, sy1, sz1);
-  from.translate3d(dx1, dy1, dz1);
+  gfx::Transform from;
+  from.Scale3d(sx1, sy1, sz1);
+  from.Translate3d(dx1, dy1, dz1);
 
-  WebTransformationMatrix to;
-  to.translate3d(dx2, dy2, dz2);
-  to.scale3d(sx2, sy2, sz2);
+  gfx::Transform to;
+  to.Translate3d(dx2, dy2, dz2);
+  to.Scale3d(sx2, sy2, sz2);
 
   double progress = 0.25;
 
-  WebTransformationMatrix expected = to;
-  expected.blend(from, progress);
+  gfx::Transform expected = to;
+  expected.Blend(from, progress);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations_to.Blend(operations_from, progress));
@@ -374,8 +372,8 @@ TEST(TransformOperationTest, LargeRotationsWithSameAxis) {
 
   double progress = 0.5;
 
-  WebTransformationMatrix expected;
-  expected.rotate3d(0, 0, 1, 180);
+  gfx::Transform expected;
+  expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 180);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations_to.Blend(operations_from, progress));
@@ -390,7 +388,7 @@ TEST(TransformOperationTest, LargeRotationsWithSameAxisInDifferentDirection) {
 
   double progress = 0.5;
 
-  WebTransformationMatrix expected;
+  gfx::Transform expected;
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations_to.Blend(operations_from, progress));
@@ -398,20 +396,20 @@ TEST(TransformOperationTest, LargeRotationsWithSameAxisInDifferentDirection) {
 
 TEST(TransformOperationTest, LargeRotationsWithDifferentAxes) {
   TransformOperations operations_from;
-  operations_from.AppendRotate(0, 0, 1, 180);
+  operations_from.AppendRotate(0, 0, 1, 175);
 
   TransformOperations operations_to;
-  operations_to.AppendRotate(0, 1, 0, 180);
+  operations_to.AppendRotate(0, 1, 0, 175);
 
   double progress = 0.5;
-  WebTransformationMatrix matrix_from;
-  matrix_from.rotate3d(0, 0, 1, 180);
+  gfx::Transform matrix_from;
+  matrix_from.RotateAbout(gfx::Vector3dF(0, 0, 1), 175);
 
-  WebTransformationMatrix matrix_to;
-  matrix_to.rotate3d(0, 1, 0, 180);
+  gfx::Transform matrix_to;
+  matrix_to.RotateAbout(gfx::Vector3dF(0, 1, 0), 175);
 
-  WebTransformationMatrix expected = matrix_to;
-  expected.blend(matrix_from, progress);
+  gfx::Transform expected = matrix_to;
+  expected.Blend(matrix_from, progress);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations_to.Blend(operations_from, progress));
@@ -427,8 +425,8 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.rotate3d(0, 0, 1, 180);
+    gfx::Transform expected;
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 180);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -445,8 +443,8 @@ TEST(TransformOperationTest, BlendTranslationFromIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.translate3d(1, 1, 1);
+    gfx::Transform expected;
+    expected.Translate3d(1, 1, 1);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -463,8 +461,8 @@ TEST(TransformOperationTest, BlendScaleFromIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.scale3d(2, 2, 2);
+    gfx::Transform expected;
+    expected.Scale3d(2, 2, 2);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -481,9 +479,9 @@ TEST(TransformOperationTest, BlendSkewFromIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.skewX(1);
-    expected.skewY(1);
+    gfx::Transform expected;
+    expected.SkewX(1);
+    expected.SkewY(1);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -500,8 +498,9 @@ TEST(TransformOperationTest, BlendPerspectiveFromIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.applyPerspective(500 + 0.5 * std::numeric_limits<double>::max());
+    gfx::Transform expected;
+    expected.ApplyPerspectiveDepth(
+        500 + 0.5 * std::numeric_limits<double>::max());
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -518,8 +517,8 @@ TEST(TransformOperationTest, BlendRotationToIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.rotate3d(0, 0, 1, 180);
+    gfx::Transform expected;
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 180);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
@@ -536,8 +535,8 @@ TEST(TransformOperationTest, BlendTranslationToIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.translate3d(1, 1, 1);
+    gfx::Transform expected;
+    expected.Translate3d(1, 1, 1);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
@@ -554,8 +553,8 @@ TEST(TransformOperationTest, BlendScaleToIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.scale3d(2, 2, 2);
+    gfx::Transform expected;
+    expected.Scale3d(2, 2, 2);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
@@ -572,9 +571,9 @@ TEST(TransformOperationTest, BlendSkewToIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.skewX(1);
-    expected.skewY(1);
+    gfx::Transform expected;
+    expected.SkewX(1);
+    expected.SkewY(1);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
@@ -591,8 +590,9 @@ TEST(TransformOperationTest, BlendPerspectiveToIdentity) {
 
     double progress = 0.5;
 
-    WebTransformationMatrix expected;
-    expected.applyPerspective(500 + 0.5 * std::numeric_limits<double>::max());
+    gfx::Transform expected;
+    expected.ApplyPerspectiveDepth(
+        500 + 0.5 * std::numeric_limits<double>::max());
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));

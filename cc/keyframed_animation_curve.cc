@@ -4,8 +4,6 @@
 
 #include "cc/keyframed_animation_curve.h"
 
-using WebKit::WebTransformationMatrix;
-
 namespace cc {
 
 namespace {
@@ -196,7 +194,7 @@ scoped_ptr<AnimationCurve> KeyframedTransformAnimationCurve::clone() const
     return toReturn.PassAs<AnimationCurve>();
 }
 
-WebTransformationMatrix KeyframedTransformAnimationCurve::getValue(double t) const
+gfx::Transform KeyframedTransformAnimationCurve::getValue(double t) const
 {
     if (t <= m_keyframes.front()->time())
         return m_keyframes.front()->value().Apply();
