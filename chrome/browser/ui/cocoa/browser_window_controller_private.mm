@@ -145,7 +145,7 @@ willPositionSheet:(NSWindow*)sheet
   //    the sheet below the bookmark bar.
   //  - If the bookmark bar is currently animating, position the sheet according
   //    to where the bar will be when the animation ends.
-  switch ([bookmarkBarController_ state]) {
+  switch ([bookmarkBarController_ currentState]) {
     case BookmarkBar::SHOW: {
       NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
       defaultSheetRect.origin.y = bookmarkBarFrame.origin.y;

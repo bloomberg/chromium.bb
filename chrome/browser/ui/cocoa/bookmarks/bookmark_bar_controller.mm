@@ -225,7 +225,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 @implementation BookmarkBarController
 
-@synthesize state = state_;
+@synthesize currentState = currentState_;
 @synthesize lastState = lastState_;
 @synthesize isAnimationRunning = isAnimationRunning_;
 @synthesize delegate = delegate_;
@@ -239,7 +239,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
        resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
                               bundle:base::mac::FrameworkBundle()])) {
-    state_ = BookmarkBar::HIDDEN;
+    currentState_ = BookmarkBar::HIDDEN;
     lastState_ = BookmarkBar::HIDDEN;
 
     browser_ = browser;
@@ -1165,7 +1165,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!barIsEnabled_)
     return 0;
 
-  switch (state_) {
+  switch (currentState_) {
     case BookmarkBar::SHOW:
       return bookmarks::kBookmarkBarHeight;
     case BookmarkBar::DETACHED:
@@ -1264,7 +1264,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)updateNoItemContainerVisibility {
   BOOL hideNoItemWarning = !isEmpty_ ||
       ([self shouldShowAtBottomWhenDetached] &&
-       state_ == BookmarkBar::DETACHED);
+       currentState_ == BookmarkBar::DETACHED);
   [[buttonView_ noItemContainer] setHidden:hideNoItemWarning];
 }
 
@@ -1450,7 +1450,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   //  - no animation is running; or
   //  - an animation is running and |animate| is YES ([*] if it's NO, we'd want
   //    to cancel the animation and jump to the final state).
-  if ((nextState == state_) && (!isAnimationRunning || animate))
+  if ((nextState == currentState_) && (!isAnimationRunning || animate))
     return;
 
   // If an animation is running, we want to finalize it. Otherwise we'd have to
@@ -1464,13 +1464,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     }
 
     // If we're in case [*] above, we can stop here.
-    if (nextState == state_)
+    if (nextState == currentState_)
       return;
   }
 
   // Now update with the new state change.
-  lastState_ = state_;
-  state_ = nextState;
+  lastState_ = currentState_;
+  currentState_ = nextState;
   isAnimationRunning_ = YES;
 
   // Animate only if told to and if bar is enabled.
@@ -1485,7 +1485,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                              andState:BookmarkBar::DETACHED]) {
       [delegate_ bookmarkBar:self
         willAnimateFromState:lastState_
-                     toState:state_];
+                     toState:currentState_];
       [self showBookmarkBarWithAnimation:YES];
       return;
     }
@@ -1512,13 +1512,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // We promise that our delegate that the variables will be finalized before
   // the call to |-bookmarkBar:didChangeFromState:toState:|.
   BookmarkBar::State oldState = lastState_;
-  lastState_ = state_;
+  lastState_ = currentState_;
   isAnimationRunning_ = NO;
 
   // Notify our delegate.
   [delegate_ bookmarkBar:self
       didChangeFromState:oldState
-                 toState:state_];
+                 toState:currentState_];
 
   // Update ourselves visually.
   [self updateVisibility];
@@ -2285,26 +2285,26 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // (BookmarkBarState protocol)
 - (BOOL)isVisible {
   if ([self shouldShowAtBottomWhenDetached] &&
-      state_ == BookmarkBar::DETACHED &&
+      currentState_ == BookmarkBar::DETACHED &&
       [self currentTabContentsHeight] <
           chrome::search::kMinContentHeightForBottomBookmarkBar) {
     return NO;
   }
 
-  return barIsEnabled_ && (state_ == BookmarkBar::SHOW ||
-                           state_ == BookmarkBar::DETACHED ||
+  return barIsEnabled_ && (currentState_ == BookmarkBar::SHOW ||
+                           currentState_ == BookmarkBar::DETACHED ||
                            lastState_ == BookmarkBar::SHOW ||
                            lastState_ == BookmarkBar::DETACHED);
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isInState:(BookmarkBar::State)state {
-  return state_ == state && ![self isAnimationRunning];
+  return currentState_ == state && ![self isAnimationRunning];
 }
 
 // (BookmarkBarState protocol)
 - (BOOL)isAnimatingToState:(BookmarkBar::State)state {
-  return state_ == state && [self isAnimationRunning];
+  return currentState_ == state && [self isAnimationRunning];
 }
 
 // (BookmarkBarState protocol)
@@ -2316,7 +2316,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (BOOL)isAnimatingFromState:(BookmarkBar::State)fromState
                      toState:(BookmarkBar::State)toState {
   return lastState_ == fromState &&
-         state_ == toState &&
+         currentState_ == toState &&
          [self isAnimationRunning];
 }
 

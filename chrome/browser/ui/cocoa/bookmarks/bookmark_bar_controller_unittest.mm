@@ -458,25 +458,25 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   }
 }
 
-// Test whether |-updateState:...| sets states as we expect. Make
+// Test whether |-updateState:...| sets currentState as expected. Make
 // sure things don't crash.
 TEST_F(BookmarkBarControllerTest, StateChanges) {
   // First, go in one-at-a-time cycle.
   [bar_ updateState:BookmarkBar::HIDDEN
          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-  EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ state]);
+  EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ currentState]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
 
   [bar_ updateState:BookmarkBar::SHOW
          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-  EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
+  EXPECT_EQ(BookmarkBar::SHOW, [bar_ currentState]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
 
   [bar_ updateState:BookmarkBar::DETACHED
          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-  EXPECT_EQ(BookmarkBar::DETACHED, [bar_ state]);
+  EXPECT_EQ(BookmarkBar::DETACHED, [bar_ currentState]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
 
@@ -484,13 +484,13 @@ TEST_F(BookmarkBarControllerTest, StateChanges) {
   for (int i = 0; i < 2; i++) {
   [bar_ updateState:BookmarkBar::HIDDEN
          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-    EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ state]);
+    EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ currentState]);
     EXPECT_FALSE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
 
     [bar_ updateState:BookmarkBar::SHOW
            changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-    EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
+    EXPECT_EQ(BookmarkBar::SHOW, [bar_ currentState]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
   }
@@ -499,13 +499,13 @@ TEST_F(BookmarkBarControllerTest, StateChanges) {
   for (int i = 0; i < 2; i++) {
     [bar_ updateState:BookmarkBar::SHOW
            changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-    EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
+    EXPECT_EQ(BookmarkBar::SHOW, [bar_ currentState]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
 
     [bar_ updateState:BookmarkBar::DETACHED
            changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
-    EXPECT_EQ(BookmarkBar::DETACHED, [bar_ state]);
+    EXPECT_EQ(BookmarkBar::DETACHED, [bar_ currentState]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
   }

@@ -153,7 +153,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
  @private
   // The state of the bookmark bar. If an animation is running, this is set to
   // the "destination" and |lastState_| is set to the "original" state.
-  BookmarkBar::State state_;
+  BookmarkBar::State currentState_;
 
   // The "original" state of the bookmark bar if an animation is running.
   BookmarkBar::State lastState_;
@@ -271,7 +271,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   BOOL isEmpty_;
 }
 
-@property(readonly, nonatomic) BookmarkBar::State state;
+@property(readonly, nonatomic) BookmarkBar::State currentState;
 @property(readonly, nonatomic) BookmarkBar::State lastState;
 @property(readonly, nonatomic) BOOL isAnimationRunning;
 @property(assign, nonatomic) id<BookmarkBarControllerDelegate> delegate;
