@@ -24,3 +24,6 @@ DiskCacheBackendTest.ShutdownWithPendingIO_Fast
 
 # http://crbug.com/61908 - It's too slow
 DirectoryListerTest.BigDirRecursiveTest
+
+# http://crbug.com/172279
+ClientCertStoreImplTest.AllIssuersAllowed
