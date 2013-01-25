@@ -9,8 +9,54 @@
 namespace extensions {
 namespace functions {
 
-// Do not reorder this enumeration. If you need to add a new entry, add it just
-// prior to ENUM_BOUNDARY.
+// Short version:
+//  *Never* reorder or delete entries in the |HistogramValue| enumeration.
+//  When creating a new extension function, add a new entry at the end of the
+//  enum, just prior to ENUM_BOUNDARY.
+//
+// Long version:
+//  This enumeration is used to associate a unique integer value to each
+//  extension function so that their usage can be recorded in histogram charts.
+//  Given we want the values recorded in the these charts to remain stable over
+//  time for comparison purposes, once an entry has been added to the
+//  enumeration, it should never be removed or moved to another spot in the
+//  enum.
+//
+//  Here are instructions how to manage entries depending on what you are trying
+//  to achieve.
+//
+//  1) Creating a new extension function:
+//
+//      Add a new entry at the end of the |HistogramValue| enum. The name of the
+//      entry should be uppercase the function name then replace "." with "_".
+//
+//  2) Deleting an existing function:
+//
+//      Given an existing entry should *never* be removed from this enumeration,
+//      it is recommended to add a "DELETED_" prefix to the existing entry.
+//
+//  3) Renaming an existing function:
+//
+//      There are 2 cases. Either the "rename" is really a rename (common case)
+//      or it is combination of "delete" + "create" operation.
+//
+//      a) "rename" case (most common)
+//
+//         If you are renaming the function for esthetic reasons (e.g. moving
+//         from "experimental" to the final namespace), you probably want to
+//         keep histogram usage accruing in the same slot before and after the
+//         rename. To do so, simply rename the enum entry to match the new
+//         function name, the enum entry will still have the same underlying
+//         integer value.
+//
+//      b) "delete" + "create" case (rare)
+//
+//         If you are significantly changing the behavior of a function, or if
+//         you want to start collecting a fresh set of histogram, you are really
+//         creating a new function and deleting the previous one (from histogram
+//         recording purposes). To do so, follow the instructions in step 1) and
+//         2) above in sequence.
+//
 enum HistogramValue {
   UNKNOWN = 0,
   WEBNAVIGATION_GETALLFRAMES,
