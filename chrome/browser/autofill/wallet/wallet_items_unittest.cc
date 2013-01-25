@@ -227,7 +227,7 @@ const char kWalletItemsWithInvalidRequiredActions[] =
     "  \"obfuscated_gaia_id\":\"\","
     "  \"required_action\":"
     "  ["
-    "    \"cvc_risk_CHALLENGE\","
+    "    \"verify_CVV\","
     "    \"UPGRADE_MIN_ADDRESS\","
     "    \"update_EXPIRATION_date\","
     "    \" 忍者の正体 \""
