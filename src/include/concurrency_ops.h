@@ -12,6 +12,11 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#if NACL_WINDOWS && (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86)
+#include <intrin.h>
+#include <mmintrin.h>
+#endif
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 static INLINE void NaClWriteMemoryBarrier(void) {
@@ -57,10 +62,17 @@ static INLINE void NaClFlushCacheForDoublyMappedCode(uint8_t *writable_addr,
    * Clearing the icache explicitly is not necessary on x86.  We could
    * call gcc's __builtin___clear_cache() on x86, where it is a no-op,
    * except that it is not available in Mac OS X's old version of gcc.
+   * We simply prevent the compiler from moving loads or stores around
+   * this function.
    */
   UNREFERENCED_PARAMETER(writable_addr);
   UNREFERENCED_PARAMETER(executable_addr);
   UNREFERENCED_PARAMETER(size);
+#if NACL_WINDOWS
+  _ReadWriteBarrier();
+#else
+  __asm__ __volatile__("" : : : "memory");
+#endif
 #elif defined(__GNUC__)
   /*
    * __clear_cache() does two things:
