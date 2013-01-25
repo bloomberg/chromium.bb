@@ -88,10 +88,6 @@ bool GLSurface::DeferDraws() {
   return false;
 }
 
-bool GLSurface::DeferSwapBuffers() {
-  return false;
-}
-
 std::string GLSurface::GetExtensions() {
   // Use of GLSurfaceAdapter class means that we can't compare
   // GetCurrent() and this directly.
@@ -194,10 +190,6 @@ bool GLSurfaceAdapter::Resize(const gfx::Size& size) {
 
 bool GLSurfaceAdapter::DeferDraws() {
   return surface_->DeferDraws();
-}
-
-bool GLSurfaceAdapter::DeferSwapBuffers() {
-  return surface_->DeferSwapBuffers();
 }
 
 bool GLSurfaceAdapter::IsOffscreen() {

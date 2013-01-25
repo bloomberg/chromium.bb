@@ -8627,9 +8627,6 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
-  if (!is_offscreen && surface_->DeferSwapBuffers()) {
-    return error::kDeferCommandUntilLater;
-  }
 
   int this_frame_number = frame_number_++;
   // TRACE_EVENT for gpu tests:

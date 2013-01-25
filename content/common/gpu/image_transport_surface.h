@@ -72,13 +72,6 @@ class ImageTransportSurface {
   virtual gfx::Size GetSize() = 0;
 
  protected:
-  // Used by certain implements of PostSubBuffer to determine
-  // how much needs to be copied between frames.
-  void GetRegionsToCopy(const gfx::Rect& previous_damage_rect,
-                        const gfx::Rect& new_damage_rect,
-                        std::vector<gfx::Rect>* regions);
-
- protected:
   virtual ~ImageTransportSurface();
 
  private:

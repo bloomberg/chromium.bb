@@ -23,43 +23,6 @@ ImageTransportSurface::ImageTransportSurface() {}
 
 ImageTransportSurface::~ImageTransportSurface() {}
 
-void ImageTransportSurface::GetRegionsToCopy(
-    const gfx::Rect& previous_damage_rect,
-    const gfx::Rect& new_damage_rect,
-    std::vector<gfx::Rect>* regions) {
-  gfx::Rect intersection =
-      gfx::IntersectRects(previous_damage_rect, new_damage_rect);
-
-  if (intersection.IsEmpty()) {
-    regions->push_back(previous_damage_rect);
-    return;
-  }
-
-  // Top (above the intersection).
-  regions->push_back(gfx::Rect(previous_damage_rect.x(),
-      previous_damage_rect.y(),
-      previous_damage_rect.width(),
-      intersection.y() - previous_damage_rect.y()));
-
-  // Left (of the intersection).
-  regions->push_back(gfx::Rect(previous_damage_rect.x(),
-      intersection.y(),
-      intersection.x() - previous_damage_rect.x(),
-      intersection.height()));
-
-  // Right (of the intersection).
-  regions->push_back(gfx::Rect(intersection.right(),
-      intersection.y(),
-      previous_damage_rect.right() - intersection.right(),
-      intersection.height()));
-
-  // Bottom (below the intersection).
-  regions->push_back(gfx::Rect(previous_damage_rect.x(),
-      intersection.bottom(),
-      previous_damage_rect.width(),
-      previous_damage_rect.bottom() - intersection.bottom()));
-}
-
 ImageTransportHelper::ImageTransportHelper(ImageTransportSurface* surface,
                                            GpuChannelManager* manager,
                                            GpuCommandBufferStub* stub,
