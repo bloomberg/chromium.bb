@@ -84,11 +84,10 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
 
   content::RenderProcessHost* process = render_view_host()->GetProcess();
 
-  // Some extensions and apps use chrome:// URLs.
+  // Some extensions use chrome:// URLs.
   Extension::Type type = extension->GetType();
   if (type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_LEGACY_PACKAGED_APP ||
-      extension->location() == Extension::COMPONENT) {
+      type == Extension::TYPE_LEGACY_PACKAGED_APP) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
         process->GetID(), chrome::kChromeUIScheme);
 
