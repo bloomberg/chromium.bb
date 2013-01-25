@@ -14,9 +14,11 @@ class FakeStorage(object):
 
   def __init__(self):
     self._store = {}
+    self._write_count = 0
 
   def PutData(self, data, key):
     self._store[key] = data
+    self._write_count += 1
 
   def PutFile(self, path, key):
     self.PutData(file_tools.ReadFile(path), key)
@@ -36,4 +38,9 @@ class FakeStorage(object):
       return None
 
   def ItemCount(self):
+    """Return a count of how many total unique keys have been written."""
     return len(self._store)
+
+  def WriteCount(self):
+    """Return a count of how many total writes have been done."""
+    return self._write_count

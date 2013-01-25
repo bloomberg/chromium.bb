@@ -14,6 +14,7 @@ import sys
 import unittest
 
 import command
+import directory_storage
 import fake_storage
 import file_tools
 import gsd_storage
@@ -77,6 +78,55 @@ class TestOnce(unittest.TestCase):
                         file_tools.ReadFile(self._output_files[1]))
       self.assertEquals(1, self._tally)
       self.assertEquals(initial_url, self._url)
+
+  def FileLength(self, src, dst, **kwargs):
+    """Command object to write the length of one file into another."""
+    return command.Command([
+        sys.executable, '-c',
+          'import sys; open(sys.argv[2], "wb").write('
+          'str(len(open(sys.argv[1], "rb").read())))', src, dst
+        ], **kwargs)
+
+  def test_RecomputeHashMatches(self):
+    # Test that things don't get stored to the output cache if they exist
+    # already.
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      # Setup test data in input0, input1 using memory storage.
+      self.GenerateTestData('RecomputeHashMatches', work_dir)
+      fs = fake_storage.FakeStorage()
+      ds = directory_storage.DirectoryStorageAdapter(storage=fs)
+      o = once.Once(storage=fs)
+
+      # Run the computation (compute the length of a file) from input0 to
+      # output0.
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [self.FileLength(
+                '%(input0)s/in0', '%(output)s/out', cwd=work_dir)])
+
+      # Check that 2 writes have occurred. One to write a mapping from in->out,
+      # and one for the output data.
+      self.assertEquals(2, fs.WriteCount())
+
+      # Run the computation again from input1 to output1.
+      # (These should have the same length.)
+      o.Run('test', self._input_dirs, self._output_dirs[1],
+            [self.FileLength(
+                '%(input1)s/in1', '%(output)s/out', cwd=work_dir)])
+
+      # Write count goes up by one as an in->out hash is added,
+      # but no new output is stored (as it is the same).
+      self.assertEquals(3, fs.WriteCount())
+
+      # Check that the test is still valid:
+      #   - in0 and in1 have equal length.
+      #   - out0 and out1 have that length in them.
+      #   - out0 and out1 agree.
+      self.assertEquals(str(len(file_tools.ReadFile(self._input_files[0]))),
+                        file_tools.ReadFile(self._output_files[0]))
+      self.assertEquals(str(len(file_tools.ReadFile(self._input_files[1]))),
+                        file_tools.ReadFile(self._output_files[1]))
+      self.assertEquals(file_tools.ReadFile(self._output_files[0]),
+                        file_tools.ReadFile(self._output_files[1]))
 
   def test_FailsWhenWritingFails(self):
     # Check that once doesn't eat the storage layer failures for writes.

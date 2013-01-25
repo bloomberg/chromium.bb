@@ -15,6 +15,7 @@ import toolchain_env
 import hashlib
 import logging
 import os
+import shutil
 import sys
 
 import directory_storage
@@ -113,20 +114,34 @@ class Once(object):
       build_signature: The input hash of the computation.
       output: A path containing the output of the computation.
     """
-    if self._cache_results:
-      out_hash = hashing_tools.StableHashPath(output)
-      try:
-        # Upload the build output.
-        url = self._directory_storage.PutDirectory(
-            output, self.KeyForOutput(package, out_hash))
-        # Upload an entry mapping from computation input to output hash.
-        self._storage.PutData(
-            out_hash, self.KeyForBuildSignature(build_signature))
-        logging.info('Computed fresh result and cached.')
-        self.PrintDownloadURL(url)
-      except gsd_storage.GSDStorageError:
-        logging.info('Failed to cache result.')
-        raise
+    if not self._cache_results:
+      return
+    out_hash = hashing_tools.StableHashPath(output)
+    try:
+      output_key = self.KeyForOutput(package, out_hash)
+      # Try to get an existing copy in a temporary directory.
+      wd = working_directory.TemporaryWorkingDirectory()
+      with wd as work_dir:
+        temp_output = os.path.join(work_dir, 'out')
+        url = self._directory_storage.GetDirectory(output_key, temp_output)
+        if url is None:
+          # Isn't present. Cache the computed result instead.
+          url = self._directory_storage.PutDirectory(output, output_key)
+          logging.info('Computed fresh result and cached it.')
+        else:
+          # Cached version is present. Replace the current output with that.
+          file_tools.RemoveDirectoryIfPresent(output)
+          shutil.move(temp_output, output)
+          logging.info(
+              'Recomputed result matches cached value, '
+              'using cached value instead.')
+      # Upload an entry mapping from computation input to output hash.
+      self._storage.PutData(
+          out_hash, self.KeyForBuildSignature(build_signature))
+      self.PrintDownloadURL(url)
+    except gsd_storage.GSDStorageError:
+      logging.info('Failed to cache result.')
+      raise
 
   def ReadMemoizedResultFromCache(self, package, build_signature, output):
     """Read a cached result (if it exists) from the cache.
