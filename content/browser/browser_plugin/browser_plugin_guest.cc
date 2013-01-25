@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_helper.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
@@ -320,6 +321,13 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
 }
 
 void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
+  // Initiating a drag from inside a guest is currently not supported. So inject
+  // some JS to disable it. http://crbug.com/161112
+  const char script[] = "window.addEventListener('dragstart', function() { "
+                        "  window.event.preventDefault(); "
+                        "});";
+  render_view_host->ExecuteJavascriptInWebFrame(string16(),
+                                                ASCIIToUTF16(script));
   SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(embedder_routing_id(),
                                                       instance_id()));
 }
