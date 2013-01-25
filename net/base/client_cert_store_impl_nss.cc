@@ -68,8 +68,10 @@ bool ClientCertStoreImpl::SelectClientCerts(const CertificateList& input_certs,
   CERTCertList* cert_list = CERT_NewCertList();
   if (!cert_list)
     return false;
-  for (size_t i = 0; i < input_certs.size(); ++i)
-    CERT_AddCertToListTail(cert_list, input_certs[i]->os_cert_handle());
+  for (size_t i = 0; i < input_certs.size(); ++i) {
+    CERT_AddCertToListTail(
+        cert_list, CERT_DupCertificate(input_certs[i]->os_cert_handle()));
+  }
 
   bool rv = GetClientCertsImpl(cert_list, request, selected_certs);
   CERT_DestroyCertList(cert_list);
