@@ -171,8 +171,7 @@ class TestEnvironment {
         new TestWebKitPlatformSupport(unit_test_mode,
                                       shadow_platform_delegate));
 
-    // TODO(darin): Uncomment this once DRT calls ResetTestEnvironment().
-    //WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
+    WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
 
 #if defined(OS_ANDROID)
     // Make sure we have enough decoding resources for layout tests.
