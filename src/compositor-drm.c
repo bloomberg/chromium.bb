@@ -287,6 +287,21 @@ drm_fb_set_buffer(struct drm_fb *fb, struct wl_buffer *buffer)
 	weston_buffer_reference(&fb->buffer_ref, buffer);
 }
 
+static void
+drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
+{
+	if (!fb)
+		return;
+
+	if (fb->bo) {
+		if (fb->is_client_buffer)
+			gbm_bo_destroy(fb->bo);
+		else
+			gbm_surface_release_buffer(output->surface,
+						   output->current->bo);
+	}
+}
+
 static uint32_t
 drm_output_check_scanout_format(struct drm_output *output,
 				struct weston_surface *es, struct gbm_bo *bo)
@@ -486,9 +501,7 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 
 	output->vblank_pending = 0;
 
-	if (s->current)
-		gbm_bo_destroy(s->current->bo);
-
+	drm_output_release_fb(output, s->current);
 	s->current = s->next;
 	s->next = NULL;
 
@@ -507,14 +520,7 @@ page_flip_handler(int fd, unsigned int frame,
 
 	output->page_flip_pending = 0;
 
-	if (output->current) {
-		if (output->current->is_client_buffer)
-			gbm_bo_destroy(output->current->bo);
-		else
-			gbm_surface_release_buffer(output->surface,
-						   output->current->bo);
-	}
-
+	drm_output_release_fb(output, output->current);
 	output->current = output->next;
 	output->next = NULL;
 
@@ -973,23 +979,9 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
 	/* reset rendering stuff. */
-	if (output->current) {
-		if (output->current->is_client_buffer)
-			gbm_bo_destroy(output->current->bo);
-		else
-			gbm_surface_release_buffer(output->surface,
-						   output->current->bo);
-	}
-	output->current = NULL;
-
-	if (output->next) {
-		if (output->next->is_client_buffer)
-			gbm_bo_destroy(output->next->bo);
-		else
-			gbm_surface_release_buffer(output->surface,
-						   output->next->bo);
-	}
-	output->next = NULL;
+	drm_output_release_fb(output, output->current);
+	drm_output_release_fb(output, output->next);
+	output->current = output->next = NULL;
 
 	gl_renderer_output_destroy(&output->base);
 	gbm_surface_destroy(output->surface);
@@ -1540,10 +1532,8 @@ destroy_sprites(struct drm_compositor *compositor)
 				sprite->plane_id,
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
-		if (sprite->current)
-			gbm_bo_destroy(sprite->current->bo);
-		if (sprite->next)
-			gbm_bo_destroy(sprite->next->bo);
+		drm_output_release_fb(output, sprite->current);
+		drm_output_release_fb(output, sprite->next);
 		weston_plane_release(&sprite->plane);
 		free(sprite);
 	}
