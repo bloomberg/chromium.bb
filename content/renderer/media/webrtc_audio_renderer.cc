@@ -177,6 +177,15 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   // Based on tests using the current ALSA implementation in Chrome, we have
   // found that 10ms buffer size on the output side works fine.
   buffer_size = 480;
+#elif defined(OS_ANDROID)
+  channel_layout = media::CHANNEL_LAYOUT_MONO;
+
+  // The buffer size lower than GetAudioHardwareBufferSize() will lead to
+  // choppy sound because AudioOutputResampler will read the buffer multiple
+  // times in a row without allowing the client to re-fill the buffer.
+  // TODO(dwkang): check if 2048 - GetAudioHardwareBufferSize() is the right
+  //               value for Android and do further tuning.
+  buffer_size = 2048;
 #else
   DLOG(ERROR) << "Unsupported platform";
   return false;
