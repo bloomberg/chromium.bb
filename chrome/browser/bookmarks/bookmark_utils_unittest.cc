@@ -188,5 +188,44 @@ TEST_F(BookmarkUtilsTest, ApplyEditsWithNoFolderChange) {
   }
 }
 
+TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
+  BookmarkModel model(NULL);
+  // This tests the case where selection contains one item and that item is a
+  // folder.
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(model.bookmark_bar_node());
+  int index = -1;
+  const BookmarkNode* real_parent = GetParentForNewNodes(
+      model.bookmark_bar_node(), nodes, &index);
+  EXPECT_EQ(real_parent, model.bookmark_bar_node());
+  EXPECT_EQ(0, index);
+
+  nodes.clear();
+
+  // This tests the case where selection contains one item and that item is an
+  // url.
+  const BookmarkNode* page1 = model.AddURL(model.bookmark_bar_node(), 0,
+                                           ASCIIToUTF16("Google"),
+                                           GURL("http://google.com"));
+  nodes.push_back(page1);
+  real_parent = GetParentForNewNodes(model.bookmark_bar_node(), nodes, &index);
+  EXPECT_EQ(real_parent, model.bookmark_bar_node());
+  EXPECT_EQ(1, index);
+
+  // This tests the case where selection has more than one item.
+  const BookmarkNode* folder1 = model.AddFolder(model.bookmark_bar_node(), 1,
+                                                ASCIIToUTF16("Folder 1"));
+  nodes.push_back(folder1);
+  real_parent = GetParentForNewNodes(model.bookmark_bar_node(), nodes, &index);
+  EXPECT_EQ(real_parent, model.bookmark_bar_node());
+  EXPECT_EQ(2, index);
+
+  // This tests the case where selection doesn't contain any items.
+  nodes.clear();
+  real_parent = GetParentForNewNodes(model.bookmark_bar_node(), nodes, &index);
+  EXPECT_EQ(real_parent, model.bookmark_bar_node());
+  EXPECT_EQ(2, index);
+}
+
 }  // namespace
 }  // namespace bookmark_utils
