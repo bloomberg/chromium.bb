@@ -106,7 +106,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new ShellBrowserContext(false));
   off_the_record_browser_context_.reset(new ShellBrowserContext(true));
 
-  Shell::PlatformInitialize();
+  Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
   int port = 0;

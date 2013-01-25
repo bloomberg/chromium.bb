@@ -23,6 +23,7 @@ class TestActivationClient;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace views {
@@ -39,7 +40,7 @@ namespace content {
 // the ash parts of the code.
 class MinimalAsh : public aura::client::StackingClient {
  public:
-  MinimalAsh();
+  explicit MinimalAsh(const gfx::Size& default_window_size);
   virtual ~MinimalAsh();
 
   // Overridden from client::StackingClient:

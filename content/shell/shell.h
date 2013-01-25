@@ -63,7 +63,7 @@ class Shell : public WebContentsDelegate,
   void CloseDevTools();
 
   // Do one time initialization at application startup.
-  static void PlatformInitialize();
+  static void Initialize();
 
   static Shell* CreateNewWindow(BrowserContext* browser_context,
                                 const GURL& url,
@@ -146,6 +146,9 @@ class Shell : public WebContentsDelegate,
 
   // Helper to create a new Shell given a newly created WebContents.
   static Shell* CreateShell(WebContents* web_contents);
+
+  // Helper for one time initialization of application
+  static void PlatformInitialize(const gfx::Size& default_window_size);
 
   // All the methods that begin with Platform need to be implemented by the
   // platform specific Shell implementation.

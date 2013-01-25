@@ -124,6 +124,11 @@ Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
   return NULL;
 }
 
+// static
+void Shell::Initialize() {
+  PlatformInitialize(gfx::Size(kTestWindowWidth, kTestWindowHeight));
+}
+
 Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               const GURL& url,
                               SiteInstance* site_instance,

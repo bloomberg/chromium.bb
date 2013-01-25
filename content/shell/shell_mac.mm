@@ -137,7 +137,7 @@ void MakeShellButton(NSRect* rect,
 
 namespace content {
 
-void Shell::PlatformInitialize() {
+void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 }
 
 void Shell::PlatformCleanUp() {

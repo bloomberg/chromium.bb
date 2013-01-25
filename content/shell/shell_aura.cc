@@ -278,14 +278,12 @@ MinimalAsh* Shell::minimal_ash_ = NULL;
 views::ViewsDelegate* Shell::views_delegate_ = NULL;
 
 // static
-void Shell::PlatformInitialize() {
+void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
-#endif
-#if defined(OS_CHROMEOS)
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, new aura::TestScreen);
-  minimal_ash_ = new content::MinimalAsh();
+  minimal_ash_ = new content::MinimalAsh(default_window_size);
 #else
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
@@ -347,6 +345,9 @@ void Shell::PlatformCreateWindow(int width, int height) {
 #endif
 
   window_ = window_widget_->GetNativeWindow();
+  // Call ShowRootWindow on RootWindow created by MinimalAsh without
+  // which XWindow owned by RootWindow doesn't get mapped.
+  window_->GetRootWindow()->ShowRootWindow();
   window_widget_->Show();
 }
 

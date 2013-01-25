@@ -13,9 +13,10 @@
 
 namespace content {
 
-MinimalAsh::MinimalAsh() {
+MinimalAsh::MinimalAsh(const gfx::Size& default_window_size) {
   root_window_.reset(new aura::RootWindow(
-      aura::RootWindow::CreateParams(gfx::Rect(100, 100))));
+      aura::RootWindow::CreateParams(
+          gfx::Rect(default_window_size))));
   root_window_->Init();
   aura::client::SetStackingClient(root_window_.get(), this);
 

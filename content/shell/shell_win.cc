@@ -32,7 +32,7 @@ namespace content {
 
 HINSTANCE Shell::instance_handle_;
 
-void Shell::PlatformInitialize() {
+void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   _setmode(_fileno(stdout), _O_BINARY);
   _setmode(_fileno(stderr), _O_BINARY);
   INITCOMMONCONTROLSEX InitCtrlEx;
