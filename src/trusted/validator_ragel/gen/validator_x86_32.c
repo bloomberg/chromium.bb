@@ -118,19 +118,19 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
 	{
 tr0:
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr9:
 	{
@@ -138,19 +138,19 @@ tr9:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr10:
 	{
@@ -158,19 +158,19 @@ tr10:
     SET_DISP_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr11:
 	{
@@ -178,19 +178,19 @@ tr11:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr15:
 	{
@@ -198,121 +198,121 @@ tr15:
     SET_IMM_PTR(current_position - 3);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr19:
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr27:
 	{ SET_CPU_FEATURE(CPUFeature_TSC);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr36:
 	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr50:
 	{ SET_CPU_FEATURE(CPUFeature_MON);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr51:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr52:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr64:
 	{
@@ -320,19 +320,19 @@ tr64:
   }
 	{ SET_CPU_FEATURE(CPUFeature_E3DNOW);    }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr65:
 	{
@@ -340,36 +340,36 @@ tr65:
   }
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr71:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr95:
 	{
@@ -377,87 +377,87 @@ tr95:
                  &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr98:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr107:
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr108:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr115:
 	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr123:
 	{
@@ -465,19 +465,19 @@ tr123:
                 &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr144:
 	{
@@ -485,125 +485,125 @@ tr144:
     SET_IMM_PTR(current_position - 1);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr161:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr246:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr259:
 	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr266:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr300:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr327:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr353:
 	{
@@ -611,53 +611,53 @@ tr353:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr377:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr383:
 	{ SET_CPU_FEATURE(CPUFeature_CMOVx87);   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr387:
 	{
@@ -669,38 +669,38 @@ tr387:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr404:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr415:
 	{
@@ -713,19 +713,19 @@ tr415:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 tr416:
 	{
@@ -734,19 +734,19 @@ tr416:
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st246;
 st246:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1348,18 +1348,18 @@ case 14:
 	goto tr15;
 tr16:
 	{
-        result &= user_callback(instruction_start, current_position,
-                                UNRECOGNIZED_INSTRUCTION, callback_data);
-        /*
-         * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkIA32 function.
-         *
-         * It does not affect the case which we really care about (when code
-         * is validatable), but makes it possible to detect more errors in one
-         * run in tools like ncval.
-         */
-        continue;
-    }
+    result &= user_callback(instruction_start, current_position,
+                            UNRECOGNIZED_INSTRUCTION, callback_data);
+    /*
+     * Process the next bundle: “continue” here is for the “for” cycle in
+     * the ValidateChunkIA32 function.
+     *
+     * It does not affect the case which we really care about (when code
+     * is validatable), but makes it possible to detect more errors in one
+     * run in tools like ncval.
+     */
+    continue;
+  }
 	goto st0;
 st0:
 ( current_state) = 0;
@@ -1776,13 +1776,21 @@ st29:
 case 29:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
+		case 5u: goto st3;
 		case 12u: goto st2;
+		case 13u: goto st3;
 		case 20u: goto st2;
+		case 21u: goto st3;
 		case 28u: goto st2;
+		case 29u: goto st3;
 		case 36u: goto st2;
+		case 37u: goto st3;
 		case 44u: goto st2;
+		case 45u: goto st3;
 		case 52u: goto st2;
+		case 53u: goto st3;
 		case 60u: goto st2;
+		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1800,39 +1808,15 @@ case 29:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*( current_position)) < 38u ) {
-		if ( (*( current_position)) < 14u ) {
-			if ( (*( current_position)) > 3u ) {
-				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
-					goto tr0;
-			} else
-				goto tr0;
-		} else if ( (*( current_position)) > 19u ) {
-			if ( (*( current_position)) > 27u ) {
-				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 22u )
-				goto tr0;
-		} else
+	if ( (*( current_position)) < 64u ) {
+		if ( (*( current_position)) <= 63u )
 			goto tr0;
-	} else if ( (*( current_position)) > 43u ) {
-		if ( (*( current_position)) < 62u ) {
-			if ( (*( current_position)) > 51u ) {
-				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 46u )
-				goto tr0;
-		} else if ( (*( current_position)) > 63u ) {
-			if ( (*( current_position)) > 127u ) {
-				if ( 192u <= (*( current_position)) )
-					goto tr16;
-			} else if ( (*( current_position)) >= 64u )
-				goto st7;
-		} else
-			goto tr0;
+	} else if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st3;
 	} else
-		goto tr0;
-	goto st3;
+		goto st7;
+	goto tr16;
 st30:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof30;
@@ -3709,19 +3693,19 @@ tr230:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st247;
 st247:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7139,19 +7123,19 @@ tr417:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st248;
 st248:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7338,19 +7322,19 @@ tr418:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st249;
 st249:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7537,19 +7521,19 @@ tr419:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st250;
 st250:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7736,19 +7720,19 @@ tr420:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st251;
 st251:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7935,19 +7919,19 @@ tr421:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st252;
 st252:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8134,19 +8118,19 @@ tr422:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st253;
 st253:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8333,19 +8317,19 @@ tr423:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
-           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-         result &= user_callback(instruction_start, current_position,
+    if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+        (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
+      result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
-       }
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       instruction_start = current_position + 1;
-       /* Mark this position as a valid target for jump.  */
-       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
-       instruction_info_collected = 0;
-     }
+    }
+    /* On successful match the instruction start must point to the next byte
+     * to be able to report the new offset as the start of instruction
+     * causing error.  */
+    instruction_start = current_position + 1;
+    /* Mark this position as a valid target for jump.  */
+    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_info_collected = 0;
+  }
 	goto st254;
 st254:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9025,18 +9009,18 @@ case 245:
 	case 244: 
 	case 245: 
 	{
-        result &= user_callback(instruction_start, current_position,
-                                UNRECOGNIZED_INSTRUCTION, callback_data);
-        /*
-         * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkIA32 function.
-         *
-         * It does not affect the case which we really care about (when code
-         * is validatable), but makes it possible to detect more errors in one
-         * run in tools like ncval.
-         */
-        continue;
-    }
+    result &= user_callback(instruction_start, current_position,
+                            UNRECOGNIZED_INSTRUCTION, callback_data);
+    /*
+     * Process the next bundle: “continue” here is for the “for” cycle in
+     * the ValidateChunkIA32 function.
+     *
+     * It does not affect the case which we really care about (when code
+     * is validatable), but makes it possible to detect more errors in one
+     * run in tools like ncval.
+     */
+    continue;
+  }
 	break;
 	}
 	}

@@ -1509,6 +1509,8 @@ void PrintImmediateArguments(const MarkedInstruction& instruction) {
                 short_program_name, operand->type, operand->size.c_str());
         exit(1);
       }
+      if (operand->enabled && enabled(kParseOperands))
+        fprintf(out_file, " @operand%" NACL_PRIuS "_jmp_to", operand_index - 1);
     } else if (operand->type == 'L') {
       if (operands.size() == 4) {
         fprintf(out_file, " b_%cxxx_0000", ia32_mode ? '0' : 'x');

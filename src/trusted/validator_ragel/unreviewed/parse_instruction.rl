@@ -274,6 +274,7 @@
   action operand0_ds_rsi     { SET_OPERAND_NAME(0, REG_DS_RSI); }
   action operand0_es_rdi     { SET_OPERAND_NAME(0, REG_ES_RDI); }
   action operand0_immediate  { SET_OPERAND_NAME(0, REG_IMM); }
+  action operand0_jmp_to     { SET_OPERAND_NAME(0, JMP_TO); }
   action operand0_port_dx    { SET_OPERAND_NAME(0, REG_PORT_DX); }
   action operand0_rax        { SET_OPERAND_NAME(0, REG_RAX); }
   action operand0_rcx        { SET_OPERAND_NAME(0, REG_RCX); }
@@ -533,7 +534,6 @@
   machine relative_fields_actions;
 
   action rel8_operand {
-    SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
@@ -541,7 +541,6 @@
     SET_DISP_PTR(current_position);
   }
   action rel16_operand {
-    SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
@@ -549,7 +548,6 @@
     SET_DISP_PTR(current_position - 1);
   }
   action rel32_operand {
-    SET_OPERAND_NAME(0, JMP_TO);
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
