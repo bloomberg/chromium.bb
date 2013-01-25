@@ -34,6 +34,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using ui::OSExchangeData;
@@ -803,9 +807,8 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     // We're going to close and we own the mouse capture. We need to repost the
     // mouse down, otherwise the window the user clicked on won't get the
     // event.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(USE_X11)
     RepostEvent(source, event);
-    // NOTE: not reposting on linux seems fine.
 #endif
 
     // And close.
@@ -1974,7 +1977,27 @@ void MenuController::RepostEvent(SubmenuView* source,
     }
   }
 }
-#endif  // defined(OS_WIN)
+#elif defined(USE_X11)
+void MenuController::RepostEvent(SubmenuView* source,
+                                 const ui::LocatedEvent& event) {
+  if (!state_.item) {
+    // We some times get an event after closing all the menus. Ignore it.
+    // Make sure the menu is in fact not visible. If the menu is visible, then
+    // we're in a bad state where we think the menu isn't visibile but it is.
+    DCHECK(!source->GetWidget()->IsVisible());
+    return;
+  }
+  if (!event.native_event())
+    return;
+  // We putback the X11 event. We set the "send_event" field in the
+  // XEvent. Otherwise a mouse click would generate a double click
+  // event. The field "send_event" is in the same place for all event
+  // types so we can use "xany" regardless of type.
+  XEvent xevent = *event.native_event();
+  xevent.xany.send_event = True;
+  XPutBackEvent(xevent.xany.display, &xevent);
+}
+#endif
 
 void MenuController::SetDropMenuItem(
     MenuItemView* new_target,

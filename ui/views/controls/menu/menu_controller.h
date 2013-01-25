@@ -412,9 +412,10 @@ class VIEWS_EXPORT MenuController
   // the title. Returns true if a match was selected and the menu should exit.
   bool SelectByChar(char16 key);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(USE_X11)
   // If there is a window at the location of the event, a new mouse event is
   // generated and posted to it at the given location.
+  // For Chromeos this applies also to the desktop background window.
   void RepostEvent(SubmenuView* source, const ui::LocatedEvent& event);
 #endif
 

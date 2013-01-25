@@ -104,6 +104,14 @@ std::string EventTypeName(ui::EventType type) {
   return std::string();
 }
 
+bool IsX11SendEventTrue(const base::NativeEvent& event) {
+#if defined(USE_X11)
+  if (event && event->xany.send_event)
+    return true;
+#endif
+  return false;
+}
+
 }  // namespace
 
 namespace ui {
@@ -317,7 +325,9 @@ bool MouseEvent::IsRepeatedClickEvent(
 int MouseEvent::GetRepeatCount(const MouseEvent& event) {
   int click_count = 1;
   if (last_click_event_) {
-    if (IsRepeatedClickEvent(*last_click_event_, event))
+    if (IsX11SendEventTrue(event.native_event()))
+      click_count = last_click_event_->GetClickCount();
+    else if (IsRepeatedClickEvent(*last_click_event_, event))
       click_count = last_click_event_->GetClickCount() + 1;
     delete last_click_event_;
   }
