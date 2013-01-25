@@ -130,7 +130,7 @@ TEST(SafeNumerics, NumericCast) {
       IsValidNumericCast<unsigned short>(static_cast<short>(SHRT_MIN)));
   EXPECT_FALSE(IsValidNumericCast<unsigned short>(SHRT_MIN));
 
-  // Confirm that numeric_cast<> actually compiles.
+  // Confirm that checked_numeric_cast<> actually compiles.
   std::vector<int> v;
   unsigned int checked_size =
       base::checked_numeric_cast<unsigned int>(v.size());

@@ -120,10 +120,10 @@ inline bool IsValidNumericCast(Source source) {
 
 }  // namespace internal
 
-// numeric_cast<> is analogous to static_cast<> for numeric types, except that
-// it CHECKs that the specified numeric conversion will not overflow or
-// underflow. Floating point arguments are not currently allowed (this is
-// COMPILE_ASSERTd), though this could be supported if necessary.
+// checked_numeric_cast<> is analogous to static_cast<> for numeric types,
+// except that it CHECKs that the specified numeric conversion will not
+// overflow or underflow. Floating point arguments are not currently allowed
+// (this is COMPILE_ASSERTd), though this could be supported if necessary.
 template <class Dest, class Source>
 inline Dest checked_numeric_cast(Source source) {
   CHECK(internal::IsValidNumericCast<Dest>(source));
