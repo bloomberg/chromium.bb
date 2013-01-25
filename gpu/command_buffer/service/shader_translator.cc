@@ -75,6 +75,26 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
   }
 }
 
+void GetNameHashingInfo(
+    ShHandle compiler, ShaderTranslator::NameMap* name_map) {
+  int hashed_names_count = 0;
+  ShGetInfo(compiler, SH_HASHED_NAMES_COUNT, &hashed_names_count);
+  if (hashed_names_count == 0)
+    return;
+
+  int name_max_len = 0, hashed_name_max_len = 0;
+  ShGetInfo(compiler, SH_NAME_MAX_LENGTH, &name_max_len);
+  ShGetInfo(compiler, SH_HASHED_NAME_MAX_LENGTH, &hashed_name_max_len);
+
+  scoped_array<char> name(new char[name_max_len]);
+  scoped_array<char> hashed_name(new char[hashed_name_max_len]);
+
+  for (int i = 0; i < hashed_names_count; ++i) {
+    ShGetNameHashingEntry(compiler, i, name.get(), hashed_name.get());
+    (*name_map)[hashed_name.get()] = name.get();
+  }
+}
+
 }  // namespace
 
 namespace gpu {
@@ -152,6 +172,8 @@ bool ShaderTranslator::Translate(const char* shader) {
     // Get info for attribs and uniforms.
     GetVariableInfo(compiler_, SH_ACTIVE_ATTRIBUTES, &attrib_map_);
     GetVariableInfo(compiler_, SH_ACTIVE_UNIFORMS, &uniform_map_);
+    // Get info for name hashing.
+    GetNameHashingInfo(compiler_, &name_map_);
   }
 
   // Get info log.
@@ -185,6 +207,11 @@ ShaderTranslator::uniform_map() const {
   return uniform_map_;
 }
 
+const ShaderTranslatorInterface::NameMap&
+ShaderTranslator::name_map() const {
+  return name_map_;
+}
+
 void ShaderTranslator::AddDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.AddObserver(observer);
@@ -209,6 +236,7 @@ void ShaderTranslator::ClearResults() {
   info_log_.reset();
   attrib_map_.clear();
   uniform_map_.clear();
+  name_map_.clear();
 }
 
 }  // namespace gles2

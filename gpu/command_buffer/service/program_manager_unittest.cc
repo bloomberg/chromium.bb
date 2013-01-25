@@ -688,6 +688,9 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
       .WillRepeatedly(ReturnRef(uniform_map));
+  ShaderTranslator::NameMap name_map;
+  EXPECT_CALL(shader_translator, name_map())
+      .WillRepeatedly(ReturnRef(name_map));
   const GLuint kVShaderClientId = 2001;
   const GLuint kFShaderClientId = 2002;
   const GLuint kVShaderServiceId = 3001;
@@ -946,6 +949,9 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
       .WillRepeatedly(ReturnRef(uniform_map));
+  ShaderTranslator::NameMap name_map;
+  EXPECT_CALL(shader_translator, name_map())
+      .WillRepeatedly(ReturnRef(name_map));
   // Check we can create shader.
   ShaderManager::ShaderInfo* vshader = shader_manager_.CreateShaderInfo(
       kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);

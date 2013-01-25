@@ -117,6 +117,10 @@ class GPU_EXPORT ProgramManager {
     const std::string* GetAttribMappedName(
         const std::string& original_name) const;
 
+    // If the hashed name is not found, return NULL.
+    const std::string* GetOriginalNameFromHashedName(
+        const std::string& hashed_name) const;
+
     // Gets the fake location of a uniform by name.
     GLint GetUniformFakeLocation(const std::string& name) const;
 
@@ -222,6 +226,9 @@ class GPU_EXPORT ProgramManager {
 
     // Updates the program info after a successful link.
     void Update();
+
+    // Process the program log, replacing the hashed names with original names.
+    std::string ProcessLogInfo(const std::string& log);
 
     // Updates the program log info from GL
     void UpdateLogInfo();

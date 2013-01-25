@@ -102,6 +102,10 @@ class GPU_EXPORT ShaderManager {
     const std::string* GetAttribMappedName(
         const std::string& original_name) const;
 
+    // If the hashed_name is not found, return NULL.
+    const std::string* GetOriginalNameFromHashedName(
+        const std::string& hashed_name) const;
+
     const std::string* log_info() const {
       return log_info_.get();
     }
@@ -143,6 +147,7 @@ class GPU_EXPORT ShaderManager {
 
    private:
     typedef ShaderTranslator::VariableMap VariableMap;
+    typedef ShaderTranslator::NameMap NameMap;
 
     friend class base::RefCounted<ShaderInfo>;
     friend class ShaderManager;
@@ -176,6 +181,9 @@ class GPU_EXPORT ShaderManager {
     // The type info when the shader was last compiled.
     VariableMap attrib_map_;
     VariableMap uniform_map_;
+
+    // The name hashing info when the shader was last compiled.
+    NameMap name_map_;
 
     // The current compilation status of the shader
     CompilationStatus compilation_status_;

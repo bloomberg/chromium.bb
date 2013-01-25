@@ -44,9 +44,11 @@ void ShaderManager::ShaderInfo::SetStatus(
   if (translator && valid) {
     attrib_map_ = translator->attrib_map();
     uniform_map_ = translator->uniform_map();
+    name_map_ = translator->name_map();
   } else {
     attrib_map_.clear();
     uniform_map_.clear();
+    name_map_.clear();
   }
 }
 
@@ -64,6 +66,14 @@ const std::string* ShaderManager::ShaderInfo::GetAttribMappedName(
     if (it->second.name == original_name)
       return &(it->first);
   }
+  return NULL;
+}
+
+const std::string* ShaderManager::ShaderInfo::GetOriginalNameFromHashedName(
+    const std::string& hashed_name) const {
+  NameMap::const_iterator it = name_map_.find(hashed_name);
+  if (it != name_map_.end())
+    return &(it->second);
   return NULL;
 }
 

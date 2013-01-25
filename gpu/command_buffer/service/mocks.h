@@ -89,6 +89,7 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
   MOCK_CONST_METHOD0(info_log, const char*());
   MOCK_CONST_METHOD0(attrib_map, const VariableMap&());
   MOCK_CONST_METHOD0(uniform_map, const VariableMap&());
+  MOCK_CONST_METHOD0(name_map, const NameMap&());
 };
 
 class MockProgramCache : public ProgramCache {

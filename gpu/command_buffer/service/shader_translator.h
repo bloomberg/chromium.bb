@@ -57,6 +57,8 @@ class ShaderTranslatorInterface {
 
   // Mapping between variable name and info.
   typedef base::hash_map<std::string, VariableInfo> VariableMap;
+  // Mapping between hashed name and original name.
+  typedef base::hash_map<std::string, std::string> NameMap;
 
   // Initializes the translator.
   // Must be called once before using the translator object.
@@ -80,6 +82,7 @@ class ShaderTranslatorInterface {
 
   virtual const VariableMap& attrib_map() const = 0;
   virtual const VariableMap& uniform_map() const = 0;
+  virtual const NameMap& name_map() const = 0;
 
  protected:
   virtual ~ShaderTranslatorInterface() {}
@@ -121,6 +124,7 @@ class GPU_EXPORT ShaderTranslator
   // Overridden from ShaderTranslatorInterface.
   virtual const VariableMap& attrib_map() const OVERRIDE;
   virtual const VariableMap& uniform_map() const OVERRIDE;
+  virtual const NameMap& name_map() const OVERRIDE;
 
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
@@ -136,6 +140,7 @@ class GPU_EXPORT ShaderTranslator
   scoped_array<char> info_log_;
   VariableMap attrib_map_;
   VariableMap uniform_map_;
+  NameMap name_map_;
   bool implementation_is_glsl_es_;
   bool needs_built_in_function_emulation_;
   ObserverList<DestructionObserver> destruction_observers_;
