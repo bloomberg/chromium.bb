@@ -243,6 +243,16 @@
             '../ui/views/views.gyp:views_unittests',
             '../webkit/webkit.gyp:test_shell_common',
            ],
+           'conditions': [
+              ['use_aura==1', {
+               'dependencies!': [
+                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+               ],
+               'defines': [
+                 'OMIT_CHROME_FRAME',
+               ],
+             }], # use_aura==1
+           ],
         }],
         ['OS=="linux"', {
           'dependencies': [
@@ -545,6 +555,16 @@
             '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
             'temp_gyp/googleurl.gyp:googleurl_unittests',
           ],
+          'conditions': [
+              ['use_aura==1', {
+               'dependencies!': [
+                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+               ],
+               'defines': [
+                 'OMIT_CHROME_FRAME',
+               ],
+             }], # use_aura==1
+          ],
         },
         {
           'target_name': 'chromium_builder_win_cf',
@@ -648,6 +668,14 @@
                     '../remoting/remoting.gyp:remoting_host_installation',
                   ],
                 }], # component != "shared_library"
+                ['use_aura==1', {
+                  'dependencies!': [
+                    '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+                  ],
+                  'defines': [
+                    'OMIT_CHROME_FRAME',
+                  ],
+                }], # use_aura==1
               ]
             },
           ], # targets
