@@ -6538,6 +6538,17 @@
    fun:_ZN11dom_storage17DomStorageContext36FindUnusedNamespacesInCommitSequenceERKSt3setISsSt4lessISsESaISsEES7_
 }
 {
+   bug_172005b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7leveldb6DBImplC1ERKNS_7OptionsERKSs
+   fun:_ZN7leveldb2DB4OpenERKNS_7OptionsERKSsPPS0_
+   fun:_ZN11dom_storage22SessionStorageDatabase9TryToOpenEPPN7leveldb2DBE
+   fun:_ZN11dom_storage22SessionStorageDatabase8LazyOpenEb
+   fun:_ZN11dom_storage22SessionStorageDatabase24ReadNamespacesAndOriginsEPSt3mapISsSt6vectorI4GURLSaIS3_EESt4lessISsESaISt4pairIKSsS5_EEE
+   fun:_ZN11dom_storage17DomStorageContext36FindUnusedNamespacesInCommitSequenceERKSt3setISsSt4lessISsESaISsEES7_
+}
+{
    bug_172025
    Memcheck:Uninitialized
    fun:_ZN11WebViewHost19didCreateDataSourceEPN6WebKit8WebFrameEPNS0_13WebDataSourceE
