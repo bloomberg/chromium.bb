@@ -29,7 +29,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   void PushPropertiesTo(PicturePileImpl* other);
 
  private:
-  ~PicturePile();
+  virtual ~PicturePile();
   friend class PicturePileImpl;
 
   // Add an invalidation to this picture list.  If the list needs to be

@@ -37,7 +37,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   bool HasRecordingAt(int x, int y);
 
  protected:
-  ~PicturePileBase();
+  virtual ~PicturePileBase();
 
   int buffer_pixels() const { return tiling_.border_texels(); }
   void Clear();

@@ -53,7 +53,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   friend class PicturePile;
 
   PicturePileImpl();
-  ~PicturePileImpl();
+  virtual ~PicturePileImpl();
 
   typedef std::map<base::PlatformThreadId, scoped_refptr<PicturePileImpl> >
       CloneMap;
