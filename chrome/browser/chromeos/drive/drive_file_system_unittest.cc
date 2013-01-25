@@ -2251,7 +2251,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL());
 
-  file_system_->Search("Directory 1", false, GURL(), callback);
+  file_system_->Search("\"Directory 1\"", false, GURL(), callback);
   // Make sure all the delayed tasks to complete.
   // message_loop_.Run() can return before the delta feed processing finishes.
   google_apis::test_util::RunBlockingPoolTask();
@@ -2265,7 +2265,7 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_, expected_results, 0u, GURL());
 
-  file_system_->Search("no-match query", false, GURL(), callback);
+  file_system_->Search("\"no-match query\"", false, GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
 }
 

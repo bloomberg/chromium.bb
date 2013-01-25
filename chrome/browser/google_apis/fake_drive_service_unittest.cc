@@ -218,6 +218,69 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
+TEST_F(FakeDriveServiceTest, GetResourceList_SearchWithAttribute) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "title:1.txt",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 3 entries that contain "1.txt" in their
+  // titles.
+  EXPECT_EQ(3U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_SearchMultipleQueries) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "Directory 1",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // There are 2 entries that contain both "Directory" and "1" in their titles.
+  EXPECT_EQ(2U, resource_list->entries().size());
+
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "\"Directory 1\"",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // There is 1 entry that contain "Directory 1" in its title.
+  EXPECT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+}
+
 TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
   // Load the account_metadata.json as well to add the largest changestamp

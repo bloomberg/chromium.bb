@@ -69,6 +69,8 @@ class FakeDriveService : public DriveServiceInterface {
   virtual std::string GetRootResourceId() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
+  // See the comment for EntryMatchWidthQuery() in .cc file for details about
+  // the supported search query types.
   virtual void GetResourceList(
       const GURL& feed_url,
       int64 start_changestamp,

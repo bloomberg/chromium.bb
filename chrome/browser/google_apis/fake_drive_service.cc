@@ -9,6 +9,8 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/string_tokenizer.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -20,6 +22,44 @@
 using content::BrowserThread;
 
 namespace google_apis {
+namespace {
+
+// Returns true if a resource entry matches with the search query.
+// Supports queries consist of following format.
+// - Phrases quoted by double/single quotes
+// - AND search for multiple words/phrases segmented by space
+// - Limited attribute search.  Only "title:" is supported.
+bool EntryMatchWithQuery(const ResourceEntry& entry,
+                         const std::string& query) {
+  StringTokenizer tokenizer(query, " ");
+  tokenizer.set_quote_chars("\"'");
+  while (tokenizer.GetNext()) {
+    std::string key, value;
+    const std::string& token = tokenizer.token();
+    if (token.find(':') == std::string::npos) {
+      TrimString(token, "\"'", &value);
+    } else {
+      StringTokenizer key_value(token, ":");
+      key_value.set_quote_chars("\"'");
+      if (!key_value.GetNext())
+        return false;
+      key = key_value.token();
+      if (!key_value.GetNext())
+        return false;
+      TrimString(key_value.token(), "\"'", &value);
+    }
+
+    // TODO(peria): Deal with other attributes than title.
+    if (!key.empty() && key != "title")
+      return false;
+    // Search query in the title.
+    if (UTF16ToUTF8(entry.title()).find(value) == std::string::npos)
+      return false;
+  }
+  return true;
+}
+
+}  // namespace
 
 FakeDriveService::FakeDriveService()
     : largest_changestamp_(0),
@@ -202,9 +242,9 @@ void FakeDriveService::GetResourceList(
 
     // If |search_query| is set, exclude the entry if it does not contain the
     // search query in the title.
-    if (!search_query.empty()) {
-      if (UTF16ToUTF8(entry->title()).find(search_query) == std::string::npos)
-        should_exclude = true;
+    if (!should_exclude && !search_query.empty() &&
+        !EntryMatchWithQuery(*entry, search_query)) {
+      should_exclude = true;
     }
 
     // If |start_changestamp| is set, exclude the entry if the
