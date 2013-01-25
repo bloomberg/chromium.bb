@@ -330,7 +330,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
         assertNotNull(mContentsClient.mGetVisitedHistoryCallback);
 
-        awContents.destroy();
+        destroyAwContentsOnMainSync(awContents);
         mContentsClient.mGetVisitedHistoryCallback.onReceiveValue(new String[] {"abc.def"});
         mContentsClient.mGetVisitedHistoryCallback.onReceiveValue(null);
     }
