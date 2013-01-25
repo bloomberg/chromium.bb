@@ -146,7 +146,9 @@ if ragel_involved:
          '-I%s' % include_dir,
          rl_file,
          '-o', '${TARGET}'],
-        extra_deps=[byte_machines, rl_instruction_file])
+        extra_deps=[byte_machines,
+                    rl_instruction_file,
+                    'unreviewed/parse_instruction.rl'])
 
     (xml_file,) = env.AutoDepsCommand(
         '%s_x86_%s.xml' % (automaton, bits),
