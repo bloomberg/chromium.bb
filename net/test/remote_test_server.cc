@@ -130,6 +130,16 @@ bool RemoteTestServer::Start() {
   return SetupWhenServerStarted();
 }
 
+bool RemoteTestServer::StartInBackground() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RemoteTestServer::BlockUntilStarted() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool RemoteTestServer::Stop() {
   if (!spawner_communicator_.get())
     return true;

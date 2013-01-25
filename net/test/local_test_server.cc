@@ -91,6 +91,10 @@ bool LocalTestServer::GetTestServerPath(FilePath* testserver_path) const {
 }
 
 bool LocalTestServer::Start() {
+  return StartInBackground() && BlockUntilStarted();
+}
+
+bool LocalTestServer::StartInBackground() {
   // Get path to Python server script.
   FilePath testserver_path;
   if (!GetTestServerPath(&testserver_path))
@@ -102,6 +106,10 @@ bool LocalTestServer::Start() {
   if (!LaunchPython(testserver_path))
     return false;
 
+  return true;
+}
+
+bool LocalTestServer::BlockUntilStarted() {
   if (!WaitToStart()) {
     Stop();
     return false;
