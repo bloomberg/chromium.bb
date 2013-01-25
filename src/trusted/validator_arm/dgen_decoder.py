@@ -158,6 +158,7 @@ def _DefineBase(out, base, values):
   _DefineMethod(out, DECODER_BASE_DEF, values, base.to_register())
 
 _METHODS_MAP['base'] = [_DeclareBase, _DefineBase]
+dgen_core.DefineDecoderFieldType('base', 'register')
 
 DECODER_CLEARS_BITS_HEADER="""
   virtual bool clears_bits(Instruction i, uint32_t clears_mask) const;"""
@@ -180,6 +181,7 @@ def _DefineClearsBits(out, clear_bits, values):
   dgen_core.UninstallParameter('clears_mask')
 
 _METHODS_MAP['clears_bits'] = [_DeclareClearsBits, _DefineClearsBits]
+dgen_core.DefineDecoderFieldType('clears_mask', 'bool')
 
 DECODER_DEFS_HEADER="""
   virtual RegisterList defs(Instruction inst) const;"""
@@ -200,6 +202,7 @@ def _DefineDefs(out, defs, values):
   _DefineMethod(out, DECODER_DEFS_DEF, values, defs.to_register_list())
 
 _METHODS_MAP['defs'] = [_DeclareDefs, _DefineDefs]
+dgen_core.DefineDecoderFieldType('defs', 'register_list')
 
 DECODER_CODE_REPLACE_HEADER="""
   virtual Instruction dynamic_code_replacement_sentinel(Instruction i) const;"""
@@ -236,6 +239,7 @@ def _DefineCodeReplace(out, dyn_code, values):
 
 _METHODS_MAP['dynamic_code_replace_immediates'] = [
     _DeclareCodeReplace, _DefineCodeReplace]
+dgen_core.DefineDecoderFieldType('dynamic_code_replace_immediates', 'bitfield')
 
 DECODER_IS_LITERAL_LOAD_HEADER="""
   virtual bool is_literal_load(Instruction i) const;"""
@@ -258,6 +262,7 @@ def _DefineIsLiteralLoad(out, is_literal_load, values):
 
 _METHODS_MAP['is_literal_load'] = [_DeclareIsLiteralLoad,
                                    _DefineIsLiteralLoad]
+dgen_core.DefineDecoderFieldType('is_literal_load', 'bool')
 
 DECODER_IS_LOAD_TP_HEADER="""
   virtual bool is_load_thread_address_pointer(Instruction i) const;"""
@@ -278,6 +283,7 @@ def _DefineIsLoadTp(out, is_load_tp, values):
   _DefineMethod(out, DECODER_IS_LOAD_TP_DEF, values, is_load_tp.to_bool())
 
 _METHODS_MAP['is_load_tp'] = [_DeclareIsLoadTp, _DefineIsLoadTp]
+dgen_core.DefineDecoderFieldType('is_load_tp', 'bool')
 
 DECODER_POOL_HEAD_HEADER="""
   virtual bool is_literal_pool_head(Instruction i) const;"""
@@ -298,6 +304,7 @@ def _DefinePoolHead(out, pool_head, values):
   _DefineMethod(out, DECODER_POOL_HEAD_DEF, values, pool_head.to_bool())
 
 _METHODS_MAP['pool_head'] = [_DeclarePoolHead, _DefinePoolHead]
+dgen_core.DefineDecoderFieldType('pool_head', 'bool')
 
 DECODER_RELATIVE_HEADER="""
   virtual bool is_relative_branch(Instruction i) const;"""
@@ -318,6 +325,7 @@ def _DefineRelative(out, relative, values):
   _DefineMethod(out, DECODER_RELATIVE_DEF, values, relative.to_bool())
 
 _METHODS_MAP['relative'] = [_DeclareRelative, _DefineRelative]
+dgen_core.DefineDecoderFieldType('relative', 'bool')
 
 DECODER_RELATIVE_OFFSET_HEADER="""
   virtual int32_t branch_target_offset(Instruction i) const;"""
@@ -340,6 +348,7 @@ def _DefineRelativeOffset(out, relative_offset, values):
 
 _METHODS_MAP['relative_offset'] = [_DeclareRelativeOffset,
                                    _DefineRelativeOffset]
+dgen_core.DefineDecoderFieldType('relative_offset', 'uint32')
 
 DECODER_SAFETY_HEADER="""
   virtual SafetyLevel safety(Instruction i) const;"""
@@ -364,6 +373,12 @@ DECODER_SAFETY_DEF_FOOTER="""
 def _DeclareSafety(out, values):
   out.write(DECODER_SAFETY_HEADER % values)
 
+def _TypeCheckSafety(safety):
+  """Type checks a list of SafetyAction's."""
+  for s in safety:
+    if isinstance(s, dgen_core.SafetyAction):
+      s.test().to_bool()
+
 def _DefineSafety(out, safety, values):
   # Use baseline to implement action if defined.
   _DefineMethod(out, DECODER_SAFETY_DEF_HEADER, values, '???')
@@ -377,8 +392,8 @@ def _DefineSafety(out, safety, values):
   out.write(DECODER_SAFETY_DEF_FOOTER % values)
 
 _METHODS_MAP['safety'] = [_DeclareSafety, _DefineSafety]
-
 _OPTIONAL_METHODS_MAP['safety'] = []
+dgen_core.DefineDecoderFieldType('safety', _TypeCheckSafety)
 
 DECODER_SETS_Z_IF_CLEAR_HEADER="""
   virtual bool sets_Z_if_bits_clear(Instruction i,
@@ -408,6 +423,7 @@ def _DefineSetsZIfClearBits(out, sets_z, values):
 
 _METHODS_MAP['sets_Z_if_clear_bits'] = [
     _DeclareSetsZIfClearBits, _DefineSetsZIfClearBits]
+dgen_core.DefineDecoderFieldType('sets_Z_if_clear_bits', 'bool')
 
 DECODER_SMALL_IMM_BASE_WB_HEADER="""
   virtual bool base_address_register_writeback_small_immediate(
@@ -432,6 +448,7 @@ def _DefineSmallImmBaseWb(out, small_base_wb, values):
 
 _METHODS_MAP['small_imm_base_wb'] = [_DeclareSmallImmBaseWb,
                                      _DefineSmallImmBaseWb]
+dgen_core.DefineDecoderFieldType('small_imm_base_wb', 'bool')
 
 DECODER_TARGET_HEADER="""
   virtual Register branch_target_register(Instruction i) const;"""
@@ -452,6 +469,7 @@ def _DefineTarget(out, target, values):
   _DefineMethod(out, DECODER_TARGET_DEF, values, target.to_register())
 
 _METHODS_MAP['target'] = [_DeclareTarget, _DefineTarget]
+dgen_core.DefineDecoderFieldType('target', 'register')
 
 DECODER_USES_HEADER="""
   virtual RegisterList uses(Instruction i) const;"""
@@ -472,6 +490,7 @@ def _DefineUses(out, uses, values):
   _DefineMethod(out, DECODER_USES_DEF, values, uses.to_register_list())
 
 _METHODS_MAP['uses'] = [_DeclareUses, _DefineUses]
+dgen_core.DefineDecoderFieldType('uses', 'register_list')
 
 """Defines the set of method fields."""
 METHODS = sorted(set(_METHODS_MAP.keys() + _OPTIONAL_METHODS_MAP.keys()))

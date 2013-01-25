@@ -91,6 +91,9 @@ interpretation is as follows:
 
 import re
 import dgen_core
+# The following import adds type information for decoder actions corresponding
+# to method definitions.
+import dgen_decoder
 
 # Set the following to True if you want to see each read/pushback of a token.
 _TRACE_TOKENS = False
@@ -551,6 +554,7 @@ class Parser(object):
   def _decoder(self):
     """ decoder        ::= (id ('=>' id)?)? """
     decoder = dgen_core.DecoderAction()
+    decoder.force_type_checking(True)
     # Check if optional.
     if self._next_token().kind in ['{', '+'] or self._is_action_option():
       return decoder
@@ -575,7 +579,13 @@ class Parser(object):
     action = self._decoder_defn(starred_actions)
     if not action.baseline():
       self._unexpected("No baseline class defined for row")
-    return action
+    return self._decoder_defn_end(action)
+
+  def _decoder_defn_end(self, action):
+      """Called when at end of a decoder definition. Used to
+         turn off type checking."""
+      action.force_type_checking(False)
+      return action
 
   def _decoder_defn(self, starred_actions):
     """decoder_defn ::=  (decoder (fields? action_option* |
@@ -584,7 +594,8 @@ class Parser(object):
                                fields? action_option*)
     """
     if self._next_token().kind == '*':
-      return self._decoder_action_extend(starred_actions)
+      return self._decoder_defn_end(
+          self._decoder_action_extend(starred_actions))
 
     action = self._decoder()
     if self._next_token().kind == '{':
@@ -602,7 +613,7 @@ class Parser(object):
         self._define('safety', [other_restrictions], action)
       if self._next_token().kind == '(':
         self._define('arch', self._arch(), action)
-    return action
+    return self._decoder_defn_end(action)
 
   def _decoder_action_extend(self, starred_actions):
     """'*' (int | id) ('-' field_names)? fields? action_option*
@@ -620,6 +631,7 @@ class Parser(object):
     # Create an initial copy, and define starred action as
     # inheriting definition.
     action = dgen_core.DecoderAction()
+    action.force_type_checking(True)
 
     # Get the set of field names.
     fields = []
@@ -653,7 +665,7 @@ class Parser(object):
       self._unexpected("No baseline class defined for row")
     if not table.add_default_row(action):
       self._unexpected('Unable to install row default')
-    return (None, action)
+    return (None, self._decoder_defn_end(action))
 
   def _field_names(self):
     """'{' (id (',' id)*)? '}'

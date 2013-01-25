@@ -1785,6 +1785,26 @@ class Table(object):
                              ' '.join([repr(c) for c in self._columns]),
                              NEWLINE_STR.join([repr(r) for r in rows]))
 
+# Defines a mapping from decoder action field names, to the
+# corresponding type of the expression. The domain is a field
+# name. The range is a list of type names defined in
+# BitExpr.to_type. Otherwise it must be a function (taking a single
+# argument) which does the type checking.  Note: This is filled
+# dynamically during import time, so that circular dependencies can be
+# handled. In particular, dgen_decoder.py fills in types for method
+# fields.
+_DECODER_ACTION_FIELD_TYPE_MAP = {}
+
+def DefineDecoderFieldType(name, type):
+    """Adds the corresponding type association to the list of known
+       types for decoder fields."""
+    global _DECODER_ACTION_FIELD_TYPE_MAP
+    types = _DECODER_ACTION_FIELD_TYPE_MAP.get(name)
+    if types == None:
+        types = set()
+        _DECODER_ACTION_FIELD_TYPE_MAP[name] = types
+    types.add(type)
+
 class DecoderAction:
   """An action defining a class decoder to apply.
      Fields are:
@@ -1804,10 +1824,39 @@ class DecoderAction:
       self._st.define('actual', actual)
     self._st.define('constraints', RuleRestrictions())
 
+    # The following field is set by method force_type_checking, and is
+    # used to force type checking while parsing a decoder action. This
+    # allows the parser to report problems at the corresponding source
+    # line that defined the value of a field to something we don't
+    # understand.
+    self._force_type_checking = False
+
+  def force_type_checking(self, value):
+      """Sets field defining if type checking will be done as symbols
+         are added to the decoder action. This allows the parser to
+         report problems at the corresponding source line that defined
+         the field."""
+      self._force_type_checking = value
+
   def find(self, name, install_inheriting=True):
     return self._st.find(name, install_inheriting)
 
   def define(self, name, value, fail_if_defined=True):
+    if self._force_type_checking:
+        types = _DECODER_ACTION_FIELD_TYPE_MAP.get(name)
+        if types:
+            # Now try translating value for each type, so that
+            # if there is a problem, a corresponding exception
+            # will be raised.
+            for type in types:
+                if isinstance(type, str):
+                    if not isinstance(value, BitExpr):
+                        raise Exception(
+                            "Defining %s:%s. Value must be BitExpr" %
+                            (name, value))
+                    value.to_type(type)
+                else:
+                    type(value)
     return self._st.define(name, value, fail_if_defined)
 
   def remove(self, name):
