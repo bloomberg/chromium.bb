@@ -152,7 +152,7 @@ int WebRequestConditionAttributeResourceType::GetStages() const {
 }
 
 bool WebRequestConditionAttributeResourceType::IsFulfilled(
-    const DeclarativeWebRequestData& request_data) const {
+    const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
   const content::ResourceRequestInfo* info =
@@ -223,7 +223,7 @@ int WebRequestConditionAttributeContentType::GetStages() const {
 }
 
 bool WebRequestConditionAttributeContentType::IsFulfilled(
-    const DeclarativeWebRequestData& request_data) const {
+    const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
   std::string content_type;
@@ -568,7 +568,7 @@ int WebRequestConditionAttributeRequestHeaders::GetStages() const {
 }
 
 bool WebRequestConditionAttributeRequestHeaders::IsFulfilled(
-    const DeclarativeWebRequestData& request_data) const {
+    const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
 
@@ -632,7 +632,7 @@ int WebRequestConditionAttributeResponseHeaders::GetStages() const {
 }
 
 bool WebRequestConditionAttributeResponseHeaders::IsFulfilled(
-    const DeclarativeWebRequestData& request_data) const {
+    const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
 
@@ -703,7 +703,7 @@ int WebRequestConditionAttributeThirdParty::GetStages() const {
 }
 
 bool WebRequestConditionAttributeThirdParty::IsFulfilled(
-    const DeclarativeWebRequestData& request_data) const {
+    const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
 
@@ -798,7 +798,7 @@ int WebRequestConditionAttributeStages::GetStages() const {
 }
 
 bool WebRequestConditionAttributeStages::IsFulfilled(
-    const DeclarativeWebRequestData& request_data) const {
+    const WebRequestData& request_data) const {
   // Note: removing '!=' triggers warning C4800 on the VS compiler.
   return (request_data.stage & GetStages()) != 0;
 }

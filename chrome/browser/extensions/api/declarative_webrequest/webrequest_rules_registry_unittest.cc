@@ -4,8 +4,10 @@
 
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 
+#include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
@@ -18,6 +20,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -183,38 +186,25 @@ class WebRequestRulesRegistryTest : public testing::Test {
     return rule;
   }
 
-  // Create a condition with the attributes specified. An example value of a
-  // string from |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
-  linked_ptr<base::Value> CreateCondition(
-      const std::vector<const char *>& attributes) {
-    // Starting boilerplate.
+  // Create a condition with the attributes specified. An example value of
+  // |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
+  linked_ptr<base::Value> CreateCondition(const std::string& attributes) {
     std::string json_description =
         "{ \n"
         "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n";
-    for (size_t i = 0; i < attributes.size(); ++i) {
-      json_description += attributes[i];
-    }
-    // Ending boilerplate.
+    json_description += attributes;
     json_description += "}";
 
     return linked_ptr<base::Value>(
         base::test::ParseJson(json_description).release());
   }
 
-  // Create a rule with the ID |rule_id| and with a single condition and a
-  // cancelling action. The condition contains a non-matching non-URL attribute,
-  // and optionally, according to |with_url_attribute| also a URL attribute
-  // matching any (!) URL.
-  linked_ptr<RulesRegistry::Rule> CreateNonMatchingRule(
-      bool with_url_attribute,
-      const char* rule_id) {
-    std::vector<const char*> attributes;
-    if (with_url_attribute)
-      attributes.push_back("\"url\": { \"pathContains\": \"\" }, \n");
-
-    // The following attribute never matches in this unit test.
-    attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
-
+  // Create a rule with the ID |rule_id| and with conditions created from the
+  // |attributes| specified (one entry one condition). An example value of a
+  // string from |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
+  linked_ptr<RulesRegistry::Rule> CreateCancellingRule(
+      const char* rule_id,
+      const std::vector<const std::string*>& attributes) {
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
@@ -222,31 +212,10 @@ class WebRequestRulesRegistryTest : public testing::Test {
     rule->id.reset(new std::string(rule_id));
     rule->priority.reset(new int(1));
     rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
-    rule->conditions.push_back(CreateCondition(attributes));
-    return rule;
-  }
-
-  // Create a rule with the ID |rule_id| and with two conditions and a
-  // cancelling action. One condition contains a non-matching non-URL attribute,
-  // and the other one a URL attribute matching any URL.
-  linked_ptr<RulesRegistry::Rule> CreateRuleWithTwoConditions(
-      const char* rule_id) {
-    std::vector<const char*> url_attributes;
-    url_attributes.push_back("\"url\": { \"pathContains\": \"\" }, \n");
-
-    // The following attribute never matches in this unit test.
-    std::vector<const char*> non_matching_attributes;
-    non_matching_attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
-
-    DictionaryValue action_dict;
-    action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
-
-    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
-    rule->id.reset(new std::string(rule_id));
-    rule->priority.reset(new int(1));
-    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
-    rule->conditions.push_back(CreateCondition(url_attributes));
-    rule->conditions.push_back(CreateCondition(non_matching_attributes));
+    for (std::vector<const std::string*>::const_iterator it =
+             attributes.begin();
+         it != attributes.end(); ++it)
+      rule->conditions.push_back(CreateCondition(**it));
     return rule;
   }
 
@@ -274,8 +243,8 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
   net::TestURLRequest http_request(http_url, NULL, &context);
-  matches = registry->GetMatches(
-      DeclarativeWebRequestData(&http_request, ON_BEFORE_REQUEST));
+  WebRequestData request_data(&http_request, ON_BEFORE_REQUEST);
+  matches = registry->GetMatches(request_data);
   EXPECT_EQ(2u, matches.size());
 
   std::set<WebRequestRule::GlobalRuleId> matches_ids;
@@ -287,8 +256,8 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
 
   GURL foobar_url("http://www.foobar.com");
   net::TestURLRequest foobar_request(foobar_url, NULL, &context);
-  matches = registry->GetMatches(
-      DeclarativeWebRequestData(&foobar_request, ON_BEFORE_REQUEST));
+  request_data.request = &foobar_request;
+  matches = registry->GetMatches(request_data);
   EXPECT_EQ(1u, matches.size());
   WebRequestRule::GlobalRuleId expected_pair =
       std::make_pair(kExtensionId, kRuleId2);
@@ -413,11 +382,9 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   GURL url("http://www.google.com");
   net::TestURLRequestContext context;
   net::TestURLRequest request(url, NULL, &context);
+  WebRequestData request_data(&request, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
-      registry->CreateDeltas(
-          NULL,
-          DeclarativeWebRequestData(&request, ON_BEFORE_REQUEST),
-          false);
+      registry->CreateDeltas(NULL, request_data, false);
 
   // The second extension is installed later and will win for this reason
   // in conflict resolution.
@@ -463,11 +430,9 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   GURL url("http://www.google.com/index.html");
   net::TestURLRequestContext context;
   net::TestURLRequest request(url, NULL, &context);
+  WebRequestData request_data(&request, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
-      registry->CreateDeltas(
-          NULL,
-          DeclarativeWebRequestData(&request, ON_BEFORE_REQUEST),
-          false);
+      registry->CreateDeltas(NULL, request_data, false);
 
   // The redirect by the first extension is ignored due to the ignore rule.
   ASSERT_EQ(1u, deltas.size());
@@ -484,19 +449,30 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
 TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
       new TestWebRequestRulesRegistry());
+  const std::string kMatchingUrlAttribute(
+      "\"url\": { \"pathContains\": \"\" }, \n");
+  const std::string kNonMatchingNonUrlAttribute(
+      "\"resourceType\": [\"stylesheet\"], \n");
+  const std::string kBothAttributes(kMatchingUrlAttribute +
+                                    kNonMatchingNonUrlAttribute);
   std::string error;
-
+  std::vector<const std::string*> attributes;
   std::vector<linked_ptr<RulesRegistry::Rule> > rules;
-  // Both rules have one condition, neither of them should fire.
-  // This rule's condition has only one, non-matching and non-URL attribute.
-  rules.push_back(CreateNonMatchingRule(false, kRuleId1));
-  // This rule's condition has two attributes: a matching URL, and a
-  // non-matching non-URL attribute.
-  rules.push_back(CreateNonMatchingRule(true, kRuleId2));
 
-  // The 3rd rule has two conditions, one with a matching URL attribute, and one
+  // Rules 1 and 2 have one condition, neither of them should fire.
+  attributes.push_back(&kNonMatchingNonUrlAttribute);
+  rules.push_back(CreateCancellingRule(kRuleId1, attributes));
+
+  attributes.clear();
+  attributes.push_back(&kBothAttributes);
+  rules.push_back(CreateCancellingRule(kRuleId2, attributes));
+
+  // Rule 3 has two conditions, one with a matching URL attribute, and one
   // with a non-matching non-URL attribute.
-  rules.push_back(CreateRuleWithTwoConditions(kRuleId3));
+  attributes.clear();
+  attributes.push_back(&kMatchingUrlAttribute);
+  attributes.push_back(&kNonMatchingNonUrlAttribute);
+  rules.push_back(CreateCancellingRule(kRuleId3, attributes));
 
   error = registry->AddRules(kExtensionId, rules);
   EXPECT_EQ("", error);
@@ -507,12 +483,74 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
   net::TestURLRequest http_request(http_url, NULL, &context);
-  matches = registry->GetMatches(
-      DeclarativeWebRequestData(&http_request, ON_BEFORE_REQUEST));
+  WebRequestData request_data(&http_request, ON_BEFORE_REQUEST);
+  matches = registry->GetMatches(request_data);
   EXPECT_EQ(1u, matches.size());
   WebRequestRule::GlobalRuleId expected_pair = std::make_pair(kExtensionId,
                                                               kRuleId3);
   EXPECT_EQ(expected_pair, (*matches.begin())->id());
+}
+
+// Test that the url and firstPartyForCookiesUrl attributes are evaluated
+// against corresponding URLs. Tested on requests where these URLs actually
+// differ.
+TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
+  scoped_refptr<TestWebRequestRulesRegistry> registry(
+      new TestWebRequestRulesRegistry());
+  const std::string kUrlAttribute(
+      "\"url\": { \"hostContains\": \"url\" }, \n");
+  const std::string kFirstPartyUrlAttribute(
+      "\"firstPartyForCookiesUrl\": { \"hostContains\": \"fpfc\" }, \n");
+  std::string error;
+  std::vector<const std::string*> attributes;
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+
+  // Rule 1 has one condition, with a url attribute
+  attributes.push_back(&kUrlAttribute);
+  rules.push_back(CreateCancellingRule(kRuleId1, attributes));
+
+  // Rule 2 has one condition, with a firstPartyForCookiesUrl attribute
+  attributes.clear();
+  attributes.push_back(&kFirstPartyUrlAttribute);
+  rules.push_back(CreateCancellingRule(kRuleId2, attributes));
+
+  error = registry->AddRules(kExtensionId, rules);
+  EXPECT_EQ("", error);
+  EXPECT_EQ(1, registry->num_clear_cache_calls());
+
+  std::set<const WebRequestRule*> matches;
+
+  const GURL urls[] = {
+    GURL("http://url.example.com"),  // matching
+    GURL("http://www.example.com")   // non-matching
+  };
+  const GURL firstPartyUrls[] = {
+    GURL("http://www.example.com"),  // non-matching
+    GURL("http://fpfc.example.com")  // matching
+  };
+  // Which rules should match in subsequent test iterations.
+  const char* matchingRuleIds[] = { kRuleId1, kRuleId2 };
+  COMPILE_ASSERT(arraysize(urls) == arraysize(firstPartyUrls),
+                 urls_and_firstPartyUrls_need_to_have_the_same_size);
+  COMPILE_ASSERT(arraysize(urls) == arraysize(matchingRuleIds),
+                 urls_and_matchingRuleIds_need_to_have_the_same_size);
+  net::TestURLRequestContext context;
+
+  for (size_t i = 0; i < arraysize(matchingRuleIds); ++i) {
+    // Construct the inputs.
+    net::TestURLRequest http_request(urls[i], NULL, &context);
+    WebRequestData request_data(&http_request, ON_BEFORE_REQUEST);
+    http_request.set_first_party_for_cookies(firstPartyUrls[i]);
+    // Now run both rules on the input.
+    matches = registry->GetMatches(request_data);
+    SCOPED_TRACE(testing::Message("i = ") << i << ", rule id = "
+                                          << matchingRuleIds[i]);
+    // Make sure that the right rule succeeded.
+    EXPECT_EQ(1u, matches.size());
+    EXPECT_EQ(WebRequestRule::GlobalRuleId(std::make_pair(kExtensionId,
+                                                          matchingRuleIds[i])),
+              (*matches.begin())->id());
+  }
 }
 
 TEST_F(WebRequestRulesRegistryTest, CheckConsistency) {

@@ -40,13 +40,44 @@ namespace extensions {
 namespace keys = declarative_webrequest_constants;
 
 //
+// WebRequestData
+//
+
+WebRequestData::WebRequestData(net::URLRequest* request, RequestStage stage)
+    : request(request),
+      stage(stage),
+      original_response_headers(NULL) {}
+
+WebRequestData::WebRequestData(
+    net::URLRequest* request,
+    RequestStage stage,
+    const net::HttpResponseHeaders* original_response_headers)
+    : request(request),
+      stage(stage),
+      original_response_headers(original_response_headers) {}
+
+WebRequestData::~WebRequestData() {}
+
+//
+// WebRequestDataWithMatchIds
+//
+
+WebRequestDataWithMatchIds::WebRequestDataWithMatchIds(
+    const WebRequestData* request_data)
+    : data(request_data) {}
+
+WebRequestDataWithMatchIds::~WebRequestDataWithMatchIds() {}
+
+//
 // WebRequestCondition
 //
 
 WebRequestCondition::WebRequestCondition(
     scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
+    scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_conditions,
     const WebRequestConditionAttributes& condition_attributes)
     : url_matcher_conditions_(url_matcher_conditions),
+      first_party_url_matcher_conditions_(first_party_url_matcher_conditions),
       condition_attributes_(condition_attributes),
       applicable_request_stages_(~0) {
   for (WebRequestConditionAttributes::const_iterator i =
@@ -58,25 +89,37 @@ WebRequestCondition::WebRequestCondition(
 WebRequestCondition::~WebRequestCondition() {}
 
 bool WebRequestCondition::IsFulfilled(
-    const std::set<URLMatcherConditionSet::ID>& url_matches,
-    const DeclarativeWebRequestData& request_data) const {
-  if (!(request_data.stage & applicable_request_stages_)) {
+    const MatchData& request_data) const {
+  if (!(request_data.data->stage & applicable_request_stages_)) {
     // A condition that cannot be evaluated is considered as violated.
     return false;
   }
 
-  // Check a UrlFilter attribute if present.
+  // Check URL attributes if present.
   if (url_matcher_conditions_.get() &&
-      !ContainsKey(url_matches, url_matcher_conditions_->id()))
+      !ContainsKey(request_data.url_match_ids, url_matcher_conditions_->id()))
+    return false;
+  if (first_party_url_matcher_conditions_.get() &&
+      !ContainsKey(request_data.first_party_url_match_ids,
+                   first_party_url_matcher_conditions_->id()))
     return false;
 
   // All condition attributes must be fulfilled for a fulfilled condition.
   for (WebRequestConditionAttributes::const_iterator i =
-       condition_attributes_.begin(); i != condition_attributes_.end(); ++i) {
-    if (!(*i)->IsFulfilled(request_data))
+           condition_attributes_.begin();
+       i != condition_attributes_.end(); ++i) {
+    if (!(*i)->IsFulfilled(*(request_data.data)))
       return false;
   }
   return true;
+}
+
+void WebRequestCondition::GetURLMatcherConditionSets(
+    URLMatcherConditionSet::Vector* condition_sets) const {
+  if (url_matcher_conditions_)
+    condition_sets->push_back(url_matcher_conditions_);
+  if (first_party_url_matcher_conditions_)
+    condition_sets->push_back(first_party_url_matcher_conditions_);
 }
 
 // static
@@ -103,22 +146,31 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 
   WebRequestConditionAttributes attributes;
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set;
+  scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_condition_set;
 
   for (base::DictionaryValue::Iterator iter(*condition_dict);
        iter.HasNext(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
     const Value& condition_attribute_value = iter.value();
+    const bool name_is_url = condition_attribute_name == keys::kUrlKey;
     if (condition_attribute_name == keys::kInstanceTypeKey) {
       // Skip this.
-    } else if (condition_attribute_name == keys::kUrlKey) {
+    } else if (name_is_url ||
+               condition_attribute_name == keys::kFirstPartyForCookiesUrlKey) {
       const base::DictionaryValue* dict = NULL;
       if (!condition_attribute_value.GetAsDictionary(&dict)) {
         *error = base::StringPrintf(kInvalidTypeOfParamter,
                                     condition_attribute_name.c_str());
       } else {
-        url_matcher_condition_set =
-            URLMatcherFactory::CreateFromURLFilterDictionary(
-                url_matcher_condition_factory, dict, ++g_next_id, error);
+        if (name_is_url) {
+          url_matcher_condition_set =
+              URLMatcherFactory::CreateFromURLFilterDictionary(
+                  url_matcher_condition_factory, dict, ++g_next_id, error);
+        } else {
+          first_party_url_matcher_condition_set =
+              URLMatcherFactory::CreateFromURLFilterDictionary(
+                  url_matcher_condition_factory, dict, ++g_next_id, error);
+        }
       }
     } else if (WebRequestConditionAttribute::IsKnownType(
         condition_attribute_name)) {
@@ -138,7 +190,9 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
   }
 
   scoped_ptr<WebRequestCondition> result(
-      new WebRequestCondition(url_matcher_condition_set, attributes));
+      new WebRequestCondition(url_matcher_condition_set,
+                              first_party_url_matcher_condition_set,
+                              attributes));
 
   if (!result->stages()) {
     *error = kConditionCannotBeFulfilled;

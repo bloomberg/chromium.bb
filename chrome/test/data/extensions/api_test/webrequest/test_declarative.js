@@ -56,7 +56,7 @@ function getURLHttpWithHeaders() {
       "files/extensions/api_test/webrequest/declarative/headers.html");
 }
 
-function getURLThirdParty() {
+function getURLOfHTMLWithThirdParty() {
   // Returns the URL of a HTML document with a third-party resource.
   return getServerURL(
       "files/extensions/api_test/webrequest/declarative/third-party.html");
@@ -86,29 +86,29 @@ function cancelThirdPartyExpected() {
       { label: "onBeforeRequest",
         event: "onBeforeRequest",
         details: {
-          url: getURLThirdParty(),
-          frameUrl: getURLThirdParty()
+          url: getURLOfHTMLWithThirdParty(),
+          frameUrl: getURLOfHTMLWithThirdParty()
         }
       },
       { label: "onBeforeSendHeaders",
         event: "onBeforeSendHeaders",
-        details: {url: getURLThirdParty()}
+        details: {url: getURLOfHTMLWithThirdParty()}
       },
       { label: "onSendHeaders",
         event: "onSendHeaders",
-        details: {url: getURLThirdParty()}
+        details: {url: getURLOfHTMLWithThirdParty()}
       },
       { label: "onHeadersReceived",
         event: "onHeadersReceived",
         details: {
-          url: getURLThirdParty(),
+          url: getURLOfHTMLWithThirdParty(),
           statusLine: "HTTP/1.0 200 OK"
         }
       },
       { label: "onResponseStarted",
         event: "onResponseStarted",
         details: {
-          url: getURLThirdParty(),
+          url: getURLOfHTMLWithThirdParty(),
           fromCache: false,
           ip: "127.0.0.1",
           statusCode: 200,
@@ -120,7 +120,7 @@ function cancelThirdPartyExpected() {
         details: {
           fromCache: false,
           ip: "127.0.0.1",
-          url: getURLThirdParty(),
+          url: getURLOfHTMLWithThirdParty(),
           statusCode: 200,
           statusLine: "HTTP/1.0 200 OK"
         }
@@ -130,7 +130,7 @@ function cancelThirdPartyExpected() {
         details: {
           type: "image",
           url: "http://non_existing_third_party.com/image.png",
-          frameUrl: getURLThirdParty()
+          frameUrl: getURLOfHTMLWithThirdParty()
         }
       },
       { label: "img-onErrorOccurred",
@@ -248,7 +248,7 @@ runTests([
     onRequest.addRules(
       [ {'conditions': [new RequestMatcher({thirdPartyForCookies: true})],
          'actions': [new chrome.declarativeWebRequest.CancelRequest()]},],
-      function() {navigateAndWait(getURLThirdParty());}
+      function() {navigateAndWait(getURLOfHTMLWithThirdParty());}
     );
   },
 
@@ -273,7 +273,45 @@ runTests([
          'actions': [new chrome.declarativeWebRequest.CancelRequest()]
         },
       ],
-      function() {navigateAndWait(getURLThirdParty());}
+      function() {navigateAndWait(getURLOfHTMLWithThirdParty());}
+    );
+  },
+
+  function testFirstPartyForCookiesUrl() {
+    // This is an end-to-end test for firstPartyForCookies. The choice of URL to
+    // navigate to is purely arbitrary.
+    ignoreUnexpected = false;
+    expect(
+      [
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLOfHTMLWithThirdParty(),
+            frameUrl: getURLOfHTMLWithThirdParty()
+          }
+        },
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLOfHTMLWithThirdParty(),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+          }
+        },
+      ],
+      [ ["onBeforeRequest", "onErrorOccurred"] ]);
+    onRequest.addRules(
+      [ {'conditions': [
+           new RequestMatcher({
+             firstPartyForCookiesUrl: {
+               hostEquals: testServer
+             }
+           })
+         ],
+         'actions': [new chrome.declarativeWebRequest.CancelRequest()]
+        },
+      ],
+      function() {navigateAndWait(getURLOfHTMLWithThirdParty());}
     );
   },
 

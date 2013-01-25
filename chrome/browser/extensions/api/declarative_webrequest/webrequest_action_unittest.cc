@@ -139,7 +139,7 @@ TEST(WebRequestActionTest, TestPermissions) {
   // Check that redirect works on regular URLs but not on protected URLs.
   net::TestURLRequest regular_request(GURL("http://test.com"), NULL, &context);
   std::list<LinkedPtrEventResponseDelta> deltas;
-  DeclarativeWebRequestData request_data(&regular_request, ON_BEFORE_REQUEST);
+  WebRequestData request_data(&regular_request, ON_BEFORE_REQUEST);
   WebRequestAction::ApplyInfo apply_info = {
     NULL, request_data, false, &deltas
   };
@@ -149,8 +149,8 @@ TEST(WebRequestActionTest, TestPermissions) {
   net::TestURLRequest protected_request(GURL("http://clients1.google.com"),
                                         NULL, &context);
   deltas.clear();
-  request_data =
-      DeclarativeWebRequestData(&protected_request, ON_BEFORE_REQUEST);
+  request_data = WebRequestData(&protected_request, ON_BEFORE_REQUEST);
+  // Note that we just updated the request_data reference in apply_info.
   action_set->Apply("ext1", base::Time(), &apply_info);
   EXPECT_EQ(0u, deltas.size());
 }

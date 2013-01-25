@@ -11,9 +11,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_RULE_H__
 
 #include <limits>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/common/extensions/api/events.h"
 #include "chrome/common/extensions/matcher/url_matcher.h"
@@ -32,25 +36,19 @@ namespace extensions {
 // ConditionT should be immutable after creation.  It must define the following
 // members:
 //
-//   // Arguments passed through from ConditionSet::Create.
+//   // Arguments passed through from DeclarativeConditionSet::Create.
 //   static scoped_ptr<ConditionT> Create(
-//       URLMatcherConditionFactory*,
+//       URLMatcherConditionFactory* url_matcher_condition_factory,
 //       // Except this argument gets elements of the AnyVector.
 //       const base::Value& definition,
 //       std::string* error);
-//   // If the Condition needs to be filtered by some
-//   // URLMatcherConditionSets, append them to this argument.
+//   // If the Condition needs to be filtered by some URLMatcherConditionSets,
+//   // append them to |condition_sets|.
 //   // DeclarativeConditionSet::GetURLMatcherConditionSets forwards here.
 //   void GetURLMatcherConditionSets(
-//       URLMatcherConditionSet::Vector* condition_sets)
-//   // True if GetURLMatcherConditionSets would append anything to its
-//   // argument.
-//   bool has_url_matcher_condition_set();
-//   // |url_matches| and |match_data| passed through from
-//   // ConditionSet::IsFulfilled.
-//   bool IsFulfilled(
-//       const std::set<URLMatcherConditionSet::ID>& url_matches,
-//       const ConditionT::MatchData&);
+//       URLMatcherConditionSet::Vector* condition_sets);
+//   // |match_data| passed through from DeclarativeConditionSet::IsFulfilled.
+//   bool IsFulfilled(const ConditionT::MatchData& match_data);
 template<typename ConditionT>
 class DeclarativeConditionSet {
  public:
@@ -58,9 +56,9 @@ class DeclarativeConditionSet {
   typedef std::vector<linked_ptr<const ConditionT> > Conditions;
   typedef typename Conditions::const_iterator const_iterator;
 
-  // Factory method that creates an WebRequestConditionSet according to the JSON
-  // array |conditions| passed by the extension API.
-  // Sets |error| and returns NULL in case of an error.
+  // Factory method that creates a DeclarativeConditionSet according to the JSON
+  // array |conditions| passed by the extension API. Sets |error| and returns
+  // NULL in case of an error.
   static scoped_ptr<DeclarativeConditionSet> Create(
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const AnyVector& conditions,
@@ -73,25 +71,12 @@ class DeclarativeConditionSet {
   const_iterator begin() const { return conditions_.begin(); }
   const_iterator end() const { return conditions_.end(); }
 
-  // If |url_match_trigger| is a member of |url_matches|, then this
-  // returns whether the corresponding condition is fulfilled
-  // wrt. |request_data|. If |url_match_trigger| is -1, this function
-  // returns whether any of the conditions without URL attributes is
-  // satisfied.
-  //
-  // Conditions for which has_url_matcher_condition_set() is false are always
-  // checked (aside from short-circuiting when an earlier condition already
-  // matched.)
-  //
-  // Conditions for which has_url_matcher_condition_set() is true are only
-  // checked if one of the URLMatcherConditionSets returned by
-  // GetURLMatcherConditionSets() has an id listed in url_matches.  That means
-  // that if |match_data| contains URL matches for two pieces of a request,
-  // their union should appear in |url_matches|.  For kinds of MatchData that
-  // only have one type of URL, |url_matches| is forwarded on to
-  // ConditionT::IsFulfilled(), so it doesn't need to appear in |match_data|.
+  // If |url_match_trigger| is not -1, this function looks for a condition
+  // with this URLMatcherConditionSet, and forwards to that condition's
+  // IsFulfilled(|match_data|). If there is no such condition, then false is
+  // returned. If |url_match_trigger| is -1, this function returns whether any
+  // of the conditions without URL attributes is satisfied.
   bool IsFulfilled(URLMatcherConditionSet::ID url_match_trigger,
-                   const std::set<URLMatcherConditionSet::ID>& url_matches,
                    const typename ConditionT::MatchData& match_data) const;
 
   // Appends the URLMatcherConditionSet from all conditions to |condition_sets|.
@@ -266,7 +251,6 @@ class DeclarativeRule {
 template<typename ConditionT>
 bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
     URLMatcherConditionSet::ID url_match_trigger,
-    const std::set<URLMatcherConditionSet::ID>& url_matches,
     const typename ConditionT::MatchData& match_data) const {
   if (url_match_trigger == -1) {
     // Invalid trigger -- indication that we should only check conditions
@@ -274,7 +258,7 @@ bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
     for (typename std::vector<const ConditionT*>::const_iterator it =
              conditions_without_urls_.begin();
          it != conditions_without_urls_.end(); ++it) {
-      if ((*it)->IsFulfilled(url_matches, match_data))
+      if ((*it)->IsFulfilled(match_data))
         return true;
     }
     return false;
@@ -283,7 +267,7 @@ bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
   typename URLMatcherIdToCondition::const_iterator triggered =
       match_id_to_condition_.find(url_match_trigger);
   return (triggered != match_id_to_condition_.end() &&
-          triggered->second->IsFulfilled(url_matches, match_data));
+          triggered->second->IsFulfilled(match_data));
 }
 
 template<typename ConditionT>

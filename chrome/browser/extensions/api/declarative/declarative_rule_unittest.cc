@@ -35,10 +35,6 @@ struct RecordingCondition {
     // No condition sets.
   }
 
-  bool has_url_matcher_condition_set() const {
-    return false;
-  }
-
   static scoped_ptr<RecordingCondition> Create(
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
@@ -92,7 +88,10 @@ TEST(DeclarativeConditionTest, CreateConditionSet) {
 }
 
 struct FulfillableCondition {
-  typedef int MatchData;
+  struct MatchData {
+    int value;
+    const std::set<URLMatcherConditionSet::ID>& url_matches;
+  };
 
   scoped_refptr<URLMatcherConditionSet> condition_set;
   int condition_set_id;
@@ -100,10 +99,6 @@ struct FulfillableCondition {
 
   URLMatcherConditionSet::ID url_matcher_condition_set_id() const {
     return condition_set_id;
-  }
-
-  bool has_url_matcher_condition_set() const {
-    return true;
   }
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set() const {
@@ -116,15 +111,15 @@ struct FulfillableCondition {
       condition_sets->push_back(condition_set);
   }
 
-  bool IsFulfilled(const std::set<URLMatcherConditionSet::ID>& url_matches,
-                   int match_data) const {
-    if (condition_set_id != -1 && !ContainsKey(url_matches, condition_set_id))
+  bool IsFulfilled(const MatchData& match_data) const {
+    if (condition_set_id != -1 &&
+        !ContainsKey(match_data.url_matches, condition_set_id))
       return false;
-    return match_data <= max_value;
+    return match_data.value <= max_value;
   }
 
   static scoped_ptr<FulfillableCondition> Create(
-      URLMatcherConditionFactory* url_matcher_condition_factory,
+      URLMatcherConditionFactory* /*url_matcher_condition_factory*/,
       const base::Value& condition,
       std::string* error) {
     scoped_ptr<FulfillableCondition> result(new FulfillableCondition());
@@ -167,24 +162,28 @@ TEST(DeclarativeConditionTest, FulfillConditionSet) {
   EXPECT_EQ(4u, result->conditions().size());
 
   std::set<URLMatcherConditionSet::ID> url_matches;
-  EXPECT_FALSE(result->IsFulfilled(1, url_matches, 0))
+  FulfillableCondition::MatchData match_data = { 0, url_matches };
+  EXPECT_FALSE(result->IsFulfilled(1, match_data))
       << "Testing an ID that's not in url_matches forwards to the Condition, "
       << "which doesn't match.";
-  EXPECT_FALSE(result->IsFulfilled(-1, url_matches, 0))
+  EXPECT_FALSE(result->IsFulfilled(-1, match_data))
       << "Testing the 'no ID' value tries to match the 4th condition, but "
       << "its max is too low.";
-  EXPECT_TRUE(result->IsFulfilled(-1, url_matches, -5))
+  match_data.value = -5;
+  EXPECT_TRUE(result->IsFulfilled(-1, match_data))
       << "Testing the 'no ID' value tries to match the 4th condition, and "
       << "this value is low enough.";
 
   url_matches.insert(1);
-  EXPECT_TRUE(result->IsFulfilled(1, url_matches, 3))
+  match_data.value = 3;
+  EXPECT_TRUE(result->IsFulfilled(1, match_data))
       << "Tests a condition with a url matcher, for a matching value.";
-  EXPECT_FALSE(result->IsFulfilled(1, url_matches, 4))
+  match_data.value = 4;
+  EXPECT_FALSE(result->IsFulfilled(1, match_data))
       << "Tests a condition with a url matcher, for a non-matching value "
       << "that would match a different condition.";
   url_matches.insert(2);
-  EXPECT_TRUE(result->IsFulfilled(2, url_matches, 4))
+  EXPECT_TRUE(result->IsFulfilled(2, match_data))
       << "Tests with 2 elements in the match set.";
 
   // Check the condition sets:

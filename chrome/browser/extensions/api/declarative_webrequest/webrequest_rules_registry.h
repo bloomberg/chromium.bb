@@ -76,13 +76,13 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
   std::set<const WebRequestRule*> GetMatches(
-      const DeclarativeWebRequestData& request_data);
+      const WebRequestData& request_data_without_ids) const;
 
   // Returns which modifications should be executed on the network request
   // according to the rules registered in this registry.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       const ExtensionInfoMap* extension_info_map,
-      const DeclarativeWebRequestData& request_data,
+      const WebRequestData& request_data,
       bool crosses_incognito);
 
   // Implementation of RulesRegistryWithCache:
@@ -124,6 +124,15 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
   typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
       RulesMap;
+  typedef std::set<URLMatcherConditionSet::ID> URLMatches;
+  typedef std::set<const WebRequestRule*> RuleSet;
+
+  // This is a helper function to GetMatches. Rules triggered by |url_matches|
+  // get added to |result| if one of their conditions is fulfilled.
+  // |request_data| gets passed to IsFulfilled of the rules' condition sets.
+  void AddTriggeredRules(const URLMatches& url_matches,
+                         const WebRequestCondition::MatchData& request_data,
+                         RuleSet* result) const;
 
   // Map that tells us which WebRequestRule may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.

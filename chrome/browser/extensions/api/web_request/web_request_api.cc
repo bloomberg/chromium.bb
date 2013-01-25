@@ -1676,7 +1676,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     helpers::EventResponseDeltas result =
         rules_registry->CreateDeltas(
             extension_info_map,
-            extensions::DeclarativeWebRequestData(
+            extensions::WebRequestData(
                 request, request_stage, original_response_headers),
             i->second);
 

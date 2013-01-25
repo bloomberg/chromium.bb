@@ -30,40 +30,35 @@ WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile,
     extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
 }
 
-std::set<const WebRequestRule*>
-WebRequestRulesRegistry::GetMatches(
-    const DeclarativeWebRequestData& request_data) {
-  typedef std::set<const WebRequestRule*> RuleSet;
-  typedef std::set<URLMatcherConditionSet::ID> URLMatches;
-
+std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
+    const WebRequestData& request_data_without_ids) const {
   RuleSet result;
-  URLMatches url_matches = url_matcher_.MatchURL(request_data.request->url());
+
+  WebRequestDataWithMatchIds request_data(&request_data_without_ids);
+  request_data.url_match_ids = url_matcher_.MatchURL(
+      request_data.data->request->url());
+  request_data.first_party_url_match_ids = url_matcher_.MatchURL(
+      request_data.data->request->first_party_for_cookies());
 
   // 1st phase -- add all rules with some conditions without UrlFilter
   // attributes.
   for (RuleSet::const_iterator it = rules_with_untriggered_conditions_.begin();
        it != rules_with_untriggered_conditions_.end(); ++it) {
-    if ((*it)->conditions().IsFulfilled(-1, url_matches, request_data))
+    if ((*it)->conditions().IsFulfilled(-1, request_data))
       result.insert(*it);
   }
 
   // 2nd phase -- add all rules with some conditions triggered by URL matches.
-  for (URLMatches::const_iterator url_match = url_matches.begin();
-       url_match != url_matches.end(); ++url_match) {
-    RuleTriggers::const_iterator rule_trigger = rule_triggers_.find(*url_match);
-    CHECK(rule_trigger != rule_triggers_.end());
-    if (!ContainsKey(result, rule_trigger->second) &&
-        rule_trigger->second->conditions().IsFulfilled(*url_match, url_matches,
-                                                       request_data))
-      result.insert(rule_trigger->second);
-  }
+  AddTriggeredRules(request_data.url_match_ids, request_data, &result);
+  AddTriggeredRules(request_data.first_party_url_match_ids,
+                    request_data, &result);
 
   return result;
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     const ExtensionInfoMap* extension_info_map,
-    const DeclarativeWebRequestData& request_data,
+    const WebRequestData& request_data,
     bool crosses_incognito) {
   if (webrequest_rules_.empty())
     return std::list<LinkedPtrEventResponseDelta>();
@@ -298,6 +293,21 @@ bool WebRequestRulesRegistry::CheckConsistency(
     }
   }
   return true;
+}
+
+void WebRequestRulesRegistry::AddTriggeredRules(
+    const URLMatches& url_matches,
+    const WebRequestCondition::MatchData& request_data,
+    RuleSet* result) const {
+  for (URLMatches::const_iterator url_match = url_matches.begin();
+       url_match != url_matches.end(); ++url_match) {
+    RuleTriggers::const_iterator rule_trigger = rule_triggers_.find(*url_match);
+    CHECK(rule_trigger != rule_triggers_.end());
+    if (!ContainsKey(*result, rule_trigger->second) &&
+        rule_trigger->second->conditions().IsFulfilled(*url_match,
+                                                       request_data))
+      result->insert(rule_trigger->second);
+  }
 }
 
 }  // namespace extensions

@@ -28,7 +28,6 @@ TEST(WebRequestConditionTest, CreateCondition) {
   std::string error;
   scoped_ptr<WebRequestCondition> result;
 
-
   // Test wrong condition name passed.
   error.clear();
   result = WebRequestCondition::Create(
@@ -71,29 +70,65 @@ TEST(WebRequestConditionTest, CreateCondition) {
   URLMatcherConditionSet::Vector url_matcher_condition_set;
   result->GetURLMatcherConditionSets(&url_matcher_condition_set);
   matcher.AddConditionSets(url_matcher_condition_set);
-  std::set<URLMatcherConditionSet::ID> url_match_ids;
 
   net::TestURLRequestContext context;
-  GURL http_url("http://www.example.com");
+  const GURL http_url("http://www.example.com");
   net::TestURLRequest match_request(http_url, NULL, &context);
-  url_match_ids = matcher.MatchURL(http_url);
-  EXPECT_EQ(1u, url_match_ids.size());
-  content::ResourceRequestInfo::AllocateForTesting(&match_request,
-      ResourceType::MAIN_FRAME, NULL, -1, -1);
-  EXPECT_TRUE(result->IsFulfilled(
-      url_match_ids,
-      DeclarativeWebRequestData(&match_request, ON_BEFORE_REQUEST)));
+  WebRequestData data(&match_request, ON_BEFORE_REQUEST);
+  WebRequestDataWithMatchIds request_data(&data);
+  request_data.url_match_ids = matcher.MatchURL(http_url);
+  EXPECT_EQ(1u, request_data.url_match_ids.size());
+  content::ResourceRequestInfo::AllocateForTesting(
+      &match_request, ResourceType::MAIN_FRAME, NULL, -1, -1);
+  EXPECT_TRUE(result->IsFulfilled(request_data));
 
-  GURL https_url("https://www.example.com");
+  const GURL https_url("https://www.example.com");
   net::TestURLRequest wrong_resource_type(https_url, NULL, &context);
-  url_match_ids = matcher.MatchURL(https_url);
+  data.request = &wrong_resource_type;
+  request_data.url_match_ids = matcher.MatchURL(http_url);
   // Make sure IsFulfilled does not fail because of URL matching.
-  EXPECT_EQ(1u, url_match_ids.size());
+  EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(&wrong_resource_type,
       ResourceType::SUB_FRAME, NULL, -1, -1);
-  EXPECT_FALSE(result->IsFulfilled(
-      url_match_ids,
-      DeclarativeWebRequestData(&wrong_resource_type, ON_BEFORE_REQUEST)));
+  EXPECT_FALSE(result->IsFulfilled(request_data));
+}
+
+TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
+  // Necessary for TestURLRequest.
+  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  URLMatcher matcher;
+
+  std::string error;
+  scoped_ptr<WebRequestCondition> result;
+
+  result = WebRequestCondition::Create(
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+          "{ \n"
+          "  \"firstPartyForCookiesUrl\": { \"hostPrefix\": \"fpfc\"}, \n"
+          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+          "}"),
+      &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(result.get());
+
+  URLMatcherConditionSet::Vector url_matcher_condition_set;
+  result->GetURLMatcherConditionSets(&url_matcher_condition_set);
+  matcher.AddConditionSets(url_matcher_condition_set);
+
+  net::TestURLRequestContext context;
+  const GURL http_url("http://www.example.com");
+  const GURL first_party_url("http://fpfc.example.com");
+  net::TestURLRequest match_request(http_url, NULL, &context);
+  WebRequestData data(&match_request, ON_BEFORE_REQUEST);
+  WebRequestDataWithMatchIds request_data(&data);
+  request_data.url_match_ids = matcher.MatchURL(http_url);
+  EXPECT_EQ(0u, request_data.url_match_ids.size());
+  request_data.first_party_url_match_ids = matcher.MatchURL(first_party_url);
+  EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
+  content::ResourceRequestInfo::AllocateForTesting(
+      &match_request, ResourceType::MAIN_FRAME, NULL, -1, -1);
+  EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 
 // Conditions without UrlFilter attributes need to be independent of URL
@@ -153,23 +188,21 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   net::TestURLRequestContext context;
   net::TestURLRequest https_request(
       GURL("https://www.example.com"), NULL, &context);
-  std::set<URLMatcherConditionSet::ID> dummy_match_set;
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its
   //    attributes are fulfilled.
-  EXPECT_FALSE(condition_no_url_false->IsFulfilled(
-      dummy_match_set,
-      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
+  WebRequestData data(&https_request, ON_BEFORE_REQUEST);
+  EXPECT_FALSE(
+      condition_no_url_false->IsFulfilled(WebRequestDataWithMatchIds(&data)));
 
-  EXPECT_TRUE(condition_no_url_true->IsFulfilled(
-      dummy_match_set,
-      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
+  data = WebRequestData(&https_request, ON_BEFORE_REQUEST);
+  EXPECT_TRUE(
+      condition_no_url_true->IsFulfilled(WebRequestDataWithMatchIds(&data)));
 
   // 2. An empty condition (in particular, without UrlFilter attributes) is
   //    always fulfilled.
-  EXPECT_TRUE(condition_empty->IsFulfilled(
-      dummy_match_set,
-      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
+  data = WebRequestData(&https_request, ON_BEFORE_REQUEST);
+  EXPECT_TRUE(condition_empty->IsFulfilled(WebRequestDataWithMatchIds(&data)));
 }
 
 TEST(WebRequestConditionTest, CreateConditionSet) {
@@ -210,38 +243,33 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   result->GetURLMatcherConditionSets(&url_matcher_condition_set);
   matcher.AddConditionSets(url_matcher_condition_set);
 
-  std::set<URLMatcherConditionSet::ID> url_match_ids;
-
   // Test that the result is correct and matches http://www.example.com and
   // https://www.example.com
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
   net::TestURLRequest http_request(http_url, NULL, &context);
-  url_match_ids = matcher.MatchURL(http_url);
-  EXPECT_EQ(1u, url_match_ids.size());
-  EXPECT_TRUE(result->IsFulfilled(
-      *(url_match_ids.begin()),
-      url_match_ids,
-      DeclarativeWebRequestData(&http_request, ON_BEFORE_REQUEST)));
+  WebRequestData data(&http_request, ON_BEFORE_REQUEST);
+  WebRequestDataWithMatchIds request_data(&data);
+  request_data.url_match_ids = matcher.MatchURL(http_url);
+  EXPECT_EQ(1u, request_data.url_match_ids.size());
+  EXPECT_TRUE(result->IsFulfilled(*(request_data.url_match_ids.begin()),
+                                  request_data));
 
   GURL https_url("https://www.example.com");
-  url_match_ids = matcher.MatchURL(https_url);
-  EXPECT_EQ(1u, url_match_ids.size());
+  request_data.url_match_ids = matcher.MatchURL(https_url);
+  EXPECT_EQ(1u, request_data.url_match_ids.size());
   net::TestURLRequest https_request(https_url, NULL, &context);
-  EXPECT_TRUE(result->IsFulfilled(
-      *(url_match_ids.begin()),
-      url_match_ids,
-      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
+  data.request = &https_request;
+  EXPECT_TRUE(result->IsFulfilled(*(request_data.url_match_ids.begin()),
+                                  request_data));
 
   // Check that both, hostPrefix and hostSuffix are evaluated.
   GURL https_foo_url("https://foo.example.com");
-  url_match_ids = matcher.MatchURL(https_foo_url);
-  EXPECT_EQ(0u, url_match_ids.size());
+  request_data.url_match_ids = matcher.MatchURL(https_foo_url);
+  EXPECT_EQ(0u, request_data.url_match_ids.size());
   net::TestURLRequest https_foo_request(https_foo_url, NULL, &context);
-  EXPECT_FALSE(result->IsFulfilled(
-      -1,
-      url_match_ids,
-      DeclarativeWebRequestData(&https_foo_request, ON_BEFORE_REQUEST)));
+  data.request = &https_foo_request;
+  EXPECT_FALSE(result->IsFulfilled(-1, request_data));
 }
 
 TEST(WebRequestConditionTest, TestPortFilter) {
@@ -308,10 +336,6 @@ TEST(WebRequestConditionTest, ConditionsWithConflictingStages) {
 
   std::string error;
   scoped_ptr<WebRequestCondition> result;
-
-  DictionaryValue condition_value;
-  condition_value.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
-
 
   // Test error on incompatible application stages for involved attributes.
   error.clear();

@@ -21,15 +21,14 @@ namespace extensions {
 
 // Container for information about a URLRequest to determine which
 // rules apply to the request.
-struct DeclarativeWebRequestData {
-  DeclarativeWebRequestData(net::URLRequest* request, RequestStage stage)
-      : request(request), stage(stage),
-        original_response_headers(NULL) {}
-  DeclarativeWebRequestData(
-      net::URLRequest* request, RequestStage stage,
-      const net::HttpResponseHeaders* original_response_headers)
-      : request(request), stage(stage),
-        original_response_headers(original_response_headers) {}
+struct WebRequestData {
+  WebRequestData(net::URLRequest* request, RequestStage stage);
+  WebRequestData(
+      net::URLRequest* request,
+      RequestStage stage,
+      const net::HttpResponseHeaders* original_response_headers);
+  ~WebRequestData();
+
   // The network request that is currently being processed.
   net::URLRequest* request;
   // The stage (progress) of the network request.
@@ -37,6 +36,16 @@ struct DeclarativeWebRequestData {
   // Additional information about requests that is not
   // available in all request stages.
   const net::HttpResponseHeaders* original_response_headers;
+};
+
+// Adds information about URL matches to WebRequestData.
+struct WebRequestDataWithMatchIds {
+  explicit WebRequestDataWithMatchIds(const WebRequestData* request_data);
+  ~WebRequestDataWithMatchIds();
+
+  const WebRequestData* data;
+  std::set<URLMatcherConditionSet::ID> url_match_ids;
+  std::set<URLMatcherConditionSet::ID> first_party_url_match_ids;
 };
 
 // Representation of a condition in the Declarative WebRequest API. A condition
@@ -58,10 +67,11 @@ struct DeclarativeWebRequestData {
 // WebRequestConditionSet::GetURLMatcherConditionSets.
 class WebRequestCondition {
  public:
-  typedef DeclarativeWebRequestData MatchData;
+  typedef WebRequestDataWithMatchIds MatchData;
 
   WebRequestCondition(
       scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
+      scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_conditions,
       const WebRequestConditionAttributes& condition_attributes);
   ~WebRequestCondition();
 
@@ -72,22 +82,12 @@ class WebRequestCondition {
       const base::Value& condition,
       std::string* error);
 
-  // Returns whether the request matches this condition.  |url_matches| lists
-  // the IDs that match the request's URL.
-  bool IsFulfilled(const std::set<URLMatcherConditionSet::ID> &url_matches,
-                   const DeclarativeWebRequestData& request_data) const;
+  // Returns whether the request matches this condition.
+  bool IsFulfilled(const MatchData& request_data) const;
 
-  // True if this condition has a url filter.
-  bool has_url_matcher_condition_set() const {
-    return url_matcher_conditions_ != NULL;
-  }
-
-  // If this Condition has a url filter, appends it to |condition_sets|.
+  // If this condition has url attributes, appends them to |condition_sets|.
   void GetURLMatcherConditionSets(
-      URLMatcherConditionSet::Vector* condition_sets) const {
-    if (url_matcher_conditions_)
-      condition_sets->push_back(url_matcher_conditions_);
-  }
+      URLMatcherConditionSet::Vector* condition_sets) const;
 
   // Returns the condition attributes checked by this condition.
   const WebRequestConditionAttributes condition_attributes() const {
@@ -100,9 +100,9 @@ class WebRequestCondition {
   int stages() const { return applicable_request_stages_; }
 
  private:
-  // Represents the 'url' attribute of this condition. If NULL, then there was
-  // no 'url' attribute in this condition.
+  // URL attributes of this condition.
   scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
+  scoped_refptr<URLMatcherConditionSet> first_party_url_matcher_conditions_;
 
   // All non-UrlFilter attributes of this condition.
   WebRequestConditionAttributes condition_attributes_;

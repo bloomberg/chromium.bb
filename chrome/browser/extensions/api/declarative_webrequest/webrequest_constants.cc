@@ -22,6 +22,7 @@ const char kExcludeRequestHeadersKey[] = "excludeRequestHeaders";
 const char kExcludeResponseHeadersKey[] = "excludeResponseHeaders";
 const char kExpiresKey[] = "expires";
 const char kFilterKey[] ="filter";
+const char kFirstPartyForCookiesUrlKey[] = "firstPartyForCookiesUrl";
 const char kFromKey[] = "from";
 const char kHttpOnlyKey[] = "httpOnly";
 const char kInstanceTypeKey[] = "instanceType";
