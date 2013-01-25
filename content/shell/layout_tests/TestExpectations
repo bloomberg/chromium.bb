@@ -1,7 +1,3 @@
 # These are additional layout test expectations for content shell
 #
 # See  http://trac.webkit.org/wiki/TestExpectations for more information on this file.
-
-# Require a local devtools frontend.
-crbug.com/171920 inspector/ [ Skip ]
-crbug.com/171920 http/tests/inspector/ [ Skip ]
