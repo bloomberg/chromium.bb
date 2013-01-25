@@ -7,6 +7,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/session.h"
@@ -30,7 +31,7 @@ bool ParseFromValue(base::Value* value, WebPoint* point) {
   return true;
 }
 
-base::Value* CreateValueFrom(WebPoint* point) {
+base::Value* CreateValueFrom(const WebPoint* point) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("x", point->x);
   dict->SetInteger("y", point->y);
@@ -50,7 +51,7 @@ bool ParseFromValue(base::Value* value, WebSize* size) {
   return true;
 }
 
-base::Value* CreateValueFrom(WebSize* size) {
+base::Value* CreateValueFrom(const WebSize* size) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("width", size->width);
   dict->SetInteger("height", size->height);
@@ -74,7 +75,7 @@ bool ParseFromValue(base::Value* value, WebRect* rect) {
   return true;
 }
 
-base::Value* CreateValueFrom(WebRect* rect) {
+base::Value* CreateValueFrom(const WebRect* rect) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("left", rect->origin.x);
   dict->SetInteger("top", rect->origin.y);
@@ -94,42 +95,6 @@ Status CallAtomsJs(
 }
 
 }  // namespace
-
-
-WebPoint::WebPoint() : x(0), y(0) {}
-
-WebPoint::WebPoint(int x, int y) : x(x), y(y) {}
-
-WebPoint::~WebPoint() {}
-
-void WebPoint::offset(int x_, int y_) {
-  x += x_;
-  y += y_;
-}
-
-WebSize::WebSize() : width(0), height(0) {}
-
-WebSize::WebSize(int width, int height) : width(width), height(height) {}
-
-WebSize::~WebSize() {}
-
-WebRect::WebRect() : origin(0, 0), size(0, 0) {}
-
-WebRect::WebRect(int x, int y, int width, int height)
-    : origin(x, y), size(width, height) {}
-
-WebRect::WebRect(const WebPoint& origin, const WebSize& size)
-    : origin(origin), size(size) {}
-
-WebRect::~WebRect() {}
-
-int WebRect::x() { return origin.x; }
-
-int WebRect::y() { return origin.y; }
-
-int WebRect::width() { return size.width; }
-
-int WebRect::height() { return size.height; }
 
 base::DictionaryValue* CreateElement(const std::string& id) {
   base::DictionaryValue* element = new base::DictionaryValue();
@@ -223,7 +188,7 @@ Status GetElementClickableLocation(
     return Status(kElementNotVisible);
 
   status = ScrollElementRegionIntoView(
-      session, element_id, &rect, true, location);
+      session, element_id, rect, true, location);
   if (status.IsError())
     return status;
   location->offset(rect.width() / 2, rect.height() / 2);
@@ -384,17 +349,29 @@ Status ToggleOptionElement(
   return SetOptionElementSelected(session, id, !is_selected);
 }
 
+Status ScrollElementIntoView(
+    Session* session,
+    const std::string& id,
+    WebPoint* location) {
+  WebSize size;
+  Status status = GetElementSize(session, id, &size);
+  if (status.IsError())
+    return status;
+  return ScrollElementRegionIntoView(
+      session, id, WebRect(WebPoint(0, 0), size), false, location);
+}
+
 Status ScrollElementRegionIntoView(
     Session* session,
     const std::string& id,
-    WebRect* region,
+    const WebRect& region,
     bool center,
     WebPoint* location) {
-  WebPoint region_offset = region->origin;
+  WebPoint region_offset = region.origin;
   base::ListValue args;
   args.Append(CreateElement(id));
   args.AppendBoolean(center);
-  args.Append(CreateValueFrom(region));
+  args.Append(CreateValueFrom(&region));
   scoped_ptr<base::Value> result;
 
   // TODO(chrisgao): Nested frame. See http://crbug.com/170998.

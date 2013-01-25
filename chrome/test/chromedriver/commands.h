@@ -159,4 +159,34 @@ Status ExecuteRefresh(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Move the mouse by an offset of the specificed element.
+Status ExecuteMouseMoveTo(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Click a mouse button at the coordinates set by the last moveto.
+Status ExecuteMouseClick(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Click and hold a mouse button at the coordinates set by the last moveto.
+Status ExecuteMouseButtonDown(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Releases the mouse button previously held (where the mouse is currently at).
+Status ExecuteMouseButtonUp(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Double-clicks at the current mouse coordinates (set by last moveto).
+Status ExecuteMouseDoubleClick(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

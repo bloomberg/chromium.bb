@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/element_util.h"
@@ -52,6 +53,19 @@ Status CheckChromeVersion(Chrome* chrome, std::string* chrome_version) {
     }
   }
   *chrome_version = temp_chrome_version;
+  return Status(kOk);
+}
+
+Status GetMouseButton(const base::DictionaryValue& params,
+                      MouseButton* button) {
+  int button_num;
+  if (!params.GetInteger("button", &button_num)) {
+    button_num = 0;  // Default to left mouse button.
+  } else if (button_num < 0 || button_num > 2) {
+    return Status(kUnknownError,
+                  base::StringPrintf("invalid button: %d", button_num));
+  }
+  *button = static_cast<MouseButton>(button_num);
   return Status(kOk);
 }
 
@@ -285,7 +299,10 @@ Status ExecuteHoverOverElement(
       kMovedMouseEventType, kNoneMouseButton, location.x, location.y, 0);
   std::list<MouseEvent> events;
   events.push_back(move_event);
-  return session->chrome->DispatchMouseEvents(events);
+  status = session->chrome->DispatchMouseEvents(events);
+  if (status.IsOk())
+    session->mouse_position = location;
+  return status;
 }
 
 Status ExecuteClickElement(
@@ -326,7 +343,10 @@ Status ExecuteClickElement(
     events.push_back(
         MouseEvent(kReleasedMouseEventType, kLeftMouseButton,
                    location.x, location.y, 1));
-    return session->chrome->DispatchMouseEvents(events);
+    status = session->chrome->DispatchMouseEvents(events);
+    if (status.IsOk())
+      session->mouse_position = location;
+    return status;
   }
 }
 
@@ -395,4 +415,112 @@ Status ExecuteRefresh(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   return session->chrome->Reload();
+}
+
+Status ExecuteMouseMoveTo(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string element_id;
+  bool has_element = params.GetString("element", &element_id);
+  int x_offset = 0;
+  int y_offset = 0;
+  bool has_offset = params.GetInteger("xoffset", &x_offset) &&
+      params.GetInteger("yoffset", &y_offset);
+  if (!has_element && !has_offset)
+    return Status(kUnknownError, "at least an element or offset should be set");
+
+  WebPoint location;
+  if (has_element) {
+    Status status = ScrollElementIntoView(session, element_id, &location);
+    if (status.IsError())
+      return status;
+  } else {
+    location = session->mouse_position;
+  }
+
+  if (has_offset) {
+    location.offset(x_offset, y_offset);
+  } else {
+    WebSize size;
+    Status status = GetElementSize(session, element_id, &size);
+    if (status.IsError())
+      return status;
+    location.offset(size.width / 2, size.height / 2);
+  }
+
+  std::list<MouseEvent> events;
+  events.push_back(
+      MouseEvent(kMovedMouseEventType, kNoneMouseButton,
+                 location.x, location.y, 0));
+  Status status = session->chrome->DispatchMouseEvents(events);
+  if (status.IsOk())
+    session->mouse_position = location;
+  return status;
+}
+
+Status ExecuteMouseClick(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  MouseButton button;
+  Status status = GetMouseButton(params, &button);
+  if (status.IsError())
+    return status;
+  std::list<MouseEvent> events;
+  events.push_back(
+      MouseEvent(kPressedMouseEventType, button,
+                 session->mouse_position.x, session->mouse_position.y, 1));
+  events.push_back(
+      MouseEvent(kReleasedMouseEventType, button,
+                 session->mouse_position.x, session->mouse_position.y, 1));
+  return session->chrome->DispatchMouseEvents(events);
+}
+
+Status ExecuteMouseButtonDown(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  MouseButton button;
+  Status status = GetMouseButton(params, &button);
+  if (status.IsError())
+    return status;
+  std::list<MouseEvent> events;
+  events.push_back(
+      MouseEvent(kPressedMouseEventType, button,
+                 session->mouse_position.x, session->mouse_position.y, 1));
+  return session->chrome->DispatchMouseEvents(events);
+}
+
+Status ExecuteMouseButtonUp(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  MouseButton button;
+  Status status = GetMouseButton(params, &button);
+  if (status.IsError())
+    return status;
+  std::list<MouseEvent> events;
+  events.push_back(
+      MouseEvent(kReleasedMouseEventType, button,
+                 session->mouse_position.x, session->mouse_position.y, 1));
+  return session->chrome->DispatchMouseEvents(events);
+}
+
+Status ExecuteMouseDoubleClick(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  MouseButton button;
+  Status status = GetMouseButton(params, &button);
+  if (status.IsError())
+    return status;
+  std::list<MouseEvent> events;
+  events.push_back(
+      MouseEvent(kPressedMouseEventType, button,
+                 session->mouse_position.x, session->mouse_position.y, 2));
+  events.push_back(
+      MouseEvent(kReleasedMouseEventType, button,
+                 session->mouse_position.x, session->mouse_position.y, 2));
+  return session->chrome->DispatchMouseEvents(events);
 }

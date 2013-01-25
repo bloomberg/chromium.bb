@@ -96,6 +96,22 @@ void CommandExecutorImpl::Init() {
   command_map_.Set(
       CommandNames::kRefresh,
       base::Bind(execute_session_command, base::Bind(&ExecuteRefresh)));
+  command_map_.Set(
+      CommandNames::kMouseMoveTo,
+      base::Bind(execute_session_command, base::Bind(&ExecuteMouseMoveTo)));
+  command_map_.Set(
+      CommandNames::kMouseClick,
+      base::Bind(execute_session_command, base::Bind(&ExecuteMouseClick)));
+  command_map_.Set(
+      CommandNames::kMouseButtonDown,
+      base::Bind(execute_session_command, base::Bind(&ExecuteMouseButtonDown)));
+  command_map_.Set(
+      CommandNames::kMouseButtonUp,
+      base::Bind(execute_session_command, base::Bind(&ExecuteMouseButtonUp)));
+  command_map_.Set(
+      CommandNames::kMouseDoubleClick,
+      base::Bind(execute_session_command,
+                 base::Bind(&ExecuteMouseDoubleClick)));
   Command quit_command = base::Bind(execute_session_command,
       base::Bind(&ExecuteQuit, &session_map_));
   command_map_.Set(CommandNames::kQuit, quit_command);
@@ -104,28 +120,28 @@ void CommandExecutorImpl::Init() {
   command_map_.Set(
       CommandNames::kFindChildElement,
       base::Bind(execute_session_command,
-          base::Bind(&ExecuteElementCommand,
-              base::Bind(&ExecuteFindChildElement, 50))));
+                 base::Bind(&ExecuteElementCommand,
+                            base::Bind(&ExecuteFindChildElement, 50))));
   command_map_.Set(
       CommandNames::kFindChildElements,
       base::Bind(execute_session_command,
-          base::Bind(&ExecuteElementCommand,
-              base::Bind(&ExecuteFindChildElements, 50))));
+                 base::Bind(&ExecuteElementCommand,
+                            base::Bind(&ExecuteFindChildElements, 50))));
   command_map_.Set(
       CommandNames::kHoverOverElement,
       base::Bind(execute_session_command,
-          base::Bind(&ExecuteElementCommand,
-              base::Bind(&ExecuteHoverOverElement))));
+                 base::Bind(&ExecuteElementCommand,
+                            base::Bind(&ExecuteHoverOverElement))));
   command_map_.Set(
       CommandNames::kClickElement,
       base::Bind(execute_session_command,
-          base::Bind(&ExecuteElementCommand,
-              base::Bind(&ExecuteClickElement))));
+                 base::Bind(&ExecuteElementCommand,
+                            base::Bind(&ExecuteClickElement))));
   command_map_.Set(
       CommandNames::kClearElement,
       base::Bind(execute_session_command,
-          base::Bind(&ExecuteElementCommand,
-              base::Bind(&ExecuteClearElement))));
+                 base::Bind(&ExecuteElementCommand,
+                            base::Bind(&ExecuteClearElement))));
 
   // Non-session commands.
   command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));

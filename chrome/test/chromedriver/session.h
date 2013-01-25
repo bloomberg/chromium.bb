@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "chrome/test/chromedriver/basic_types.h"
 
 class Chrome;
 
@@ -22,6 +23,7 @@ struct Session {
   const std::string id;
   scoped_ptr<Chrome> chrome;
   std::string frame;
+  WebPoint mouse_position;
   int implicit_wait;
   int page_load_timeout;
   int script_timeout;

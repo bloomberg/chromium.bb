@@ -158,6 +158,28 @@ class ChromeDriver(object):
   def Refresh(self):
     return self.ExecuteSessionCommand('refresh')
 
+  def MouseMoveTo(self, element=None, x_offset=None, y_offset=None):
+    params = {}
+    if element is not None:
+      params['element'] = element._id
+    if x_offset is not None:
+      params['xoffset'] = x_offset
+    if y_offset is not None:
+      params['yoffset'] = y_offset
+    self.ExecuteSessionCommand('mouseMoveTo', params)
+
+  def MouseClick(self, button=0):
+    self.ExecuteSessionCommand('mouseClick', {'button': button})
+
+  def MouseButtonDown(self, button=0):
+    self.ExecuteSessionCommand('mouseButtonDown', {'button': button})
+
+  def MouseButtonUp(self, button=0):
+    self.ExecuteSessionCommand('mouseButtonUp', {'button': button})
+
+  def MouseDoubleClick(self, button=0):
+    self.ExecuteSessionCommand('mouseDoubleClick', {'button': button})
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self.ExecuteSessionCommand('quit')

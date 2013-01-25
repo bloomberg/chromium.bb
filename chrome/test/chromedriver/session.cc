@@ -7,10 +7,11 @@
 #include "chrome/test/chromedriver/chrome.h"
 
 Session::Session(const std::string& id)
-    : id(id), implicit_wait(0), page_load_timeout(0), script_timeout(0) {}
+    : id(id), mouse_position(0, 0), implicit_wait(0), page_load_timeout(0),
+      script_timeout(0) {}
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
-    : id(id), chrome(chrome.Pass()), implicit_wait(0),
+    : id(id), chrome(chrome.Pass()), mouse_position(0, 0), implicit_wait(0),
       page_load_timeout(0), script_timeout(0) {}
 
 Session::~Session() {}

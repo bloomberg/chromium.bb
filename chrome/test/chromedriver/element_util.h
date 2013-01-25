@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/test/chromedriver/basic_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -17,41 +18,6 @@ class Value;
 
 struct Session;
 class Status;
-
-struct WebPoint {
-  WebPoint();
-  WebPoint(int x, int y);
-  ~WebPoint();
-
-  void offset(int x_, int y_);
-
-  int x;
-  int y;
-};
-
-struct WebSize {
-  WebSize();
-  WebSize(int width, int height);
-  ~WebSize();
-
-  int width;
-  int height;
-};
-
-struct WebRect {
-  WebRect();
-  WebRect(int x, int y, int width, int height);
-  WebRect(const WebPoint& origin, const WebSize& size);
-  ~WebRect();
-
-  int x();
-  int y();
-  int width();
-  int height();
-
-  WebPoint origin;
-  WebSize size;
-};
 
 base::DictionaryValue* CreateElement(const std::string& id);
 
@@ -118,10 +84,15 @@ Status ToggleOptionElement(
     Session* session,
     const std::string& id);
 
+Status ScrollElementIntoView(
+    Session* session,
+    const std::string& id,
+    WebPoint* location);
+
 Status ScrollElementRegionIntoView(
     Session* session,
     const std::string& id,
-    WebRect* region,
+    const WebRect& region,
     bool center,
     WebPoint* location);
 
