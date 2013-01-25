@@ -24,6 +24,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "googleurl/src/gurl.h"
+#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_util.h"
+#include "media/base/channel_layout.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -877,8 +880,31 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
     // TODO(justinlin): Nicer way to do this?
     // Re-append the device's id since we lost it when posting request to UI.
     if (device_info.device.type == content::MEDIA_TAB_VIDEO_CAPTURE ||
-        device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE)
+        device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
       device_info.device.id = request->requested_device_id;
+
+      // Initialize the sample_rate and channel_layout here since for audio
+      // mirroring, we don't go through EnumerateDevices where these are usually
+      // initialized.
+      if (device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
+        int sample_rate = media::GetAudioInputHardwareSampleRate(
+            media::AudioManagerBase::kDefaultDeviceId);
+        media::ChannelLayout channel_layout =
+            media::GetAudioInputHardwareChannelLayout(
+                media::AudioManagerBase::kDefaultDeviceId);
+
+        // If we weren't able to get the native sampling rate, it most likely
+        // means the system did not have an input device, but for mirroring we
+        // still want to startup the audio engine, so set reasonable defaults.
+        if (sample_rate == 0)
+          sample_rate = 44100;
+        if (channel_layout == 0)
+          channel_layout = media::CHANNEL_LAYOUT_STEREO;
+
+        device_info.device.sample_rate = sample_rate;
+        device_info.device.channel_layout = channel_layout;
+      }
+    }
 
     // Set in_use to false to be able to track if this device has been
     // opened. in_use might be true if the device type can be used in more

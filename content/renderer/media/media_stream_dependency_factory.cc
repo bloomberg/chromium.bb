@@ -225,7 +225,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
   }
 
   // Do additional source initialization if the audio source is a valid
-  // microphone.
+  // microphone or tab audio.
   WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
   description->audioSources(audio_components);
   for (size_t i = 0; i < audio_components.size(); ++i) {
@@ -239,7 +239,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     }
 
     const StreamDeviceInfo device_info = source_data->device_info();
-    if (device_info.device.type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    if (IsAudioMediaType(device_info.device.type)) {
       if (!InitializeAudioSource(device_info)) {
         DLOG(WARNING) << "Unsupported audio source";
         sources_created.Run(description, false);
