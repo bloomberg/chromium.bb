@@ -27,6 +27,8 @@ class CC_EXPORT LayerTreeDebugState {
   bool showOccludingRects;
   bool showNonOccludingRects;
 
+  int slowDownRasterScaleFactor;
+
   bool showHudInfo() const;
   bool showHudRects() const;
   bool hudNeedsFont() const;

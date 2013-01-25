@@ -17,7 +17,8 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl());
 }
 
-PicturePileImpl::PicturePileImpl() {
+PicturePileImpl::PicturePileImpl()
+    : slow_down_raster_scale_factor_for_debug_(0) {
 }
 
 PicturePileImpl::~PicturePileImpl() {
@@ -50,6 +51,8 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
     }
   }
   clone->min_contents_scale_ = min_contents_scale_;
+  clone->set_slow_down_raster_scale_factor(
+      slow_down_raster_scale_factor_for_debug_);
 
   return clone;
 }
@@ -95,7 +98,13 @@ void PicturePileImpl::Raster(
           gfx::ScaleRect((*i)->LayerRect(), contents_scale));
       if (!unclipped.Intersects(content_clip))
         continue;
-      (*i)->Raster(canvas, content_clip, contents_scale);
+
+      if (slow_down_raster_scale_factor_for_debug_) {
+        for (int j = 0; j < slow_down_raster_scale_factor_for_debug_; ++j)
+          (*i)->Raster(canvas, content_clip, contents_scale);
+      } else {
+        (*i)->Raster(canvas, content_clip, contents_scale);
+      }
 
       // Don't allow pictures underneath to draw where this picture did.
       canvas->clipRect(

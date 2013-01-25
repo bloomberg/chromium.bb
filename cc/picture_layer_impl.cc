@@ -67,6 +67,8 @@ void PictureLayerImpl::pushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->TransferTilingSet(tilings_.Pass());
   layer_impl->pile_ = pile_;
   pile_ = PicturePileImpl::Create();
+  pile_->set_slow_down_raster_scale_factor(
+      layerTreeImpl()->debug_state().slowDownRasterScaleFactor);
 }
 
 

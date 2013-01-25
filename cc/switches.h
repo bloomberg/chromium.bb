@@ -33,6 +33,7 @@ CC_EXPORT extern const char kShowOccludingRects[];
 CC_EXPORT extern const char kShowNonOccludingRects[];
 CC_EXPORT extern const char kTraceOverdraw[];
 CC_EXPORT extern const char kTopControlsHeight[];
+CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
 
 }  // namespace switches
 }  // namespace cc

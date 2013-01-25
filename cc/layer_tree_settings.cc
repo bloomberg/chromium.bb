@@ -67,6 +67,14 @@ LayerTreeSettings::LayerTreeSettings()
     initialDebugState.showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
     initialDebugState.showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
     initialDebugState.showNonOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowNonOccludingRects);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
+      int scaleAsInt;
+      std::string value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kSlowDownRasterScaleFactor);
+      if (!base::StringToInt(value, &scaleAsInt))
+          LOG(ERROR) << "Failed to parse the slow down raster scale factor:" << value;
+      else
+          initialDebugState.slowDownRasterScaleFactor = scaleAsInt;
+    }
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kNumRasterThreads)) {

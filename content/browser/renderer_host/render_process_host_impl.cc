@@ -860,6 +860,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kShowOccludingRects,
     cc::switches::kTraceOverdraw,
     cc::switches::kTopControlsHeight,
+    cc::switches::kSlowDownRasterScaleFactor,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

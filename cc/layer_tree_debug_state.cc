@@ -19,7 +19,8 @@ LayerTreeDebugState::LayerTreeDebugState()
   , showScreenSpaceRects(false)
   , showReplicaScreenSpaceRects(false)
   , showOccludingRects(false)
-  , showNonOccludingRects(false) { }
+  , showNonOccludingRects(false)
+  , slowDownRasterScaleFactor(0) { }
 
 LayerTreeDebugState::~LayerTreeDebugState() {
 }
@@ -55,6 +56,9 @@ LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, con
     r.showReplicaScreenSpaceRects |= b.showReplicaScreenSpaceRects;
     r.showOccludingRects |= b.showOccludingRects;
     r.showNonOccludingRects |= b.showNonOccludingRects;
+
+    if (b.slowDownRasterScaleFactor)
+      r.slowDownRasterScaleFactor = b.slowDownRasterScaleFactor;
 
     return r;
 }

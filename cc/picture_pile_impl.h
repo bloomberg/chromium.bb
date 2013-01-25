@@ -45,6 +45,10 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
+  void set_slow_down_raster_scale_factor(int factor) {
+    slow_down_raster_scale_factor_for_debug_ = factor;
+  }
+
  protected:
   friend class PicturePile;
 
@@ -54,6 +58,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   typedef std::map<base::PlatformThreadId, scoped_refptr<PicturePileImpl> >
       CloneMap;
   CloneMap clones_;
+
+  int slow_down_raster_scale_factor_for_debug_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };
