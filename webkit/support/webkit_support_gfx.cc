@@ -485,6 +485,9 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
                    int png_output_color_type, int output_color_components,
                    FormatConverter converter,
                    const std::vector<Comment>& comments) {
+#ifdef PNG_TEXT_SUPPORTED
+  CommentWriter comment_writer(comments);
+#endif
   unsigned char* row_buffer = NULL;
 
   // Make sure to not declare any locals here -- locals in the presence
@@ -505,7 +508,6 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
                PNG_FILTER_TYPE_DEFAULT);
 
 #ifdef PNG_TEXT_SUPPORTED
-  CommentWriter comment_writer(comments);
   if (comment_writer.HasComments()) {
     png_set_text(png_ptr, info_ptr, comment_writer.get_png_text(),
                  comment_writer.size());
