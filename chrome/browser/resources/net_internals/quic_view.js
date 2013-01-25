@@ -24,6 +24,7 @@ var QuicView = (function() {
     g_browser.addQuicInfoObserver(this, true);
 
     this.quicEnabledSpan_ = $(QuicView.ENABLED_SPAN_ID);
+    this.quicUseSpdyOverQuicSpan_ = $(QuicView.USE_SPDY_OVER_QUIC_SPAN_ID);
     this.quicForcePortSpan_ = $(QuicView.FORCE_PORT_SPAN_ID);
 
     this.quicSessionNoneSpan_ = $(QuicView.SESSION_NONE_SPAN_ID);
@@ -37,6 +38,7 @@ var QuicView = (function() {
   // IDs for special HTML elements in quic_view.html
   QuicView.MAIN_BOX_ID = 'quic-view-tab-content';
   QuicView.ENABLED_SPAN_ID = 'quic-view-enabled-span';
+  QuicView.USE_SPDY_OVER_QUIC_SPAN_ID = 'quic-view-use-spdy-over-quic-span';
   QuicView.FORCE_PORT_SPAN_ID = 'quic-view-force-port-span';
   QuicView.SESSION_NONE_SPAN_ID = 'quic-view-session-none-span';
   QuicView.SESSION_LINK_SPAN_ID = 'quic-view-session-link-span';
@@ -69,7 +71,8 @@ var QuicView = (function() {
       if (!quicInfo)
         return false;
 
-      this.quicEnabledSpan_.textContent = quicInfo.quic_enabled;
+      this.quicEnabledSpan_.textContent = !!quicInfo.quic_enabled;
+      this.quicUseSpdyOverQuicSpan_.textContent = !!quicInfo.use_spdy_over_quic;
       this.quicForcePortSpan_.textContent =
           quicInfo.origin_port_to_force_quic_on;
 

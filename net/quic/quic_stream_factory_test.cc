@@ -25,7 +25,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   QuicStreamFactoryTest()
       : clock_(new MockClock()),
         factory_(&host_resolver_, &socket_factory_,
-                 &random_generator_, clock_),
+                 &random_generator_, clock_, false),
         host_port_proxy_pair_(HostPortPair("www.google.com", 443),
                               ProxyServer::Direct()) {
   }

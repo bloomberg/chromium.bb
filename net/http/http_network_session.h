@@ -81,6 +81,7 @@ class NET_EXPORT HttpNetworkSession
     SpdySessionPool::TimeFunc time_func;
     std::string trusted_spdy_proxy;
     uint16 origin_port_to_force_quic_on;
+    bool use_spdy_over_quic;
   };
 
   enum SocketPoolType {
