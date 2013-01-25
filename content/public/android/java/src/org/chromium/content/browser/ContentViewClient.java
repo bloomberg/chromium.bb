@@ -92,6 +92,15 @@ public class ContentViewClient {
     public void onImeEvent() {
     }
 
+    /**
+     * Notified when a change to the IME was requested.
+     *
+     * @param requestShow Whether the IME was requested to be shown (may already be showing
+     *                    though).
+     */
+    public void onImeStateChangeRequested(boolean requestShow) {
+    }
+
     // TODO (dtrainor): Should expose getScrollX/Y from ContentView or make
     // computeHorizontalScrollOffset()/computeVerticalScrollOffset() public.
     /**

@@ -242,8 +242,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     // Temporary notification to tell onSizeChanged to focus a form element,
     // because the OSK was just brought up.
-    private boolean mFocusOnNextSizeChanged = false;
     private boolean mUnfocusOnNextSizeChanged = false;
+    private Rect mFocusPreOSKViewportRect = new Rect();
 
     private boolean mNeedUpdateOrientationChanged;
 
@@ -389,6 +389,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
                     @Override
                     public void onDismissInput() {
+                        getContentViewClient().onImeStateChangeRequested(false);
                     }
 
                     @Override
@@ -401,11 +402,15 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                         return new ResultReceiver(new Handler()) {
                             @Override
                             public void onReceiveResult(int resultCode, Bundle resultData) {
+                                getContentViewClient().onImeStateChangeRequested(
+                                        resultCode == InputMethodManager.RESULT_SHOWN ||
+                                        resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN);
                                 if (resultCode == InputMethodManager.RESULT_SHOWN) {
                                     // If OSK is newly shown, delay the form focus until
                                     // the onSizeChanged (in order to adjust relative to the
                                     // new size).
-                                    mFocusOnNextSizeChanged = true;
+                                    getContainerView().getWindowVisibleDisplayFrame(
+                                            mFocusPreOSKViewportRect);
                                 } else if (resultCode ==
                                         InputMethodManager.RESULT_UNCHANGED_SHOWN) {
                                     // If the OSK was already there, focus the form immediately.
@@ -1314,9 +1319,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public void updateAfterSizeChanged() {
         // Execute a delayed form focus operation because the OSK was brought
         // up earlier.
-        if (mFocusOnNextSizeChanged) {
-            scrollFocusedEditableNodeIntoView();
-            mFocusOnNextSizeChanged = false;
+        if (!mFocusPreOSKViewportRect.isEmpty()) {
+            Rect rect = new Rect();
+            getContainerView().getWindowVisibleDisplayFrame(rect);
+            if (!rect.equals(mFocusPreOSKViewportRect)) {
+                scrollFocusedEditableNodeIntoView();
+                mFocusPreOSKViewportRect.setEmpty();
+            }
         } else if (mUnfocusOnNextSizeChanged) {
             undoScrollFocusedEditableNodeIntoViewIfNeeded(true);
             mUnfocusOnNextSizeChanged = false;
@@ -1377,6 +1386,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     @SuppressWarnings("javadoc")
     public void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        if (!gainFocus) getContentViewClient().onImeStateChangeRequested(false);
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }
 
