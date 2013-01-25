@@ -26,12 +26,14 @@ const int kMaxMessageWidth = 400;
 
 }  // namespace
 
-ConfirmBubbleViews::ConfirmBubbleViews(const gfx::Point& anchor_point,
+ConfirmBubbleViews::ConfirmBubbleViews(gfx::NativeView parent,
+                                       const gfx::Point& anchor_point,
                                        ConfirmBubbleModel* model)
     : BubbleDelegateView(NULL, views::BubbleBorder::NONE),
-      anchor_point_(anchor_point),
       model_(model) {
   DCHECK(model);
+  set_anchor_point(anchor_point);
+  set_parent_window(parent);
 }
 
 ConfirmBubbleViews::~ConfirmBubbleViews() {
@@ -51,7 +53,7 @@ void ConfirmBubbleViews::LinkClicked(views::Link* source, int event_flags) {
 }
 
 gfx::Rect ConfirmBubbleViews::GetAnchorRect() {
-  return gfx::Rect(anchor_point_, gfx::Size());
+  return gfx::Rect(anchor_point(), gfx::Size());
 }
 
 void ConfirmBubbleViews::Init() {
@@ -159,7 +161,7 @@ namespace chrome {
 void ShowConfirmBubble(gfx::NativeView view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model) {
-  ConfirmBubbleViews* bubble = new ConfirmBubbleViews(origin, model);
+  ConfirmBubbleViews* bubble = new ConfirmBubbleViews(view, origin, model);
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 }

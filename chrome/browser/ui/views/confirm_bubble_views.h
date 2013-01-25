@@ -36,8 +36,9 @@ class ConfirmBubbleViews : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener {
  public:
-  explicit ConfirmBubbleViews(const gfx::Point& anchor_point,
-                              ConfirmBubbleModel* model);
+  ConfirmBubbleViews(gfx::NativeView parent,
+                     const gfx::Point& anchor_point,
+                     ConfirmBubbleModel* model);
 
  protected:
   virtual ~ConfirmBubbleViews();
@@ -54,9 +55,6 @@ class ConfirmBubbleViews : public views::BubbleDelegateView,
   virtual void Init() OVERRIDE;
 
  private:
-  // The screen point where this bubble is anchored.
-  gfx::Point anchor_point_;
-
   // The model to customize this bubble view.
   scoped_ptr<ConfirmBubbleModel> model_;
 
