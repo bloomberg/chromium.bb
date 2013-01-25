@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/notifications/notification_types.h"
@@ -57,6 +58,10 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
     // Request to show the notification settings (|notification_id| is used
     // to identify the requesting browser context).
     virtual void ShowSettings(const std::string& notification_id) = 0;
+
+    // Request to show the notification settings dialog. |context| is necessary
+    // to create a new window.
+    virtual void ShowSettingsDialog(gfx::NativeView context) = 0;
 
     // Called when the notification body is clicked on.
     virtual void OnClicked(const std::string& notification_id) = 0;
@@ -140,6 +145,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   virtual void DisableNotificationByExtension(const std::string& id) OVERRIDE;
   virtual void DisableNotificationByUrl(const std::string& id) OVERRIDE;
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
+  virtual void ShowNotificationSettingsDialog(gfx::NativeView context) OVERRIDE;
   virtual void OnNotificationClicked(const std::string& id) OVERRIDE;
   virtual void OnQuietModeChanged(bool quiet_mode) OVERRIDE;
   virtual void OnButtonClicked(const std::string& id, int button_index)

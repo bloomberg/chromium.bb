@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "ui/views/widget/widget.h"
 
 using message_center::NotifierSettingsView;
 
@@ -83,6 +84,15 @@ void BalloonCollectionImplAsh::ShowSettings(
     chrome::ShowExtensions(browser);
   else
     chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+}
+
+void BalloonCollectionImplAsh::ShowSettingsDialog(gfx::NativeView context) {
+  if (settings_view_) {
+    settings_view_->GetWidget()->StackAtTop();
+  } else {
+    settings_view_ =
+        message_center::NotifierSettingsView::Create(this, context);
+  }
 }
 
 void BalloonCollectionImplAsh::OnClicked(const std::string& notification_id) {

@@ -44,6 +44,10 @@ class MockNotificationListDelegate : public NotificationList::Delegate {
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE {
   }
 
+  virtual void ShowNotificationSettingsDialog(
+      gfx::NativeView context) OVERRIDE {
+  }
+
   virtual void OnNotificationClicked(const std::string& id) OVERRIDE {
   }
 

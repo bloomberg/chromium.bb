@@ -45,6 +45,7 @@ class MessageCenterNotificationManager
   virtual void DisableNotificationsFromSource(
       const std::string& notification_id) OVERRIDE;
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
+  virtual void ShowSettingsDialog(gfx::NativeView context) OVERRIDE;
   virtual void OnClicked(const std::string& notification_id) OVERRIDE;
   virtual void OnButtonClicked(const std::string& notification_id,
                                int button_index) OVERRIDE;
@@ -93,5 +94,3 @@ class MessageCenterNotificationManager
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_NOTIFICATION_MANAGER_H_
-
-

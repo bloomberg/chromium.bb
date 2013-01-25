@@ -144,6 +144,11 @@ void MessageCenter::ShowNotificationSettings(const std::string& id) {
     delegate_->ShowSettings(id);
 }
 
+void MessageCenter::ShowNotificationSettingsDialog(gfx::NativeView context) {
+  if (delegate_)
+    delegate_->ShowSettingsDialog(context);
+}
+
 void MessageCenter::OnNotificationClicked(const std::string& id) {
   if (delegate_)
     delegate_->OnClicked(id);

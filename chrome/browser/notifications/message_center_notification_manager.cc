@@ -153,6 +153,11 @@ void MessageCenterNotificationManager::ShowSettings(
   NOTIMPLEMENTED();
 }
 
+void MessageCenterNotificationManager::ShowSettingsDialog(
+    gfx::NativeView context) {
+  NOTIMPLEMENTED();
+}
+
 void MessageCenterNotificationManager::OnClicked(
     const std::string& notification_id) {
   NOTIMPLEMENTED();

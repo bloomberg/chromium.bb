@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/notifications/notification_types.h"
 
@@ -77,8 +78,11 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     virtual void DisableNotificationByExtension(const std::string& id) = 0;
     virtual void DisableNotificationByUrl(const std::string& id) = 0;
 
-    // Requests the Delegate to the settings dialog.
+    // Requests the Delegate to show the settings page.
     virtual void ShowNotificationSettings(const std::string& id) = 0;
+
+    // Requests the Delegate to show the settings dialog.
+    virtual void ShowNotificationSettingsDialog(gfx::NativeView context) = 0;
 
     // Called when a notification is clicked on.
     virtual void OnNotificationClicked(const std::string& id) = 0;

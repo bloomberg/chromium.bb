@@ -11,6 +11,7 @@
 
 #include "base/string16.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -64,7 +65,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   // Create a new widget of the notifier settings and returns it. Note that
   // the widget and the view is self-owned. It'll be deleted when it's closed
   // or the chrome's shutdown.
-  static NotifierSettingsView* Create(Delegate* delegate);
+  static NotifierSettingsView* Create(Delegate* delegate,
+                                      gfx::NativeView context);
 
   void UpdateIconImage(const std::string& id, const gfx::ImageSkia& icon);
 

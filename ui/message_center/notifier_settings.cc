@@ -50,7 +50,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     AddChildView(new views::Label(notifier.name));
   }
 
-  void UpdateIconImage(gfx::ImageSkia icon) {
+  void UpdateIconImage(const gfx::ImageSkia& icon) {
     notifier_.icon = icon;
     if (icon.isNull()) {
       delete icon_view_;
@@ -80,6 +80,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
   }
 
  private:
+  // views::ButtonListener overrides:
   void ButtonPressed(views::Button* button, const ui::Event& event) {
     DCHECK(button == checkbox_);
     // The checkbox state has already changed at this point, but we'll update
@@ -107,11 +108,13 @@ NotifierSettingsView::Notifier::Notifier(
 }
 
 // static
-NotifierSettingsView* NotifierSettingsView::Create(Delegate* delegate) {
+NotifierSettingsView* NotifierSettingsView::Create(Delegate* delegate,
+                                                   gfx::NativeView context) {
   NotifierSettingsView* view = new NotifierSettingsView(delegate);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = view;
+  params.context = context;
   widget->Init(params);
   widget->Show();
 

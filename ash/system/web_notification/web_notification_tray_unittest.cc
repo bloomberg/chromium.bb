@@ -60,6 +60,9 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
   virtual void ShowSettings(const std::string& notifcation_id) {
   }
 
+  virtual void ShowSettingsDialog(gfx::NativeView context) {
+  }
+
   virtual void OnClicked(const std::string& notifcation_id) {
   }
 
