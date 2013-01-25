@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/test/base/testing_profile.h"
@@ -143,4 +144,24 @@ TEST_F(AppsModelBuilderTest, OnExtensionMoved) {
   service_->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
             GetModelContent(model.get()));
+}
+
+TEST_F(AppsModelBuilderTest, InvalidOrdinal) {
+  // Creates a no-ordinal case.
+  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  sorting->ClearOrdinals(kPackagedApp1Id);
+
+  // Creates an corrupted ordinal case.
+  ExtensionScopedPrefs* scoped_prefs = service_->extension_prefs();
+  scoped_prefs->UpdateExtensionPref(
+      kHostedAppId,
+      "page_ordinal",
+      base::Value::CreateStringValue("a corrupted ordinal"));
+
+  scoped_ptr<app_list::AppListModel::Apps> model(
+      new app_list::AppListModel::Apps);
+  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+
+  // This should not assert or crash.
+  builder.Build();
 }

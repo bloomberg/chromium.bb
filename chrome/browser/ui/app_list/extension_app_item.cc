@@ -195,6 +195,8 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
       controller_(controller),
       has_overlay_(HasOverlay(extension)) {
   Reload();
+  GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
+                                                     syncer::StringOrdinal());
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
