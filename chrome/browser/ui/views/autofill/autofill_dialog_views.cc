@@ -24,6 +24,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -208,9 +209,16 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
 AutofillDialogViews::SuggestionView::SuggestionView(
     const string16& edit_label,
     views::LinkListener* edit_listener)
-    : label_(new views::Label()) {
+    : label_(new views::Label()),
+      icon_(new views::ImageView()),
+      label_container_(new views::View()) {
+  // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(label_);
+  label_container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  label_container_->AddChildView(icon_);
+  label_container_->AddChildView(label_);
+  AddChildView(label_container_);
 
   // TODO(estade): The link needs to have a different color when hovered.
   views::Link* edit_link = new views::Link(edit_label);
@@ -233,6 +241,11 @@ AutofillDialogViews::SuggestionView::~SuggestionView() {}
 void AutofillDialogViews::SuggestionView::SetSuggestionText(
     const string16& text) {
   label_->SetText(text);
+}
+
+void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
+    const gfx::Image& image) {
+  icon_->SetImage(image.AsImageSkia());
 }
 
 // AutofillDialogView ----------------------------------------------------------
@@ -718,6 +731,8 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   bool show_suggestions = !suggestion_text.empty();
   group.suggested_info->SetVisible(show_suggestions);
   group.suggested_info->SetSuggestionText(suggestion_text);
+  gfx::Image icon = controller_->SuggestionIconForSection(group.section);
+  group.suggested_info->SetSuggestionIcon(icon);
 
   if (group.section == SECTION_SHIPPING) {
     bool show_checkbox = !show_suggestions;

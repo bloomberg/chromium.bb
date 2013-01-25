@@ -24,57 +24,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
-#include "grit/webkit_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 
 namespace {
-
-// Converts a credit card type to the appropriate resource ID of the CC icon.
-int CreditCardTypeToResourceID(const std::string& type) {
-  if (type == kAmericanExpressCard)
-    return IDR_AUTOFILL_CC_AMEX;
-  else if (type == kDinersCard)
-    return IDR_AUTOFILL_CC_DINERS;
-  else if (type == kDiscoverCard)
-    return IDR_AUTOFILL_CC_DISCOVER;
-  else if (type == kGenericCard)
-    return IDR_AUTOFILL_CC_GENERIC;
-  else if (type == kJCBCard)
-    return IDR_AUTOFILL_CC_JCB;
-  else if (type == kMasterCard)
-    return IDR_AUTOFILL_CC_MASTERCARD;
-  else if (type == kSoloCard)
-    return IDR_AUTOFILL_CC_SOLO;
-  else if (type == kVisaCard)
-    return IDR_AUTOFILL_CC_VISA;
-
-  NOTREACHED();
-  return 0;
-}
-
-// Converts a credit card type to the appropriate localized card type.
-string16 LocalizedCreditCardType(const std::string& type) {
-  if (type == kAmericanExpressCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
-  else if (type == kDinersCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
-  else if (type == kDiscoverCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
-  else if (type == kGenericCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
-  else if (type == kJCBCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
-  else if (type == kMasterCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
-  else if (type == kSoloCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_SOLO);
-  else if (type == kVisaCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
-
-  NOTREACHED();
-  return string16();
-}
 
 // Returns a dictionary that maps country codes to data for the country.
 DictionaryValue* GetCountryData() {
@@ -422,13 +375,14 @@ void AutofillOptionsHandler::LoadAutofillData() {
   for (std::vector<CreditCard*>::const_iterator i =
            personal_data_->credit_cards().begin();
        i != personal_data_->credit_cards().end(); ++i) {
+    const CreditCard* card = *i;
+    // TODO(estade): this should be a dictionary.
     ListValue* entry = new ListValue();
-    entry->Append(new StringValue((*i)->guid()));
-    entry->Append(new StringValue((*i)->Label()));
-    int res = CreditCardTypeToResourceID((*i)->type());
-    entry->Append(
-        new StringValue(webui::GetBitmapDataUrlFromResource(res)));
-    entry->Append(new StringValue(LocalizedCreditCardType((*i)->type())));
+    entry->Append(new StringValue(card->guid()));
+    entry->Append(new StringValue(card->Label()));
+    entry->Append(new StringValue(
+        webui::GetBitmapDataUrlFromResource(card->IconResourceId())));
+    entry->Append(new StringValue(card->TypeForDisplay()));
     credit_cards.Append(entry);
   }
 

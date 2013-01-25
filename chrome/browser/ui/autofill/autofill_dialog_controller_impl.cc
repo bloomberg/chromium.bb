@@ -30,6 +30,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace autofill {
 
@@ -329,19 +330,43 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
 
   if (section == SECTION_CC) {
     CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
-    if (card)
-      return card->Label();
-  } else {
-    // TODO(estade): This doesn't display as much info as it should (for
-    // example, it should show full addresses rather than just a summary).
-    AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
-    if (profile)
-      return profile->Label();
+    if (!card)
+      return string16();
+
+    return card->TypeAndLastFourDigits();
   }
 
-  // TODO(estade): The FormGroup was likely deleted while menu was showing. We
-  // should not let this happen.
-  return string16();
+  AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
+  if (!profile)
+    return string16();
+
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  string16 comma = ASCIIToUTF16(", ");
+  string16 label = profile->GetInfo(NAME_FULL, app_locale) +
+      comma + profile->GetInfo(ADDRESS_HOME_LINE1, app_locale);
+  string16 address2 = profile->GetInfo(ADDRESS_HOME_LINE2, app_locale);
+  if (!address2.empty())
+    label += comma + address2;
+  label += ASCIIToUTF16("\n") +
+      profile->GetInfo(ADDRESS_HOME_CITY, app_locale) + comma +
+      profile->GetInfo(ADDRESS_HOME_STATE, app_locale) + ASCIIToUTF16(" ") +
+      profile->GetInfo(ADDRESS_HOME_ZIP, app_locale);
+  return label;
+}
+
+gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
+    DialogSection section) {
+  if (section != SECTION_CC)
+    return gfx::Image();
+
+  std::string item_key =
+      suggested_cc_.GetItemKeyAt(suggested_cc_.checked_item());
+  CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
+  if (!card)
+    return gfx::Image();
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageNamed(card->IconResourceId());
 }
 
 void AutofillDialogControllerImpl::EditClickedForSection(

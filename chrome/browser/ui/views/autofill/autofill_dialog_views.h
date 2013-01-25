@@ -22,11 +22,16 @@ namespace content {
 class KeyboardListener;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace views {
 class Checkbox;
 class Combobox;
 class FocusManager;
 class ImageButton;
+class ImageView;
 class Label;
 class MenuRunner;
 class TextButton;
@@ -171,13 +176,19 @@ class AutofillDialogViews : public AutofillDialogView,
                    views::LinkListener* edit_listener);
     virtual ~SuggestionView();
 
-    // Sets the display text of the suggestion. TODO(estade): this needs to
-    // support credit card icons as well.
+    // Sets the display text of the suggestion.
     void SetSuggestionText(const string16& text);
+
+    // Sets the icon which should be displayed ahead of the text.
+    void SetSuggestionIcon(const gfx::Image& image);
 
    private:
     // The label that holds the suggestion description text.
     views::Label* label_;
+    // The icon that comes just before |label_|.
+    views::ImageView* icon_;
+    // A view to contain |label_| and |icon_|.
+    views::View* label_container_;
 
     DISALLOW_COPY_AND_ASSIGN(SuggestionView);
   };

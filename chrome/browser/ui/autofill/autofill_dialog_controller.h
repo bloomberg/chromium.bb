@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -60,6 +61,7 @@ class AutofillDialogController {
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) = 0;
   virtual string16 LabelForSection(DialogSection section) const = 0;
   virtual string16 SuggestionTextForSection(DialogSection section) = 0;
+  virtual gfx::Image SuggestionIconForSection(DialogSection section) = 0;
   virtual void EditClickedForSection(DialogSection section) = 0;
   virtual bool InputIsValid(const DetailInput* input,
                             const string16& value) = 0;
