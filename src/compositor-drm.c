@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <linux/input.h>
 #include <assert.h>
+#include <sys/mman.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -114,11 +115,17 @@ struct drm_mode {
 struct drm_output;
 
 struct drm_fb {
-	struct gbm_bo *bo;
 	struct drm_output *output;
-	uint32_t fb_id;
+	uint32_t fb_id, stride, handle, size;
+	int fd;
 	int is_client_buffer;
 	struct weston_buffer_reference buffer_ref;
+
+	/* Used by gbm fbs */
+	struct gbm_bo *bo;
+
+	/* Used by dumb fbs */
+	void *map;
 };
 
 struct drm_output {
@@ -213,27 +220,108 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 }
 
 static struct drm_fb *
+drm_fb_create_dumb(struct drm_compositor *ec, unsigned width, unsigned height)
+{
+	struct drm_fb *fb;
+	int ret;
+
+	struct drm_mode_create_dumb create_arg;
+	struct drm_mode_destroy_dumb destroy_arg;
+	struct drm_mode_map_dumb map_arg;
+
+	fb = calloc(1, sizeof *fb);
+	if (!fb)
+		return NULL;
+
+	create_arg.bpp = 32;
+	create_arg.width = width;
+	create_arg.height = height;
+
+	ret = drmIoctl(ec->drm.fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_arg);
+	if (ret)
+		goto err_fb;
+
+	fb->handle = create_arg.handle;
+	fb->stride = create_arg.pitch;
+	fb->size = create_arg.size;
+	fb->fd = ec->drm.fd;
+
+	ret = drmModeAddFB(ec->drm.fd, width, height, 24, 32,
+			   fb->stride, fb->handle, &fb->fb_id);
+	if (ret)
+		goto err_bo;
+
+	memset(&map_arg, 0, sizeof(map_arg));
+	map_arg.handle = fb->handle;
+	drmIoctl(fb->fd, DRM_IOCTL_MODE_MAP_DUMB, &map_arg);
+
+	if (ret)
+		goto err_add_fb;
+
+	fb->map = mmap(0, fb->size, PROT_WRITE,
+		       MAP_SHARED, ec->drm.fd, map_arg.offset);
+	if (fb->map == MAP_FAILED)
+		goto err_add_fb;
+
+	return fb;
+
+err_add_fb:
+	drmModeRmFB(ec->drm.fd, fb->fb_id);
+err_bo:
+	memset(&destroy_arg, 0, sizeof(destroy_arg));
+	destroy_arg.handle = create_arg.handle;
+	drmIoctl(ec->drm.fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_arg);
+err_fb:
+	free(fb);
+	return NULL;
+}
+
+static void
+drm_fb_destroy_dumb(struct drm_fb *fb)
+{
+	struct drm_mode_destroy_dumb destroy_arg;
+
+	if (!fb->map)
+		return;
+
+	if (fb->fb_id)
+		drmModeRmFB(fb->fd, fb->fb_id);
+
+	weston_buffer_reference(&fb->buffer_ref, NULL);
+
+	munmap(fb->map, fb->size);
+
+	memset(&destroy_arg, 0, sizeof(destroy_arg));
+	destroy_arg.handle = fb->handle;
+	drmIoctl(fb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_arg);
+
+	free(fb);
+}
+
+static struct drm_fb *
 drm_fb_get_from_bo(struct gbm_bo *bo,
 		   struct drm_compositor *compositor, uint32_t format)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
-	uint32_t width, height, stride, handle;
+	uint32_t width, height;
 	uint32_t handles[4], pitches[4], offsets[4];
 	int ret;
 
 	if (fb)
 		return fb;
 
-	fb = malloc(sizeof *fb);
+	fb = calloc(1, sizeof *fb);
+	if (!fb)
+		return NULL;
 
 	fb->bo = bo;
-	fb->is_client_buffer = 0;
-	fb->buffer_ref.buffer = NULL;
 
 	width = gbm_bo_get_width(bo);
 	height = gbm_bo_get_height(bo);
-	stride = gbm_bo_get_stride(bo);
-	handle = gbm_bo_get_handle(bo).u32;
+	fb->stride = gbm_bo_get_stride(bo);
+	fb->handle = gbm_bo_get_handle(bo).u32;
+	fb->size = fb->stride * height;
+	fb->fd = compositor->drm.fd;
 
 	if (compositor->min_width > width || width > compositor->max_width ||
 	    compositor->min_height > height ||
@@ -245,8 +333,8 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 	ret = -1;
 
 	if (format && !compositor->no_addfb2) {
-		handles[0] = handle;
-		pitches[0] = stride;
+		handles[0] = fb->handle;
+		pitches[0] = fb->stride;
 		offsets[0] = 0;
 
 		ret = drmModeAddFB2(compositor->drm.fd, width, height,
@@ -261,7 +349,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 
 	if (ret)
 		ret = drmModeAddFB(compositor->drm.fd, width, height, 24, 32,
-				   stride, handle, &fb->fb_id);
+				   fb->stride, fb->handle, &fb->fb_id);
 
 	if (ret) {
 		weston_log("failed to create kms fb: %m\n");
@@ -293,7 +381,9 @@ drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
 	if (!fb)
 		return;
 
-	if (fb->bo) {
+	if (fb->map) {
+		drm_fb_destroy_dumb(fb);
+	} else if (fb->bo) {
 		if (fb->is_client_buffer)
 			gbm_bo_destroy(fb->bo);
 		else
@@ -1034,6 +1124,7 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	weston_log("using %s\n", filename);
 
 	ec->drm.fd = fd;
+
 
 	return 0;
 }
