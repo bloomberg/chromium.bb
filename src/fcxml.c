@@ -2375,6 +2375,11 @@ FcParseEdit (FcConfigParse *parse)
 	FcEditDestroy (edit);
 }
 
+typedef struct FcSubstStack {
+    FcTest *test;
+    FcEdit *edit;
+} FcSubstStack;
+
 static void
 FcParseMatch (FcConfigParse *parse)
 {
@@ -2383,6 +2388,9 @@ FcParseMatch (FcConfigParse *parse)
     FcTest	    *test = 0;
     FcEdit	    *edit = 0;
     FcVStack	    *vstack;
+    FcBool           tested = FcFalse;
+    FcSubstStack    *sstack = NULL;
+    int              len, pos = 0;
 
     kind_name = FcConfigGetAttribute (parse, "target");
     if (!kind_name)
@@ -2401,6 +2409,16 @@ FcParseMatch (FcConfigParse *parse)
 	    return;
 	}
     }
+    len = FcVStackElements(parse);
+    if (len > 0)
+    {
+	sstack = malloc (sizeof (FcSubstStack) * (len + 1));
+	if (!sstack)
+	{
+	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	    return;
+	}
+    }
     while ((vstack = FcVStackPeek (parse)))
     {
 	switch ((int) vstack->tag) {
@@ -2408,8 +2426,22 @@ FcParseMatch (FcConfigParse *parse)
 	    vstack->u.test->next = test;
 	    test = vstack->u.test;
 	    vstack->tag = FcVStackNone;
+	    tested = FcTrue;
 	    break;
 	case FcVStackEdit:
+	    /* due to the reverse traversal, <edit> node appears faster than
+	     * <test> node if any. so we have to deal with it here rather than
+	     * the above in FcVStackTest, and put recipes in reverse order.
+	     */
+	    if (tested)
+	    {
+		sstack[pos].test = test;
+		sstack[pos].edit = edit;
+		pos++;
+		test = NULL;
+		edit = NULL;
+		tested = FcFalse;
+	    }
 	    vstack->u.edit->next = edit;
 	    edit = vstack->u.edit;
 	    vstack->tag = FcVStackNone;
@@ -2428,6 +2460,20 @@ FcParseMatch (FcConfigParse *parse)
     }
     if (!FcConfigAddEdit (parse->config, test, edit, kind))
 	FcConfigMessage (parse, FcSevereError, "out of memory");
+    if (sstack)
+    {
+	int i;
+
+	for (i = 0; i < pos; i++)
+	{
+	    if (!FcConfigAddEdit (parse->config, sstack[pos - i - 1].test, sstack[pos - i - 1].edit, kind))
+	    {
+		FcConfigMessage (parse, FcSevereError, "out of memory");
+		return;
+	    }
+	}
+	free (sstack);
+    }
 }
 
 static void
