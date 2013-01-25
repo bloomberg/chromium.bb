@@ -132,7 +132,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@ca6c225d0059dd17b476c934e744a3c4f60e2df2',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@a31f072f1af2ce491aa13b144b08259f2fa8728e',
+        Var('git_url') + '/external/gyp.git@aa153a1bb19a7aac8a10243246f8703a7164e4a1',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
