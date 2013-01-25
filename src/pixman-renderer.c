@@ -31,6 +31,8 @@
 #include <linux/input.h>
 
 struct pixman_output_state {
+	void *shadow_buffer;
+	pixman_image_t *shadow_image;
 	pixman_image_t *hw_buffer;
 };
 
@@ -140,7 +142,7 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 		pixman_image_composite32(pixman_op,
 			ps->image, /* src */
 			NULL /* mask */,
-			po->hw_buffer, /* dest */
+			po->shadow_image, /* dest */
 			src_x, src_y, /* src_x, src_y */
 			0, 0, /* mask_x, mask_y */
 			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
@@ -153,7 +155,7 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 		pixman_image_composite32(PIXMAN_OP_OVER,
 			pr->debug_color, /* src */
 			NULL /* mask */,
-			po->hw_buffer, /* dest */
+			po->shadow_image, /* dest */
 			src_x, src_y, /* src_x, src_y */
 			0, 0, /* mask_x, mask_y */
 			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
@@ -220,6 +222,35 @@ repaint_surfaces(struct weston_output *output, pixman_region32_t *damage)
 }
 
 static void
+copy_to_hw_buffer(struct weston_output *output, pixman_region32_t *region)
+{
+	struct pixman_output_state *po = get_output_state(output);
+	int nrects, i, width, height;
+	pixman_box32_t *rects;
+	pixman_box32_t b;
+
+	width = pixman_image_get_width(po->shadow_image);
+	height = pixman_image_get_height(po->shadow_image);
+
+	rects = pixman_region32_rectangles(region, &nrects);
+	for (i = 0; i < nrects; i++) {
+		b = weston_transformed_rect(width, height,
+					    output->transform, rects[i]);
+
+		pixman_image_composite32(PIXMAN_OP_SRC,
+			po->shadow_image, /* src */
+			NULL /* mask */,
+			po->hw_buffer, /* dest */
+			b.x1, b.y1, /* src_x, src_y */
+			0, 0, /* mask_x, mask_y */
+			b.x1, b.y1, /* dest_x, dest_y */
+			b.x2 - b.x1, /* width */
+			b.y2 - b.y1 /* height */);
+	}
+
+}
+
+static void
 pixman_renderer_repaint_output(struct weston_output *output,
 			     pixman_region32_t *output_damage)
 {
@@ -229,6 +260,7 @@ pixman_renderer_repaint_output(struct weston_output *output,
 		return;
 
 	repaint_surfaces(output, output_damage);
+	copy_to_hw_buffer(output, output_damage);
 
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
@@ -402,10 +434,68 @@ WL_EXPORT int
 pixman_renderer_output_create(struct weston_output *output)
 {
 	struct pixman_output_state *po = calloc(1, sizeof *po);
+	pixman_transform_t transform;
+	pixman_fixed_t fw, fh;
+	int w, h;
+	int rotated = 0;
 
 	if (!po)
 		return -1;
-	
+
+	/* set shadow image transformation */
+	w = output->current->width;
+	h = output->current->height;
+
+	fw = pixman_int_to_fixed(w);
+	fh = pixman_int_to_fixed(h);
+
+	pixman_transform_init_identity(&transform);
+
+	switch (output->transform) {
+	default:
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		pixman_transform_rotate(&transform, NULL, -pixman_fixed_1, 0);
+		pixman_transform_translate(NULL, &transform, fw, fh);
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		rotated = 1;
+		pixman_transform_rotate(&transform, NULL, 0, pixman_fixed_1);
+		pixman_transform_translate(&transform, NULL, fh, 0);
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		rotated = 1;
+		pixman_transform_rotate(&transform, NULL, 0, -pixman_fixed_1);
+		pixman_transform_translate(&transform, NULL, 0, fw);
+		break;
+	}
+
+	if (rotated) {
+		int tmp = w;
+		w = h;
+		h = tmp;
+	}
+
+	po->shadow_buffer = malloc(w * h * 4);
+
+	if (!po->shadow_buffer) {
+		free(po);
+		return -1;
+	}
+
+	po->shadow_image =
+		pixman_image_create_bits(PIXMAN_x8r8g8b8, w, h,
+					 po->shadow_buffer, w * 4);
+
+	if (!po->shadow_image) {
+		free(po->shadow_buffer);
+		free(po);
+		return -1;
+	}
+
+	pixman_image_set_transform(po->shadow_image, &transform);
+
 	output->renderer_state = po;
 
 	return 0;
@@ -416,7 +506,10 @@ pixman_renderer_output_destroy(struct weston_output *output)
 {
 	struct pixman_output_state *po = get_output_state(output);
 
+	pixman_image_unref(po->shadow_image);
 	pixman_image_unref(po->hw_buffer);
+
+	po->shadow_image = NULL;
 	po->hw_buffer = NULL;
 
 	free(po);
