@@ -28,6 +28,8 @@
 
 #include "pixman-renderer.h"
 
+#include <linux/input.h>
+
 struct pixman_output_state {
 	pixman_image_t *hw_buffer;
 };
@@ -39,6 +41,8 @@ struct pixman_surface_state {
 
 struct pixman_renderer {
 	struct weston_renderer base;
+	int repaint_debug;
+	pixman_image_t *debug_color;
 };
 
 static inline struct pixman_output_state *
@@ -103,6 +107,8 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 		pixman_region32_t *region, pixman_region32_t *surf_region,
 		pixman_op_t pixman_op)
 {
+	struct pixman_renderer *pr =
+		(struct pixman_renderer *) output->compositor->renderer;
 	struct pixman_surface_state *ps = get_surface_state(es);
 	struct pixman_output_state *po = get_output_state(output);
 	pixman_region32_t final_region;
@@ -133,6 +139,19 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 		weston_surface_from_global(es, rects[i].x1, rects[i].y1, &src_x, &src_y);
 		pixman_image_composite32(pixman_op,
 			ps->image, /* src */
+			NULL /* mask */,
+			po->hw_buffer, /* dest */
+			src_x, src_y, /* src_x, src_y */
+			0, 0, /* mask_x, mask_y */
+			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
+			rects[i].x2 - rects[i].x1, /* width */
+			rects[i].y2 - rects[i].y1 /* height */);
+
+		if (!pr->repaint_debug)
+			continue;
+
+		pixman_image_composite32(PIXMAN_OP_OVER,
+			pr->debug_color, /* src */
 			NULL /* mask */,
 			po->hw_buffer, /* dest */
 			src_x, src_y, /* src_x, src_y */
@@ -319,25 +338,48 @@ pixman_renderer_destroy(struct weston_compositor *ec)
 	ec->renderer = NULL;
 }
 
+static void
+debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+	      void *data)
+{
+	struct weston_compositor *ec = data;
+	struct pixman_renderer *pr = (struct pixman_renderer *) ec->renderer;
+
+	pr->repaint_debug ^= 1;
+
+	if (pr->repaint_debug) {
+		pixman_color_t red = {
+			0x3fff, 0x0000, 0x0000, 0x3fff
+		};
+
+		pr->debug_color = pixman_image_create_solid_fill(&red);
+	} else {
+		pixman_image_unref(pr->debug_color);
+		weston_compositor_damage_all(ec);
+	}
+}
+
 WL_EXPORT int
 pixman_renderer_init(struct weston_compositor *ec)
 {
-	struct weston_renderer *renderer;
+	struct pixman_renderer *renderer;
 
 	renderer = malloc(sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
 
-	renderer->read_pixels = pixman_renderer_read_pixels;
-	renderer->repaint_output = pixman_renderer_repaint_output;
-	renderer->flush_damage = pixman_renderer_flush_damage;
-	renderer->attach = pixman_renderer_attach;
-	renderer->create_surface = pixman_renderer_create_surface;
-	renderer->surface_set_color = pixman_renderer_surface_set_color;
-	renderer->destroy_surface = pixman_renderer_destroy_surface;
-	renderer->destroy = pixman_renderer_destroy;
-	ec->renderer = renderer;
+	renderer->base.read_pixels = pixman_renderer_read_pixels;
+	renderer->base.repaint_output = pixman_renderer_repaint_output;
+	renderer->base.flush_damage = pixman_renderer_flush_damage;
+	renderer->base.attach = pixman_renderer_attach;
+	renderer->base.create_surface = pixman_renderer_create_surface;
+	renderer->base.surface_set_color = pixman_renderer_surface_set_color;
+	renderer->base.destroy_surface = pixman_renderer_destroy_surface;
+	renderer->base.destroy = pixman_renderer_destroy;
+	ec->renderer = &renderer->base;
 
+	weston_compositor_add_debug_binding(ec, KEY_R,
+					    debug_binding, ec);
 	return 0;
 }
 
