@@ -1845,3 +1845,17 @@
    fun:::FilterBuilder::Build
    fun:::LoadWhitelistsOnBlockingPoolThread
 }
+{
+   bug_171567_a
+   Heapcheck:Leak
+   ...
+   fun:AutofillPopupControllerUnitTest_GrowPopupInSpace_Test::TestBody
+}
+{
+   bug_171567_b
+   Heapcheck:Leak
+   ...
+   fun:AutofillPopupControllerUnitTest::AutofillPopupControllerUnitTest
+   fun:AutofillPopupControllerUnitTest_GrowPopupInSpace_Test::AutofillPopupControllerUnitTest_GrowPopupInSpace_Test
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
