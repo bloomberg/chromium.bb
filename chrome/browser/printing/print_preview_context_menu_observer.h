@@ -15,7 +15,7 @@ class WebContents;
 
 class PrintPreviewContextMenuObserver : public RenderViewContextMenuObserver {
  public:
-  explicit PrintPreviewContextMenuObserver(content::WebContents* tab);
+  explicit PrintPreviewContextMenuObserver(content::WebContents* contents);
   virtual ~PrintPreviewContextMenuObserver();
 
   // RenderViewContextMenuObserver implementation.
@@ -23,9 +23,9 @@ class PrintPreviewContextMenuObserver : public RenderViewContextMenuObserver {
   virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
 
  private:
-  bool IsPrintPreviewTab();
+  bool IsPrintPreviewDialog();
 
-  content::WebContents* tab_;
+  content::WebContents* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewContextMenuObserver);
 };

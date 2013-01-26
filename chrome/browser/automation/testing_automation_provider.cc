@@ -5643,17 +5643,17 @@ void TestingAutomationProvider::GetViews(
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-      WebContents* tab = browser->tab_strip_model()->GetWebContentsAt(i);
+      WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(i);
       DictionaryValue* dict = new DictionaryValue();
-      AutomationId id = automation_util::GetIdForTab(tab);
+      AutomationId id = automation_util::GetIdForTab(contents);
       dict->Set("auto_id", id.ToValue());
       view_list->Append(dict);
       if (preview_controller) {
-        WebContents* preview_tab =
-            preview_controller->GetPrintPreviewForTab(tab);
-        if (preview_tab) {
+        WebContents* preview_dialog =
+            preview_controller->GetPrintPreviewForContents(contents);
+        if (preview_dialog) {
           DictionaryValue* dict = new DictionaryValue();
-          AutomationId id = automation_util::GetIdForTab(preview_tab);
+          AutomationId id = automation_util::GetIdForTab(preview_dialog);
           dict->Set("auto_id", id.ToValue());
           view_list->Append(dict);
         }

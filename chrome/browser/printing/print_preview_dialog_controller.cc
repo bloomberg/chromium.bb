@@ -204,7 +204,7 @@ namespace printing {
 
 PrintPreviewDialogController::PrintPreviewDialogController()
     : waiting_for_new_preview_page_(false),
-      is_creating_print_preview_tab_(false) {
+      is_creating_print_preview_dialog_(false) {
 }
 
 // static
@@ -243,6 +243,11 @@ WebContents* PrintPreviewDialogController::GetOrCreatePreviewTab(
   // Show the initiator tab holding the existing preview tab.
   initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
   return preview_tab;
+}
+
+WebContents* PrintPreviewDialogController::GetPrintPreviewForContents(
+    WebContents* contents) const {
+  return GetPrintPreviewForTab(contents);
 }
 
 WebContents* PrintPreviewDialogController::GetPrintPreviewForTab(
@@ -315,8 +320,8 @@ void PrintPreviewDialogController::EraseInitiatorTabInfo(
   preview_tab_map_[preview_tab] = NULL;
 }
 
-bool PrintPreviewDialogController::is_creating_print_preview_tab() const {
-  return is_creating_print_preview_tab_;
+bool PrintPreviewDialogController::is_creating_print_preview_dialog() const {
+  return is_creating_print_preview_dialog_;
 }
 
 PrintPreviewDialogController::~PrintPreviewDialogController() {}
@@ -406,7 +411,7 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
 
 WebContents* PrintPreviewDialogController::CreatePrintPreviewTab(
     WebContents* initiator_tab) {
-  base::AutoReset<bool> auto_reset(&is_creating_print_preview_tab_, true);
+  base::AutoReset<bool> auto_reset(&is_creating_print_preview_dialog_, true);
   Profile* profile =
       Profile::FromBrowserContext(initiator_tab->GetBrowserContext());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {

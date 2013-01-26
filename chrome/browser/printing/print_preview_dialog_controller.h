@@ -57,9 +57,14 @@ class PrintPreviewDialogController
   content::WebContents* GetOrCreatePreviewTab(
       content::WebContents* initiator_tab);
 
-  // Returns preview tab for |tab|.
-  // Returns |tab| if |tab| is a preview tab.
-  // Returns NULL if no preview tab exists for |tab|.
+  // Returns the preview dialog for |contents|.
+  // Returns |contents| if |contents| is a preview dialog.
+  // Returns NULL if no preview dialog exists for |contents|.
+  content::WebContents* GetPrintPreviewForContents(
+      content::WebContents* contents) const;
+
+  // DEPRECATED. Use GetPrintPreviewForContents() instead.
+  // TODO(thestig) Remove.
   content::WebContents* GetPrintPreviewForTab(content::WebContents* tab) const;
 
   // Returns initiator tab for |preview_tab|.
@@ -84,7 +89,7 @@ class PrintPreviewDialogController
   // Erase the initiator tab info associated with |preview_tab|.
   void EraseInitiatorTabInfo(content::WebContents* preview_tab);
 
-  bool is_creating_print_preview_tab() const;
+  bool is_creating_print_preview_dialog() const;
 
  private:
   friend class base::RefCounted<PrintPreviewDialogController>;
@@ -137,8 +142,8 @@ class PrintPreviewDialogController
   bool waiting_for_new_preview_page_;
 
   // Whether the PrintPreviewDialogController is in the middle of creating a
-  // print preview tab.
-  bool is_creating_print_preview_tab_;
+  // print preview dialog.
+  bool is_creating_print_preview_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogController);
 };

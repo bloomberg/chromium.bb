@@ -102,18 +102,17 @@ bool PrintViewManager::PrintForSystemDialogNow() {
 }
 
 bool PrintViewManager::AdvancedPrintNow() {
-  PrintPreviewDialogController* tab_controller =
+  PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
-  if (!tab_controller)
+  if (!dialog_controller)
     return false;
-  WebContents* print_preview_tab =
-      tab_controller->GetPrintPreviewForTab(web_contents());
-  if (print_preview_tab) {
-    // Preview tab exist for current tab or current tab is preview tab.
-    if (!print_preview_tab->GetWebUI())
+  WebContents* print_preview_dialog =
+      dialog_controller->GetPrintPreviewForContents(web_contents());
+  if (print_preview_dialog) {
+    if (!print_preview_dialog->GetWebUI())
       return false;
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        print_preview_tab->GetWebUI()->GetController());
+        print_preview_dialog->GetWebUI()->GetController());
     print_preview_ui->OnShowSystemDialog();
     return true;
   } else {
@@ -327,9 +326,9 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
     return;
   }
 
-  PrintPreviewDialogController* tab_controller =
+  PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
-  if (!tab_controller) {
+  if (!dialog_controller) {
     Send(reply_msg);
     return;
   }
@@ -342,9 +341,9 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
   map[rph] = callback;
   scripted_print_preview_rph_ = rph;
 
-  tab_controller->PrintPreview(web_contents());
+  dialog_controller->PrintPreview(web_contents());
   PrintPreviewUI::SetSourceIsModifiable(
-      tab_controller->GetPrintPreviewForTab(web_contents()),
+      dialog_controller->GetPrintPreviewForContents(web_contents()),
       source_is_modifiable);
 }
 

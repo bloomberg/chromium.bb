@@ -526,7 +526,7 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
       }
       if (preview_controller) {
         WebContents* print_preview_contents =
-            preview_controller->GetPrintPreviewForTab(web_contents);
+            preview_controller->GetPrintPreviewForContents(web_contents);
         if (print_preview_contents) {
           SessionTabHelper* preview_session_tab_helper =
               SessionTabHelper::FromWebContents(print_preview_contents);

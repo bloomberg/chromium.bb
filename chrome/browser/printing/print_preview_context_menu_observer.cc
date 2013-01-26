@@ -9,18 +9,18 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 
 PrintPreviewContextMenuObserver::PrintPreviewContextMenuObserver(
-    content::WebContents* tab) : tab_(tab) {
+    content::WebContents* contents) : contents_(contents) {
 }
 
 PrintPreviewContextMenuObserver::~PrintPreviewContextMenuObserver() {
 }
 
-bool PrintPreviewContextMenuObserver::IsPrintPreviewTab() {
+bool PrintPreviewContextMenuObserver::IsPrintPreviewDialog() {
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
   if (!controller)
     return false;
-  return !!controller->GetPrintPreviewForTab(tab_);
+  return (controller->GetPrintPreviewForContents(contents_) != NULL);
 }
 
 bool PrintPreviewContextMenuObserver::IsCommandIdSupported(int command_id) {
@@ -30,7 +30,7 @@ bool PrintPreviewContextMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
-      return IsPrintPreviewTab();
+      return IsPrintPreviewDialog();
 
     default:
       return false;
