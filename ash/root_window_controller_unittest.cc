@@ -165,6 +165,17 @@ TEST_F(RootWindowControllerTest, MAYBE_MoveWindows_Basic) {
   EXPECT_EQ("0,0 500x500",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
+  views::Widget* unparented_control = new Widget;
+  Widget::InitParams params;
+  params.bounds = gfx::Rect(650, 10, 100, 100);
+  params.context = CurrentContext();
+  params.type = Widget::InitParams::TYPE_CONTROL;
+  unparented_control->Init(params);
+  EXPECT_EQ(root_windows[1],
+            unparented_control->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(internal::kShellWindowId_UnparentedControlContainer,
+            unparented_control->GetNativeView()->parent()->id());
+
   // Make sure a window that will delete itself when losing focus
   // will not crash.
   aura::WindowTracker tracker;
@@ -215,6 +226,12 @@ TEST_F(RootWindowControllerTest, MAYBE_MoveWindows_Basic) {
             fullscreen->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("300,10 100x100",
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
+
+  // Test if the unparented widget has moved.
+  EXPECT_EQ(root_windows[0],
+            unparented_control->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(internal::kShellWindowId_UnparentedControlContainer,
+            unparented_control->GetNativeView()->parent()->id());
 }
 
 #if defined(OS_WIN)
