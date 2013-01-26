@@ -399,11 +399,14 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   AutoLoginPrompter::ShowInfoBarIfPossible(request, info->GetChildID(),
                                            info->GetRouteID());
 
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
-  OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
+  OneClickSigninHelper::ShowInfoBarIfPossible(request, io_data,
+                                              info->GetChildID(),
                                               info->GetRouteID());
 #endif
 
@@ -418,7 +421,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     }
   }
 
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->resource_prefetch_predictor_observer())
     io_data->resource_prefetch_predictor_observer()->OnResponseStarted(request);
 
@@ -432,6 +434,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceResponse* response) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
@@ -440,11 +444,11 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
-  OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
+  OneClickSigninHelper::ShowInfoBarIfPossible(request, io_data,
+                                              info->GetChildID(),
                                               info->GetRouteID());
 #endif
 
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
         redirect_url, request);

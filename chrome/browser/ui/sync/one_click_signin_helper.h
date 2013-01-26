@@ -73,10 +73,6 @@ class OneClickSigninHelper
 
   virtual ~OneClickSigninHelper();
 
-  // Called only by tests to associate information with a given request.
-  static void AssociateWithRequestForTesting(base::SupportsUserData* request,
-                                             const std::string& email);
-
   // Returns true if the one-click signin feature can be offered at this time.
   // If |email| is not empty, then the profile is checked to see if it's
   // already connected to a google account or if the user has already rejected
@@ -110,6 +106,7 @@ class OneClickSigninHelper
   // tries to display an infobar in the tab contents identified by the
   // child/route id.
   static void ShowInfoBarIfPossible(net::URLRequest* request,
+                                    ProfileIOData* io_data,
                                     int child_id,
                                     int route_id);
 

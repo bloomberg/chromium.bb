@@ -125,6 +125,14 @@ class ProfileIOData {
     return &reverse_autologin_enabled_;
   }
 
+  const std::string& reverse_autologin_pending_email() const {
+    return reverse_autologin_pending_email_;
+  }
+
+  void set_reverse_autologin_pending_email(const std::string& email) {
+    reverse_autologin_pending_email_ = email;
+  }
+
   StringListPrefMember* one_click_signin_rejected_email_list() const {
     return &one_click_signin_rejected_email_list_;
   }
@@ -418,6 +426,11 @@ class ProfileIOData {
   mutable StringPrefMember google_services_username_;
   mutable StringPrefMember google_services_username_pattern_;
   mutable BooleanPrefMember reverse_autologin_enabled_;
+
+  // During the reverse autologin request chain processing, this member saves
+  // the email of the google account that is being signed into.
+  std::string reverse_autologin_pending_email_;
+
   mutable StringListPrefMember one_click_signin_rejected_email_list_;
 
   // Member variables which are pointed to by the various context objects.

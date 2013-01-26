@@ -123,6 +123,12 @@ void StartSync(Browser* browser,
                             one_click_signin::HISTOGRAM_MAX);
 }
 
+void ClearPendingEmailOnIOThread(content::ResourceContext* context) {
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+  DCHECK(io_data);
+  io_data->set_reverse_autologin_pending_email(std::string());
+}
+
 // Determines the source of the sign in and the continue URL.  Its either one
 // of the known sign in access point (first run, NTP, menu, settings) or its
 // an implicit sign in via another Google property.  In the former case,
@@ -180,54 +186,6 @@ bool IsValidGaiaSigninRedirectOrResponseURL(const GURL& url) {
 
   return false;
 }
-
-// This class is associated as user data with a given URLRequest object, in
-// order to pass information from one response to another during the process
-// of signing the user into their Gaia account.  This class is only meant
-// to be used from the IO thread.
-class OneClickSigninRequestUserData : public base::SupportsUserData::Data {
- public:
-  const std::string& email() const { return email_; }
-
-  // Associates signin information with the request.  Overwrites existing
-  // information if any.
-  static void AssociateWithRequest(base::SupportsUserData* request,
-                                   const std::string& email);
-
-  // Gets the one-click sign in information associated with the request.
-  static OneClickSigninRequestUserData* FromRequest(
-      base::SupportsUserData* request);
-
- private:
-  // Key used when setting this object on the request.
-  static const void* const kUserDataKey;
-
-  explicit OneClickSigninRequestUserData(const std::string& email)
-      : email_(email) {
-  }
-
-  std::string email_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneClickSigninRequestUserData);
-};
-
-// static
-void OneClickSigninRequestUserData::AssociateWithRequest(
-    base::SupportsUserData* request,
-    const std::string& email) {
-  request->SetUserData(kUserDataKey, new OneClickSigninRequestUserData(email));
-}
-
-// static
-OneClickSigninRequestUserData* OneClickSigninRequestUserData::FromRequest(
-    base::SupportsUserData* request) {
-  return static_cast<OneClickSigninRequestUserData*>(
-      request->GetUserData(kUserDataKey));
-}
-
-const void* const OneClickSigninRequestUserData::kUserDataKey =
-    static_cast<const void* const>(
-        &OneClickSigninRequestUserData::kUserDataKey);
 
 }  // namespace
 
@@ -410,13 +368,6 @@ OneClickSigninHelper::~OneClickSigninHelper() {
 }
 
 // static
-void OneClickSigninHelper::AssociateWithRequestForTesting(
-    base::SupportsUserData* request,
-    const std::string& email) {
-  OneClickSigninRequestUserData::AssociateWithRequest(request, email);
-}
-
-// static
 bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
                                     CanOfferFor can_offer_for,
                                     const std::string& email,
@@ -565,10 +516,9 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   // that we want to connect the profile, chrome needs to tell Gaia that
   // it should offer the interstitial.  Therefore missing one click data on
   // the request means can offer is true.
-  OneClickSigninRequestUserData* one_click_data =
-      OneClickSigninRequestUserData::FromRequest(request);
-  if (one_click_data) {
-    if (!SigninManager::IsAllowedUsername(one_click_data->email(),
+  const std::string& pending_email = io_data->reverse_autologin_pending_email();
+  if (!pending_email.empty()) {
+    if (!SigninManager::IsAllowedUsername(pending_email,
             io_data->google_services_username_pattern()->GetValue())) {
       return DONT_OFFER;
     }
@@ -577,12 +527,12 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
         io_data->one_click_signin_rejected_email_list()->GetValue();
     if (std::count_if(rejected_emails.begin(), rejected_emails.end(),
                       std::bind2nd(std::equal_to<std::string>(),
-                                   one_click_data->email())) > 0) {
+                                   pending_email)) > 0) {
       return DONT_OFFER;
     }
 
     if (io_data->signin_names()->GetEmails().count(
-            UTF8ToUTF16(one_click_data->email())) > 0) {
+            UTF8ToUTF16(pending_email)) > 0) {
       return DONT_OFFER;
     }
   }
@@ -607,6 +557,7 @@ void OneClickSigninHelper::InitializeFieldTrial() {
 
 // static
 void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
+                                                 ProfileIOData* io_data,
                                                  int child_id,
                                                  int route_id) {
   std::string google_chrome_signin_value;
@@ -652,7 +603,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   // in the IO thread (see CanOfferOnIOThread).  So save the email address as
   // user data on the request (only for web-based flow).
   if (SyncPromoUI::UseWebBasedSigninFlow() && !email.empty())
-    OneClickSigninRequestUserData::AssociateWithRequest(request, email);
+    io_data->set_reverse_autologin_pending_email(email);
 
   if (!email.empty() || !session_index.empty()) {
     VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
@@ -731,20 +682,6 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   int error_message_id = 0;
 
-  CanOfferFor can_offer_for =
-      (auto_accept != AUTO_ACCEPT_EXPLICIT &&
-          helper->auto_accept_ != AUTO_ACCEPT_EXPLICIT) ?
-          CAN_OFFER_FOR_INTERSTITAL_ONLY : CAN_OFFER_FOR_ALL;
-
-  if (!web_contents || !CanOffer(web_contents, can_offer_for, email,
-                                 &error_message_id)) {
-    VLOG(1) << "OneClickSigninHelper::ShowInfoBarUIThread: not offering";
-    if (helper && helper->error_message_.empty() && error_message_id != 0)
-      helper->error_message_ = l10n_util::GetStringUTF8(error_message_id);
-
-    return;
-  }
-
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
@@ -757,6 +694,20 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (auto_accept != AUTO_ACCEPT_NONE) {
     helper->auto_accept_ = auto_accept;
     helper->source_ = source;
+  }
+
+  CanOfferFor can_offer_for =
+      (auto_accept != AUTO_ACCEPT_EXPLICIT &&
+          helper->auto_accept_ != AUTO_ACCEPT_EXPLICIT) ?
+          CAN_OFFER_FOR_INTERSTITAL_ONLY : CAN_OFFER_FOR_ALL;
+
+  if (!web_contents || !CanOffer(web_contents, can_offer_for, email,
+                                 &error_message_id)) {
+    VLOG(1) << "OneClickSigninHelper::ShowInfoBarUIThread: not offering";
+    if (helper && helper->error_message_.empty() && error_message_id != 0)
+      helper->error_message_ = l10n_util::GetStringUTF8(error_message_id);
+
+    return;
   }
 
   if (continue_url.is_valid()) {
@@ -796,6 +747,14 @@ void OneClickSigninHelper::CleanTransientState() {
   auto_accept_ = AUTO_ACCEPT_NONE;
   source_ = SyncPromoUI::SOURCE_UNKNOWN;
   continue_url_ = GURL();
+
+  // Post to IO thread to clear pending email.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&ClearPendingEmailOnIOThread,
+                 base::Unretained(profile->GetResourceContext())));
 }
 
 void OneClickSigninHelper::DidNavigateAnyFrame(

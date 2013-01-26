@@ -311,8 +311,6 @@ OneClickSigninHelperIOTest::~OneClickSigninHelperIOTest() {
 void OneClickSigninHelperIOTest::SetUp() {
   OneClickSigninHelperTest::SetUp();
   ASSERT_TRUE(testing_profile_manager_.SetUp());
-  OneClickSigninHelper::AssociateWithRequestForTesting(&request_,
-                                                       "user@gmail.com");
 }
 
 TestProfileIOData* OneClickSigninHelperIOTest::CreateTestProfileIOData(
@@ -323,6 +321,7 @@ TestProfileIOData* OneClickSigninHelperIOTest::CreateTestProfileIOData(
       CookieSettings::Factory::GetForProfile(profile_);
   TestProfileIOData* io_data = new TestProfileIOData(
       is_incognito, pref_service, local_state, cookie_settings);
+  io_data->set_reverse_autologin_pending_email("user@gmail.com");
   return io_data;
 }
 
