@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "media/audio/audio_buffers_state.h"
@@ -20,7 +21,9 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
                                  const media::AudioParameters& params,
                                  int input_channels)
     : shared_memory_(shared_memory),
-      input_channels_(input_channels) {
+      input_channels_(input_channels),
+      renderer_callback_count_(0),
+      renderer_missed_callback_count_(0) {
   packet_size_ = media::PacketSizeInBytes(shared_memory_->created_size());
   int input_memory_size = 0;
   int output_memory_size = AudioBus::CalculateMemorySize(params);
@@ -37,6 +40,15 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
 }
 
 AudioSyncReader::~AudioSyncReader() {
+  if (!renderer_callback_count_)
+    return;
+
+  // Recording the percentage of deadline misses gives us a rough overview of
+  // how many users might be running into audio glitches.
+  int percentage_missed =
+      100.0 * renderer_missed_callback_count_ / renderer_callback_count_;
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Media.AudioRendererMissedDeadline", percentage_missed);
 }
 
 bool AudioSyncReader::DataReady() {
@@ -57,6 +69,10 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
 }
 
 int AudioSyncReader::Read(AudioBus* source, AudioBus* dest) {
+  ++renderer_callback_count_;
+  if (!DataReady())
+    ++renderer_missed_callback_count_;
+
   // Copy optional synchronized live audio input for consumption by renderer
   // process.
   if (source && input_bus_.get()) {
