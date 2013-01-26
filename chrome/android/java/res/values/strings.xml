@@ -34,4 +34,8 @@
     <string name="suppress_js_modal_dialogs">Prevent this page from creating additional dialogs</string>
     <!-- Content description for the input javascript modal dialog prompt. [CHAR-LIMIT=32] -->
     <string name="accessibility_js_modal_dialog_prompt">Prompt</string>
+
+    <!-- Certificate Viewer -->
+    <!-- Dialog box title for viewing security certificates. [CHAR-LIMIT=32] -->
+    <string name="certtitle">Certificate Viewer</string>
 </resources>

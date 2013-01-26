@@ -16,4 +16,7 @@
     <dimen name="favicon_fold_corner_radii">1dp</dimen>
     <dimen name="favicon_fold_border">1px</dimen>
     <dimen name="favicon_fold_shadow">2dp</dimen>
+
+    <!-- Certificate Viewer Dimensions -->
+    <dimen name="certificate_viewer_padding">20dp</dimen>
 </resources>

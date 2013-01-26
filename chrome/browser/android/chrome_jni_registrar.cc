@@ -18,8 +18,11 @@
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
+#include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
+
+bool RegisterCertificateViewer(JNIEnv* env);
 
 namespace chrome {
 namespace android {
@@ -33,6 +36,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ApplicationLifetime", browser::RegisterApplicationLifetimeAndroid},
   { "AutofillPopup",
       AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
+  { "CertificateViewer", RegisterCertificateViewer},
   { "ChromeBrowserProvider",
       ChromeBrowserProvider::RegisterChromeBrowserProvider },
   { "ChromeHttpAuthHandler",
@@ -47,6 +51,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "ProcessUtils", RegisterProcessUtils },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
+  { "WebsiteSettingsPopupAndroid",
+      WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 };
 
 bool RegisterJni(JNIEnv* env) {
