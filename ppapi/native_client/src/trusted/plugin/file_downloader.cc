@@ -62,6 +62,7 @@ bool FileDownloader::Open(
 
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
+  status_code_ = -1;
   url_to_open_ = url;
   url_ = url;
   file_open_notify_callback_ = callback;
@@ -199,22 +200,22 @@ bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
     return false;
   }
   bool status_ok = false;
-  int32_t status_code = url_response.GetStatusCode();
+  status_code_ = url_response.GetStatusCode();
   switch (url_scheme_) {
     case SCHEME_CHROME_EXTENSION:
       PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (chrome-extension "
-                     "response status_code=%"NACL_PRId32")\n", status_code));
-      status_ok = (status_code == kExtensionUrlRequestStatusOk);
+                     "response status_code=%"NACL_PRId32")\n", status_code_));
+      status_ok = (status_code_ == kExtensionUrlRequestStatusOk);
       break;
     case SCHEME_DATA:
       PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (data URI "
-                     "response status_code=%"NACL_PRId32")\n", status_code));
-      status_ok = (status_code == kDataUriRequestStatusOk);
+                     "response status_code=%"NACL_PRId32")\n", status_code_));
+      status_ok = (status_code_ == kDataUriRequestStatusOk);
       break;
     case SCHEME_OTHER:
       PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (HTTP response "
-                     "status_code=%"NACL_PRId32")\n", status_code));
-      status_ok = (status_code == NACL_HTTP_STATUS_OK);
+                     "status_code=%"NACL_PRId32")\n", status_code_));
+      status_ok = (status_code_ == NACL_HTTP_STATUS_OK);
       break;
   }
 

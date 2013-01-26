@@ -106,6 +106,8 @@ class FileDownloader {
   bool streaming_to_buffer() const;
   bool streaming_to_user() const;
 
+  int status_code() const { return status_code_; }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
   // This class loads and opens the file in three steps for DOWNLOAD_TO_FILE:
@@ -137,6 +139,7 @@ class FileDownloader {
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
   int64_t open_time_;
+  int32_t status_code_;
   DownloadMode mode_;
   static const uint32_t kTempBufferSize = 2048;
   std::vector<char> temp_buffer_;

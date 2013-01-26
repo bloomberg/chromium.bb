@@ -251,6 +251,17 @@ void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
   HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
 }
 
+void HistogramHTTPStatusCode(const std::string& name, int status) {
+  // Log the status codes in rough buckets - 1XX, 2XX, etc.
+  int sample = status / 100;
+  // HTTP status codes only go up to 5XX, using "6" to indicate an internal
+  // error.
+  // Note: installed files may have "0" for a status code.
+  if (status < 0 || status >= 600)
+    sample = 6;
+  HistogramEnumerate(name, sample, 7, 6);
+}
+
 }  // namespace
 
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
@@ -795,6 +806,11 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
+  HistogramHTTPStatusCode(
+      is_installed_ ?
+          "NaCl.HttpStatusCodeClass.Nexe.InstalledApp" :
+          "NaCl.HttpStatusCodeClass.Nexe.NotInstalledApp",
+      nexe_downloader_.status_code());
   ErrorInfo error_info;
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
@@ -1061,6 +1077,11 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
                  NACL_PRId32")\n", pp_error));
   HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
+  HistogramHTTPStatusCode(
+      is_installed_ ?
+          "NaCl.HttpStatusCodeClass.Manifest.InstalledApp" :
+          "NaCl.HttpStatusCodeClass.Manifest.NotInstalledApp",
+      nexe_downloader_.status_code());
   ErrorInfo error_info;
   // The manifest file was successfully opened.  Set the src property on the
   // plugin now, so that the full url is available to error handlers.
