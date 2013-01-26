@@ -184,8 +184,12 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   }
 
   // During a pinch, a user could zoom in and out, so throwing away a tiling may
-  // be premature.
-  if (!layerTreeImpl()->PinchGestureActive())
+  // be premature. Animations could also cause us to scale in or out, and we
+  // don't want to discard tilings in this case, either.
+  bool is_animating = layerTreeImpl()->PinchGestureActive() ||
+      drawTransformIsAnimating() ||
+      screenSpaceTransformIsAnimating();
+  if (!is_animating)
     CleanUpUnusedTilings(seen_tilings);
 }
 
@@ -454,13 +458,15 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
   DCHECK(ideal_contents_scale);
   float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
   float low_res_contents_scale = ideal_contents_scale * low_res_factor;
+  bool is_animating = drawTransformIsAnimating() ||
+      screenSpaceTransformIsAnimating();
 
   // Remove any tilings from the pending tree that don't exactly match the
   // contents scale.  The pending tree should always come in crisp.  However,
   // don't do this during a pinch, to avoid throwing away a tiling that should
   // have been kept.
   if (layerTreeImpl()->IsPendingTree() &&
-      !layerTreeImpl()->PinchGestureActive()) {
+      !layerTreeImpl()->PinchGestureActive() && !is_animating) {
     std::vector<PictureLayerTiling*> remove_list;
     for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
       PictureLayerTiling* tiling = tilings_->tiling_at(i);
@@ -475,9 +481,12 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
       tilings_->Remove(remove_list[i]);
   }
 
-  // Find existing tilings closest to ideal high / low res.
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
+  PictureLayerTiling* old_high_res = NULL;
+  PictureLayerTiling* old_low_res = NULL;
+
+  // Find existing tilings closest to ideal high / low res.
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
     if (!high_res || IsCloserToThan(tiling, high_res, ideal_contents_scale))
@@ -485,9 +494,19 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
     if (!low_res || IsCloserToThan(tiling, low_res, low_res_contents_scale))
       low_res = tiling;
 
+    if (tiling->resolution() == HIGH_RESOLUTION)
+      old_high_res = tiling;
+    else if (tiling->resolution() == LOW_RESOLUTION)
+      old_low_res = tiling;
+
     // Reset all tilings to non-ideal until the end of this function.
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
+
+  if (is_animating && old_high_res)
+    high_res = old_high_res;
+  if (is_animating && old_low_res)
+    low_res = old_low_res;
 
   if (layerTreeImpl()->PinchGestureActive() && high_res) {
     // If zooming out, if only available high-res tiling is very high
@@ -500,13 +519,18 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
     if (ratio >= kMaxScaleRatioDuringPinch)
       high_res = AddTiling(ideal_contents_scale);
   } else {
+    bool high_res_mismatch = !is_animating && high_res &&
+        high_res->contents_scale() != ideal_contents_scale;
+    bool low_res_mismatch = !is_animating && low_res &&
+        low_res->contents_scale() != low_res_contents_scale;
+
     // Always make sure we have some tiling.
-    if (!high_res || high_res->contents_scale() != ideal_contents_scale)
+    if (!high_res || high_res_mismatch)
       high_res = AddTiling(ideal_contents_scale);
 
     // If we're not pinching then add a low res tiling at the exact scale.
     if (!layerTreeImpl()->PinchGestureActive()) {
-      if (!low_res || low_res->contents_scale() != low_res_contents_scale)
+      if (!low_res || low_res_mismatch)
         low_res = AddTiling(low_res_contents_scale);
     }
   }
