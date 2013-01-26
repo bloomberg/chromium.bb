@@ -209,6 +209,12 @@ bool PathService::Get(int key, FilePath* result) {
   if (path.empty())
     return false;
 
+  if (path.ReferencesParent()) {
+    // Make sure path service never returns a path with ".." in it.
+    if (!file_util::AbsolutePath(&path)) {
+      return false;
+    }
+  }
   *result = path;
 
   base::AutoLock scoped_lock(path_data->lock);
