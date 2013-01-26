@@ -303,8 +303,8 @@ bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
 // static
 bool SyncPromoUI::UseWebBasedSigninFlow() {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseWebBasedSigninFlow) ||
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseClientLoginSigninFlow) ||
       g_force_web_based_signin_flow;
 #else
   return false;

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -20,6 +21,10 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
  public:
   virtual ~WebUIBidiCheckerBrowserTest();
 
+  // testing::Test implementation.
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
  protected:
   WebUIBidiCheckerBrowserTest();
 
@@ -29,6 +34,10 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
 
   // Setup test path.
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+
+ private:
+  // The command line args used to run the test before being changed in SetUp().
+  CommandLine::StringVector argv_;
 };
 
 // Base class for BidiChecker-based tests that run with an LTR UI.

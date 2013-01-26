@@ -23,6 +23,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,6 +79,23 @@ void ReloadLocaleResources(const std::string& new_locale) {
 
 static const FilePath::CharType* kBidiCheckerTestsJS =
     FILE_PATH_LITERAL("bidichecker_tests.js");
+
+void WebUIBidiCheckerBrowserTest::SetUp() {
+  argv_ = CommandLine::ForCurrentProcess()->GetArgs();
+
+  // Sync only uses webui when client login is enabled.  Client login is going
+  // away, but to keep it tested for now, force client login to be used.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseClientLoginSigninFlow)) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseClientLoginSigninFlow);
+  }
+}
+
+void WebUIBidiCheckerBrowserTest::TearDown() {
+  // Reset command line to the way it was before the test was run.
+  CommandLine::ForCurrentProcess()->InitFromArgv(argv_);
+}
 
 WebUIBidiCheckerBrowserTest::~WebUIBidiCheckerBrowserTest() {}
 
