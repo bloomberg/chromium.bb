@@ -37,7 +37,6 @@ class ScriptExecutor;
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate,
-                  public ImageLoadingTracker::Observer,
                   public AppNotifyChannelSetup::Delegate,
                   public base::SupportsWeakPtr<TabHelper>,
                   public content::NotificationObserver,
@@ -200,13 +199,9 @@ class TabHelper : public content::WebContentsObserver,
   // ImageLoadingTracker to load the extension's image.
   void UpdateExtensionAppIcon(const Extension* extension);
 
-  const Extension* GetExtension(
-      const std::string& extension_app_id);
+  const Extension* GetExtension(const std::string& extension_app_id);
 
-  // ImageLoadingTracker::Observer.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
+  void OnImageLoaded(const gfx::Image& image);
 
   // WebstoreStandaloneInstaller::Callback.
   virtual void OnInlineInstallComplete(int install_id,
@@ -247,9 +242,6 @@ class TabHelper : public content::WebContentsObserver,
   // Process any extension messages coming from the tab.
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 
-  // Used for loading extension_app_icon_.
-  scoped_ptr<ImageLoadingTracker> extension_app_image_loader_;
-
   // Cached web app info data.
   WebApplicationInfo web_app_info_;
 
@@ -268,6 +260,9 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<ScriptBubbleController> script_bubble_controller_;
 
   Profile* profile_;
+
+  // Vend weak pointers that can be invalidated to stop in-progress loads.
+  base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };
