@@ -5,7 +5,7 @@
       "url": "file:///tough_animation_cases/keyframed_animations.html",
       "why": "Tests various keyframed animations.",
       "smoothness": {
-        "action": "wait_interaction",
+        "action": "wait_action",
         "duration": 5
       }
     },
@@ -13,7 +13,7 @@
       "url": "file:///tough_animation_cases/transform_transitions.html",
       "why": "Tests various transitions.",
       "smoothness": {
-        "action": "wait_interaction",
+        "action": "wait_action",
         "duration": 5
       }
     },
@@ -21,7 +21,7 @@
       "url": "http://ie.microsoft.com/testdrive/performance/robohornetpro/",
       "why": "Login page is slow because of ineffecient transform operations",
       "smoothness": {
-        "action": "wait_interaction",
+        "action": "wait_action",
         "duration": 5
       }
     }

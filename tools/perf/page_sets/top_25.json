@@ -8,71 +8,71 @@
             "url": "https://www.google.com/#hl=en&q=barack+obama",
             "why": "top google property; a google tab is often open",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             },
             "wait_for_element_with_text": "Next",
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Next",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Next"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Next",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Next"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Next",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Previous"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Previous",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Previous"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Previous",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Previous"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Previous",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Images"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Images",
                         "wait_for_href_change": true,
                         "wait_for_element_with_text": "Images"
@@ -86,19 +86,19 @@
             "credentials": "google",
             "wait_for_javascript_expression": "window.gmonkey !== undefined && document.getElementById('gb') !== null",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scrollable_element_function": "function(callback) { gmonkey.load('2.0', function(api) { callback(api.getScrollableElement()); }); }"
             },
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#starred\"]",
                         "wait_for_href_change": true
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]",
                         "wait_for_href_change": true
                     }
@@ -111,56 +111,56 @@
             "credentials": "google",
             "wait_for_element_with_selector": "div[class~=\"navForward\"]",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scrollable_element_function": "function(callback) { callback(document.getElementById('scrolltimedeventswk')); }"
             },
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navForward\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navForward\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navForward\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navForward\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navForward\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navForward\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navForward\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navBack\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navBack\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navBack\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navBack\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navBack\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navBack\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navBack\"]"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "div[class~=\"navBack\"]",
                         "wait_for_seconds": 2,
                         "wait_for_element_with_selector": "div[class~=\"navBack\"]"
@@ -174,7 +174,7 @@
             "credentials": "google",
             "wait_for_javascript_expression": "document.getElementsByClassName('doclistview-list').length",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('doclistview-list')[0]); }"
             }
         },
@@ -185,7 +185,7 @@
             "credentials": "google",
             "wait_for_javascript_expression": "document.getElementsByClassName('kix-appview-editor').length",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('kix-appview-editor')[0]); }"
             }
         },
@@ -195,38 +195,38 @@
             "credentials": "google",
             "wait_for_element_with_text": "Home",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scroll_is_infinite": true
             },
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Home",
                         "wait_seconds": 2,
                         "wait_for_element_with_text": "Profile"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Profile",
                         "wait_seconds": 2,
                         "wait_for_element_with_text": "Explore"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Explore",
                         "wait_seconds": 2,
                         "wait_for_element_with_text": "Events"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Events",
                         "wait_seconds": 2,
                         "wait_for_element_with_text": "Circles"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Circles",
                         "wait_seconds": 2,
                         "wait_for_element_with_text": "Home"
@@ -239,7 +239,7 @@
             "why": "#3 (Alexa global)",
             "credentials": "google",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
@@ -248,40 +248,40 @@
             "why": "#11 (Alexa global), google property; some blogger layouts have infinite scroll but more interesting",
             "wait_for_element_with_text": "accessibility",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             },
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "accessibility",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "advanced"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "advanced",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "beginner"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "beginner",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Home"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Home",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Home"
@@ -295,40 +295,40 @@
             "why": "#18 (Alexa global), Picked an interesting post",
             "wait_for_element_with_selector": "a[href=\"http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/\"]",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             },
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "selector": "a[href=\"http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/\"]",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Features"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Features",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "News"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "News",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "News"
                     },
                     {
-                        "action": "scrolling_interaction"
+                        "action": "scrolling_action"
                     }
                 ]
             }
@@ -340,44 +340,44 @@
             "credentials": "facebook",
             "wait_for_element_with_text": "About",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scroll_is_infinite": true
             },
             "stress_memory": {
-                "action": "compound_interaction",
+                "action": "compound_action",
                 "actions": [
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "About",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "The Audacity of Hope"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "The Audacity of Hope",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Back to Barack Obama's Timeline"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Back to Barack Obama's Timeline",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "About"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "About",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Elected to U.S. Senate"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Elected to U.S. Senate",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Home"
                     },
                     {
-                        "action": "click_element_interaction",
+                        "action": "click_element_action",
                         "text": "Home",
                         "wait_for_navigate": true,
                         "wait_for_element_with_text": "Home"
@@ -390,7 +390,7 @@
             "url": "http://www.linkedin.com/in/linustorvalds",
             "why": "#12 (Alexa global),Public profile",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
@@ -398,7 +398,7 @@
             "url": "http://en.wikipedia.org/wiki/Wikipedia",
             "why": "#6 (Alexa) most visited worldwide,Picked an interesting page",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
@@ -406,7 +406,7 @@
             "url": "http://twitter.com/katyperry",
             "why": "#8 (Alexa global),Picked an interesting page",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scroll_is_infinite": true
             }
         },
@@ -415,7 +415,7 @@
             "url": "http://pinterest.com",
             "why": "#37 (Alexa global)",
             "smoothness": {
-                "action": "scrolling_interaction",
+                "action": "scrolling_action",
                 "scroll_is_infinite": true
             }
         },
@@ -424,21 +424,21 @@
             "url": "http://espn.go.com",
             "why": "#1 sports",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://news.yahoo.com",
             "why": "#1 news worldwide (Alexa global)",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://www.cnn.com",
             "why": "#2 news worldwide",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
@@ -446,56 +446,56 @@
             "url": "http://www.weather.com/weather/right-now/Mountain+View+CA+94043",
             "why": "#7 (Alexa news); #27 total time spent,Picked interesting page",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://www.amazon.com",
             "why": "#1 world commerce website by visits; #3 commerce in the US by time spent",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://www.ebay.com",
             "why": "#1 commerce website by time spent by users in US",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://games.yahoo.com",
             "why": "#1 games according to Alexa (with actual games in it)",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://booking.com",
             "why": "#1 Alexa recreation",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://answers.yahoo.com",
             "why": "#1 Alexa reference",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://sports.yahoo.com/",
             "why": "#1 Alexa sports",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         },
         {
             "url": "http://techcrunch.com",
             "why": "top tech blog",
             "smoothness": {
-                "action": "scrolling_interaction"
+                "action": "scrolling_action"
             }
         }
     ]

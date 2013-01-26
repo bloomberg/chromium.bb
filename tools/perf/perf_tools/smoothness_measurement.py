@@ -21,13 +21,13 @@ class SmoothnessMeasurement(object):
   def Stop(self):
     self._tab.ExecuteJavaScript('window.__renderingStats.stop()')
 
-  def BindToInteraction(self, interaction):
+  def BindToAction(self, action):
     # Make the scroll test start and stop measurement automatically.
     self._tab.ExecuteJavaScript(
         'window.__renderingStats = new __RenderingStats();')
-    interaction.BindMeasurementJavaScript(self._tab,
-                                          'window.__renderingStats.start();',
-                                          'window.__renderingStats.stop();')
+    action.BindMeasurementJavaScript(self._tab,
+                                     'window.__renderingStats.start();',
+                                     'window.__renderingStats.stop();')
 
   @property
   def start_values(self):
