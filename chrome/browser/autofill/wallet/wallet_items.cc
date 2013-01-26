@@ -6,8 +6,12 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "googleurl/src/gurl.h"
 
 namespace {
+
+const char kLegalDocumentUrl[] =
+    "https://wallet.google.com/customer/gadget/legaldocument.html?docId=";
 
 wallet::WalletItems::MaskedInstrument::Type
     TypeFromString(const std::string& type_string) {
@@ -199,11 +203,9 @@ bool WalletItems::MaskedInstrument::operator!=(
 }
 
 WalletItems::LegalDocument::LegalDocument(const std::string& document_id,
-                                          const std::string& display_name,
-                                          const std::string& document_body)
+                                          const std::string& display_name)
     : document_id_(document_id),
-      display_name_(display_name),
-      document_body_(document_body) {}
+      display_name_(display_name) {}
 
 WalletItems::LegalDocument::~LegalDocument() {}
 
@@ -222,21 +224,17 @@ scoped_ptr<WalletItems::LegalDocument>
     return scoped_ptr<LegalDocument>();
   }
 
-  std::string document_body;
-  if (!dictionary.GetString("document", &document_body)) {
-    DLOG(ERROR) << "Response from Google Wallet missing document body";
-    return scoped_ptr<LegalDocument>();
-  }
-
   return scoped_ptr<LegalDocument>(new LegalDocument(document_id,
-                                                     display_name,
-                                                     document_body));
+                                                     display_name));
+}
+
+GURL WalletItems::LegalDocument::GetUrl() {
+  return GURL(kLegalDocumentUrl + document_id_);
 }
 
 bool WalletItems::LegalDocument::operator==(const LegalDocument& other) const {
   return document_id_ == other.document_id_ &&
-         display_name_ == other.display_name_ &&
-         document_body_ == other.document_body_;
+         display_name_ == other.display_name_;
 }
 
 bool WalletItems::LegalDocument::operator!=(const LegalDocument& other) const {

@@ -16,6 +16,8 @@
 #include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
+class GURL;
+
 namespace base {
 class DictionaryValue;
 }
@@ -116,23 +118,24 @@ class WalletItems {
     static scoped_ptr<LegalDocument>
         CreateLegalDocument(const base::DictionaryValue& dictionary);
 
+    // Get the url where this legal document is hosted.
+    GURL GetUrl();
+
     bool operator==(const LegalDocument& other) const;
     bool operator!=(const LegalDocument& other) const;
 
     const std::string& document_id() const { return document_id_; }
     const std::string& display_name() const { return display_name_; }
-    const std::string& document_body() const { return document_body_; }
 
    private:
     friend class WalletItemsTest;
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateLegalDocument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
+    FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentGetUrl);
     LegalDocument(const std::string& document_id,
-                  const std::string& display_name,
-                  const std::string& document_body);
+                  const std::string& display_name);
     std::string document_id_;
     std::string display_name_;
-    std::string document_body_;
     DISALLOW_COPY_AND_ASSIGN(LegalDocument);
   };
 

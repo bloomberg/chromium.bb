@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -187,26 +188,17 @@ const char kMaskedInstrumentMissingObjectId[] =
 const char kLegalDocument[] =
     "{"
     "  \"legal_document_id\":\"doc_id\","
-    "  \"display_name\":\"display_name\","
-    "  \"document\":\"doc_body\""
+    "  \"display_name\":\"display_name\""
     "}";
 
 const char kLegalDocumentMissingDocumentId[] =
     "{"
-    "  \"display_name\":\"display_name\","
-    "  \"document\":\"doc_body\""
+    "  \"display_name\":\"display_name\""
     "}";
 
 const char kLegalDocumentMissingDisplayName[] =
     "{"
-    "  \"legal_document_id\":\"doc_id\","
-    "  \"document\":\"doc_body\""
-    "}";
-
-const char kLegalDocumentMissingDocumentBody[] =
-    "{"
-    "  \"legal_document_id\":\"doc_id\","
-    "  \"display_name\":\"display_name\""
+    "  \"legal_document_id\":\"doc_id\""
     "}";
 
 const char kWalletItemsWithRequiredActions[] =
@@ -291,8 +283,7 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "  ["
     "    {"
     "      \"legal_document_id\":\"doc_id\","
-    "      \"display_name\":\"display_name\","
-    "      \"document\":\"doc_body\""
+    "      \"display_name\":\"display_name\""
     "    }"
     "  ]"
     "}";
@@ -355,8 +346,7 @@ const char kWalletItems[] =
     "  ["
     "    {"
     "      \"legal_document_id\":\"doc_id\","
-    "      \"display_name\":\"display_name\","
-    "      \"document\":\"doc_body\""
+    "      \"display_name\":\"display_name\""
     "    }"
     "  ]"
     "}";
@@ -452,16 +442,18 @@ TEST_F(WalletItemsTest, CreateLegalDocumentMissingDisplayName) {
   ASSERT_EQ(NULL, WalletItems::LegalDocument::CreateLegalDocument(*dict).get());
 }
 
-TEST_F(WalletItemsTest, CreateLegalDocumentMissingDocBody) {
-  SetUpDictionary(kLegalDocumentMissingDocumentBody);
-  ASSERT_EQ(NULL, WalletItems::LegalDocument::CreateLegalDocument(*dict).get());
-}
-
 TEST_F(WalletItemsTest, CreateLegalDocument) {
   SetUpDictionary(kLegalDocument);
-  WalletItems::LegalDocument expected("doc_id", "display_name", "doc_body");
+  WalletItems::LegalDocument expected("doc_id", "display_name");
   ASSERT_EQ(expected,
             *WalletItems::LegalDocument::CreateLegalDocument(*dict));
+}
+
+TEST_F(WalletItemsTest, LegalDocumentGetUrl) {
+  WalletItems::LegalDocument legal_doc("doc_id", "display_name");
+  EXPECT_EQ("https://wallet.google.com/customer/gadget/legaldocument.html?"
+            "docId=doc_id",
+            legal_doc.GetUrl().spec());
 }
 
 TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
@@ -547,8 +539,7 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
 
   scoped_ptr<WalletItems::LegalDocument> legal_document(
       new WalletItems::LegalDocument("doc_id",
-                                     "display_name",
-                                     "doc_body"));
+                                     "display_name"));
   expected.AddLegalDocument(legal_document.Pass());
 
   ASSERT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
