@@ -307,6 +307,34 @@ ca-t3/pk-g4-4.0.1-r333
     self.assertCommandContains(['svn', 'cat', '-r', '1234'])
 
 
+class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
+
+  def setUp(self):
+    self._buildroot = os.path.join(self.tempdir, 'buildroot')
+    os.makedirs(self._buildroot)
+    self._board = 'test-board'
+
+  def testBuildAUTestTarball(self):
+    """Tests that our call to generate an au test tarball is correct."""
+    tarball_dir = self.tempdir
+    archive_url = 'gs://mytest/path/version'
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      tarball_path = commands.BuildAUTestTarball(
+          self._buildroot, self._board, tarball_dir, 'R26-3928.0.0',
+          archive_url)
+      m.assert_called_once_with(self._buildroot, ['autotest/au_control_files'],
+                                os.path.join(tarball_dir, 'au_control.tar.bz2'),
+                                cwd=tarball_dir)
+
+      self.assertEquals(os.path.join(tarball_dir, 'au_control.tar.bz2'),
+                        tarball_path)
+
+    # Full release test with partial args defined.
+    self.assertCommandContains(['site_utils/autoupdate/full_release_test.py',
+                                '--archive_url', archive_url, '3928.0.0',
+                                self._board])
+
+
 class UnmockedTests(cros_test_lib.TempDirTestCase):
 
   def testArchiveTestResults(self):

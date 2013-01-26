@@ -1073,7 +1073,7 @@ _release = full.derive(official, internal,
 
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
-  hw_tests=['bvt'],
+  hw_tests=['bvt', constants.HWTEST_AU_SUITE],
   master=True,
 )
 

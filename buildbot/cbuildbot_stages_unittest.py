@@ -749,6 +749,59 @@ class HWTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
       self._RunHWTestSuite()
 
 
+class AUTestStageTest(AbstractStageTest):
+  """Test only custom methods in AUTestStageTest."""
+
+  def setUp(self):
+    self.archive_path = self.build_root + '/archive'
+    self.archive_url = 'gs://my/fake/path'
+    self.bot_id = 'x86-mario-release'
+    self.options.log_dir = '/b/cbuild/mylogdir'
+    self.build_config = config.config[self.bot_id].copy()
+    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
+    self.archive_stage_mock.debug = False
+    self.suite = 'bvt'
+    self.version = 'ver'
+
+  def ConstructStage(self):
+    return stages.AUTestStage(self.options, self.build_config,
+                              self._current_board, self.archive_stage_mock,
+                              self.suite)
+
+  def testWaitForPreconditions(self):
+    """Tests that we correctly generate a tarball and archive it."""
+    tarball_name = 'boogie'
+    tarball_path = '/tmp/oogie/' + tarball_name
+
+    self.mox.StubOutWithMock(commands, 'BuildAUTestTarball')
+    self.mox.StubOutWithMock(commands, 'ArchiveFile')
+    self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
+
+    # Mock out interaction with archive_stage.
+    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
+    self.archive_stage_mock.GetArchivePath().InAnyOrder().AndReturn(
+        self.archive_path)
+    self.archive_stage_mock.GetGSUploadLocation().InAnyOrder().AndReturn(
+        self.archive_url)
+    self.archive_stage_mock.GetVersion().AndReturn(self.version)
+
+
+    # Build it, archive it and upload it!
+    commands.BuildAUTestTarball(
+        self.build_root, self._current_board, mox.IgnoreArg(), self.version,
+        self.archive_url).AndReturn(tarball_path)
+    commands.ArchiveFile(tarball_path, self.archive_path).AndReturn(
+        tarball_name)
+    commands.UploadArchivedFile(self.archive_path, self.archive_url,
+                                tarball_name, self.archive_stage_mock.debug,
+                                update_list=True)
+
+    self.mox.ReplayAll()
+    stage = self.ConstructStage()
+    stage.WaitForPreconditions()
+    self.mox.VerifyAll()
+
+
 class UprevStageTest(AbstractStageTest):
 
   def setUp(self):

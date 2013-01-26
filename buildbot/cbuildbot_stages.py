@@ -1153,9 +1153,8 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     # Build autotest tarball, which is used in archive step. This is generated
     # here because the test directory is modified during the test phase, and we
     # don't want to include the modifications in the tarball.
-    tarballs = commands.BuildAutotestTarballs(self._build_root,
-                                              self._current_board,
-                                              self._tarball_dir)
+    tarballs = commands.BuildAutotestTarballs(
+        self._build_root, self._current_board, self._tarball_dir)
     self._archive_stage.AutotestTarballsReady(tarballs)
 
   def _BuildFullAutotestTarball(self):
@@ -1390,9 +1389,13 @@ class HWTestStage(BoardSpecificBuilderStage):
     return super(HWTestStage, self)._HandleStageException(exception)
 
 
-  def _PerformStage(self):
+  def WaitForPreconditions(self):
+    """Waits for preconditions for this test. Run before rest of stage"""
     if not self._archive_stage.WaitForHWTestUploads():
       raise InvalidTestConditionException('Missing uploads.')
+
+  def _PerformStage(self):
+    self.WaitForPreconditions()
 
     build = '/'.join([self._bot_id, self._archive_stage.GetVersion()])
     if self._options.remote_trybot and self._options.hwtest:
@@ -1415,8 +1418,27 @@ class HWTestStage(BoardSpecificBuilderStage):
       return self.DealWithTimeout(exception)
 
 
-class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
-                       ForgivingBuilderStage):
+class AUTestStage(HWTestStage):
+  """Stage for au hw test suites that requires special pre-processing."""
+
+  def WaitForPreconditions(self):
+    """Wait for payloads to be staged and uploads its au control files."""
+    super(AUTestStage, self).WaitForPreconditions()
+    local_archive_path = self._archive_stage.GetArchivePath()
+    remote_archive_path = self._archive_stage.GetGSUploadLocation()
+
+    with osutils.TempDirContextManager() as tempdir:
+      tarball = commands.BuildAUTestTarball(
+          self._build_root, self._current_board, tempdir,
+          self._archive_stage.GetVersion(),
+          remote_archive_path)
+      tarball_name = commands.ArchiveFile(tarball, local_archive_path)
+      commands.UploadArchivedFile(local_archive_path, remote_archive_path,
+                                  tarball_name, self._archive_stage.debug,
+                                  update_list=True)
+
+
+class ASyncHWTestStage(HWTestStage, ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
   def __init__(self, options, build_config, board, archive_stage, suite):

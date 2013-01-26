@@ -179,6 +179,7 @@ HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
 # Currently supported hwtest boards.
 HWTEST_BOARD_WHITELIST = ['x86-mario', 'lumpy']
+HWTEST_AU_SUITE = 'au'
 
 # Defines VM Test types.
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'

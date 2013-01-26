@@ -1249,6 +1249,51 @@ def BuildAutotestTarballs(buildroot, board, tarball_dir):
   return [autotest_tarball, test_suites_tarball]
 
 
+def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
+  """Tar up the au test artifacts into the tarball_dir.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine.
+    work_dir: Location for doing work.
+    version: Basic version of the build i.e. 3289.23.0.
+    archive_url: GS directory where we uploaded payloads.
+  """
+  au_test_tarball = os.path.join(work_dir, 'au_control.tar.bz2')
+
+  cwd = os.path.join(buildroot, 'src', 'third_party', 'autotest', 'files')
+  control_files_subdir = os.path.join('autotest', 'au_control_files')
+
+  autotest_dir = os.path.join(work_dir, control_files_subdir)
+  os.makedirs(autotest_dir)
+
+  # Get basic version without R*.
+  basic_version = re.search('R[0-9]+-([0-9][\w.]+)', version).group(1)
+
+  # TODO(sosa): Temporary hack to bootstrap devserver dependency.
+  cmd = ['site_utils/autoupdate/full_release_test.py', '--help']
+  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, error_code_ok=True,
+                                         print_cmd=False)
+
+  cmd = ['site_utils/autoupdate/full_release_test.py',
+         '--npo', '--dump',
+         '--dump_dir', autotest_dir, '--archive_url', archive_url,
+         basic_version, board, '--log=debug']
+
+
+  gs_context_dir = os.path.dirname(gs.GSUTIL_BIN)
+  run_env = None
+  if not gs_context_dir in os.environ['PATH']:
+    run_env = os.environ.copy()
+    run_env['PATH'] += ':%s' % gs_context_dir
+  else:
+    run_env = os.environ
+
+  cros_build_lib.RunCommand(cmd, env=run_env, cwd=cwd)
+  BuildTarball(buildroot, [control_files_subdir], au_test_tarball, cwd=work_dir)
+  return au_test_tarball
+
+
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   """Tar up the full autotest directory into image_dir.
 
