@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H
 
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
-#include "ash/system/tray/tray_image_item.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_views.h"
 
 namespace ash {
@@ -18,7 +18,7 @@ namespace internal {
 
 class EnterpriseDefaultView;
 
-class TrayEnterprise : public TrayImageItem,
+class TrayEnterprise : public SystemTrayItem,
                        public ViewClickListener,
                        public EnterpriseDomainObserver {
  public:
@@ -29,10 +29,9 @@ class TrayEnterprise : public TrayImageItem,
   // tray items.
   void UpdateEnterpriseMessage();
 
-  // Overridden from TrayImageItem.
+  // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
-  virtual bool GetInitialVisibility() OVERRIDE;
 
   // Overridden from EnterpriseDomainObserver.
   virtual void OnEnterpriseDomainChanged() OVERRIDE;

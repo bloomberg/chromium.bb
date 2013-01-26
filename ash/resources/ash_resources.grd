@@ -151,7 +151,6 @@
 
       <!-- ChromeOS specific icons -->
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_LIGHT" file="cros/status/status_managed_tray.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE_DARK" file="cros/status/status_managed_p.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X" file="cros/network/statusbar_network_1x.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_3G_DARK" file="cros/network/statusbar_network_3g_dark.png" />
