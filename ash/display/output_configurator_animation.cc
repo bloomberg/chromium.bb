@@ -191,6 +191,8 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
       hiding_layers_[root_window] = hiding_layer;
     } else {
       hiding_layer = hiding_layers_[root_window];
+      if (hiding_layer->bounds() != root_window->bounds())
+        hiding_layer->SetBounds(root_window->bounds());
     }
 
     ui::ScopedLayerAnimationSettings settings(hiding_layer->GetAnimator());
