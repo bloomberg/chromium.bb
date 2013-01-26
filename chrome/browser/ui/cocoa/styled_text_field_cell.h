@@ -7,10 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-typedef enum {
-  StyledTextFieldCellRoundedAll = 0,
-  StyledTextFieldCellRoundedLeft = 1
-} StyledTextFieldCellRoundedFlags;
+#import "chrome/browser/ui/cocoa/rect_path_utils.h"
+
+enum rect_path_utils::RoundedCornerFlags;
 
 // StyledTextFieldCell customizes the look of the standard Cocoa text field.
 // The border and focus ring are modified, as is the font baseline.  Subclasses
@@ -46,7 +45,7 @@ typedef enum {
 - (CGFloat)cornerRadius;
 
 // Which corners of the field to round.  Defaults to RoundedAll.
-- (StyledTextFieldCellRoundedFlags)roundedFlags;
+- (rect_path_utils::RoundedCornerFlags)roundedFlags;
 
 // Returns YES if a light themed bezel should be drawn under the text field.
 // Default implementation returns NO.

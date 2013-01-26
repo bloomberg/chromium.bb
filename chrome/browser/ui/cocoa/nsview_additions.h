@@ -26,6 +26,9 @@
             isPositioned:(NSWindowOrderingMode)place
               relativeTo:(NSView *)otherView;
 
+// Return best color for keyboard focus ring.
+- (NSColor*)cr_keyboardFocusIndicatorColor;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_NSVIEW_ADDITIONS_H_

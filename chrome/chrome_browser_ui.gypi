@@ -698,6 +698,8 @@
         'browser/ui/cocoa/profile_menu_controller.mm',
         'browser/ui/cocoa/ratings_view.h',
         'browser/ui/cocoa/ratings_view.mm',
+        'browser/ui/cocoa/rect_path_utils.h',
+        'browser/ui/cocoa/rect_path_utils.mm',
         'browser/ui/cocoa/restart_browser.h',
         'browser/ui/cocoa/restart_browser.mm',
         'browser/ui/cocoa/simple_message_box_mac.mm',

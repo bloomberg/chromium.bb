@@ -48,8 +48,8 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
   return 4.0;
 }
 
-- (StyledTextFieldCellRoundedFlags)roundedFlags {
-  return StyledTextFieldCellRoundedLeft;
+- (rect_path_utils::RoundedCornerFlags)roundedCornerFlags {
+  return rect_path_utils::RoundedCornerLeft;
 }
 
 // @synthesize doesn't seem to compile for this transition.

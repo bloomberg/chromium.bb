@@ -62,4 +62,9 @@
         relativeTo:otherView];
 }
 
+- (NSColor*)cr_keyboardFocusIndicatorColor {
+  return [[NSColor keyboardFocusIndicatorColor]
+      colorWithAlphaComponent:0.5 / [self cr_lineWidth]];
+}
+
 @end

@@ -6,9 +6,12 @@
 
 #include "base/logging.h"
 #import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "chrome/browser/ui/cocoa/rect_path_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 // Adjust the overlay position relative to the top right of the button image.
 const CGFloat kOverlayOffsetX = -3;
@@ -115,6 +118,20 @@ const CGFloat kImageNoFocusAlpha = 0.65;
                     fraction:1.0
               respectFlipped:YES
                        hints:nil];
+  }
+
+  // Draws the blue focus ring.
+  if ([self showsFirstResponder]) {
+    gfx::ScopedNSGraphicsContextSaveGState scoped_state;
+    const CGFloat lineWidth = [controlView cr_lineWidth];
+    rect_path_utils::FrameRectWithInset(rect_path_utils::RoundedCornerAll,
+                                        NSInsetRect(cellFrame, 0, lineWidth),
+                                        0.0,            // insetX
+                                        0.0,            // insetY
+                                        3.0,            // outerRadius
+                                        lineWidth * 2,  // lineWidth
+                                        [controlView
+                                            cr_keyboardFocusIndicatorColor]);
   }
 }
 

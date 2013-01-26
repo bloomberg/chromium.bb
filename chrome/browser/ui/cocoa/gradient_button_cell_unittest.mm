@@ -109,4 +109,11 @@ TEST_F(GradientButtonCellTest, PulseState) {
               ([cell pulseState] == gradient_button_cell::kPulsedOff));
 }
 
+// Test drawing when first responder, mostly to ensure nothing leaks or
+// crashes.
+TEST_F(GradientButtonCellTest, FirstResponder) {
+  [test_window() makePretendKeyWindowAndSetFirstResponder:view_];
+  [view_ display];
+}
+
 }  // namespace

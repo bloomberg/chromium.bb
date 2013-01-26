@@ -11,6 +11,7 @@
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#import "chrome/browser/ui/cocoa/rect_path_utils.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -536,17 +537,12 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     BOOL showClickedGradient = pressed ||
         (pulseState_ == gradient_button_cell::kPulsingContinuous);
 
-    // When first responder, turn the hover alpha all the way up.
-    CGFloat hoverAlpha = [self hoverAlpha];
-    if ([self showsFirstResponder])
-      hoverAlpha = 1.0;
-
     [self drawBorderAndFillForTheme:themeProvider
                         controlView:controlView
                           innerPath:innerPath
                 showClickedGradient:showClickedGradient
               showHighlightGradient:[self isHighlighted]
-                         hoverAlpha:hoverAlpha
+                         hoverAlpha:[self hoverAlpha]
                              active:active
                           cellFrame:cellFrame
                     defaultGradient:nil];
@@ -568,6 +564,23 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                              NSCompositeSourceOver);
   }
   [self drawInteriorWithFrame:innerFrame inView:controlView];
+
+  // Draws the blue focus ring.
+  if ([self showsFirstResponder]) {
+    gfx::ScopedNSGraphicsContextSaveGState scoped_state;
+    const CGFloat lineWidth = [controlView cr_lineWidth];
+    // insetX = 1.0 is used for the drawing of blue highlight so that this
+    // highlight won't be too near the bookmark toolbar itself, in case we
+    // draw bookmark buttons in bookmark toolbar.
+    rect_path_utils::FrameRectWithInset(rect_path_utils::RoundedCornerAll,
+                                        NSInsetRect(cellFrame, 0, lineWidth),
+                                        1.0,            // insetX
+                                        0.0,            // insetY
+                                        3.0,            // outerRadius
+                                        lineWidth * 2,  // lineWidth
+                                        [controlView
+                                            cr_keyboardFocusIndicatorColor]);
+  }
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
