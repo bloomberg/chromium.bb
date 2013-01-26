@@ -2114,7 +2114,14 @@ void HostResolverImpl::OnDNSChanged() {
 }
 
 bool HostResolverImpl::HaveDnsConfig() const {
-  return (dns_client_.get() != NULL) && (dns_client_->GetConfig() != NULL);
+  // Use DnsClient only if it's fully configured and there is no override by
+  // ScopedDefaultHostResolverProc.
+  // The alternative is to use NetworkChangeNotifier to override DnsConfig,
+  // but that would introduce construction order requirements for NCN and SDHRP.
+  return (dns_client_.get() != NULL) &&
+         (dns_client_->GetConfig() != NULL) &&
+         !(proc_params_.resolver_proc == NULL &&
+           HostResolverProc::GetDefault() != NULL);
 }
 
 void HostResolverImpl::OnDnsTaskResolve(int net_error) {
