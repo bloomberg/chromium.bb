@@ -829,6 +829,8 @@ void ChromeBrowserMainPartsChromeos::SetupZramFieldTrial() {
   trial->AppendGroup("snow_no_swap", zram_group == '6' ? 1 : 0);
   trial->AppendGroup("snow_1GB_swap", zram_group == '7' ? 1 : 0);
   trial->AppendGroup("snow_2GB_swap", zram_group == '8' ? 1 : 0);
+  // This is necessary to start the experiment as a side effect.
+  trial->group();
 }
 
 }  //  namespace chromeos
