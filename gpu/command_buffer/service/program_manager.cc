@@ -152,7 +152,6 @@ void ProgramManager::ProgramInfo::Reset() {
 std::string ProgramManager::ProgramInfo::ProcessLogInfo(
     const std::string& log) {
   const char kHashedNamePrefix[] = "webgl_";
-  const size_t kHashedNameLength = 22;  // "webgl_" plus sixteen digits.
 
   std::string output;
   size_t current = 0;
@@ -160,12 +159,17 @@ std::string ProgramManager::ProgramInfo::ProcessLogInfo(
   while (next != std::string::npos) {
     output += log.substr(current, next - current);
 
-    std::string hashed_name = log.substr(next, kHashedNameLength);
+    size_t end_of_name = log.find_first_not_of(
+        "0123456789abcdefABCDEF", next + sizeof(kHashedNamePrefix));
+    size_t name_length = end_of_name - next;
+    // Currently we use 64bit hashing, which converts to 16 hex digits.
+    DCHECK(name_length == sizeof(kHashedNamePrefix) + 16);
+    std::string hashed_name = log.substr(next, name_length);
     const std::string* original_name =
         GetOriginalNameFromHashedName(hashed_name);
     if (original_name) {
       output += *original_name;
-      current = next + kHashedNameLength;
+      current = next + name_length;
     } else {
       // This shouldn't happen, but still handle it, to be on the safer side.
       output += std::string(kHashedNamePrefix);
