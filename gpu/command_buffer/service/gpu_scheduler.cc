@@ -82,7 +82,7 @@ void GpuScheduler::PutChanged() {
     error = parser_->ProcessCommand();
 
     if (error == error::kDeferCommandUntilLater) {
-      DCHECK(unscheduled_count_ > 0);
+      DCHECK_GT(unscheduled_count_, 0);
       break;
     }
 

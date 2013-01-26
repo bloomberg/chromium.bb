@@ -220,7 +220,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
       reinterpret_cast<const char*>(&name), sizeof(name));
 
   glFlush();
-  ProduceTexture(backbuffer_);
+  ProduceTexture(&backbuffer_);
 
   // Do not allow destruction while we are still waiting for a swap ACK,
   // so we do not leak a texture in the mailbox.
@@ -262,7 +262,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
       reinterpret_cast<const char*>(&name), sizeof(name));
 
   glFlush();
-  ProduceTexture(backbuffer_);
+  ProduceTexture(&backbuffer_);
 
   // Do not allow destruction while we are still waiting for a swap ACK,
   // so we do not leak a texture in the mailbox.
@@ -323,7 +323,7 @@ void TextureImageTransportSurface::BufferPresentedImpl(
     DCHECK(mailbox_name.length() == GL_MAILBOX_SIZE_CHROMIUM);
     mailbox_name.copy(reinterpret_cast<char *>(&backbuffer_.mailbox_name),
                       sizeof(MailboxName));
-    ConsumeTexture(backbuffer_);
+    ConsumeTexture(&backbuffer_);
   }
 
   if (stub_destroyed_ && backbuffer_.service_id) {
@@ -431,28 +431,28 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
 #endif
 }
 
-void TextureImageTransportSurface::ConsumeTexture(Texture& texture) {
-  DCHECK(!texture.service_id);
+void TextureImageTransportSurface::ConsumeTexture(Texture* texture) {
+  DCHECK(!texture->service_id);
 
   scoped_ptr<TextureDefinition> definition(mailbox_manager_->ConsumeTexture(
-      GL_TEXTURE_2D, texture.mailbox_name));
+      GL_TEXTURE_2D, texture->mailbox_name));
   if (definition.get()) {
-    texture.service_id = definition->ReleaseServiceId();
-    texture.size = gfx::Size(definition->level_infos()[0][0].width,
+    texture->service_id = definition->ReleaseServiceId();
+    texture->size = gfx::Size(definition->level_infos()[0][0].width,
                              definition->level_infos()[0][0].height);
   } else {
-    texture.mailbox_name = MailboxName();
+    texture->mailbox_name = MailboxName();
   }
 }
 
-void TextureImageTransportSurface::ProduceTexture(Texture& texture) {
-  DCHECK(texture.service_id);
+void TextureImageTransportSurface::ProduceTexture(Texture* texture) {
+  DCHECK(texture->service_id);
 
   TextureManager* texture_manager =
       helper_->stub()->decoder()->GetContextGroup()->texture_manager();
-  DCHECK(texture.size.width() > 0 && texture.size.height() > 0);
+  DCHECK(texture->size.width() > 0 && texture->size.height() > 0);
   TextureDefinition::LevelInfo info(
-      GL_TEXTURE_2D, GL_RGBA, texture.size.width(), texture.size.height(), 1,
+      GL_TEXTURE_2D, GL_RGBA, texture->size.width(), texture->size.height(), 1,
       0, GL_RGBA, GL_UNSIGNED_BYTE, true);
 
   TextureDefinition::LevelInfos level_infos;
@@ -461,7 +461,7 @@ void TextureImageTransportSurface::ProduceTexture(Texture& texture) {
   level_infos[0][0] = info;
   scoped_ptr<TextureDefinition> definition(new TextureDefinition(
       GL_TEXTURE_2D,
-      texture.service_id,
+      texture->service_id,
       GL_LINEAR,
       GL_LINEAR,
       GL_CLAMP_TO_EDGE,
@@ -475,12 +475,12 @@ void TextureImageTransportSurface::ProduceTexture(Texture& texture) {
   // at which point we consume the correct texture back.
   bool success = mailbox_manager_->ProduceTexture(
       GL_TEXTURE_2D,
-      texture.mailbox_name,
+      texture->mailbox_name,
       definition.release(),
       NULL);
   DCHECK(success);
-  texture.service_id = 0;
-  texture.mailbox_name = MailboxName();
+  texture->service_id = 0;
+  texture->mailbox_name = MailboxName();
 }
 
 }  // namespace content

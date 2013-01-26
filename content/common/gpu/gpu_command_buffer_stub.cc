@@ -44,7 +44,7 @@ namespace {
 // ContextGroup's memory type managers and the GpuMemoryManager class.
 class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  GpuCommandBufferMemoryTracker(GpuChannel* channel) :
+  explicit GpuCommandBufferMemoryTracker(GpuChannel* channel) :
       tracking_group_(channel->gpu_channel_manager()->gpu_memory_manager()->
           CreateTrackingGroup(channel->renderer_pid(), this)) {
   }

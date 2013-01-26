@@ -175,7 +175,7 @@ class GpuCommandBufferStub
   void OnSignalSyncPointAck(uint32 id);
 
   void OnReceivedClientManagedMemoryStats(const GpuManagedMemoryStats& stats);
-  void OnSetClientHasMemoryAllocationChangedCallback(bool);
+  void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
   void OnReschedule();
 
