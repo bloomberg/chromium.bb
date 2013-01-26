@@ -341,6 +341,10 @@ class Network {
     void SetDisconnected() {
       network_->set_disconnected();
     }
+    void SetUserConnectState(UserConnectState user_connect_state) {
+      network_->set_user_connect_state(user_connect_state);
+    }
+
    private:
     Network* network_;
   };

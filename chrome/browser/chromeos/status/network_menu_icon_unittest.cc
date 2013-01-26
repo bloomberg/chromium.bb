@@ -144,16 +144,20 @@ class NetworkMenuIconTest : public testing::Test {
   void SetConnected(Network* network) {
     Network::TestApi test_network(network);
     test_network.SetConnected();
+    test_network.SetUserConnectState(USER_CONNECT_CONNECTED);
   }
 
-  void SetConnecting(Network* network) {
+  void SetConnecting(Network* network, bool user_initiated) {
     Network::TestApi test_network(network);
     test_network.SetConnecting();
+    test_network.SetUserConnectState(
+        user_initiated ? USER_CONNECT_STARTED : USER_CONNECT_NONE);
   }
 
   void SetDisconnected(Network* network) {
     Network::TestApi test_network(network);
     test_network.SetDisconnected();
+    test_network.SetUserConnectState(USER_CONNECT_NONE);
   }
 
   void SetActive(Network* network, bool active) {
@@ -298,9 +302,9 @@ TEST_F(NetworkMenuIconTest, StatusIconMenuMode) {
   CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
   SetRoamingState(cellular1, ROAMING_STATE_HOME);  // Clear romaing state
-  SetConnecting(cellular1);
+  SetConnecting(cellular1, true);
 
-  // For MENU_MODE, we always display the connecting icon (cellular1).
+  // For user initiated connect always display the connecting icon (cellular1).
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, cellular_connecting_image_));
 
@@ -337,9 +341,9 @@ TEST_F(NetworkMenuIconTest, StatusIconDropdownMode) {
   // Set wifi1 to connecting.
   WifiNetwork* wifi1 = cros_->FindWifiNetworkByPath("wifi1");
   ASSERT_NE(static_cast<const Network*>(NULL), wifi1);
-  SetConnecting(wifi1);
+  SetConnecting(wifi1, false);
 
-  // For DROPDOWN_MODE, we prioritize the connected network (ethernet).
+  // For non user-initiated connect, show the connected network (ethernet).
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, ethernet_connected_image_));
 
