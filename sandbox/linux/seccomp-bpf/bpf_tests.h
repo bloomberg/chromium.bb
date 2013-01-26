@@ -92,7 +92,6 @@ class BpfTests : public UnitTests {
       playground2::Sandbox::SetSandboxPolicy(arg->policy(), &arg->aux_);
       playground2::Sandbox::Program *program =
           playground2::Sandbox::AssembleFilter();
-      playground2::Sandbox::VerifyProgram(*program);
       delete program;
       sandbox::UnitTests::IgnoreThisTest();
     }

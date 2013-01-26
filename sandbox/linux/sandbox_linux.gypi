@@ -122,6 +122,8 @@
         'seccomp-bpf/syscall.h',
         'seccomp-bpf/syscall_iterator.cc',
         'seccomp-bpf/syscall_iterator.h',
+        'seccomp-bpf/trap.cc',
+        'seccomp-bpf/trap.h',
         'seccomp-bpf/verifier.cc',
         'seccomp-bpf/verifier.h',
       ],

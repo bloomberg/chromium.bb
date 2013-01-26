@@ -5,6 +5,8 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 
+#include "sandbox/linux/seccomp-bpf/trap.h"
+
 namespace playground2 {
 
 struct arch_seccomp_data;
@@ -30,16 +32,6 @@ class ErrorCode {
     // This code should never be used directly, it is used internally only.
     ERR_INVALID   = -1,
   };
-
-  // TrapFnc is a pointer to a function that handles Seccomp traps in
-  // user-space. The seccomp policy can request that a trap handler gets
-  // installed; it does so by returning a suitable ErrorCode() from the
-  // syscallEvaluator. See the ErrorCode() constructor for how to pass in
-  // the function pointer.
-  // Please note that TrapFnc is executed from signal context and must be
-  // async-signal safe:
-  // http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_04.html
-  typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
 
   enum ArgType {
     TP_32BIT, TP_64BIT,
@@ -85,6 +77,7 @@ class ErrorCode {
  private:
   friend class CodeGen;
   friend class Sandbox;
+  friend class Trap;
   friend class Verifier;
 
   enum ErrorType {
@@ -94,7 +87,7 @@ class ErrorCode {
   // If we are wrapping a callback, we must assign a unique id. This id is
   // how the kernel tells us which one of our different SECCOMP_RET_TRAP
   // cases has been triggered.
-  ErrorCode(TrapFnc fnc, const void *aux, bool safe, uint16_t id);
+  ErrorCode(Trap::TrapFnc fnc, const void *aux, bool safe, uint16_t id);
 
   // Some system calls require inspection of arguments. This constructor
   // allows us to specify additional constraints.
@@ -106,9 +99,9 @@ class ErrorCode {
   union {
     // Fields needed for SECCOMP_RET_TRAP callbacks
     struct {
-      TrapFnc fnc_;              // Callback function and arg, if trap was
-      void    *aux_;             //   triggered by the kernel's BPF filter.
-      bool    safe_;             // Keep sandbox active while calling fnc_()
+      Trap::TrapFnc fnc_;        // Callback function and arg, if trap was
+      void          *aux_;       //   triggered by the kernel's BPF filter.
+      bool          safe_;       // Keep sandbox active while calling fnc_()
     };
 
     // Fields needed when inspecting additional arguments.

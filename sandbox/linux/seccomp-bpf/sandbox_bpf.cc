@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <signal.h>
+// Some headers on Android are missing cdefs: crbug.com/172337.
+// (We can't use OS_ANDROID here since build_config.h is not included).
+#if defined(ANDROID)
+#include <sys/cdefs.h>
+#endif
+
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 
@@ -17,11 +22,6 @@
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
-// Android's signal.h doesn't define ucontext etc.
-#if defined(OS_ANDROID)
-#include "sandbox/linux/services/android_ucontext.h"
-#endif
-
 namespace {
 
 void WriteFailedStderrSetupMessage(int out_fd) {
@@ -33,31 +33,6 @@ void WriteFailedStderrSetupMessage(int out_fd) {
       HANDLE_EINTR(write(out_fd, error_string, strlen(error_string))) > 0 &&
       HANDLE_EINTR(write(out_fd, "\n", 1))) {
   }
-}
-
-// We need to tell whether we are performing a "normal" callback, or
-// whether we were called recursively from within a UnsafeTrap() callback.
-// This is a little tricky to do, because we need to somehow get access to
-// per-thread data from within a signal context. Normal TLS storage is not
-// safely accessible at this time. We could roll our own, but that involves
-// a lot of complexity. Instead, we co-opt one bit in the signal mask.
-// If BUS is blocked, we assume that we have been called recursively.
-// There is a possibility for collision with other code that needs to do
-// this, but in practice the risks are low.
-// If SIGBUS turns out to be a problem, we could instead co-opt one of the
-// realtime signals. There are plenty of them. Unfortunately, there is no
-// way to mark a signal as allocated. So, the potential for collision is
-// possibly even worse.
-bool GetIsInSigHandler(const ucontext_t *ctx) {
-  // Note: on Android, sigismember does not take a pointer to const.
-  return sigismember(const_cast<sigset_t*>(&ctx->uc_sigmask), SIGBUS);
-}
-
-void SetIsInSigHandler() {
-  sigset_t mask;
-  sigemptyset(&mask);
-  sigaddset(&mask, SIGBUS);
-  sigprocmask(SIG_BLOCK, &mask, NULL);
 }
 
 }  // namespace
@@ -367,13 +342,16 @@ void Sandbox::PolicySanityChecks(EvaluateSyscall syscall_evaluator,
 }
 
 void Sandbox::CheckForUnsafeErrorCodes(Instruction *insn, void *aux) {
-  if (BPF_CLASS(insn->code) == BPF_RET &&
-      insn->k >  SECCOMP_RET_TRAP &&
-      insn->k - SECCOMP_RET_TRAP <= trap_array_size_) {
-    const ErrorCode& err = trap_array_[insn->k - SECCOMP_RET_TRAP - 1];
-    if (!err.safe_) {
-      bool *is_unsafe = static_cast<bool *>(aux);
-      *is_unsafe = true;
+  bool *is_unsafe = static_cast<bool *>(aux);
+  if (!*is_unsafe) {
+    if (BPF_CLASS(insn->code) == BPF_RET &&
+        insn->k > SECCOMP_RET_TRAP &&
+        insn->k - SECCOMP_RET_TRAP <= SECCOMP_RET_DATA) {
+      const ErrorCode& err =
+        Trap::ErrorCodeFromTrapId(insn->k & SECCOMP_RET_DATA);
+      if (err.error_type_ != ErrorCode::ET_INVALID && !err.safe_) {
+        *is_unsafe = true;
+      }
     }
   }
 }
@@ -430,13 +408,6 @@ void Sandbox::InstallFilter(bool quiet) {
   // in system calls to things like munmap() or brk().
   Program *program = AssembleFilter();
 
-  // Make sure compilation resulted in BPF program that executes
-  // correctly. Otherwise, there is an internal error in our BPF compiler.
-  // There is really nothing the caller can do until the bug is fixed.
-#ifndef NDEBUG
-  VerifyProgram(*program);
-#endif
-
   struct sock_filter bpf[program->size()];
   const struct sock_fprog prog = {
     static_cast<unsigned short>(program->size()), bpf };
@@ -462,25 +433,7 @@ void Sandbox::InstallFilter(bool quiet) {
 Sandbox::Program *Sandbox::AssembleFilter() {
   // Verify that the user pushed a policy.
   if (evaluators_.empty()) {
-  filter_failed:
     SANDBOX_DIE("Failed to configure system call filters");
-  }
-
-  // Set new SIGSYS handler
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_sigaction = SigSys;
-  sa.sa_flags = SA_SIGINFO | SA_NODEFER;
-  if (sigaction(SIGSYS, &sa, NULL) < 0) {
-    goto filter_failed;
-  }
-
-  // Unmask SIGSYS
-  sigset_t mask;
-  if (sigemptyset(&mask) ||
-      sigaddset(&mask, SIGSYS) ||
-      sigprocmask(SIG_UNBLOCK, &mask, NULL)) {
-    goto filter_failed;
   }
 
   // We can't handle stacked evaluators, yet. We'll get there eventually
@@ -506,6 +459,7 @@ Sandbox::Program *Sandbox::AssembleFilter() {
     gen->MakeInstruction(BPF_RET+BPF_K,
                          Kill("Invalid audit architecture in BPF filter"))));
 
+  bool has_unsafe_traps = false;
   {
     // Evaluate all possible system calls and group their ErrorCodes into
     // ranges of identical codes.
@@ -521,8 +475,7 @@ Sandbox::Program *Sandbox::AssembleFilter() {
     // SECCOMP_RET_ALLOW ErrorCodes are handled in user-space. This will then
     // allow us to temporarily disable sandboxing rules inside of callbacks to
     // UnsafeTrap().
-    has_unsafe_traps_ = false;
-    gen->Traverse(jumptable, CheckForUnsafeErrorCodes, &has_unsafe_traps_);
+    gen->Traverse(jumptable, CheckForUnsafeErrorCodes, &has_unsafe_traps);
 
     // Grab the system call number, so that we can implement jump tables.
     Instruction *load_nr =
@@ -535,7 +488,7 @@ Sandbox::Program *Sandbox::AssembleFilter() {
     // measures that the sandbox provides, we print a big warning message --
     // and of course, we make sure to only ever enable this feature if it
     // is actually requested by the sandbox policy.
-    if (has_unsafe_traps_) {
+    if (has_unsafe_traps) {
       if (SandboxSyscall(-1) == -1 && errno == ENOSYS) {
         SANDBOX_DIE("Support for UnsafeTrap() has not yet been ported to this "
                     "architecture");
@@ -560,7 +513,14 @@ Sandbox::Program *Sandbox::AssembleFilter() {
                     "unconditionally allow sigreturn() and sigprocmask()");
       }
 
-      SANDBOX_INFO("WARNING! Disabling sandbox for debugging purposes");
+      if (!Trap::EnableUnsafeTrapsInSigSysHandler()) {
+        // We should never be able to get here, as UnsafeTrap() should never
+        // actually return a valid ErrorCode object unless the user set the
+        // CHROME_SANDBOX_DEBUGGING environment variable; and therefore,
+        // "has_unsafe_traps" would always be false. But better double-check
+        // than enabling dangerous code.
+        SANDBOX_DIE("We'd rather die than enable unsafe traps");
+      }
       gen->Traverse(jumptable, RedirectToUserspace, NULL);
 
       // Allow system calls, if they originate from our magic return address
@@ -620,10 +580,17 @@ Sandbox::Program *Sandbox::AssembleFilter() {
   gen->Compile(head, program);
   delete gen;
 
+  // Make sure compilation resulted in BPF program that executes
+  // correctly. Otherwise, there is an internal error in our BPF compiler.
+  // There is really nothing the caller can do until the bug is fixed.
+#ifndef NDEBUG
+  VerifyProgram(*program, has_unsafe_traps);
+#endif
+
   return program;
 }
 
-void Sandbox::VerifyProgram(const Program& program) {
+void Sandbox::VerifyProgram(const Program& program, bool has_unsafe_traps) {
   // If we previously rewrote the BPF program so that it calls user-space
   // whenever we return an "errno" value from the filter, then we have to
   // wrap our system call evaluator to perform the same operation. Otherwise,
@@ -635,7 +602,7 @@ void Sandbox::VerifyProgram(const Program& program) {
   const char *err = NULL;
   if (!Verifier::VerifyBPF(
                        program,
-                       has_unsafe_traps_ ? redirected_evaluators : evaluators_,
+                       has_unsafe_traps ? redirected_evaluators : evaluators_,
                        &err)) {
     SANDBOX_DIE(err);
   }
@@ -787,152 +754,12 @@ ErrorCode Sandbox::Unexpected64bitArgument() {
   return Kill("Unexpected 64bit argument detected");
 }
 
-void Sandbox::SigSys(int nr, siginfo_t *info, void *void_context) {
-  // Various sanity checks to make sure we actually received a signal
-  // triggered by a BPF filter. If something else triggered SIGSYS
-  // (e.g. kill()), there is really nothing we can do with this signal.
-  if (nr != SIGSYS || info->si_code != SYS_SECCOMP || !void_context ||
-      info->si_errno <= 0 ||
-      static_cast<size_t>(info->si_errno) > trap_array_size_) {
-    // SANDBOX_DIE() can call LOG(FATAL). This is not normally async-signal
-    // safe and can lead to bugs. We should eventually implement a different
-    // logging and reporting mechanism that is safe to be called from
-    // the sigSys() handler.
-    // TODO: If we feel confident that our code otherwise works correctly, we
-    //       could actually make an argument that spurious SIGSYS should
-    //       just get silently ignored. TBD
-  sigsys_err:
-    SANDBOX_DIE("Unexpected SIGSYS received");
-  }
-
-  // Signal handlers should always preserve "errno". Otherwise, we could
-  // trigger really subtle bugs.
-  int old_errno   = errno;
-
-  // Obtain the signal context. This, most notably, gives us access to
-  // all CPU registers at the time of the signal.
-  ucontext_t *ctx = reinterpret_cast<ucontext_t *>(void_context);
-
-  // Obtain the siginfo information that is specific to SIGSYS. Unfortunately,
-  // most versions of glibc don't include this information in siginfo_t. So,
-  // we need to explicitly copy it into a arch_sigsys structure.
-  struct arch_sigsys sigsys;
-  memcpy(&sigsys, &info->_sifields, sizeof(sigsys));
-
-  // Some more sanity checks.
-  if (sigsys.ip != reinterpret_cast<void *>(SECCOMP_IP(ctx)) ||
-      sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx)) ||
-      sigsys.arch != SECCOMP_ARCH) {
-    goto sigsys_err;
-  }
-
-  intptr_t rc;
-  if (has_unsafe_traps_ && GetIsInSigHandler(ctx)) {
-    errno = old_errno;
-    if (sigsys.nr == __NR_clone) {
-      SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler");
-    }
-    rc = SandboxSyscall(sigsys.nr,
-                        SECCOMP_PARM1(ctx), SECCOMP_PARM2(ctx),
-                        SECCOMP_PARM3(ctx), SECCOMP_PARM4(ctx),
-                        SECCOMP_PARM5(ctx), SECCOMP_PARM6(ctx));
-  } else {
-    const ErrorCode& err = trap_array_[info->si_errno - 1];
-    if (!err.safe_) {
-      SetIsInSigHandler();
-    }
-
-    // Copy the seccomp-specific data into a arch_seccomp_data structure. This
-    // is what we are showing to TrapFnc callbacks that the system call
-    // evaluator registered with the sandbox.
-    struct arch_seccomp_data data = {
-      sigsys.nr,
-      SECCOMP_ARCH,
-      reinterpret_cast<uint64_t>(sigsys.ip),
-      {
-        static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM4(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM5(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM6(ctx))
-      }
-    };
-
-    // Now call the TrapFnc callback associated with this particular instance
-    // of SECCOMP_RET_TRAP.
-    rc = err.fnc_(data, err.aux_);
-  }
-
-  // Update the CPU register that stores the return code of the system call
-  // that we just handled, and restore "errno" to the value that it had
-  // before entering the signal handler.
-  SECCOMP_RESULT(ctx) = static_cast<greg_t>(rc);
-  errno               = old_errno;
-
-  return;
+ErrorCode Sandbox::Trap(Trap::TrapFnc fnc, const void *aux) {
+  return Trap::MakeTrap(fnc, aux, true /* Safe Trap */);
 }
 
-bool Sandbox::TrapKey::operator<(const Sandbox::TrapKey& o) const {
-  if (fnc != o.fnc) {
-    return fnc < o.fnc;
-  } else if (aux != o.aux) {
-    return aux < o.aux;
-  } else {
-    return safe < o.safe;
-  }
-}
-
-ErrorCode Sandbox::MakeTrap(ErrorCode::TrapFnc fnc, const void *aux,
-                            bool safe) {
-  // Each unique pair of TrapFnc and auxiliary data make up a distinct instance
-  // of a SECCOMP_RET_TRAP.
-  TrapKey key(fnc, aux, safe);
-  TrapIds::const_iterator iter = trap_ids_.find(key);
-  uint16_t id;
-  if (iter != trap_ids_.end()) {
-    // We have seen this pair before. Return the same id that we assigned
-    // earlier.
-    id = iter->second;
-  } else {
-    // This is a new pair. Remember it and assign a new id.
-    // Please note that we have to store traps in memory that doesn't get
-    // deallocated when the program is shutting down. A memory leak is
-    // intentional, because we might otherwise not be able to execute
-    // system calls part way through the program shutting down
-    if (!traps_) {
-      traps_ = new Traps();
-    }
-    if (traps_->size() >= SECCOMP_RET_DATA) {
-      // In practice, this is pretty much impossible to trigger, as there
-      // are other kernel limitations that restrict overall BPF program sizes.
-      SANDBOX_DIE("Too many SECCOMP_RET_TRAP callback instances");
-    }
-    id = traps_->size() + 1;
-
-    traps_->push_back(ErrorCode(fnc, aux, safe, id));
-    trap_ids_[key] = id;
-
-    // We want to access the traps_ vector from our signal handler. But
-    // we are not assured that doing so is async-signal safe. On the other
-    // hand, C++ guarantees that the contents of a vector is stored in a
-    // contiguous C-style array.
-    // So, we look up the address and size of this array outside of the
-    // signal handler, where we can safely do so.
-    trap_array_      = &(*traps_)[0];
-    trap_array_size_ = id;
-    return traps_->back();
-  }
-
-  return ErrorCode(fnc, aux, safe, id);
-}
-
-ErrorCode Sandbox::Trap(ErrorCode::TrapFnc fnc, const void *aux) {
-  return MakeTrap(fnc, aux, true /* Safe Trap */);
-}
-
-ErrorCode Sandbox::UnsafeTrap(ErrorCode::TrapFnc fnc, const void *aux) {
-  return MakeTrap(fnc, aux, false /* Unsafe Trap */);
+ErrorCode Sandbox::UnsafeTrap(Trap::TrapFnc fnc, const void *aux) {
+  return Trap::MakeTrap(fnc, aux, false /* Unsafe Trap */);
 }
 
 intptr_t Sandbox::ForwardSyscall(const struct arch_seccomp_data& args) {
@@ -973,11 +800,6 @@ ErrorCode Sandbox::Kill(const char *msg) {
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int Sandbox::proc_fd_                   = -1;
 Sandbox::Evaluators Sandbox::evaluators_;
-Sandbox::Traps *Sandbox::traps_         = NULL;
-Sandbox::TrapIds Sandbox::trap_ids_;
-ErrorCode *Sandbox::trap_array_         = NULL;
-size_t Sandbox::trap_array_size_        = 0;
-  bool Sandbox::has_unsafe_traps_       = false;
 Sandbox::Conds Sandbox::conds_;
 
 }  // namespace

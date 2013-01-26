@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "sandbox/linux/services/linux_syscalls.h"
@@ -26,7 +27,8 @@ using sandbox::BrokerProcess;
 
 namespace {
 
-const int kExpectedReturnValue = 42;
+const int  kExpectedReturnValue   = 42;
+const char kSandboxDebuggingEnv[] = "CHROME_SANDBOX_DEBUGGING";
 
 // This test should execute no matter whether we have kernel support. So,
 // we make it a TEST() instead of a BPF_TEST().
@@ -299,6 +301,7 @@ ErrorCode GreyListedPolicy(int sysno, void *aux) {
   // expect any messages on "stderr". So, temporarily disable messages. The
   // BPF_TEST() is guaranteed to turn messages back on, after the policy
   // function has completed.
+  setenv(kSandboxDebuggingEnv, "t", 0);
   Die::SuppressInfoMessages(true);
 
   // Some system calls must always be allowed, if our policy wants to make
@@ -338,6 +341,19 @@ BPF_TEST(SandboxBpf, GreyListedPolicy,
   BPF_ASSERT(*name);
 }
 
+SANDBOX_TEST(SandboxBpf, EnableUnsafeTrapsInSigSysHandler) {
+  // Disabling warning messages that could confuse our test framework.
+  setenv(kSandboxDebuggingEnv, "t", 0);
+  Die::SuppressInfoMessages(true);
+
+  unsetenv(kSandboxDebuggingEnv);
+  SANDBOX_ASSERT(Trap::EnableUnsafeTrapsInSigSysHandler() == false);
+  setenv(kSandboxDebuggingEnv, "", 1);
+  SANDBOX_ASSERT(Trap::EnableUnsafeTrapsInSigSysHandler() == false);
+  setenv(kSandboxDebuggingEnv, "t", 1);
+  SANDBOX_ASSERT(Trap::EnableUnsafeTrapsInSigSysHandler() == true);
+}
+
 intptr_t PrctlHandler(const struct arch_seccomp_data& args, void *) {
   if (args.args[0] == PR_CAPBSET_DROP &&
       static_cast<int>(args.args[1]) == -1) {
@@ -350,6 +366,7 @@ intptr_t PrctlHandler(const struct arch_seccomp_data& args, void *) {
 }
 
 ErrorCode PrctlPolicy(int sysno, void *aux) {
+  setenv(kSandboxDebuggingEnv, "t", 0);
   Die::SuppressInfoMessages(true);
 
   if (sysno == __NR_prctl) {
@@ -391,6 +408,7 @@ intptr_t AllowRedirectedSyscall(const struct arch_seccomp_data& args, void *) {
 }
 
 ErrorCode RedirectAllSyscallsPolicy(int sysno, void *aux) {
+  setenv(kSandboxDebuggingEnv, "t", 0);
   Die::SuppressInfoMessages(true);
 
   // Some system calls must always be allowed, if our policy wants to make

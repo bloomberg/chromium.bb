@@ -269,21 +269,6 @@ class Sandbox {
     STATUS_ENABLED       // The sandbox is now active
   };
 
-  // TrapFnc is a pointer to a function that handles Seccomp traps in
-  // user-space. The seccomp policy can request that a trap handler gets
-  // installed; it does so by returning a suitable ErrorCode() from the
-  // syscallEvaluator. See the ErrorCode() constructor for how to pass in
-  // the function pointer.
-  // Please note that TrapFnc is executed from signal context and must be
-  // async-signal safe:
-  // http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_04.html
-  // Also note that it follows the calling convention of native system calls.
-  // In other words, it reports an error by returning an exit code in the
-  // range -1..-4096. It should not set errno when reporting errors; on the
-  // other hand, accidentally modifying errno is harmless and the changes will
-  // be undone afterwards.
-  typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
-
   // When calling setSandboxPolicy(), the caller can provide an arbitrary
   // pointer. This pointer will then be forwarded to the sandbox policy
   // each time a call is made through an EvaluateSyscall function pointer.
@@ -334,16 +319,19 @@ class Sandbox {
   // The "aux" field can carry a pointer to arbitrary data. See EvaluateSyscall
   // for a description of how to pass data from setSandboxPolicy() to a Trap()
   // handler.
-  static ErrorCode Trap(ErrorCode::TrapFnc fnc, const void *aux);
+  static ErrorCode Trap(Trap::TrapFnc fnc, const void *aux);
 
   // Calls a user-space trap handler and disables all sandboxing for system
   // calls made from this trap handler.
+  // This feature is available only if explicitly enabled by the user having
+  // set the CHROME_SANDBOX_DEBUGGING environment variable.
+  // Returns an ET_INVALID ErrorCode, if called when not enabled.
   // NOTE: This feature, by definition, disables all security features of
   //   the sandbox. It should never be used in production, but it can be
   //   very useful to diagnose code that is incompatible with the sandbox.
   //   If even a single system call returns "UnsafeTrap", the security of
   //   entire sandbox should be considered compromised.
-  static ErrorCode UnsafeTrap(ErrorCode::TrapFnc fnc, const void *aux);
+  static ErrorCode UnsafeTrap(Trap::TrapFnc fnc, const void *aux);
 
   // From within an UnsafeTrap() it is often useful to be able to execute
   // the system call that triggered the trap. The ForwardSyscall() method
@@ -384,11 +372,6 @@ class Sandbox {
   // internals. It should not be used by production code.
   static Program *AssembleFilter();
 
-  // Verify the correctness of a compiled program by comparing it against the
-  // current policy. This function should only ever be called by unit tests and
-  // by the sandbox internals. It should not be used by production code.
-  static void VerifyProgram(const Program& program);
-
  private:
   friend class CodeGen;
   friend class SandboxUnittestHelper;
@@ -405,21 +388,8 @@ class Sandbox {
     uint32_t  from, to;
     ErrorCode err;
   };
-  struct TrapKey {
-    TrapKey(TrapFnc f, const void *a, bool s)
-        : fnc(f),
-          aux(a),
-          safe(s) {
-    }
-    TrapFnc    fnc;
-    const void *aux;
-    bool       safe;
-    bool operator<(const TrapKey&) const;
-  };
   typedef std::vector<Range> Ranges;
   typedef std::map<uint32_t, ErrorCode> ErrMap;
-  typedef std::vector<ErrorCode> Traps;
-  typedef std::map<TrapKey, uint16_t> TrapIds;
   typedef std::set<ErrorCode, struct ErrorCode::LessThan> Conds;
 
   // Get a file descriptor pointing to "/proc", if currently available.
@@ -462,6 +432,11 @@ class Sandbox {
   // been configured with SetSandboxPolicy().
   static void      InstallFilter(bool quiet);
 
+  // Verify the correctness of a compiled program by comparing it against the
+  // current policy. This function should only ever be called by unit tests and
+  // by the sandbox internals. It should not be used by production code.
+  static void VerifyProgram(const Program& program, bool has_unsafe_traps);
+
   // Finds all the ranges of system calls that need to be handled. Ranges are
   // sorted in ascending order of system call numbers. There are no gaps in the
   // ranges. System calls with identical ErrorCodes are coalesced into a single
@@ -491,9 +466,6 @@ class Sandbox {
   // attempted to pass a 64bit value in a 32bit system call argument.
   static ErrorCode Unexpected64bitArgument();
 
-  static void      SigSys(int nr, siginfo_t *info, void *void_context);
-  static ErrorCode MakeTrap(ErrorCode::TrapFnc fn, const void *aux, bool safe);
-
   // A Trap() handler that returns an "errno" value. The value is encoded
   // in the "aux" parameter.
   static intptr_t  ReturnErrno(const struct arch_seccomp_data&, void *aux);
@@ -503,11 +475,6 @@ class Sandbox {
   static SandboxStatus status_;
   static int           proc_fd_;
   static Evaluators    evaluators_;
-  static Traps         *traps_;
-  static TrapIds       trap_ids_;
-  static ErrorCode     *trap_array_;
-  static size_t        trap_array_size_;
-  static bool          has_unsafe_traps_;
   static Conds         conds_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
