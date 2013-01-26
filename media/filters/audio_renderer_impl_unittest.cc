@@ -7,6 +7,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/mock_time_provider.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
 #include "media/base/gmock_callback_support.h"
@@ -16,9 +17,12 @@
 #include "media/filters/audio_renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::base::Time;
+using ::base::TimeDelta;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
+using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::NiceMock;
@@ -97,8 +101,7 @@ class AudioRendererImplTest : public ::testing::Test {
   MOCK_METHOD0(OnDisabled, void());
   MOCK_METHOD1(OnError, void(PipelineStatus));
 
-  void OnAudioTimeCallback(
-      base::TimeDelta current_time, base::TimeDelta max_time) {
+  void OnAudioTimeCallback(TimeDelta current_time, TimeDelta max_time) {
     CHECK(current_time <= max_time);
   }
 
@@ -134,11 +137,11 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void Preroll() {
-    next_timestamp_->SetBaseTimestamp(base::TimeDelta());
+    next_timestamp_->SetBaseTimestamp(TimeDelta());
 
     // Fill entire buffer to complete prerolling.
     EXPECT_CALL(*decoder_, Read(_));
-    renderer_->Preroll(base::TimeDelta(), NewPrerollCB());
+    renderer_->Preroll(TimeDelta(), NewPrerollCB());
     EXPECT_CALL(*this, OnPrerollComplete(PIPELINE_OK));
     message_loop_.RunUntilIdle();
     DeliverRemainingAudio();
@@ -149,7 +152,7 @@ class AudioRendererImplTest : public ::testing::Test {
     renderer_->SetPlaybackRate(1.0f);
   }
 
-  void Preroll(base::TimeDelta preroll_time) {
+  void Preroll(TimeDelta preroll_time) {
     next_timestamp_->SetBaseTimestamp(preroll_time);
 
     // Fill entire buffer to complete prerolling.
@@ -216,6 +219,33 @@ class AudioRendererImplTest : public ::testing::Test {
     return (frames_read == requested_frames);
   }
 
+  // Attempts to consume all data available from the renderer.  Returns the
+  // number of frames read.  Since time is frozen, the audio delay will increase
+  // as frames come in.
+  int ConsumeAllBufferedData() {
+    renderer_->DisableUnderflowForTesting();
+
+    int frames_read = 0;
+    int total_frames_read = 0;
+
+    const int kRequestFrames = 1024;
+    const uint32 bytes_per_frame = (decoder_->bits_per_channel() / 8) *
+        ChannelLayoutToChannelCount(decoder_->channel_layout());
+    scoped_array<uint8> buffer(new uint8[kRequestFrames * bytes_per_frame]);
+
+    do {
+      TimeDelta audio_delay = TimeDelta::FromMicroseconds(
+          total_frames_read * Time::kMicrosecondsPerSecond /
+          static_cast<float>(decoder_->samples_per_second()));
+
+      frames_read = renderer_->FillBuffer(
+          buffer.get(), kRequestFrames, audio_delay.InMilliseconds());
+      total_frames_read += frames_read;
+    } while (frames_read > 0);
+
+    return total_frames_read * bytes_per_frame;
+  }
+
   uint32 bytes_buffered() {
     return renderer_->algorithm_->bytes_buffered();
   }
@@ -235,6 +265,61 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void CallResumeAfterUnderflow() {
     renderer_->ResumeAfterUnderflow(false);
+  }
+
+  TimeDelta CalculatePlayTime(int bytes_filled) {
+    return TimeDelta::FromMicroseconds(
+        bytes_filled * Time::kMicrosecondsPerSecond /
+        renderer_->audio_parameters_.GetBytesPerSecond());
+  }
+
+  void EndOfStreamTest(float playback_rate) {
+    // Inject a mock time provider so we can control ended event execution.
+    StrictMock<base::MockTimeProvider> mock_time;
+    renderer_->set_time_provider_for_testing(
+        &base::MockTimeProvider::StaticNow);
+    EXPECT_CALL(mock_time, Now()).WillRepeatedly(Return(Time()));
+
+    Initialize();
+    Preroll();
+    Play();
+    renderer_->SetPlaybackRate(playback_rate);
+
+    // Drain internal buffer, we should have a pending read.
+    EXPECT_CALL(*decoder_, Read(_));
+    int total_bytes = bytes_buffered();
+    int bytes_filled = ConsumeAllBufferedData();
+
+    // Due to how the cross-fade algorithm works we won't get an exact match
+    // between the ideal and expected number of bytes consumed.  In the faster
+    // than normal playback case, more bytes are created than should exist and
+    // vice versa in the slower than normal playback case.
+    const float kEpsilon = 0.10 * (total_bytes / playback_rate);
+    EXPECT_NEAR(bytes_filled, total_bytes / playback_rate, kEpsilon);
+
+    // Figure out how long until the ended event should fire.
+    TimeDelta audio_play_time = CalculatePlayTime(bytes_filled);
+
+    // Fulfill the read with an end-of-stream packet.  We shouldn't report ended
+    // nor have a read until we drain the internal buffer.
+    DeliverEndOfStream();
+
+    InSequence s;
+
+    // Advance the mock timer by 10% each time.
+    const int kUnendingCycles = 10;
+    for (int i = 1; i < kUnendingCycles; ++i) {
+      EXPECT_CALL(mock_time, Now()).Times(2).WillRepeatedly(Return(
+          Time() + (i * audio_play_time / kUnendingCycles)));
+      ConsumeBufferedData(bytes_buffered(), NULL);
+    }
+
+    // Advance clock such that audio should have completed playout and ensure
+    // the ended event fires.
+    EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time() + audio_play_time));
+    EXPECT_CALL(*this, OnEnded());
+    EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time()));
+    ConsumeBufferedData(bytes_buffered(), NULL);
   }
 
   // Fixture members.
@@ -313,33 +398,15 @@ TEST_F(AudioRendererImplTest, Play) {
 }
 
 TEST_F(AudioRendererImplTest, EndOfStream) {
-  Initialize();
-  Preroll();
-  Play();
+  EndOfStreamTest(1.0);
+}
 
-  // Drain internal buffer, we should have a pending read.
-  int audio_bytes_filled = bytes_buffered();
-  EXPECT_CALL(*decoder_, Read(_));
-  EXPECT_TRUE(ConsumeBufferedData(audio_bytes_filled, NULL));
+TEST_F(AudioRendererImplTest, EndOfStream_FasterPlaybackSpeed) {
+  EndOfStreamTest(2.0);
+}
 
-  // Check and clear |earliest_end_time_| so the ended event fires on the next
-  // ConsumeBufferedData() call.
-  base::TimeDelta audio_play_time = base::TimeDelta::FromMicroseconds(
-      audio_bytes_filled * base::Time::kMicrosecondsPerSecond /
-      static_cast<float>(renderer_->audio_parameters_.GetBytesPerSecond()));
-  base::TimeDelta time_until_ended =
-      renderer_->earliest_end_time_ - base::Time::Now();
-  EXPECT_TRUE(time_until_ended > base::TimeDelta());
-  EXPECT_TRUE(time_until_ended <= audio_play_time);
-  renderer_->earliest_end_time_ = base::Time();
-
-  // Fulfill the read with an end-of-stream packet, we shouldn't report ended
-  // nor have a read until we drain the internal buffer.
-  DeliverEndOfStream();
-
-  // Drain internal buffer, now we should report ended.
-  EXPECT_CALL(*this, OnEnded());
-  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
+TEST_F(AudioRendererImplTest, EndOfStream_SlowerPlaybackSpeed) {
+  EndOfStreamTest(0.5);
 }
 
 TEST_F(AudioRendererImplTest, Underflow) {
@@ -376,9 +443,20 @@ TEST_F(AudioRendererImplTest, Underflow) {
 }
 
 TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
+  StrictMock<base::MockTimeProvider> mock_time;
+  renderer_->set_time_provider_for_testing(
+      &base::MockTimeProvider::StaticNow);
+  EXPECT_CALL(mock_time, Now()).WillRepeatedly(Return(Time()));
+
   Initialize();
   Preroll();
   Play();
+
+  // Figure out how long until the ended event should fire.  Since
+  // ConsumeBufferedData() doesn't provide audio delay information, the time
+  // until the ended event fires is equivalent to the longest buffered section,
+  // which is the initial bytes_buffered() read.
+  TimeDelta time_until_ended = CalculatePlayTime(bytes_buffered());
 
   // Drain internal buffer, we should have a pending read.
   EXPECT_CALL(*decoder_, Read(_));
@@ -417,12 +495,11 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
   // stop reading after receiving an end of stream buffer. It should have also
   // fired the ended callback http://crbug.com/106641
   DeliverEndOfStream();
+
+  InSequence s;
+  EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time() + time_until_ended));
   EXPECT_CALL(*this, OnEnded());
-
-  // Clear |earliest_end_time_| so ended fires on the next ConsumeBufferedData()
-  // call.
-  renderer_->earliest_end_time_ = base::Time();
-
+  EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time()));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
 }
@@ -461,14 +538,14 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Preroll) {
 
   // Start prerolling.
   EXPECT_CALL(*decoder_, Read(_));
-  renderer_->Preroll(base::TimeDelta(), NewPrerollCB());
+  renderer_->Preroll(TimeDelta(), NewPrerollCB());
 
   // Simulate the decoder aborting the pending read.
   EXPECT_CALL(*this, OnPrerollComplete(PIPELINE_OK));
   AbortPendingRead();
 
   // Preroll again to verify it completed normally.
-  Preroll(base::TimeDelta::FromSeconds(1));
+  Preroll(TimeDelta::FromSeconds(1));
 
   ASSERT_TRUE(read_cb_.is_null());
 }
@@ -487,7 +564,7 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Pause) {
 
   AbortPendingRead();
 
-  Preroll(base::TimeDelta::FromSeconds(1));
+  Preroll(TimeDelta::FromSeconds(1));
 }
 
 }  // namespace media

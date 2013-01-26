@@ -73,13 +73,17 @@ class MEDIA_EXPORT AudioRendererImpl
   // Initialize().
   void DisableUnderflowForTesting();
 
+  // Allows injection of a mock time provider for non-realtime testing.
+  typedef base::Time(TimeProvider)();
+  void set_time_provider_for_testing(TimeProvider* time_provider) {
+    time_provider_ = time_provider;
+  }
+
  protected:
   virtual ~AudioRendererImpl();
 
  private:
   friend class AudioRendererImplTest;
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, EndOfStream);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, Underflow_EndOfStream);
 
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(AudioDecoder::Status status,
@@ -116,7 +120,6 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Estimate earliest time when current buffer can stop playing.
   void UpdateEarliestEndTime_Locked(int frames_filled,
-                                    float playback_rate,
                                     base::TimeDelta playback_delay,
                                     base::Time time_now);
 
@@ -188,6 +191,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Callback provided to Preroll().
   PipelineStatusCB preroll_cb_;
 
+  // Called as a proxy to base::Time::Now() or a mock time provider.
+  TimeProvider* time_provider_;
+
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
   base::Lock lock_;
@@ -236,6 +242,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // know when that particular data would start playing, but it is much better
   // than nothing.
   base::Time earliest_end_time_;
+  size_t total_frames_filled_;
 
   bool underflow_disabled_;
 
