@@ -106,10 +106,35 @@ int TilingData::BorderTileYIndexFromSrcCoord(int src_position) const {
 
 gfx::Rect TilingData::TileBounds(int i, int j) const {
   AssertTile(i, j);
-  int x = TilePositionX(i);
-  int y = TilePositionY(j);
-  int width = TileSizeX(i);
-  int height = TileSizeY(j);
+  int max_texture_size_x = max_texture_size_.width() - 2 * border_texels_;
+  int max_texture_size_y = max_texture_size_.height() - 2 * border_texels_;
+  int total_size_x = total_size_.width();
+  int total_size_y = total_size_.height();
+
+  int lo_x = max_texture_size_x * i;
+  if (i != 0)
+    lo_x += border_texels_;
+
+  int lo_y = max_texture_size_y * j;
+  if (j != 0)
+    lo_y += border_texels_;
+
+  int hi_x = max_texture_size_x * (i + 1) + border_texels_;
+  if (i + 1 == num_tiles_x_)
+    hi_x += border_texels_;
+  if (hi_x > total_size_x)
+    hi_x = total_size_x;
+
+  int hi_y = max_texture_size_y * (j + 1) + border_texels_;
+  if (j + 1 == num_tiles_y_)
+    hi_y += border_texels_;
+  if (hi_y > total_size_y)
+    hi_y = total_size_y;
+
+  int x = lo_x;
+  int y = lo_y;
+  int width = hi_x - lo_x;
+  int height = hi_y - lo_y;
   DCHECK_GE(x, 0);
   DCHECK_GE(y, 0);
   DCHECK_GE(width, 0);

@@ -302,42 +302,74 @@ void PictureLayerTiling::UpdateTilePriorities(
     return;
 
   gfx::Rect view_rect(gfx::Point(), device_viewport);
-  int right = tiling_data_.TileXIndexFromSrcCoord(content_rect.width() - 1);
-  int bottom = tiling_data_.TileYIndexFromSrcCoord(content_rect.height() - 1);
+  float current_scale = current_layer_contents_scale / contents_scale_;
+  float last_scale = last_layer_contents_scale / contents_scale_;
 
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    TileMapKey key = it->first;
-    TilePriority priority;
-    priority.resolution = resolution_;
-    if (key.first > right || key.second > bottom) {
-      priority.distance_to_visible_in_pixels = std::numeric_limits<int>::max();
+  if (last_screen_transform.IsIdentityOrTranslation() &&
+      current_screen_transform.IsIdentityOrTranslation())
+  {
+    gfx::Vector2dF current_offset(
+        current_screen_transform.matrix().get(0, 3),
+        current_screen_transform.matrix().get(1, 3));
+    gfx::Vector2dF last_offset(
+        last_screen_transform.matrix().get(0, 3),
+        last_screen_transform.matrix().get(1, 3));
+
+    for (TileMap::const_iterator it = tiles_.begin();
+        it != tiles_.end(); ++it) {
+      TileMapKey key = it->first;
+      TilePriority priority;
+      priority.resolution = resolution_;
+
+      gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
+      gfx::RectF current_screen_rect = gfx::ScaleRect(
+          tile_bound,
+          current_scale,
+          current_scale) + current_offset;
+      gfx::RectF last_screen_rect = gfx::ScaleRect(
+          tile_bound,
+          last_scale,
+          last_scale) + last_offset;
+
       priority.time_to_visible_in_seconds =
-          TilePriority::kMaxTimeToVisibleInSeconds;
+          TilePriority::TimeForBoundsToIntersect(
+              last_screen_rect, current_screen_rect, time_delta, view_rect);
+
+      priority.distance_to_visible_in_pixels =
+          TilePriority::manhattanDistance(current_screen_rect, view_rect);
       it->second->set_priority(tree, priority);
-      continue;
     }
+  }
+  else
+  {
+    for (TileMap::const_iterator it = tiles_.begin();
+           it != tiles_.end(); ++it) {
+      TileMapKey key = it->first;
+      TilePriority priority;
+      priority.resolution = resolution_;
 
-    gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
-    gfx::RectF current_layer_content_rect = gfx::ScaleRect(
-        tile_bound,
-        current_layer_contents_scale / contents_scale_,
-        current_layer_contents_scale / contents_scale_);
-    gfx::RectF current_screen_rect = MathUtil::mapClippedRect(
-        current_screen_transform, current_layer_content_rect);
-    gfx::RectF last_layer_content_rect = gfx::ScaleRect(
-        tile_bound,
-        last_layer_contents_scale / contents_scale_,
-        last_layer_contents_scale / contents_scale_);
-    gfx::RectF last_screen_rect  = MathUtil::mapClippedRect(
-        last_screen_transform, last_layer_content_rect);
+      gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
+      gfx::RectF current_layer_content_rect = gfx::ScaleRect(
+          tile_bound,
+          current_scale,
+          current_scale);
+      gfx::RectF current_screen_rect = MathUtil::mapClippedRect(
+          current_screen_transform, current_layer_content_rect);
+      gfx::RectF last_layer_content_rect = gfx::ScaleRect(
+          tile_bound,
+          last_scale,
+          last_scale);
+      gfx::RectF last_screen_rect  = MathUtil::mapClippedRect(
+          last_screen_transform, last_layer_content_rect);
 
-    priority.time_to_visible_in_seconds =
-        TilePriority::TimeForBoundsToIntersect(
-            last_screen_rect, current_screen_rect, time_delta, view_rect);
+      priority.time_to_visible_in_seconds =
+          TilePriority::TimeForBoundsToIntersect(
+              last_screen_rect, current_screen_rect, time_delta, view_rect);
 
-    priority.distance_to_visible_in_pixels =
-        TilePriority::manhattanDistance(current_screen_rect, view_rect);
-    it->second->set_priority(tree, priority);
+      priority.distance_to_visible_in_pixels =
+          TilePriority::manhattanDistance(current_screen_rect, view_rect);
+      it->second->set_priority(tree, priority);
+    }
   }
 }
 
