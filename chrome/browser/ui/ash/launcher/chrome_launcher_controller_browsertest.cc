@@ -343,6 +343,26 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
 
 }
 
+// Test that we can launch a platform app panel and get a running item.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPanelWindow) {
+  int item_count = launcher_model()->item_count();
+  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  ShellWindow::CreateParams params;
+  params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+  ShellWindow* window = CreateShellWindowFromParams(extension, params);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher_model()->item_count());
+  // Panels show up on the right side of the launcher, so the new item should
+  // be the last one.
+  ash::LauncherItem item =
+      launcher_model()->items()[launcher_model()->item_count() - 1];
+  EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  CloseShellWindow(window);
+  --item_count;
+  EXPECT_EQ(item_count, launcher_model()->item_count());
+}
+
 // Confirm that app windows can be reactivated by clicking their icons and that
 // the correct activation order is maintained.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {

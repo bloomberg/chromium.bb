@@ -7,7 +7,7 @@
 
 
 #include "chrome/browser/extensions/extension_apitest.h"
-
+#include "chrome/browser/ui/extensions/shell_window.h"
 
 namespace content {
 class WebContents;
@@ -63,6 +63,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Creates an empty shell window for |extension|.
   ShellWindow* CreateShellWindow(const Extension* extension);
+
+  ShellWindow* CreateShellWindowFromParams(
+      const Extension* extension, const ShellWindow::CreateParams& params);
 
   // Closes |window| and waits until it's gone.
   void CloseShellWindow(ShellWindow* window);

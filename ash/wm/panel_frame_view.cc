@@ -59,7 +59,7 @@ void PanelFrameView::ResetWindowControls() {
 }
 
 void PanelFrameView::UpdateWindowIcon() {
-  NOTIMPLEMENTED();
+  // TODO(stevenjb): Support icons for panels?
 }
 
 void PanelFrameView::UpdateWindowTitle() {

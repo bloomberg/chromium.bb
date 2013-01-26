@@ -79,6 +79,8 @@ class ASH_EXPORT PanelLayoutManager
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visible) OVERRIDE;
 
   // Overridden from aura::client::ActivationChangeObserver
   virtual void OnWindowActivated(aura::Window* gained_active,

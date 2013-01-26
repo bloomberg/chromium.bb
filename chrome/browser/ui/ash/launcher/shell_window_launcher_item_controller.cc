@@ -30,10 +30,11 @@ class ShellWindowHasWindow {
 }  // namespace
 
 ShellWindowLauncherItemController::ShellWindowLauncherItemController(
+    Type type,
     const std::string& app_launcher_id,
     const std::string& app_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(TYPE_APP, app_id, controller),
+    : LauncherItemController(type, app_id, controller),
       app_launcher_id_(app_launcher_id) {
 }
 
@@ -43,6 +44,10 @@ ShellWindowLauncherItemController::~ShellWindowLauncherItemController() {
 void ShellWindowLauncherItemController::AddShellWindow(
     ShellWindow* shell_window,
     ash::LauncherItemStatus status) {
+  if (shell_window->window_type() == ShellWindow::WINDOW_TYPE_PANEL &&
+      type() != TYPE_APP_PANEL) {
+    LOG(ERROR) << "ShellWindow of type Panel added to non-panel launcher item";
+  }
   if (status == ash::STATUS_ACTIVE)
     shell_windows_.push_front(shell_window);
   else

@@ -166,7 +166,11 @@ class ChromeLauncherController
   // Returns the id of the app for the specified tab.
   virtual std::string GetAppID(content::WebContents* tab) = 0;
 
+  // Returns the launcherID of the first non-panel item whose app_id
+  // matches |app_id| or 0 if none match.
   virtual ash::LauncherID GetLauncherIDForAppID(const std::string& app_id) = 0;
+
+  // Returns the id of the app for the specified id (which must exist).
   virtual std::string GetAppIDForLauncherID(ash::LauncherID id) = 0;
 
   // Set the image for a specific launcher item (e.g. when set by the app).

@@ -75,8 +75,13 @@ void ShellWindowLauncherController::OnShellWindowAdded(
     launcher_id = controller->launcher_id();
     controller->AddShellWindow(shell_window, status);
   } else {
+    LauncherItemController::Type type =
+        shell_window->window_type() == ShellWindow::WINDOW_TYPE_PANEL
+        ? LauncherItemController::TYPE_APP_PANEL
+        : LauncherItemController::TYPE_APP;
     ShellWindowLauncherItemController* controller =
-        new ShellWindowLauncherItemController(app_launcher_id, app_id, owner_);
+        new ShellWindowLauncherItemController(
+            type, app_launcher_id, app_id, owner_);
     controller->AddShellWindow(shell_window, status);
     // If the app launcher id is not unique, and there is already a launcher
     // item for this app id (e.g. pinned), use that launcher item.

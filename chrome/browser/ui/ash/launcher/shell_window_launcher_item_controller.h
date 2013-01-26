@@ -28,7 +28,8 @@ class ShellWindow;
 // Instances are owned by ShellWindowLauncherController.
 class ShellWindowLauncherItemController : public LauncherItemController {
  public:
-  ShellWindowLauncherItemController(const std::string& app_launcher_id,
+  ShellWindowLauncherItemController(Type type,
+                                    const std::string& app_launcher_id,
                                     const std::string& app_id,
                                     ChromeLauncherController* controller);
 

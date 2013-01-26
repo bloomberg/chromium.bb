@@ -285,6 +285,12 @@ void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
     RestorePanel(window);
 }
 
+void PanelLayoutManager::OnWindowVisibilityChanged(
+    aura::Window* window, bool visible) {
+  if (visible)
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
 

@@ -549,6 +549,8 @@ ash::LauncherID ChromeLauncherControllerPerBrowser::GetLauncherIDForAppID(
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
+    if (i->second->type() == LauncherItemController::TYPE_APP_PANEL)
+      continue;  // Don't include panels
     if (i->second->app_id() == app_id)
       return i->first;
   }

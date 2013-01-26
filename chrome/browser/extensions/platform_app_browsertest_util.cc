@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -140,6 +139,12 @@ void PlatformAppBrowserTest::SetCommandLineArg(const std::string& test_file) {
 ShellWindow* PlatformAppBrowserTest::CreateShellWindow(
     const Extension* extension) {
   ShellWindow::CreateParams params;
+  return ShellWindow::Create(
+      browser()->profile(), extension, GURL(""), params);
+}
+
+ShellWindow* PlatformAppBrowserTest::CreateShellWindowFromParams(
+    const Extension* extension, const ShellWindow::CreateParams& params) {
   return ShellWindow::Create(
       browser()->profile(), extension, GURL(""), params);
 }
