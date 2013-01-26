@@ -978,7 +978,7 @@ void InstantController::NavigateToURL(const GURL& url,
   browser_->OpenURLInCurrentTab(url, transition);
 }
 
-void InstantController::LogDebugEvent(const std::string& info) {
+void InstantController::LogDebugEvent(const std::string& info) const {
   DVLOG(1) << info;
 
   debug_events_.push_front(std::make_pair(
@@ -1187,9 +1187,10 @@ bool InstantController::GetInstantURL(const content::WebContents* active_tab,
       Profile::FromBrowserContext(active_tab->GetBrowserContext()))->
       GetDefaultSearchProvider();
 
-  // TODO(shishir): Add logging when false is returned.
-  if (!template_url)
+  if (!template_url) {
+    LOG_INSTANT_DEBUG_EVENT(this, "GetInstantURL: No template URL");
     return false;
+  }
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantURL))
@@ -1197,8 +1198,12 @@ bool InstantController::GetInstantURL(const content::WebContents* active_tab,
 
   if (instant_url->empty()) {
     const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
-    if (!instant_url_ref.IsValid())
+    if (!instant_url_ref.IsValid()) {
+      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+          "GetInstantURL: TemplateRef invalid: url=%s",
+          template_url->instant_url().c_str()));
       return false;
+    }
 
     // Even if the URL template doesn't have search terms, it may have other
     // components (such as {google:baseURL}) that need to be replaced.
@@ -1210,13 +1215,21 @@ bool InstantController::GetInstantURL(const content::WebContents* active_tab,
     // only supporting "{google:baseURL}...".
     if (extended_enabled_) {
       GURL url_obj(*instant_url);
-      if (!url_obj.is_valid())
+      if (!url_obj.is_valid()) {
+        LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+            "GetInstantURL: Instant URL invalid: url=%s",
+            url_obj.possibly_invalid_spec().c_str()));
         return false;
+      }
 
       // Extended mode won't work properly unless the TemplateURL supports the
       // param to enable it on the server.
-      if (!template_url->HasSearchTermsReplacementKey(url_obj))
+      if (!template_url->HasSearchTermsReplacementKey(url_obj)) {
+        LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+            "GetInstantURL: No search terms replacement key: url=%s",
+            url_obj.spec().c_str()));
         return false;
+      }
 
       if (!url_obj.SchemeIsSecure()) {
         std::string new_scheme = "https";
@@ -1226,8 +1239,12 @@ bool InstantController::GetInstantURL(const content::WebContents* active_tab,
         secure.SetPortStr(new_port);
         url_obj = url_obj.ReplaceComponents(secure);
 
-        if (!url_obj.is_valid())
+        if (!url_obj.is_valid()) {
+          LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+              "GetInstantURL: HTTPS URL invalid: url=%s",
+              url_obj.possibly_invalid_spec().c_str()));
           return false;
+        }
 
         *instant_url = url_obj.spec();
       }
@@ -1239,6 +1256,9 @@ bool InstantController::GetInstantURL(const content::WebContents* active_tab,
   if (iter != blacklisted_urls_.end() &&
       iter->second > kMaxInstantSupportFailures) {
     RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST);
+    LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+        "GetInstantURL: Instant URL blacklisted: url=%s",
+        instant_url->c_str()));
     return false;
   }
 

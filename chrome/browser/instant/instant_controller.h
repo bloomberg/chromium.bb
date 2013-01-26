@@ -180,7 +180,7 @@ class InstantController {
 
   // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
   // |debug_events_| doesn't get too large.
-  void LogDebugEvent(const std::string& info);
+  void LogDebugEvent(const std::string& info) const;
 
   // See comments for |debug_events_| below.
   const std::list<std::pair<int64, std::string> >& debug_events() {
@@ -342,7 +342,7 @@ class InstantController {
   bool allow_preview_to_show_search_suggestions_;
 
   // List of events and their timestamps, useful in debugging Instant behaviour.
-  std::list<std::pair<int64, std::string> > debug_events_;
+  mutable std::list<std::pair<int64, std::string> > debug_events_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
