@@ -28,7 +28,13 @@ namespace functions {
 //  1) Creating a new extension function:
 //
 //      Add a new entry at the end of the |HistogramValue| enum. The name of the
-//      entry should be uppercase the function name then replace "." with "_".
+//      entry should follow this algorithm:
+//      a) Take the string value passed as first argument to
+//         DECLARE_EXTENSION_FUNCTION.
+//      b) Replace '.' with '_'.
+//      c) Make all letters uppercase.
+//
+//      Example: "tabs.create" -> TABS_CREATE
 //
 //  2) Deleting an existing function:
 //
@@ -37,25 +43,20 @@ namespace functions {
 //
 //  3) Renaming an existing function:
 //
-//      There are 2 cases. Either the "rename" is really a rename (common case)
-//      or it is combination of "delete" + "create" operation.
+//      There are 2 options, depending if you want to keep accruing data in the
+//      *existing* histogram stream or in a *new* one.
 //
-//      a) "rename" case (most common)
+//      a) If you want keep recording usages of the extension function in the
+//         *existing* histogram stream, simply rename the enum entry to match
+//         the new extension function name, following the same naming rule as
+//         mentioned in 1). The enum entry will keep the same underlying integer
+//         value, so the same histogram stream will be used for recording
+//         usages.
 //
-//         If you are renaming the function for esthetic reasons (e.g. moving
-//         from "experimental" to the final namespace), you probably want to
-//         keep histogram usage accruing in the same slot before and after the
-//         rename. To do so, simply rename the enum entry to match the new
-//         function name, the enum entry will still have the same underlying
-//         integer value.
-//
-//      b) "delete" + "create" case (rare)
-//
-//         If you are significantly changing the behavior of a function, or if
-//         you want to start collecting a fresh set of histogram, you are really
-//         creating a new function and deleting the previous one (from histogram
-//         recording purposes). To do so, follow the instructions in step 1) and
-//         2) above in sequence.
+//      b) If you want start recording usages of the extension function to in a
+//         *new* histogram stream, follow the instructions in step 1) and 2)
+//         above. This will effectively deprecate the old histogram stream and
+//         creates a new one for the new function name.
 //
 enum HistogramValue {
   UNKNOWN = 0,
