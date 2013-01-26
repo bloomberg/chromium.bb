@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
 
 #include "base/bind.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"

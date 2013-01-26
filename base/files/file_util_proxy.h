@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_FILE_UTIL_PROXY_H_
-#define BASE_FILE_UTIL_PROXY_H_
+#ifndef BASE_FILES_FILE_UTIL_PROXY_H_
+#define BASE_FILES_FILE_UTIL_PROXY_H_
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
@@ -208,4 +208,4 @@ class BASE_EXPORT FileUtilProxy {
 
 }  // namespace base
 
-#endif  // BASE_FILE_UTIL_PROXY_H_
+#endif  // BASE_FILES_FILE_UTIL_PROXY_H_

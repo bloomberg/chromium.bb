@@ -14,7 +14,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"

@@ -5,7 +5,7 @@
 #include "net/url_request/url_fetcher_core.h"
 
 #include "base/bind.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/metrics/histogram.h"

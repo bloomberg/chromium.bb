@@ -4,7 +4,7 @@
 
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
 #include "net/base/file_stream.h"

@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/file_util.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"

@@ -38,7 +38,7 @@
 #include "webkit/user_agent/user_agent_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/i18n/time_formatting.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

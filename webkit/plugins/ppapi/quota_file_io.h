@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"

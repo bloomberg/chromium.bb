@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"

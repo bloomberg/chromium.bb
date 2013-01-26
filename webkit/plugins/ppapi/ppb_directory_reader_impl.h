@@ -8,7 +8,7 @@
 #include <queue>
 #include <vector>
 
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_directory_reader_api.h"
 

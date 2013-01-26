@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/id_map.h"
 #include "base/process.h"
 #include "ipc/ipc_listener.h"

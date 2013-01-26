@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/sys_string_conversions.h"

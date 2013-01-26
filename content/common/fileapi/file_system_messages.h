@@ -5,7 +5,7 @@
 // IPC messages for the file system.
 // Multiply-included message file, hence no include guard.
 
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"

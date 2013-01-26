@@ -6,7 +6,7 @@
 #define WEBKIT_CHROMEOS_FILEAPI_FILE_SYSTEM_FILE_UTIL_ASYNC_H_
 
 #include "base/callback.h"
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "webkit/chromeos/fileapi/async_file_stream.h"
 

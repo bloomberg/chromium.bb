@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_util_proxy.h"
+#include "base/files/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
