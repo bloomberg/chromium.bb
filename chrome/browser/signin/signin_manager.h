@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/cookies/canonical_cookie.h"
 
 class CookieSettings;
 class GaiaAuthFetcher;
@@ -207,6 +208,15 @@ class SigninManager : public GaiaAuthConsumer,
                         const std::string& username,
                         const std::string& password);
 
+  // Called to verify GAIA cookies asynchronously before starting auto sign-in
+  // without password.
+  void VerifyGaiaCookiesBeforeSignIn(const std::string& session_index);
+
+  // Called when GAIA cookies are fetched. If LSID cookie is valid, then start
+  // auto sign-in by exchanging cookies for an oauth code.
+  void OnGaiaCookiesFetched(
+      const std::string session_index, const net::CookieList& cookie_list);
+
   // Called when a new request to re-authenticate a user is in progress.
   // Will clear in memory data but leaves the db as such so when the browser
   // restarts we can use the old token(which might throw a password error).
@@ -265,6 +275,8 @@ class SigninManager : public GaiaAuthConsumer,
   // The list of SigninDiagnosticObservers.
   ObserverList<signin_internals_util::SigninDiagnosticsObserver>
       signin_diagnostics_observers_;
+
+  base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

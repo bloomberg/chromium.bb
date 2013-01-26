@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -28,14 +30,19 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/icu/public/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
+
+using content::BrowserThread;
 
 namespace {
 
@@ -48,6 +55,88 @@ const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 
 }  // namespace
 
+// This class fetches GAIA cookie on IO thread on behalf of SigninManager which
+// only lives on the UI thread.
+class SigninManagerCookieHelper
+    : public base::RefCountedThreadSafe<SigninManagerCookieHelper> {
+ public:
+  explicit SigninManagerCookieHelper(
+      net::URLRequestContextGetter* request_context_getter);
+
+  // Starts the fetching process, which will notify its completion via
+  // callback.
+  void StartFetchingGaiaCookiesOnUIThread(
+      const base::Callback<void(const net::CookieList& cookies)>& callback);
+
+ private:
+  friend class base::RefCountedThreadSafe<SigninManagerCookieHelper>;
+  ~SigninManagerCookieHelper();
+
+  // Fetch the GAIA cookies. This must be called in the IO thread.
+  void FetchGaiaCookiesOnIOThread();
+
+  // Callback for fetching cookies. This must be called in the IO thread.
+  void OnGaiaCookiesFetched(const net::CookieList& cookies);
+
+  // Notifies the completion callback. This must be called in the UI thread.
+  void NotifyOnUIThread(const net::CookieList& cookies);
+
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // This only mutates on the UI thread.
+  base::Callback<void(const net::CookieList& cookies)> completion_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SigninManagerCookieHelper);
+};
+
+SigninManagerCookieHelper::SigninManagerCookieHelper(
+    net::URLRequestContextGetter* request_context_getter)
+    : request_context_getter_(request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+SigninManagerCookieHelper::~SigninManagerCookieHelper() {
+}
+
+void SigninManagerCookieHelper::StartFetchingGaiaCookiesOnUIThread(
+    const base::Callback<void(const net::CookieList& cookies)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(completion_callback_.is_null());
+
+  completion_callback_ = callback;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread, this));
+}
+
+void SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  scoped_refptr<net::CookieMonster> cookie_monster =
+      request_context_getter_->GetURLRequestContext()->
+      cookie_store()->GetCookieMonster();
+  if (cookie_monster) {
+    cookie_monster->GetAllCookiesForURLAsync(
+        GURL(GaiaUrls::GetInstance()->gaia_origin_url()),
+        base::Bind(&SigninManagerCookieHelper::OnGaiaCookiesFetched, this));
+  } else {
+    OnGaiaCookiesFetched(net::CookieList());
+  }
+}
+
+void SigninManagerCookieHelper::OnGaiaCookiesFetched(
+    const net::CookieList& cookies) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&SigninManagerCookieHelper::NotifyOnUIThread, this, cookies));
+}
+
+void SigninManagerCookieHelper::NotifyOnUIThread(
+    const net::CookieList& cookies) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::ResetAndReturn(&completion_callback_).Run(cookies);
+}
 
 // static
 bool SigninManager::AreSigninCookiesAllowed(Profile* profile) {
@@ -99,7 +188,8 @@ bool SigninManager::IsAllowedUsername(const std::string& username,
 SigninManager::SigninManager()
     : profile_(NULL),
       had_two_factor_error_(false),
-      type_(SIGNIN_TYPE_NONE) {
+      type_(SIGNIN_TYPE_NONE),
+      weak_pointer_factory_(this) {
 }
 
 SigninManager::~SigninManager() {
@@ -315,18 +405,61 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
   if (!PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password))
     return;
 
-  // This function starts with the current state of the web session's cookie
-  // jar and mints a new ClientLogin-style SID/LSID pair.  This involves going
-  // throug the follow process or requests to GAIA and LSO:
-  //
-  // - call /o/oauth2/programmatic_auth with the returned token to get oauth2
-  //   access and refresh tokens
-  // - call /accounts/OAuthLogin with the oauth2 access token and get SID/LSID
-  //   pair for use by the token service
-  //
-  // The resulting SID/LSID can then be used just as if
-  // client_login_->StartClientLogin() had completed successfully.
-  client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
+  if (password.empty()) {
+    // Chrome must verify the GAIA cookies first if auto sign-in is triggered
+    // with no password provided. This is to protect Chrome against forged
+    // GAIA cookies from a super-domain.
+    VerifyGaiaCookiesBeforeSignIn(session_index);
+  } else {
+    // This function starts with the current state of the web session's cookie
+    // jar and mints a new ClientLogin-style SID/LSID pair.  This involves going
+    // through the follow process or requests to GAIA and LSO:
+    //
+    // - call /o/oauth2/programmatic_auth with the returned token to get oauth2
+    //   access and refresh tokens
+    // - call /accounts/OAuthLogin with the oauth2 access token and get SID/LSID
+    //   pair for use by the token service
+    //
+    // The resulting SID/LSID can then be used just as if
+    // client_login_->StartClientLogin() had completed successfully.
+    client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
+  }
+}
+
+void SigninManager::VerifyGaiaCookiesBeforeSignIn(
+    const std::string& session_index) {
+  scoped_refptr<SigninManagerCookieHelper> cookie_helper(
+      new SigninManagerCookieHelper(profile_->GetRequestContext()));
+  cookie_helper->StartFetchingGaiaCookiesOnUIThread(
+      base::Bind(&SigninManager::OnGaiaCookiesFetched,
+                 weak_pointer_factory_.GetWeakPtr(), session_index));
+}
+
+void SigninManager::OnGaiaCookiesFetched(
+    const std::string session_index, const net::CookieList& cookie_list) {
+  net::CookieList::const_iterator it;
+  bool success = false;
+  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
+    // Make sure the LSID cookie is set on the GAIA host, instead of a super-
+    // domain.
+    if (it->Name() == "LSID") {
+      if (it->IsHostCookie() && it->IsHttpOnly() && it->IsSecure()) {
+        // Found a valid LSID cookie. Continue loop to make sure we don't have
+        // invalid LSID cookies on any super-domain.
+        success = true;
+      } else {
+        success = false;
+        break;
+      }
+    }
+  }
+
+  if (success) {
+    client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
+  } else {
+    HandleAuthError(GoogleServiceAuthError(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS), true);
+  }
 }
 
 void SigninManager::StartSignInWithOAuth(const std::string& username,

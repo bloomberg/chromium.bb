@@ -1778,8 +1778,8 @@ void ProfileSyncService::Observe(int type,
       const GoogleServiceSigninSuccessDetails* successful =
           content::Details<const GoogleServiceSigninSuccessDetails>(
               details).ptr();
-      DCHECK(!successful->password.empty());
-      if (!sync_prefs_.IsStartSuppressed()) {
+      if (!sync_prefs_.IsStartSuppressed() &&
+          !successful->password.empty()) {
         cached_passphrase_ = successful->password;
         // Try to consume the passphrase we just cached. If the sync backend
         // is not running yet, the passphrase will remain cached until the
