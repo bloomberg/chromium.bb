@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_storage_delegate.h"
+#include "chrome/browser/extensions/api/declarative_content/content_constants.h"
+#include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -69,6 +71,21 @@ void RulesRegistryService::RegisterDefaultRulesRegistries() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
           profile_, web_request_rules_registry));
+
+#if defined(ENABLE_EXTENSIONS)
+  delegate = new RulesRegistryStorageDelegate();
+  scoped_refptr<ContentRulesRegistry> content_rules_registry(
+      new ContentRulesRegistry(profile_, delegate));
+  delegate->InitOnUIThread(profile_, content_rules_registry,
+      GetDeclarativeRuleStorageKey(
+          declarative_content_constants::kOnPageChanged,
+          profile_->IsOffTheRecord()));
+  delegates_.push_back(delegate);
+
+  RegisterRulesRegistry(declarative_content_constants::kOnPageChanged,
+                        content_rules_registry);
+  content_rules_registry_ = content_rules_registry.get();
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void RulesRegistryService::Shutdown() {

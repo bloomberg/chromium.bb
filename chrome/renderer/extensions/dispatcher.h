@@ -39,6 +39,7 @@ class RenderThread;
 }
 
 namespace extensions {
+class ContentWatcher;
 class Extension;
 class FilteredEventRouter;
 class RequestSender;
@@ -65,6 +66,9 @@ class Dispatcher : public content::RenderProcessObserver {
   }
   V8SchemaRegistry* v8_schema_registry() {
     return &v8_schema_registry_;
+  }
+  ContentWatcher* content_watcher() {
+    return content_watcher_.get();
   }
 
   bool IsExtensionActive(const std::string& extension_id) const;
@@ -220,6 +224,8 @@ class Dispatcher : public content::RenderProcessObserver {
   ChromeV8ContextSet v8_context_set_;
 
   scoped_ptr<UserScriptSlave> user_script_slave_;
+
+  scoped_ptr<ContentWatcher> content_watcher_;
 
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.

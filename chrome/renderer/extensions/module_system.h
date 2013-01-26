@@ -14,6 +14,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace extensions {
 
@@ -80,6 +81,13 @@ class ModuleSystem : public NativeHandler {
   // equivalent to calling require('module_name').method_name() from JS.
   void CallModuleMethod(const std::string& module_name,
                         const std::string& method_name);
+
+  // Calls the specified method exported by the specified module. This is
+  // equivalent to calling require('module_name').method_name(args) from JS.
+  v8::Local<v8::Value> CallModuleMethod(
+      const std::string& module_name,
+      const std::string& method_name,
+      std::vector<v8::Handle<v8::Value> >* args);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by

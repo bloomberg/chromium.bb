@@ -119,6 +119,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "declarativeContent": {
+    "channel": "trunk",
+    "extension_types": ["extension"]
+  },
   "declarativeWebRequest": {
     "channel": "beta",
     "extension_types": ["extension", "packaged_app"]

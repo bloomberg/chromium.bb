@@ -1,0 +1,13 @@
+{
+  "name": "Declarative Content apitest",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "end-to-end browser test for the declarative Content API",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "declarativeContent"
+  ],
+  "page_action": {}
+}

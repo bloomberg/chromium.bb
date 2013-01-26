@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/module_system.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 
 namespace {
@@ -159,29 +160,39 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
 
 void ModuleSystem::CallModuleMethod(const std::string& module_name,
                                     const std::string& method_name) {
+  std::vector<v8::Handle<v8::Value> > args;
+  CallModuleMethod(module_name, method_name, &args);
+}
+
+v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
+    const std::string& module_name,
+    const std::string& method_name,
+    std::vector<v8::Handle<v8::Value> >* args) {
   v8::HandleScope handle_scope;
   v8::Local<v8::Value> module =
       v8::Local<v8::Value>::New(
           RequireForJsInner(v8::String::New(module_name.c_str())));
   if (module.IsEmpty() || !module->IsObject())
-    return;
+    return v8::Local<v8::Value>();
   v8::Local<v8::Value> value =
       v8::Handle<v8::Object>::Cast(module)->Get(
           v8::String::New(method_name.c_str()));
   if (value.IsEmpty() || !value->IsFunction())
-    return;
+    return v8::Local<v8::Value>();
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(value);
   // TODO(jeremya/koz): refer to context_ here, not the current context.
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  v8::Local<v8::Value> result;
   {
     WebKit::WebScopedMicrotaskSuppression suppression;
     v8::TryCatch try_catch;
     try_catch.SetCaptureMessage(true);
-    func->Call(global, 0, NULL);
+    result = func->Call(global, args->size(), vector_as_array(args));
     if (try_catch.HasCaught())
       HandleException(try_catch);
   }
+  return handle_scope.Close(result);
 }
 
 void ModuleSystem::RegisterNativeHandler(const std::string& name,

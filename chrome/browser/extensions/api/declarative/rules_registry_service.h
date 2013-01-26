@@ -21,6 +21,7 @@ class NotificationSource;
 }
 
 namespace extensions {
+class ContentRulesRegistry;
 class RulesRegistry;
 class RulesRegistryStorageDelegate;
 }
@@ -50,6 +51,11 @@ class RulesRegistryService : public content::NotificationObserver  {
   scoped_refptr<RulesRegistry> GetRulesRegistry(
       const std::string& event_name) const;
 
+  // Accessors for each type of rules registry.
+  ContentRulesRegistry* content_rules_registry() const {
+    return content_rules_registry_;
+  }
+
   // For testing.
   void SimulateExtensionUnloaded(const std::string& extension_id);
  private:
@@ -71,6 +77,10 @@ class RulesRegistryService : public content::NotificationObserver  {
   // These are weak pointers to the delegates owned by the RulesRegistry's. We
   // keep track of them so we can tell them to do cleanup on shutdown.
   std::vector<RulesRegistryStorageDelegate*> delegates_;
+
+  // Weak pointer into rule_registries_ to make it easier to handle content rule
+  // conditions.
+  ContentRulesRegistry* content_rules_registry_;
 
   content::NotificationRegistrar registrar_;
 

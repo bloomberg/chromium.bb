@@ -7,6 +7,8 @@
 
 #include <map>
 #include <string>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -30,6 +32,7 @@ struct LoadCommittedDetails;
 namespace extensions {
 class Extension;
 class LocationBarController;
+class RulesRegistryService;
 class ScriptBadgeController;
 class ScriptBubbleController;
 class ScriptExecutor;
@@ -192,6 +195,7 @@ class TabHelper : public content::WebContentsObserver,
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       int32 page_id,
       const GURL& on_url);
+  void OnWatchedPageChange(const std::vector<std::string>& css_selectors);
 
   // App extensions related methods:
 
@@ -258,6 +262,8 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
   scoped_ptr<ScriptBubbleController> script_bubble_controller_;
+
+  RulesRegistryService* rules_registry_service_;
 
   Profile* profile_;
 

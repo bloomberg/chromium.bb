@@ -176,6 +176,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
       PermissionMessage::kClipboard },
     { APIPermission::kClipboardWrite, "clipboardWrite" },
+    { APIPermission::kDeclarativeContent, "declarativeContent" },
     { APIPermission::kDeclarativeWebRequest, "declarativeWebRequest" },
     { APIPermission::kDownloads, "downloads", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS,

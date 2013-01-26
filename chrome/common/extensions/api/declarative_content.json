@@ -1,0 +1,73 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "declarativeContent",
+    "documentation_permissions_required": ["declarative", "declarativeContent"],
+    "types": [
+      {
+        "id": "PageStateMatcher",
+        "type": "object",
+        "description": "Matches the state of a web page by various criteria.",
+        "properties": {
+          "pageUrl": {
+            "$ref": "events.UrlFilter",
+            "description": "Matches if the condition of the UrlFilter are fulfilled for the top-level URL of the page.",
+            "optional": true
+          },
+          "css": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if all of the CSS selectors in the array match in a frame with the same origin as the page's main frame.  Note that listing hundreds of CSS selectors here can slow down web sites.",
+            // TODO(jyasskin): Figure out if we want to require all
+            // the selectors to match in the same frame, or allow several
+            // frames to contribute to a match.
+            "items": { "type": "string" }
+            // TODO(jyasskin): Validate that the selectors in this
+            // array are valid. Otherwise, we can get exceptions from
+            // content_watcher.js:FindMatchingSelectors() long after the
+            // rule is registered.
+//          },
+//          TODO: "text": {
+//            "type": "array",
+//            "optional": true,
+//            "description": "Matches if all of the regular expressions in the array match text in the page. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
+//            "items": { "type": "string" }
+          },
+          "instanceType": {
+            "type": "string", "enum": ["declarativeContent.PageStateMatcher"],
+            "nodoc": true
+          }
+        }
+      },
+      {
+        "id": "ShowPageAction",
+        "description": "Declarative event action that shows the extension's page action while the corresponding conditions are met.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeContent.ShowPageAction"],
+            "nodoc": true
+          }
+        }
+      }
+    ],
+    "functions": [
+    ],
+    "events": [
+      {
+        "name": "onPageChanged",
+        "options": {
+          "supportsListeners": false,
+          "supportsRules": true,
+          "conditions": ["declarativeContent.PageStateMatcher"],
+          "actions": [
+            "declarativeContent.ShowPageAction"
+          ]
+        }
+      }
+    ]
+  }
+]

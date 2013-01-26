@@ -194,7 +194,8 @@ void RulesRegistryStorageDelegate::Inner::InitForOTRProfile() {
   const ExtensionSet* extensions = extension_service->extensions();
   for (ExtensionSet::const_iterator i = extensions->begin();
        i != extensions->end(); ++i) {
-    if ((*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest) &&
+    if (((*i)->HasAPIPermission(APIPermission::kDeclarativeContent) ||
+         (*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) &&
         extension_service->IsIncognitoEnabled((*i)->id()))
       ReadFromStorage((*i)->id());
   }
@@ -211,8 +212,8 @@ void RulesRegistryStorageDelegate::Inner::Observe(
         content::Details<const extensions::Extension>(details).ptr();
     // TODO(mpcomplete): This API check should generalize to any use of
     // declarative rules, not just webRequest.
-    if (extension->HasAPIPermission(
-            APIPermission::kDeclarativeWebRequest)) {
+    if (extension->HasAPIPermission(APIPermission::kDeclarativeContent) ||
+        extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) {
       ExtensionInfoMap* extension_info_map =
           ExtensionSystem::Get(profile_)->info_map();
       if (profile_->IsOffTheRecord() &&

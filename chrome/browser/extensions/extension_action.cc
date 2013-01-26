@@ -272,6 +272,18 @@ bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
   return true;
 }
 
+void ExtensionAction::DeclarativeShow(int tab_id) {
+  DCHECK_NE(tab_id, kDefaultTabId);
+  ++declarative_show_count_[tab_id];  // Use default initialization to 0.
+}
+
+void ExtensionAction::UndoDeclarativeShow(int tab_id) {
+  int& show_count = declarative_show_count_[tab_id];
+  DCHECK_GT(show_count, 0);
+  if (--show_count == 0)
+    declarative_show_count_.erase(tab_id);
+}
+
 void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   popup_url_.erase(tab_id);
   title_.erase(tab_id);
@@ -280,6 +292,10 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);
   appearance_.erase(tab_id);
+  // TODO(jyasskin): Erase the element from declarative_show_count_
+  // when the tab's closed.  There's a race between the
+  // PageActionController and the ContentRulesRegistry on navigation,
+  // which prevents me from cleaning everything up now.
   icon_animation_.erase(tab_id);
 }
 

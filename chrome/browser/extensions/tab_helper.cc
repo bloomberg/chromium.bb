@@ -5,11 +5,14 @@
 #include "chrome/browser/extensions/tab_helper.h"
 
 #include "chrome/browser/extensions/activity_log.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/page_action_controller.h"
@@ -84,6 +87,10 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       pending_web_app_action_(NONE),
       script_executor_(new ScriptExecutor(web_contents,
                                           &script_execution_observers_)),
+      rules_registry_service_(
+          ExtensionSystem::Get(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
+          rules_registry_service()),
       ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
@@ -188,6 +195,13 @@ void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
 void TabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+#if defined(ENABLE_EXTENSIONS)
+  if (rules_registry_service_) {
+    rules_registry_service_->content_rules_registry()->DidNavigateMainFrame(
+        web_contents(), details, params);
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
+
   if (details.is_in_page)
     return;
 
@@ -229,6 +243,8 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
                         OnContentScriptsExecuting)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OnWatchedPageChange,
+                        OnWatchedPageChange)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -415,6 +431,16 @@ void TabHelper::OnContentScriptsExecuting(
                                       executing_scripts_map,
                                       on_page_id,
                                       on_url));
+}
+
+void TabHelper::OnWatchedPageChange(
+    const std::vector<std::string>& css_selectors) {
+#if defined(ENABLE_EXTENSIONS)
+  if (rules_registry_service_) {
+    rules_registry_service_->content_rules_registry()->Apply(
+        web_contents(), css_selectors);
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {

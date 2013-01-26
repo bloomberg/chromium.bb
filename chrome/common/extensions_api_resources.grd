@@ -15,6 +15,7 @@
       <include name="IDR_EXTENSION_API_JSON_BROWSINGDATA" file="extensions\api\browsing_data.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE" file="extensions\api\chromeos_info_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COMMANDS" file="extensions\api\commands.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT" file="extensions\api\declarative_content.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarative_web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echo_private.json" type="BINDATA" />

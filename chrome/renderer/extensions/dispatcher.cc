@@ -24,6 +24,7 @@
 #include "chrome/renderer/extensions/app_window_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/content_watcher.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
@@ -314,7 +315,8 @@ static v8::Handle<v8::Object> GetOrCreateChrome(
 }  // namespace
 
 Dispatcher::Dispatcher()
-    : is_webkit_initialized_(false),
+    : content_watcher_(new ContentWatcher(this)),
+      is_webkit_initialized_(false),
       webrequest_adblock_(false),
       webrequest_adblock_plus_(false),
       webrequest_other_(false),
@@ -363,6 +365,8 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldUnload, OnShouldUnload)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Unload, OnUnload)
     IPC_MESSAGE_HANDLER(ExtensionMsg_CancelUnload, OnCancelUnload)
+    IPC_MESSAGE_FORWARD(ExtensionMsg_WatchPages,
+                        content_watcher_.get(), ContentWatcher::OnWatchPages)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -566,6 +570,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("setIcon",
       scoped_ptr<NativeHandler>(
           new SetIconNatives(this, request_sender_.get())));
+  module_system->RegisterNativeHandler("contentWatcherNative",
+                                       content_watcher_->MakeNatives());
 
   // Natives used by multiple APIs.
   module_system->RegisterNativeHandler("file_system_natives",
@@ -620,6 +626,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("apitest", IDR_EXTENSION_APITEST_JS);
 
   // Libraries.
+  source_map_.RegisterSource("contentWatcher", IDR_CONTENT_WATCHER_JS);
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
   source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
@@ -638,6 +645,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contextMenus",
                              IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("declarativeContent",
+                             IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("declarativeWebRequest",
                              IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource(
@@ -871,6 +880,8 @@ void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
             GetRawDataResource(IDR_PLATFORM_APP_CSS)),
         WebDocument::UserStyleUserLevel);
   }
+
+  content_watcher_->DidCreateDocumentElement(frame);
 }
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {
