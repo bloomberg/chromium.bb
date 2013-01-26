@@ -963,6 +963,10 @@ void LayerTreeHostImpl::activatePendingTree()
         m_activeTree->SetContentsTexturesPurged();
     else
         m_activeTree->ResetContentsTexturesPurged();
+    if (m_pendingTree->hud_layer())
+        m_activeTree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(LayerTreeHostCommon::findLayerInSubtree(m_activeTree->RootLayer(), m_pendingTree->hud_layer()->id())));
+    else
+        m_activeTree->set_hud_layer(NULL);
 
     // Now that we've synced everything from the pending tree to the active
     // tree, rename the pending tree the recycle tree so we can reuse it on the
