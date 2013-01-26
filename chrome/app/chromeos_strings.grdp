@@ -2435,7 +2435,7 @@ Battery full
     Formatting finished successfully!
   </message>
   <message name="IDS_FORMATTING_FINISHED_FAILURE_MESSAGE" desc="Text of notification message which is shown when there are some errors while formatting.">
-    Aw, Snap! There've been some errors while formatting...
+    Aw, Snap! There was an error during formatting.
   </message>
 
   <!-- ChromeOS GData synchronization notifications -->
