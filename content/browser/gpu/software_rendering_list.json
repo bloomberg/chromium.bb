@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.12",
+  "version": "4.13",
   "entries": [
     {
       "id": 1,
@@ -472,7 +472,7 @@
     {
       "id": 32,
       "description": "Accelerated 2d canvas is disabled on Windows systems with low perf stats.",
-      "cr_bugs": [116350],
+      "cr_bugs": [116350, 151500],
       "os": {
         "type": "win"
       },
@@ -482,9 +482,9 @@
       },
       "exceptions": [
         {
-          "cpu_info": {
-            "op": "contains",
-            "value": "Atom"
+          "perf_gaming": {
+            "op": ">",
+            "value": "3.5"
           }
         }
       ],
