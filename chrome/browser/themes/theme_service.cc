@@ -78,8 +78,7 @@ SkColor IncreaseLightness(SkColor color, double percent) {
 
 // Default colors.
 #if defined(USE_AURA)
-// TODO(jamescook): Revert this when Aura is using its own window frame
-// implementation by default, specifically BrowserNonClientFrameViewAsh.
+// Used for theme fallback colors.
 const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 #else
