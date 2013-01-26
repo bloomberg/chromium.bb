@@ -130,7 +130,7 @@ class GpuCommandBufferStub
   // retire all sync points that haven't been previously retired.
   void AddSyncPoint(uint32 sync_point);
 
-  void SetPreemptByCounter(scoped_refptr<gpu::RefCountedCounter> counter);
+  void SetPreemptByFlag(scoped_refptr<gpu::PreemptionFlag> flag);
 
  private:
   GpuMemoryManager* GetMemoryManager();
@@ -246,7 +246,7 @@ class GpuCommandBufferStub
 
   bool delayed_work_scheduled_;
 
-  scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
+  scoped_refptr<gpu::PreemptionFlag> preemption_flag_;
 
   GURL active_url_;
   size_t active_url_hash_;

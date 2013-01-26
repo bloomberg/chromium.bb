@@ -71,7 +71,7 @@ bool TextureImageTransportSurface::Initialize() {
   if (parent_channel) {
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
-      helper_->SetPreemptByCounter(parent_channel->MessagesPendingCount());
+      helper_->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
   }
 
   return true;

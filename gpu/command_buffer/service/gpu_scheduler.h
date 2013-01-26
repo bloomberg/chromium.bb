@@ -27,19 +27,21 @@ class GLFence;
 
 namespace gpu {
 
-struct RefCountedCounter
-    : public base::RefCountedThreadSafe<RefCountedCounter> {
-  base::AtomicRefCount count;
-  RefCountedCounter() : count(0) {}
+class PreemptionFlag
+    : public base::RefCountedThreadSafe<PreemptionFlag> {
+ public:
+  PreemptionFlag() : flag_(0) {}
 
-  bool IsZero() { return base::AtomicRefCountIsZero(&count); }
-  void IncCount() { base::AtomicRefCountInc(&count); }
-  void DecCount() { base::AtomicRefCountDec(&count); }
-  void Reset() { base::subtle::NoBarrier_Store(&count, 0); }
+  bool IsSet() { return base::AtomicRefCountIsZero(&flag_); }
+  void Set() { base::AtomicRefCountInc(&flag_); }
+  void Reset() { base::subtle::NoBarrier_Store(&flag_, 0); }
+
  private:
-  ~RefCountedCounter() {}
+  base::AtomicRefCount flag_;
 
-  friend class base::RefCountedThreadSafe<RefCountedCounter>;
+  ~PreemptionFlag() {}
+
+  friend class base::RefCountedThreadSafe<PreemptionFlag>;
 };
 
 // This class schedules commands that have been flushed. They are received via
@@ -58,8 +60,8 @@ class GPU_EXPORT GpuScheduler
 
   void PutChanged();
 
-  void SetPreemptByCounter(scoped_refptr<RefCountedCounter> counter) {
-    preempt_by_counter_ = counter;
+  void SetPreemptByFlag(scoped_refptr<PreemptionFlag> flag) {
+    preemption_flag_ = flag;
   }
 
   // Sets whether commands should be processed by this scheduler. Setting to
@@ -145,9 +147,8 @@ class GPU_EXPORT GpuScheduler
   base::Closure scheduled_callback_;
   base::Closure command_processed_callback_;
 
-  // If non-NULL and preempt_by_counter_->count is non-zero,
-  // exit PutChanged early.
-  scoped_refptr<RefCountedCounter> preempt_by_counter_;
+  // If non-NULL and |preemption_flag_->IsSet()|, exit PutChanged early.
+  scoped_refptr<PreemptionFlag> preemption_flag_;
   bool was_preempted_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuScheduler);

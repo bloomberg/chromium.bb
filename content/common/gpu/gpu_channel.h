@@ -36,7 +36,7 @@ class WaitableEvent;
 }
 
 namespace gpu {
-struct RefCountedCounter;
+class PreemptionFlag;
 namespace gles2 {
 class ImageManager;
 }
@@ -52,6 +52,7 @@ namespace content {
 class GpuChannelManager;
 struct GpuRenderingStats;
 class GpuWatchdog;
+class SyncPointMessageFilter;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
@@ -130,14 +131,14 @@ class GpuChannel : public IPC::Listener,
   void AddRoute(int32 route_id, IPC::Listener* listener);
   void RemoveRoute(int32 route_id);
 
-  gpu::RefCountedCounter* MessagesPendingCount() {
-    return unprocessed_messages_.get();
+  gpu::PreemptionFlag* GetPreemptionFlag() {
+    return processing_stalled_.get();
   }
 
-  // If preempt_by_counter->count is non-zero, any stub on this channel
+  // If |preemption_flag->IsSet()|, any stub on this channel
   // should stop issuing GL commands. Setting this to NULL stops deferral.
-  void SetPreemptByCounter(
-      scoped_refptr<gpu::RefCountedCounter> preempt_by_counter);
+  void SetPreemptByFlag(
+      scoped_refptr<gpu::PreemptionFlag> preemption_flag);
 
 #if defined(OS_ANDROID)
   StreamTextureManagerAndroid* stream_texture_manager() {
@@ -181,6 +182,9 @@ class GpuChannel : public IPC::Listener,
   void OnCollectRenderingStatsForSurface(
       int32 surface_id, GpuRenderingStats* stats);
 
+  // Decrement the count of unhandled IPC messages and defer preemption.
+  void MessageProcessed();
+
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.
@@ -188,13 +192,17 @@ class GpuChannel : public IPC::Listener,
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
-  // Number of routed messages for pending processing on a stub.
-  scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_;
+  // Pointer to number of routed messages that are pending processing on a
+  // stub. The lifetime is properly managed because we pass ownership to a
+  // SyncPointMessageFilter, which we hold a reference to.
+  base::AtomicRefCount* unprocessed_messages_;
+
+  // Whether the processing of IPCs on this channel is stalled.
+  scoped_refptr<gpu::PreemptionFlag> processing_stalled_;
 
   // If non-NULL, all stubs on this channel should stop processing GL
-  // commands (via their GpuScheduler) when preempt_by_counter_->count
-  // is non-zero.
-  scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
+  // commands (via their GpuScheduler) when preemption_flag_->IsSet()
+  scoped_refptr<gpu::PreemptionFlag> preemption_flag_;
 
   std::deque<IPC::Message*> deferred_messages_;
 
@@ -232,6 +240,9 @@ class GpuChannel : public IPC::Listener,
 #endif
 
   base::WeakPtrFactory<GpuChannel> weak_factory_;
+
+  scoped_refptr<SyncPointMessageFilter> filter_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

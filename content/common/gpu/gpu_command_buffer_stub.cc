@@ -372,8 +372,8 @@ void GpuCommandBufferStub::OnInitialize(
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                          decoder_.get(),
                                          decoder_.get()));
-  if (preempt_by_counter_.get())
-    scheduler_->SetPreemptByCounter(preempt_by_counter_);
+  if (preemption_flag_.get())
+    scheduler_->SetPreemptByFlag(preemption_flag_);
 
   decoder_->set_engine(scheduler_.get());
 
@@ -842,11 +842,11 @@ void GpuCommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-void GpuCommandBufferStub::SetPreemptByCounter(
-    scoped_refptr<gpu::RefCountedCounter> counter) {
-  preempt_by_counter_ = counter;
+void GpuCommandBufferStub::SetPreemptByFlag(
+    scoped_refptr<gpu::PreemptionFlag> flag) {
+  preemption_flag_ = flag;
   if (scheduler_.get())
-    scheduler_->SetPreemptByCounter(preempt_by_counter_);
+    scheduler_->SetPreemptByFlag(preemption_flag_);
 }
 
 bool GpuCommandBufferStub::GetTotalGpuMemory(size_t* bytes) {

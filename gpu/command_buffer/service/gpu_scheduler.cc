@@ -65,14 +65,14 @@ void GpuScheduler::PutChanged() {
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   error::Error error = error::kNoError;
   while (!parser_->IsEmpty()) {
-    if (preempt_by_counter_.get() &&
+    if (preemption_flag_.get() &&
         !was_preempted_ &&
-        !preempt_by_counter_->IsZero()) {
-      TRACE_COUNTER_ID1("gpu","GpuScheduler::Preempted", this, 1);
+        !preemption_flag_->IsSet()) {
+      TRACE_COUNTER_ID1("gpu", "GpuScheduler::Preempted", this, 1);
       was_preempted_ = true;
       break;
     } else if (was_preempted_) {
-      TRACE_COUNTER_ID1("gpu","GpuScheduler::Preempted", this, 0);
+      TRACE_COUNTER_ID1("gpu", "GpuScheduler::Preempted", this, 0);
       was_preempted_ = false;
     }
 
