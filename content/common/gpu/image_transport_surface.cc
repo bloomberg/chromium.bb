@@ -168,27 +168,11 @@ void ImageTransportHelper::OnResizeViewACK() {
 }
 
 void ImageTransportHelper::Resize(gfx::Size size) {
-  // On windows, the surface is recreated and, in case the newly allocated
-  // surface happens to have the same address, it should be invalidated on the
-  // decoder so that future calls to MakeCurrent do not early out on the
-  // assumption that neither the context or surface have actually changed.
-#if defined(OS_WIN)
-  if (handle_ != NULL)
-    Decoder()->ReleaseCurrent();
-#endif
-
   surface_->OnResize(size);
 
 #if defined(OS_ANDROID)
   manager_->gpu_memory_manager()->ScheduleManage(
       GpuMemoryManager::kScheduleManageNow);
-#endif
-
-#if defined(OS_WIN)
-  if (handle_ != NULL) {
-    Decoder()->MakeCurrent();
-    SetSwapInterval(Decoder()->GetGLContext());
-  }
 #endif
 }
 
