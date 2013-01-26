@@ -148,7 +148,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         RootLayer(),
         device_viewport_size(),
         device_scale_factor(),
-        pinch_zoom_viewport().page_scale_factor(),
+        pinch_zoom_viewport().total_page_scale_factor(),
         MaxTextureSize(),
         settings().canUseLCDText,
         render_surface_layer_list_);
