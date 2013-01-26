@@ -149,13 +149,13 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
     // Palm is id 1, finger id 2
     {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
-    {0, 0, 0, 0, kPr, 0, 30, 37, 2, 0},
+    {0, 0, 0, 0, kPr, 0, 60, 37, 2, 0},
 
     {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
-    {0, 0, 0, 0, kPr, 0, 30, 40, 2, 0},
+    {0, 0, 0, 0, kPr, 0, 60, 40, 2, 0},
 
     {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
-    {0, 0, 0, 0, kPr, 0, 30, 43, 2, 0},
+    {0, 0, 0, 0, kPr, 0, 60, 43, 2, 0},
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer

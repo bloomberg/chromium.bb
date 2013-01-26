@@ -231,7 +231,8 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
         palm_stationary_time_.val_ &&
         FingerAge(fs.tracking_id, hwstate.timestamp) >
         palm_stationary_time_.val_ &&
-        !SetContainsValue(non_stationary_palm_, fs.tracking_id)) {
+        !SetContainsValue(non_stationary_palm_, fs.tracking_id) &&
+        !FingerNearOtherFinger(hwstate, i)) {
       // Enough time has passed. Make this stationary contact a palm.
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
