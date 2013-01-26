@@ -57,7 +57,6 @@ class ClosingDelegate : public SpdyStream::Delegate {
   SpdyStream* stream_;
 };
 
-
 class TestSpdyStreamDelegate : public SpdyStream::Delegate {
  public:
   explicit TestSpdyStreamDelegate(const CompletionCallback& callback)
@@ -111,7 +110,7 @@ TEST_F(SpdySessionSpdy3Test, SpdyIOBuffer) {
   std::priority_queue<SpdyIOBuffer> queue_;
   const size_t kQueueSize = 100;
 
-  // Insert items with random priority and increasing buffer size
+  // Insert items with random priority and increasing buffer size.
   for (size_t index = 0; index < kQueueSize; ++index) {
     queue_.push(SpdyIOBuffer(
         new IOBufferWithSize(index + 1),
@@ -1146,142 +1145,6 @@ TEST_F(SpdySessionSpdy3Test, ClearSettingsStorageOnIPAddressChanged) {
       test_host_port_pair).size());
 }
 
-TEST_F(SpdySessionSpdy3Test, NeedsCredentials) {
-  SpdySessionDependencies session_deps;
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps.socket_factory->AddSocketDataProvider(&data);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.channel_id_sent = true;
-  ssl.protocol_negotiated = kProtoSPDY3;
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  scoped_refptr<HttpNetworkSession> http_session(
-      SpdySessionDependencies::SpdyCreateSession(&session_deps));
-
-  const GURL url("https:/www.foo.com");
-  HostPortPair test_host_port_pair(url.host(), 443);
-  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
-
-  SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
-  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
-  scoped_refptr<SpdySession> session =
-      spdy_session_pool->Get(pair, BoundNetLog());
-  EXPECT_TRUE(spdy_session_pool->HasSession(pair));
-
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), true, OK));
-
-  EXPECT_TRUE(session->NeedsCredentials());
-
-  // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
-
-  spdy_session_pool->Remove(session);
-}
-
-TEST_F(SpdySessionSpdy3Test, SendCredentials) {
-  SpdySessionDependencies session_deps;
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  SettingsMap settings;
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
-  MockWrite writes[] = {
-    CreateMockWrite(*settings_frame),
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads),
-                                writes, arraysize(writes));
-  data.set_connect_data(connect_data);
-  session_deps.socket_factory->AddSocketDataProvider(&data);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.channel_id_sent = true;
-  ssl.protocol_negotiated = kProtoSPDY3;
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  scoped_refptr<HttpNetworkSession> http_session(
-      SpdySessionDependencies::SpdyCreateSession(&session_deps));
-
-  const GURL kTestUrl("https://www.foo.com");
-  HostPortPair test_host_port_pair(kTestUrl.host(), 443);
-  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
-
-  SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
-  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
-  scoped_refptr<SpdySession> session =
-      spdy_session_pool->Get(pair, BoundNetLog());
-  EXPECT_TRUE(spdy_session_pool->HasSession(pair));
-
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), true, OK));
-  EXPECT_TRUE(session->NeedsCredentials());
-
-  // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
-
-  spdy_session_pool->Remove(session);
-  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
-}
-
 TEST_F(SpdySessionSpdy3Test, CloseSessionOnError) {
   SpdySessionDependencies session_deps;
   session_deps.host_resolver->set_synchronous_mode(true);
@@ -1352,98 +1215,6 @@ TEST_F(SpdySessionSpdy3Test, CloseSessionOnError) {
   EXPECT_EQ(ERR_CONNECTION_CLOSED, error_code);
 }
 
-TEST_F(SpdySessionSpdy3Test, UpdateStreamsSendWindowSize) {
-  // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
-  // gets sent.
-  SettingsMap new_settings;
-  int32 window_size = 1;
-  new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, window_size);
-
-  // Set up the socket so we read a SETTINGS frame that sets
-  // INITIAL_WINDOW_SIZE.
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(new_settings));
-  MockRead reads[] = {
-    CreateMockRead(*settings_frame, 0),
-    MockRead(ASYNC, 0, 1)  // EOF
-  };
-
-  SpdySessionDependencies session_deps;
-
-  session_deps.host_resolver->set_synchronous_mode(true);
-
-  scoped_ptr<DeterministicSocketData> data(
-      new DeterministicSocketData(reads, arraysize(reads), NULL, 0));
-  data->set_connect_data(connect_data);
-  session_deps.deterministic_socket_factory->AddSocketDataProvider(data.get());
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  scoped_refptr<HttpNetworkSession> http_session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps));
-
-  const std::string kTestHost("www.foo.com");
-  const int kTestPort = 80;
-  HostPortPair test_host_port_pair(kTestHost, kTestPort);
-  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
-
-  SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
-
-  // Create a session.
-  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
-  scoped_refptr<SpdySession> session =
-      spdy_session_pool->Get(pair, BoundNetLog());
-  ASSERT_TRUE(spdy_session_pool->HasSession(pair));
-
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
-                                 transport_params, MEDIUM, CompletionCallback(),
-                                 http_session->GetTransportSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), false, OK));
-
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
-  GURL url("http://www.google.com");
-  EXPECT_EQ(OK,
-            session->CreateStream(url,
-                                  MEDIUM,  /* priority, not important */
-                                  &spdy_stream1,
-                                  BoundNetLog(),
-                                  callback1.callback()));
-  EXPECT_NE(spdy_stream1->send_window_size(), window_size);
-
-  data->RunFor(1);  // Process the SETTINGS frame, but not the EOF
-  MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(session->initial_send_window_size(), window_size);
-  EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
-
-  // Release the first one, this will allow the second to be created.
-  spdy_stream1->Cancel();
-  spdy_stream1 = NULL;
-
-  scoped_refptr<SpdyStream> spdy_stream2;
-  EXPECT_EQ(OK,
-            session->CreateStream(url,
-                                  MEDIUM,  /* priority, not important */
-                                  &spdy_stream2,
-                                  BoundNetLog(),
-                                  callback1.callback()));
-
-  EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
-  spdy_stream2->Cancel();
-  spdy_stream2 = NULL;
-}
-
 TEST_F(SpdySessionSpdy3Test, OutOfOrderSynStreams) {
   // Construct the request.
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1454,10 +1225,10 @@ TEST_F(SpdySessionSpdy3Test, OutOfOrderSynStreams) {
     CreateMockWrite(*req2, 1),
   };
 
-  scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdyFrame> body1(ConstructSpdyBodyFrame(3, true));
-  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 5));
-  scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(5, true));
+  scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> body1(ConstructSpdyBodyFrame(1, true));
+  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
+  scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(3, true));
   MockRead reads[] = {
     CreateMockRead(*resp1, 3),
     CreateMockRead(*body1, 4),
@@ -2200,6 +1971,234 @@ TEST_F(SpdySessionSpdy3Test, CancelTwoStalledCreateStream) {
   session->CancelPendingCreateStreams(&spdy_stream3);
   EXPECT_EQ(0u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
+}
+
+TEST_F(SpdySessionSpdy3Test, NeedsCredentials) {
+  SpdySessionDependencies session_deps;
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.channel_id_sent = true;
+  ssl.protocol_negotiated = kProtoSPDY3;
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  scoped_refptr<HttpNetworkSession> http_session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  const GURL url("https:/www.foo.com");
+  HostPortPair test_host_port_pair(url.host(), 443);
+  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
+
+  SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
+  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
+  scoped_refptr<SpdySession> session =
+      spdy_session_pool->Get(pair, BoundNetLog());
+  EXPECT_TRUE(spdy_session_pool->HasSession(pair));
+
+  SSLConfig ssl_config;
+  scoped_refptr<TransportSocketParams> transport_params(
+      new TransportSocketParams(test_host_port_pair,
+                                MEDIUM,
+                                false,
+                                false,
+                                OnHostResolutionCallback()));
+  scoped_refptr<SOCKSSocketParams> socks_params;
+  scoped_refptr<HttpProxySocketParams> http_proxy_params;
+  scoped_refptr<SSLSocketParams> ssl_params(
+      new SSLSocketParams(transport_params,
+                          socks_params,
+                          http_proxy_params,
+                          ProxyServer::SCHEME_DIRECT,
+                          test_host_port_pair,
+                          ssl_config,
+                          0,
+                          false,
+                          false));
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
+                                 ssl_params, MEDIUM, CompletionCallback(),
+                                 http_session->GetSSLSocketPool(
+                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
+                                 BoundNetLog()));
+
+  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), true, OK));
+
+  EXPECT_TRUE(session->NeedsCredentials());
+
+  // Flush the SpdySession::OnReadComplete() task.
+  MessageLoop::current()->RunUntilIdle();
+
+  spdy_session_pool->Remove(session);
+}
+
+TEST_F(SpdySessionSpdy3Test, SendCredentials) {
+  SpdySessionDependencies session_deps;
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  SettingsMap settings;
+  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(settings));
+  MockWrite writes[] = {
+    CreateMockWrite(*settings_frame),
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads),
+                                writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.channel_id_sent = true;
+  ssl.protocol_negotiated = kProtoSPDY3;
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  scoped_refptr<HttpNetworkSession> http_session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  const GURL kTestUrl("https://www.foo.com");
+  HostPortPair test_host_port_pair(kTestUrl.host(), 443);
+  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
+
+  SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
+  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
+  scoped_refptr<SpdySession> session =
+      spdy_session_pool->Get(pair, BoundNetLog());
+  EXPECT_TRUE(spdy_session_pool->HasSession(pair));
+
+  SSLConfig ssl_config;
+  scoped_refptr<TransportSocketParams> transport_params(
+      new TransportSocketParams(test_host_port_pair,
+                                MEDIUM,
+                                false,
+                                false,
+                                OnHostResolutionCallback()));
+  scoped_refptr<SOCKSSocketParams> socks_params;
+  scoped_refptr<HttpProxySocketParams> http_proxy_params;
+  scoped_refptr<SSLSocketParams> ssl_params(
+      new SSLSocketParams(transport_params,
+                          socks_params,
+                          http_proxy_params,
+                          ProxyServer::SCHEME_DIRECT,
+                          test_host_port_pair,
+                          ssl_config,
+                          0,
+                          false,
+                          false));
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
+                                 ssl_params, MEDIUM, CompletionCallback(),
+                                 http_session->GetSSLSocketPool(
+                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
+                                 BoundNetLog()));
+
+  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), true, OK));
+  EXPECT_TRUE(session->NeedsCredentials());
+
+  // Flush the SpdySession::OnReadComplete() task.
+  MessageLoop::current()->RunUntilIdle();
+
+  spdy_session_pool->Remove(session);
+  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
+}
+
+TEST_F(SpdySessionSpdy3Test, UpdateStreamsSendWindowSize) {
+  // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
+  // gets sent.
+  SettingsMap new_settings;
+  int32 window_size = 1;
+  new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, window_size);
+
+  // Set up the socket so we read a SETTINGS frame that sets
+  // INITIAL_WINDOW_SIZE.
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(new_settings));
+  MockRead reads[] = {
+    CreateMockRead(*settings_frame, 0),
+    MockRead(ASYNC, 0, 1)  // EOF
+  };
+
+  SpdySessionDependencies session_deps;
+
+  session_deps.host_resolver->set_synchronous_mode(true);
+
+  scoped_ptr<DeterministicSocketData> data(
+      new DeterministicSocketData(reads, arraysize(reads), NULL, 0));
+  data->set_connect_data(connect_data);
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(data.get());
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  scoped_refptr<HttpNetworkSession> http_session(
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps));
+
+  const std::string kTestHost("www.foo.com");
+  const int kTestPort = 80;
+  HostPortPair test_host_port_pair(kTestHost, kTestPort);
+  HostPortProxyPair pair(test_host_port_pair, ProxyServer::Direct());
+
+  SpdySessionPool* spdy_session_pool(http_session->spdy_session_pool());
+
+  // Create a session.
+  EXPECT_FALSE(spdy_session_pool->HasSession(pair));
+  scoped_refptr<SpdySession> session =
+      spdy_session_pool->Get(pair, BoundNetLog());
+  ASSERT_TRUE(spdy_session_pool->HasSession(pair));
+
+  scoped_refptr<TransportSocketParams> transport_params(
+      new TransportSocketParams(test_host_port_pair,
+                                MEDIUM,
+                                false,
+                                false,
+                                OnHostResolutionCallback()));
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
+                                 transport_params, MEDIUM, CompletionCallback(),
+                                 http_session->GetTransportSocketPool(
+                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
+                                 BoundNetLog()));
+  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), false, OK));
+
+  scoped_refptr<SpdyStream> spdy_stream1;
+  TestCompletionCallback callback1;
+  GURL url("http://www.google.com");
+  EXPECT_EQ(OK,
+            session->CreateStream(url,
+                                  MEDIUM,  /* priority, not important */
+                                  &spdy_stream1,
+                                  BoundNetLog(),
+                                  callback1.callback()));
+  EXPECT_NE(spdy_stream1->send_window_size(), window_size);
+
+  data->RunFor(1);  // Process the SETTINGS frame, but not the EOF
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(session->initial_send_window_size(), window_size);
+  EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
+
+  // Release the first one, this will allow the second to be created.
+  spdy_stream1->Cancel();
+  spdy_stream1 = NULL;
+
+  scoped_refptr<SpdyStream> spdy_stream2;
+  EXPECT_EQ(OK,
+            session->CreateStream(url,
+                                  MEDIUM,  /* priority, not important */
+                                  &spdy_stream2,
+                                  BoundNetLog(),
+                                  callback1.callback()));
+
+  EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
+  spdy_stream2->Cancel();
+  spdy_stream2 = NULL;
 }
 
 }  // namespace net
