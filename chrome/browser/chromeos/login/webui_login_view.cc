@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -365,7 +366,7 @@ void WebUILoginView::OnLoginPromptVisible() {
     LOG(INFO) << "Login WebUI >> not emitting signal, hidden: " << is_hidden_;
     return;
   }
-
+  TRACE_EVENT0("chromeos", "WebUILoginView::OnLoginPromoptVisible");
   if (should_emit_login_prompt_visible_) {
     LOG(INFO) << "Login WebUI >> login-prompt-visible";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->

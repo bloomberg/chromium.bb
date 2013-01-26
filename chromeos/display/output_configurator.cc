@@ -23,6 +23,7 @@
 
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
 #include "base/metrics/histogram.h"
@@ -105,8 +106,9 @@ const unsigned int kHighDensityDIPThreshold = 160;
 const char kInternal_LVDS[] = "LVDS";
 const char kInternal_eDP[] = "eDP";
 
-// The delay to wait NotifyOnDisplayChanged().  See the comment in Dispatch().
-const int kNotificationTimerDelayMs = 500;
+// The delay to perform configuration after RRNotify.  See the comment
+// in |Dispatch()|.
+const int64 kConfigureDelayMs = 500;
 
 // Gap between screens so cursor at bottom of active display doesn't partially
 // appear on top of inactive display. Higher numbers guard against larger
@@ -223,6 +225,7 @@ void CreateFrameBuffer(Display* display,
                        int height,
                        CrtcConfig* config1,
                        CrtcConfig* config2) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::CreateFrameBuffer");
   VLOG(1) << "CreateFrameBuffer " << width << " by " << height;
 
   DestroyUnusedCrtcs(display, screen, window, config1, config2);
@@ -327,6 +330,7 @@ CoordinateTransformation GetMirrorModeCTM(XRRScreenResources* screen,
 OutputState InferCurrentState(Display* display,
                               XRRScreenResources* screen,
                               const std::vector<OutputSnapshot>& outputs) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::InferCurrentState");
   OutputState state = STATE_INVALID;
   switch (outputs.size()) {
     case 0:
@@ -394,6 +398,7 @@ OutputState GetNextState(Display* display,
                          XRRScreenResources* screen,
                          OutputState current_state,
                          const std::vector<OutputSnapshot>& outputs) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::GetNextState");
   OutputState state = STATE_INVALID;
 
   switch (outputs.size()) {
@@ -535,6 +540,7 @@ OutputConfigurator::OutputConfigurator()
 }
 
 void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::Init");
   if (!is_running_on_chrome_os_)
     return;
 
@@ -590,6 +596,7 @@ OutputConfigurator::~OutputConfigurator() {
 }
 
 bool OutputConfigurator::CycleDisplayMode() {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::CycleDisplayMode");
   VLOG(1) << "CycleDisplayMode";
   if (!is_running_on_chrome_os_)
     return false;
@@ -619,13 +626,14 @@ bool OutputConfigurator::CycleDisplayMode() {
   XUngrabServer(display);
 
   if (did_change)
-    WillNotifyOnDisplayChanged();
+    NotifyOnDisplayChanged();
   else
     FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
   return did_change;
 }
 
 bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::ScreenPowerSet");
   VLOG(1) << "OutputConfigurator::SetScreensOn " << power_on
           << " all displays " << all_displays;
   if (!is_running_on_chrome_os_)
@@ -698,6 +706,7 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
 }
 
 bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::SetDisplayMode");
   if (output_state_ == STATE_INVALID ||
       output_state_ == STATE_HEADLESS ||
       output_state_ == STATE_SINGLE)
@@ -715,20 +724,21 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 
   std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
   connected_output_count_ = outputs.size();
-  if (EnterState(display, screen, window, new_state, outputs)) {
+  if (EnterState(display, screen, window, new_state, outputs))
     output_state_ = new_state;
-    WillNotifyOnDisplayChanged();
-  }
 
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
-  if (output_state_ != new_state)
+  if (output_state_ == new_state)
+    NotifyOnDisplayChanged();
+  else
     FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
   return true;
 }
 
 bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::Dispatch");
   // Ignore this event if the Xrandr extension isn't supported.
   if (!is_running_on_chrome_os_ ||
       (event->type - xrandr_event_base_ != RRNotify)) {
@@ -742,37 +752,56 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
         reinterpret_cast<XRROutputChangeNotifyEvent*>(xevent);
     if ((output_change_event->connection == RR_Connected) ||
         (output_change_event->connection == RR_Disconnected)) {
-      Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
-      CHECK(display != NULL);
-      XGrabServer(display);
-      Window window = DefaultRootWindow(display);
-      XRRScreenResources* screen =
-          GetScreenResourcesAndRecordUMA(display, window);
-      CHECK(screen != NULL);
-
-      std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
-      int new_output_count = outputs.size();
-      if (new_output_count != connected_output_count_) {
-        connected_output_count_ = new_output_count;
-        OutputState new_state =
-            GetNextState(display, screen, STATE_INVALID, outputs);
-        if (EnterState(display, screen, window, new_state, outputs)) {
-          WillNotifyOnDisplayChanged();
-          output_state_ = new_state;
-        }
+      // Connecting/Disconnecting display may generate multiple
+      // RRNotify. Defer configuring outputs to avoid
+      // grabbing X and configuring displays multiple times.
+      if (configure_timer_.get()) {
+        configure_timer_->Reset();
+      } else {
+        configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
+        configure_timer_->Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+            this,
+            &OutputConfigurator::ConfigureOutputs);
       }
-
-      bool is_projecting = IsProjecting(outputs);
-      XRRFreeScreenResources(screen);
-      XUngrabServer(display);
-
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-          SetIsProjecting(is_projecting);
     }
-    // Ignore the case of RR_UnkownConnection.
   }
 
+  // Ignore the case of RR_UnknownConnection.
   return true;
+}
+
+void OutputConfigurator::ConfigureOutputs() {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::ConfigureOutputs");
+  configure_timer_.reset();
+
+  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  CHECK(display != NULL);
+  XGrabServer(display);
+  Window window = DefaultRootWindow(display);
+  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
+  CHECK(screen != NULL);
+
+  std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
+  int new_output_count = outputs.size();
+  bool changed = false;
+  if (new_output_count != connected_output_count_) {
+    connected_output_count_ = new_output_count;
+    OutputState new_state =
+        GetNextState(display, screen, STATE_INVALID, outputs);
+    changed = EnterState(display, screen, window, new_state, outputs);
+    if (changed)
+      output_state_ = new_state;
+  }
+  bool is_projecting = IsProjecting(outputs);
+  XRRFreeScreenResources(screen);
+  XUngrabServer(display);
+
+  if (changed)
+    NotifyOnDisplayChanged();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      SetIsProjecting(is_projecting);
 }
 
 void OutputConfigurator::AddObserver(Observer* observer) {
@@ -788,24 +817,6 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
   return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
 }
 
-void OutputConfigurator::WillNotifyOnDisplayChanged() {
-  // Sets the timer for NotifyOnDisplayChanged().  When an output state change
-  // is issued, several notifications should arrive and NotifyOnDisplayChanged()
-  // should be called once for the last one.  The timer could lead at most a few
-  // hundreds of milliseconds of delay for the notification, but it would be
-  // unrecognizable for users.
-  if (notification_timer_.get()) {
-    notification_timer_->Reset();
-  } else {
-    notification_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
-    notification_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kNotificationTimerDelayMs),
-        this,
-        &OutputConfigurator::NotifyOnDisplayChanged);
-  }
-}
-
 void OutputConfigurator::SuspendDisplays() {
   // Turn displays on before suspend. At this point, the backlight is off,
   // so we turn on the internal display so that we can resume directly into
@@ -818,7 +829,7 @@ void OutputConfigurator::SuspendDisplays() {
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
-  notification_timer_.reset();
+  TRACE_EVENT0("chromeos", "OutputConfigurator::NotifyOnDisplayChanged");
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
 }
 
@@ -1137,6 +1148,7 @@ bool OutputConfigurator::EnterState(
     Window window,
     OutputState new_state,
     const std::vector<OutputSnapshot>& outputs) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::EnterState");
   switch (outputs.size()) {
     case 0:
       // Do nothing as no 0-display states are supported.

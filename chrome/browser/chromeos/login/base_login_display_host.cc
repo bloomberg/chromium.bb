@@ -9,6 +9,7 @@
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -496,6 +497,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   chromeos::LoginUtils::Get()->PrewarmAuthentication();
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
       ->EmitLoginPromptReady();
+  TRACE_EVENT0("chromeos", "ShowLoginWizard::EmitLoginPromptReady");
 
   // Set initial timezone if specified by customization.
   const std::string timezone_name = startup_manifest->initial_timezone();

@@ -107,8 +107,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void SuspendDisplays();
 
  private:
-  // Schedules notifying OnDisplayModeChanged().
-  void WillNotifyOnDisplayChanged();
+  // Configure outputs.
+  void ConfigureOutputs();
 
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
@@ -196,9 +196,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
   ObserverList<Observer> observers_;
 
-  // The timer to delay sending the notification of OnDisplayChanged(). See also
-  // the comments in Dispatch().
-  scoped_ptr<base::OneShotTimer<OutputConfigurator> > notification_timer_;
+  // The timer to delay configuring outputs. See also the comments in
+  // |Dispatch()|.
+  scoped_ptr<base::OneShotTimer<OutputConfigurator> > configure_timer_;
 
   // Next 3 members are used for UMA of time spent in various states.
   // Indicates that current OutputSnapshot has aspect preserving mirror mode.
