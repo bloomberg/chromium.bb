@@ -177,8 +177,7 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
 
   if (NativeTheme::IsNewMenuStyleEnabled()) {
     set_border(views::Border::CreateBorderPainter(
-        new views::RoundRectPainter(
-            ui::NativeTheme::instance()->GetSystemColor(
+        new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
                 ui::NativeTheme::kColorId_MenuBorderColor)),
         gfx::Insets(menu_config.menu_vertical_border_size,
                     menu_config.menu_horizontal_border_size,

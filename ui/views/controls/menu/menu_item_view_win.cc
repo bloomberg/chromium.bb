@@ -24,13 +24,12 @@ namespace views {
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = GetMenuConfig();
 
-#if defined(USE_AURA)
-  if (config.native_theme == ui::NativeThemeAura::instance()) {
+  if (NativeTheme::IsNewMenuStyleEnabled()) {
     PaintButtonCommon(canvas, mode);
     return;
   }
-#else
-  if (NativeTheme::IsNewMenuStyleEnabled()) {
+#if defined(USE_AURA)
+  if (config.native_theme == ui::NativeThemeAura::instance()) {
     PaintButtonCommon(canvas, mode);
     return;
   }
