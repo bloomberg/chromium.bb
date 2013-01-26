@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::nothrow;
-using std::numeric_limits;
 
 namespace {
 
@@ -98,96 +97,6 @@ TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char[]> ptr(new (nothrow) char[kTooBigAllocSize]);
     ASSERT_TRUE(ptr == NULL);
-  }
-}
-
-// The tests bellow check for overflows in new[] and calloc().
-
-#if defined(OS_IOS)
-  #define DISABLE_ON_IOS(function) DISABLED_##function
-#else
-  #define DISABLE_ON_IOS(function) function
-#endif
-
-#if defined(ADDRESS_SANITIZER)
-  #define DISABLE_ON_ASAN(function) DISABLED_##function
-#else
-  #define DISABLE_ON_ASAN(function) function
-#endif
-
-// There are platforms where these tests are known to fail. We would like to
-// be able to easily check the status on the bots, but marking tests as
-// FAILS_ is too clunky.
-void OverflowTestsSoftExpectTrue(bool overflow_detected) {
-  if (!overflow_detected) {
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX)
-    // Sadly, on Linux, Android, and OSX we don't have a good story yet. Don't
-    // fail the test, but report.
-    printf("Platform has overflow: %s\n",
-           !overflow_detected ? "yes." : "no.");
-#else
-    // Otherwise, fail the test. (Note: EXPECT are ok in subfunctions, ASSERT
-    // aren't).
-    EXPECT_TRUE(overflow_detected);
-#endif
-  }
-}
-
-// This function acts as a compiler optimization barrier. We use it to
-// prevent the compiler from making an expression a compile-time constant.
-// We also use it so that the compiler doesn't discard certain return values
-// as something we don't need (see the comment with calloc below).
-template <typename Type>
-Type HideValueFromCompiler(volatile Type value) {
-  return value;
-}
-
-// Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
-// IOS doesn't honor nothrow, so disable the test there.
-TEST(SecurityTest, DISABLE_ON_IOS(NewOverflow)) {
-  const size_t kArraySize = 4096;
-  // We want something "dynamic" here, so that the compiler doesn't
-  // immediately reject crazy arrays.
-  const size_t kDynamicArraySize = HideValueFromCompiler(kArraySize);
-  // numeric_limits are still not constexpr until we switch to C++11, so we
-  // use an ugly cast.
-  const size_t kMaxSizeT = ~static_cast<size_t>(0);
-  ASSERT_EQ(numeric_limits<size_t>::max(), kMaxSizeT);
-  const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
-  const size_t kDynamicArraySize2 = HideValueFromCompiler(kArraySize2);
-  {
-    scoped_ptr<char[][kArraySize]> array_pointer(new (nothrow)
-        char[kDynamicArraySize2][kArraySize]);
-    OverflowTestsSoftExpectTrue(array_pointer == NULL);
-  }
-  {
-    scoped_ptr<char[][kArraySize2]> array_pointer(new (nothrow)
-        char[kDynamicArraySize][kArraySize2]);
-    OverflowTestsSoftExpectTrue(array_pointer == NULL);
-  }
-}
-
-// Test if calloc() can overflow. Disable on ASAN for now since the
-// overflow seems present there.
-TEST(SecurityTest, DISABLE_ON_ASAN(CallocOverflow)) {
-  const size_t kArraySize = 4096;
-  const size_t kMaxSizeT = numeric_limits<size_t>::max();
-  const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
-  {
-    scoped_ptr<char> array_pointer(
-        static_cast<char*>(calloc(kArraySize, kArraySize2)));
-    // We need the call to HideValueFromCompiler(): we have seen LLVM
-    // optimize away the call to calloc() entirely and assume
-    // the pointer to not be NULL.
-    EXPECT_TRUE(HideValueFromCompiler(array_pointer.get()) == NULL);
-  }
-  {
-    scoped_ptr<char> array_pointer(
-        static_cast<char*>(calloc(kArraySize2, kArraySize)));
-    // We need the call to HideValueFromCompiler(): we have seen LLVM
-    // optimize away the call to calloc() entirely and assume
-    // the pointer to not be NULL.
-    EXPECT_TRUE(HideValueFromCompiler(array_pointer.get()) == NULL);
   }
 }
 
