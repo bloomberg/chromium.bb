@@ -1102,16 +1102,24 @@ void SyncSchedulerImpl::PollTimerCallback() {
 void SyncSchedulerImpl::Unthrottle(scoped_ptr<SyncSessionJob> to_be_canary) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK_EQ(WaitInterval::THROTTLED, wait_interval_->mode);
+  DCHECK(!to_be_canary.get() || pending_nudge_ == to_be_canary.get() ||
+         wait_interval_->pending_configure_job == to_be_canary.get());
   SDVLOG(2) << "Unthrottled " << (to_be_canary.get() ? "with " : "without ")
-            << "canary.";
-  if (to_be_canary.get())
-    DoCanaryJob(to_be_canary.Pass());
+           << "canary.";
 
-  // TODO(tim): The way DecideOnJob works today, canary privileges aren't
-  // enough to bypass a THROTTLED wait interval, which would suggest we need
-  // to reset before DoCanaryJob (though trusting canary in DecideOnJob is
-  // probably the "right" thing to do). Bug 154216.
+  // We're no longer throttled, so clear the wait interval.
   wait_interval_.reset();
+
+  // We treat this as a 'canary' in the sense that it was originally scheduled
+  // to run some time ago, failed, and we now want to retry, versus a job that
+  // was just created (e.g via ScheduleNudgeImpl). The main implication is
+  // that we're careful to update routing info (etc) with such potentially
+  // stale canary jobs.
+  if (to_be_canary.get()) {
+    DoCanaryJob(to_be_canary.Pass());
+  } else {
+    DCHECK(!unscheduled_nudge_storage_.get());
+  }
 }
 
 void SyncSchedulerImpl::Notify(SyncEngineEvent::EventCause cause) {

@@ -730,7 +730,7 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   ASSERT_EQ(0, counter.times_called());
 }
 
-TEST_F(SyncSchedulerTest, ThrottlingExpires) {
+TEST_F(SyncSchedulerTest, ThrottlingExpiresFromPoll) {
   SyncShareRecords records;
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
   TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
@@ -754,6 +754,70 @@ TEST_F(SyncSchedulerTest, ThrottlingExpires) {
 
   StopSyncScheduler();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll);
+}
+
+TEST_F(SyncSchedulerTest, ThrottlingExpiresFromNudge) {
+  SyncShareRecords records;
+  TimeDelta poll(TimeDelta::FromDays(1));
+  TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  ::testing::InSequence seq;
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(
+          WithArg<0>(sessions::test_util::SimulateThrottled(throttle1)),
+          Return(true)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                      QuitLoopNowAction()));
+
+  const ModelTypeSet types(BOOKMARKS);
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  scheduler()->ScheduleNudgeAsync(
+      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+
+  PumpLoop();
+  EXPECT_TRUE(scheduler()->IsSyncingCurrentlySilenced());
+  RunLoop();
+  EXPECT_FALSE(scheduler()->IsSyncingCurrentlySilenced());
+
+  StopSyncScheduler();
+}
+
+TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
+  SyncShareRecords records;
+  TimeDelta poll(TimeDelta::FromDays(1));
+  TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll);
+
+  ::testing::InSequence seq;
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(
+          WithArg<0>(sessions::test_util::SimulateThrottled(throttle1)),
+          Return(true)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                      QuitLoopNowAction()));
+
+  const ModelTypeSet types(BOOKMARKS);
+  StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
+
+  CallbackCounter counter;
+  ConfigurationParams params(
+      GetUpdatesCallerInfo::RECONFIGURATION,
+      types,
+      TypesToRoutingInfo(types),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
+  EXPECT_FALSE(scheduler()->ScheduleConfiguration(params));
+  EXPECT_EQ(0, counter.times_called());
+  EXPECT_TRUE(scheduler()->IsSyncingCurrentlySilenced());
+
+  RunLoop();
+  EXPECT_FALSE(scheduler()->IsSyncingCurrentlySilenced());
+
+  StopSyncScheduler();
 }
 
 // Test nudges / polls don't run in config mode and config tasks do.
