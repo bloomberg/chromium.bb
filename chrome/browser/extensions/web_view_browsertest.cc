@@ -56,25 +56,25 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
 
     GURL tag_url1 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/cookie.html");
+        "files/extensions/platform_apps/web_view/isolation/cookie.html");
     tag_url1 = tag_url1.ReplaceComponents(replace_host);
     GURL tag_url2 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/cookie2.html");
+        "files/extensions/platform_apps/web_view/isolation/cookie2.html");
     tag_url2 = tag_url2.ReplaceComponents(replace_host);
     GURL tag_url3 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/storage1.html");
+        "files/extensions/platform_apps/web_view/isolation/storage1.html");
     tag_url3 = tag_url3.ReplaceComponents(replace_host);
     GURL tag_url4 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/storage2.html");
+        "files/extensions/platform_apps/web_view/isolation/storage2.html");
     tag_url4 = tag_url4.ReplaceComponents(replace_host);
     GURL tag_url5 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/storage1.html#p1");
+        "files/extensions/platform_apps/web_view/isolation/storage1.html#p1");
     tag_url5 = tag_url5.ReplaceComponents(replace_host);
     GURL tag_url6 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/storage1.html#p2");
+        "files/extensions/platform_apps/web_view/isolation/storage1.html#p2");
     tag_url6 = tag_url6.ReplaceComponents(replace_host);
     GURL tag_url7 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view_isolation/storage1.html#p3");
+        "files/extensions/platform_apps/web_view/isolation/storage1.html#p3");
     tag_url7 = tag_url7.ReplaceComponents(replace_host);
 
     ui_test_utils::NavigateToURLWithDisposition(
@@ -95,7 +95,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         tag_url6, content::NotificationService::AllSources());
     ui_test_utils::UrlLoadObserver observer7(
         tag_url7, content::NotificationService::AllSources());
-    LoadAndLaunchPlatformApp("web_view_isolation");
+    LoadAndLaunchPlatformApp("web_view/isolation");
     observer1.Wait();
     observer2.Wait();
     observer3.Wait();
@@ -205,11 +205,11 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/shim")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view_src_attribute"))
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
 }
 

@@ -4,19 +4,19 @@
 
 chrome.test.getConfig(function(config) {
   var url = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/cookie.html';
+      '/files/extensions/platform_apps/web_view/isolation/cookie.html';
   var url2 = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/cookie2.html';
+      '/files/extensions/platform_apps/web_view/isolation/cookie2.html';
   var url3 = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/storage1.html';
+      '/files/extensions/platform_apps/web_view/isolation/storage1.html';
   var url4 = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/storage2.html';
+      '/files/extensions/platform_apps/web_view/isolation/storage2.html';
   var url5 = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/storage1.html#p1';
+      '/files/extensions/platform_apps/web_view/isolation/storage1.html#p1';
   var url6 = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/storage1.html#p2';
+      '/files/extensions/platform_apps/web_view/isolation/storage1.html#p2';
   var url7 = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view_isolation/storage1.html#p3';
+      '/files/extensions/platform_apps/web_view/isolation/storage1.html#p3';
   var node = document.getElementById('web_view_container');
   node.innerHTML =
       "<webview id='webview' src='" + url + "'></webview>" +
