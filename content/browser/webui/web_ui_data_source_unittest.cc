@@ -5,22 +5,62 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "grit/generated_resources.h"
-#include "grit/webui_resources.h"
+#include "content/browser/webui/web_ui_data_source.h"
+#include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ChromeWebUIDataSourceTest : public testing::Test {
+namespace content {
+namespace {
+
+const int kDummyStringId = 123;
+const int kDummyDefaultResourceId = 456;
+const int kDummyResourceId = 789;
+
+const char kDummyString[] = "foo";
+const char kDummyDefaultResource[] = "<html>foo</html>";
+const char kDummytResource[] = "<html>blah</html>";
+
+class TestClient : public TestContentClient {
  public:
-  ChromeWebUIDataSourceTest() : result_data_(NULL) {}
-  virtual ~ChromeWebUIDataSourceTest() {}
+  TestClient() {}
+  virtual ~TestClient() {}
+
+  virtual string16 GetLocalizedString(int message_id) const OVERRIDE {
+    if (message_id == kDummyStringId)
+      return UTF8ToUTF16(kDummyString);
+    return string16();
+
+  }
+
+  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+      int resource_id) const OVERRIDE {
+    base::RefCountedStaticMemory* bytes = NULL;
+    if (resource_id == kDummyDefaultResourceId) {
+      bytes = new base::RefCountedStaticMemory(
+          reinterpret_cast<const unsigned char*>(kDummyDefaultResource),
+          arraysize(kDummyDefaultResource));
+    } else if (resource_id == kDummyResourceId) {
+      bytes = new base::RefCountedStaticMemory(
+          reinterpret_cast<const unsigned char*>(kDummytResource),
+          arraysize(kDummytResource));
+    }
+    return bytes;
+  }
+};
+
+}
+
+class WebUIDataSourceTest : public testing::Test {
+ public:
+  WebUIDataSourceTest() : result_data_(NULL), old_client_(NULL) {}
+  virtual ~WebUIDataSourceTest() {}
   ChromeWebUIDataSource* source() { return source_.get(); }
 
   void StartDataRequest(const std::string& path) {
      source_->StartDataRequest(
         path,
         false,
-        base::Bind(&ChromeWebUIDataSourceTest::SendResult,
+        base::Bind(&WebUIDataSourceTest::SendResult,
         base::Unretained(this)));
   }
 
@@ -32,13 +72,17 @@ class ChromeWebUIDataSourceTest : public testing::Test {
 
  private:
   virtual void SetUp() {
-    content::WebUIDataSource* source = ChromeWebUIDataSource::Create("host");
+    old_client_ = GetContentClient();
+    SetContentClient(&client_);
+    WebUIDataSource* source = ChromeWebUIDataSource::Create("host");
     ChromeWebUIDataSource* source_impl = static_cast<ChromeWebUIDataSource*>(
         source);
+    source_impl->disable_set_font_strings_for_testing();
     source_ = make_scoped_refptr(source_impl);
   }
 
   virtual void TearDown() {
+    SetContentClient(old_client_);
   }
 
   // Store response for later comparisons.
@@ -47,9 +91,11 @@ class ChromeWebUIDataSourceTest : public testing::Test {
   }
 
   scoped_refptr<ChromeWebUIDataSource> source_;
+  TestClient client_;
+  ContentClient* old_client_;
 };
 
-TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {
+TEST_F(WebUIDataSourceTest, EmptyStrings) {
   source()->SetJsonPath("strings.js");
   StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
@@ -58,47 +104,47 @@ TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {
   EXPECT_NE(result.find("};"), std::string::npos);
 }
 
-TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
+TEST_F(WebUIDataSourceTest, SomeStrings) {
   source()->SetJsonPath("strings.js");
   source()->AddString("planet", ASCIIToUTF16("pluto"));
-  source()->AddLocalizedString("button", IDS_OK);
+  source()->AddLocalizedString("button", kDummyStringId);
   StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
       result_data_->front()), result_data_->size());
   EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
-  EXPECT_NE(result.find("\"button\":\"OK\""), std::string::npos);
+  EXPECT_NE(result.find("\"button\":\"foo\""), std::string::npos);
 }
 
-TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
-  source()->SetDefaultResource(IDR_WEBUI_I18N_PROCESS_JS);
+TEST_F(WebUIDataSourceTest, DefaultResource) {
+  source()->SetDefaultResource(kDummyDefaultResourceId);
   StartDataRequest("foobar" );
   std::string result(
       reinterpret_cast<const char*>(result_data_->front()),
       result_data_->size());
-  EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
+  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
   StartDataRequest("strings.js");
   result = std::string(
       reinterpret_cast<const char*>(result_data_->front()),
       result_data_->size());
-  EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
+  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 
-TEST_F(ChromeWebUIDataSourceTest, NamedResource) {
-  source()->SetDefaultResource(IDR_WEBUI_I18N_PROCESS_JS);
-  source()->AddResourcePath("foobar", IDR_WEBUI_I18N_TEMPLATE_JS);
+TEST_F(WebUIDataSourceTest, NamedResource) {
+  source()->SetDefaultResource(kDummyDefaultResourceId);
+  source()->AddResourcePath("foobar", kDummyResourceId);
   StartDataRequest("foobar");
   std::string result(
       reinterpret_cast<const char*>(result_data_->front()),
       result_data_->size());
-  EXPECT_NE(result.find("var i18nTemplate"), std::string::npos);
+  EXPECT_NE(result.find(kDummytResource), std::string::npos);
   StartDataRequest("strings.js");
   result = std::string(
       reinterpret_cast<const char*>(result_data_->front()),
       result_data_->size());
-  EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
+  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 
-TEST_F(ChromeWebUIDataSourceTest, MimeType) {
+TEST_F(WebUIDataSourceTest, MimeType) {
   const char* html = "text/html";
   const char* js = "application/javascript";
   EXPECT_EQ(GetMimeType(""), html);
@@ -110,3 +156,5 @@ TEST_F(ChromeWebUIDataSourceTest, MimeType) {
   EXPECT_EQ(GetMimeType("foojs"), html);
   EXPECT_EQ(GetMimeType("foo.jsp"), html);
 }
+
+}  // namespace content

@@ -17,6 +17,10 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+namespace content {
+class WebUIDataSourceTest;
+}
+
 // A data source that can help with implementing the common operations
 // needed by the chrome WEBUI settings/history/downloads pages.
 class CONTENT_EXPORT ChromeWebUIDataSource
@@ -63,7 +67,7 @@ class CONTENT_EXPORT ChromeWebUIDataSource
  private:
   class InternalDataSource;
   friend class InternalDataSource;
-  friend class ChromeWebUIDataSourceTest;
+  friend class content::WebUIDataSourceTest;
 
   explicit ChromeWebUIDataSource(const std::string& source_name);
 
@@ -75,6 +79,10 @@ class CONTENT_EXPORT ChromeWebUIDataSource
       const std::string& path,
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback);
+
+  void disable_set_font_strings_for_testing() {
+    disable_set_font_strings_ = true;
+  }
 
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
@@ -92,6 +100,7 @@ class CONTENT_EXPORT ChromeWebUIDataSource
   bool frame_src_set_;
   std::string frame_src_;
   bool deny_xframe_options_;
+  bool disable_set_font_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUIDataSource);
 };

@@ -73,7 +73,8 @@ ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
       add_csp_(true),
       object_src_set_(false),
       frame_src_set_(false),
-      deny_xframe_options_(true) {
+      deny_xframe_options_(true),
+      disable_set_font_strings_(false) {
 }
 
 ChromeWebUIDataSource::~ChromeWebUIDataSource() {
@@ -189,7 +190,8 @@ void ChromeWebUIDataSource::StartDataRequest(
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(
     const content::URLDataSource::GotDataCallback& callback) {
   std::string template_data;
-  webui::SetFontAndTextDirection(&localized_strings_);
+  if (!disable_set_font_strings_)
+    webui::SetFontAndTextDirection(&localized_strings_);
 
   scoped_ptr<webui::UseVersion2> version2;
   if (json_js_format_v2_)
