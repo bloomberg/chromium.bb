@@ -169,6 +169,10 @@ public class InvalidationService extends AndroidListener {
     }
 
     @Override
+    public void ready(byte[] clientId) {
+    }
+
+    @Override
     public void reissueRegistrations(byte[] clientId) {
         Set<ObjectId> desiredRegistrations = readRegistrationsFromPrefs();
         if (!desiredRegistrations.isEmpty()) {
