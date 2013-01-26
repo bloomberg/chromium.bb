@@ -1016,6 +1016,7 @@
             'java_in_dir': '../sync/android/java',
           },
           'dependencies': [
+            '../base/base.gyp:base_java',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
             '../third_party/guava/guava.gyp:guava_javalib',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',

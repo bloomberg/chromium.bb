@@ -16,6 +16,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationPreferences;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -68,6 +69,7 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
         InvalidationPreferences invPreferences = new InvalidationPreferences(mContext);
         assertNull(invPreferences.getSavedSyncedAccount());
         assertNull(invPreferences.getSavedSyncedTypes());
+        assertNull(invPreferences.getInternalNotificationClientState());
     }
 
     @SmallTest
@@ -84,8 +86,10 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
         // with them here to ensure that preferences are not interpreting the written data.
         Set<String> syncTypes = Sets.newHashSet("BOOKMARK", ModelType.ALL_TYPES_TYPE);
         Account account = new Account("test@example.com", "bogus");
+        byte[] internalClientState = new byte[]{100,101,102};
         invPreferences.setSyncTypes(editContext, syncTypes);
         invPreferences.setAccount(editContext, account);
+        invPreferences.setInternalNotificationClientState(editContext, internalClientState);
 
         // Nothing should yet have been written.
         assertNull(invPreferences.getSavedSyncedAccount());
@@ -95,5 +99,7 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
         invPreferences.commit(editContext);
         assertEquals(account, invPreferences.getSavedSyncedAccount());
         assertEquals(syncTypes, invPreferences.getSavedSyncedTypes());
+        assertTrue(Arrays.equals(
+                internalClientState, invPreferences.getInternalNotificationClientState()));
     }
 }

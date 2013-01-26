@@ -80,4 +80,22 @@ public enum ModelType {
             return modelTypes;
         }
     }
+
+    /** Converts a set of {@link ModelType} to a set of {@link ObjectId}. */
+    public static Set<ObjectId> modelTypesToObjectIds(Set<ModelType> modelTypes) {
+        Set<ObjectId> objectIds = Sets.newHashSetWithExpectedSize(modelTypes.size());
+        for (ModelType modelType : modelTypes) {
+            objectIds.add(modelType.toObjectId());
+        }
+        return objectIds;
+    }
+
+    /** Converts a set of {@link ModelType} to a set of string names. */
+    public static Set<String> modelTypesToSyncTypes(Set<ModelType> modelTypes) {
+        Set<String> objectIds = Sets.newHashSetWithExpectedSize(modelTypes.size());
+        for (ModelType modelType : modelTypes) {
+            objectIds.add(modelType.toString());
+        }
+        return objectIds;
+    }
 }

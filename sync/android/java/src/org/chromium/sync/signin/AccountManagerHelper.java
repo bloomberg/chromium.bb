@@ -207,6 +207,9 @@ public class AccountManagerHelper {
      * - Should not be called on the main thread.
      */
     public String getNewAuthToken(Account account, String authToken, String authTokenType) {
+        // TODO(dsmyers): consider reimplementing using an AccountManager function with an
+        // explicit timeout.
+        // Bug: https://code.google.com/p/chromium/issues/detail?id=172394.
         if (authToken != null && !authToken.isEmpty()) {
             mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
         }

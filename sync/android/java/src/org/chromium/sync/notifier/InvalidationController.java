@@ -76,6 +76,16 @@ public class InvalidationController {
             return registerIntent;
         }
 
+        /** Returns whether {@code intent} is a stop intent. */
+        public static boolean isStop(Intent intent) {
+            return intent.getBooleanExtra(EXTRA_STOP, false);
+        }
+
+        /** Returns whether {@code intent} is a registered types change intent. */
+        public static boolean isRegisteredTypesChange(Intent intent) {
+            return intent.hasExtra(EXTRA_REGISTERED_TYPES);
+        }
+
         private IntentProtocol() {
             // Disallow instantiation.
         }
@@ -93,7 +103,7 @@ public class InvalidationController {
      */
     private static final String TAG = InvalidationController.class.getSimpleName();
 
-    private final Context context;
+    private final Context mContext;
 
     /**
      * Sets the types for which the client should register for notifications.
@@ -105,7 +115,7 @@ public class InvalidationController {
     public void setRegisteredTypes(Account account, boolean allTypes, Set<ModelType> types) {
         Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes, types);
         setDestinationClassName(registerIntent);
-        context.startService(registerIntent);
+        mContext.startService(registerIntent);
     }
 
     /**
@@ -113,7 +123,7 @@ public class InvalidationController {
      */
     public void start() {
         Intent intent = setDestinationClassName(new Intent());
-        context.startService(intent);
+        mContext.startService(intent);
     }
 
     /**
@@ -122,14 +132,14 @@ public class InvalidationController {
     public void stop() {
         Intent intent = setDestinationClassName(new Intent());
         intent.putExtra(IntentProtocol.EXTRA_STOP, true);
-        context.startService(intent);
+        mContext.startService(intent);
     }
 
     /**
      * Returns the contract authority to use when requesting sync.
      */
     public String getContractAuthority() {
-        return context.getPackageName();
+        return mContext.getPackageName();
     }
 
     /**
@@ -143,7 +153,7 @@ public class InvalidationController {
      * Creates an instance using {@code context} to send intents.
      */
     private InvalidationController(Context context) {
-        this.context = Preconditions.checkNotNull(context.getApplicationContext());
+        this.mContext = Preconditions.checkNotNull(context.getApplicationContext());
     }
 
     /**
@@ -154,9 +164,9 @@ public class InvalidationController {
      * @return {@code intent}
      */
     private Intent setDestinationClassName(Intent intent) {
-        String className = getDestinationClassName(context);
+        String className = getDestinationClassName(mContext);
         if (className != null) {
-            intent.setClassName(context, className);
+            intent.setClassName(mContext, className);
         }
         return intent;
     }

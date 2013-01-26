@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -60,6 +61,9 @@ public class InvalidationPreferences {
 
         /** Shared preference key to store the type of account in use. */
         static final String SYNC_ACCT_TYPE = "sync_acct_type";
+
+        /** Shared preference key to store internal notification client library state. */
+        static final String SYNC_TANGO_INTERNAL_STATE = "sync_tango_internal_state";
     }
 
     private static final String TAG = InvalidationPreferences.class.getSimpleName();
@@ -90,9 +94,16 @@ public class InvalidationPreferences {
     }
 
     /** Returns the saved sync types, or {@code null} if none exist. */
-    @Nullable public Collection<String> getSavedSyncedTypes() {
+    @Nullable public Set<String> getSavedSyncedTypes() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         return preferences.getStringSet(PrefKeys.SYNC_TANGO_TYPES, null);
+    }
+
+    /** Sets the saved sync types to {@code syncTypes} in {@code editContext}. */
+    public void setSyncTypes(EditContext editContext, Collection<String> syncTypes) {
+        Preconditions.checkNotNull(syncTypes);
+        Set<String> selectedTypesSet = new HashSet<String>(syncTypes);
+        editContext.editor.putStringSet(PrefKeys.SYNC_TANGO_TYPES, selectedTypesSet);
     }
 
     /** Returns the saved account, or {@code null} if none exists. */
@@ -106,16 +117,25 @@ public class InvalidationPreferences {
         return new Account(accountName, accountType);
     }
 
-    /** Sets the saved sync types to {@code syncTypes} in {@code editContext}. */
-    public void setSyncTypes(EditContext editContext, Collection<String> syncTypes) {
-        Preconditions.checkNotNull(syncTypes);
-        Set<String> selectedTypesSet = new HashSet<String>(syncTypes);
-        editContext.editor.putStringSet(PrefKeys.SYNC_TANGO_TYPES, selectedTypesSet);
-    }
-
     /** Sets the saved account to {@code account} in {@code editContext}. */
     public void setAccount(EditContext editContext, Account account) {
         editContext.editor.putString(PrefKeys.SYNC_ACCT_NAME, account.name);
         editContext.editor.putString(PrefKeys.SYNC_ACCT_TYPE, account.type);
+    }
+
+    /** Returns the notification client internal state. */
+    @Nullable public byte[] getInternalNotificationClientState() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String base64State = preferences.getString(PrefKeys.SYNC_TANGO_INTERNAL_STATE, null);
+        if (base64State == null) {
+            return null;
+        }
+        return Base64.decode(base64State, Base64.DEFAULT);
+    }
+
+    /** Sets the notification client internal state to {@code state}. */
+    public void setInternalNotificationClientState(EditContext editContext, byte[] state) {
+        editContext.editor.putString(PrefKeys.SYNC_TANGO_INTERNAL_STATE,
+                Base64.encodeToString(state, Base64.DEFAULT));
     }
 }

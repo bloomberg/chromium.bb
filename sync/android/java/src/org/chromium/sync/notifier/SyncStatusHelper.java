@@ -36,6 +36,9 @@ public class SyncStatusHelper {
         void onClearSignedInUser();
     }
 
+    // TODO(dsmyers): remove the downstream version of this constant.
+    public static final String AUTH_TOKEN_TYPE_SYNC = "chromiumsync";
+
     @VisibleForTesting
     public static final String SIGNED_IN_ACCOUNT_KEY = "google.services.username";
 
