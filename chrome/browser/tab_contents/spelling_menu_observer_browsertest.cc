@@ -405,3 +405,60 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
 }
+
+// Test that "Ask Google For Suggestions" is grayed out when using an
+// off the record profile.
+// TODO(rlp): Include graying out of autocorrect in this test when autocorrect
+// is functional.
+IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
+                       NoSpellingServiceWhenOffTheRecord) {
+  scoped_ptr<MockRenderViewContextMenu> menu(new MockRenderViewContextMenu);
+  menu->GetProfile()->AsTestingProfile()->set_incognito(true);
+  scoped_ptr<SpellingMenuObserver> observer(
+      new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+
+  // This means spellchecking is allowed. Default is that the service is
+  // contacted but this test makes sure that if profile is incognito, that
+  // is not an option.
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+
+  // Force a non-empty locale so SUGGEST normally would be available.
+  menu->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
+  EXPECT_FALSE(SpellingServiceClient::IsAvailable(menu->GetProfile(),
+    SpellingServiceClient::SUGGEST));
+  EXPECT_FALSE(SpellingServiceClient::IsAvailable(menu->GetProfile(),
+    SpellingServiceClient::SPELLCHECK));
+
+  content::ContextMenuParams params;
+  params.is_editable = true;
+  params.misspelled_word = ASCIIToUTF16("sjxdjiiiiii");
+  observer->InitMenu(params);
+
+  // The test should see "No spelling suggestions" (from system checker).
+  // They should not see "No more Google suggestions" (from SpellingService) or
+  // a separator. The next 2 items should be "Add to Dictionary" followed
+  // by "Ask Google for suggestions" which should be disabled.
+  // TODO(rlp): add autocorrect here when it is functional.
+  EXPECT_LT(3U, menu->GetMenuSize());
+
+  MockRenderViewContextMenu::MockMenuItem item;
+  menu->GetMenuItem(0, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu->GetMenuItem(1, &item);
+  EXPECT_EQ(IDC_SPELLCHECK_ADD_TO_DICTIONARY, item.command_id);
+  EXPECT_TRUE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu->GetMenuItem(2, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  // Set incognito back to false to allow appropriate test cleanup.
+  menu->GetProfile()->AsTestingProfile()->set_incognito(false);
+}
+

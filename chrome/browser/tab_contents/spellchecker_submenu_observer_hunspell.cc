@@ -104,7 +104,6 @@ bool SpellCheckerSubMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
-    case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return true;
   }
 
@@ -144,7 +143,6 @@ bool SpellCheckerSubMenuObserver::IsCommandIdEnabled(int command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
-    case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return true;
   }
 

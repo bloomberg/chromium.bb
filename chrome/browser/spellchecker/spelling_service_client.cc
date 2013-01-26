@@ -102,8 +102,11 @@ bool SpellingServiceClient::RequestTextCheck(
 
 bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   const PrefService* pref = profile->GetPrefs();
+  // If prefs don't allow spellchecking or if the profile is off the record,
+  // the spelling service should be unavailable.
   if (!pref->GetBoolean(prefs::kEnableContinuousSpellcheck) ||
-      !pref->GetBoolean(prefs::kSpellCheckUseSpellingService))
+      !pref->GetBoolean(prefs::kSpellCheckUseSpellingService) ||
+      profile->IsOffTheRecord())
     return false;
 
   // If the locale for spelling has not been set, the user has not decided to
