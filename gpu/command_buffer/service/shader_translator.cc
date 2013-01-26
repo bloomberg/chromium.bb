@@ -148,7 +148,7 @@ bool ShaderTranslator::Translate(const char* shader) {
   bool success = false;
   int compile_options =
       SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS |
-      SH_MAP_LONG_VARIABLE_NAMES;
+      SH_MAP_LONG_VARIABLE_NAMES | SH_ENFORCE_PACKING_RESTRICTIONS;
 
 #if !defined(OS_WIN) && !(defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL))
   // Cannot reliably clamp an array index in HLSL.
