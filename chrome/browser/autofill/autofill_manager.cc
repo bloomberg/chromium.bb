@@ -42,7 +42,6 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -784,8 +783,13 @@ void AutofillManager::RemoveAutocompleteEntry(const string16& name,
   autocomplete_history_manager_.OnRemoveAutocompleteEntry(name, value);
 }
 
-content::WebContents* AutofillManager::GetWebContents() {
-  return web_contents();
+void AutofillManager::ShowRequestAutocompleteDialog(
+    const FormData& form,
+    const GURL& source_url,
+    const content::SSLStatus& ssl_status,
+    const base::Callback<void(const FormStructure*)>& callback) {
+  manager_delegate_->ShowRequestAutocompleteDialog(
+      form, source_url, ssl_status, callback);
 }
 
 void AutofillManager::OnAddPasswordFormMapping(
@@ -832,13 +836,7 @@ void AutofillManager::OnRequestAutocomplete(
 
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData, this);
-  autofill::AutofillDialogControllerImpl* controller =
-      new autofill::AutofillDialogControllerImpl(web_contents(),
-                                                 form,
-                                                 frame_url,
-                                                 ssl_status,
-                                                 callback);
-  controller->Show();
+  ShowRequestAutocompleteDialog(form, frame_url, ssl_status, callback);
 }
 
 void AutofillManager::ReturnAutocompleteResult(

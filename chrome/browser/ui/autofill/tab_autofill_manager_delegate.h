@@ -32,6 +32,11 @@ class TabAutofillManagerDelegate
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) OVERRIDE;
+  virtual void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      const content::SSLStatus& ssl_status,
+      const base::Callback<void(const FormStructure*)>& callback) OVERRIDE;
 
  private:
   explicit TabAutofillManagerDelegate(content::WebContents* web_contents);

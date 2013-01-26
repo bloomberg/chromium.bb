@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -109,8 +110,12 @@ class AutofillManager : public content::WebContentsObserver,
   // Remove the specified Autocomplete entry.
   void RemoveAutocompleteEntry(const string16& name, const string16& value);
 
-  // Returns the present web_contents state.
-  content::WebContents* GetWebContents();
+  // Causes the dialog for request autocomplete feature to be shown.
+  void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      const content::SSLStatus& ssl_status,
+      const base::Callback<void(const FormStructure*)>& callback);
 
  protected:
   // Only test code should subclass AutofillManager.

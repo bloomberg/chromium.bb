@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "content/public/browser/web_contents.h"
@@ -56,8 +55,8 @@ FormData BuildAutocheckoutFormData() {
 }  // namespace
 
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
-  : autofill_manager_(autofill_manager),
-    ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : autofill_manager_(autofill_manager),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 AutocheckoutManager::~AutocheckoutManager() {
@@ -69,14 +68,8 @@ void AutocheckoutManager::ShowAutocheckoutDialog(
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());
-  autofill::AutofillDialogControllerImpl* controller =
-      new autofill::AutofillDialogControllerImpl(
-          autofill_manager_->GetWebContents(),
-          BuildAutocheckoutFormData(),
-          frame_url,
-          ssl_status,
-          callback);
-  controller->Show();
+  autofill_manager_->ShowRequestAutocompleteDialog(
+      BuildAutocheckoutFormData(), frame_url, ssl_status, callback);
 }
 
 void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {

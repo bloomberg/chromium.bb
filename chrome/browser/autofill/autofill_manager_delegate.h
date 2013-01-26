@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_DELEGATE_H_
 
+#include "base/callback_forward.h"
+
 namespace autofill {
 class PasswordGenerator;
 }
@@ -12,16 +14,21 @@ class PasswordGenerator;
 namespace content {
 class BrowserContext;
 struct PasswordForm;
+struct SSLStatus;
 }
 
 namespace gfx {
 class Rect;
 }
 
+class FormStructure;
+class GURL;
 class InfoBarService;
 class PrefServiceBase;
 class Profile;
 class ProfileSyncServiceBase;
+
+struct FormData;
 
 namespace autofill {
 
@@ -70,6 +77,13 @@ class AutofillManagerDelegate {
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) = 0;
+
+  // Causes the dialog for request autocomplete feature to be shown.
+  virtual void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      const content::SSLStatus& ssl_status,
+      const base::Callback<void(const FormStructure*)>& callback) = 0;
 };
 
 }  // namespace autofill

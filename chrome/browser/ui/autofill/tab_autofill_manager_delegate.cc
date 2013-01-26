@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -80,4 +81,18 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   browser->window()->ShowPasswordGenerationBubble(bounds, form, generator);
 #endif  // #if defined(OS_ANDROID)
+}
+
+void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
+    const FormData& form,
+    const GURL& source_url,
+    const content::SSLStatus& ssl_status,
+    const base::Callback<void(const FormStructure*)>& callback) {
+  autofill::AutofillDialogControllerImpl* controller =
+      new autofill::AutofillDialogControllerImpl(web_contents_,
+                                                 form,
+                                                 source_url,
+                                                 ssl_status,
+                                                 callback);
+  controller->Show();
 }
