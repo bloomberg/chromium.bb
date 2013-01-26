@@ -66,34 +66,33 @@ KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title,
                                                  const GURL& url)
     : title_(title),
       url_(url),
-      view_(NULL) {
+      widget_(NULL) {
 }
 
 KeyboardOverlayDelegate::~KeyboardOverlayDelegate() {
 }
 
-void KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
-  view_ = view;
-
-  views::Widget* widget = new views::Widget;
+views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
+  widget_ = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.context = Shell::GetPrimaryRootWindow();
   params.delegate = view;
-  widget->Init(params);
+  widget_->Init(params);
 
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   GetDialogSize(&size);
   const gfx::Rect& rect = Shell::GetScreen()->GetDisplayNearestWindow(
-      widget->GetNativeView()).work_area();
+      widget_->GetNativeView()).work_area();
   gfx::Rect bounds((rect.width() - size.width()) / 2,
                    rect.height() - size.height(),
                    size.width(),
                    size.height());
-  widget->SetBounds(bounds);
+  widget_->SetBounds(bounds);
 
   // The widget will be shown when the web contents gets ready to display.
+  return widget_;
 }
 
 ui::ModalType KeyboardOverlayDelegate::GetDialogModalType() const {
@@ -110,15 +109,15 @@ GURL KeyboardOverlayDelegate::GetDialogContentURL() const {
 
 void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
-  handlers->push_back(new PaintMessageHandler(view_->GetWidget()));
+  handlers->push_back(new PaintMessageHandler(widget_));
 }
 
 void KeyboardOverlayDelegate::GetDialogSize(
     gfx::Size* size) const {
   using std::min;
-  DCHECK(view_);
+  DCHECK(widget_);
   gfx::Rect rect = ash::Shell::GetScreen()->GetDisplayNearestWindow(
-      view_->GetWidget()->GetNativeView()).bounds();
+      widget_->GetNativeView()).bounds();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;
   size->SetSize(width, height);

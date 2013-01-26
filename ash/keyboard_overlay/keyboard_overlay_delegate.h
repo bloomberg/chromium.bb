@@ -5,27 +5,34 @@
 #ifndef ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
 #define ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "googleurl/src/gurl.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace views {
 class WebDialogView;
+class Widget;
 }
 
 namespace ash {
 
-class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
+// Delegate to handle showing the keyboard overlay drawing. Exported for test.
+class ASH_EXPORT KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
   KeyboardOverlayDelegate(const string16& title, const GURL& url);
 
-  void Show(views::WebDialogView* view);
+  // Shows the keyboard overlay widget. Returns the widget for testing.
+  views::Widget* Show(views::WebDialogView* view);
 
   // Overridden from ui::WebDialogDelegate:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(KeyboardOverlayDelegateTest, ShowAndClose);
+
   virtual ~KeyboardOverlayDelegate();
 
   // Overridden from ui::WebDialogDelegate:
@@ -48,9 +55,8 @@ class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
   // The URL of the keyboard overlay.
   GURL url_;
 
-  // The view associated with this delegate.
-  // This class does not own the pointer.
-  views::WebDialogView* view_;
+  // The widget associated with this delegate. Not owned.
+  views::Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegate);
 };

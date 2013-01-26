@@ -569,6 +569,7 @@
         'drag_drop/drag_drop_tracker_unittest.cc',
         'extended_desktop_unittest.cc',
         'focus_cycler_unittest.cc',
+        'keyboard_overlay/keyboard_overlay_delegate_unittest.cc',
         'keyboard_overlay/keyboard_overlay_view_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/launcher_navigator_unittest.cc',
