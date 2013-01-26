@@ -86,6 +86,9 @@
             '-lppapi',
             '-pthread',
           ],
+          'extra_args': [
+            '--strip-all',
+          ],
         },
         'target_conditions': [
           ['build_newlib==1', {

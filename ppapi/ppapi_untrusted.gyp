@@ -107,6 +107,9 @@
           '<@(test_common_source_files)',
           '<@(test_nacl_source_files)',
         ],
+        'extra_args': [
+          '--strip-all',
+        ],
       },
       'conditions': [
         ['target_arch!="arm"', {
