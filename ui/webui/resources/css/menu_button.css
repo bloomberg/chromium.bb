@@ -29,3 +29,7 @@ button.menu-button.drop-down:focus {
   background-image: -webkit-canvas(drop-down-arrow-active);
   border-color: rgb(48, 57, 66);
 }
+
+button.menu-button.using-mouse {
+  outline: none;
+}

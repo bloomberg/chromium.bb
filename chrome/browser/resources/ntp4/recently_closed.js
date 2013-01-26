@@ -47,14 +47,14 @@ cr.define('ntp', function() {
      * button.
      * @override
      */
-    showMenu: function() {
+    showMenu: function(shouldSetFocus) {
       if (this.needsRebuild_) {
         this.menu.textContent = '';
         this.dataItems_.forEach(this.addItem_, this);
         this.needsRebuild_ = false;
       }
 
-      MenuButton.prototype.showMenu.call(this);
+      MenuButton.prototype.showMenu.apply(this, arguments);
     },
 
     /**

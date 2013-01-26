@@ -38,9 +38,9 @@ cr.define('cr.ui', function() {
       this.hidden = true;  // Hide the menu by default.
 
       // Decorate the children as menu items.
-      var children = this.children;
-      for (var i = 0, child; child = children[i]; i++) {
-        cr.ui.decorate(child, MenuItem);
+      var menuItems = this.menuItems;
+      for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
+        cr.ui.decorate(menuItem, MenuItem);
       }
     },
 
@@ -112,15 +112,19 @@ cr.define('cr.ui', function() {
       this.selectedItem = null;
     },
 
+    get menuItems() {
+      return this.querySelectorAll('[role=menuitem]');
+    },
+
     /**
      * The selected menu item or null if none.
      * @type {cr.ui.MenuItem}
      */
     get selectedItem() {
-      return this.children[this.selectedIndex];
+      return this.menuItems[this.selectedIndex];
     },
     set selectedItem(item) {
-      var index = Array.prototype.indexOf.call(this.children, item);
+      var index = Array.prototype.indexOf.call(this.menuItems, item);
       this.selectedIndex = index;
     },
 
@@ -130,7 +134,7 @@ cr.define('cr.ui', function() {
      */
     focusSelectedItem: function() {
       if (this.selectedIndex < 0 ||
-          this.selectedIndex > this.children.length) {
+          this.selectedIndex > this.menuItems.length) {
         this.selectedIndex = 0;
       }
 
@@ -142,7 +146,7 @@ cr.define('cr.ui', function() {
      * Menu length
      */
     get length() {
-      return this.children.length;
+      return this.menuItems.length;
     },
 
     /**
@@ -156,8 +160,8 @@ cr.define('cr.ui', function() {
 
       var self = this;
       function selectNextAvailable(m) {
-        var children = self.children;
-        var len = children.length;
+        var menuItems = self.menuItems;
+        var len = menuItems.length;
         var i = self.selectedIndex;
         if (i == -1 && m == -1) {
           // Edge case when needed to go the last item first.
@@ -177,7 +181,7 @@ cr.define('cr.ui', function() {
           if (i == startPosition)
             break;
 
-          item = children[i];
+          item = menuItems[i];
           if (item && !item.isSeparator() && !item.hidden && !item.disabled)
             break;
         }
@@ -216,15 +220,15 @@ cr.define('cr.ui', function() {
      * @param {Node=} node Node for which to actuate commands state.
      */
     updateCommands: function(node) {
-      var children = this.children;
+      var menuItems = this.menuItems;
 
-      for (var i = 0, child; child = children[i]; i++)
-        child.updateCommand(node);
+      for (var i = 0, menuItem; menuItem = menuItems[i]; i++)
+        menuItems.updateCommand(node);
     }
   };
 
   function selectedIndexChanged(selectedIndex, oldSelectedIndex) {
-    var oldSelectedItem = this.children[oldSelectedIndex];
+    var oldSelectedItem = this.menuItems[oldSelectedIndex];
     if (oldSelectedItem) {
       oldSelectedItem.selected = false;
       oldSelectedItem.blur();

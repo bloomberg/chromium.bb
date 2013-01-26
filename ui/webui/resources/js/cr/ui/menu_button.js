@@ -100,11 +100,16 @@ cr.define('cr.ui', function() {
               this.hideMenu();
             } else if (e.button == 0) {  // Only show the menu when using left
                                          // mouse button.
-              this.showMenu(false);
+              this.showMenu(true);
+
               // Prevent the button from stealing focus on mousedown.
               e.preventDefault();
             }
           }
+
+          // Hide the focus ring on mouse click.
+          this.classList.add('using-mouse');
+
           break;
         case 'keydown':
           this.handleKeyDown(e);
@@ -115,10 +120,18 @@ cr.define('cr.ui', function() {
               e.stopPropagation();
             }
           }
+
+          // Show the focus ring on keypress.
+          this.classList.remove('using-mouse');
           break;
         case 'focus':
-          if (!this.contains(e.target) && !this.menu.contains(e.target))
+          if (!this.contains(e.target) && !this.menu.contains(e.target)) {
             this.hideMenu();
+            // Show the focus ring on focus - if it's come from a mouse event,
+            // the focus ring will be hidden in the mousedown event handler,
+            // executed after this.
+            this.classList.remove('using-mouse');
+          }
           break;
         case 'activate':
           if (e.target instanceof cr.ui.MenuItem && e.target.checkable)
@@ -143,23 +156,24 @@ cr.define('cr.ui', function() {
       var event = document.createEvent('UIEvents');
       event.initUIEvent('menushow', true, true, window, null);
 
-      if (this.dispatchEvent(event)) {
-        this.menu.hidden = false;
+      if (!this.dispatchEvent(event))
+        return;
 
-        this.setAttribute('menu-shown', '');
-        if (shouldSetFocus)
-          this.menu.focusSelectedItem();
+      this.menu.hidden = false;
 
-        // when the menu is shown we steal all keyboard events.
-        var doc = this.ownerDocument;
-        var win = doc.defaultView;
-        this.showingEvents_.add(doc, 'keydown', this, true);
-        this.showingEvents_.add(doc, 'mousedown', this, true);
-        this.showingEvents_.add(doc, 'focus', this, true);
-        this.showingEvents_.add(win, 'resize', this);
-        this.showingEvents_.add(this.menu, 'activate', this);
-        this.positionMenu_();
-      }
+      this.setAttribute('menu-shown', '');
+      if (shouldSetFocus)
+        this.menu.focusSelectedItem();
+
+      // When the menu is shown we steal all keyboard events.
+      var doc = this.ownerDocument;
+      var win = doc.defaultView;
+      this.showingEvents_.add(doc, 'keydown', this, true);
+      this.showingEvents_.add(doc, 'mousedown', this, true);
+      this.showingEvents_.add(doc, 'focus', this, true);
+      this.showingEvents_.add(win, 'resize', this);
+      this.showingEvents_.add(this.menu, 'activate', this);
+      this.positionMenu_();
     },
 
     /**
