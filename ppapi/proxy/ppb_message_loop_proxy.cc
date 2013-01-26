@@ -198,6 +198,7 @@ void MessageLoopResource::ReleaseMessageLoop(void* value) {
 // -----------------------------------------------------------------------------
 
 PP_Resource Create(PP_Instance instance) {
+  ProxyAutoLock lock;
   // Validate the instance.
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
@@ -206,10 +207,12 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Resource GetForMainThread() {
+  ProxyAutoLock lock;
   return PluginGlobals::Get()->loop_for_main_thread()->GetReference();
 }
 
 PP_Resource GetCurrent() {
+  ProxyAutoLock lock;
   Resource* resource = MessageLoopResource::GetCurrent();
   if (resource)
     return resource->GetReference();
