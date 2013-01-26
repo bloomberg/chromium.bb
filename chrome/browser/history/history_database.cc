@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX)
@@ -39,6 +40,7 @@ void ComputeDatabaseMetrics(const FilePath& history_name,
   if (base::RandInt(1, 100) != 50)
     return;  // Only do this computation sometimes since it can be expensive.
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   int64 file_size = 0;
   if (!file_util::GetFileSize(history_name, &file_size))
     return;
@@ -55,6 +57,59 @@ void ComputeDatabaseMetrics(const FilePath& history_name,
   if (!visit_count.Step())
     return;
   UMA_HISTOGRAM_COUNTS("History.VisitTableCount", visit_count.ColumnInt(0));
+
+  base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
+  sql::Statement weekly_visit_sql(db.GetUniqueStatement(
+      "SELECT count(*) FROM visits WHERE visit_time > ?"));
+  weekly_visit_sql.BindInt64(0, one_week_ago.ToInternalValue());
+  int weekly_visit_count = weekly_visit_sql.ColumnInt(0);
+  UMA_HISTOGRAM_COUNTS("History.WeeklyVisitCount", weekly_visit_count);
+
+  base::Time one_month_ago = base::Time::Now() - base::TimeDelta::FromDays(30);
+  sql::Statement monthly_visit_sql(db.GetUniqueStatement(
+      "SELECT count(*) FROM visits WHERE visit_time > ? AND visit_time <= ?"));
+  monthly_visit_sql.BindInt64(0, one_month_ago.ToInternalValue());
+  monthly_visit_sql.BindInt64(1, one_week_ago.ToInternalValue());
+  UMA_HISTOGRAM_COUNTS("History.MonthlyVisitCount",
+                       monthly_visit_sql.ColumnInt(0) + weekly_visit_count);
+
+  UMA_HISTOGRAM_TIMES("History.DatabaseBasicMetricsTime",
+                      base::TimeTicks::Now() - start_time);
+
+  // Compute the advanced metrics even less often, pending timing data showing
+  // that's not necessary.
+  if (base::RandInt(1, 3) == 3) {
+    start_time = base::TimeTicks::Now();
+
+    // Collect all URLs visited within the last month.
+    sql::Statement url_sql(db.GetUniqueStatement(
+        "SELECT url, last_visit_time FROM urls WHERE last_visit_time > ?"));
+    url_sql.BindInt64(0, one_month_ago.ToInternalValue());
+
+    // Count URLs (which will always be unique) and unique hosts within the last
+    // week and last month.
+    int week_url_count = 0;
+    int month_url_count = 0;
+    std::set<std::string> week_hosts;
+    std::set<std::string> month_hosts;
+    while (url_sql.Step()) {
+      GURL url(url_sql.ColumnString(0));
+      base::Time visit_time =
+          base::Time::FromInternalValue(url_sql.ColumnInt64(1));
+      ++month_url_count;
+      month_hosts.insert(url.host());
+      if (visit_time > one_week_ago) {
+        ++week_url_count;
+        week_hosts.insert(url.host());
+      }
+    }
+    UMA_HISTOGRAM_COUNTS("History.WeeklyURLCount", week_url_count);
+    UMA_HISTOGRAM_COUNTS_10000("History.WeeklyHostCount", week_hosts.size());
+    UMA_HISTOGRAM_COUNTS("History.MonthlyURLCount", month_url_count);
+    UMA_HISTOGRAM_COUNTS_10000("History.MonthlyHostCount", month_hosts.size());
+    UMA_HISTOGRAM_TIMES("History.DatabaseAdvancedMetricsTime",
+                        base::TimeTicks::Now() - start_time);
+  }
 }
 
 }  // namespace
