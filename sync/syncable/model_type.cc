@@ -610,8 +610,10 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case HISTORY_DELETE_DIRECTIVES:
       *notification_type = kHistoryDeleteDirectiveNotificationType;
+      return true;
     case SYNCED_NOTIFICATIONS:
       *notification_type = kSyncedNotificationType;
+      return true;
     case DEVICE_INFO:
       *notification_type = kDeviceInfoNotificationType;
       return true;
@@ -680,10 +682,15 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kHistoryDeleteDirectiveNotificationType) {
     *model_type = HISTORY_DELETE_DIRECTIVES;
+    return true;
   } else if (notification_type == kSyncedNotificationType) {
     *model_type = SYNCED_NOTIFICATIONS;
+    return true;
   } else if (notification_type == kDeviceInfoNotificationType) {
     *model_type = DEVICE_INFO;;
+    return true;
+  } else if (notification_type == kExperimentsNotificationType) {
+    *model_type = EXPERIMENTS;
     return true;
   } else if (notification_type == kPriorityPreferenceNotificationType) {
     *model_type = PRIORITY_PREFERENCES;
