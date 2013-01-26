@@ -70,6 +70,8 @@
           },
         }],
       ],
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
   'conditions': [
@@ -158,6 +160,8 @@
                 '..',
             ],
           },
+          # Disable c4267 warnings until we fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         },
         {
           # In component build, this is just a phony target that makes sure
