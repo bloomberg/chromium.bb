@@ -390,3 +390,16 @@ content.dll!*
 KERNEL32.dll!*
 ntdll.dll!*
 ntdll.dll!*
+
+WARNING
+name=Security test (new oveflow)
+MSVCR100D.dll!operator new
+*!operator new
+*!operator new[]
+*!`anonymous namespace'::SecurityTest_NewOverflow_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
+
+WARNING
+name=Security test (calloc overflow)
+*!`anonymous namespace'::SecurityTest_CallocOverflow_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
