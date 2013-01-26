@@ -51,7 +51,9 @@ public:
 
   // PushPropertiesTo active tree => pending tree
   void SyncFromActiveLayer();
-  void SyncTiling(const PictureLayerTiling* tiling);
+  void SyncTiling(
+      const PictureLayerTiling* tiling,
+      const Region& pending_layer_invalidation);
 
   void CreateTilingSet();
   void TransferTilingSet(scoped_ptr<PictureLayerTilingSet> tilings);

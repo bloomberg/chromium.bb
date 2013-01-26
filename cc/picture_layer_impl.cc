@@ -328,8 +328,9 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 }
 
 void PictureLayerImpl::SyncTiling(
-    const PictureLayerTiling* tiling) {
-  tilings_->Clone(tiling, invalidation_);
+    const PictureLayerTiling* tiling,
+    const Region& pending_layer_invalidation) {
+  tilings_->Clone(tiling, pending_layer_invalidation);
 }
 
 void PictureLayerImpl::SetIsMask(bool is_mask) {
@@ -399,17 +400,22 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   for (Region::Iterator iter(recorded); iter.has_rect(); iter.next())
     tiling->CreateTilesFromLayerRect(iter.rect());
 
-  // If a new tiling is created on the active tree, sync it to the pending tree
-  // so that it can share the same tiles.
-  if (layerTreeImpl()->IsPendingTree())
-    return tiling;
+  PictureLayerImpl* twin;
+  const Region* pending_layer_invalidation = NULL;
+  if (layerTreeImpl()->IsPendingTree()) {
+    twin = static_cast<PictureLayerImpl*>(
+        layerTreeImpl()->FindActiveTreeLayerById(id()));
+    pending_layer_invalidation = &invalidation_;
+  } else {
+    twin = static_cast<PictureLayerImpl*>(
+        layerTreeImpl()->FindPendingTreeLayerById(id()));
+    pending_layer_invalidation = &twin->invalidation_;
+  }
 
-  PictureLayerImpl* pending_twin = static_cast<PictureLayerImpl*>(
-      layerTreeImpl()->FindPendingTreeLayerById(id()));
-  if (!pending_twin)
+  if (!twin)
     return tiling;
-  DCHECK_EQ(id(), pending_twin->id());
-  pending_twin->SyncTiling(tiling);
+  DCHECK_EQ(id(), twin->id());
+  twin->SyncTiling(tiling, *pending_layer_invalidation);
   return tiling;
 }
 
@@ -483,10 +489,7 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
 
-  // The active tree always has calcDrawProperties called on it first, and
-  // any tilings added to the active tree will be synced to the pending tree.
-  if (layerTreeImpl()->IsActiveTree() &&
-      layerTreeImpl()->PinchGestureActive() && high_res) {
+  if (layerTreeImpl()->PinchGestureActive() && high_res) {
     // If zooming out, if only available high-res tiling is very high
     // resolution, create additional tilings closer to the ideal.
     // When zooming in, add some additional tilings so that content
@@ -496,15 +499,16 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
         ideal_contents_scale);
     if (ratio >= kMaxScaleRatioDuringPinch)
       high_res = AddTiling(ideal_contents_scale);
-  } else if (layerTreeImpl()->IsActiveTree() ||
-             !layerTreeImpl()->PinchGestureActive()) {
-    // When not pinching or if no tilings, add exact contents scales.
-    // If this pending layer doesn't have an ideal tiling (because it has
-    // no active twin), then this will also create one.
+  } else {
+    // Always make sure we have some tiling.
     if (!high_res || high_res->contents_scale() != ideal_contents_scale)
       high_res = AddTiling(ideal_contents_scale);
-    if (!low_res || low_res->contents_scale() != low_res_contents_scale)
-      low_res = AddTiling(low_res_contents_scale);
+
+    // If we're not pinching then add a low res tiling at the exact scale.
+    if (!layerTreeImpl()->PinchGestureActive()) {
+      if (!low_res || low_res->contents_scale() != low_res_contents_scale)
+        low_res = AddTiling(low_res_contents_scale);
+    }
   }
 
   if (high_res)
