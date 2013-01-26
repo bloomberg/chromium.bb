@@ -80,6 +80,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   virtual bool ShouldEnterPushedState(const ui::Event& event) OVERRIDE;
 
   // views::View overrides:
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;

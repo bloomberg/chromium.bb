@@ -372,23 +372,53 @@ TEST_F(AppsGridViewTest, SimultaneousDrag) {
 }
 
 TEST_F(AppsGridViewTest, HighlightWithKeyboard) {
-  const int kTotalitems = 2;
-  PopulateApps(kTotalitems);
-  apps_grid_view_->SetSelectedView(GetItemViewAt(0));
+  const int kPages = 2;
+  PopulateApps(kPages * kTilesPerPage);
 
-  // Try moving off the item to an invalid location.
+  const int first_index = 0;
+  const int last_index = kPages * kTilesPerPage - 1;
+  const int last_index_on_page1 = kTilesPerPage - 1;
+  const int first_index_on_page2 = kTilesPerPage;
+
+  // Try moving off the item beyond the first one.
+  apps_grid_view_->SetSelectedView(GetItemViewAt(first_index));
   SimulateKeyPress(ui::VKEY_UP);
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
-  SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(first_index)));
   SimulateKeyPress(ui::VKEY_LEFT);
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(first_index)));
 
-  // Move to the second item and try to go past it.
+  // Move to the last item and try to go past it.
+  apps_grid_view_->SetSelectedView(GetItemViewAt(last_index));
+  SimulateKeyPress(ui::VKEY_DOWN);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(last_index)));
   SimulateKeyPress(ui::VKEY_RIGHT);
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(1)));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(last_index)));
+
+  // Move right on last item on page 1 should get to first item on page 2
+  // and vice vesa.
+  apps_grid_view_->SetSelectedView(GetItemViewAt(last_index_on_page1));
   SimulateKeyPress(ui::VKEY_RIGHT);
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(1)));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
+      first_index_on_page2)));
+  SimulateKeyPress(ui::VKEY_LEFT);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
+      last_index_on_page1)));
+
+  // Up/down changes page similarly to the above left/right cases.
+  apps_grid_view_->SetSelectedView(GetItemViewAt(last_index_on_page1));
+  SimulateKeyPress(ui::VKEY_DOWN);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
+      last_index_on_page1 + kCols)));
+  SimulateKeyPress(ui::VKEY_UP);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
+      last_index_on_page1)));
+
+  // After page switch, arrow keys select first item on current page.
+  apps_grid_view_->SetSelectedView(GetItemViewAt(first_index));
+  pagination_model_->SelectPage(1, false);
+  SimulateKeyPress(ui::VKEY_UP);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
+      first_index_on_page2)));
 }
 
 }  // namespace test

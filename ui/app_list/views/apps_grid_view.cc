@@ -389,8 +389,8 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
   if (selected_view_)
     selected_view_->SchedulePaint();
 
+  EnsureViewVisible(new_selection);
   selected_view_ = new_selection;
-  EnsureViewVisible(selected_view_);
   selected_view_->SchedulePaint();
   if (GetWidget()) {
     GetWidget()->NotifyAccessibilityEvent(
@@ -423,16 +423,18 @@ views::View* AppsGridView::GetViewAtIndex(const Index& index) const {
 
 void AppsGridView::MoveSelected(int page_delta, int slot_delta) {
   if (!selected_view_)
-    return SetSelectedItemByIndex(Index(0, 0));
+    return SetSelectedItemByIndex(Index(pagination_model_->selected_page(), 0));
 
   const Index& selected = GetIndexOfView(selected_view_);
   int target_slot = selected.slot + slot_delta;
   if (target_slot < 0) {
     page_delta += (target_slot + 1) / tiles_per_page() - 1;
-    target_slot = tiles_per_page() + (target_slot + 1) % tiles_per_page() - 1;
-  } else if (target_slot > tiles_per_page()) {
+    if (selected.page > 0)
+      target_slot = tiles_per_page() + (target_slot + 1) % tiles_per_page() - 1;
+  } else if (target_slot >= tiles_per_page()) {
     page_delta += target_slot / tiles_per_page();
-    target_slot %= tiles_per_page();
+    if (selected.page < pagination_model_->total_pages() - 1)
+      target_slot %= tiles_per_page();
   }
 
   int target_page = std::min(pagination_model_->total_pages() - 1,
@@ -771,6 +773,7 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
     Layout();
     MaybeStartPageFlipTimer(last_drag_point_);
   } else {
+    ClearSelectedView(selected_view_);
     Layout();
   }
 }

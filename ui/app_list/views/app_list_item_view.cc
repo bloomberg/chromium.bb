@@ -270,6 +270,17 @@ bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
+bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Disable space key to press the button. The keyboard events received
+  // by this view are forwarded from a Textfield (SearchBoxView) and key
+  // released events are not forwarded. This leaves the button in pressed
+  // state.
+  if (event.key_code() == ui::VKEY_SPACE)
+    return false;
+
+  return CustomButton::OnKeyPressed(event);
+}
+
 void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
   apps_grid_view_->EndDrag(false);
