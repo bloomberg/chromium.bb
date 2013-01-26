@@ -4,45 +4,50 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
+  BookmarkModel model(NULL);
+
   std::vector<const BookmarkNode*> nodes;
 
-  BookmarkNode b1(GURL("http://google.com"));
-  nodes.push_back(&b1);
+  // This tests that |nodes| contains an URL.
+  const BookmarkNode* page1 = model.AddURL(model.bookmark_bar_node(), 0,
+                                           ASCIIToUTF16("Google"),
+                                           GURL("http://google.com"));
+  nodes.push_back(page1);
   EXPECT_TRUE(chrome::HasBookmarkURLs(nodes));
 
   nodes.clear();
 
-  BookmarkNode folder1(GURL::EmptyGURL());
-  nodes.push_back(&folder1);
+  // This tests that |nodes| does not contain any URL.
+  const BookmarkNode* folder1 = model.AddFolder(model.bookmark_bar_node(), 0,
+                                                ASCIIToUTF16("Folder1"));
+  nodes.push_back(folder1);
   EXPECT_FALSE(chrome::HasBookmarkURLs(nodes));
 
-  BookmarkNode* b2 = new BookmarkNode(GURL("http://google.com"));
-  folder1.Add(b2, 0);
+  // This verifies if HasBookmarkURLs iterates through immediate children.
+  model.AddURL(folder1, 0, ASCIIToUTF16("Foo"), GURL("http://randomsite.com"));
   EXPECT_TRUE(chrome::HasBookmarkURLs(nodes));
 
-  folder1.Remove(b2);
+  // This verifies that HasBookmarkURLS does not iterate through descendants.
+  // i.e, it should not find an URL inside a two or three level hierarchy.
+  // So we add another folder to |folder1| and add another page to that new
+  // folder to create a two level hierarchy.
 
-  BookmarkNode* folder11 = new BookmarkNode(GURL::EmptyGURL());
-  folder11->Add(b2, 0);
-  folder1.Add(folder11, 0);
-  BookmarkNode folder2(GURL::EmptyGURL());
-  nodes.push_back(&folder2);
+  // But first we have to remove the URL from |folder1|.
+  model.Remove(folder1, 0);
+
+  const BookmarkNode* subfolder1 = model.AddFolder(folder1, 0,
+                                                   ASCIIToUTF16("Subfolder1"));
+
+  // Now add the URL to that |subfolder1|.
+  model.AddURL(subfolder1, 0, ASCIIToUTF16("BAR"), GURL("http://bar-foo.com"));
   EXPECT_FALSE(chrome::HasBookmarkURLs(nodes));
-
-  folder2.Add(b2, 0);
-  EXPECT_TRUE(chrome::HasBookmarkURLs(nodes));
-
-  folder2.Remove(b2);
-  EXPECT_FALSE(chrome::HasBookmarkURLs(nodes));
-
-  nodes.push_back(b2);
-  EXPECT_TRUE(chrome::HasBookmarkURLs(nodes));
 }
 
 }  // namespace
