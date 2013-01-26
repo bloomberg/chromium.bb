@@ -393,6 +393,11 @@ class ChangeInfo(object):
     """Returns the issue description from Rietveld."""
     return self.SendToRietveld('/%d/description' % self.issue)
 
+  def AddComment(self, comment):
+    """Adds a comment for an issue on Rietveld.
+    As a side effect, this will email everyone associated with the issue."""
+    return self.RpcServer().add_comment(self.issue, comment)
+
   def PrimeLint(self):
     """Do background work on Rietveld to lint the file so that the results are
     ready when the issue is viewed."""
@@ -982,6 +987,8 @@ def CMDcommit(change_info, args):
     print "Nothing to commit, changelist is empty."
     return 1
 
+  # OptionallyDoPresubmitChecks has a side-effect which eats these flags.
+  bypassed = '--no_presubmit' in args or '--force' in args
   output = OptionallyDoPresubmitChecks(change_info, True, args)
   if not output.should_continue():
     return 1
@@ -1038,6 +1045,9 @@ def CMDcommit(change_info, args):
       elif revision:
         change_info.description += "\nCommitted: " + revision
       change_info.CloseIssue()
+      comment = "Committed manually as r%s" % revision
+      comment += ' (presubmit successful).' if not bypassed else '.'
+      change_info.AddComment(comment)
   return 0
 
 

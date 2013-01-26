@@ -56,6 +56,12 @@ class GclTestsBase(SuperMoxTestBase):
     change_info.reviewers = None
     change_info._closed = False
     change_info._deleted = False
+    change_info._comments_added = []
+
+    def AddComment(comment):
+      # pylint: disable=W0212
+      change_info._comments_added.append(comment)
+    change_info.AddComment = AddComment
 
     def Delete():
       change_info._deleted = True
@@ -180,9 +186,10 @@ class ChangeInfoUnittest(GclTestsBase):
   def testChangeInfoMembers(self):
     self.mox.ReplayAll()
     members = [
-      'CloseIssue', 'Delete', 'Exists', 'GetFiles', 'GetFileNames',
-      'GetLocalRoot', 'GetIssueDescription', 'Load', 'MissingTests',
-      'NeedsUpload', 'PrimeLint', 'RpcServer', 'Save', 'SendToRietveld',
+      'AddComment', 'CloseIssue', 'Delete', 'Exists', 'GetFiles',
+      'GetFileNames', 'GetLocalRoot', 'GetIssueDescription', 'Load',
+      'MissingTests', 'NeedsUpload', 'PrimeLint', 'RpcServer', 'Save',
+      'SendToRietveld',
       'SEPARATOR',
       'UpdateRietveldDescription',
       'description', 'issue', 'name',
@@ -586,6 +593,9 @@ class CMDCommitUnittest(GclTestsBase):
     # pylint: disable=W0212
     self.assertTrue(change_info._deleted)
     self.assertTrue(change_info._closed)
+    self.assertEqual(
+        change_info._comments_added,
+        ["Committed manually as r12345 (presubmit successful)."])
 
 
 if __name__ == '__main__':

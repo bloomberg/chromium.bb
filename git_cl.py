@@ -1495,6 +1495,9 @@ def SendUpstream(parser, args, cmd):
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
     cl.CloseIssue()
+    comment = "Committed manually as r%s" % revision
+    comment += ' (presubmit successful).' if not options.bypass_hooks else '.'
+    cl.RpcServer().add_comment(cl.GetIssue(), comment)
     cl.SetIssue(0)
 
   if retcode == 0:
