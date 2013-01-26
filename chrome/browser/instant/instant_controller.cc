@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/google/google_util.h"
@@ -199,13 +200,15 @@ bool InstantController::Update(const AutocompleteMatch& match,
   if (!extended_enabled_ && !instant_enabled_)
     return false;
 
-  DVLOG(1) << "Update: " << AutocompleteMatch::TypeToString(match.type)
-           << " user_text='" << user_text << "' full_text='" << full_text << "'"
-           << " selection_start=" << selection_start << " selection_end="
-           << selection_end << " verbatim=" << verbatim << " typing="
-           << user_input_in_progress << " popup=" << omnibox_popup_is_open
-           << " escape_pressed=" << escape_pressed << " is_keyword_search="
-           << is_keyword_search;
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "Update: %s user_text='%s' full_text='%s' selection_start=%d "
+      "selection_end=%d verbatim=%d typing=%d popup=%d escape_pressed=%d "
+      "is_keyword_search=%d",
+      AutocompleteMatch::TypeToString(match.type).c_str(),
+      UTF16ToUTF8(user_text).c_str(), UTF16ToUTF8(full_text).c_str(),
+      static_cast<int>(selection_start), static_cast<int>(selection_end),
+      verbatim, user_input_in_progress, omnibox_popup_is_open, escape_pressed,
+      is_keyword_search));
 
   // TODO(dhollowa): Complete keyword match UI.  For now just hide suggestions.
   // http://crbug.com/153932.  Note, this early escape is happens prior to the
@@ -455,6 +458,9 @@ void InstantController::HandleAutocompleteResults(
       results.push_back(result);
     }
   }
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "HandleAutocompleteResults: total_results=%d",
+      static_cast<int>(results.size())));
 
   if (instant_tab_)
     instant_tab_->SendAutocompleteResults(results);
@@ -491,9 +497,11 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   if (!extended_enabled_ && !instant_enabled_)
     return false;
 
-  DVLOG(1) << "CommitIfPossible: type=" << type << " last_omnibox_text_='"
-           << last_omnibox_text_ << "' last_match_was_search_="
-           << last_match_was_search_ << " instant_tab_=" << instant_tab_;
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "CommitIfPossible: type=%d last_omnibox_text_='%s' "
+      "last_match_was_search_=%d instant_tab_=%d", type,
+      UTF16ToUTF8(last_omnibox_text_).c_str(), last_match_was_search_,
+      instant_tab_ != NULL));
 
   // If we are on an already committed search results page, send a submit event
   // to the page, but otherwise, nothing else to do.
@@ -625,6 +633,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   // user interaction.
   EnsureLoaderIsCurrent();
 
+  LOG_INSTANT_DEBUG_EVENT(this, "Committed");
   return true;
 }
 
@@ -632,8 +641,9 @@ void InstantController::OmniboxFocusChanged(
     OmniboxFocusState state,
     OmniboxFocusChangeReason reason,
     gfx::NativeView view_gaining_focus) {
-  DVLOG(1) << "OmniboxFocusChanged: " << omnibox_focus_state_ << " to "
-           << state << " for reason " << reason;
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "OmniboxFocusChanged: %d to %d for reason %d", omnibox_focus_state_,
+      state, reason));
 
   OmniboxFocusState old_focus_state = omnibox_focus_state_;
   omnibox_focus_state_ = state;
@@ -667,9 +677,9 @@ void InstantController::SearchModeChanged(
   if (!extended_enabled_)
     return;
 
-  DVLOG(1) << "SearchModeChanged: [origin:mode] " << old_mode.origin << ":"
-           << old_mode.mode << " to " << new_mode.origin << ":"
-           << new_mode.mode;
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "SearchModeChanged: [origin:mode] %d:%d to %d:%d", old_mode.origin,
+      old_mode.mode, new_mode.origin, new_mode.mode));
 
   search_mode_ = new_mode;
   if (!new_mode.is_search_suggestions())
@@ -685,7 +695,7 @@ void InstantController::ActiveTabChanged() {
   if (!extended_enabled_ && !instant_enabled_)
     return;
 
-  DVLOG(1) << "ActiveTabChanged";
+  LOG_INSTANT_DEBUG_EVENT(this, "ActiveTabChanged");
 
   // When switching tabs, always hide the preview, except if it's showing NTP
   // content, and the new tab is also an NTP.
@@ -697,13 +707,14 @@ void InstantController::ActiveTabChanged() {
 }
 
 void InstantController::TabDeactivated(content::WebContents* contents) {
-  DVLOG(1) << "TabDeactivated";
+  LOG_INSTANT_DEBUG_EVENT(this, "TabDeactivated");
   if (extended_enabled_ && !contents->IsBeingDestroyed())
     CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 void InstantController::SetInstantEnabled(bool instant_enabled) {
-  DVLOG(1) << "SetInstantEnabled: " << instant_enabled;
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "SetInstantEnabled: %d", instant_enabled));
   instant_enabled_ = instant_enabled;
   HideInternal();
   loader_.reset();
@@ -732,7 +743,7 @@ void InstantController::ThemeAreaHeightChanged(int height) {
 void InstantController::SetSuggestions(
     const content::WebContents* contents,
     const std::vector<InstantSuggestion>& suggestions) {
-  DVLOG(1) << "SetSuggestions";
+  LOG_INSTANT_DEBUG_EVENT(this, "SetSuggestions");
 
   // Ignore if the message is from an unexpected source.
   if (instant_tab_) {
@@ -769,8 +780,9 @@ void InstantController::SetSuggestions(
     last_omnibox_text_ = suggestion.text;
     last_suggestion_ = InstantSuggestion();
     last_match_was_search_ = suggestion.type == INSTANT_SUGGESTION_SEARCH;
-    DVLOG(1) << "SetReplaceSuggestion: text='" << suggestion.text << "'"
-             << " type=" << suggestion.type;
+    LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+        "ReplaceSuggestion text='%s' type=%d",
+        UTF16ToUTF8(suggestion.text).c_str(), suggestion.type));
     browser_->SetInstantSuggestion(suggestion);
   } else {
     bool is_valid_suggestion = true;
@@ -809,9 +821,9 @@ void InstantController::SetSuggestions(
 
     if (is_valid_suggestion) {
       last_suggestion_ = suggestion;
-      DVLOG(1) << "SetInstantSuggestion: text='" << suggestion.text << "'"
-               << " behavior=" << suggestion.behavior << " type="
-               << suggestion.type;
+      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+          "SetInstantSuggestion: text='%s' behavior=%d",
+          UTF16ToUTF8(suggestion.text).c_str(), suggestion.behavior));
       browser_->SetInstantSuggestion(suggestion);
     } else {
       last_suggestion_ = InstantSuggestion();
@@ -826,6 +838,9 @@ void InstantController::SetSuggestions(
 void InstantController::InstantSupportDetermined(
     const content::WebContents* contents,
     bool supports_instant) {
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "InstantSupportDetermined: supports_instant= %d", supports_instant));
+
   if (instant_tab_ && instant_tab_->contents() == contents) {
     if (!supports_instant)
       MessageLoop::current()->DeleteSoon(FROM_HERE, instant_tab_.release());
@@ -953,11 +968,24 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
 
 void InstantController::NavigateToURL(const GURL& url,
                                       content::PageTransition transition) {
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "NavigateToURL: url='%s'", url.spec().c_str()));
+
   if (!extended_enabled_)
     return;
   if (loader_)
     HideLoader();
   browser_->OpenURLInCurrentTab(url, transition);
+}
+
+void InstantController::LogDebugEvent(const std::string& info) {
+  DVLOG(1) << info;
+
+  debug_events_.push_front(std::make_pair(
+      base::Time::Now().ToInternalValue(), info));
+  static const size_t kMaxDebugEventSize = 2000;
+  if (debug_events_.size() > kMaxDebugEventSize)
+    debug_events_.pop_back();
 }
 
 bool InstantController::EnsureLoaderIsCurrent() {
@@ -986,6 +1014,8 @@ void InstantController::CreateLoader(const std::string& instant_url,
   HideInternal();
   loader_.reset(new InstantLoader(this, instant_url));
   loader_->InitContents(active_tab);
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "CreateLoader: instant_url='%s'", instant_url.c_str()));
 
   // Ensure the searchbox API has the correct initial state.
   if (extended_enabled_) {
@@ -1043,7 +1073,7 @@ void InstantController::HideLoader() {
 }
 
 void InstantController::HideInternal() {
-  DVLOG(1) << "Hide";
+  LOG_INSTANT_DEBUG_EVENT(this, "Hide");
 
   // If GetPreviewContents() returns NULL, either we're already in the desired
   // MODE_DEFAULT state, or we're in the commit path. For the latter, don't
@@ -1068,8 +1098,8 @@ void InstantController::ShowLoader(InstantShownReason reason,
   if (instant_tab_)
     return;
 
-  DVLOG(1) << "Show: reason=" << reason << " height=" << height << " units="
-           << units;
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "Show: reason=%d height=%d units=%d", reason, height, units));
 
   // Must be on NTP to show NTP content.
   if (reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT && !search_mode_.is_ntp())

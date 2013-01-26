@@ -150,6 +150,28 @@ var instantConfig = (function() {
     return false;
   }
 
+  /**
+   * Request debug info.
+   * The method is asynchronous, results being provided via getDebugInfoResult.
+   */
+  function getDebugInfo() {
+    chrome.send('getDebugInfo');
+  }
+
+  /**
+   * Handles callback from getDebugInfo.
+   * @param {Object} info The debug info.
+   */
+  function getDebugInfoResult(info) {
+    for (var i = 0; i < info.entries.length; ++i) {
+      var entry = info.entries[i];
+      var row = createElementWithClass('p', 'debug');
+      row.appendChild(createElementWithClass('span', 'timestamp')).textContent =
+          entry.time;
+      row.appendChild(document.createElement('span')).textContent = entry.text;
+      $('instant-debug-info').appendChild(row);
+    }
+  }
 
   function loadForm() {
     for (var i = 0; i < FIELDS.length; i++)
@@ -163,6 +185,7 @@ var instantConfig = (function() {
     buildForm();
     loadForm();
     initForm();
+    getDebugInfo();
 
     $('reset-button').onclick = onReset.bind(this);
     $('save-button').onclick = onSave.bind(this);
@@ -170,6 +193,7 @@ var instantConfig = (function() {
 
   return {
     initialize: initialize,
+    getDebugInfoResult: getDebugInfoResult,
     getPreferenceValueResult: getPreferenceValueResult
   };
 })();

@@ -13,7 +13,7 @@ namespace content {
 class BrowserContext;
 }
 
-// Provides configuration options for Instant web search.
+// Provides configuration options for Instant web search and shows debug info.
 class InstantUI : public content::WebUIController {
  public:
   // Constructs an instance using |web_ui| for its data sources and message

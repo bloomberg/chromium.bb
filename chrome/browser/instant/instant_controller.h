@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
 
+#include <list>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -38,6 +40,10 @@ class BrowserInstantController;
 namespace content {
 class WebContents;
 }
+
+// Macro used for logging debug events. |message| should be a std::string.
+#define LOG_INSTANT_DEBUG_EVENT(controller, message) \
+    controller->LogDebugEvent(message)
 
 // InstantController maintains a WebContents that is intended to give a preview
 // of search suggestions and results. InstantController is owned by Browser via
@@ -171,6 +177,15 @@ class InstantController {
   // Invoked by the InstantLoader when the instant page wants to navigate to
   // the speicfied URL.
   void NavigateToURL(const GURL& url, content::PageTransition transition);
+
+  // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
+  // |debug_events_| doesn't get too large.
+  void LogDebugEvent(const std::string& info);
+
+  // See comments for |debug_events_| below.
+  const std::list<std::pair<int64, std::string> >& debug_events() {
+    return debug_events_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
@@ -325,6 +340,9 @@ class InstantController {
   // preview is allowed to show search suggestions whenever |search_mode_| is
   // MODE_SEARCH_SUGGESTIONS, except in those cases where this is false.
   bool allow_preview_to_show_search_suggestions_;
+
+  // List of events and their timestamps, useful in debugging Instant behaviour.
+  std::list<std::pair<int64, std::string> > debug_events_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

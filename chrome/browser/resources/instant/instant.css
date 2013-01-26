@@ -35,3 +35,15 @@ img {
 .url {
   color: #a0a0a0;
 }
+
+.debug {
+  margin: 1px;
+}
+
+.debug span+span {
+  padding-left: 5px;
+}
+
+.timestamp {
+  color: blue;
+}
