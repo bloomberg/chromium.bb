@@ -86,6 +86,16 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
+     * Notifies that a load has finished for a given frame.
+     * @param frameId A positive, non-zero integer identifying the navigating frame.
+     * @param validatedUrl The validated URL that is being navigated to.
+     * @param isMainFrame Whether the load is happening for the main frame.
+     */
+    @CalledByNative
+    public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative

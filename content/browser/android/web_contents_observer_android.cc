@@ -156,6 +156,21 @@ void WebContentsObserverAndroid::DidStartProvisionalLoadForFrame(
       jstring_url.obj(), is_error_page, is_iframe_srcdoc);
 }
 
+void WebContentsObserverAndroid::DidFinishLoad(
+    int64 frame_id,
+    const GURL& validated_url,
+    bool is_main_frame,
+    RenderViewHost* render_view_host) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jstring> jstring_url(
+      ConvertUTF8ToJavaString(env, validated_url.spec()));
+  Java_WebContentsObserverAndroid_didFinishLoad(
+      env, obj.obj(), frame_id, jstring_url.obj(), is_main_frame);
+}
+
 void WebContentsObserverAndroid::DidFailLoadInternal(
     bool is_provisional_load,
     bool is_main_frame,
