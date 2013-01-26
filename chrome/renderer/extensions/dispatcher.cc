@@ -669,6 +669,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("systemIndicator",
                              IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("systemInfo.display",
+                             IDR_SYSTEM_INFO_DISPLAY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabCapture", IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);

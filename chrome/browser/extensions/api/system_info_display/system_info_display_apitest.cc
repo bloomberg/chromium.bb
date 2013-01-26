@@ -10,7 +10,8 @@
 
 namespace extensions {
 
-using api::experimental_system_info_display::DisplayUnitInfo;
+using api::system_info_display::Bounds;
+using api::system_info_display::DisplayUnitInfo;
 
 class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
@@ -19,20 +20,20 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     for (int i = 0; i < 2; i++) {
       linked_ptr<DisplayUnitInfo> unit(new DisplayUnitInfo());
       unit->id = "DISPLAY";
-      unit->index = i;
+      unit->name = "DISPLAY NAME";
       unit->is_primary = i == 0 ? true : false;
-      unit->avail_top = 0;
-      unit->avail_left = 0;
-      unit->avail_width = 960;
-      unit->avail_height = 720;
-      unit->color_depth = 32;
-      unit->pixel_depth = 32;
-      unit->height = 1280;
-      unit->width = 720;
-      unit->absolute_top_offset = 0;
-      unit->absolute_left_offset = 1280;
-      unit->dpi_x = 96;
-      unit->dpi_y = 96;
+      unit->is_internal = i == 0 ? true : false;
+      unit->is_enabled = true;
+      unit->dpi_x = 96.0;
+      unit->dpi_y = 96.0;
+      unit->bounds.left = 0;
+      unit->bounds.top = 0;
+      unit->bounds.width = 1280;
+      unit->bounds.height = 720;
+      unit->work_area.left = 0;
+      unit->work_area.top = 0;
+      unit->work_area.width = 960;
+      unit->work_area.height = 720;
       info->push_back(unit);
     }
     return true;

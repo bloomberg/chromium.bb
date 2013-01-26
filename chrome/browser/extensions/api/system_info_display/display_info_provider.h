@@ -6,16 +6,16 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_DISPLAY_DISPLAY_INFO_PROVIDER_H_
 
 #include "chrome/browser/extensions/system_info_provider.h"
-#include "chrome/common/extensions/api/experimental_system_info_display.h"
+#include "chrome/common/extensions/api/system_info_display.h"
 
 namespace extensions {
 
 typedef std::vector<linked_ptr<
-    api::experimental_system_info_display::DisplayUnitInfo> > DisplayInfo;
+    api::system_info_display::DisplayUnitInfo> > DisplayInfo;
 
 class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
  public:
-  static DisplayInfoProvider* Get();
+  static DisplayInfoProvider* GetDisplayInfo();
 
   // Overriden from SystemInfoProvider<DisplayInfo>.
   virtual bool QueryInfo(DisplayInfo* info) OVERRIDE;

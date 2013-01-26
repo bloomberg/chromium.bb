@@ -349,6 +349,7 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kSystemIndicator, "systemIndicator", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR,
       PermissionMessage::kSystemIndicator },
+    { APIPermission::kSystemInfoDisplay, "systemInfo.display" },
     { APIPermission::kPointerLock, "pointerLock" },
   };
 

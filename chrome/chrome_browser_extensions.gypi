@@ -367,6 +367,7 @@
         'browser/extensions/api/system_info_cpu/system_info_cpu_api.h',
         'browser/extensions/api/system_info_display/display_info_provider.cc',
         'browser/extensions/api/system_info_display/display_info_provider.h',
+        'browser/extensions/api/system_info_display/display_info_provider_chromeos.cc',
         'browser/extensions/api/system_info_display/display_info_provider_mac.cc',
         'browser/extensions/api/system_info_display/display_info_provider_win.cc',
         'browser/extensions/api/system_info_display/display_info_provider_x11.cc',

@@ -1,0 +1,50 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace systemInfo.display {
+
+  dictionary Bounds {
+    // The x-coordinate of the upper-left corner.
+    long left;
+    // The y-coordinate of the upper-left corner.
+    long top;
+    // The width of the display in pixels.
+    long width;
+    // The height of the display in pixels.
+    long height;
+  };
+
+  dictionary DisplayUnitInfo {
+    // The unique identifier of the display.
+    DOMString id;
+    // The user-friendly name (e.g. "HP LCD monitor").
+    DOMString name;
+    // True if this is the primary display.
+    boolean isPrimary;
+    // True if this is an internal display.
+    boolean isInternal;
+    // True if this display is enabled.
+    boolean isEnabled;
+    // The number of pixels per inch along the x-axis.
+    double dpiX;
+    // The number of pixels per inch along the y-axis.
+    double dpiY;
+    // The bounds of the display.
+    Bounds bounds;
+    // The usable work area of the display.
+    Bounds workArea;
+  };
+  
+  callback DisplayInfoCallback = void (DisplayUnitInfo[] displayInfo);
+
+  interface Functions {
+    // Get the information of all attached display devices.
+    static void getDisplayInfo(DisplayInfoCallback callback);
+  };
+  
+  interface Events {
+    // Fired when anything changes to the display configuration.
+    static void onDisplayChanged();
+  };
+};

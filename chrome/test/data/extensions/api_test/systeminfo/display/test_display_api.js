@@ -5,30 +5,29 @@
 // systeminfo.memory api test
 // browser_tests --gtest_filter=SystemInfoMemoryApiTest.*
 
-chrome.systemInfo = chrome.experimental.systemInfo;
-
 chrome.test.runTests([
   function testGet() {
     for(var i = 0; i < 10; ++i) {
-      chrome.systemInfo.display.get(chrome.test.callbackPass(function(result) {
-        chrome.test.assertEq(2, result.length);
-        for (var i = 0; i < result.length; i++) {
-          var info = result[i];
-          chrome.test.assertEq('DISPLAY', info.id);
-          chrome.test.assertEq(i, info.index);
-          chrome.test.assertEq(i == 0 ? true : false, info.isPrimary);
-          chrome.test.assertEq(0, info.availTop);
-          chrome.test.assertEq(0, info.availLeft);
-          chrome.test.assertEq(960, info.availWidth);
-          chrome.test.assertEq(720, info.availHeight);
-          chrome.test.assertEq(32, info.colorDepth);
-          chrome.test.assertEq(32, info.pixelDepth);
-          chrome.test.assertEq(1280, info.height);
-          chrome.test.assertEq(720, info.width);
-          chrome.test.assertEq(0, info.absoluteTopOffset);
-          chrome.test.assertEq(1280, info.absoluteLeftOffset);
-          chrome.test.assertEq(96, info.dpiX);
-          chrome.test.assertEq(96, info.dpiY);
+      chrome.systemInfo.display.getDisplayInfo(
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertEq(2, result.length);
+          for (var i = 0; i < result.length; i++) {
+            var info = result[i];
+            chrome.test.assertEq('DISPLAY', info.id);
+            chrome.test.assertEq('DISPLAY NAME', info.name);
+            chrome.test.assertEq(i == 0 ? true : false, info.isPrimary);
+            chrome.test.assertEq(i == 0 ? true : false, info.isInternal);
+            chrome.test.assertEq(true, info.isEnabled);
+            chrome.test.assertEq(96.0, info.dpiX);
+            chrome.test.assertEq(96.0, info.dpiY);
+            chrome.test.assertEq(0, info.bounds.left);
+            chrome.test.assertEq(0, info.bounds.top);
+            chrome.test.assertEq(1280, info.bounds.width);
+            chrome.test.assertEq(720, info.bounds.height);
+            chrome.test.assertEq(0, info.workArea.left);
+            chrome.test.assertEq(0, info.workArea.top);
+            chrome.test.assertEq(960, info.workArea.width);
+            chrome.test.assertEq(720, info.workArea.height);
         }
       }));
     }

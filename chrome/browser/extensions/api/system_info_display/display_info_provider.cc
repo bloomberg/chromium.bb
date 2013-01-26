@@ -7,7 +7,7 @@
 namespace extensions {
 
 // static
-DisplayInfoProvider* DisplayInfoProvider::Get() {
+DisplayInfoProvider* DisplayInfoProvider::GetDisplayInfo() {
   return DisplayInfoProvider::GetInstance<DisplayInfoProvider>();
 }
 

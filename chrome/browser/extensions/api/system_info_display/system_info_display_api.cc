@@ -6,21 +6,19 @@
 
 namespace extensions {
 
-using api::experimental_system_info_display::DisplayUnitInfo;
+using api::system_info_display::DisplayUnitInfo;
 
-bool SystemInfoDisplayGetFunction::RunImpl() {
-  DisplayInfoProvider::Get()->StartQueryInfo(
-      base::Bind(&SystemInfoDisplayGetFunction::OnGetDisplayInfoCompleted,
+bool SystemInfoDisplayGetDisplayInfoFunction::RunImpl() {
+  DisplayInfoProvider::GetDisplayInfo()->StartQueryInfo(
+      base::Bind(&SystemInfoDisplayGetDisplayInfoFunction::OnGetDisplayInfoCompleted,
                  this));
   return true;
 }
 
-void SystemInfoDisplayGetFunction::OnGetDisplayInfoCompleted(
+void SystemInfoDisplayGetDisplayInfoFunction::OnGetDisplayInfoCompleted(
     const DisplayInfo& info, bool success) {
-  if (success) {
-    results_ =
-      api::experimental_system_info_display::Get::Results::Create(info);
-  }
+  if (success)
+    results_ = api::system_info_display::GetDisplayInfo::Results::Create(info);
   else
     SetError("Error occurred when querying display information.");
   SendResponse(success);

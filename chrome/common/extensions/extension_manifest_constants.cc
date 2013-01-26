@@ -111,6 +111,7 @@ const char kShortcutKey[] = "shortcutKey";
 const char kSignature[] = "signature";
 const char kSuggestedKey[] = "suggested_key";
 const char kSystemIndicator[] = "system_indicator";
+const char kSystemInfoDisplay[] = "systemInfo.display";
 const char kTheme[] = "theme";
 const char kThemeColors[] = "colors";
 const char kThemeDisplayProperties[] = "properties";
