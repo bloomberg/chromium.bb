@@ -499,6 +499,7 @@
             'project_path': 'third_party/ffmpeg',
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
             'output_root': '<(SHARED_INTERMEDIATE_DIR)/ffmpeg',
+            'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)'
           },
           'sources': [
             '<(extra_header)',
