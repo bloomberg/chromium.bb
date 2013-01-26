@@ -280,9 +280,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
   }
 };
 
-// TODO(jcampan): http://crbug.com/26996 temporarily disabled because failing
-//                since we move to running the process
-VIEW_TEST(BookmarkBarViewTest1, DISABLED_Basic)
+VIEW_TEST(BookmarkBarViewTest1, Basic)
 
 // Brings up menu, clicks on empty space and make sure menu hides.
 class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
@@ -309,9 +307,14 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     gfx::Point mouse_loc;
     views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
     ui_controls::SendMouseMove(0, 0);
+
+    // As the click is on the desktop the hook never sees the up, so we only
+    // wait on the down. We still send the up though else the system thinks
+    // the mouse is still down.
     ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        ui_controls::LEFT, ui_controls::DOWN,
         CreateEventTask(this, &BookmarkBarViewTest2::Step3));
+    ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::UP);
   }
 
   void Step3() {
@@ -323,15 +326,11 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     views::TextButton* button = GetBookmarkButton(0);
     ASSERT_TRUE(button->state() == views::CustomButton::STATE_NORMAL);
 
-    window_->Activate();
-
     Done();
   }
 };
 
-// TODO(jcampan): http://crbug.com/26996 temporarily disabled because failing
-//                since we move to running the process
-VIEW_TEST(BookmarkBarViewTest2, DISABLED_HideOnDesktopClick)
+VIEW_TEST(BookmarkBarViewTest2, HideOnDesktopClick)
 
 // Brings up menu. Moves over child to make sure submenu appears, moves over
 // another child and make sure next menu appears.

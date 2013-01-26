@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -162,18 +163,8 @@ ViewEventTestBase::~ViewEventTestBase() {
 }
 
 void ViewEventTestBase::StartMessageLoopAndRunTest() {
-  window_->Show();
-  // Make sure the window is the foreground window, otherwise none of the
-  // mouse events are going to be targeted correctly.
-#if defined(OS_WIN)
-#if defined(USE_AURA)
-  HWND window =
-      window_->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget();
-#else
-  HWND window = window_->GetNativeWindow();
-#endif
-  SetForegroundWindow(window);
-#endif
+  ASSERT_TRUE(
+      ui_test_utils::ShowAndFocusNativeWindow(window_->GetNativeWindow()));
 
   // Flush any pending events to make sure we start with a clean slate.
   content::RunAllPendingInMessageLoop();
