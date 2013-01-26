@@ -399,8 +399,12 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   const bool is_keyword = (source == keyword_fetcher_.get());
+  // Ensure the request succeeded and that the provider used is still available.
+  // A verbatim match cannot be generated without this provider, causing errors.
   const bool request_succeeded =
-      source->GetStatus().is_success() && source->GetResponseCode() == 200;
+      source->GetStatus().is_success() && source->GetResponseCode() == 200 &&
+      ((is_keyword && providers_.GetKeywordProviderURL()) ||
+       (!is_keyword && providers_.GetDefaultProviderURL()));
 
   // Record response time for suggest requests sent to Google.  We care
   // only about the common case: the Google default provider used in
