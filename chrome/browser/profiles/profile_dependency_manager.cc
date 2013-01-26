@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
-#include "chrome/browser/extensions/api/session_restore/session_restore_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -283,7 +282,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
-  extensions::SessionRestoreAPI::GetFactoryInstance();
 #if defined(ENABLE_INPUT_SPEECH)
   extensions::SpeechInputAPI::GetFactoryInstance();
 #endif

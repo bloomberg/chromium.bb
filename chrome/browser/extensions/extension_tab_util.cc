@@ -27,7 +27,6 @@
 #include "googleurl/src/gurl.h"
 
 namespace keys = extensions::tabs_constants;
-namespace tabs = extensions::api::tabs;
 
 using content::NavigationEntry;
 using content::WebContents;
@@ -138,18 +137,6 @@ void ExtensionTabUtil::ScrubTabValueForExtension(const WebContents* contents,
     tab_info->Remove(keys::kUrlKey, NULL);
     tab_info->Remove(keys::kTitleKey, NULL);
     tab_info->Remove(keys::kFaviconUrlKey, NULL);
-  }
-}
-
-void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
-                                            tabs::Tab* tab) {
-  bool has_permission = extension && extension->HasAPIPermission(
-      APIPermission::kTab);
-
-  if (!has_permission) {
-    tab->url.reset();
-    tab->title.reset();
-    tab->fav_icon_url.reset();
   }
 }
 

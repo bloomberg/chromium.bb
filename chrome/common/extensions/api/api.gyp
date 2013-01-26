@@ -60,7 +60,6 @@
           'push_messaging.idl',
           'rtc_private.idl',
           'serial.idl',
-          'session_restore.json',
           'socket.idl',
           'storage.json',
           'sync_file_system.idl',

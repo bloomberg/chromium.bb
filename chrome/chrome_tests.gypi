@@ -1075,7 +1075,6 @@
         'browser/extensions/api/rtc_private/rtc_private_apitest.cc',
         'browser/extensions/api/runtime/runtime_apitest.cc',
         'browser/extensions/api/serial/serial_apitest.cc',
-        'browser/extensions/api/session_restore/session_restore_apitest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
         'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
         'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
