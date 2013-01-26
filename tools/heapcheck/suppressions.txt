@@ -1859,3 +1859,9 @@
    fun:AutofillPopupControllerUnitTest_GrowPopupInSpace_Test::AutofillPopupControllerUnitTest_GrowPopupInSpace_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_171983
+   Heapcheck:Leak
+   ...
+   fun:chromeos::MagnificationManagerTest_MagnificationObserver_Test::TestBody
+}
