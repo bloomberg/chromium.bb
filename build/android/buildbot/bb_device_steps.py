@@ -209,8 +209,8 @@ def RunWebkitLayoutTests(options):
                        options.factory_properties.get(flag)])
 
   for f in options.factory_properties.get('additional_expectations_files', []):
-    cmd_args.extend(['--additional-expectations-file',
-                     os.path.join(CHROME_SRC, *f)])
+    cmd_args.extend(
+        ['--additional-expectations=%s' % os.path.join(CHROME_SRC, *f)])
 
   RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] + cmd_args)
 
