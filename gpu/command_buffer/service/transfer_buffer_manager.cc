@@ -92,7 +92,7 @@ void TransferBufferManager::DestroyTransferBuffer(int32 id) {
   DCHECK(shared_memory_bytes_allocated_ >= it->second.size);
   shared_memory_bytes_allocated_ -= it->second.size;
   TRACE_COUNTER_ID1(
-      "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
+      "gpu", "GpuTransferBufferMemory", this, shared_memory_bytes_allocated_);
 
   delete it->second.shared_memory;
   registered_buffers_.erase(it);
