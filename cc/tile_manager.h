@@ -116,6 +116,7 @@ class CC_EXPORT TileManager {
       scoped_refptr<Tile> tile, skia::LazyPixelRef* pixel_ref);
   void OnImageDecodeTaskCompleted(
       scoped_refptr<Tile> tile, uint32_t pixel_ref_id);
+  bool CanDispatchRasterTask(Tile* tile);
   void DispatchOneRasterTask(scoped_refptr<Tile> tile);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
@@ -145,6 +146,7 @@ class CC_EXPORT TileManager {
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_set_pixels_;
+  int bytes_pending_set_pixels_;
 
   RenderingStats rendering_stats_;
 

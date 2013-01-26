@@ -18,6 +18,19 @@ namespace cc {
 
 namespace {
 
+// If we raster too fast we become upload bound, and pending
+// uploads consume memory. For maximum upload throughput, we would
+// want to allow for upload_throughput * pipeline_time of pending
+// uploads, after which we are just wasting memory. Since we don't
+// know our upload throughput yet, this just caps our memory usage.
+#if defined(OS_ANDROID)
+// For reference, the Nexus10 can upload 1MB in about 2.5ms.
+// Assuming a three frame deep pipeline this implies ~20MB.
+const int kMaxPendingUploadBytes = 20 * 1024 * 1024;
+#else
+const int kMaxPendingUploadBytes = 100 * 1024 * 1024;
+#endif
+
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 TileManagerBin BinFromTilePriority(const TilePriority& prio) {
@@ -78,7 +91,8 @@ TileManager::TileManager(
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads)),
       manage_tiles_pending_(false),
-      manage_tiles_call_count_(0) {
+      manage_tiles_call_count_(0),
+      bytes_pending_set_pixels_(0) {
 }
 
 TileManager::~TileManager() {
@@ -274,6 +288,8 @@ void TileManager::CheckForCompletedTileUploads() {
         tile->managed_state().resource->id());
 
     DidFinishTileInitialization(tile);
+
+    bytes_pending_set_pixels_ -= tile->bytes_consumed_if_allocated();
     tiles_with_pending_set_pixels_.pop();
   }
 }
@@ -367,16 +383,24 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
     resource_pool_->ReleaseResource(managed_tile_state.resource.Pass());
 }
 
+bool TileManager::CanDispatchRasterTask(Tile* tile) {
+  if (raster_worker_pool_->IsBusy())
+    return false;
+  int new_bytes_pending = bytes_pending_set_pixels_;
+  new_bytes_pending += tile->bytes_consumed_if_allocated();
+  return new_bytes_pending <= kMaxPendingUploadBytes;
+}
+
 void TileManager::DispatchMoreTasks() {
   // Because tiles in the image decoding list have higher priorities, we
   // need to process those tiles first before we start to handle the tiles
   // in the need_to_be_rasterized queue.
-  std::list<Tile*>::iterator it = tiles_with_image_decoding_tasks_.begin();
-  while (it != tiles_with_image_decoding_tasks_.end()) {
+  for(TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
+      it != tiles_with_image_decoding_tasks_.end(); ) {
     DispatchImageDecodeTasksForTile(*it);
     ManagedTileState& managed_state = (*it)->managed_state();
     if (managed_state.pending_pixel_refs.empty()) {
-      if (raster_worker_pool_->IsBusy())
+      if (!CanDispatchRasterTask(*it))
         return;
       DispatchOneRasterTask(*it);
       tiles_with_image_decoding_tasks_.erase(it++);
@@ -394,7 +418,7 @@ void TileManager::DispatchMoreTasks() {
     if (!managed_state.pending_pixel_refs.empty()) {
       tiles_with_image_decoding_tasks_.push_back(tile);
     } else {
-      if (raster_worker_pool_->IsBusy())
+      if (!CanDispatchRasterTask(tile))
         return;
       DispatchOneRasterTask(tile);
     }
@@ -539,6 +563,8 @@ void TileManager::OnRasterTaskCompleted(
     resource_pool_->resource_provider()->beginSetPixels(resource->id());
     resource_pool_->resource_provider()->shallowFlushIfSupported();
     managed_tile_state.resource = resource.Pass();
+
+    bytes_pending_set_pixels_ += tile->bytes_consumed_if_allocated();
     tiles_with_pending_set_pixels_.push(tile);
   } else {
     resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
