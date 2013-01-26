@@ -16,6 +16,9 @@ while [ $# -gt 0 ]; do
       checkout_branch=yes
       create_branch=yes
       ;;
+    --closest)
+      use_closest=yes
+      ;;
     --create)
       create_branch=yes
       ;;
@@ -36,6 +39,9 @@ while [ $# -gt 0 ]; do
       echo "Usage:"
       echo "  --checkout         Create a branch and check it out."
       echo "  --create           Create a branch."
+      echo "  --closest          Use closest git commit to the target svn revision."
+      echo "                       Otherwise --checkout may be required to create"
+      echo "                       a git commit for a specific svn revision."
       echo "  -n, --name <name>  Specify the name of branch to create or reset."
       echo "                       This will force the branch using 'git branch -f '."
       echo "  -q, --quiet        Quiet."
@@ -95,6 +101,12 @@ else
 EOF
     exit 1
   fi
+  closest_svn=`git svn find-rev ${closest_svn_commit}`
+fi
+
+if [ "${use_closest}" = "yes" ]; then
+  svn_lkgr="${closest_svn}"
+  git_lkgr="${closest_svn_commit}"
 fi
 
 # Determine lkgr_branch:
@@ -136,10 +148,11 @@ elif [ "${quiet}" = "yes" ]; then
   exit 1
 elif [ "${checkout_branch}" = "no" ]; then
   echo "There is no master commit which corresponds exactly to svn revision ${svn_lkgr}."
-  if [ -n "$closest_commit" ]; then
-    echo "The closest commit is ${closest_commit}."
-  fi
   echo "Call 'git lkgr --checkout' to create a branch with a commit to match ${svn_lkgr}."
+  if [ -n "$closest_commit" ]; then
+    echo "The closest commit is r${closest_svn}, ${closest_commit}."
+    echo "Use the --closest option to use the closest instead of the target revision."
+  fi
   exit 0
 fi
 
