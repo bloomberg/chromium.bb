@@ -23,14 +23,6 @@ Status DomTracker::GetFrameIdForNode(
   return Status(kOk);
 }
 
-Status DomTracker::GetContextIdForFrame(
-    const std::string& frame_id, int* context_id) {
-  if (frame_to_context_map_.count(frame_id) == 0)
-    return Status(kUnknownError, "frame does not have execution context");
-  *context_id = frame_to_context_map_[frame_id];
-  return Status(kOk);
-}
-
 void DomTracker::OnEvent(const std::string& method,
                          const base::DictionaryValue& params) {
   if (method == "DOM.setChildNodes") {
@@ -44,26 +36,8 @@ void DomTracker::OnEvent(const std::string& method,
       base::JSONWriter::Write(nodes, &json);
       LOG(ERROR) << "DOM.setChildNodes has invalid 'nodes': " << json;
     }
-  } else if (method == "Runtime.executionContextCreated") {
-    const base::DictionaryValue* context;
-    if (!params.GetDictionary("context", &context)) {
-      LOG(ERROR) << "Runtime.executionContextCreated missing dict 'context'";
-      return;
-    }
-    int context_id;
-    std::string frame_id;
-    if (!context->GetInteger("id", &context_id) ||
-        !context->GetString("frameId", &frame_id)) {
-      std::string json;
-      base::JSONWriter::Write(context, &json);
-      LOG(ERROR) << "Runtime.executionContextCreated has invalid 'context': "
-                 << json;
-      return;
-    }
-    frame_to_context_map_.insert(std::make_pair(frame_id, context_id));
   } else if (method == "DOM.documentUpdated") {
     node_to_frame_map_.clear();
-    frame_to_context_map_.clear();
   }
 }
 

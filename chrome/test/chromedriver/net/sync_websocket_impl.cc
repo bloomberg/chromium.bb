@@ -31,6 +31,10 @@ bool SyncWebSocketImpl::ReceiveNextMessage(std::string* message) {
   return core_->ReceiveNextMessage(message);
 }
 
+bool SyncWebSocketImpl::HasNextMessage() {
+  return core_->HasNextMessage();
+}
+
 SyncWebSocketImpl::Core::Core(net::URLRequestContextGetter* context_getter)
     : context_getter_(context_getter),
       closed_(false),
@@ -66,6 +70,11 @@ bool SyncWebSocketImpl::Core::ReceiveNextMessage(std::string* message) {
   *message = received_queue_.front();
   received_queue_.pop_front();
   return true;
+}
+
+bool SyncWebSocketImpl::Core::HasNextMessage() {
+  base::AutoLock lock(lock_);
+  return !received_queue_.empty();
 }
 
 void SyncWebSocketImpl::Core::OnMessageReceived(const std::string& message) {

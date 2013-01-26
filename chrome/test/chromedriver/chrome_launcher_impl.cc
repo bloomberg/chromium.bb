@@ -11,11 +11,13 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_finder.h"
 #include "chrome/test/chromedriver/chrome_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/version.h"
 
 ChromeLauncherImpl::ChromeLauncherImpl(
     URLRequestContextGetter* context_getter,
@@ -44,7 +46,9 @@ Status ChromeLauncherImpl::Launch(
   if (!user_data_dir.CreateUniqueTempDir())
     return Status(kUnknownError, "cannot create temp dir for user data dir");
   command.AppendSwitchPath("user-data-dir", user_data_dir.path());
-  command.AppendArg("about:blank");
+  command.AppendArg(
+      base::StringPrintf("data:text/html;charset=utf-8,ChromeDriver v%s",
+                         kChromeDriverVersion));
 
   base::LaunchOptions options;
   base::ProcessHandle process;

@@ -88,6 +88,12 @@ class Chrome {
 
   // Quits Chrome.
   virtual Status Quit() = 0;
+
+  // Waits until all pending navigations have completed in the given frame.
+  virtual Status WaitForPendingNavigations(const std::string& frame_id) = 0;
+
+  // Returns the frame id for the main frame.
+  virtual Status GetMainFrame(std::string* out_frame) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_H_

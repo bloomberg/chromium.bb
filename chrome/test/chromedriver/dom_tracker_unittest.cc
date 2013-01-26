@@ -32,22 +32,3 @@ TEST(DomTracker, GetFrameIdForNode) {
   tracker.OnEvent("DOM.documentUpdated", params);
   ASSERT_TRUE(tracker.GetFrameIdForNode(102, &frame_id).IsError());
 }
-
-TEST(DomTracker, GetContextIdForFrame) {
-  DomTracker tracker;
-  int context_id = -1;
-  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsError());
-  ASSERT_EQ(-1, context_id);
-
-  const char context[] = "{\"id\":100,\"frameId\":\"f\"}";
-  base::DictionaryValue params;
-  params.Set("context", base::JSONReader::Read(context));
-  tracker.OnEvent("Runtime.executionContextCreated", params);
-  ASSERT_TRUE(tracker.GetContextIdForFrame("foo", &context_id).IsError());
-  ASSERT_EQ(-1, context_id);
-  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
-  ASSERT_EQ(100, context_id);
-
-  tracker.OnEvent("DOM.documentUpdated", params);
-  ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsError());
-}

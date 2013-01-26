@@ -38,6 +38,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
   virtual bool Connect(const GURL& url) OVERRIDE;
   virtual bool Send(const std::string& message) OVERRIDE;
   virtual bool ReceiveNextMessage(std::string* message) OVERRIDE;
+  virtual bool HasNextMessage() OVERRIDE;
 
  private:
   struct CoreTraits;
@@ -51,6 +52,8 @@ class SyncWebSocketImpl : public SyncWebSocket {
     bool Send(const std::string& message);
 
     bool ReceiveNextMessage(std::string* message);
+
+    bool HasNextMessage();
 
     // Overriden from WebSocketListener:
     virtual void OnMessageReceived(const std::string& message) OVERRIDE;

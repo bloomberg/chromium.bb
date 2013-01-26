@@ -96,6 +96,10 @@ class FakeDevToolsClient : public DevToolsClient {
     return Status(kOk);
   }
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {}
+  virtual Status HandleEventsUntil(
+      const ConditionalFunc& conditional_func) OVERRIDE {
+    return Status(kOk);
+  }
 
  private:
   Status status_;

@@ -31,6 +31,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "no such session";
     case kChromeNotReachable:
       return "chrome not reachable";
+    case kDisconnected:
+      return "disconnected";
     default:
       return "<unknown>";
   }

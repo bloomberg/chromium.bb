@@ -21,6 +21,7 @@ enum StatusCode {
   // Chrome-specific status codes.
   kNoSuchSession = 100,
   kChromeNotReachable,
+  kDisconnected,
 };
 
 // Represents a WebDriver status, which may be an error or ok.

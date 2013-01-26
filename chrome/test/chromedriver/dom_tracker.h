@@ -26,7 +26,6 @@ class DomTracker : public DevToolsEventListener {
   virtual ~DomTracker();
 
   Status GetFrameIdForNode(int node_id, std::string* frame_id);
-  Status GetContextIdForFrame(const std::string& frame_id, int* context_id);
 
   // Overridden from DevToolsEventListener:
   virtual void OnEvent(const std::string& method,
@@ -36,10 +35,7 @@ class DomTracker : public DevToolsEventListener {
   bool ProcessNodeList(const base::Value* nodes);
   bool ProcessNode(const base::Value* node);
 
-  typedef std::map<int, std::string> NodeToFrameMap;
-  typedef std::map<std::string, int> FrameToContextMap;
-  NodeToFrameMap node_to_frame_map_;
-  FrameToContextMap frame_to_context_map_;
+  std::map<int, std::string> node_to_frame_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DomTracker);
 };

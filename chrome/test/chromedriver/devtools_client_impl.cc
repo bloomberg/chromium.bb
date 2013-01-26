@@ -72,13 +72,30 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
   listeners_.push_back(listener);
 }
 
+Status DevToolsClientImpl::HandleEventsUntil(
+    const ConditionalFunc& conditional_func) {
+  internal::InspectorMessageType type;
+  internal::InspectorEvent event;
+  internal::InspectorCommandResponse response;
+
+  while (socket_->HasNextMessage() || !conditional_func.Run()) {
+    Status status = ReceiveNextMessage(-1, &type, &event, &response);
+    if (status.IsError()) {
+      return status;
+    } else if (type == internal::kCommandResponseMessageType) {
+      return Status(kUnknownError, "unexpected command message");
+    }
+  }
+  return Status(kOk);
+}
+
 Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
     scoped_ptr<base::DictionaryValue>* result) {
   if (!connected_) {
     if (!socket_->Connect(url_))
-      return Status(kUnknownError, "unable to connect to renderer");
+      return Status(kDisconnected, "unable to connect to renderer");
     connected_ = true;
   }
 
@@ -89,22 +106,25 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.Set("params", params.DeepCopy());
   std::string message;
   base::JSONWriter::Write(&command, &message);
-  if (!socket_->Send(message))
-    return Status(kUnknownError, "unable to send message to renderer");
+  if (!socket_->Send(message)) {
+    connected_ = false;
+    return Status(kDisconnected, "unable to send message to renderer");
+  }
 
-  scoped_ptr<base::DictionaryValue> response_dict;
+  return ReceiveCommandResponse(command_id, result);
+}
+
+Status DevToolsClientImpl::ReceiveCommandResponse(
+    int command_id,
+    scoped_ptr<base::DictionaryValue>* result) {
+  internal::InspectorMessageType type;
+  internal::InspectorEvent event;
+  internal::InspectorCommandResponse response;
   while (true) {
-    std::string message;
-    if (!socket_->ReceiveNextMessage(&message))
-      return Status(kUnknownError, "unable to receive message from renderer");
-    internal::InspectorMessageType type;
-    internal::InspectorEvent event;
-    internal::InspectorCommandResponse response;
-    if (!parser_func_.Run(message, command_id, &type, &event, &response))
-      return Status(kUnknownError, "bad inspector message: " + message);
-    if (type == internal::kEventMessageType) {
-      NotifyEventListeners(event.method, *event.params);
-    } else {
+    Status status = ReceiveNextMessage(command_id, &type, &event, &response);
+    if (status.IsError()) {
+      return status;
+    } else if (type == internal::kCommandResponseMessageType) {
       if (response.id != command_id) {
         return Status(kUnknownError,
                       "received response for unknown command ID");
@@ -118,13 +138,36 @@ Status DevToolsClientImpl::SendCommandInternal(
   }
 }
 
-void DevToolsClientImpl::NotifyEventListeners(
+Status DevToolsClientImpl::ReceiveNextMessage(
+    int expected_id,
+    internal::InspectorMessageType* type,
+    internal::InspectorEvent* event,
+    internal::InspectorCommandResponse* response) {
+  std::string message;
+  if (!socket_->ReceiveNextMessage(&message)) {
+    connected_ = false;
+    return Status(kDisconnected,
+                  "unable to receive message from renderer");
+  }
+  if (!parser_func_.Run(message, expected_id, type, event, response))
+    return Status(kUnknownError, "bad inspector message: " + message);
+  if (*type == internal::kEventMessageType)
+    return NotifyEventListeners(event->method, *event->params);
+  return Status(kOk);
+}
+
+Status DevToolsClientImpl::NotifyEventListeners(
     const std::string& method,
     const base::DictionaryValue& params) {
   for (std::list<DevToolsEventListener*>::iterator iter = listeners_.begin();
        iter != listeners_.end(); ++iter) {
     (*iter)->OnEvent(method, params);
   }
+  if (method == "Inspector.detached") {
+    connected_ = false;
+    return Status(kDisconnected, "received Inspector.detached event");
+  }
+  return Status(kOk);
 }
 
 namespace internal {

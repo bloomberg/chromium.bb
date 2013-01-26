@@ -23,7 +23,7 @@ namespace {
 
 class MockSyncWebSocket : public SyncWebSocket {
  public:
-  MockSyncWebSocket() : connected_(false), id_(-1) {}
+  MockSyncWebSocket() : connected_(false), id_(-1), queued_messages_(1) {}
   virtual ~MockSyncWebSocket() {}
 
   virtual bool Connect(const GURL& url) OVERRIDE {
@@ -60,12 +60,18 @@ class MockSyncWebSocket : public SyncWebSocket {
     result.SetInteger("param", 1);
     response.Set("result", result.DeepCopy());
     base::JSONWriter::Write(&response, message);
+    --queued_messages_;
     return true;
+  }
+
+  virtual bool HasNextMessage() OVERRIDE {
+    return queued_messages_ > 0;
   }
 
  private:
   bool connected_;
   int id_;
+  int queued_messages_;
 };
 
 template <typename T>
@@ -118,6 +124,10 @@ class MockSyncWebSocket2 : public SyncWebSocket {
     EXPECT_TRUE(false);
     return false;
   }
+
+  virtual bool HasNextMessage() OVERRIDE {
+    return true;
+  }
 };
 
 }  // namespace
@@ -149,6 +159,10 @@ class MockSyncWebSocket3 : public SyncWebSocket {
     EXPECT_TRUE(false);
     return false;
   }
+
+  virtual bool HasNextMessage() OVERRIDE {
+    return true;
+  }
 };
 
 }  // namespace
@@ -178,6 +192,10 @@ class MockSyncWebSocket4 : public SyncWebSocket {
 
   virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
     return false;
+  }
+
+  virtual bool HasNextMessage() OVERRIDE {
+    return true;
   }
 };
 
@@ -209,6 +227,10 @@ class FakeSyncWebSocket : public SyncWebSocket {
   }
 
   virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+    return true;
+  }
+
+  virtual bool HasNextMessage() OVERRIDE {
     return true;
   }
 
@@ -292,9 +314,8 @@ bool ReturnEventThenResponse(
   if (*first) {
     *type = internal::kEventMessageType;
     event->method = "method";
-    base::DictionaryValue params;
-    params.SetInteger("key", 1);
-    event->params.reset(params.DeepCopy());
+    event->params.reset(new base::DictionaryValue());
+    event->params->SetInteger("key", 1);
   } else {
     *type = internal::kCommandResponseMessageType;
     command_response->id = expected_id;
@@ -303,6 +324,32 @@ bool ReturnEventThenResponse(
     command_response->result.reset(params.DeepCopy());
   }
   *first = false;
+  return true;
+}
+
+bool ReturnEvent(
+    const std::string& message,
+    int expected_id,
+    internal::InspectorMessageType* type,
+    internal::InspectorEvent* event,
+    internal::InspectorCommandResponse* command_response) {
+  *type = internal::kEventMessageType;
+  event->method = "method";
+  event->params.reset(new base::DictionaryValue());
+  event->params->SetInteger("key", 1);
+  return true;
+}
+
+bool ReturnError(
+    const std::string& message,
+    int expected_id,
+    internal::InspectorMessageType* type,
+    internal::InspectorEvent* event,
+    internal::InspectorCommandResponse* command_response) {
+  return false;
+}
+
+bool AlwaysTrue() {
   return true;
 }
 
@@ -435,4 +482,33 @@ TEST(ParseInspectorMessage, Command) {
   int key;
   ASSERT_TRUE(response.result->GetInteger("key", &key));
   ASSERT_EQ(1, key);
+}
+
+TEST(DevToolsClientImpl, HandleEventsUntil) {
+  MockListener listener;
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
+      &ReturnEvent));
+  client.AddListener(&listener);
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
+  ASSERT_EQ(kOk, status.code());
+}
+
+TEST(DevToolsClientImpl, WaitForNextEventCommand) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
+      &ReturnCommand));
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
+  ASSERT_EQ(kUnknownError, status.code());
+}
+
+TEST(DevToolsClientImpl, WaitForNextEventError) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
+      &ReturnError));
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
+  ASSERT_EQ(kUnknownError, status.code());
 }

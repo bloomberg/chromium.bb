@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -29,6 +30,9 @@ class DevToolsClient {
       scoped_ptr<base::DictionaryValue>* result) = 0;
 
   virtual void AddListener(DevToolsEventListener* listener) = 0;
+
+  typedef base::Callback<bool()> ConditionalFunc;
+  virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_DEVTOOLS_CLIENT_H_

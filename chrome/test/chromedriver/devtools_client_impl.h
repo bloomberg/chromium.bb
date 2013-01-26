@@ -74,14 +74,24 @@ class DevToolsClientImpl : public DevToolsClient {
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE;
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE;
+  virtual Status HandleEventsUntil(
+      const ConditionalFunc& conditional_func) OVERRIDE;
 
  private:
   Status SendCommandInternal(
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result);
-  virtual void NotifyEventListeners(const std::string& method,
-                                    const base::DictionaryValue& params);
+  Status ReceiveCommandResponse(
+      int command_id,
+      scoped_ptr<base::DictionaryValue>* result);
+  Status ReceiveNextMessage(
+      int expected_id,
+      internal::InspectorMessageType* type,
+      internal::InspectorEvent* event,
+      internal::InspectorCommandResponse* response);
+  virtual Status NotifyEventListeners(const std::string& method,
+                                      const base::DictionaryValue& params);
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
   ParserFunc parser_func_;

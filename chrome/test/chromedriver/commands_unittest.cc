@@ -72,6 +72,14 @@ class StubChrome : public Chrome {
   virtual Status Quit() OVERRIDE {
     return Status(kOk);
   }
+  virtual Status WaitForPendingNavigations(
+      const std::string& frame_id) OVERRIDE {
+    return Status(kOk);
+  }
+  virtual Status GetMainFrame(
+      std::string* frame_id) OVERRIDE {
+    return Status(kOk);
+  }
 };
 
 class OkChrome : public StubChrome {

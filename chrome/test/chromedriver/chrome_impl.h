@@ -24,6 +24,8 @@ class Value;
 
 class DevToolsClient;
 class DomTracker;
+class FrameTracker;
+class NavigationTracker;
 class Status;
 class URLRequestContextGetter;
 
@@ -55,6 +57,9 @@ class ChromeImpl : public Chrome {
   virtual Status DispatchMouseEvents(
       const std::list<MouseEvent>& events) OVERRIDE;
   virtual Status Quit() OVERRIDE;
+  virtual Status WaitForPendingNavigations(
+      const std::string& frame_id) OVERRIDE;
+  virtual Status GetMainFrame(std::string* out_frame) OVERRIDE;
 
  private:
   base::ProcessHandle process_;
@@ -63,6 +68,8 @@ class ChromeImpl : public Chrome {
   int port_;
   SyncWebSocketFactory socket_factory_;
   scoped_ptr<DomTracker> dom_tracker_;
+  scoped_ptr<FrameTracker> frame_tracker_;
+  scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<DevToolsClient> client_;
 };
 
