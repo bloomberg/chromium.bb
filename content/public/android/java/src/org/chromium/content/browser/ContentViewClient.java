@@ -35,6 +35,13 @@ public class ContentViewClient {
     }
 
     /**
+     * Called whenever the background color of the page changes as notified by WebKit.
+     * @param color The new ARGB color of the page background.
+     */
+    public void onBackgroundColorChanged(int color) {
+    }
+
+    /**
       * Lets client listen on the scaling changes on delayed, throttled
       * and best-effort basis. Used for WebView.onScaleChanged.
       */

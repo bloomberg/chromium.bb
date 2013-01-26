@@ -742,6 +742,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
     }
 
+    @CalledByNative
+    private void onBackgroundColorChanged(int color) {
+        getContentViewClient().onBackgroundColorChanged(color);
+    }
+
     /**
      * Load url without fixing up the url string. Consumers of ContentView are responsible for
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left

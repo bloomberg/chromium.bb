@@ -238,6 +238,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         int composition_start, int composition_end,
                         bool show_ime_if_needed);
   void SetTitle(const string16& title);
+  void OnBackgroundColorChanged(SkColor color);
 
   bool HasFocus();
   void ConfirmTouchEvent(InputEventAckState ack_result);

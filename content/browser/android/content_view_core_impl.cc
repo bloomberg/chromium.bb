@@ -420,6 +420,14 @@ void ContentViewCoreImpl::SetTitle(const string16& title) {
   Java_ContentViewCore_setTitle(env, obj.obj(), jtitle.obj());
 }
 
+void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_onBackgroundColorChanged(env, obj.obj(), color);
+}
+
 void ContentViewCoreImpl::ShowSelectPopupMenu(
     const std::vector<WebMenuItem>& items, int selected_item, bool multiple) {
   JNIEnv* env = AttachCurrentThread();

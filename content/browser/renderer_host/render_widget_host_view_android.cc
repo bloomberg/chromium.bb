@@ -576,7 +576,12 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
 
 
 void RenderWidgetHostViewAndroid::SetCachedBackgroundColor(SkColor color) {
+  if (cached_background_color_ == color)
+    return;
+
   cached_background_color_ = color;
+  if (content_view_core_)
+    content_view_core_->OnBackgroundColorChanged(color);
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
