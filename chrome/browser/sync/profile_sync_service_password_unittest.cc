@@ -235,7 +235,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
         EXPECT_CALL(*components, CreatePasswordSyncComponents(_, _, _))
             .Times(0);
       }
-      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _)).
+      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going

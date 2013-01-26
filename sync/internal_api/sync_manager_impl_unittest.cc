@@ -2833,6 +2833,7 @@ TEST_F(SyncManagerTestWithMockScheduler, MAYBE_BasicConfiguration) {
   sync_manager_.ConfigureSyncer(
       reason,
       types_to_download,
+      ModelTypeSet(),
       new_routing_info,
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&ready_task_counter)),
@@ -2889,6 +2890,7 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   sync_manager_.ConfigureSyncer(
       reason,
       types_to_download,
+      ModelTypeSet(),
       new_routing_info,
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&ready_task_counter)),
@@ -2922,6 +2924,7 @@ TEST_F(SyncManagerTestWithMockScheduler, ConfigurationRetry) {
   sync_manager_.ConfigureSyncer(
       reason,
       types_to_download,
+      ModelTypeSet(),
       new_routing_info,
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&ready_task_counter)),
@@ -3033,7 +3036,8 @@ TEST_F(SyncManagerTest, MAYBE_PurgeDisabledTypes) {
 
   // Verify all the enabled types remain after cleanup, and all the disabled
   // types were purged.
-  sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(), enabled_types);
+  sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(), enabled_types,
+                                   ModelTypeSet());
   EXPECT_TRUE(enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
   EXPECT_TRUE(disabled_types.Equals(
       sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
@@ -3045,7 +3049,8 @@ TEST_F(SyncManagerTest, MAYBE_PurgeDisabledTypes) {
       Difference(ModelTypeSet::All(), disabled_types);
 
   // Verify only the non-disabled types remain after cleanup.
-  sync_manager_.PurgeDisabledTypes(enabled_types, new_enabled_types);
+  sync_manager_.PurgeDisabledTypes(enabled_types, new_enabled_types,
+                                   ModelTypeSet());
   EXPECT_TRUE(new_enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
   EXPECT_TRUE(disabled_types.Equals(
       sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));

@@ -1479,7 +1479,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
         factory_->CreateDataTypeManager(debug_info_listener_,
                                         backend_.get(),
                                         &data_type_controllers_,
-                                        this));
+                                        this,
+                                        &failed_datatypes_handler_));
 
     // We create the migrator at the same time.
     migrator_.reset(

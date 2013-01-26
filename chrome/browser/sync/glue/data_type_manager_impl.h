@@ -18,6 +18,8 @@
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/model_association_manager.h"
 
+class FailedDatatypesHandler;
+
 namespace syncer {
 class DataTypeDebugInfoListener;
 template <typename T> class WeakHandle;
@@ -36,7 +38,8 @@ class DataTypeManagerImpl : public DataTypeManager,
           debug_info_listener,
       BackendDataTypeConfigurer* configurer,
       const DataTypeController::TypeMap* controllers,
-      DataTypeManagerObserver* observer);
+      DataTypeManagerObserver* observer,
+      const FailedDatatypesHandler* failed_datatypes_handler);
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
@@ -88,6 +91,9 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void ConfigureImpl(TypeSet desired_types, syncer::ConfigureReason reason);
 
+  BackendDataTypeConfigurer::DataTypeConfigStateMap
+      BuildDataTypeConfigStateMap() const;
+
   BackendDataTypeConfigurer* configurer_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
@@ -122,6 +128,10 @@ class DataTypeManagerImpl : public DataTypeManager,
   // DataTypeManager must have only one observer -- the ProfileSyncService that
   // created it and manages its lifetime.
   DataTypeManagerObserver* const observer_;
+
+  // For querying failed data types (having unrecoverable error) when
+  // configuring backend.
+  const FailedDatatypesHandler* failed_datatypes_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };

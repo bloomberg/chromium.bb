@@ -248,11 +248,13 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
         debug_info_listener,
     SyncBackendHost* backend,
     const DataTypeController::TypeMap* controllers,
-    DataTypeManagerObserver* observer) {
+    DataTypeManagerObserver* observer,
+    const FailedDatatypesHandler* failed_datatypes_handler) {
   return new DataTypeManagerImpl(debug_info_listener,
                                  backend,
                                  controllers,
-                                 observer);
+                                 observer,
+                                 failed_datatypes_handler);
 }
 
 browser_sync::GenericChangeProcessor*

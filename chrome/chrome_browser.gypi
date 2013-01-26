@@ -1910,6 +1910,7 @@
         'browser/sync/glue/autofill_data_type_controller.h',
         'browser/sync/glue/autofill_profile_data_type_controller.cc',
         'browser/sync/glue/autofill_profile_data_type_controller.h',
+        'browser/sync/glue/backend_data_type_configurer.cc',
         'browser/sync/glue/backend_data_type_configurer.h',
         'browser/sync/glue/bookmark_change_processor.cc',
         'browser/sync/glue/bookmark_change_processor.h',

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_BACKEND_DATA_TYPE_CONFIGURER_H_
 #define CHROME_BROWSER_SYNC_GLUE_BACKEND_DATA_TYPE_CONFIGURER_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -16,7 +18,15 @@ namespace browser_sync {
 // removed data types.
 class BackendDataTypeConfigurer {
  public:
-  // Configures the given set of types to add and remove.
+  enum DataTypeConfigState {
+    ENABLED,   // Actively being synced.
+    DISABLED,  // Not syncing. Disabled by user.
+    FAILED,    // Not syncing due to unrecoverable error.
+  };
+  typedef std::map<syncer::ModelType, DataTypeConfigState>
+      DataTypeConfigStateMap;
+
+  // Configures sync for data types in config_state_map according to the states.
   // |ready_task| is called on the same thread as ConfigureDataTypes
   // is called when configuration is done with the set of data types
   // that failed configuration (i.e., configuration succeeded iff that
@@ -29,10 +39,18 @@ class BackendDataTypeConfigurer {
   // Nigori.
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,
-      syncer::ModelTypeSet types_to_add,
-      syncer::ModelTypeSet types_to_remove,
+      const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) = 0;
+
+  // Return model types in |state_map| that match |state|.
+  static syncer::ModelTypeSet GetDataTypesInState(
+      DataTypeConfigState state, const DataTypeConfigStateMap& state_map);
+
+  // Set state of |types| in |state_map| to |state|.
+  static void SetDataTypesState(DataTypeConfigState state,
+                                syncer::ModelTypeSet types,
+                                DataTypeConfigStateMap* state_map);
 
  protected:
   virtual ~BackendDataTypeConfigurer() {}

@@ -274,7 +274,7 @@ class ProfileSyncServiceSessionTest
     EXPECT_CALL(*factory, CreateSessionSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
             model_associator_, change_processor_)));
-    EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
+    EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _, _)).
         WillOnce(ReturnNewDataTypeManager());
 
     TokenServiceFactory::GetForProfile(profile())->IssueAuthTokenForTest(

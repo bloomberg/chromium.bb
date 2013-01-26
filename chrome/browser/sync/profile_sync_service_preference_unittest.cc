@@ -65,7 +65,8 @@ ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
       debug_listener,
       arg1,
       arg2,
-      arg3);
+      arg3,
+      arg4);
 }
 
 // TODO(zea): Refactor to remove the ProfileSyncService usage.
@@ -161,7 +162,7 @@ class ProfileSyncServicePreferenceTest
     EXPECT_CALL(*components, GetSyncableServiceForType(syncer::PREFERENCES)).
         WillOnce(Return(pref_sync_service_->AsWeakPtr()));
 
-    EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _)).
+    EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
         WillOnce(ReturnNewDataTypeManagerWithDebugListener(
                      syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
     dtc_ = new UIDataTypeController(syncer::PREFERENCES,

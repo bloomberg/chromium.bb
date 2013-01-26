@@ -16,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager_observer.h"
@@ -30,7 +31,8 @@ DataTypeManagerImpl::DataTypeManagerImpl(
         debug_info_listener,
     BackendDataTypeConfigurer* configurer,
     const DataTypeController::TypeMap* controllers,
-    DataTypeManagerObserver* observer)
+    DataTypeManagerObserver* observer,
+    const FailedDatatypesHandler* failed_datatypes_handler)
     : configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -40,7 +42,8 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       model_association_manager_(debug_info_listener,
                                  controllers,
                                  ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      observer_(observer) {
+      observer_(observer),
+      failed_datatypes_handler_(failed_datatypes_handler) {
   DCHECK(configurer_);
   DCHECK(observer_);
 }
@@ -95,6 +98,33 @@ void DataTypeManagerImpl::ConfigureImpl(
   Restart(reason);
 }
 
+BackendDataTypeConfigurer::DataTypeConfigStateMap
+DataTypeManagerImpl::BuildDataTypeConfigStateMap() const {
+  // In three steps:
+  // 1. Add last_requested_types_ as ENABLED.
+  // 2. Set other types as DISABLED.
+  // 3. Overwrite state of failed types according to failed_datatypes_handler_.
+  BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::ENABLED, last_requested_types_,
+      &config_state_map);
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::DISABLED,
+      syncer::Difference(syncer::UserTypes(), last_requested_types_),
+      &config_state_map);
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::DISABLED,
+      syncer::Difference(syncer::ControlTypes(), last_requested_types_),
+      &config_state_map);
+  if (failed_datatypes_handler_) {
+    BackendDataTypeConfigurer::SetDataTypesState(
+        BackendDataTypeConfigurer::FAILED,
+        failed_datatypes_handler_->GetFailedTypes(),
+        &config_state_map);
+  }
+  return config_state_map;
+}
+
 void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   DVLOG(1) << "Restarting...";
   model_association_manager_.Initialize(last_requested_types_);
@@ -112,23 +142,9 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   // Tell the backend about the new set of data types we wish to sync.
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
-  syncer::ModelTypeSet all_types;
-  for (DataTypeController::TypeMap::const_iterator it =
-           controllers_->begin(); it != controllers_->end(); ++it) {
-    all_types.Put(it->first);
-  }
-  // These have no controller.  We must add them manually.
-  all_types.PutAll(syncer::ControlTypes());
-  const syncer::ModelTypeSet types_to_add = last_requested_types_;
-  // Check that types_to_add \subseteq all_types.
-  DCHECK(all_types.HasAll(types_to_add));
-  // Set types_to_remove to all_types \setminus types_to_add.
-  const syncer::ModelTypeSet types_to_remove =
-      Difference(all_types, types_to_add);
   configurer_->ConfigureDataTypes(
       reason,
-      types_to_add,
-      types_to_remove,
+      BuildDataTypeConfigStateMap(),
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DataTypeManagerImpl::OnDownloadRetry,

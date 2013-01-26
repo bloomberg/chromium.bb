@@ -104,6 +104,7 @@ void SyncBackendHostForProfileSyncTest::UpdateCredentials(
 void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet types_to_config,
+    syncer::ModelTypeSet failed_types,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {

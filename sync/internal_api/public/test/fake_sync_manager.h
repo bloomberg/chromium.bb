@@ -105,6 +105,7 @@ class FakeSyncManager : public SyncManager {
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       ModelTypeSet types_to_config,
+      ModelTypeSet failed_types,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;

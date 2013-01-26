@@ -209,11 +209,17 @@ class SyncBackendHostTest : public testing::Test {
   // Synchronously configures the backend's datatypes.
   void ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
                           syncer::ModelTypeSet types_to_remove) {
+    BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
+    BackendDataTypeConfigurer::SetDataTypesState(
+        BackendDataTypeConfigurer::ENABLED, types_to_add,  &config_state_map);
+    BackendDataTypeConfigurer::SetDataTypesState(
+        BackendDataTypeConfigurer::DISABLED,
+        types_to_remove, &config_state_map);
+
     types_to_add.PutAll(syncer::ControlTypes());
     backend_->ConfigureDataTypes(
         syncer::CONFIGURE_REASON_RECONFIGURATION,
-        types_to_add,
-        types_to_remove,
+        config_state_map,
         base::Bind(&SyncBackendHostTest::DownloadReady,
                    base::Unretained(this)),
         base::Bind(&SyncBackendHostTest::OnDownloadRetry,

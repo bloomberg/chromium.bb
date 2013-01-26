@@ -41,6 +41,7 @@
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/nigori_util.h"
+#include "sync/syncable/syncable_delete_journal.h"
 #include "sync/syncable/syncable_read_transaction.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
@@ -1041,7 +1042,8 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
     parent2.Put(syncable::ID, pref_node_id);
   }
 
-  directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES));
+  directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES),
+                                      ModelTypeSet());
 
   SyncShareNudge();
   ASSERT_EQ(2U, mock_server_->committed_ids().size());
@@ -1076,7 +1078,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
   }
 
   directory()->PurgeEntriesWithTypeIn(
-      ModelTypeSet(BOOKMARKS));
+      ModelTypeSet(BOOKMARKS), ModelTypeSet());
 
   SyncShareNudge();
   directory()->SaveChanges();
@@ -1084,6 +1086,48 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
     syncable::ReadTransaction rt(FROM_HERE, directory());
     Entry entry(&rt, syncable::GET_BY_ID, parent_id_);
     ASSERT_FALSE(entry.good());
+  }
+}
+
+TEST_F(SyncerTest, TestPurgeWithJournal) {
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
+    MutableEntry parent(&wtrans, syncable::CREATE, BOOKMARKS, wtrans.root_id(),
+                        "Pete");
+    ASSERT_TRUE(parent.good());
+    parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
+    parent.Put(syncable::BASE_VERSION, 1);
+    parent.Put(syncable::ID, parent_id_);
+    MutableEntry child(&wtrans, syncable::CREATE, BOOKMARKS, parent_id_,
+                       "Pete");
+    ASSERT_TRUE(child.good());
+    child.Put(syncable::ID, child_id_);
+    child.Put(syncable::BASE_VERSION, 1);
+    WriteTestDataToEntry(&wtrans, &child);
+
+    MutableEntry parent2(&wtrans, syncable::CREATE, PREFERENCES,
+                         wtrans.root_id(), "Tim");
+    ASSERT_TRUE(parent2.good());
+    parent2.Put(syncable::IS_DIR, true);
+    parent2.Put(syncable::SPECIFICS, DefaultPreferencesSpecifics());
+    parent2.Put(syncable::BASE_VERSION, 1);
+    parent2.Put(syncable::ID, TestIdFactory::MakeServer("Tim"));
+  }
+
+  directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES, BOOKMARKS),
+                                      ModelTypeSet(BOOKMARKS));
+  {
+    // Verify bookmark nodes are saved in delete journal but not preference
+    // node.
+    syncable::ReadTransaction rt(FROM_HERE, directory());
+    syncable::DeleteJournal* delete_journal = directory()->delete_journal();
+    EXPECT_EQ(2u, delete_journal->GetDeleteJournalSize(&rt));
+    syncable::EntryKernelSet journal_entries;
+    directory()->delete_journal()->GetDeleteJournals(&rt, BOOKMARKS,
+                                                     &journal_entries);
+    EXPECT_EQ(parent_id_, (*journal_entries.begin())->ref(syncable::ID));
+    EXPECT_EQ(child_id_, (*journal_entries.rbegin())->ref(syncable::ID));
   }
 }
 

@@ -203,6 +203,7 @@ class SyncBackendHost::Core
   void DoConfigureSyncer(
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet types_to_config,
+      syncer::ModelTypeSet failed_types,
       const syncer::ModelSafeRoutingInfo routing_info,
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback);
@@ -654,8 +655,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
 void SyncBackendHost::ConfigureDataTypes(
     syncer::ConfigureReason reason,
-    syncer::ModelTypeSet types_to_add,
-    syncer::ModelTypeSet types_to_remove,
+    const DataTypeConfigStateMap& config_state_map,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
     const base::Callback<void()>& retry_callback) {
   // Only one configure is allowed at a time.  This is guaranteed by our
@@ -682,7 +682,9 @@ void SyncBackendHost::ConfigureDataTypes(
   // until they succeed or the backend is shut down.
 
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
-      types_to_add, types_to_remove);
+      GetDataTypesInState(ENABLED, config_state_map),
+      syncer::Union(GetDataTypesInState(DISABLED, config_state_map),
+                    GetDataTypesInState(FAILED, config_state_map)));
   if (!types_to_download.Empty())
     types_to_download.Put(syncer::NIGORI);
 
@@ -719,6 +721,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // need for GetKey as part of the SyncManager::ConfigureSyncer logic.
   RequestConfigureSyncer(reason,
                          types_to_download,
+                         GetDataTypesInState(FAILED, config_state_map),
                          routing_info,
                          ready_task,
                          retry_callback);
@@ -799,6 +802,7 @@ void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
 void SyncBackendHost::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet types_to_config,
+    syncer::ModelTypeSet failed_types,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
@@ -807,6 +811,7 @@ void SyncBackendHost::RequestConfigureSyncer(
                   core_.get(),
                   reason,
                   types_to_config,
+                  failed_types,
                   routing_info,
                   ready_task,
                   retry_callback));
@@ -933,6 +938,7 @@ void SyncBackendHost::Core::DoDownloadControlTypes() {
   sync_manager_->ConfigureSyncer(
       syncer::CONFIGURE_REASON_NEW_CLIENT,
       new_control_types,
+      syncer::ModelTypeSet(),
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoInitialProcessControlTypes,
                  this),
@@ -1335,6 +1341,7 @@ void SyncBackendHost::Core::DoDestroySyncManager() {
 void SyncBackendHost::Core::DoConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet types_to_config,
+    syncer::ModelTypeSet failed_types,
     const syncer::ModelSafeRoutingInfo routing_info,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
@@ -1342,6 +1349,7 @@ void SyncBackendHost::Core::DoConfigureSyncer(
   sync_manager_->ConfigureSyncer(
       reason,
       types_to_config,
+      failed_types,
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoFinishConfigureDataTypes,
                  this,

@@ -561,7 +561,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
   }
 
   ModelTypeSet to_purge(BOOKMARKS);
-  dir_->PurgeEntriesWithTypeIn(to_purge);
+  dir_->PurgeEntriesWithTypeIn(to_purge, ModelTypeSet());
 
   Directory::SaveChangesSnapshot snapshot1;
   base::AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
@@ -570,7 +570,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
 
   to_purge.Clear();
   to_purge.Put(PREFERENCES);
-  dir_->PurgeEntriesWithTypeIn(to_purge);
+  dir_->PurgeEntriesWithTypeIn(to_purge, ModelTypeSet());
 
   dir_->HandleSaveChangesFailure(snapshot1);
 
@@ -1738,7 +1738,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
     ASSERT_EQ(10U, all_set.size());
   }
 
-  dir_->PurgeEntriesWithTypeIn(types_to_purge);
+  dir_->PurgeEntriesWithTypeIn(types_to_purge, ModelTypeSet());
 
   // We first query the in-memory data, and then reload the directory (without
   // saving) to verify that disk does not still have the data.
@@ -1999,7 +1999,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   ASSERT_TRUE(dir_->good());
 
   ModelTypeSet set(BOOKMARKS);
-  dir_->PurgeEntriesWithTypeIn(set);
+  dir_->PurgeEntriesWithTypeIn(set, ModelTypeSet());
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
   ASSERT_FALSE(dir_->SaveChanges());
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));

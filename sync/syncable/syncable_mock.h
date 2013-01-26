@@ -28,7 +28,7 @@ class MockDirectory : public Directory {
   MOCK_METHOD1(GetEntryByClientTag,
                syncable::EntryKernel*(const std::string&));
 
-  MOCK_METHOD1(PurgeEntriesWithTypeIn, bool(ModelTypeSet));
+  MOCK_METHOD2(PurgeEntriesWithTypeIn, bool(ModelTypeSet, ModelTypeSet));
 
  private:
   syncable::NullDirectoryChangeDelegate delegate_;

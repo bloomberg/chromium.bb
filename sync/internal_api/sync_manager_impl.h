@@ -101,6 +101,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       ModelTypeSet types_to_config,
+      ModelTypeSet failed_types,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
@@ -238,7 +239,8 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // Purge those types from |previously_enabled_types| that are no longer
   // enabled in |currently_enabled_types|.
   bool PurgeDisabledTypes(ModelTypeSet previously_enabled_types,
-                          ModelTypeSet currently_enabled_types);
+                          ModelTypeSet currently_enabled_types,
+                          ModelTypeSet failed_types);
 
   void RequestNudgeForDataTypes(
       const tracked_objects::Location& nudge_location,

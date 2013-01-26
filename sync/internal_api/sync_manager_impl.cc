@@ -297,6 +297,7 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet types_to_config,
+    ModelTypeSet failed_types,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
@@ -309,7 +310,8 @@ void SyncManagerImpl::ConfigureSyncer(
   if (!session_context_->routing_info().empty())
     previous_types = GetRoutingInfoTypes(session_context_->routing_info());
   if (!PurgeDisabledTypes(previous_types,
-                          GetRoutingInfoTypes(new_routing_info))) {
+                          GetRoutingInfoTypes(new_routing_info),
+                          failed_types)) {
     // We failed to cleanup the types. Invoke the ready task without actually
     // configuring any types. The caller should detect this as a configuration
     // failure and act appropriately.
@@ -578,12 +580,14 @@ bool SyncManagerImpl::PurgePartiallySyncedTypes() {
                        partially_synced_types.Size());
   if (partially_synced_types.Empty())
     return true;
-  return directory()->PurgeEntriesWithTypeIn(partially_synced_types);
+  return directory()->PurgeEntriesWithTypeIn(partially_synced_types,
+                                             ModelTypeSet());
 }
 
 bool SyncManagerImpl::PurgeDisabledTypes(
     ModelTypeSet previously_enabled_types,
-    ModelTypeSet currently_enabled_types) {
+    ModelTypeSet currently_enabled_types,
+    ModelTypeSet failed_types) {
   ModelTypeSet disabled_types = Difference(previously_enabled_types,
                                            currently_enabled_types);
   if (disabled_types.Empty())
@@ -591,7 +595,7 @@ bool SyncManagerImpl::PurgeDisabledTypes(
 
   DVLOG(1) << "Purging disabled types "
            << ModelTypeSetToString(disabled_types);
-  return directory()->PurgeEntriesWithTypeIn(disabled_types);
+  return directory()->PurgeEntriesWithTypeIn(disabled_types, failed_types);
 }
 
 void SyncManagerImpl::UpdateCredentials(
