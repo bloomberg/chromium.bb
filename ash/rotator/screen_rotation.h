@@ -32,10 +32,15 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
  public:
   // The screen rotation does not own the view or the listener, and these
   // objects are required to outlive the Screen rotation object.
-  ScreenRotation(int degrees);
+  // |delegate| is usually a layer.
+  ScreenRotation(int degrees, ui::LayerAnimationDelegate* delegate);
   virtual ~ScreenRotation();
 
  private:
+  // Generates the intermediate transformation matrices used during the
+  // animation.
+  void InitTransform(ui::LayerAnimationDelegate* delegate);
+
   // Implementation of ui::LayerAnimationDelegate
   virtual void OnStart(ui::LayerAnimationDelegate* delegate) OVERRIDE;
   virtual bool OnProgress(double t,
@@ -46,8 +51,6 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   static const ui::LayerAnimationElement::AnimatableProperties&
       GetProperties();
 
-  // Generates the intermediate transformation matrices used during the
-  // animation.
   scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
 
   // The number of degrees to rotate.

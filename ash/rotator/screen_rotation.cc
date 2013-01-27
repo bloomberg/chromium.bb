@@ -31,19 +31,24 @@ base::TimeDelta GetTransitionDuration(int degrees) {
 
 }  // namespace
 
-ScreenRotation::ScreenRotation(int degrees)
+ScreenRotation::ScreenRotation(int degrees,
+                               ui::LayerAnimationDelegate* delegate)
     : ui::LayerAnimationElement(GetProperties(),
                                 GetTransitionDuration(degrees)),
       degrees_(degrees) {
+  InitTransform(delegate);
 }
 
 ScreenRotation::~ScreenRotation() {
 }
 
-void ScreenRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
-  // No rotation required.
-  if (degrees_ == 0)
+void ScreenRotation::InitTransform(ui::LayerAnimationDelegate* delegate) {
+  // No rotation required, use the identity transform.
+  if (degrees_ == 0) {
+    interpolated_transform_.reset(
+        new ui::InterpolatedConstantTransform(gfx::Transform()));
     return;
+  }
 
   const gfx::Transform& current_transform =
       delegate->GetTransformForAnimation();
@@ -99,6 +104,9 @@ void ScreenRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
   translation->SetChild(scale_up.release());
   rotation->SetChild(translation.release());
   interpolated_transform_->SetChild(rotation.release());
+}
+
+void ScreenRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
 }
 
 bool ScreenRotation::OnProgress(double t,
