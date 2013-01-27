@@ -292,6 +292,8 @@ void TileManager::CheckForCompletedTileUploads() {
     bytes_pending_set_pixels_ -= tile->bytes_consumed_if_allocated();
     tiles_with_pending_set_pixels_.pop();
   }
+
+  DispatchMoreTasks();
 }
 
 void TileManager::GetRenderingStats(RenderingStats* stats) {
