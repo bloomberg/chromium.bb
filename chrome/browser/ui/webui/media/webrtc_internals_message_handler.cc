@@ -21,6 +21,14 @@ WebRTCInternalsMessageHandler::~WebRTCInternalsMessageHandler() {
 }
 
 void WebRTCInternalsMessageHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("getAllUpdates",
+      base::Bind(&WebRTCInternalsMessageHandler::OnGetAllUpdates,
+                 base::Unretained(this)));
+}
+
+void WebRTCInternalsMessageHandler::OnGetAllUpdates(
+    const base::ListValue* list) {
+  ChromeWebRTCInternals::GetInstance()->SendAllUpdates();
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,

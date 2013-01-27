@@ -22,6 +22,8 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
                         OnAddPeerConnection)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_RemovePeerConnection,
                         OnRemovePeerConnection)
+    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_UpdatePeerConnection,
+                        OnUpdatePeerConnection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -55,6 +57,15 @@ void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
 
   GetContentClient()->browser()->GetWebRTCInternals()->
       RemovePeerConnection(base::GetProcId(peer_handle()), lid);
+}
+
+void PeerConnectionTrackerHost::OnUpdatePeerConnection(
+    int lid, const std::string& type, const std::string& value) {
+  if (!GetContentClient()->browser()->GetWebRTCInternals())
+    return;
+
+  GetContentClient()->browser()->GetWebRTCInternals()->
+      UpdatePeerConnection(base::GetProcId(peer_handle()), lid, type, value);
 }
 
 }  // namespace content

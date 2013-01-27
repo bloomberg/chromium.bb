@@ -27,10 +27,17 @@ class ChromeWebRTCInternals : public content::WebRTCInternals {
                                  const std::string& servers,
                                  const std::string& constraints) OVERRIDE;
   virtual void RemovePeerConnection(base::ProcessId pid, int lid) OVERRIDE;
+  virtual void UpdatePeerConnection(base::ProcessId pid,
+                                    int lid,
+                                    const std::string& type,
+                                    const std::string& value) OVERRIDE;
 
   // Methods for adding or removing WebRTCInternalsUIObserver.
   void AddObserver(WebRTCInternalsUIObserver *observer);
   void RemoveObserver(WebRTCInternalsUIObserver *observer);
+
+  // Sends all update data to the observers.
+  void SendAllUpdates();
 
  private:
   friend struct DefaultSingletonTraits<ChromeWebRTCInternals>;
@@ -41,6 +48,19 @@ class ChromeWebRTCInternals : public content::WebRTCInternals {
   void SendUpdate(const std::string& command, base::Value* value);
 
   ObserverList<WebRTCInternalsUIObserver> observers_;
+
+  // |peer_connection_data_| is a list containing all the PeerConnection
+  // updates.
+  // Each item of the list represents the data for one PeerConnection, which
+  // contains these fields:
+  // "pid" -- processId of the renderer that creates the PeerConnection.
+  // "lid" -- local Id assigned to the PeerConnection.
+  // "url" -- url of the web page that created the PeerConnection.
+  // "servers" and "constraints" -- server configuration and media constraints
+  // used to initialize the PeerConnection respectively.
+  // "log" -- a ListValue contains all the updates for the PeerConnection. Each
+  // list item is a DictionaryValue containing "type" and "value", both of which
+  // are strings.
   base::ListValue peer_connection_data_;
 };
 

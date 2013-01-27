@@ -9,6 +9,10 @@
 #include "chrome/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 // This class handles messages to and from WebRTCInternalsUI.
 // It delegates all its work to WebRTCInternalsProxy on the IO thread.
 class WebRTCInternalsMessageHandler : public content::WebUIMessageHandler,
@@ -23,6 +27,9 @@ class WebRTCInternalsMessageHandler : public content::WebUIMessageHandler,
   // WebRTCInternalsUIObserver override.
   virtual void OnUpdate(const std::string& command,
                         const base::Value* args) OVERRIDE;
+
+  // Javascript message handler.
+  void OnGetAllUpdates(const base::ListValue* list);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);

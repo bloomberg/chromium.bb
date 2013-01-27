@@ -26,6 +26,14 @@ class WebRTCInternals {
   // This method is called when PeerConnection is destroyed.
   // |pid| is the renderer process id, |lid| is the renderer local id.
   virtual void RemovePeerConnection(base::ProcessId pid, int lid) = 0;
+
+  // This method is called when a PeerConnection is updated.
+  // |pid| is the renderer process id, |lid| is the renderer local id,
+  // |type| is the update type, |value| is the detail of the update.
+  virtual void UpdatePeerConnection(base::ProcessId pid,
+                                    int lid,
+                                    const std::string& type,
+                                    const std::string& value) = 0;
 };
 
 }  // namespace content
