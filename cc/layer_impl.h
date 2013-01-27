@@ -107,6 +107,8 @@ public:
     virtual RenderPass::Id firstContributingRenderPassId() const;
     virtual RenderPass::Id nextContributingRenderPassId(RenderPass::Id) const;
 
+    virtual void updateTilePriorities() { }
+
     virtual ScrollbarLayerImpl* toScrollbarLayer();
 
     // Returns true if this layer has content to draw.
@@ -278,7 +280,6 @@ public:
 
     virtual Region visibleContentOpaqueRegion() const;
 
-    virtual void didUpdateTransforms() { }
     virtual void didBecomeActive();
 
     // Indicates that the surface previously used to render this layer

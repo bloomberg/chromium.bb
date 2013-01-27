@@ -22,7 +22,7 @@ public:
     static gfx::Rect calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform&);
 
     static void calculateDrawProperties(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
-    static void calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static void calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList, bool updateTilePriorities);
 
     // Performs hit testing for a given renderSurfaceLayerList.
     static LayerImpl* findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, const std::vector<LayerImpl*>& renderSurfaceLayerList);
@@ -32,6 +32,8 @@ public:
     static bool layerHasTouchEventHandlersAt(const gfx::PointF& screenSpacePoint, LayerImpl* layerImpl);
 
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
+
+    template<class Function, typename LayerType> static void callFunctionForSubtree(LayerType* rootLayer);
 
     // Returns a layer with the given id if one exists in the subtree starting
     // from the given root layer (including mask and replica layers).
@@ -92,6 +94,23 @@ LayerType* LayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int lay
             return found;
     }
     return 0;
+}
+
+template<class Function, typename LayerType>
+void LayerTreeHostCommon::callFunctionForSubtree(LayerType* rootLayer)
+{
+    Function()(rootLayer);
+   
+    if (LayerType* maskLayer = rootLayer->maskLayer())
+        Function()(maskLayer);
+    if (LayerType* replicaLayer = rootLayer->replicaLayer()) {
+        Function()(replicaLayer);
+        if (LayerType* maskLayer = replicaLayer->maskLayer())
+            Function()(maskLayer);
+    }
+
+    for (size_t i = 0; i < rootLayer->children().size(); ++i)
+        callFunctionForSubtree<Function>(getChildAsRawPtr(rootLayer->children(), i));
 }
 
 }  // namespace cc

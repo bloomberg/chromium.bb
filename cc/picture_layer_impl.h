@@ -34,7 +34,7 @@ public:
   virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
   virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-  virtual void didUpdateTransforms() OVERRIDE;
+  virtual void updateTilePriorities() OVERRIDE;
   virtual void didBecomeActive() OVERRIDE;
   virtual void didLoseOutputSurface() OVERRIDE;
   virtual void calculateContentsScale(
@@ -76,8 +76,9 @@ protected:
   scoped_refptr<PicturePileImpl> pile_;
   Region invalidation_;
 
+  int last_source_frame_number_;
   gfx::Transform last_screen_space_transform_;
-  double last_update_time_;
+  double last_impl_frame_time_;
   gfx::Size last_bounds_;
   gfx::Size last_content_bounds_;
   float last_content_scale_;

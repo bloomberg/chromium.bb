@@ -121,9 +121,19 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   root_scroll_layer_->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }
 
-void LayerTreeImpl::UpdateDrawProperties() {
-  if (!needs_update_draw_properties_)
+struct UpdateTilePrioritiesForLayer {
+  void operator()(LayerImpl *layer) {
+    layer->updateTilePriorities();
+  }
+};
+
+void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
+  if (!needs_update_draw_properties_) {
+    if (reason == UPDATE_ACTIVE_TREE_FOR_DRAW && RootLayer())
+      LayerTreeHostCommon::callFunctionForSubtree<UpdateTilePrioritiesForLayer>(
+          RootLayer());
     return;
+  }
 
   needs_update_draw_properties_ = false;
   render_surface_layer_list_.clear();
@@ -144,6 +154,9 @@ void LayerTreeImpl::UpdateDrawProperties() {
 
   {
     TRACE_EVENT1("cc", "LayerTreeImpl::UpdateDrawProperties", "IsActive", IsActiveTree());
+    bool update_tile_priorities =
+        reason == UPDATE_PENDING_TREE ||
+        reason == UPDATE_ACTIVE_TREE_FOR_DRAW;
     LayerTreeHostCommon::calculateDrawProperties(
         RootLayer(),
         device_viewport_size(),
@@ -151,7 +164,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
         pinch_zoom_viewport().total_page_scale_factor(),
         MaxTextureSize(),
         settings().canUseLCDText,
-        render_surface_layer_list_);
+        render_surface_layer_list_,
+        update_tile_priorities);
   }
 
   DCHECK(!needs_update_draw_properties_) <<

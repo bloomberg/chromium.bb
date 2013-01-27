@@ -235,22 +235,19 @@ static inline bool subtreeShouldBeSkipped(Layer* layer)
 // Called on each layer that could be drawn after all information from
 // calcDrawProperties has been updated on that layer.  May have some false
 // positives (e.g. layers get this called on them but don't actually get drawn).
-static inline void markLayerAsUpdated(LayerImpl* layer)
+static inline void updateTilePrioritiesForLayer(LayerImpl* layer)
 {
-    layer->didUpdateTransforms();
+    layer->updateTilePriorities();
 
     // Mask layers don't get this call, so explicitly update them so they can
     // kick off tile rasterization.
     if (layer->maskLayer())
-        layer->maskLayer()->didUpdateTransforms();
-    if (layer->replicaLayer()) {
-        layer->replicaLayer()->didUpdateTransforms();
-        if (layer->replicaLayer()->maskLayer())
-            layer->replicaLayer()->maskLayer()->didUpdateTransforms();
-    }
+        layer->maskLayer()->updateTilePriorities();
+    if (layer->replicaLayer() && layer->replicaLayer()->maskLayer())
+      layer->replicaLayer()->maskLayer()->updateTilePriorities();
 }
 
-static inline void markLayerAsUpdated(Layer* layer)
+static inline void updateTilePrioritiesForLayer(Layer* layer)
 {
 }
 
@@ -534,7 +531,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     const gfx::Rect& clipRectFromAncestor, const gfx::Rect& clipRectFromAncestorInDescendantSpace, bool ancestorClipsSubtree,
     RenderSurfaceType* nearestAncestorThatMovesPixels, LayerList& renderSurfaceLayerList, LayerList& layerList,
     LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, bool subtreeCanUseLCDText,
-    gfx::Rect& drawableContentRectOfSubtree)
+    gfx::Rect& drawableContentRectOfSubtree, bool updateTilePriorities)
 {
     // This function computes the new matrix transformations recursively for this
     // layer and all its descendants. It also computes the appropriate render surfaces.
@@ -880,7 +877,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         calculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType>(child, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
                                                                                  clipRectForSubtree, clipRectForSubtreeInDescendantSpace, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
                                                                                  renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor,
-                                                                                 subtreeCanUseLCDText, drawableContentRectOfChildSubtree);
+                                                                                 subtreeCanUseLCDText, drawableContentRectOfChildSubtree, updateTilePriorities);
         if (!drawableContentRectOfChildSubtree.IsEmpty()) {
             accumulatedDrawableContentRectOfChildren.Union(drawableContentRectOfChildSubtree);
             if (child->renderSurface())
@@ -980,7 +977,8 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         }
     }
 
-    markLayerAsUpdated(layer);
+    if (updateTilePriorities)
+        updateTilePrioritiesForLayer(layer);
 
     // If neither this layer nor any of its children were added, early out.
     if (sortingStartIndex == descendants.size())
@@ -1012,6 +1010,7 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
     // The root layer's renderSurface should receive the deviceViewport as the initial clipRect.
     bool subtreeShouldBeClipped = true;
     gfx::Rect deviceViewportRect(gfx::Point(), deviceViewportSize);
+    bool updateTilePriorities = false;
 
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
@@ -1021,7 +1020,8 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, 0, maxTextureSize,
-        deviceScaleFactor, pageScaleFactor, canUseLCDText, totalDrawableContentRect);
+        deviceScaleFactor, pageScaleFactor, canUseLCDText, totalDrawableContentRect,
+        updateTilePriorities);
 
     // The dummy layer list should not have been used.
     DCHECK(dummyLayerList.size() == 0);
@@ -1029,7 +1029,7 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
     DCHECK(rootLayer->renderSurface());
 }
 
-void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList)
+void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList, bool updateTilePriorities)
 {
     gfx::Rect totalDrawableContentRect;
     gfx::Transform identityMatrix;
@@ -1050,7 +1050,8 @@ void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gf
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, &layerSorter, maxTextureSize,
-        deviceScaleFactor, pageScaleFactor, canUseLCDText, totalDrawableContentRect);
+        deviceScaleFactor, pageScaleFactor, canUseLCDText, totalDrawableContentRect,
+        updateTilePriorities);
 
     // The dummy layer list should not have been used.
     DCHECK(dummyLayerList.size() == 0);

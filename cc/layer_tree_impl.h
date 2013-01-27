@@ -112,8 +112,14 @@ class CC_EXPORT LayerTreeImpl {
     has_transparent_background_ = transparent;
   }
 
+  enum UpdateDrawPropertiesReason {
+    UPDATE_PENDING_TREE,
+    UPDATE_ACTIVE_TREE,
+    UPDATE_ACTIVE_TREE_FOR_DRAW
+  };
+
   // Updates draw properties and render surface layer list
-  void UpdateDrawProperties();
+  void UpdateDrawProperties(UpdateDrawPropertiesReason reason);
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;
   }

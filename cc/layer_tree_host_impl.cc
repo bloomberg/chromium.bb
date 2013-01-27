@@ -193,7 +193,7 @@ void LayerTreeHostImpl::commitComplete()
     // more lazily when needed prior to drawing.
     if (m_settings.implSidePainting) {
         pendingTree()->set_needs_update_draw_properties();
-        pendingTree()->UpdateDrawProperties();
+        pendingTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
     } else {
         activeTree()->set_needs_update_draw_properties();
     }
@@ -650,7 +650,7 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
 
     if (m_topControlsManager)
         m_topControlsManager->UpdateDrawPositions();
-    activeTree()->UpdateDrawProperties();
+    activeTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_ACTIVE_TREE_FOR_DRAW);
 
     frame.renderSurfaceLayerList = &activeTree()->RenderSurfaceLayerList();
     frame.renderPasses.clear();
@@ -934,7 +934,7 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
     if (!pendingTree())
         return;
 
-    pendingTree()->UpdateDrawProperties();
+    pendingTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
 
     // It's always fine to activate to an empty tree.  Otherwise, only
     // activate once all visible resources in pending tree are ready.
@@ -1161,7 +1161,7 @@ void LayerTreeHostImpl::setNeedsRedraw()
 
 bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
 {
-    activeTree()->UpdateDrawProperties();
+    activeTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_ACTIVE_TREE);
     return activeTree()->RenderSurfaceLayerList().size();
 }
 

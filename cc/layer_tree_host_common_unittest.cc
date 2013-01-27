@@ -70,7 +70,7 @@ void executeCalculateDrawProperties(LayerImpl* rootLayer, float deviceScaleFacto
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
     DCHECK(!rootLayer->bounds().IsEmpty());
-    LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, canUseLCDText, dummyRenderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, canUseLCDText, dummyRenderSurfaceLayerList, false);
 }
 
 scoped_ptr<LayerImpl> createTreeForFixedPositionTests(LayerTreeHostImpl* hostImpl)
@@ -2916,7 +2916,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2965,7 +2965,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3019,7 +3019,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3066,7 +3066,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3122,7 +3122,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3187,7 +3187,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
@@ -3251,7 +3251,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3341,7 +3341,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     // The grandChild is expected to create a renderSurface because it masksToBounds and is not axis aligned.
@@ -3423,7 +3423,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3503,7 +3503,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_TRUE(child1);
@@ -3611,7 +3611,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_TRUE(child1);
@@ -3697,7 +3697,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3763,7 +3763,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibl
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3819,7 +3819,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSinglePosit
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3891,7 +3891,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
@@ -3967,7 +3967,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     pageScaleTransform.Scale(pageScaleFactor, pageScaleFactor);
     root->setImplTransform(pageScaleTransform); // Applying the pageScaleFactor through implTransform.
     gfx::Size scaledBoundsForRoot = gfx::ToCeiledSize(gfx::ScaleSize(root->bounds(), deviceScaleFactor * pageScaleFactor));
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), scaledBoundsForRoot, deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), scaledBoundsForRoot, deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
@@ -4051,7 +4051,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSimpleClipp
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
