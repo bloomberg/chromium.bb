@@ -20,8 +20,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   void Init(const FilePath& db_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!storage_);
-    TRACE_EVENT1("ValueStoreFrontend::Backend", "Init",
-                 "db_path", db_path.value().c_str());
+    TRACE_EVENT0("ValueStoreFrontend::Backend", "Init");
     db_path_ = db_path;
     storage_ = new LeveldbValueStore(db_path);
   }
