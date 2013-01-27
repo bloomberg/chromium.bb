@@ -567,6 +567,11 @@ void GpuChannel::HandleMessage() {
       return;
     }
 
+    if (stub && stub->IsPreempted()) {
+      OnScheduled();
+      return;
+    }
+
     scoped_ptr<IPC::Message> message(m);
     deferred_messages_.pop_front();
     bool message_processed = true;

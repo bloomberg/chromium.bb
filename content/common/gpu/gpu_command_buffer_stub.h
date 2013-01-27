@@ -97,6 +97,11 @@ class GpuCommandBufferStub
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
+  // If the command buffer is pre-empted and cannot process commands.
+  bool IsPreempted() const {
+    return scheduler_.get() && scheduler_->IsPreempted();
+  }
+
   // Whether there are commands in the buffer that haven't been processed.
   bool HasUnprocessedCommands();
 
