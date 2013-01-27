@@ -110,10 +110,20 @@ cr.define('ntp', function() {
     }
   };
 
+  function gotShouldShowApps(shouldShowApps) {
+    if (shouldShowApps != loadTimeData.getBoolean('showApps')) {
+      // TODO(jeremya): update the UI in-place instead of reloading.
+      window.location.reload();
+      return;
+    }
+  }
+
   /**
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function onLoad() {
+    // This will end up calling ntp.gotShouldShowApps.
+    chrome.send('getShouldShowApps');
     sectionsToWaitFor = loadTimeData.getBoolean('showApps') ? 2 : 1;
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
       sectionsToWaitFor++;
@@ -628,6 +638,7 @@ cr.define('ntp', function() {
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
     onLoad: onLoad,
+    gotShouldShowApps: gotShouldShowApps,
     leaveRearrangeMode: leaveRearrangeMode,
     logTimeToClick: logTimeToClick,
     NtpFollowAction: NtpFollowAction,

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -72,6 +73,9 @@ void NewTabPageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("logTimeToClick",
       base::Bind(&NewTabPageHandler::HandleLogTimeToClick,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getShouldShowApps",
+      base::Bind(&NewTabPageHandler::HandleGetShouldShowApps,
                  base::Unretained(this)));
 }
 
@@ -165,6 +169,17 @@ void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
   } else {
     NOTREACHED();
   }
+}
+
+void NewTabPageHandler::HandleGetShouldShowApps(const ListValue* args) {
+  extensions::UpdateIsAppLauncherEnabled(
+      base::Bind(&NewTabPageHandler::GotIsAppLauncherEnabled,
+                 AsWeakPtr()));
+}
+
+void NewTabPageHandler::GotIsAppLauncherEnabled(bool is_enabled) {
+  base::FundamentalValue should_show_apps(!is_enabled);
+  web_ui()->CallJavascriptFunction("ntp.gotShouldShowApps", should_show_apps);
 }
 
 // static

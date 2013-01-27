@@ -69,6 +69,7 @@ class NTPResourceCache : public content::NotificationObserver,
 #endif
 
   bool is_swipe_tracking_from_scroll_events_enabled_;
+  bool should_show_apps_page_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };
