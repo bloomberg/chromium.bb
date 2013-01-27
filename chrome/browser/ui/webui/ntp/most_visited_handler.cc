@@ -23,7 +23,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -72,16 +72,16 @@ void MostVisitedHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
-  ChromeURLDataManager::AddDataSource(profile, thumbnail_src);
+  content::URLDataSource::Add(profile, thumbnail_src);
 
 #if defined(OS_ANDROID)
   // Register chrome://touch-icon as a data source for touch icons or favicons.
-  ChromeURLDataManager::AddDataSource(profile,
-      new FaviconSource(profile, FaviconSource::ANY));
+  content::URLDataSource::Add(profile,
+                              new FaviconSource(profile, FaviconSource::ANY));
 #endif
   // Register chrome://favicon as a data source for favicons.
-  ChromeURLDataManager::AddDataSource(profile,
-      new FaviconSource(profile, FaviconSource::FAVICON));
+  content::URLDataSource::Add(
+      profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
   history::TopSites* ts = profile->GetTopSites();
   if (ts) {

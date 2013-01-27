@@ -35,7 +35,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -49,6 +48,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
@@ -114,7 +114,7 @@ void OffTheRecordProfileImpl::Init() {
 
   // Make the chrome//extension-icon/ resource available.
   ExtensionIconSource* icon_source = new ExtensionIconSource(profile_);
-  ChromeURLDataManager::AddDataSource(this, icon_source);
+  content::URLDataSource::Add(this, icon_source);
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(

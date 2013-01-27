@@ -18,8 +18,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -36,6 +34,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
@@ -147,8 +146,9 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
 
 // Appends the inspectable workers to the list of RenderViews, and sends the
 // response back to the webui system.
-void SendDescriptors(ListValue* rvh_list,
-                     const ChromeWebUIDataSource::GotDataCallback& callback) {
+void SendDescriptors(
+    ListValue* rvh_list,
+    const content::WebUIDataSource::GotDataCallback& callback) {
   std::vector<WorkerService::WorkerInfo> worker_info =
       WorkerService::GetInstance()->GetWorkers();
   for (size_t i = 0; i < worker_info.size(); ++i) {
@@ -171,7 +171,7 @@ void SendDescriptors(ListValue* rvh_list,
 
 bool HandleRequestCallback(
     const std::string& path,
-    const ChromeWebUIDataSource::GotDataCallback& callback) {
+    const content::WebUIDataSource::GotDataCallback& callback) {
   if (path != kDataFile)
     return false;
 
@@ -215,7 +215,7 @@ bool HandleRequestCallback(
 
 content::WebUIDataSource* CreateInspectUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIInspectHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIInspectHost);
   source->AddResourcePath("inspect.css", IDR_INSPECT_CSS);
   source->AddResourcePath("inspect.js", IDR_INSPECT_JS);
   source->SetDefaultResource(IDR_INSPECT_HTML);
@@ -362,8 +362,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new InspectMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreateInspectUIHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_CONNECTED,

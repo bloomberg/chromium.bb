@@ -27,7 +27,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
@@ -44,6 +43,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -162,7 +162,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   // tests immediately deletes it, so html_source should not be accessed after
   // this call.
   Profile* profile = GetProfile();
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  content::URLDataSource::Add(profile, html_source);
 
   pref_change_registrar_.Init(GetProfile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar,
@@ -277,7 +277,7 @@ void NewTabUI::InitializeCSSCaches() {
 #if defined(ENABLE_THEMES)
   Profile* profile = GetProfile();
   ThemeSource* theme = new ThemeSource(profile);
-  ChromeURLDataManager::AddDataSource(profile, theme);
+  content::URLDataSource::Add(profile, theme);
 #endif
 }
 

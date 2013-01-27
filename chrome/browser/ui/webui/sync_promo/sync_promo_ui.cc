@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
@@ -28,8 +26,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/net/url_util.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -78,7 +78,7 @@ bool AllowPromoAtStartupForCurrentBrand() {
 
 content::WebUIDataSource* CreateSyncUIHTMLSource(content::WebUI* web_ui) {
   content::WebUIDataSource* html_source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUISyncPromoHost);
+      content::WebUIDataSource::Create(chrome::kChromeUISyncPromoHost);
   DictionaryValue localized_strings;
   options::CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
@@ -100,11 +100,10 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://theme/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   ThemeSource* theme = new ThemeSource(profile);
-  ChromeURLDataManager::AddDataSource(profile, theme);
+  content::URLDataSource::Add(profile, theme);
 
   // Set up the sync promo source.
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreateSyncUIHTMLSource(web_ui));
+  content::WebUIDataSource::Add(profile, CreateSyncUIHTMLSource(web_ui));
 
   sync_promo_trial::RecordUserShownPromo(web_ui);
 }

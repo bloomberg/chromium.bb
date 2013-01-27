@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "content/common/content_export.h"
 #include "base/callback.h"
+#include "content/common/content_export.h"
 
 class MessageLoop;
 
@@ -17,6 +17,7 @@ class RefCountedMemory;
 }
 
 namespace content {
+class BrowserContext;
 
 // A URLDataSource is an object that can answer requests for data
 // asynchronously. An implementation of URLDataSource should handle calls to
@@ -25,11 +26,8 @@ namespace content {
 // notify.
 class CONTENT_EXPORT URLDataSource {
  public:
-  // Used by StartDataRequest. The string parameter is the path of the request.
-  // If the callee doesn't want to handle the data, false is returned. Otherwise
-  // true is returned and the GotDataCallback parameter is called either then or
-  // asynchronously with the response.
-  typedef base::Callback<void(base::RefCountedMemory*)> GotDataCallback;
+  // Adds a URL data source to |browser_context|.
+  static void Add(BrowserContext* browser_context, URLDataSource* source);
 
   virtual ~URLDataSource() {}
 
@@ -38,9 +36,14 @@ class CONTENT_EXPORT URLDataSource {
   // specific resources like "favicon/34" getting sent to this source.
   virtual std::string GetSource() = 0;
 
-  // Called by URLDataSource to request data at |path|.  The delegate should
-  // run |callback| when the data is available or if the request could not be
-  // satisfied.
+  // Used by StartDataRequest so that the child class can return the data when
+  // it's available.
+  typedef base::Callback<void(base::RefCountedMemory*)> GotDataCallback;
+
+  // Called by URLDataSource to request data at |path|. The string parameter is
+  // the path of the request. The child class should run |callback| when the
+  // data is available or if the request could not be satisfied. This can be
+  // called either in this callback or asynchronously with the response.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 const GotDataCallback& callback) = 0;

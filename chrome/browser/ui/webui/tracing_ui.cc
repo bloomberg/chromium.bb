@@ -15,10 +15,9 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -52,7 +52,7 @@ namespace {
 
 content::WebUIDataSource* CreateTracingHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUITracingHost);
+      content::WebUIDataSource::Create(chrome::kChromeUITracingHost);
 
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
@@ -510,5 +510,5 @@ TracingUI::TracingUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://tracing/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateTracingHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateTracingHTMLSource());
 }

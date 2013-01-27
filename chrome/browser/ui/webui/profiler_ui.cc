@@ -21,12 +21,12 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_profiler/task_profiler_data_serializer.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -100,7 +100,7 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
 
 content::WebUIDataSource* CreateProfilerHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIProfilerHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIProfilerHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("profiler.js", IDR_PROFILER_JS);
@@ -157,9 +157,9 @@ ProfilerUI::ProfilerUI(content::WebUI* web_ui)
   // Set up the chrome://profiler/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
 #if defined(USE_SOURCE_FILES_DIRECTLY)
-  ChromeURLDataManager::AddDataSource(profile, new ProfilerWebUIDataSource);
+  content::URLDataSource::Add(profile, new ProfilerWebUIDataSource);
 #else
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateProfilerHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateProfilerHTMLSource());
 #endif
 }
 

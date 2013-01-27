@@ -16,12 +16,11 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -43,7 +42,7 @@ namespace {
 
 content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIFlagsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIFlagsHost);
 
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
@@ -163,7 +162,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:flags source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateFlagsUIHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
 }
 
 // static

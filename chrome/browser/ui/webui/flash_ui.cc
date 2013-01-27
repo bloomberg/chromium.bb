@@ -22,8 +22,6 @@
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -33,6 +31,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/gpu_info.h"
 #include "grit/browser_resources.h"
@@ -60,7 +59,7 @@ const char kFlashPlugin[] = "Flash plugin";
 
 content::WebUIDataSource* CreateFlashUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIFlashHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIFlashHost);
 
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("loadingMessage", IDS_FLASH_LOADING_MESSAGE);
@@ -388,7 +387,7 @@ FlashUI::FlashUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:flash source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateFlashUIHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateFlashUIHTMLSource());
 }
 
 // static

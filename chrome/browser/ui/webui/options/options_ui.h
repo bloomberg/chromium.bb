@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -23,6 +22,7 @@ class AutocompleteResult;
 namespace base {
 class DictionaryValue;
 class ListValue;
+class RefCountedMemory;
 }
 
 #if defined(OS_CHROMEOS)

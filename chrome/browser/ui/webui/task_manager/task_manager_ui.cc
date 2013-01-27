@@ -7,12 +7,11 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/chromium_strings.h"
@@ -26,7 +25,7 @@ namespace {
 
 content::WebUIDataSource* CreateTaskManagerUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUITaskManagerHost);
+      content::WebUIDataSource::Create(chrome::kChromeUITaskManagerHost);
   source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("closeWindow", IDS_CLOSE);
@@ -93,5 +92,5 @@ TaskManagerUI::TaskManagerUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://taskmanager/ source.
   content::WebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
+  content::WebUIDataSource::Add(profile, html_source);
 }

@@ -20,8 +20,6 @@
 #include "cc/switches.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -31,6 +29,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
@@ -57,7 +56,7 @@ struct GpuFeatureInfo {
 
 content::WebUIDataSource* CreateGpuHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIGpuInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIGpuInternalsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
@@ -688,5 +687,5 @@ GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://gpu-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateGpuHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateGpuHTMLSource());
 }

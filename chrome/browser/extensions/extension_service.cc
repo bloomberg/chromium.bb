@@ -71,7 +71,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -101,6 +100,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
@@ -1076,21 +1076,21 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   if (extension->HasHostPermission(GURL(chrome::kChromeUIFaviconURL))) {
     FaviconSource* favicon_source = new FaviconSource(profile_,
                                                       FaviconSource::FAVICON);
-    ChromeURLDataManager::AddDataSource(profile_, favicon_source);
+    content::URLDataSource::Add(profile_, favicon_source);
   }
 
 #if !defined(OS_ANDROID)
   // Same for chrome://theme/ resources.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIThemeURL))) {
     ThemeSource* theme_source = new ThemeSource(profile_);
-    ChromeURLDataManager::AddDataSource(profile_, theme_source);
+    content::URLDataSource::Add(profile_, theme_source);
   }
 #endif
 
   // Same for chrome://thumb/ resources.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIThumbnailURL))) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_);
-    ChromeURLDataManager::AddDataSource(profile_, thumbnail_source);
+    content::URLDataSource::Add(profile_, thumbnail_source);
   }
 
 #if defined(ENABLE_PLUGINS)

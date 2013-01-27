@@ -99,7 +99,7 @@ ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
   ProxySettingsHTMLSource* source =
       new ProxySettingsHTMLSource(localized_strings);
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, source);
+  content::URLDataSource::Add(profile, source);
 }
 
 ProxySettingsUI::~ProxySettingsUI() {

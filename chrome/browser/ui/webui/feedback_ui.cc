@@ -33,8 +33,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/cancelable_task_tracker.h"
@@ -44,8 +42,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -295,7 +295,7 @@ class FeedbackHandler : public WebUIMessageHandler,
 
 content::WebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIFeedbackHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIFeedbackHost);
   source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("title", IDS_FEEDBACK_TITLE);
@@ -377,8 +377,7 @@ void FeedbackHandler::ClobberScreenshotsSource() {
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-  ChromeURLDataManager::AddDataSource(profile,
-                                      new ScreenshotSource(NULL, profile));
+  content::URLDataSource::Add(profile, new ScreenshotSource(NULL, profile));
 
   FeedbackUtil::ClearScreenshotPng();
 }
@@ -388,7 +387,7 @@ void FeedbackHandler::SetupScreenshotsSource() {
   screenshot_source_ =
       new ScreenshotSource(FeedbackUtil::GetScreenshotPng(), profile);
   // Add the source to the data manager.
-  ChromeURLDataManager::AddDataSource(profile, screenshot_source_);
+  content::URLDataSource::Add(profile, screenshot_source_);
 }
 
 bool FeedbackHandler::Init() {
@@ -725,7 +724,7 @@ FeedbackUI::FeedbackUI(content::WebUI* web_ui)
 
   // Set up the chrome://feedback/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
+  content::WebUIDataSource::Add(profile, html_source);
 }
 
 #if defined(OS_CHROMEOS)

@@ -8,12 +8,12 @@
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/version_handler.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_client.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -39,7 +39,7 @@ namespace {
 
 content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   content::WebUIDataSource* html_source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIVersionHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIVersionHost);
 
   // Localized and data strings.
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
@@ -139,11 +139,10 @@ VersionUI::VersionUI(content::WebUI* web_ui)
 #if defined(ENABLE_THEMES)
   // Set up the chrome://theme/ source.
   ThemeSource* theme = new ThemeSource(profile);
-  ChromeURLDataManager::AddDataSource(profile, theme);
+  content::URLDataSource::Add(profile, theme);
 #endif
 
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreateVersionUIDataSource(profile));
+  content::WebUIDataSource::Add(profile, CreateVersionUIDataSource(profile));
 }
 
 VersionUI::~VersionUI() {

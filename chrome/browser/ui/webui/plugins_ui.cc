@@ -28,8 +28,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -39,6 +37,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -64,7 +63,7 @@ void AssertPluginEnabled(bool did_enable) {
 
 content::WebUIDataSource* CreatePluginsUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIPluginsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIPluginsHost);
   source->SetUseJsonJSFormatV2();
 
   source->AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
@@ -480,8 +479,7 @@ PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://plugins/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreatePluginsUIHTMLSource());
+  content::WebUIDataSource::Add(profile, CreatePluginsUIHTMLSource());
 }
 
 // static

@@ -6,18 +6,17 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/help/help_handler.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 
 namespace {
 
 content::WebUIDataSource* CreateAboutPageHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIHelpFrameHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIHelpFrameHost);
 
   source->SetJsonPath("strings.js");
   source->SetUseJsonJSFormatV2();
@@ -36,7 +35,7 @@ HelpUI::HelpUI(content::WebUI* web_ui)
 
   HelpHandler* handler = new HelpHandler();
   handler->GetLocalizedValues(source);
-  ChromeURLDataManager::AddWebUIDataSource(profile, source);
+  content::WebUIDataSource::Add(profile, source);
   web_ui->AddMessageHandler(handler);
 }
 

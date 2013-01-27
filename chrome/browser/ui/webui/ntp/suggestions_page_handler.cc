@@ -18,7 +18,6 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -62,9 +62,9 @@ SuggestionsHandler::~SuggestionsHandler() {
 void SuggestionsHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
-  ChromeURLDataManager::AddDataSource(profile, new ThumbnailSource(profile));
-  ChromeURLDataManager::AddDataSource(profile,
-      new FaviconSource(profile, FaviconSource::FAVICON));
+  content::URLDataSource::Add(profile, new ThumbnailSource(profile));
+  content::URLDataSource::Add(
+      profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
   // TODO(georgey) change the source of the web-sites to provide our data.
   // Initial commit uses top sites as a data source.

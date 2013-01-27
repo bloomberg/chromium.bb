@@ -9,9 +9,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
@@ -23,7 +23,7 @@ GestureConfigUI::GestureConfigUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://gesture-config source.
   content::WebUIDataSource* html_source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIGestureConfigHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIGestureConfigHost);
 
   // Register callback handlers.
   web_ui->RegisterMessageCallback(
@@ -45,7 +45,7 @@ GestureConfigUI::GestureConfigUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_GESTURE_CONFIG_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
+  content::WebUIDataSource::Add(profile, html_source);
 }
 
 GestureConfigUI::~GestureConfigUI() {

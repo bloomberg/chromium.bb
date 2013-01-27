@@ -5,19 +5,20 @@
 #include "chrome/browser/ui/webui/suggestions_internals/suggestions_internals_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 
 SuggestionsInternalsUI::SuggestionsInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://suggestions-internals/ source.
-  content::WebUIDataSource* html_source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUISuggestionsInternalsHost);
+  content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
+      chrome::kChromeUISuggestionsInternalsHost);
   html_source->AddResourcePath("suggestions_internals.css",
                                IDR_SUGGESTIONS_INTERNALS_CSS);
   html_source->AddResourcePath("suggestions_internals.js",
@@ -25,8 +26,8 @@ SuggestionsInternalsUI::SuggestionsInternalsUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_SUGGESTIONS_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
-  ChromeURLDataManager::AddDataSource(
+  content::WebUIDataSource::Add(profile, html_source);
+  content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
   // AddMessageHandler takes ownership of SuggestionsInternalsUIHandler

@@ -29,12 +29,12 @@
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 
@@ -684,13 +684,13 @@ DriveInternalsUI::DriveInternalsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new DriveInternalsWebUIHandler());
 
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIDriveInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIDriveInternalsHost);
   source->AddResourcePath("drive_internals.css", IDR_DRIVE_INTERNALS_CSS);
   source->AddResourcePath("drive_internals.js", IDR_DRIVE_INTERNALS_JS);
   source->SetDefaultResource(IDR_DRIVE_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 }  // namespace chromeos

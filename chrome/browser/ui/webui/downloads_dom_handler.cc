@@ -31,13 +31,13 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -209,7 +209,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Create our fileicon data source.
   Profile* profile = Profile::FromBrowserContext(dlm->GetBrowserContext());
-  ChromeURLDataManager::AddDataSource(profile, new FileIconSource());
+  content::URLDataSource::Add(profile, new FileIconSource());
 
   if (profile->IsOffTheRecord()) {
     original_notifier_.reset(new AllDownloadItemNotifier(

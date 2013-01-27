@@ -5,11 +5,10 @@
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
@@ -17,7 +16,7 @@ CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui) {
   // Set up the chrome://view-cert source.
   content::WebUIDataSource* html_source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUICertificateViewerHost);
+      content::WebUIDataSource::Create(chrome::kChromeUICertificateViewerHost);
 
   // Localized strings.
   html_source->SetUseJsonJSFormatV2();
@@ -59,7 +58,7 @@ CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_CERTIFICATE_VIEWER_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
+  content::WebUIDataSource::Add(profile, html_source);
 }
 
 CertificateViewerUI::~CertificateViewerUI() {

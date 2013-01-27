@@ -10,9 +10,9 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/signin_internals_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -20,7 +20,7 @@ namespace {
 
 content::WebUIDataSource* CreateSignInInternalsHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUISignInInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUISignInInternalsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("signin_internals.js",
@@ -34,8 +34,7 @@ content::WebUIDataSource* CreateSignInInternalsHTMLSource() {
 SignInInternalsUI::SignInInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(
-      profile, CreateSignInInternalsHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateSignInInternalsHTMLSource());
   if (profile) {
     AboutSigninInternals* about_signin_internals =
         AboutSigninInternalsFactory::GetForProfile(profile);

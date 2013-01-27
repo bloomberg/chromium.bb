@@ -4,9 +4,15 @@
 
 #include "content/public/browser/url_data_source.h"
 
+#include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
+
+void URLDataSource::Add(BrowserContext* browser_context,
+                        URLDataSource* source) {
+  ChromeURLDataManager::AddDataSource(browser_context, source);
+}
 
 MessageLoop* URLDataSource::MessageLoopForRequestPath(
     const std::string& path) const {

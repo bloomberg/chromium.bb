@@ -13,6 +13,19 @@
 #include "ui/webui/jstemplate_builder.h"
 #include "ui/webui/web_ui_util.h"
 
+namespace content {
+
+WebUIDataSource* WebUIDataSource::Create(const std::string& source_name) {
+  return new ChromeWebUIDataSource(source_name);
+}
+
+void WebUIDataSource::Add(BrowserContext* browser_context,
+                          WebUIDataSource* source) {
+  ChromeURLDataManager::AddWebUIDataSource(browser_context, source);
+}
+
+}  // namespace content
+
 // Internal class to hide the fact that ChromeWebUIDataSource implements
 // content::URLDataSource.
 class ChromeWebUIDataSource::InternalDataSource
@@ -57,11 +70,6 @@ class ChromeWebUIDataSource::InternalDataSource
  private:
   ChromeWebUIDataSource* parent_;
 };
-
-content::WebUIDataSource* ChromeWebUIDataSource::Create(
-    const std::string& source_name) {
-  return new ChromeWebUIDataSource(source_name);
-}
 
 ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
     : URLDataSourceImpl(

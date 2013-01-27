@@ -32,8 +32,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,10 +39,12 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -109,7 +109,7 @@ void SetURLAndTitle(DictionaryValue* result,
 
 content::WebUIDataSource* CreateHistoryUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
   source->AddLocalizedString("newest", IDS_HISTORY_NEWEST);
@@ -167,7 +167,7 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
 void BrowsingHistoryHandler::RegisterMessages() {
   // Create our favicon data source.
   Profile* profile = Profile::FromWebUI(web_ui());
-  ChromeURLDataManager::AddDataSource(
+  content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
   // Get notifications when history is cleared.
@@ -532,8 +532,8 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
   // Set up the chrome://history-frame/ source.
-  ChromeURLDataManager::AddWebUIDataSource(Profile::FromWebUI(web_ui),
-                                           CreateHistoryUIHTMLSource());
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
+                                CreateHistoryUIHTMLSource());
 }
 
 // static

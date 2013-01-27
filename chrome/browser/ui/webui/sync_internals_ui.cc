@@ -16,12 +16,11 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/sync_internals_resources.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_arg_list.h"
@@ -39,7 +38,7 @@ namespace {
 
 content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("sync_index.js", IDR_SYNC_INTERNALS_INDEX_JS);
@@ -81,8 +80,7 @@ SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreateSyncInternalsHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateSyncInternalsHTMLSource());
   ProfileSyncService* sync_service = GetProfileSyncService(profile);
   if (sync_service) {
     js_controller_ = sync_service->GetJsController();

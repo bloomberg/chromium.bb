@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -347,7 +346,7 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
 
   // Set up the chrome://mobilesetup/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  content::URLDataSource::Add(profile, html_source);
 }
 
 void MobileSetupUI::RenderViewCreated(RenderViewHost* host) {

@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -104,15 +103,15 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   static bool registered = false;
   if (!registered) {
-    ChromeURLDataManager::AddDataSource(profile, new DevToolsDataSource);
+    content::URLDataSource::Add(profile, new DevToolsDataSource);
     registered = true;
   }
 }
 
 DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->SetBindings(0);
-  ChromeURLDataManager::AddDataSource(
-      Profile::FromWebUI(web_ui), new DevToolsDataSource);
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                              new DevToolsDataSource);
 }
 
 void DevToolsUI::RenderViewCreated(

@@ -8,11 +8,10 @@
 #include "base/values.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
@@ -20,7 +19,7 @@ namespace {
 
 content::WebUIDataSource* CreateWebUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIPerformanceMonitorHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIPerformanceMonitorHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("chart.css", IDR_PERFORMANCE_MONITOR_CHART_CSS);
@@ -79,7 +78,7 @@ PerformanceMonitorUI::PerformanceMonitorUI(content::WebUI* web_ui)
   html_source->SetUseJsonJSFormatV2();
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, html_source);
+  content::WebUIDataSource::Add(profile, html_source);
 }
 
 }  // namespace performance_monitor

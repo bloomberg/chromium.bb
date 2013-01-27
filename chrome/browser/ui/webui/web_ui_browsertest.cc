@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
@@ -307,7 +306,7 @@ class MockWebUIProvider
   WebUIController* NewWebUI(content::WebUI* web_ui, const GURL& url) OVERRIDE {
     WebUIController* controller = new content::WebUIController(web_ui);
     Profile* profile = Profile::FromWebUI(web_ui);
-    ChromeURLDataManager::AddDataSource(profile, new MockWebUIDataSource());
+    content::URLDataSource::Add(profile, new MockWebUIDataSource());
     return controller;
   }
 

@@ -313,17 +313,17 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
 
   // Set up the chrome://settings-frame/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  content::URLDataSource::Add(profile, html_source);
 
   // Set up the chrome://theme/ source.
   ThemeSource* theme = new ThemeSource(profile);
-  ChromeURLDataManager::AddDataSource(profile, theme);
+  content::URLDataSource::Add(profile, theme);
 
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
   chromeos::options::UserImageSource* user_image_source =
       new chromeos::options::UserImageSource();
-  ChromeURLDataManager::AddDataSource(profile, user_image_source);
+  content::URLDataSource::Add(profile, user_image_source);
 
   pointer_device_observer_.reset(
       new chromeos::system::PointerDeviceObserver());

@@ -6,11 +6,11 @@
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/options/chromeos/bluetooth_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 
 using content::WebContents;
@@ -32,7 +32,7 @@ BluetoothPairingUI::BluetoothPairingUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(bluetooth_handler_);
 
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIBluetoothPairingHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIBluetoothPairingHost);
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath("strings.js");
@@ -40,7 +40,7 @@ BluetoothPairingUI::BluetoothPairingUI(content::WebUI* web_ui)
   source->DisableContentSecurityPolicy();
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 BluetoothPairingUI::~BluetoothPairingUI() {

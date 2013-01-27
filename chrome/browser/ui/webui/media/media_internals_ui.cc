@@ -6,12 +6,11 @@
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -21,7 +20,7 @@ namespace {
 
 content::WebUIDataSource* CreateMediaInternalsHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIMediaInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIMediaInternalsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_JS);
@@ -42,6 +41,5 @@ MediaInternalsUI::MediaInternalsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new MediaInternalsMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(
-      profile, CreateMediaInternalsHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateMediaInternalsHTMLSource());
 }

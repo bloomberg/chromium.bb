@@ -18,6 +18,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace content {
+class WebUIDataSource;
 class WebUIDataSourceTest;
 }
 
@@ -27,9 +28,6 @@ class CONTENT_EXPORT ChromeWebUIDataSource
     : public NON_EXPORTED_BASE(URLDataSourceImpl),
       public NON_EXPORTED_BASE(content::WebUIDataSource) {
  public:
-  static content::WebUIDataSource* Create(
-      const std::string& source_name);
-
   // content::WebUIDataSource implementation:
   virtual void AddString(const std::string& name,
                          const string16& value) OVERRIDE;
@@ -67,6 +65,7 @@ class CONTENT_EXPORT ChromeWebUIDataSource
  private:
   class InternalDataSource;
   friend class InternalDataSource;
+  friend class content::WebUIDataSource;
   friend class content::WebUIDataSourceTest;
 
   explicit ChromeWebUIDataSource(const std::string& source_name);

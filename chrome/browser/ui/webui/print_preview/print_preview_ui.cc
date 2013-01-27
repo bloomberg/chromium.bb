@@ -20,13 +20,13 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -119,7 +119,7 @@ base::LazyInstance<IDMap<PrintPreviewUI> >
 // to return the markup or other resources for the print preview page itself.
 bool HandleRequestCallback(
     const std::string& path,
-    const ChromeWebUIDataSource::GotDataCallback& callback) {
+    const content::WebUIDataSource::GotDataCallback& callback) {
   // ChromeWebUIDataSource handles most requests except for the print preview
   // data.
   if (!EndsWith(path, "/print.pdf", true))
@@ -150,7 +150,7 @@ bool HandleRequestCallback(
 
 content::WebUIDataSource* CreatePrintPreviewUISource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIPrintHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
 #if defined(OS_CHROMEOS)
   source->AddLocalizedString("title",
                              IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE);
@@ -347,11 +347,10 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreatePrintPreviewUISource());
+  content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource());
 
   // Set up the chrome://theme/ source.
-  ChromeURLDataManager::AddDataSource(profile, new ThemeSource(profile));
+  content::URLDataSource::Add(profile, new ThemeSource(profile));
 
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();

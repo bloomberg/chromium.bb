@@ -7,12 +7,13 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -136,7 +137,7 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new DiagnosticsWebUIHandler());
 
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIDiagnosticsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIDiagnosticsHost);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("main.css", IDR_DIAGNOSTICS_MAIN_CSS);
   source->AddResourcePath("main.js", IDR_DIAGNOSTICS_MAIN_JS);
@@ -178,7 +179,7 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_DIAGNOSTICS_MAIN_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 }  // namespace chromeos

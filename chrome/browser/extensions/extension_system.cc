@@ -38,7 +38,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -46,6 +45,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/url_data_source.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -199,8 +199,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   }
 
   // Make the chrome://extension-icon/ resource available.
-  ChromeURLDataManager::AddDataSource(profile_,
-      new ExtensionIconSource(profile_));
+  content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
 
   // Initialize extension event routers. Note that on Chrome OS, this will
   // not succeed if the user has not logged in yet, in which case the

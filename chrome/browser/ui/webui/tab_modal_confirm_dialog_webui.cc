@@ -16,11 +16,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/web_contents_modal_dialog.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,11 +46,11 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
     : delegate_(delegate) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  content::WebUIDataSource* data_source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUITabModalConfirmDialogHost);
+  content::WebUIDataSource* data_source = content::WebUIDataSource::Create(
+      chrome::kChromeUITabModalConfirmDialogHost);
   data_source->SetDefaultResource(IDR_TAB_MODAL_CONFIRM_DIALOG_HTML);
   data_source->DisableContentSecurityPolicy();
-  ChromeURLDataManager::AddWebUIDataSource(profile, data_source);
+  content::WebUIDataSource::Add(profile, data_source);
 
   constrained_web_dialog_delegate_ =
       CreateConstrainedWebDialog(profile, this, NULL, web_contents);

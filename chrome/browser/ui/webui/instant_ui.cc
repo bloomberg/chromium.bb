@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 
@@ -24,7 +24,7 @@ namespace {
 
 content::WebUIDataSource* CreateInstantHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIInstantHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIInstantHost);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("instant.js", IDR_INSTANT_JS);
   source->AddResourcePath("instant.css", IDR_INSTANT_CSS);
@@ -145,7 +145,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://instant/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateInstantHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateInstantHTMLSource());
 }
 
 // static

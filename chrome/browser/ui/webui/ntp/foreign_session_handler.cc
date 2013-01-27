@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/session_favicon_source.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -192,8 +192,7 @@ void ForeignSessionHandler::Init() {
                  content::Source<Profile>(profile));
 
   // Add the data source for synced favicons.
-  ChromeURLDataManager::AddDataSource(profile,
-      new SessionFaviconSource(profile));
+  content::URLDataSource::Add(profile, new SessionFaviconSource(profile));
 }
 
 void ForeignSessionHandler::Observe(

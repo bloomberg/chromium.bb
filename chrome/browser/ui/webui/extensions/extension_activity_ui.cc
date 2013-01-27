@@ -7,12 +7,11 @@
 #include "base/bind.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,7 +23,7 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
       IDS_EXTENSION_ACTIVITY_TITLE));
 
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUIExtensionActivityHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIExtensionActivityHost);
 
   // Localized strings.
   source->AddLocalizedString("extensionActivity", IDS_EXTENSION_ACTIVITY_TITLE);
@@ -41,7 +40,7 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
   source->AddResourcePath("extension_activity.js", IDR_EXTENSION_ACTIVITY_JS);
   source->SetDefaultResource(IDR_EXTENSION_ACTIVITY_HTML);
   profile_ = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile_, source);
+  content::WebUIDataSource::Add(profile_, source);
   // Callback handlers.
   web_ui->RegisterMessageCallback("requestExtensionData",
       base::Bind(&ExtensionActivityUI::HandleRequestExtensionData,

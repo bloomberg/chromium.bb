@@ -18,8 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -27,6 +25,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -48,7 +47,7 @@ namespace {
 
 content::WebUIDataSource* CreateNaClUIHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUINaClHost);
+      content::WebUIDataSource::Create(chrome::kChromeUINaClHost);
 
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("loadingMessage", IDS_NACL_LOADING_MESSAGE);
@@ -277,5 +276,5 @@ NaClUI::NaClUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:nacl source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, CreateNaClUIHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateNaClUIHTMLSource());
 }

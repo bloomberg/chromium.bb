@@ -5,17 +5,16 @@
 #include "chrome/browser/ui/webui/local_omnibox_popup/local_omnibox_popup_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 
 
 LocalOmniboxPopupUI::LocalOmniboxPopupUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  content::WebUIDataSource* source = ChromeWebUIDataSource::Create(
+  content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUILocalOmniboxPopupHost);
   source->AddResourcePath("local_omnibox_popup.css",
                           IDR_LOCAL_OMNIBOX_POPUP_CSS);
@@ -38,7 +37,7 @@ LocalOmniboxPopupUI::LocalOmniboxPopupUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_LOCAL_OMNIBOX_POPUP_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 LocalOmniboxPopupUI::~LocalOmniboxPopupUI() {

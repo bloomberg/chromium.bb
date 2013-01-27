@@ -12,19 +12,19 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
 ExtensionInfoUI::ExtensionInfoUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui),
-      source_(ChromeWebUIDataSource::Create(
+      source_(content::WebUIDataSource::Create(
           chrome::kChromeUIExtensionInfoHost)) {
   AddExtensionDataToSource(url.path().substr(1));
 
@@ -40,7 +40,7 @@ ExtensionInfoUI::ExtensionInfoUI(content::WebUI* web_ui, const GURL& url)
   source_->SetDefaultResource(IDR_EXTENSION_INFO_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile, source_);
+  content::WebUIDataSource::Add(profile, source_);
 }
 
 ExtensionInfoUI::~ExtensionInfoUI() {

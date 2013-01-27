@@ -7,18 +7,27 @@
 
 #include "base/string16.h"
 #include "base/callback.h"
+#include "content/common/content_export.h"
 
 namespace base {
+class DictionaryValue;
 class RefCountedMemory;
 }
 
 namespace content {
+class BrowserContext;
 
 // A data source that can help with implementing the common operations needed by
 // WebUI pages.
 class WebUIDataSource {
  public:
   virtual ~WebUIDataSource() {}
+
+  CONTENT_EXPORT static WebUIDataSource* Create(const std::string& source_name);
+
+  // Adds a WebUI data source to |browser_context|.
+  CONTENT_EXPORT static void Add(BrowserContext* browser_context,
+                                 WebUIDataSource* source);
 
   // Adds a string keyed to its name to our dictionary.
   virtual void AddString(const std::string& name, const string16& value) = 0;
@@ -32,7 +41,7 @@ class WebUIDataSource {
 
   // Add strings from |localized_strings| to our dictionary.
   virtual void AddLocalizedStrings(
-      const DictionaryValue& localized_strings) = 0;
+      const base::DictionaryValue& localized_strings) = 0;
 
   // Adds a boolean keyed to its name to our dictionary.
   virtual void AddBoolean(const std::string& name, bool value) = 0;

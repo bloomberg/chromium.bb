@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -206,21 +205,21 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(profile);
-  ChromeURLDataManager::AddDataSource(profile, theme);
+  content::URLDataSource::Add(profile, theme);
 
   // Set up the chrome://terms/ data source, for EULA content.
   AboutUIHTMLSource* about_source =
       new AboutUIHTMLSource(chrome::kChromeUITermsHost, profile);
-  ChromeURLDataManager::AddDataSource(profile, about_source);
+  content::URLDataSource::Add(profile, about_source);
 
   // Set up the chrome://oobe/ source.
   OobeUIHTMLSource* html_source = new OobeUIHTMLSource(localized_strings);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  content::URLDataSource::Add(profile, html_source);
 
   // Set up the chrome://userimage/ source.
   options::UserImageSource* user_image_source =
       new options::UserImageSource();
-  ChromeURLDataManager::AddDataSource(profile, user_image_source);
+  content::URLDataSource::Add(profile, user_image_source);
 }
 
 OobeUI::~OobeUI() {

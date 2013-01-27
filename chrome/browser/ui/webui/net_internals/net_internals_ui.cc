@@ -40,8 +40,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -54,6 +52,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
@@ -220,7 +219,7 @@ Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
 
 content::WebUIDataSource* CreateNetInternalsHTMLSource() {
   content::WebUIDataSource* source =
-      ChromeWebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
 
   source->SetDefaultResource(IDR_NET_INTERNALS_INDEX_HTML);
   source->AddResourcePath("help.html", IDR_NET_INTERNALS_HELP_HTML);
@@ -1940,6 +1939,5 @@ NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://net-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddWebUIDataSource(profile,
-                                           CreateNetInternalsHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateNetInternalsHTMLSource());
 }
