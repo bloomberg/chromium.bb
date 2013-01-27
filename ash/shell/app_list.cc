@@ -193,8 +193,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
          ++i) {
       WindowTypeLauncherItem::Type type =
           static_cast<WindowTypeLauncherItem::Type>(i);
-
-      std::string title = WindowTypeLauncherItem::GetTitle(type);
       apps->Add(new WindowTypeLauncherItem(type));
     }
   }
