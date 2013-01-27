@@ -14,18 +14,18 @@
 namespace {
 
 int WebInputEventSizeForType(WebKit::WebInputEvent::Type type) {
-    if (WebKit::WebInputEvent::isMouseEventType(type))
-        return sizeof(WebKit::WebMouseEvent);
-    if (type == WebKit::WebInputEvent::MouseWheel)
-        return sizeof(WebKit::WebMouseWheelEvent);
-    if (WebKit::WebInputEvent::isKeyboardEventType(type))
-        return sizeof(WebKit::WebKeyboardEvent);
-    if (WebKit::WebInputEvent::isTouchEventType(type))
-        return sizeof(WebKit::WebTouchEvent);
-    if (WebKit::WebInputEvent::isGestureEventType(type))
-        return sizeof(WebKit::WebGestureEvent);
-    NOTREACHED() << "Unknown webkit event type " << type;
-    return 0;
+  if (WebKit::WebInputEvent::isMouseEventType(type))
+    return sizeof(WebKit::WebMouseEvent);
+  if (type == WebKit::WebInputEvent::MouseWheel)
+    return sizeof(WebKit::WebMouseWheelEvent);
+  if (WebKit::WebInputEvent::isKeyboardEventType(type))
+    return sizeof(WebKit::WebKeyboardEvent);
+  if (WebKit::WebInputEvent::isTouchEventType(type))
+    return sizeof(WebKit::WebTouchEvent);
+  if (WebKit::WebInputEvent::isGestureEventType(type))
+    return sizeof(WebKit::WebGestureEvent);
+  NOTREACHED() << "Unknown webkit event type " << type;
+  return 0;
 }
 
 }  // namespace

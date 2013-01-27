@@ -768,7 +768,7 @@ const char kDisableFixedPositionCreatesStackingContext[]
 // Defer image decoding in WebKit until painting.
 const char kEnableDeferredImageDecoding[] = "enable-deferred-image-decoding";
 
-// Enables history navigation in response to horizontal overscroll.
+// Disables history navigation in response to horizontal overscroll.
 const char kDisableOverscrollHistoryNavigation[] =
     "disable-overscroll-history-navigation";
 
