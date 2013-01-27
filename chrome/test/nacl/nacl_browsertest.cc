@@ -42,12 +42,4 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
 })
 
-// NOTE: this does not use NACL_BROWSER_TEST_F, since we only need to
-// test that PNaCl works under incognito (translation caching).
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl, IncognitoTranslateAndLoad) {
-  // Force Incognito mode.
-  SetBrowser(CreateIncognitoBrowser());
-  RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
-}
-
 }  // namespace anonymous
