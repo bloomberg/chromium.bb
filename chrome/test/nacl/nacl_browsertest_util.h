@@ -10,6 +10,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_test_observer.h"
 
+class Browser;
+
 // A helper base class that decodes structured automation messages of the form:
 // {"type": type_name, ...}
 class StructuredMessageHandler : public TestMessageHandler {
@@ -73,6 +75,10 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
 
   virtual bool IsPnacl();
 
+  // Set the Browser window used for loading tests to a different window
+  // (e.g., an incognito window).
+  void SetBrowser(Browser* browser);
+
   // Map a file relative to the variant directory to a URL served by the test
   // web server.
   GURL TestURL(const FilePath::StringType& url_fragment);
@@ -98,7 +104,11 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
  private:
   bool StartTestServer();
 
+  Browser* GetBrowser();
+
   scoped_ptr<net::TestServer> test_server_;
+
+  Browser* test_browser_;
 };
 
 class NaClBrowserTestNewlib : public NaClBrowserTestBase {

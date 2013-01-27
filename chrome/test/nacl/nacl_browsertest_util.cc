@@ -176,7 +176,7 @@ static bool GetNaClVariantRoot(const FilePath::StringType& variant,
   return true;
 }
 
-NaClBrowserTestBase::NaClBrowserTestBase() {
+NaClBrowserTestBase::NaClBrowserTestBase() : test_browser_(NULL) {
 }
 
 NaClBrowserTestBase::~NaClBrowserTestBase() {
@@ -209,9 +209,9 @@ GURL NaClBrowserTestBase::TestURL(const FilePath::StringType& url_fragment) {
 bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
                                             TestMessageHandler* handler) {
   JavascriptTestObserver observer(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      chrome::GetActiveWebContents(GetBrowser())->GetRenderViewHost(),
       handler);
-  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURL(GetBrowser(), url);
   return observer.Run();
 }
 
@@ -239,6 +239,18 @@ bool NaClBrowserTestBase::StartTestServer() {
                                          net::TestServer::kLocalhost,
                                          document_root));
   return test_server_->Start();
+}
+
+void NaClBrowserTestBase::SetBrowser(Browser* browser) {
+  test_browser_ = browser;
+}
+
+Browser* NaClBrowserTestBase::GetBrowser() {
+  if (test_browser_) {
+    return test_browser_;
+  } else {
+    return browser();
+  }
 }
 
 FilePath::StringType NaClBrowserTestNewlib::Variant() {
