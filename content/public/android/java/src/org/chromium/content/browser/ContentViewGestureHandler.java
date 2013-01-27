@@ -727,7 +727,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
         int type = TouchPoint.createTouchPoints(event, pts);
         boolean forwarded = false;
-        if (type != TouchPoint.CONVERSION_ERROR) {
+        if (type != TouchPoint.CONVERSION_ERROR && !mNativeScrolling && !mPinchInProgress) {
             forwarded = mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts);
             mTouchCancelEventSent = false;
         } else if (!mTouchCancelEventSent) {
