@@ -2821,19 +2821,19 @@
                 # Disabled from running in coverage_posix.py.
                 # We need to build this during compile step, so enabling here.
                 'browser_tests',
-                '../courgette/courgette.gyp:courgette_unittests',
-                '../crypto/crypto.gyp:crypto_unittests',
                 'chromedriver_unittests',
-                '../build/temp_gyp/googleurl.gyp:googleurl_unittests',
                 'gpu_tests',
-                '../jingle/jingle.gyp:jingle_unittests',
-                '../net/net.gyp:net_perftests',
                 'performance_ui_tests',
+                'pyautolib',
                 'reliability_tests',
                 'sync_integration_tests',
-                '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
-                'pyautolib',
                 '../content/content.gyp:content_browsertests',
+                '../courgette/courgette.gyp:courgette_unittests',
+                '../crypto/crypto.gyp:crypto_unittests',
+                '../googleurl/googleurl.gyp:googleurl_unittests',
+                '../jingle/jingle.gyp:jingle_unittests',
+                '../net/net.gyp:net_perftests',
+                '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
               ]}],
             ['OS=="mac"', {
               'dependencies': [
