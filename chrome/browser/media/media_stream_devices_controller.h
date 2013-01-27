@@ -11,10 +11,12 @@
 
 class PrefServiceSyncable;
 class Profile;
+class TabSpecificContentSettings;
 
 class MediaStreamDevicesController {
  public:
   MediaStreamDevicesController(Profile* profile,
+                               TabSpecificContentSettings* content_settings,
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
 
@@ -70,6 +72,13 @@ class MediaStreamDevicesController {
 
   // The owner of this class needs to make sure it does not outlive the profile.
   Profile* profile_;
+
+  // Weak pointer to the tab specific content settings of the tab for which the
+  // MediaStreamDevicesController was created. The tab specific content
+  // settings are associated with a the web contents of the tab. The
+  // MediaStreamDeviceController must not outlive the web contents for which it
+  // was created.
+  TabSpecificContentSettings* content_settings_;
 
   // The original request for access to devices.
   const content::MediaStreamRequest request_;

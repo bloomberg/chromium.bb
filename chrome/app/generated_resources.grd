@@ -3203,6 +3203,21 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_BLOCKED_POPUPS_LINK" desc="Link to popups section of content blocking management dialog, displayed in bubble when a page tries to display popups.">
         Manage pop-up blocking...
       </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_ALLOW" desc="TODO">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone.
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_ASK" desc="TODO">
+        Ask if <ph name="HOST">$1<ex>mail.google.com</ex></ph> wants to access your camera and microphone.
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_BLOCK" desc="TODO">
+        Always block camera and microphone access.
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_NO_ACTION" desc="TODO">
+        Continue blocking camera and microphone access.
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_NO_ACTION" desc="TODO">
+        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone.
+      </message>
       <message name="IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when popup is blocked">
         Pop-up blocked
       </message>
@@ -14715,9 +14730,29 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_GEOLOCATION_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
       This page has been blocked from tracking your location.
     </message>
+    
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
     </message>
+    <message name="IDS_MEDIASTREAM_BUBBLE_CLEAR_LINK" desc="Link on the mediastream bubble that resets the media content setting for the current site.">
+      Clear these settings for future visits
+    </message>
+    <message name="IDS_MEDIASTREAM_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location.">
+      This site is accessing your camera and microphone.
+    </message>
+    <message name="IDS_MEDIASTREAM_BUBBLE_SECTION_BLOCKED" desc="Heading for a section in the geolocation bubble listing all sites which are currently blocked from accessing the user's location.">
+      This site was blocked from accessing your camera and microphone.
+    </message>
+    <message name="IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK" desc="Link on the media (camera and microphone) bubble that opens up the Content Settings management dialog for media settings.">
+      Manage media settings...
+    </message>
+    <message name="IDS_MEDIASTREAM_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use media streams (camera, microphone).">
+      This page is accessing your camera and microphone.
+    </message>
+    <message name="IDS_MEDIASTREAM_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using media streams (camera, microphone).">
+      This page has been blocked from accessing your camera and microphone.
+    </message>
+
 
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">

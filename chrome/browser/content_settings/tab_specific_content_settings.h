@@ -191,7 +191,6 @@ class TabSpecificContentSettings
     pending_protocol_handler_ = ProtocolHandler::EmptyProtocolHandler();
   }
 
-
   // Sets the previous protocol handler which will be replaced by the
   // pending protocol handler.
   void set_previous_protocol_handler(const ProtocolHandler& handler) {
@@ -277,6 +276,9 @@ class TabSpecificContentSettings
                              bool blocked_by_policy);
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
+
+  // This method is called when a media stream is accessed.
+  void OnMediaStreamAccessed();
 
   // Adds the given |SiteDataObserver|. The |observer| is notified when a
   // locale shared object, like for example a cookie, is accessed.

@@ -127,7 +127,8 @@ void ContentSettingTitleAndLinkModel::SetManageLink() {
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_LINK},
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_GEOLOCATION_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_LEARN_MORE},
-    {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, IDS_HANDLERS_BUBBLE_MANAGE_LINK}
+    {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, IDS_HANDLERS_BUBBLE_MANAGE_LINK},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM, IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK}
   };
   set_manage_link(l10n_util::GetStringUTF8(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -190,7 +191,7 @@ class ContentSettingSingleRadioGroup
   void SetRadioGroup();
   void AddException(ContentSetting setting,
                     const std::string& resource_identifier);
-  virtual void OnRadioClicked(int radio_index);
+  virtual void OnRadioClicked(int radio_index) OVERRIDE;
 
   ContentSetting block_setting_;
   int selected_item_;
@@ -483,6 +484,136 @@ void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
   }
 }
 
+// The model of the content settings bubble for media settings.
+class ContentSettingMediaStreamBubbleModel
+    : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingMediaStreamBubbleModel(Delegate* delegate,
+                                       WebContents* web_contents,
+                                       Profile* profile);
+
+  virtual ~ContentSettingMediaStreamBubbleModel();
+
+ private:
+  // Sets the title of the bubble.
+  void SetTitle();
+  // Sets the data for the radio buttons of the bubble.
+  void SetRadioGroup();
+  // Updates the camera and microphone setting with the passed |setting|.
+  void UpdateSettings(ContentSetting setting);
+
+  // ContentSettingBubbleModel implementation.
+  virtual void OnRadioClicked(int radio_index) OVERRIDE;
+
+  // The index of the selected radio item.
+  int selected_item_;
+  // The content settings that are associated with the individual radio
+  // buttons.
+  ContentSetting radio_item_setting_[2];
+};
+
+ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
+    Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile)
+    : ContentSettingTitleAndLinkModel(
+          delegate, web_contents, profile, CONTENT_SETTINGS_TYPE_MEDIASTREAM),
+      selected_item_(0) {
+  // Initialize the content settings associated with the individual radio
+  // buttons.
+  radio_item_setting_[0] = CONTENT_SETTING_ASK;
+  radio_item_setting_[1] = CONTENT_SETTING_BLOCK;
+
+  SetTitle();
+  SetRadioGroup();
+}
+
+ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
+  // Update the media settings if the radio button selection was changed.
+  if (selected_item_ != bubble_content().radio_group.default_item)
+    UpdateSettings(radio_item_setting_[selected_item_]);
+}
+
+void ContentSettingMediaStreamBubbleModel::SetTitle() {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  int title_id = IDS_MEDIASTREAM_BUBBLE_SECTION_ALLOWED;
+  if (content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM))
+    title_id = IDS_MEDIASTREAM_BUBBLE_SECTION_BLOCKED;
+  set_title(l10n_util::GetStringUTF8(title_id));
+}
+
+void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
+  GURL url = web_contents()->GetURL();
+  RadioGroup radio_group;
+  radio_group.url = url;
+
+  string16 display_host_utf16;
+  net::AppendFormattedHost(
+      url,
+      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      &display_host_utf16);
+  std::string display_host(UTF16ToUTF8(display_host_utf16));
+  if (display_host.empty())
+    display_host = url.spec();
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  bool media_stream_blocked =
+      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+  std::string radio_allow_label;
+  std::string radio_block_label;
+  if (media_stream_blocked) {
+    if (!url.SchemeIsSecure()) {
+      radio_allow_label = l10n_util::GetStringFUTF8(
+          IDS_BLOCKED_MEDIASTREAM_ASK, UTF8ToUTF16(display_host));
+    } else {
+      radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
+      radio_allow_label = l10n_util::GetStringFUTF8(
+          IDS_BLOCKED_MEDIASTREAM_ALLOW, UTF8ToUTF16(display_host));
+    }
+    radio_block_label =
+      l10n_util::GetStringUTF8(IDS_BLOCKED_MEDIASTREAM_NO_ACTION);
+  } else {
+    radio_allow_label = l10n_util::GetStringFUTF8(
+          IDS_ALLOWED_MEDIASTREAM_NO_ACTION, UTF8ToUTF16(display_host));
+    radio_block_label =
+      l10n_util::GetStringUTF8(IDS_ALLOWED_MEDIASTREAM_BLOCK);
+  }
+  radio_group.default_item = media_stream_blocked ? 1 : 0;
+  radio_group.radio_items.push_back(radio_allow_label);
+  radio_group.radio_items.push_back(radio_block_label);
+
+  set_radio_group(radio_group);
+  set_radio_group_enabled(true);
+}
+
+void ContentSettingMediaStreamBubbleModel::UpdateSettings(
+    ContentSetting setting) {
+  if (profile()) {
+    HostContentSettingsMap* content_settings =
+        profile()->GetHostContentSettingsMap();
+    // The same patterns must be used as in other places (e.g. the infobar) in
+    // order to override the existing rule. Otherwise a new rule is created.
+    // TODO(markusheintz): Extract to a helper so thath there is only a single
+    // place to touch.
+    ContentSettingsPattern primary_pattern =
+        ContentSettingsPattern::FromURLNoWildcard(web_contents()->GetURL());
+    ContentSettingsPattern secondary_pattern =
+        ContentSettingsPattern::Wildcard();
+    content_settings->SetContentSetting(
+        primary_pattern, secondary_pattern,
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "", setting);
+    content_settings->SetContentSetting(
+        primary_pattern, secondary_pattern,
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "", setting);
+  }
+}
+
+void ContentSettingMediaStreamBubbleModel::OnRadioClicked(int radio_index) {
+  selected_item_ = radio_index;
+}
+
 class ContentSettingDomainListBubbleModel
     : public ContentSettingTitleAndLinkModel {
  public:
@@ -753,6 +884,10 @@ ContentSettingBubbleModel*
   if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     return new ContentSettingDomainListBubbleModel(delegate, web_contents,
                                                    profile, content_type);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    return new ContentSettingMediaStreamBubbleModel(delegate, web_contents,
+                                                    profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     return new ContentSettingPluginBubbleModel(delegate, web_contents, profile,

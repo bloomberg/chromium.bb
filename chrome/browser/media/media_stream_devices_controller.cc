@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -20,10 +21,6 @@
 #include "content/public/common/media_stream_request.h"
 
 using content::BrowserThread;
-
-// TODO(xians): Remove this when the Omnibar UI has been completed.
-// See http://crbug.com/167263 for more details.
-#define ALLOW_STICKY_DENY 0
 
 namespace {
 
@@ -42,9 +39,11 @@ bool HasAnyAvailableDevice() {
 
 MediaStreamDevicesController::MediaStreamDevicesController(
     Profile* profile,
+    TabSpecificContentSettings* content_settings,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback)
     : profile_(profile),
+      content_settings_(content_settings),
       request_(request),
       callback_(callback),
       has_audio_(content::IsAudioMediaType(request.audio_type) &&
@@ -121,6 +120,9 @@ const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
 }
 
 void MediaStreamDevicesController::Accept(bool update_content_setting) {
+  content_settings_->OnMediaStreamAccessed();
+
+  // Get the default devices for the request.
   content::MediaStreamDevices devices;
   if (has_audio_ || has_video_) {
     switch (request_.request_type) {
@@ -143,7 +145,7 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         break;
     }
 
-    if (update_content_setting && IsSchemeSecure() && !devices.empty())
+  if (update_content_setting && IsSchemeSecure() && !devices.empty())
       SetPermission(true);
   }
 
@@ -151,10 +153,13 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
 }
 
 void MediaStreamDevicesController::Deny(bool update_content_setting) {
-#if ALLOW_STICKY_DENY
+  // TODO(markusheintz): Replace CONTENT_SETTINGS_TYPE_MEDIA_STREAM with the
+  // appropriate new CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC and
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
+  content_settings_->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+                                      std::string());
   if (update_content_setting)
     SetPermission(false);
-#endif
 
   callback_.Run(content::MediaStreamDevices());
 }
@@ -200,7 +205,6 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
 }
 
 bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
-#if ALLOW_STICKY_DENY
   if (has_audio_ &&
       profile_->GetHostContentSettingsMap()->GetContentSetting(
           request_.security_origin,
@@ -220,21 +224,17 @@ bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
   }
 
   return true;
-#else
-  return false;
-#endif
 }
 
 bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if ALLOW_STICKY_DENY
+  // TODO(markusheintz): Replace CONTENT_SETTINGS_TYPE_MEDIA_STREAM with the
+  // appropriate new CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC and
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
   ContentSetting current_setting =
       profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
   return (current_setting == CONTENT_SETTING_BLOCK);
-#else
-  return false;
-#endif
 }
 
 void MediaStreamDevicesController::HandleTapMediaRequest() {
@@ -267,6 +267,9 @@ bool MediaStreamDevicesController::IsSchemeSecure() const {
 }
 
 bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() const {
+  // TODO(markusheintz): Replace CONTENT_SETTINGS_TYPE_MEDIA_STREAM with the
+  // appropriate new CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC and
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
   return profile_->GetHostContentSettingsMap()->ShouldAllowAllContent(
       request_.security_origin, request_.security_origin,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM);
