@@ -41,6 +41,7 @@
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "ui/views/window/dialog_frame_view.h"
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resources.h"
@@ -633,10 +634,9 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 }
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
+  if (views::DialogDelegate::UseNewStyle())
+    return new views::DialogFrameView(widget_delegate()->GetWindowTitle());
 #if defined(USE_ASH)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableNewDialogStyle))
-    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
   ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
   frame->Init(this);
   return frame;
