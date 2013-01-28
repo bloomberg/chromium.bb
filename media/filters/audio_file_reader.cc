@@ -102,6 +102,14 @@ bool AudioFileReader::Open() {
     return false;
   }
 
+  // Verify the channel layout is supported by Chrome.  Acts as a sanity check
+  // against invalid files.  See http://crbug.com/171962
+  if (ChannelLayoutToChromeChannelLayout(
+          codec_context_->channel_layout, codec_context_->channels) ==
+      CHANNEL_LAYOUT_UNSUPPORTED) {
+    return false;
+  }
+
   return true;
 }
 

@@ -73,6 +73,11 @@ class AudioFileReaderTest : public testing::Test {
     ReadAndVerify(hash, trimmed_frames);
   }
 
+  void RunFailingTest(const char* fn) {
+    Initialize(fn);
+    EXPECT_FALSE(reader_->Open());
+  }
+
  protected:
   scoped_refptr<DecoderBuffer> data_;
   scoped_ptr<InMemoryUrlProtocol> protocol_;
@@ -86,8 +91,7 @@ TEST_F(AudioFileReaderTest, WithoutOpen) {
 }
 
 TEST_F(AudioFileReaderTest, InvalidFile) {
-  Initialize("ten_byte_file");
-  ASSERT_FALSE(reader_->Open());
+  RunFailingTest("ten_byte_file");
 }
 
 TEST_F(AudioFileReaderTest, WithVideo) {
@@ -131,5 +135,9 @@ TEST_F(AudioFileReaderTest, AAC) {
           base::TimeDelta::FromMicroseconds(312001), 13759, 13312);
 }
 #endif
+
+TEST_F(AudioFileReaderTest, VorbisInvalidChannelLayout) {
+  RunFailingTest("9ch.ogg");
+}
 
 }  // namespace media
