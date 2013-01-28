@@ -1087,17 +1087,16 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
 
 
 def MakeNetboot(buildroot, board, image_dir):
-  """Convert the specified image to be a netboot image.
+  """Build a netboot image.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Board type that was built on this machine.
     image_dir: Directory containing factory install shim.
   """
-  image = os.path.join(image_dir, 'factory_install_shim.bin')
   cmd = ['./make_netboot.sh',
          '--board=%s' % board,
-         '--image=%s' % git.ReinterpretPathForChroot(image)]
+         '--image_dir=%s' % git.ReinterpretPathForChroot(image_dir)]
   _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 

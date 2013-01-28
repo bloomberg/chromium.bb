@@ -1979,6 +1979,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # Generate the recovery image. To conserve loop devices, we try to only
       # run one instance of build_image at a time. TODO(davidjames): Move the
       # image generation out of the archive stage.
+
+      # For recovery image to be generated correctly, BuildRecoveryImage must
+      # run before BuildAndArchiveFactoryImages.
       if 'base' in config['images']:
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
         self._recovery_image_status_queue.put(True)
