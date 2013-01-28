@@ -5,6 +5,7 @@
 import collections
 
 from telemetry import multi_page_benchmark
+from telemetry import util
 
 class LoadingBenchmark(multi_page_benchmark.MultiPageBenchmark):
   @property
@@ -15,13 +16,17 @@ class LoadingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     tab.StartTimelineRecording()
 
   def MeasurePage(self, page, tab, results):
-    # In current telemetry tests, all tests wait for DocumentComplete state.
-    #
+    # In current telemetry tests, all tests wait for DocumentComplete state,
+    # but we need to wait for the load event.
+    def IsLoaded():
+      return bool(tab.EvaluateJavaScript('performance.timing.loadEventStart'))
+    util.WaitFor(IsLoaded, 30)
+
     # TODO(nduca): when crbug.com/168431 is fixed, modify the page sets to
     # recognize loading as a toplevel action.
     tab.StopTimelineRecording()
 
-    load_timings = tab.EvaluateJavaScript("window.performance.timing")
+    load_timings = tab.EvaluateJavaScript('window.performance.timing')
     load_time_ms = (
       float(load_timings['loadEventStart']) -
       load_timings['navigationStart'])
