@@ -141,10 +141,10 @@ static std::string RoleToString(WebAccessibilityRole role) {
       return result.append("ListBoxOption");
     case WebKit::WebAccessibilityRoleTableHeaderContainer:
       return result.append("TableHeaderContainer");
-    case WebKit::WebAccessibilityRoleDefinitionListTerm:
-      return result.append("DefinitionListTerm");
-    case WebKit::WebAccessibilityRoleDefinitionListDefinition:
-      return result.append("DefinitionListDefinition");
+    //case WebKit::WebAccessibilityRoleDefinitionListTerm:
+    //  return result.append("DefinitionListTerm");
+    //case WebKit::WebAccessibilityRoleDefinitionListDefinition:
+    //  return result.append("DefinitionListDefinition");
     case WebKit::WebAccessibilityRoleAnnotation:
       return result.append("Annotation");
     case WebKit::WebAccessibilityRoleSliderThumb:
