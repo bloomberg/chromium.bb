@@ -15,7 +15,7 @@
 #include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.cc"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.cc"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_item.h"
@@ -260,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserResourceThrottleExtensionApiTest, Basic) {
   // Get child and routing id from the current web contents (the real values
   // should be used so the FileBrowserHandlerEventRouter can correctly extract
   // profile from them).
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   int child_id = web_contents->GetRenderProcessHost()->GetID();
   int routing_id = web_contents->GetRoutingID();
@@ -365,7 +366,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserResourceThrottleExtensionApiTest,
       downloads_dir_.path().Append(FILE_PATH_LITERAL("download_target.txt"));
 
   // Set the downloads parameters.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents, url));

@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -128,11 +128,11 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
                                       false,
                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
         content::PageNavigator* navigator = NULL;
-        if (!browser || !chrome::GetActiveWebContents(browser)) {
+        if (!browser || !browser->tab_strip_model()->GetActiveWebContents()) {
           navigator = &navigator_impl;
         } else {
           browser->window()->Activate();
-          navigator = chrome::GetActiveWebContents(browser);
+          navigator = browser->tab_strip_model()->GetActiveWebContents();
         }
 
         chrome::OpenAll(parent_widget()->GetNativeWindow(), navigator,

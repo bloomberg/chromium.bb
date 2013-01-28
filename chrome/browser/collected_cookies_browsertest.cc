@@ -9,7 +9,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -36,7 +36,8 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
       browser(), test_server()->GetURL("files/cookie1.html"));
 
   // Click on the info link twice.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   chrome::ShowCollectedCookiesDialog(web_contents);
   chrome::ShowCollectedCookiesDialog(web_contents);
 }
@@ -53,7 +54,8 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
       browser(), test_server()->GetURL("files/cookie1.html"));
 
   // Click on the info link.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   chrome::ShowCollectedCookiesDialog(web_contents);
 
   // Navigate to another page.

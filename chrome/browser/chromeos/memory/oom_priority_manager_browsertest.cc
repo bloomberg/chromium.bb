@@ -6,7 +6,6 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -117,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   reload1.Wait();
   // Make sure the FindBarController gets the right WebContents.
   EXPECT_EQ(browser()->GetFindBarController()->web_contents(),
-            chrome::GetActiveWebContents(browser()));
+            browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(0));
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(1));

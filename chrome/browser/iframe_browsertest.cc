@@ -5,7 +5,7 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -19,7 +19,7 @@ class IFrameTest : public InProcessBrowserTest {
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(ASCIIToUTF16(page_title),
-              chrome::GetActiveWebContents(browser())->GetTitle());
+              browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   }
 };
 

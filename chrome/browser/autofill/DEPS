@@ -42,6 +42,7 @@ specific_include_rules = {
     "!chrome/browser/ui/browser.h",
     "!chrome/browser/ui/browser_tabstrip.h",
     "!chrome/browser/ui/browser_window.h",
+    "!chrome/browser/ui/tabs/tab_strip_model.h",
   ],
 
   # TODO(joi): May be able to get rid of the need for this by moving

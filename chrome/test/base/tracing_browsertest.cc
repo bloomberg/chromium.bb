@@ -7,7 +7,8 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -29,8 +30,8 @@ class TracingBrowserTest : public InProcessBrowserTest {
   // Execute some no-op javascript on the current tab - this triggers a trace
   // event in RenderViewImpl::OnScriptEvalRequest (from the renderer process).
   void ExecuteJavascriptOnCurrentTab() {
-    content::RenderViewHost* rvh =
-        chrome::GetActiveWebContents(browser())->GetRenderViewHost();
+    content::RenderViewHost* rvh = browser()->tab_strip_model()->
+        GetActiveWebContents()->GetRenderViewHost();
     ASSERT_TRUE(rvh);
     ASSERT_TRUE(content::ExecuteScript(rvh, ";"));
   }

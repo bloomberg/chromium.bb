@@ -15,8 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -220,7 +220,7 @@ class ThroughputTest : public BrowserPerfTest {
 
     gfx::Rect root_bounds = browser()->window()->GetBounds();
     gfx::Rect tab_contents_bounds;
-    chrome::GetActiveWebContents(browser())->GetContainerBounds(
+    browser()->tab_strip_model()->GetActiveWebContents()->GetContainerBounds(
         &tab_contents_bounds);
 
     gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
@@ -327,7 +327,8 @@ class ThroughputTest : public BrowserPerfTest {
     LOG(INFO) << gurl_.possibly_invalid_spec();
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), gurl_, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-    content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+    content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents());
 
     // Let the test spin up.
     LOG(INFO) << "Spinning up test...";
@@ -389,7 +390,7 @@ class ThroughputTest : public BrowserPerfTest {
 
     // Close the tab so that we can quit without timing out during the
     // wait-for-idle stage in browser_test framework.
-    chrome::GetActiveWebContents(browser())->Close();
+    browser()->tab_strip_model()->GetActiveWebContents()->Close();
   }
 
  private:

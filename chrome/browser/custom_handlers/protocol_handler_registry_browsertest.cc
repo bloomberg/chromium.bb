@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
@@ -52,7 +52,8 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.link_url = url;
     params.unfiltered_link_url = url;
-    WebContents* web_contents = chrome::GetActiveWebContents(browser());
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
@@ -60,7 +61,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        chrome::GetActiveWebContents(browser()), params);
+        browser()->tab_strip_model()->GetActiveWebContents(), params);
     menu->Init();
     return menu;
   }
@@ -108,5 +109,6 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("foo:test"));
 
-  ASSERT_EQ(handler_url, chrome::GetActiveWebContents(browser())->GetURL());
+  ASSERT_EQ(handler_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }

@@ -22,7 +22,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -590,9 +589,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, ui::EF_CONTROL_DOWN,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &chrome::GetActiveWebContents(browser())->GetController())));
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController())));
 
-    GURL url = chrome::GetActiveWebContents(browser())->GetURL();
+    GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
     EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
   }
 
@@ -626,8 +626,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, 0,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &chrome::GetActiveWebContents(browser())->GetController())));
-    GURL url = chrome::GetActiveWebContents(browser())->GetURL();
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController())));
+    GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
     EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
 
     // Test that entering a single character then Enter performs a search.
@@ -646,8 +647,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, 0,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &chrome::GetActiveWebContents(browser())->GetController())));
-    url = chrome::GetActiveWebContents(browser())->GetURL();
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController())));
+    url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
     EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
   }
 

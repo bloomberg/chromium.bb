@@ -10,7 +10,8 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
@@ -172,7 +173,7 @@ TEST_F(ChromeToMobileServiceTest, CertainSchemesAreRequired) {
   };
 
   content::NavigationController* controller =
-      &chrome::GetActiveWebContents(browser())->GetController();
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     NavigateAndCommit(controller, GURL(cases[i].url));
     EXPECT_EQ(cases[i].enabled, UpdateAndGetVerifiedCommandState());

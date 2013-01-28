@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -22,7 +22,7 @@ const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
 void FullscreenControllerTest::RequestToLockMouse(
     bool user_gesture,
     bool last_unlocked_by_target) {
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   browser()->RequestToLockMouse(tab, user_gesture,
       last_unlocked_by_target);
 }

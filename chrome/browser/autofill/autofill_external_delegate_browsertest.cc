@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/navigation_controller.h"
@@ -56,7 +57,7 @@ class AutofillExternalDelegateBrowserTest
   virtual ~AutofillExternalDelegateBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    web_contents_ = chrome::GetActiveWebContents(browser());
+    web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents_ != NULL);
     Observe(web_contents_);
 

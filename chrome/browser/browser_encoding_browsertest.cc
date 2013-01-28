@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -123,7 +123,7 @@ class BrowserEncodingTest
     SavePackageFinishedObserver observer(
         content::BrowserContext::GetDownloadManager(browser()->profile()),
         loop_runner->QuitClosure());
-    chrome::GetActiveWebContents(browser())->SavePage(
+    browser()->tab_strip_model()->GetActiveWebContents()->SavePage(
         full_file_name, temp_sub_resource_dir_,
         content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
     loop_runner->Run();
@@ -165,7 +165,8 @@ IN_PROC_BROWSER_TEST_P(BrowserEncodingTest, TestEncodingAliasMapping) {
   GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(GetParam().encoding_name,
-            chrome::GetActiveWebContents(browser())->GetEncoding());
+            browser()->tab_strip_model()->GetActiveWebContents()->
+                GetEncoding());
 }
 
 INSTANTIATE_TEST_CASE_P(EncodingAliases,
@@ -183,7 +184,8 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
   GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
   ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ("ISO-8859-1", web_contents->GetEncoding());
 
   // Override the encoding to "gb18030".
@@ -288,7 +290,8 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
   browser()->profile()->GetPrefs()->SetString(prefs::kDefaultCharset,
                                               "ISO-8859-4");
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas); ++i) {
     // Disable auto detect if it is on.
     browser()->profile()->GetPrefs()->SetBoolean(

@@ -9,7 +9,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -47,7 +47,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
                                const std::string& result) {
     std::string data;
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        chrome::GetActiveWebContents(browser()), script, &data));
+        browser()->tab_strip_model()->GetActiveWebContents(), script, &data));
     ASSERT_EQ(data, result);
   }
 

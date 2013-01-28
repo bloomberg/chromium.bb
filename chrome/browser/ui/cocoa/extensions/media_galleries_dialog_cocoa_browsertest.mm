@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -26,7 +27,8 @@ class MediaGalleriesDialogBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   NiceMock<MediaGalleriesDialogControllerMock> controller;
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_CALL(controller, web_contents()).
       WillRepeatedly(Return(web_contents));
 

@@ -8,7 +8,8 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -209,7 +210,7 @@ GURL NaClBrowserTestBase::TestURL(const FilePath::StringType& url_fragment) {
 bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
                                             TestMessageHandler* handler) {
   JavascriptTestObserver observer(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       handler);
   ui_test_utils::NavigateToURL(browser(), url);
   return observer.Run();

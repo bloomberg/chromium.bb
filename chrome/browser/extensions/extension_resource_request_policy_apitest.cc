@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       browser(), web_resource.ReplaceComponents(make_host_a_com));
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
           "non_existent_extension.html"));
   ui_test_utils::NavigateToURL(browser(), non_existent_extension);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Image failed to load");
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(browser(),
       GURL(std::string("data:text/html;charset=utf-8,") + file_source));
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       browser(),
       GURL("chrome-extension://pbkkcbgdkliohhfaeefcijaghglkahja/index.html"));
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/accessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("Loaded", result);
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   ui_test_utils::NavigateToURL(
       browser(), xhr_accessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("XHR completed with status: 200", result);
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   ui_test_utils::NavigateToURL(
       browser(), xhr_inaccessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("XHR failed to load resource", result);
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonaccessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("Image failed to load", result);
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonexistent_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonexistent_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("Image failed to load", result);
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonaccessible_chrome_resource_scheme.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_cer_resource);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("Loading CER:// failed.", result);
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), accessible_newtab_override, 2);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("New Tab Page Loaded Successfully", result);
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/accessible_resource_with_csp.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource_with_csp);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ("Loaded", result);

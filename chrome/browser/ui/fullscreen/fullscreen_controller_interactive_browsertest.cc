@@ -7,9 +7,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -50,7 +50,7 @@ class FullscreenControllerInteractiveTest
     // Verify that IsMouseLocked is consistent between the
     // Fullscreen Controller and the Render View Host View.
     EXPECT_TRUE(browser()->IsMouseLocked() ==
-                chrome::GetActiveWebContents(browser())->
+                browser()->tab_strip_model()->GetActiveWebContents()->
                     GetRenderViewHost()->GetView()->IsMouseLocked());
     return browser()->IsMouseLocked();
   }
@@ -156,7 +156,7 @@ FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
 
 void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
     bool enter_fullscreen, bool retry_until_success) {
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   do {
     FullscreenNotificationObserver fullscreen_observer;
     browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(
 
   AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   {
     FullscreenNotificationObserver fullscreen_observer;

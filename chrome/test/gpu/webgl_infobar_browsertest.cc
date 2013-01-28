@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -85,7 +85,8 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
   infobar_added.Wait();
   EXPECT_EQ(1u,
             InfoBarService::FromWebContents(
-                chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
+                browser()->tab_strip_model()->GetActiveWebContents())->
+                    GetInfoBarCount());
 }
 
 IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
@@ -117,12 +118,13 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
         content::NotificationService::AllSources());
   SimulateGPUCrash(browser());
   infobar_added.Wait();
-  ASSERT_EQ(1u,
+  EXPECT_EQ(1u,
             InfoBarService::FromWebContents(
-                chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
-  InfoBarDelegate* delegate =
-      InfoBarService::FromWebContents(
-          chrome::GetActiveWebContents(browser()))->GetInfoBarDelegateAt(0);
+                browser()->tab_strip_model()->GetActiveWebContents())->
+                    GetInfoBarCount());
+  InfoBarDelegate* delegate = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents())->
+          GetInfoBarDelegateAt(0);
   ASSERT_TRUE(delegate);
   ASSERT_TRUE(delegate->AsThreeDAPIInfoBarDelegate());
   delegate->AsConfirmInfoBarDelegate()->Cancel();

@@ -17,7 +17,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -74,7 +74,8 @@ PreferencesBrowserTest::~PreferencesBrowserTest() {
 void PreferencesBrowserTest::SetUpOnMainThread() {
   ui_test_utils::NavigateToURL(browser(),
                                GURL(chrome::kChromeUISettingsFrameURL));
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
