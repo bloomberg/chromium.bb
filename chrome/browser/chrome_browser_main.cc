@@ -1372,6 +1372,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
 
+  content::WebUIControllerFactory::RegisterFactory(
+      ChromeWebUIControllerFactory::GetInstance());
+
 #if !defined(OS_ANDROID)
   // Most general initialization is behind us, but opening a
   // tab and/or session restore and such is still to be done.
@@ -1389,9 +1392,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   std::vector<Profile*> last_opened_profiles =
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
-
-  content::WebUIControllerFactory::RegisterFactory(
-      ChromeWebUIControllerFactory::GetInstance());
 
   if (browser_creator_->Start(parsed_command_line(), FilePath(),
                               profile_, last_opened_profiles, &result_code)) {
