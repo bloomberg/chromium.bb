@@ -546,9 +546,10 @@ void NetworkIcon::UpdateIcon(const Network* network) {
 }
 
 void NetworkIcon::GenerateImage() {
-  if (icon_.isNull())
-    return;
-
+  if (icon_.isNull()) {
+    set_icon(NetworkMenuIcon::GetDisconnectedImage(
+        NetworkMenuIcon::ARCS, resource_color_theme_));
+  }
   image_ = NetworkMenuIcon::GenerateImageFromComponents(icon_, top_left_badge_,
       top_right_badge_, bottom_left_badge_, bottom_right_badge_);
 }

@@ -33,6 +33,10 @@ namespace {
 // detailed view.
 const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
 
+// Duration of swipe animation used when transitioning from a default to
+// detailed view or vice versa.
+const int kSwipeDelayMS = 150;
+
 // A view with some special behaviour for tray items in the popup:
 // - optionally changes background color on hover.
 class TrayPopupItemContainer : public views::View {
@@ -149,54 +153,55 @@ void SystemTrayBubble::UpdateView(
     const std::vector<ash::SystemTrayItem*>& items,
     BubbleType bubble_type) {
   DCHECK(bubble_type != BUBBLE_TYPE_NOTIFICATION);
-  DCHECK(bubble_type != bubble_type_);
 
-  const int kSwipeDelayMS = 150;
-  base::TimeDelta swipe_duration =
-      base::TimeDelta::FromMilliseconds(kSwipeDelayMS);
-  scoped_ptr<ui::Layer> scoped_layer(bubble_view_->RecreateLayer());
-  // Keep the reference to layer as we need it after releasing it.
-  ui::Layer* layer = scoped_layer.get();
-  DCHECK(layer);
-  layer->SuppressPaint();
+  scoped_ptr<ui::Layer> scoped_layer;
+  if (bubble_type != bubble_type_) {
+    base::TimeDelta swipe_duration =
+        base::TimeDelta::FromMilliseconds(kSwipeDelayMS);
+    scoped_layer.reset(bubble_view_->RecreateLayer());
+    // Keep the reference to layer as we need it after releasing it.
+    ui::Layer* layer = scoped_layer.get();
+    DCHECK(layer);
+    layer->SuppressPaint();
 
-  // When transitioning from detailed view to default view, animate the existing
-  // view (slide out towards the right).
-  if (bubble_type == BUBBLE_TYPE_DEFAULT) {
-    // Make sure the old view is visibile over the new view during the
-    // animation.
-    layer->parent()->StackAbove(layer, bubble_view_->layer());
-    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.AddObserver(
-        new AnimationObserverDeleteLayer(scoped_layer.release()));
-    settings.SetTransitionDuration(swipe_duration);
-    settings.SetTweenType(ui::Tween::EASE_OUT);
-    gfx::Transform transform;
-    transform.Translate(layer->bounds().width(), 0.0);
-    layer->SetTransform(transform);
-  }
+    // When transitioning from detailed view to default view, animate the
+    // existing view (slide out towards the right).
+    if (bubble_type == BUBBLE_TYPE_DEFAULT) {
+      // Make sure the old view is visibile over the new view during the
+      // animation.
+      layer->parent()->StackAbove(layer, bubble_view_->layer());
+      ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+      settings.AddObserver(
+          new AnimationObserverDeleteLayer(scoped_layer.release()));
+      settings.SetTransitionDuration(swipe_duration);
+      settings.SetTweenType(ui::Tween::EASE_OUT);
+      gfx::Transform transform;
+      transform.Translate(layer->bounds().width(), 0.0);
+      layer->SetTransform(transform);
+    }
 
-  {
-    // Add a shadow layer to make the old layer darker as the animation
-    // progresses.
-    ui::Layer* shadow = new ui::Layer(ui::LAYER_SOLID_COLOR);
-    shadow->SetColor(SK_ColorBLACK);
-    shadow->SetOpacity(0.01f);
-    shadow->SetBounds(layer->bounds());
-    layer->Add(shadow);
-    layer->StackAtTop(shadow);
     {
-      // Animate the darkening effect a little longer than the swipe-in. This is
-      // to make sure the darkening animation does not end up finishing early,
-      // because the dark layer goes away at the end of the animation, and there
-      // is a brief moment when the old view is still visible, but it does not
-      // have the shadow layer on top.
-      ui::ScopedLayerAnimationSettings settings(shadow->GetAnimator());
-      settings.AddObserver(new AnimationObserverDeleteLayer(shadow));
-      settings.SetTransitionDuration(swipe_duration +
-                                     base::TimeDelta::FromMilliseconds(150));
-      settings.SetTweenType(ui::Tween::LINEAR);
-      shadow->SetOpacity(0.15f);
+      // Add a shadow layer to make the old layer darker as the animation
+      // progresses.
+      ui::Layer* shadow = new ui::Layer(ui::LAYER_SOLID_COLOR);
+      shadow->SetColor(SK_ColorBLACK);
+      shadow->SetOpacity(0.01f);
+      shadow->SetBounds(layer->bounds());
+      layer->Add(shadow);
+      layer->StackAtTop(shadow);
+      {
+        // Animate the darkening effect a little longer than the swipe-in. This
+        // is to make sure the darkening animation does not end up finishing
+        // early, because the dark layer goes away at the end of the animation,
+        // and there is a brief moment when the old view is still visible, but
+        // it does not have the shadow layer on top.
+        ui::ScopedLayerAnimationSettings settings(shadow->GetAnimator());
+        settings.AddObserver(new AnimationObserverDeleteLayer(shadow));
+        settings.SetTransitionDuration(swipe_duration +
+                                       base::TimeDelta::FromMilliseconds(150));
+        settings.SetTweenType(ui::Tween::LINEAR);
+        shadow->SetOpacity(0.15f);
+      }
     }
   }
 
@@ -220,21 +225,24 @@ void SystemTrayBubble::UpdateView(
     bubble_view_->SetMaxHeight(0);  // Clear max height limit.
   }
 
-  // When transitioning from default view to detailed view, animate the new
-  // view (slide in from the right).
-  if (bubble_type == BUBBLE_TYPE_DETAILED) {
-    ui::Layer* new_layer = bubble_view_->layer();
-    gfx::Rect bounds = new_layer->bounds();
-    gfx::Transform transform;
-    transform.Translate(bounds.width(), 0.0);
-    new_layer->SetTransform(transform);
-    {
-      ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
-      settings.AddObserver(
-          new AnimationObserverDeleteLayer(scoped_layer.release()));
-      settings.SetTransitionDuration(swipe_duration);
-      settings.SetTweenType(ui::Tween::EASE_OUT);
-      new_layer->SetTransform(gfx::Transform());
+  if (scoped_layer.get()) {
+    // When transitioning from default view to detailed view, animate the new
+    // view (slide in from the right).
+    if (bubble_type == BUBBLE_TYPE_DETAILED) {
+      ui::Layer* new_layer = bubble_view_->layer();
+      gfx::Rect bounds = new_layer->bounds();
+      gfx::Transform transform;
+      transform.Translate(bounds.width(), 0.0);
+      new_layer->SetTransform(transform);
+      {
+        ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
+        settings.AddObserver(
+            new AnimationObserverDeleteLayer(scoped_layer.release()));
+        settings.SetTransitionDuration(
+            base::TimeDelta::FromMilliseconds(kSwipeDelayMS));
+        settings.SetTweenType(ui::Tween::EASE_OUT);
+        new_layer->SetTransform(gfx::Transform());
+      }
     }
   }
 }

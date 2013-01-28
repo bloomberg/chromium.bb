@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
@@ -26,6 +27,13 @@ class VpnDefaultView : public TrayItemMore {
   }
 
   virtual ~VpnDefaultView() {}
+
+  static bool ShouldShow() {
+    // Do not show VPN line in uber tray bubble if VPN is not configured.
+    std::vector<NetworkIconInfo> list;
+    Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(&list);
+    return list.size() != 0;
+  }
 
   void Update() {
     NetworkIconInfo info;
@@ -153,10 +161,7 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
     return NULL;
 
-  // Do not show VPN line in uber tray bubble if VPN is not configured.
-  std::vector<NetworkIconInfo> list;
-  Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(&list);
-  if (list.size() == 0)
+  if (!tray::VpnDefaultView::ShouldShow())
     return NULL;
 
   default_ = new tray::VpnDefaultView(this, status != user::LOGGED_IN_LOCKED);
@@ -196,8 +201,16 @@ void TrayVPN::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayVPN::OnNetworkRefresh(const NetworkIconInfo& info) {
-  if (default_)
+  if (default_) {
     default_->Update();
+  } else if (tray::VpnDefaultView::ShouldShow()) {
+    if (system_tray()->HasSystemBubbleType(
+            SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+      // We created the default view without a VPN view, so rebuild it.
+      system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+    }
+  }
+
   if (detailed_)
     detailed_->ManagerChanged();
 }
