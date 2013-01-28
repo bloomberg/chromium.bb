@@ -84,7 +84,7 @@ FileListContext.prototype.filter = function(entry) {
 /**
  * This class is responsible for scanning directory (or search results),
  * and filling the fileList. Different descendants handle various types of
- * directory contents shown: basic directory, gdata search results, local search
+ * directory contents shown: basic directory, drive search results, local search
  * results.
  * @constructor
  * @param {FileListContext} context The file list context.
@@ -153,7 +153,7 @@ DirectoryContents.prototype.isScanning = function() {
 };
 
 /**
- * @return {boolean} True if search results (gdata or local).
+ * @return {boolean} True if search results (drive or local).
  */
 DirectoryContents.prototype.isSearch = function() {
   return false;
@@ -334,7 +334,7 @@ DirectoryContentsBasic.prototype.getLastNonSearchDirectoryEntry = function() {
  * Start directory scan.
  */
 DirectoryContentsBasic.prototype.scan = function() {
-  if (this.entry_ === DirectoryModel.fakeGDataEntry_) {
+  if (this.entry_ === DirectoryModel.fakeDriveEntry_) {
     this.lastChunkReceived();
     return;
   }
@@ -396,17 +396,17 @@ DirectoryContentsBasic.prototype.createDirectory = function(
 };
 
 /**
- * Delay to be used for gdata search scan.
+ * Delay to be used for drive search scan.
  * The goal is to reduce the number of server requests when user is typing the
  * query.
  */
-DirectoryContentsGDataSearch.SCAN_DELAY = 200;
+DirectoryContentsDriveSearch.SCAN_DELAY = 200;
 
 /**
  * Number of results at which we stop the search.
  * Note that max number of shown results is MAX_RESULTS + search feed size.
  */
-DirectoryContentsGDataSearch.MAX_RESULTS = 999;
+DirectoryContentsDriveSearch.MAX_RESULTS = 999;
 
 /**
  * @constructor
@@ -417,7 +417,7 @@ DirectoryContentsGDataSearch.MAX_RESULTS = 999;
  *     before the search.
  * @param {string} query Search query.
  */
-function DirectoryContentsGDataSearch(context,
+function DirectoryContentsDriveSearch(context,
                                       dirEntry,
                                       previousDirEntry,
                                       query) {
@@ -433,14 +433,14 @@ function DirectoryContentsGDataSearch(context,
 /**
  * Extends DirectoryContents.
  */
-DirectoryContentsGDataSearch.prototype.__proto__ = DirectoryContents.prototype;
+DirectoryContentsDriveSearch.prototype.__proto__ = DirectoryContents.prototype;
 
 /**
  * Create the copy of the object, but without scan started.
  * @return {DirectoryContentsBasic} Object copy.
  */
-DirectoryContentsGDataSearch.prototype.clone = function() {
-  return new DirectoryContentsGDataSearch(
+DirectoryContentsDriveSearch.prototype.clone = function() {
+  return new DirectoryContentsDriveSearch(
       this.context_, this.directoryEntry_,
       this.previousDirectoryEntry_, this.query_);
 };
@@ -448,7 +448,7 @@ DirectoryContentsGDataSearch.prototype.clone = function() {
 /**
  * @return {boolean} True if this is search results (yes).
  */
-DirectoryContentsGDataSearch.prototype.isSearch = function() {
+DirectoryContentsDriveSearch.prototype.isSearch = function() {
   return true;
 };
 
@@ -456,7 +456,7 @@ DirectoryContentsGDataSearch.prototype.isSearch = function() {
  * @return {DirectoryEntry} A DirectoryEntry for the top directory from which
  *     search is run (i.e. drive root).
  */
-DirectoryContentsGDataSearch.prototype.getDirectoryEntry = function() {
+DirectoryContentsDriveSearch.prototype.getDirectoryEntry = function() {
   return this.directoryEntry_;
 };
 
@@ -464,7 +464,7 @@ DirectoryContentsGDataSearch.prototype.getDirectoryEntry = function() {
  * @return {DirectoryEntry} DirectoryEntry for the directory that was current
  *     before the search.
  */
-DirectoryContentsGDataSearch.prototype.getLastNonSearchDirectoryEntry =
+DirectoryContentsDriveSearch.prototype.getLastNonSearchDirectoryEntry =
     function() {
   return this.previousDirectoryEntry_;
 };
@@ -472,24 +472,24 @@ DirectoryContentsGDataSearch.prototype.getLastNonSearchDirectoryEntry =
 /**
  * @return {string} The path.
  */
-DirectoryContentsGDataSearch.prototype.getPath = function() {
+DirectoryContentsDriveSearch.prototype.getPath = function() {
   return this.directoryEntry_.fullPath;
 };
 
 /**
  * Start directory scan.
  */
-DirectoryContentsGDataSearch.prototype.scan = function() {
+DirectoryContentsDriveSearch.prototype.scan = function() {
   // Let's give another search a chance to cancel us before we begin.
   setTimeout(this.readNextChunk.bind(this),
-             DirectoryContentsGDataSearch.SCAN_DELAY);
+             DirectoryContentsDriveSearch.SCAN_DELAY);
 };
 
 /**
  * All the results are read in one chunk, so when we try to read second chunk,
  * it means we're done.
  */
-DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
+DirectoryContentsDriveSearch.prototype.readNextChunk = function() {
   if (this.scanCancelled_)
     return;
 
@@ -507,7 +507,7 @@ DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
     }
     this.nextFeed_ = nextFeed;
     this.fetchedResultsNum_ += results.length;
-    if (this.fetchedResultsNum_ >= DirectoryContentsGDataSearch.MAX_RESULTS)
+    if (this.fetchedResultsNum_ >= DirectoryContentsDriveSearch.MAX_RESULTS)
       this.nextFeed_ = '';
 
     this.done_ = (this.nextFeed_ == '');
@@ -562,7 +562,7 @@ DirectoryContentsLocalSearch.prototype.getPath = function() {
 };
 
 /**
- * @return {boolean} True if search results (gdata or local).
+ * @return {boolean} True if search results (drive or local).
  */
 DirectoryContentsLocalSearch.prototype.isSearch = function() {
   return true;

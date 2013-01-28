@@ -17,7 +17,7 @@ function FileSelection(fileManager, indexes) {
   this.directoryCount = 0;
   this.bytes = 0;
   this.showBytes = false;
-  this.allGDataFilesPresent = false,
+  this.allDriveFilesPresent = false,
   this.iconType = null;
   this.cancelled_ = false;
   this.bytesKnown = false;
@@ -55,15 +55,15 @@ function FileSelection(fileManager, indexes) {
  * @param {function} callback The callback.
  */
 FileSelection.prototype.createTasks = function(callback) {
-  if (!this.fileManager_.isOnGData()) {
+  if (!this.fileManager_.isOnDrive()) {
     this.tasks.init(this.urls);
     callback();
     return;
   }
 
-  this.fileManager_.metadataCache_.get(this.urls, 'gdata', function(props) {
+  this.fileManager_.metadataCache_.get(this.urls, 'drive', function(props) {
     var present = props.filter(function(p) { return p && p.availableOffline });
-    this.allGDataFilesPresent = present.length == props.length;
+    this.allDriveFilesPresent = present.length == props.length;
 
     // Collect all of the mime types and push that info into the selection.
     this.mimeTypes = props.map(function(value) {
@@ -274,14 +274,14 @@ FileSelectionHandler.prototype.updateOkButton = function() {
 /**
   * Check if all the files in the current selection are available. The only
   * case when files might be not available is when the selection contains
-  * uncached GData files and the browser is offline.
+  * uncached Drive files and the browser is offline.
   * @return {boolean} True if all files in the current selection are
   *                   available.
   */
 FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
-  return !this.fileManager_.isOnGData() ||
+  return !this.fileManager_.isOnDrive() ||
       !this.fileManager_.isOffline() ||
-      this.selection.allGDataFilesPresent;
+      this.selection.allDriveFilesPresent;
 };
 
 /**

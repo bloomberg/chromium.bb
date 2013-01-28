@@ -292,7 +292,7 @@ chrome.fileBrowserPrivate = {
   addMount: function(source, type, options, callback) {
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       var path =
-          (type == 'gdata') ?
+          (type == 'drive') ?
           '/drive' :
           ('/archive/archive' + (++chrome.fileBrowserPrivate.archiveCount_));
       callback(source);
@@ -371,7 +371,7 @@ chrome.fileBrowserPrivate = {
       if (urlLocalPath.indexOf('readonly') != -1) {
         metadata.isReadOnly = true;
       }
-    } else if (urlStartsWith('/gdata')) {
+    } else if (urlStartsWith('/drive')) {
       metadata.deviceType = 'network';
     } else {
       metadata.deviceType = 'file';
@@ -406,7 +406,7 @@ chrome.fileBrowserPrivate = {
 
   getPreferences: function(callback) {
     setTimeout(callback, 0, cloneShallow(
-        chrome.fileBrowserPrivate.gdataPreferences_));
+        chrome.fileBrowserPrivate.drivePreferences_));
   },
 
   setPreferences: function(preferences) {
@@ -473,7 +473,7 @@ chrome.fileBrowserPrivate = {
       CHROMEOS_RELEASE_BOARD: 'stumpy',
 
       DRIVE_DIRECTORY_LABEL: 'Google Drive',
-      ENABLE_GDATA: true,
+      ENABLE_DRIVE: true,
       PDF_VIEW_ENABLED: true,
 
       ROOT_DIRECTORY_LABEL: 'Files',

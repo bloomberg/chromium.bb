@@ -10,7 +10,7 @@ var RootType = {
   DOWNLOADS: 'downloads',
   ARCHIVE: 'archive',
   REMOVABLE: 'removable',
-  GDATA: 'gdata'
+  DRIVE: 'drive'
 };
 
 /**
@@ -21,7 +21,7 @@ var RootDirectory = {
   DOWNLOADS: '/Downloads',
   ARCHIVE: '/archive',
   REMOVABLE: '/removable',
-  GDATA: '/drive'
+  DRIVE: '/drive'
 };
 
 var PathUtil = {};
@@ -87,7 +87,7 @@ PathUtil.join = function() {
 
 /**
  * @param {string} path Path starting with '/'.
- * @return {RootType} RootType.DOWNLOADS, RootType.GDATA etc.
+ * @return {RootType} RootType.DOWNLOADS, RootType.DRIVE etc.
  */
 PathUtil.getRootType = function(path) {
   var rootDir = PathUtil.getRootDirectory(path);
@@ -104,7 +104,7 @@ PathUtil.getRootType = function(path) {
 PathUtil.getRootPath = function(path) {
   var type = PathUtil.getRootType(path);
 
-  if (type == RootType.DOWNLOADS || type == RootType.GDATA)
+  if (type == RootType.DOWNLOADS || type == RootType.DRIVE)
     return PathUtil.getRootDirectory(path);
 
   if (type == RootType.ARCHIVE || type == RootType.REMOVABLE) {
@@ -169,10 +169,8 @@ PathUtil.getRootLabel = function(path) {
   if (PathUtil.isParentPath(RootDirectory.REMOVABLE, path))
     return path.substring(RootDirectory.REMOVABLE.length + 1);
 
-  if (path === RootDirectory.GDATA)
+  if (path === RootDirectory.DRIVE)
     return str('DRIVE_DIRECTORY_LABEL');
 
   return path;
 };
-
-

@@ -31,12 +31,12 @@ CommandUtil.getCommandRootType = function(event, rootsList) {
 };
 
 /**
- * Checks if command can be executed on gdata.
+ * Checks if command can be executed on drive.
  * @param {Event} event Command event to mark.
  * @param {FileManager} fileManager FileManager to use.
  */
-CommandUtil.canExecuteOnGDataOnly = function(event, fileManager) {
-  event.canExecute = fileManager.isOnGData();
+CommandUtil.canExecuteOnDriveOnly = function(event, fileManager) {
+  event.canExecute = fileManager.isOnDrive();
 };
 
 /**
@@ -180,7 +180,7 @@ Commands.importCommand = {
   },
   canExecute: function(event, rootsList) {
     event.canExecute =
-        (CommandUtil.getCommandRootType(event, rootsList) != RootType.GDATA);
+        (CommandUtil.getCommandRootType(event, rootsList) != RootType.DRIVE);
   }
 };
 
@@ -242,53 +242,53 @@ Commands.renameFileCommand = {
 };
 
 /**
- * Opens gdata help.
+ * Opens drive help.
  */
-Commands.gdataHelpCommand = {
+Commands.driveHelpCommand = {
   execute: function() {
     window.open(FileManager.GOOGLE_DRIVE_HELP, 'help');
   },
-  canExecute: CommandUtil.canExecuteOnGDataOnly
+  canExecute: CommandUtil.canExecuteOnDriveOnly
 };
 
 /**
- * Opens gdata buy-more-space url.
+ * Opens drive buy-more-space url.
  */
-Commands.gdataBuySpaceCommand = {
+Commands.driveBuySpaceCommand = {
   execute: function() {
     window.open(FileManager.GOOGLE_DRIVE_BUY_STORAGE, 'buy-more-space');
   },
-  canExecute: CommandUtil.canExecuteOnGDataOnly
+  canExecute: CommandUtil.canExecuteOnDriveOnly
 };
 
 /**
- * Clears gdata cache.
+ * Clears drive cache.
  */
-Commands.gdataClearCacheCommand = {
+Commands.driveClearCacheCommand = {
   execute: function() {
     chrome.fileBrowserPrivate.clearDriveCache();
   },
-  canExecute: CommandUtil.canExecuteOnGDataOnly
+  canExecute: CommandUtil.canExecuteOnDriveOnly
 };
 
 /**
  * Reload the metadata of the file system from the server
  */
-Commands.gdataReloadCommand = {
+Commands.driveReloadCommand = {
   execute: function() {
     chrome.fileBrowserPrivate.reloadDrive();
   },
-  canExecute: CommandUtil.canExecuteOnGDataOnly
+  canExecute: CommandUtil.canExecuteOnDriveOnly
 };
 
 /**
  * Opens drive.google.com.
  */
-Commands.gdataGoToDriveCommand = {
+Commands.driveGoToDriveCommand = {
   execute: function() {
-    window.open(FileManager.GOOGLE_DRIVE_ROOT, 'gdata-root');
+    window.open(FileManager.GOOGLE_DRIVE_ROOT, 'drive-root');
   },
-  canExecute: CommandUtil.canExecuteOnGDataOnly
+  canExecute: CommandUtil.canExecuteOnDriveOnly
 };
 
 /**
@@ -345,9 +345,9 @@ Commands.togglePinnedCommand = {
         fileManager.metadataCache_.get(entry, 'filesystem', showError);
       }
       // We don't have update events yet, so clear the cached data.
-      fileManager.metadataCache_.clear(entry, 'gdata');
-      fileManager.metadataCache_.get(entry, 'gdata', function(gdata) {
-        fileManager.updateMetadataInUI_('gdata', [entry.toURL()], [gdata]);
+      fileManager.metadataCache_.clear(entry, 'drive');
+      fileManager.metadataCache_.get(entry, 'drive', function(drive) {
+        fileManager.updateMetadataInUI_('drive', [entry.toURL()], [drive]);
       });
     }
 
@@ -355,16 +355,16 @@ Commands.togglePinnedCommand = {
   },
   canExecute: function(event, fileManager) {
     var entry = CommandUtil.getSingleEntry(event, fileManager);
-    var gdata = entry && fileManager.metadataCache_.getCached(entry, 'gdata');
+    var drive = entry && fileManager.metadataCache_.getCached(entry, 'drive');
 
-    if (!fileManager.isOnGData() || !entry || entry.isDirectory || !gdata ||
-        gdata.hosted) {
+    if (!fileManager.isOnDrive() || !entry || entry.isDirectory || !drive ||
+        drive.hosted) {
       event.canExecute = false;
       event.command.setHidden(true);
     } else {
       event.canExecute = true;
       event.command.setHidden(false);
-      event.command.checked = gdata.pinned;
+      event.command.checked = drive.pinned;
     }
   }
 };
@@ -376,12 +376,12 @@ Commands.zipSelectionCommand = {
   execute: function(event, fileManager) {
     var dirEntry = fileManager.directoryModel_.getCurrentDirEntry();
     var selectionEntries = fileManager.getSelection().entries;
-    fileManager.copyManager_.zipSelection(dirEntry, fileManager.isOnGData(),
+    fileManager.copyManager_.zipSelection(dirEntry, fileManager.isOnDrive(),
                                           selectionEntries);
   },
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.isOnGData() && selection &&
+    event.canExecute = !fileManager.isOnDrive() && selection &&
         selection.totalCount > 0;
   }
 };

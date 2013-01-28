@@ -226,8 +226,8 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
   var fm = this.fileManager_;
   var urls = this.urls_;
 
-  if (fm.isOnGData() && fm.isOffline()) {
-    fm.metadataCache_.get(urls, 'gdata', function(props) {
+  if (fm.isOnDrive() && fm.isOffline()) {
+    fm.metadataCache_.get(urls, 'drive', function(props) {
       if (areAll(props, 'availableOffline')) {
         callback();
         return;
@@ -249,9 +249,9 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
     return;
   }
 
-  if (fm.isOnGData() && fm.isOnMeteredConnection()) {
-    fm.metadataCache_.get(urls, 'gdata', function(gdataProps) {
-      if (areAll(gdataProps, 'availableWhenMetered')) {
+  if (fm.isOnDrive() && fm.isOnMeteredConnection()) {
+    fm.metadataCache_.get(urls, 'drive', function(driveProps) {
+      if (areAll(driveProps, 'availableWhenMetered')) {
         callback();
         return;
       }
@@ -259,7 +259,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       fm.metadataCache_.get(urls, 'filesystem', function(fileProps) {
         var sizeToDownload = 0;
         for (var i = 0; i != urls.length; i++) {
-          if (!gdataProps[i].availableWhenMetered)
+          if (!driveProps[i].availableWhenMetered)
             sizeToDownload += fileProps[i].size;
         }
         fm.confirm.show(
@@ -421,7 +421,7 @@ FileTasks.prototype.openGallery = function(urls) {
     var downloadsDir = fm.directoryModel_.getRootsList().item(0);
     var readonlyDirName = null;
     if (readonly) {
-      readonlyDirName = fm.isOnGData() ?
+      readonlyDirName = fm.isOnDrive() ?
           PathUtil.getRootLabel(PathUtil.getRootPath(currentDir.fullPath)) :
           fm.directoryModel_.getCurrentRootName();
     }
@@ -435,7 +435,7 @@ FileTasks.prototype.openGallery = function(urls) {
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
       onClose: onClose,
-      allowMosaic: fm.isOnGData(),
+      allowMosaic: fm.isOnDrive(),
       onThumbnailError: function(imageURL) {
         fm.metadataCache_.refreshFileMetadata(imageURL);
       },
@@ -581,4 +581,3 @@ FileTasks.decorate('display');
 FileTasks.decorate('updateMenuItem');
 FileTasks.decorate('execute');
 FileTasks.decorate('executeDefault');
-

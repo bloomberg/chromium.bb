@@ -39,7 +39,7 @@ function FileManager(dialogDom) {
   this.showDelayTimeout_ = null;
 
   this.filesystemObserverId_ = null;
-  this.gdataObserverId_ = null;
+  this.driveObserverId_ = null;
 
   this.document_ = dialogDom.ownerDocument;
   this.dialogType = this.params_.type || DialogType.FULL_PAGE;
@@ -204,15 +204,15 @@ DialogType.isModal = function(type) {
         fileManager.updateMetadataInUI_.bind(fileManager, 'filesystem');
     this.thumbnailChangeHandler_ =
         fileManager.updateMetadataInUI_.bind(fileManager, 'thumbnail');
-    this.gdataChangeHandler_ =
-        fileManager.updateMetadataInUI_.bind(fileManager, 'gdata');
+    this.driveChangeHandler_ =
+        fileManager.updateMetadataInUI_.bind(fileManager, 'drive');
 
     var dm = fileManager.directoryModel_;
     this.internalChangeHandler_ = dm.rescan.bind(dm);
 
     this.filesystemObserverId_ = null;
     this.thumbnailObserverId_ = null;
-    this.gdataObserverId_ = null;
+    this.driveObserverId_ = null;
     this.internalObserverId_ = null;
   };
 
@@ -232,10 +232,10 @@ DialogType.isModal = function(type) {
       this.metadataCache_.removeObserver(this.filesystemObserverId_);
     if (this.thumbnailObserverId_)
       this.metadataCache_.removeObserver(this.thumbnailObserverId_);
-    if (this.gdataObserverId_)
-      this.metadataCache_.removeObserver(this.gdataObserverId_);
+    if (this.driveObserverId_)
+      this.metadataCache_.removeObserver(this.driveObserverId_);
     this.filesystemObserverId_ = null;
-    this.gdataObserverId_ = null;
+    this.driveObserverId_ = null;
     this.internalObserverId_ = null;
     if (!entry)
       return;
@@ -252,12 +252,12 @@ DialogType.isModal = function(type) {
         'thumbnail',
         this.thumbnailChangeHandler_);
 
-    if (PathUtil.getRootType(entry.fullPath) === RootType.GDATA) {
-      this.gdataObserverId_ = this.metadataCache_.addObserver(
+    if (PathUtil.getRootType(entry.fullPath) === RootType.DRIVE) {
+      this.driveObserverId_ = this.metadataCache_.addObserver(
           entry,
           MetadataCache.CHILDREN,
-          'gdata',
-          this.gdataChangeHandler_);
+          'drive',
+          this.driveChangeHandler_);
     }
 
     this.internalObserverId_ = this.metadataCache_.addObserver(
@@ -344,7 +344,7 @@ DialogType.isModal = function(type) {
       done();
     });
 
-    // GDATA preferences should be initialized before creating DirectoryModel
+    // DRIVE preferences should be initialized before creating DirectoryModel
     // to tot rebuild the roots list.
     this.updateNetworkStateAndPreferences_(done);
 
@@ -514,11 +514,11 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('#text-context-menu');
     cr.ui.Menu.decorate(this.textContextMenu_);
 
-    this.gdataSettingsMenu_ = this.dialogDom_.querySelector('#gdata-settings');
-    cr.ui.decorate(this.gdataSettingsMenu_, cr.ui.MenuButton);
+    this.driveSettingsMenu_ = this.dialogDom_.querySelector('#drive-settings');
+    cr.ui.decorate(this.driveSettingsMenu_, cr.ui.MenuButton);
 
-    this.gdataSettingsMenu_.addEventListener('menushow',
-        this.onGDataMenuShow_.bind(this));
+    this.driveSettingsMenu_.addEventListener('menushow',
+        this.onDriveMenuShow_.bind(this));
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -562,20 +562,20 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'rename',
         Commands.renameFileCommand, this);
 
-    CommandUtil.registerCommand(doc, 'gdata-buy-more-space',
-        Commands.gdataBuySpaceCommand, this);
+    CommandUtil.registerCommand(doc, 'drive-buy-more-space',
+        Commands.driveBuySpaceCommand, this);
 
-    CommandUtil.registerCommand(doc, 'gdata-help',
-        Commands.gdataHelpCommand, this);
+    CommandUtil.registerCommand(doc, 'drive-help',
+        Commands.driveHelpCommand, this);
 
-    CommandUtil.registerCommand(doc, 'gdata-clear-local-cache',
-        Commands.gdataClearCacheCommand, this);
+    CommandUtil.registerCommand(doc, 'drive-clear-local-cache',
+        Commands.driveClearCacheCommand, this);
 
-    CommandUtil.registerCommand(doc, 'gdata-reload',
-        Commands.gdataReloadCommand, this);
+    CommandUtil.registerCommand(doc, 'drive-reload',
+        Commands.driveReloadCommand, this);
 
-    CommandUtil.registerCommand(doc, 'gdata-go-to-drive',
-        Commands.gdataGoToDriveCommand, this);
+    CommandUtil.registerCommand(doc, 'drive-go-to-drive',
+        Commands.driveGoToDriveCommand, this);
 
     CommandUtil.registerCommand(doc, 'files-app-help',
         Commands.filesAppHelpCommand, this);
@@ -714,12 +714,12 @@ DialogType.isModal = function(type) {
     this.dialogDom_.querySelector('#thumbnail-view').addEventListener(
         'click', this.onThumbnailViewButtonClick_.bind(this));
 
-    this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
-    this.syncButton.addEventListener('activate', this.onGDataPrefClick_.bind(
+    this.syncButton = this.dialogDom_.querySelector('#drive-sync-settings');
+    this.syncButton.addEventListener('activate', this.onDrivePrefClick_.bind(
         this, 'cellularDisabled', false /* not inverted */));
 
-    this.hostedButton = this.dialogDom_.querySelector('#gdata-hosted-settings');
-    this.hostedButton.addEventListener('activate', this.onGDataPrefClick_.bind(
+    this.hostedButton = this.dialogDom_.querySelector('#drive-hosted-settings');
+    this.hostedButton.addEventListener('activate', this.onDrivePrefClick_.bind(
         this, 'hostedFilesDisabled', true /* inverted */));
 
     cr.ui.ComboButton.decorate(this.taskItems_);
@@ -779,7 +779,7 @@ DialogType.isModal = function(type) {
         singleSelection,
         this.metadataCache_,
         this.volumeManager_,
-        this.isGDataEnabled());
+        this.isDriveEnabled());
 
     this.directoryModel_.start();
 
@@ -996,7 +996,7 @@ DialogType.isModal = function(type) {
     // DriveFileSystem, so we need to manually trigger the directory rescan
     // after paste operations complete. Remove this once we emulate file
     // watching functionalities in DriveFileSystem.
-    if (this.isOnGData()) {
+    if (this.isOnDrive()) {
       if (event.reason == 'SUCCESS' || event.reason == 'ERROR' ||
           event.reason == 'CANCELLED') {
         this.directoryModel_.rescanLater();
@@ -1011,7 +1011,7 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
     var currentPath = this.directoryModel_.getCurrentDirPath();
-    if (this.isOnGData() && this.directoryModel_.isSearching())
+    if (this.isOnDrive() && this.directoryModel_.isSearching())
       return;
 
     function inCurrentDirectory(entry) {
@@ -1183,12 +1183,12 @@ DialogType.isModal = function(type) {
     var invokeHandlers = pageLoading && (this.params_.action != 'select') &&
         this.dialogType == DialogType.FULL_PAGE;
 
-    if (PathUtil.getRootType(path) === RootType.GDATA) {
+    if (PathUtil.getRootType(path) === RootType.DRIVE) {
       var tracker = this.directoryModel_.createDirectoryChangeTracker();
-      // Expected finish of setupPath to GData.
+      // Expected finish of setupPath to Drive.
       tracker.exceptInitialChange = true;
       tracker.start();
-      if (!this.isGDataEnabled()) {
+      if (!this.isDriveEnabled()) {
         if (pageLoading)
           this.show_();
         var leafName = path.substr(path.indexOf('/') + 1);
@@ -1196,26 +1196,26 @@ DialogType.isModal = function(type) {
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
       }
-      var gdataPath = RootDirectory.GDATA;
-      if (this.volumeManager_.isMounted(gdataPath)) {
+      var drivePath = RootDirectory.DRIVE;
+      if (this.volumeManager_.isMounted(drivePath)) {
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
         return;
       }
       if (pageLoading)
         this.delayShow_(500);
-      // Reflect immediatelly in the UI we are on GData and display
+      // Reflect immediatelly in the UI we are on Drive and display
       // mounting UI.
-      this.directoryModel_.setupPath(gdataPath);
+      this.directoryModel_.setupPath(drivePath);
 
-      if (!this.isOnGData()) {
-        // Since GDATA is not mounted it should be resolved synchronously
+      if (!this.isOnDrive()) {
+        // Since DRIVE is not mounted it should be resolved synchronously
         // (no need in asynchronous calls to filesystem API). It is important
         // to prevent race condition.
         console.error('Expected path set up synchronously');
       }
 
       var self = this;
-      this.volumeManager_.mountGData(function() {
+      this.volumeManager_.mountDrive(function() {
         tracker.stop();
         if (!tracker.hasChanged) {
           self.finishSetupCurrentDirectory_(path, invokeHandlers);
@@ -1424,7 +1424,7 @@ DialogType.isModal = function(type) {
 
       cr.ui.contextMenuHandler.addEventListener(
         'show', this.downloadsRootContextMenuListener_);
-    } else if (rootType != RootType.GDATA) {
+    } else if (rootType != RootType.DRIVE) {
       cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
     }
 
@@ -1460,9 +1460,9 @@ DialogType.isModal = function(type) {
     // changed.
     this.metadataCache_.clear(entries, 'filesystem|thumbnail|media');
     this.metadataCache_.get(entries, 'filesystem', null);
-    if (this.isOnGData()) {
-      this.metadataCache_.clear(entries, 'gdata');
-      this.metadataCache_.get(entries, 'gdata', null);
+    if (this.isOnDrive()) {
+      this.metadataCache_.clear(entries, 'drive');
+      this.metadataCache_.get(entries, 'drive', null);
     }
 
     var visibleItems = this.currentList_.items;
@@ -1533,8 +1533,8 @@ DialogType.isModal = function(type) {
     this.currentList_.restoreLeadItem(leadListItem);
   };
 
-  FileManager.prototype.isOnGData = function() {
-    return this.directoryModel_.getCurrentRootType() === RootType.GDATA;
+  FileManager.prototype.isOnDrive = function() {
+    return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
   };
 
   /**
@@ -1638,32 +1638,32 @@ DialogType.isModal = function(type) {
   FileManager.prototype.onNetworkStateOrPreferencesChanged_ = function() {
     var self = this;
     this.updateNetworkStateAndPreferences_(function() {
-      var gdata = self.preferences_;
+      var drive = self.preferences_;
       var network = self.networkState_;
 
       self.initDateTimeFormatters_();
       self.refreshCurrentDirectoryMetadata_();
 
-      self.directoryModel_.setGDataEnabled(self.isGDataEnabled());
+      self.directoryModel_.setDriveEnabled(self.isDriveEnabled());
       self.directoryModel_.setOffline(!network.online);
 
-      if (gdata.cellularDisabled)
+      if (drive.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
       else
         self.syncButton.removeAttribute('checked');
 
       if (self.hostedButton.hasAttribute('checked') !=
-          gdata.hostedFilesDisabled && self.isOnGData()) {
+          drive.hostedFilesDisabled && self.isOnDrive()) {
         self.directoryModel_.rescan();
       }
 
-      if (!gdata.hostedFilesDisabled)
+      if (!drive.hostedFilesDisabled)
         self.hostedButton.setAttribute('checked', '');
       else
         self.hostedButton.removeAttribute('checked');
 
       if (network.online) {
-        if (gdata.cellularDisabled && network.type == 'cellular')
+        if (drive.cellularDisabled && network.type == 'cellular')
           self.dialogContainer_.setAttribute('connection', 'metered');
         else
           self.dialogContainer_.removeAttribute('connection');
@@ -1683,8 +1683,8 @@ DialogType.isModal = function(type) {
     return !this.networkState_.online;
   };
 
-  FileManager.prototype.isGDataEnabled = function() {
-    return !this.params_.disableGData &&
+  FileManager.prototype.isDriveEnabled = function() {
+    return !this.params_.disableDrive &&
         (!('driveEnabled' in this.preferences_) ||
          this.preferences_.driveEnabled);
   };
@@ -1915,7 +1915,7 @@ DialogType.isModal = function(type) {
     this.selectionHandler_.onFileSelectionChanged();
     this.updateSearchBoxOnDirChange_();
     if (this.dialogType == DialogType.FULL_PAGE)
-      this.table_.showOfflineColumn(this.isOnGData());
+      this.table_.showOfflineColumn(this.isOnDrive());
 
     util.updateAppState(event.initial, this.getCurrentDirectory());
 
@@ -2394,24 +2394,24 @@ DialogType.isModal = function(type) {
   /**
    * Resolves selected file urls returned from an Open dialog.
    *
-   * For gdata files this involves some special treatment.
-   * Starts getting gdata files if needed.
+   * For drive files this involves some special treatment.
+   * Starts getting drive files if needed.
    *
-   * @param {Array.<string>} fileUrls GData URLs.
+   * @param {Array.<string>} fileUrls Drive URLs.
    * @param {function(Array.<string>)} callback To be called with fixed URLs.
    */
   FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
-    if (this.isOnGData()) {
+    if (this.isOnDrive()) {
       chrome.fileBrowserPrivate.getDriveFiles(
         fileUrls,
         function(localPaths) {
           fileUrls = [].concat(fileUrls);  // Clone the array.
           // localPath can be empty if the file is not present, which
           // can happen if the user specifies a new file name to save a
-          // file on gdata.
+          // file on drive.
           for (var i = 0; i != localPaths.length; i++) {
             if (localPaths[i]) {
-              // Add "localPath" parameter to the gdata file URL.
+              // Add "localPath" parameter to the drive file URL.
               fileUrls[i] += '?localPath=' + encodeURIComponent(localPaths[i]);
             }
           }
@@ -2440,11 +2440,11 @@ DialogType.isModal = function(type) {
 
   /**
    * Tries to close this modal dialog with some files selected.
-   * Performs preprocessing if needed (e.g. for GData).
+   * Performs preprocessing if needed (e.g. for Drive).
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
   FileManager.prototype.selectFilesAndClose_ = function(selection) {
-    if (!this.isOnGData() ||
+    if (!this.isOnDrive() ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
       return;
@@ -2542,7 +2542,7 @@ DialogType.isModal = function(type) {
     }.bind(this);
 
     setup();
-    this.metadataCache_.get(selection.urls, 'gdata', onProperties);
+    this.metadataCache_.get(selection.urls, 'drive', onProperties);
   };
 
   /**
@@ -2700,12 +2700,12 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * Handler invoked on preference setting in gdata context menu.
+   * Handler invoked on preference setting in drive context menu.
    * @param {string} pref  The preference to alter.
    * @param {boolean} inverted Invert the value if true.
    * @param {Event}  event The click event.
    */
-  FileManager.prototype.onGDataPrefClick_ = function(pref, inverted, event) {
+  FileManager.prototype.onDrivePrefClick_ = function(pref, inverted, event) {
     var newValue = !event.target.hasAttribute('checked');
     if (newValue)
       event.target.setAttribute('checked', 'checked');
@@ -2770,24 +2770,24 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * Listener invoked on gdata menu show event, to update gdata free/total
+   * Listener invoked on drive menu show event, to update drive free/total
    * space info in opened menu.
    * @private
    */
-  FileManager.prototype.onGDataMenuShow_ = function() {
-    var gdataSpaceInfoLabel =
-        this.dialogDom_.querySelector('#gdata-space-info-label');
+  FileManager.prototype.onDriveMenuShow_ = function() {
+    var driveSpaceInfoLabel =
+        this.dialogDom_.querySelector('#drive-space-info-label');
 
-    var gdataSpaceInnerBar =
-        this.dialogDom_.querySelector('#gdata-space-info-bar');
-    var gdataSpaceOuterBar =
-            this.dialogDom_.querySelector('#gdata-space-info-bar').parentNode;
+    var driveSpaceInnerBar =
+        this.dialogDom_.querySelector('#drive-space-info-bar');
+    var driveSpaceOuterBar =
+            this.dialogDom_.querySelector('#drive-space-info-bar').parentNode;
 
-    gdataSpaceInnerBar.setAttribute('pending', '');
+    driveSpaceInnerBar.setAttribute('pending', '');
     chrome.fileBrowserPrivate.getSizeStats(
         this.directoryModel_.getCurrentRootUrl(), function(result) {
-          updateSpaceInfo(result, gdataSpaceInnerBar, gdataSpaceInfoLabel,
-                          gdataSpaceOuterBar);
+          updateSpaceInfo(result, driveSpaceInnerBar, driveSpaceInfoLabel,
+                          driveSpaceOuterBar);
         });
   };
 

@@ -123,16 +123,16 @@
       <command id="import-photos" i18n-values="label:PHOTO_IMPORT_TITLE"
           hidden></command>
 
-      <command id="gdata-buy-more-space"
+      <command id="drive-buy-more-space"
           i18n-values="label:DRIVE_BUY_MORE_SPACE"
           ></command>
-      <command id="gdata-help" i18n-values="label:DRIVE_MENU_HELP"
+      <command id="drive-help" i18n-values="label:DRIVE_MENU_HELP"
           ></command>
-      <command id="gdata-clear-local-cache"
+      <command id="drive-clear-local-cache"
           i18n-values="label:DRIVE_CLEAR_LOCAL_CACHE"></command>
-      <command id="gdata-reload"
+      <command id="drive-reload"
           i18n-values="label:DRIVE_RELOAD"></command>
-      <command id="gdata-go-to-drive"
+      <command id="drive-go-to-drive"
           i18n-values="label:DRIVE_VISIT_DRIVE_GOOGLE_COM"></command>
 
       <command id="toggle-pinned"
@@ -175,26 +175,26 @@
     </menu>
 
     <menu id="docs-settings" class="chrome-menu">
-      <menuitem id="gdata-sync-settings"
+      <menuitem id="drive-sync-settings"
           i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
-      <menuitem id="gdata-hosted-settings"
+      <menuitem id="drive-hosted-settings"
           i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
       <hr required_attr="ctrl-pressing">
       <menuitem required_attr="ctrl-pressing"
-          command="#gdata-clear-local-cache"></menuitem>
+          command="#drive-clear-local-cache"></menuitem>
       <menuitem required_attr="ctrl-pressing"
-          command="#gdata-reload"></menuitem>
+          command="#drive-reload"></menuitem>
       <hr>
-      <div id="gdata-space-info" disabled>
-        <span id="gdata-space-info-label"
+      <div id="drive-space-info" disabled>
+        <span id="drive-space-info-label"
             i18n-content=WAITING_FOR_SPACE_INFO
             ></span>
-        <div><div id="gdata-space-info-bar" style="width:100%" pending></div
+        <div><div id="drive-space-info-bar" style="width:100%" pending></div
             ></div>
       </div>
-      <menuitem command="#gdata-buy-more-space"></menuitem>
-      <menuitem command="#gdata-go-to-drive"></menuitem>
-      <menuitem command="#gdata-help"></menuitem>
+      <menuitem command="#drive-buy-more-space"></menuitem>
+      <menuitem command="#drive-go-to-drive"></menuitem>
+      <menuitem command="#drive-help"></menuitem>
     </menu>
 
     <menu id="tasks-menu" class="chrome-menu">
@@ -246,7 +246,7 @@
               <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
                    >[THUMBNAIL VIEW]</div>
             </div>
-            <button class="menubutton" id="gdata-settings" tabindex="12"
+            <button class="menubutton" id="drive-settings" tabindex="12"
                     menu="#docs-settings" visibleif="full-page">
               <span class="disclosureindicator"></span>
             </button>
@@ -272,7 +272,7 @@
             <div>
               <div class="preview-thumbnails"></div>
             </div>
-            <div id="preview-lines"> 
+            <div id="preview-lines">
               <div class="preview-summary">
                 <span class="preview-text"></span>
                 <span class="calculating-size" hidden></span>

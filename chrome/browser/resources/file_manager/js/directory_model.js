@@ -17,10 +17,10 @@ var SHORT_RESCAN_INTERVAL = 100;
  *                                  at the time.
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManager} volumeManager The volume manager.
- * @param {boolean} isGDataEnabled True if GDATA enabled (initial value).
+ * @param {boolean} isDriveEnabled True if DRIVE enabled (initial value).
  */
 function DirectoryModel(root, singleSelection,
-                        metadataCache, volumeManager, isGDataEnabled) {
+                        metadataCache, volumeManager, isDriveEnabled) {
   this.root_ = root;
   var fileList = new cr.ui.ArrayDataModel([]);
   this.fileListSelection_ = singleSelection ?
@@ -30,7 +30,7 @@ function DirectoryModel(root, singleSelection,
   this.pendingScan_ = null;
   this.rescanTime_ = null;
   this.scanFailures_ = 0;
-  this.gDataEnabled_ = isGDataEnabled;
+  this.driveEnabled_ = isDriveEnabled;
 
   this.currentFileListContext_ = new FileListContext(
       metadataCache, fileList, false);
@@ -57,11 +57,11 @@ function DirectoryModel(root, singleSelection,
 
 /**
  * Fake entry to be used in currentDirEntry_ when current directory is
- * unmounted GDATA.
+ * unmounted DRIVE.
  * @private
  */
-DirectoryModel.fakeGDataEntry_ = {
-  fullPath: RootDirectory.GDATA,
+DirectoryModel.fakeDriveEntry_ = {
+  fullPath: RootDirectory.DRIVE,
   isDirectory: true
 };
 
@@ -76,8 +76,8 @@ DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
 DirectoryModel.prototype.start = function() {
   var volumesChangeHandler = this.onMountChanged_.bind(this);
   this.volumeManager_.addEventListener('change', volumesChangeHandler);
-  this.volumeManager_.addEventListener('gdata-status-changed',
-      this.onGDataStatusChanged_.bind(this));
+  this.volumeManager_.addEventListener('drive-status-changed',
+      this.onDriveStatusChanged_.bind(this));
   this.updateRoots_();
 };
 
@@ -96,16 +96,16 @@ DirectoryModel.prototype.getMetadataCache = function() {
 };
 
 /**
- * Sets whether GDATA appears in the roots list and
+ * Sets whether DRIVE appears in the roots list and
  * if it could be used as current directory.
- * @param {boolead} enabled True if GDATA enabled.
+ * @param {boolead} enabled True if DRIVE enabled.
  */
-DirectoryModel.prototype.setGDataEnabled = function(enabled) {
-  if (this.gDataEnabled_ == enabled)
+DirectoryModel.prototype.setDriveEnabled = function(enabled) {
+  if (this.driveEnabled_ == enabled)
     return;
-  this.gDataEnabled_ = enabled;
+  this.driveEnabled_ = enabled;
   this.updateRoots_();
-  if (!enabled && this.getCurrentRootType() == RootType.GDATA)
+  if (!enabled && this.getCurrentRootType() == RootType.DRIVE)
     this.changeDirectory(this.getDefaultDirectory());
 };
 
@@ -203,7 +203,7 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
       return true;
     case RootType.DOWNLOADS:
       return false;
-    case RootType.GDATA:
+    case RootType.DRIVE:
       return this.isOffline();
     default:
       return true;
@@ -680,17 +680,17 @@ DirectoryModel.prototype.changeDirectory = function(path) {
 };
 
 /**
- * Resolves absolute directory path. Handles GData stub.
+ * Resolves absolute directory path. Handles Drive stub.
  * @param {string} path Path to the directory.
  * @param {function(DirectoryEntry} successCallback Success callback.
  * @param {function(FileError} errorCallback Error callback.
  */
 DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
                                                      errorCallback) {
-  if (PathUtil.getRootType(path) == RootType.GDATA) {
+  if (PathUtil.getRootType(path) == RootType.DRIVE) {
     if (!this.isDriveMounted()) {
-      if (path == DirectoryModel.fakeGDataEntry_.fullPath)
-        successCallback(DirectoryModel.fakeGDataEntry_);
+      if (path == DirectoryModel.fakeDriveEntry_.fullPath)
+        successCallback(DirectoryModel.fakeDriveEntry_);
       else  // Subdirectory.
         errorCallback({ code: FileError.NOT_FOUND_ERR });
       return;
@@ -789,10 +789,10 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
-  if (dirEntry == DirectoryModel.fakeGDataEntry_ &&
-      this.volumeManager_.getGDataStatus() ==
-          VolumeManager.GDataStatus.UNMOUNTED) {
-    this.volumeManager_.mountGData(function() {}, function() {});
+  if (dirEntry == DirectoryModel.fakeDriveEntry_ &&
+      this.volumeManager_.getDriveStatus() ==
+          VolumeManager.DriveStatus.UNMOUNTED) {
+    this.volumeManager_.mountDrive(function() {}, function() {});
   }
 
   this.clearSearch_();
@@ -999,7 +999,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     downloads: null,
     archives: null,
     removables: null,
-    gdata: null
+    drive: null
   };
   var self = this;
 
@@ -1010,7 +1010,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
         return;
 
     callback(groups.downloads.
-             concat(groups.gdata).
+             concat(groups.drive).
              concat(groups.archives).
              concat(groups.removables));
     metrics.recordInterval('Load.Roots');
@@ -1045,15 +1045,15 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
   util.readDirectory(root, RootDirectory.REMOVABLE.substring(1),
                      append.bind(this, 'removables'));
 
-  if (this.gDataEnabled_) {
-    var fake = [DirectoryModel.fakeGDataEntry_];
+  if (this.driveEnabled_) {
+    var fake = [DirectoryModel.fakeDriveEntry_];
     if (this.isDriveMounted()) {
-      readSingle(RootDirectory.GDATA.substring(1), 'gdata', fake);
+      readSingle(RootDirectory.DRIVE.substring(1), 'drive', fake);
     } else {
-      groups.gdata = fake;
+      groups.drive = fake;
     }
   } else {
-    groups.gdata = [];
+    groups.drive = [];
   }
 };
 
@@ -1096,11 +1096,11 @@ DirectoryModel.prototype.updateRootsListSelection_ = function() {
 };
 
 /**
- * @return {boolean} True if GDATA is fully mounted.
+ * @return {boolean} True if DRIVE is fully mounted.
  */
 DirectoryModel.prototype.isDriveMounted = function() {
-  return this.volumeManager_.getGDataStatus() ==
-      VolumeManager.GDataStatus.MOUNTED;
+  return this.volumeManager_.getDriveStatus() ==
+      VolumeManager.DriveStatus.MOUNTED;
 };
 
 /**
@@ -1119,34 +1119,34 @@ DirectoryModel.prototype.onMountChanged_ = function() {
 };
 
 /**
- * Handler for the VolumeManager's 'gdata-status-changed' event.
+ * Handler for the VolumeManager's 'drive-status-changed' event.
  * @private
  */
-DirectoryModel.prototype.onGDataStatusChanged_ = function() {
-  if (this.getCurrentRootType() != RootType.GDATA)
+DirectoryModel.prototype.onDriveStatusChanged_ = function() {
+  if (this.getCurrentRootType() != RootType.DRIVE)
      return;
 
   var mounted = this.isDriveMounted();
-  if (this.getCurrentDirEntry() == DirectoryModel.fakeGDataEntry_) {
+  if (this.getCurrentDirEntry() == DirectoryModel.fakeDriveEntry_) {
     if (mounted) {
       // Change fake entry to real one and rescan.
       function onGotDirectory(entry) {
         this.updateRootEntry_(entry);
-        if (this.getCurrentDirEntry() == DirectoryModel.fakeGDataEntry_) {
+        if (this.getCurrentDirEntry() == DirectoryModel.fakeDriveEntry_) {
           this.changeDirectoryEntrySilent_(entry);
         }
       }
-      this.root_.getDirectory(RootDirectory.GDATA, {},
+      this.root_.getDirectory(RootDirectory.DRIVE, {},
                               onGotDirectory.bind(this));
     }
   } else if (!mounted) {
     // Current entry unmounted. Replace with fake one.
-    this.updateRootEntry_(DirectoryModel.fakeGDataEntry_);
-    if (this.getCurrentDirPath() == DirectoryModel.fakeGDataEntry_.fullPath) {
+    this.updateRootEntry_(DirectoryModel.fakeDriveEntry_);
+    if (this.getCurrentDirPath() == DirectoryModel.fakeDriveEntry_.fullPath) {
       // Replace silently and rescan.
-      this.changeDirectoryEntrySilent_(DirectoryModel.fakeGDataEntry_);
+      this.changeDirectoryEntrySilent_(DirectoryModel.fakeDriveEntry_);
     } else {
-      this.changeDirectoryEntry_(false, DirectoryModel.fakeGDataEntry_);
+      this.changeDirectoryEntry_(false, DirectoryModel.fakeDriveEntry_);
     }
   }
 };
@@ -1190,7 +1190,7 @@ DirectoryModel.isMountableRoot = function(path) {
       return false;
     case RootType.ARCHIVE:
     case RootType.REMOVABLE:
-    case RootType.GDATA:
+    case RootType.DRIVE:
       return true;
     default:
       throw new Error('Unknown root type!');
@@ -1199,8 +1199,8 @@ DirectoryModel.isMountableRoot = function(path) {
 
 /**
  * Performs search and displays results. The search type is dependent on the
- * current directory. If we are currently on gdata, server side content search
- * over gdata mount point. If the current directory is not on the gdata, file
+ * current directory. If we are currently on drive, server side content search
+ * over drive mount point. If the current directory is not on the drive, file
  * name search over current directory wil be performed.
  *
  * @param {string} query Query that will be searched for.
@@ -1234,10 +1234,10 @@ DirectoryModel.prototype.search = function(query,
   this.addEventListener('scan-completed', this.onSearchCompleted_);
 
   // If we are offline, let's fallback to file name search inside dir.
-  if (this.getCurrentRootType() === RootType.GDATA && !this.isOffline()) {
-    // GData search is performed over the whole drive, so pass drive root as
+  if (this.getCurrentRootType() === RootType.DRIVE && !this.isOffline()) {
+    // Drive search is performed over the whole drive, so pass drive root as
     // |directoryEntry|.
-    newDirContents = new DirectoryContentsGDataSearch(
+    newDirContents = new DirectoryContentsDriveSearch(
         this.currentFileListContext_,
         this.getSelectedRootDirEntry_(),
         this.currentDirContents_.getLastNonSearchDirectoryEntry(),
@@ -1358,8 +1358,8 @@ FileWatcher.prototype.onFileInWatchedDirectoryChanged = function() {
 FileWatcher.prototype.updateWatchedDirectory_ = function() {
   var current = this.watchedDirectoryEntry_;
   switch (this.dm_.getCurrentRootType()) {
-    case RootType.GDATA:
-      if (!this.vm_.isMounted(RootDirectory.GDATA))
+    case RootType.DRIVE:
+      if (!this.vm_.isMounted(RootDirectory.DRIVE))
         break;
     case RootType.DOWNLOADS:
     case RootType.REMOVABLE:

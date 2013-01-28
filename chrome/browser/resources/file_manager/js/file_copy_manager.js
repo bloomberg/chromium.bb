@@ -68,8 +68,8 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.deleteAfterCopy = false;
   this.move = false;
   this.zip = false;
-  this.sourceOnGData = false;
-  this.targetOnGData = false;
+  this.sourceOnDrive = false;
+  this.targetOnDrive = false;
 
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
@@ -95,7 +95,7 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
 
   this.originalEntries = entries;
   // When moving directories, FileEntry.moveTo() is used if both source
-  // and target are on GData. There is no need to recurse into directories.
+  // and target are on Drive. There is no need to recurse into directories.
   var recurse = !this.move;
   util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
 };
@@ -419,16 +419,16 @@ FileCopyManager.prototype.maybeCancel_ = function() {
  * Convert string in clipboard to entries and kick off pasting.
  * @param {Object} clipboard Clipboard contents.
  * @param {string} targetPath Target path.
- * @param {boolean} targetOnGData If target is on GDrive.
+ * @param {boolean} targetOnDrive If target is on GDrive.
  */
 FileCopyManager.prototype.paste = function(clipboard, targetPath,
-                                           targetOnGData) {
+                                           targetOnDrive) {
   var self = this;
   var results = {
     sourceDirEntry: null,
     entries: [],
     isCut: false,
-    isOnGData: false
+    isOnDrive: false
   };
 
   function onPathError(err) {
@@ -442,8 +442,8 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
             targetEntry,
             results.entries,
             results.isCut,
-            results.isOnGData,
-            targetOnGData);
+            results.isOnDrive,
+            targetOnDrive);
     }
 
     function onComplete() {
@@ -479,7 +479,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
     var added = 0;
 
     results.isCut = (clipboard.isCut == 'true');
-    results.isOnGData = (clipboard.isOnGData == 'true');
+    results.isOnDrive = (clipboard.isOnDrive == 'true');
 
     util.getDirectories(self.root_, {create: false}, directories, onEntryFound,
                         onPathError);
@@ -502,12 +502,12 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
  *
  * @param {DirectoryEntry} sourceEntry An entry from the source.
  * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
- * @param {boolean} targetOnGData If target is on GDrive.
+ * @param {boolean} targetOnDrive If target is on GDrive.
  * @return {boolean} Whether source and target dir are on the same root.
  */
 FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
                                                   targetDirEntry,
-                                                  targetOnGData) {
+                                                  targetOnDrive) {
   return PathUtil.getRootPath(sourceEntry.fullPath) ==
          PathUtil.getRootPath(targetDirEntry.fullPath);
 };
@@ -518,16 +518,16 @@ FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
  * @param {boolean} deleteAfterCopy In case of move.
- * @param {boolean} sourceOnGData Source directory on GDrive.
- * @param {boolean} targetOnGData Target directory on GDrive.
+ * @param {boolean} sourceOnDrive Source directory on GDrive.
+ * @param {boolean} targetOnDrive Target directory on GDrive.
  * @return {FileCopyManager.Task} Copy task.
  */
 FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
                                                targetDirEntry,
                                                entries,
                                                deleteAfterCopy,
-                                               sourceOnGData,
-                                               targetOnGData) {
+                                               sourceOnDrive,
+                                               targetOnDrive) {
   var self = this;
   var copyTask = new FileCopyManager.Task(sourceDirEntry, targetDirEntry);
   if (deleteAfterCopy) {
@@ -539,8 +539,8 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
       copyTask.deleteAfterCopy = true;
     }
   }
-  copyTask.sourceOnGData = sourceOnGData;
-  copyTask.targetOnGData = targetOnGData;
+  copyTask.sourceOnDrive = sourceOnDrive;
+  copyTask.targetOnDrive = targetOnDrive;
   copyTask.setEntries(entries, function() {
     self.copyTasks_.push(copyTask);
     self.maybeScheduleCloseBackgroundPage_();
@@ -841,7 +841,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     // TODO(benchan): DriveFileSystem has not implemented directory copy,
     // and thus we only call FileEntry.copyTo() for files. Revisit this
     // code when DriveFileSystem supports directory copy.
-    if (sourceEntry.isFile && (task.sourceOnGData || task.targetOnGData)) {
+    if (sourceEntry.isFile && (task.sourceOnDrive || task.targetOnDrive)) {
       var sourceFileUrl = sourceEntry.toURL();
       var targetFileUrl = targetDirEntry.toURL() + '/' +
                           encodeURIComponent(targetRelativePath);
@@ -881,7 +881,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
             // It becomes tricky when both the sides are on Drive.
             // Currently, it is implemented by download followed by upload.
             // Note, however, download will not happen if the file is cached.
-            if (task.sourceOnGData && task.targetOnGData) {
+            if (task.sourceOnDrive && task.targetOnDrive) {
               if (s.fileUrl == sourceFileUrl) {
                 // Download transfer is detected. Let's halve the progress.
                 downTransfer = processed = (s.processed >> 1);
@@ -902,7 +902,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         }
       }
 
-      if (task.sourceOnGData && task.targetOnGData) {
+      if (task.sourceOnDrive && task.targetOnDrive) {
         resolveDirAndBaseName(
             targetDirEntry, targetRelativePath,
             function(dirEntry, fileName) {
@@ -919,7 +919,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         if (chrome.runtime.lastError) {
           onFailTransfer({
             code: chrome.runtime.lastError.message,
-            toGDrive: task.targetOnGData,
+            toGDrive: task.targetOnDrive,
             sourceFileUrl: sourceFileUrl
           });
         } else {
@@ -932,7 +932,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         self.cancelCallback_ = null;
         chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
             onFileTransfersUpdated);
-        if (task.sourceOnGData) {
+        if (task.sourceOnDrive) {
           chrome.fileBrowserPrivate.cancelFileTransfers([sourceFileUrl],
                                                         function() {});
         } else {
@@ -942,7 +942,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       };
 
       // TODO(benchan): Until DriveFileSystem supports FileWriter, we use the
-      // transferFile API to copy files into or out from a gdata file system.
+      // transferFile API to copy files into or out from a drive file system.
       onStartTransfer();
       chrome.fileBrowserPrivate.transferFile(
           sourceFileUrl, targetFileUrl, onFileTransferCompleted);
@@ -1156,16 +1156,16 @@ FileCopyManager.prototype.deleteEntries = function(entries, callback) {
 /**
  * Creates a zip file for the selection of files.
  * @param {Entry} dirEntry the directory containing the selection.
- * @param {boolean} isOnGData If directory is on GDrive.
+ * @param {boolean} isOnDrive If directory is on GDrive.
  * @param {Array.<Entry>} selectionEntries the selected entries.
  */
-FileCopyManager.prototype.zipSelection = function(dirEntry, isOnGData,
-                                                   selectionEntries) {
+FileCopyManager.prototype.zipSelection = function(dirEntry, isOnDrive,
+                                                  selectionEntries) {
   var self = this;
   var zipTask = new FileCopyManager.Task(dirEntry, dirEntry);
   zipTask.zip = true;
-  zipTask.sourceOnGData = isOnGData;
-  zipTask.targetOnGData = isOnGData;
+  zipTask.sourceOnDrive = isOnDrive;
+  zipTask.targetOnDrive = isOnDrive;
   zipTask.setEntries(selectionEntries, function() {
     // TODO: per-entry zip progress update with accurate byte count.
     // For now just set pendingBytes to zero so that the progress bar is full.

@@ -18,8 +18,8 @@ function ThumbnailLoader(url, opt_metadata, opt_mediaType) {
 
   this.fallbackUrl_ = null;
   this.thumbnailUrl_ = null;
-  if (opt_metadata.gdata) {
-    var apps = opt_metadata.gdata.driveApps;
+  if (opt_metadata.drive) {
+    var apps = opt_metadata.drive.driveApps;
     for (var i = 0; i < apps.length; ++i) {
       if (apps[i].docIcon && apps[i].isPrimary) {
         this.fallbackUrl_ = apps[i].docIcon;

@@ -383,7 +383,7 @@ TileView.drive.prepareBox = function(box, callback) {
     }
 
     // TODO(dgozman): remove this hack if we ask for larger thumbnails in
-    // gdata code.
+    // drive code.
     var thumbnailUrl = thumbnail.url.replace(/240$/, '512');
 
     box.image = new Image();
