@@ -1,7 +1,5 @@
 include_rules = [
   "+chrome/browser",  # For out of process profile import.
-  # TODO(jam): remove this once all of chrome doesn't depend on content/common.
-  "-content/common",
   "+content/public/utility",
   "+webkit/glue",
 ]
