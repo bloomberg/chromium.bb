@@ -99,4 +99,54 @@ TEST(ClientCertStoreImplTest, CertAuthorityFiltering) {
   EXPECT_TRUE(selected_certs[0]->Equals(cert_1));
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// Verify that the preferred cert gets filtered out when it doesn't match the
+// server criteria.
+TEST(ClientCertStoreImplTest, FilterOutThePreferredCert) {
+  scoped_refptr<X509Certificate> cert_1(
+      ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
+  ASSERT_TRUE(cert_1);
+
+  std::vector<std::string> authority_2(
+      1, std::string(reinterpret_cast<const char*>(kAuthority2DN),
+                     sizeof(kAuthority2DN)));
+  EXPECT_FALSE(cert_1->IsIssuedByEncoded(authority_2));
+
+  std::vector<scoped_refptr<X509Certificate> > certs;
+  scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
+  request->cert_authorities = authority_2;
+
+  ClientCertStoreImpl store;
+  std::vector<scoped_refptr<X509Certificate> > selected_certs;
+  bool rv = store.SelectClientCertsGivenPreferred(cert_1, certs, *request,
+                                                  &selected_certs);
+  EXPECT_TRUE(rv);
+  EXPECT_EQ(0u, selected_certs.size());
+}
+
+// Verify that the preferred cert takes the first position in the output list,
+// when it does not get filtered out.
+TEST(ClientCertStoreImplTest, PreferredCertGoesFirst) {
+  scoped_refptr<X509Certificate> cert_1(
+      ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
+  ASSERT_TRUE(cert_1);
+  scoped_refptr<X509Certificate> cert_2(
+      ImportCertFromFile(GetTestCertsDirectory(), "client_2.pem"));
+  ASSERT_TRUE(cert_2);
+
+  std::vector<scoped_refptr<X509Certificate> > certs;
+  certs.push_back(cert_2);
+  scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
+
+  ClientCertStoreImpl store;
+  std::vector<scoped_refptr<X509Certificate> > selected_certs;
+  bool rv = store.SelectClientCertsGivenPreferred(cert_1, certs, *request,
+                                                  &selected_certs);
+  EXPECT_TRUE(rv);
+  ASSERT_EQ(2u, selected_certs.size());
+  EXPECT_TRUE(selected_certs[0]->Equals(cert_1));
+  EXPECT_TRUE(selected_certs[1]->Equals(cert_2));
+}
+#endif
+
 }  // namespace net

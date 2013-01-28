@@ -158,4 +158,15 @@ bool ClientCertStoreImpl::SelectClientCerts(const CertificateList& input_certs,
                             selected_certs);
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+bool ClientCertStoreImpl::SelectClientCertsGivenPreferred(
+      const scoped_refptr<X509Certificate>& preferred_cert,
+      const CertificateList& regular_certs,
+      const SSLCertRequestInfo& request,
+      CertificateList* selected_certs) {
+  return GetClientCertsImpl(preferred_cert, regular_certs, request,
+                            selected_certs);
+}
+#endif
+
 }  // namespace net
