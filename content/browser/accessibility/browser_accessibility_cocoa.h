@@ -37,11 +37,23 @@
 // from browserAccessibility_.
 - (content::AccessibilityNodeData::Role)internalRole;
 
+// Internally-used method.
+@property(nonatomic, readonly) NSPoint origin;
+
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.
+@property(nonatomic, readonly) NSString* accessKey;
+@property(nonatomic, readonly) NSNumber* ariaAtomic;
+@property(nonatomic, readonly) NSNumber* ariaBusy;
+@property(nonatomic, readonly) NSString* ariaLive;
+@property(nonatomic, readonly) NSString* ariaRelevant;
 @property(nonatomic, readonly) NSArray* children;
 @property(nonatomic, readonly) NSArray* columns;
 @property(nonatomic, readonly) NSString* description;
+@property(nonatomic, readonly) NSNumber* disclosing;
+@property(nonatomic, readonly) id disclosedByRow;
+@property(nonatomic, readonly) NSNumber* disclosureLevel;
+@property(nonatomic, readonly) id disclosedRows;
 @property(nonatomic, readonly) NSNumber* enabled;
 @property(nonatomic, readonly) NSNumber* focused;
 @property(nonatomic, readonly) NSString* help;
@@ -49,13 +61,15 @@
 // should be ignored by the accessibility hierarchy.
 @property(nonatomic, readonly, getter=isIgnored) BOOL ignored;
 @property(nonatomic, readonly) NSString* invalid;
-// The origin of this object in the page's document.
-// This is relative to webkit's top-left origin, not Cocoa's
-// bottom-left origin.
-@property(nonatomic, readonly) NSPoint origin;
+@property(nonatomic, readonly) NSNumber* loaded;
+@property(nonatomic, readonly) NSNumber* loadingProgress;
+@property(nonatomic, readonly) NSNumber* maxValue;
+@property(nonatomic, readonly) NSNumber* minValue;
 @property(nonatomic, readonly) NSNumber* numberOfCharacters;
+@property(nonatomic, readonly) NSString* orientation;
 @property(nonatomic, readonly) id parent;
 @property(nonatomic, readonly) NSValue* position;
+@property(nonatomic, readonly) NSNumber* required;
 // A string indicating the role of this object as far as accessibility
 // is concerned.
 @property(nonatomic, readonly) NSString* role;
@@ -69,8 +83,10 @@
 // The tabs owned by a tablist.
 @property(nonatomic, readonly) NSArray* tabs;
 @property(nonatomic, readonly) NSString* title;
+@property(nonatomic, readonly) id titleUIElement;
 @property(nonatomic, readonly) NSString* url;
 @property(nonatomic, readonly) NSString* value;
+@property(nonatomic, readonly) NSString* valueDescription;
 @property(nonatomic, readonly) NSValue* visibleCharacterRange;
 @property(nonatomic, readonly) NSNumber* visited;
 @property(nonatomic, readonly) id window;

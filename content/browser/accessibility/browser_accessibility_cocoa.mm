@@ -479,7 +479,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   return nil;
 }
 
-- (id)disclosureLevel {
+- (NSNumber*)disclosureLevel {
   AccessibilityNodeData::Role role = [self internalRole];
   if (role == AccessibilityNodeData::ROLE_ROW ||
       role == AccessibilityNodeData::ROLE_TREE_ITEM) {
