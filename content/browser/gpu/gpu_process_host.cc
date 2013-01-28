@@ -830,6 +830,14 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     // This is a content area swap, send it on to the UI thread.
     scoped_completion_runner.Release();
     RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+#else
+  // HW accelerated compositing for webview uses image transport surface
+  // to forward guest renderer buffers to the embedder.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginCompositing)) {
+    scoped_completion_runner.Release();
+    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+  }
 #endif
     return;
   }
