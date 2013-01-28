@@ -91,7 +91,6 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1371,9 +1370,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // triggering the timer and call that explicitly in the approprate place.
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
-
-  content::WebUIControllerFactory::RegisterFactory(
-      ChromeWebUIControllerFactory::GetInstance());
 
 #if !defined(OS_ANDROID)
   // Most general initialization is behind us, but opening a
