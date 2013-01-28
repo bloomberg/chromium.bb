@@ -38,8 +38,6 @@ class ConnectionToClient : public base::NonThreadSafe,
  public:
   class EventHandler {
    public:
-    virtual ~EventHandler() {}
-
     // Called when the network connection is authenticated.
     virtual void OnConnectionAuthenticated(ConnectionToClient* connection) = 0;
 
@@ -61,6 +59,9 @@ class ConnectionToClient : public base::NonThreadSafe,
     virtual void OnRouteChange(ConnectionToClient* connection,
                                const std::string& channel_name,
                                const TransportRoute& route) = 0;
+
+   protected:
+    virtual ~EventHandler() {}
   };
 
   // Constructs a ConnectionToClient object for the |session|. Takes

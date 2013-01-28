@@ -12,8 +12,6 @@ class SharedBuffer;
 // Provides a way to create shared buffers accessible by two or more processes.
 class SharedBufferFactory {
  public:
-  virtual ~SharedBufferFactory() {}
-
   // Creates a shared memory buffer of the given size.
   virtual scoped_refptr<SharedBuffer> CreateSharedBuffer(uint32 size) = 0;
 
@@ -21,6 +19,9 @@ class SharedBufferFactory {
   // can be released. The caller still has to drop all references to free
   // the memory.
   virtual void ReleaseSharedBuffer(scoped_refptr<SharedBuffer> buffer) = 0;
+
+ protected:
+  virtual ~SharedBufferFactory() {}
 };
 
 }  // namespace remoting

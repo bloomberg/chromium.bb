@@ -16,13 +16,12 @@ namespace protocol {
 
 class VideoStub {
  public:
-  virtual ~VideoStub() {}
-
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                                   const base::Closure& done) = 0;
 
  protected:
   VideoStub() {}
+  virtual ~VideoStub() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoStub);

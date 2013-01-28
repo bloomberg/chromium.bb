@@ -21,7 +21,6 @@ class AudioControl;
 class HostStub {
  public:
   HostStub() {}
-  virtual ~HostStub() {}
 
   // Notification of the available client display dimensions.
   // This may be used to resize the host display to match the client area.
@@ -34,6 +33,9 @@ class HostStub {
   // Configures audio properties. Currently only pausing & resuming the audio
   // channel is supported.
   virtual void ControlAudio(const AudioControl& audio_control) = 0;
+
+ protected:
+  virtual ~HostStub() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

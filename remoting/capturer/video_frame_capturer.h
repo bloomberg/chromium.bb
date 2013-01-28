@@ -52,8 +52,6 @@ class VideoFrameCapturer {
   // mouse cursor shapes to the processing pipeline.
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     // Called when a video frame has been captured. |capture_data| describes
     // a captured frame.
     virtual void OnCaptureCompleted(
@@ -63,6 +61,9 @@ class VideoFrameCapturer {
     // TODO(sergeyu): Move cursor shape capturing to a separate class.
     virtual void OnCursorShapeChanged(
         scoped_ptr<MouseCursorShape> cursor_shape) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   virtual ~VideoFrameCapturer() {}

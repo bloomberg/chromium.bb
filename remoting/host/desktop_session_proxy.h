@@ -47,7 +47,6 @@ class IpcVideoFrameCapturer;
 // integration process.
 class DesktopSessionProxy
     : public base::RefCountedThreadSafe<DesktopSessionProxy>,
-      public DesktopEnvironment,
       public IPC::Listener {
  public:
   DesktopSessionProxy(
@@ -55,15 +54,15 @@ class DesktopSessionProxy
       const std::string& client_jid,
       const base::Closure& disconnect_callback);
 
-  // DesktopEnvironment implementation.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) OVERRIDE;
-  virtual scoped_ptr<EventExecutor> CreateEventExecutor(
+  // Mirrors DesktopEnvironment.
+  scoped_ptr<AudioCapturer> CreateAudioCapturer(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
+  scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
-  virtual scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
+      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

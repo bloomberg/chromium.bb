@@ -50,21 +50,20 @@ class EventExecutorWin : public EventExecutor {
 
  private:
   // The actual implementation resides in EventExecutorWin::Core class.
-  class Core : public base::RefCountedThreadSafe<Core>, public EventExecutor {
+  class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-    // ClipboardStub interface.
-    virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+    // Mirrors the ClipboardStub interface.
+    void InjectClipboardEvent(const ClipboardEvent& event);
 
-    // InputStub interface.
-    virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
-    virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
+    // Mirrors the InputStub interface.
+    void InjectKeyEvent(const KeyEvent& event);
+    void InjectMouseEvent(const MouseEvent& event);
 
-    // EventExecutor interface.
-    virtual void Start(
-        scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+    // Mirrors the EventExecutor interface.
+    void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
     void Stop();
 
