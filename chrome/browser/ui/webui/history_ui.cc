@@ -243,9 +243,8 @@ void BrowsingHistoryHandler::QueryHistory(
 void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   history::QueryOptions options;
 
-  // Parse the arguments from JavaScript. There are four required arguments:
+  // Parse the arguments from JavaScript. There are three required arguments:
   // - the text to search for (may be empty)
-  // - the end time of the range to search (see QueryOptions.end_time)
   // - the search cursor, an opaque value from a previous query result, which
   //   allows this query to pick up where the previous one left off. May be
   //   null or undefined.
@@ -253,24 +252,18 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   //   is no maximum)
   string16 search_text = ExtractStringValue(args);
 
-  double end_time;
-  if (!args->GetDouble(1, &end_time))
-    return;
-  if (end_time)
-    options.end_time = base::Time::FromJsTime(end_time);
-
   const Value* cursor_value;
 
   // Get the cursor. It must be either null, or a list.
-  if (!args->Get(2, &cursor_value) ||
+  if (!args->Get(1, &cursor_value) ||
       (!cursor_value->IsType(Value::TYPE_NULL) &&
       !history::QueryCursor::FromValue(cursor_value, &options.cursor))) {
-    NOTREACHED() << "Failed to convert argument 2. ";
+    NOTREACHED() << "Failed to convert argument 1. ";
     return;
   }
 
-  if (!ExtractIntegerValueAtIndex(args, 3, &options.max_count)) {
-    NOTREACHED() << "Failed to convert argument 3.";
+  if (!ExtractIntegerValueAtIndex(args, 2, &options.max_count)) {
+    NOTREACHED() << "Failed to convert argument 2.";
     return;
   }
 

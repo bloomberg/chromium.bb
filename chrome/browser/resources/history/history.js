@@ -500,20 +500,10 @@ HistoryModel.prototype.updateSearch_ = function() {
  * @private
  */
 HistoryModel.prototype.queryHistory_ = function() {
-  var endTime = 0;
-  // Do the time-based search.
-  // If there are already some visits, pick up the previous query where it
-  // left off.
-  if (this.visits_.length > 0) {
-    var lastVisit = this.visits_.slice(-1)[0];
-    endTime = lastVisit.date.getTime();
-    cursor = this.queryCursor_;
-  }
-
   $('loading-spinner').hidden = false;
   this.inFlight_ = true;
   chrome.send('queryHistory',
-      [this.searchText_, endTime, this.queryCursor_, RESULTS_PER_PAGE]);
+      [this.searchText_, this.queryCursor_, RESULTS_PER_PAGE]);
 };
 
 /**
