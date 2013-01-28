@@ -105,9 +105,6 @@ class GpuCommandBufferStub
   // Whether there are commands in the buffer that haven't been processed.
   bool HasUnprocessedCommands();
 
-  // Delay an echo message until the command buffer has been rescheduled.
-  void DelayEcho(IPC::Message*);
-
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
   GpuChannel* channel() const { return channel_; }
@@ -236,8 +233,6 @@ class GpuCommandBufferStub
   uint32 parent_texture_for_initialization_;
 
   GpuWatchdog* watchdog_;
-
-  std::deque<IPC::Message*> delayed_echos_;
 
   // Zero or more video decoders owned by this stub, keyed by their
   // decoder_route_id.

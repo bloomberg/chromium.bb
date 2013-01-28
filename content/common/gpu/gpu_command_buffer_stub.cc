@@ -268,19 +268,9 @@ void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {
   Send(new IPC::Message(message));
 }
 
-void GpuCommandBufferStub::DelayEcho(IPC::Message* message) {
-  delayed_echos_.push_back(message);
-}
-
 void GpuCommandBufferStub::OnReschedule() {
   if (!IsScheduled())
     return;
-  while (!delayed_echos_.empty()) {
-    scoped_ptr<IPC::Message> message(delayed_echos_.front());
-    delayed_echos_.pop_front();
-
-    OnMessageReceived(*message);
-  }
 
   channel_->OnScheduled();
 }
@@ -311,11 +301,6 @@ void GpuCommandBufferStub::Destroy() {
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
   scheduler_.reset();
-
-  while (!delayed_echos_.empty()) {
-    delete delayed_echos_.front();
-    delayed_echos_.pop_front();
-  }
 
   bool have_context = false;
   if (decoder_.get())

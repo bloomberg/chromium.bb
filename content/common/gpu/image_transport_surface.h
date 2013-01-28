@@ -163,6 +163,7 @@ class PassThroughImageTransportSurface
   // GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual bool DeferDraws() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
@@ -186,6 +187,8 @@ class PassThroughImageTransportSurface
   gfx::Size new_size_;
   bool transport_;
   bool did_set_swap_interval_;
+  bool did_unschedule_;
+  bool is_swap_buffers_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

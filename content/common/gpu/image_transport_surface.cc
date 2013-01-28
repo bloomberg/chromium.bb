@@ -183,7 +183,9 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     bool transport)
     : GLSurfaceAdapter(surface),
       transport_(transport),
-      did_set_swap_interval_(false) {
+      did_set_swap_interval_(false),
+      did_unschedule_(false),
+      is_swap_buffers_pending_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -200,19 +202,30 @@ void PassThroughImageTransportSurface::Destroy() {
   GLSurfaceAdapter::Destroy();
 }
 
+bool PassThroughImageTransportSurface::DeferDraws() {
+  if (is_swap_buffers_pending_) {
+    DCHECK(!did_unschedule_);
+    did_unschedule_ = true;
+    helper_->SetScheduled(false);
+    return true;
+  }
+  return false;
+}
+
 bool PassThroughImageTransportSurface::SwapBuffers() {
   bool result = gfx::GLSurfaceAdapter::SwapBuffers();
   SendVSyncUpdateIfAvailable();
 
   if (transport_) {
+    DCHECK(!is_swap_buffers_pending_);
+    is_swap_buffers_pending_ = true;
+
     // Round trip to the browser UI thread, for throttling, by sending a dummy
     // SwapBuffers message.
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
     params.surface_handle = 0;
     params.size = surface()->GetSize();
     helper_->SendAcceleratedSurfaceBuffersSwapped(params);
-
-    helper_->SetScheduled(false);
   }
   return result;
 }
@@ -223,6 +236,9 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
   SendVSyncUpdateIfAvailable();
 
   if (transport_) {
+    DCHECK(!is_swap_buffers_pending_);
+    is_swap_buffers_pending_ = true;
+
     // Round trip to the browser UI thread, for throttling, by sending a dummy
     // PostSubBuffer message.
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
@@ -250,7 +266,12 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 void PassThroughImageTransportSurface::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& /* params */) {
   DCHECK(transport_);
-  helper_->SetScheduled(true);
+  DCHECK(is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = false;
+  if (did_unschedule_) {
+    did_unschedule_ = false;
+    helper_->SetScheduled(true);
+  }
 }
 
 void PassThroughImageTransportSurface::OnResizeViewACK() {

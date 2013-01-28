@@ -556,17 +556,6 @@ void GpuChannel::HandleMessage() {
     IPC::Message* m = deferred_messages_.front();
     GpuCommandBufferStub* stub = stubs_.Lookup(m->routing_id());
 
-    if (stub && !stub->IsScheduled()) {
-      if (m->type() == GpuCommandBufferMsg_Echo::ID) {
-        stub->DelayEcho(m);
-        deferred_messages_.pop_front();
-        MessageProcessed();
-        if (!deferred_messages_.empty())
-          OnScheduled();
-      }
-      return;
-    }
-
     if (stub && stub->IsPreempted()) {
       OnScheduled();
       return;
