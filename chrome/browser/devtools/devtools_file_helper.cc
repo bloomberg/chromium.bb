@@ -28,6 +28,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -133,7 +134,7 @@ std::string RegisterFileSystem(WebContents* web_contents,
                                const FilePath& path,
                                std::string* registered_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents->GetURL()));
+  CHECK(content::HasWebUIScheme(web_contents->GetURL()));
   std::string file_system_id = isolated_context()->RegisterFileSystemForPath(
       fileapi::kFileSystemTypeNativeLocal, path, registered_name);
 

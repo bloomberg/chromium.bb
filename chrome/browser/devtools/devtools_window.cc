@@ -34,7 +34,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
@@ -49,6 +48,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 
 typedef std::vector<DevToolsWindow*> DevToolsWindowList;
@@ -852,19 +852,19 @@ DictionaryValue* CreateFileSystemValue(
 } // namespace
 
 void DevToolsWindow::RequestFileSystems() {
-  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents_->GetURL()));
+  CHECK(content::HasWebUIScheme(web_contents_->GetURL()));
   file_helper_->RequestFileSystems(
       Bind(&DevToolsWindow::FileSystemsLoaded, weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsWindow::AddFileSystem() {
-  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents_->GetURL()));
+  CHECK(content::HasWebUIScheme(web_contents_->GetURL()));
   file_helper_->AddFileSystem(
       Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
-  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents_->GetURL()));
+  CHECK(content::HasWebUIScheme(web_contents_->GetURL()));
   file_helper_->RemoveFileSystem(file_system_path);
   StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.fileSystemRemoved",
