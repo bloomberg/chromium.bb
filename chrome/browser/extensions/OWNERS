@@ -19,3 +19,5 @@ koz@chromium.org
 miket@chromium.org
 mpcomplete@chromium.org
 yoz@chromium.org
+
+per-file web_view_browsertest.cc=fsamuel@chromium.org
