@@ -4,8 +4,6 @@
 
 #include "webkit/blob/blob_url_request_job.h"
 
-#include <limits>
-
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util_proxy.h"
@@ -47,8 +45,6 @@ const char kHTTPMethodNotAllowText[] = "Method Not Allowed";
 const char kHTTPRequestedRangeNotSatisfiableText[] =
     "Requested Range Not Satisfiable";
 const char kHTTPInternalErrorText[] = "Internal Server Error";
-
-const int64 kMaxTotalSize = std::numeric_limits<int64>::max();
 
 bool IsFileType(BlobData::Item::Type type) {
   switch (type) {
@@ -187,19 +183,6 @@ void BlobURLRequestJob::DidStart() {
   CountSize();
 }
 
-bool BlobURLRequestJob::AddItemLength(size_t index, int64 item_length) {
-  if (item_length > kMaxTotalSize - total_size_) {
-    NotifyFailure(net::ERR_FAILED);
-    return false;
-  }
-
-  // Cache the size and add it to the total size.
-  DCHECK_LT(index, item_length_list_.size());
-  item_length_list_[index] = item_length;
-  total_size_ += item_length;
-  return true;
-}
-
 void BlobURLRequestJob::CountSize() {
   error_ = false;
   pending_get_file_info_count_ = 0;
@@ -215,9 +198,10 @@ void BlobURLRequestJob::CountSize() {
                      weak_factory_.GetWeakPtr(), i));
       continue;
     }
-
-    if (!AddItemLength(i, item.length()))
-      return;
+    // Cache the size and add it to the total size.
+    int64 item_length = static_cast<int64>(item.length());
+    item_length_list_[i] = item_length;
+    total_size_ += item_length;
   }
 
   if (pending_get_file_info_count_ == 0)
@@ -267,28 +251,16 @@ void BlobURLRequestJob::DidGetFileItemLength(size_t index, int64 result) {
   const BlobData::Item& item = blob_data_->items().at(index);
   DCHECK(IsFileType(item.type()));
 
-  uint64 file_length = result;
-  uint64 item_offset = item.offset();
-  uint64 item_length = item.length();
-
-  if (item_offset > file_length) {
-    NotifyFailure(net::ERR_FILE_NOT_FOUND);
-    return;
-  }
-
-  uint64 max_length = file_length - item_offset;
-
   // If item length is -1, we need to use the file size being resolved
   // in the real time.
-  if (item_length == static_cast<uint64>(-1)) {
-    item_length = max_length;
-  } else if (item_length > max_length) {
-    NotifyFailure(net::ERR_FILE_NOT_FOUND);
-    return;
-  }
+  int64 item_length = static_cast<int64>(item.length());
+  if (item_length == -1)
+    item_length = result - item.offset();
 
-  if (!AddItemLength(index, item_length))
-    return;
+  // Cache the size and add it to the total size.
+  DCHECK_LT(index, item_length_list_.size());
+  item_length_list_[index] = item_length;
+  total_size_ += item_length;
 
   if (--pending_get_file_info_count_ == 0)
     DidCountSize(net::OK);
@@ -448,18 +420,14 @@ int BlobURLRequestJob::BytesReadCompleted() {
 }
 
 int BlobURLRequestJob::ComputeBytesToRead() const {
-  int64 current_item_length = item_length_list_[current_item_index_];
+  int64 current_item_remaining_bytes =
+      item_length_list_[current_item_index_] - current_item_offset_;
+  int64 remaining_bytes = std::min(current_item_remaining_bytes,
+                                   remaining_bytes_);
 
-  int64 item_remaining = current_item_length - current_item_offset_;
-  int64 buf_remaining = read_buf_->BytesRemaining();
-  int64 max_remaining = std::numeric_limits<int>::max();
-
-  int64 min = std::min(std::min(std::min(item_remaining,
-                                         buf_remaining),
-                                         remaining_bytes_),
-                                         max_remaining);
-
-  return static_cast<int>(min);
+  return static_cast<int>(std::min(
+             static_cast<int64>(read_buf_->BytesRemaining()),
+             remaining_bytes));
 }
 
 bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
