@@ -21,6 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <float.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -46,7 +47,8 @@ WL_EXPORT void
 weston_matrix_init(struct weston_matrix *matrix)
 {
 	static const struct weston_matrix identity = {
-		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 }
+		.d = { 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 },
+		.type = 0,
 	};
 
 	memcpy(matrix, &identity, sizeof identity);
@@ -69,6 +71,7 @@ weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n)
 		for (j = 0; j < 4; j++)
 			tmp.d[i] += row[j] * column[j * 4];
 	}
+	tmp.type = m->type | n->type;
 	memcpy(m, &tmp, sizeof tmp);
 }
 
@@ -76,7 +79,8 @@ WL_EXPORT void
 weston_matrix_translate(struct weston_matrix *matrix, float x, float y, float z)
 {
 	struct weston_matrix translate = {
-		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 }
+		.d = { 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 },
+		.type = WESTON_MATRIX_TRANSFORM_TRANSLATE,
 	};
 
 	weston_matrix_multiply(matrix, &translate);
@@ -86,10 +90,22 @@ WL_EXPORT void
 weston_matrix_scale(struct weston_matrix *matrix, float x, float y,float z)
 {
 	struct weston_matrix scale = {
-		{ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 }
+		.d = { x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 },
+		.type = WESTON_MATRIX_TRANSFORM_SCALE,
 	};
 
 	weston_matrix_multiply(matrix, &scale);
+}
+
+WL_EXPORT void
+weston_matrix_rotate_xy(struct weston_matrix *matrix, float cos, float sin)
+{
+	struct weston_matrix translate = {
+		.d = { cos, sin, 0, 0,  -sin, cos, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 },
+		.type = WESTON_MATRIX_TRANSFORM_ROTATE,
+	};
+
+	weston_matrix_multiply(matrix, &translate);
 }
 
 /* v <- m * v */
@@ -249,6 +265,7 @@ weston_matrix_invert(struct weston_matrix *inverse,
 	weston_matrix_init(inverse);
 	for (c = 0; c < 4; ++c)
 		inverse_transform(LU, perm, &inverse->d[c * 4]);
+	inverse->type = matrix->type;
 
 	return 0;
 }

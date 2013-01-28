@@ -1876,6 +1876,8 @@ shell_map_popup(struct shell_surface *shsurf)
 	} else {
 		/* construct x, y translation matrix */
 		weston_matrix_init(&shsurf->popup.parent_transform.matrix);
+		shsurf->popup.parent_transform.matrix.type =
+			WESTON_MATRIX_TRANSFORM_TRANSLATE;
 		shsurf->popup.parent_transform.matrix.d[12] =
 			parent->geometry.x;
 		shsurf->popup.parent_transform.matrix.d[13] =
@@ -2502,10 +2504,7 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 			&shsurf->rotation.transform.matrix;
 
 		weston_matrix_init(&rotate->rotation);
-		rotate->rotation.d[0] = dx / r;
-		rotate->rotation.d[4] = -dy / r;
-		rotate->rotation.d[1] = -rotate->rotation.d[4];
-		rotate->rotation.d[5] = rotate->rotation.d[0];
+		weston_matrix_rotate_xy(&rotate->rotation, dx / r, dy / r);
 
 		weston_matrix_init(matrix);
 		weston_matrix_translate(matrix, -cx, -cy, 0.0f);
@@ -2600,17 +2599,11 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		struct weston_matrix inverse;
 
 		weston_matrix_init(&inverse);
-		inverse.d[0] = dx / r;
-		inverse.d[4] = dy / r;
-		inverse.d[1] = -inverse.d[4];
-		inverse.d[5] = inverse.d[0];
+		weston_matrix_rotate_xy(&inverse, dx / r, -dy / r);
 		weston_matrix_multiply(&surface->rotation.rotation, &inverse);
 
 		weston_matrix_init(&rotate->rotation);
-		rotate->rotation.d[0] = dx / r;
-		rotate->rotation.d[4] = -dy / r;
-		rotate->rotation.d[1] = -rotate->rotation.d[4];
-		rotate->rotation.d[5] = rotate->rotation.d[0];
+		weston_matrix_rotate_xy(&rotate->rotation, dx / r, dy / r);
 	} else {
 		weston_matrix_init(&surface->rotation.rotation);
 		weston_matrix_init(&rotate->rotation);

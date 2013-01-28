@@ -24,8 +24,16 @@
 #ifndef WESTON_MATRIX_H
 #define WESTON_MATRIX_H
 
+enum weston_matrix_transform_type {
+	WESTON_MATRIX_TRANSFORM_TRANSLATE	= (1 << 0),
+	WESTON_MATRIX_TRANSFORM_SCALE		= (1 << 1),
+	WESTON_MATRIX_TRANSFORM_ROTATE		= (1 << 2),
+	WESTON_MATRIX_TRANSFORM_OTHER		= (1 << 3),
+};
+
 struct weston_matrix {
 	float d[16];
+	unsigned int type;
 };
 
 struct weston_vector {
@@ -41,6 +49,8 @@ weston_matrix_scale(struct weston_matrix *matrix, float x, float y, float z);
 void
 weston_matrix_translate(struct weston_matrix *matrix,
 			float x, float y, float z);
+void
+weston_matrix_rotate_xy(struct weston_matrix *matrix, float cos, float sin);
 void
 weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
 

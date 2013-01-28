@@ -539,6 +539,7 @@ weston_surface_update_transform_enable(struct weston_surface *surface)
 	surface->transform.enabled = 1;
 
 	/* Otherwise identity matrix, but with x and y translation. */
+	surface->transform.position.matrix.type = WESTON_MATRIX_TRANSFORM_TRANSLATE;
 	surface->transform.position.matrix.d[12] = surface->geometry.x;
 	surface->transform.position.matrix.d[13] = surface->geometry.y;
 
@@ -2754,12 +2755,14 @@ weston_output_compute_transform(struct weston_output *output)
 	int flip;
 
 	weston_matrix_init(&transform);
+	transform.type = WESTON_MATRIX_TRANSFORM_ROTATE;
 
 	switch(output->transform) {
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		transform.type |= WESTON_MATRIX_TRANSFORM_OTHER;
 		flip = -1;
 		break;
 	default:
