@@ -4,13 +4,15 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
+#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace errors = extension_manifest_errors;
+namespace extensions {
 
 TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
-  scoped_refptr<extensions::Extension> extension(
+  scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("page_action_manifest_version_2.json"));
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->page_action_info());
@@ -21,5 +23,7 @@ TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
   EXPECT_TRUE(extension->page_action_info()->default_popup_url.is_empty());
 
   LoadAndExpectError("page_action_manifest_version_2b.json",
-                     errors::kInvalidPageActionPopup);
+                     extension_manifest_errors::kInvalidPageActionPopup);
 }
+
+}  // namespace extensions

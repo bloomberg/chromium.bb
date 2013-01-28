@@ -47,7 +47,7 @@ ChromeDownloadManagerDelegateTest.StartDownload_PromptAlways
 # browser_prefs.cc
 ExtensionTest.*
 ExtensionAPI.*
-ExtensionFileUtil.*
+ExtensionFileUtilTest.*
 ExtensionPermissionsTest.*
 ExtensionUnpackerTest.*
 ActiveTabTest.*

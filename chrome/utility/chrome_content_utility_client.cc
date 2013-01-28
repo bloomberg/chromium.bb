@@ -17,8 +17,11 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
@@ -41,6 +44,17 @@
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
+
+namespace {
+
+// Explicitly register all ManifestHandlers needed in the utility process.
+void RegisterExtensionManifestHandlers() {
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kBrowserAction,
+      new extensions::BrowserActionHandler);
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -116,6 +130,7 @@ void ChromeContentUtilityClient::OnUnpackExtension(
     int creation_flags) {
   CHECK(location > extensions::Extension::INVALID);
   CHECK(location < extensions::Extension::NUM_LOCATIONS);
+  RegisterExtensionManifestHandlers();
   extensions::Unpacker unpacker(
       extension_path,
       extension_id,

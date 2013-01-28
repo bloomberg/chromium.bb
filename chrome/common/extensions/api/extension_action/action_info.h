@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "googleurl/src/gurl.h"
 
@@ -26,12 +27,17 @@ struct ActionInfo {
     TYPE_SYSTEM_INDICATOR,
   };
 
-  // Returns the appropriate ActionInfo for the given |extension|.
-  static const ActionInfo* GetScriptBadgeInfo(const Extension* extension);
+  // Returns the extension's browser action, if any.
+  static const ActionInfo* GetBrowserActionInfo(const Extension* extension);
 
-  // Sets the appropriate ActionInfo as ManifestData for the given |extension|.
-  // This is static since |extension| takes ownership of |info|.
-  static void SetScriptBadgeInfo(Extension* extension, ActionInfo* info);
+  // Returns the extension's script badge.
+  static const ActionInfo* GetScriptBadgeInfo(const Extension* etxension);
+
+  // Sets the extension's browser action. |extension| takes ownership of |info|.
+  static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
+
+  // Sets the extension's script badge. |extension| takes ownership of |info|.
+  static void SetScriptBadgeInfo(Extension* etxension, ActionInfo* info);
 
   // Empty implies the key wasn't present.
   ExtensionIconSet default_icon;

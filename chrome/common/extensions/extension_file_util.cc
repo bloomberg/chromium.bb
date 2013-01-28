@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -336,7 +337,7 @@ bool ValidateExtension(const Extension* extension,
     return false;
   }
 
-  action = extension->browser_action_info();
+  action = extensions::ActionInfo::GetBrowserActionInfo(extension);
   if (action && !action->default_icon.empty() &&
       !ValidateExtensionIconSet(action->default_icon, extension,
           IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED, error)) {

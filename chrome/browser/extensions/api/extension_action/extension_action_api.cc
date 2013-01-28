@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -186,10 +187,39 @@ static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
+  ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
+                            new BrowserActionHandler);
   ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
                             new ScriptBadgeHandler);
+
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
+
+  // Browser Actions
+  registry->RegisterFunction<BrowserActionSetIconFunction>();
+  registry->RegisterFunction<BrowserActionSetTitleFunction>();
+  registry->RegisterFunction<BrowserActionSetBadgeTextFunction>();
+  registry->RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
+  registry->RegisterFunction<BrowserActionSetPopupFunction>();
+  registry->RegisterFunction<BrowserActionGetTitleFunction>();
+  registry->RegisterFunction<BrowserActionGetBadgeTextFunction>();
+  registry->RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
+  registry->RegisterFunction<BrowserActionGetPopupFunction>();
+  registry->RegisterFunction<BrowserActionEnableFunction>();
+  registry->RegisterFunction<BrowserActionDisableFunction>();
+
+  // Page Actions
+  registry->RegisterFunction<EnablePageActionsFunction>();
+  registry->RegisterFunction<DisablePageActionsFunction>();
+  registry->RegisterFunction<PageActionShowFunction>();
+  registry->RegisterFunction<PageActionHideFunction>();
+  registry->RegisterFunction<PageActionSetIconFunction>();
+  registry->RegisterFunction<PageActionSetTitleFunction>();
+  registry->RegisterFunction<PageActionSetPopupFunction>();
+  registry->RegisterFunction<PageActionGetTitleFunction>();
+  registry->RegisterFunction<PageActionGetPopupFunction>();
+
+  // Script Badges
   registry->RegisterFunction<ScriptBadgeGetAttentionFunction>();
   registry->RegisterFunction<ScriptBadgeGetPopupFunction>();
   registry->RegisterFunction<ScriptBadgeSetPopupFunction>();

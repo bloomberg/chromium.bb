@@ -129,6 +129,8 @@
         'common/descriptors_android.h',
         'common/extensions/api/commands/commands_handler.cc',
         'common/extensions/api/commands/commands_handler.h',
+        'common/extensions/api/extension_action/browser_action_handler.cc',
+        'common/extensions/api/extension_action/browser_action_handler.h',
         'common/extensions/api/extension_action/script_badge_handler.cc',
         'common/extensions/api/extension_action/script_badge_handler.h',
         'common/extensions/api/extension_action/action_info.cc',
@@ -474,6 +476,8 @@
             ['include', 'common/extensions/api/extension_api_stub.cc'],
             ['include', 'common/extensions/api/extension_action/action_info.cc'],
             ['include', 'common/extensions/api/extension_action/action_info.h'],
+            ['include', 'common/extensions/api/extension_action/browser_action_handler.cc'],
+            ['include', 'common/extensions/api/extension_action/browser_action_handler.h'],
           ],
         }],
         ['remoting==1', {

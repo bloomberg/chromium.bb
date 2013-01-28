@@ -11,8 +11,10 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,11 +24,21 @@ using extensions::Extension;
 
 namespace keys = extension_manifest_keys;
 
+class ExtensionFileUtilTest : public testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kBrowserAction,
+        new extensions::BrowserActionHandler);
+  }
+};
+
 #if defined(OS_WIN)
 // http://crbug.com/106381
 #define InstallUninstallGarbageCollect DISABLED_InstallUninstallGarbageCollect
 #endif
-TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
+TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -97,7 +109,7 @@ TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
   ASSERT_TRUE(file_util::DirectoryExists(all_extensions));
 }
 
-TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
+TEST_F(ExtensionFileUtilTest, LoadExtensionWithValidLocales) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -113,7 +125,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
   EXPECT_EQ("The first extension that I made.", extension->description());
 }
 
-TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
+TEST_F(ExtensionFileUtilTest, LoadExtensionWithoutLocalesFolder) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -134,7 +146,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
 #define CheckIllegalFilenamesNoUnderscores \
     DISABLED_CheckIllegalFilenamesNoUnderscores
 #endif
-TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
+TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesNoUnderscores) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -154,7 +166,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
 #define CheckIllegalFilenamesOnlyReserved \
     DISABLED_CheckIllegalFilenamesOnlyReserved
 #endif
-TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
+TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesOnlyReserved) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -171,7 +183,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
 #define CheckIllegalFilenamesReservedAndIllegal \
     DISABLED_CheckIllegalFilenamesReservedAndIllegal
 #endif
-TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
+TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -186,7 +198,8 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
                                                              &error));
 }
 
-TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
+TEST_F(ExtensionFileUtilTest,
+       LoadExtensionGivesHelpfullErrorOnMissingManifest) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -203,7 +216,7 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
   ASSERT_STREQ("Manifest file is missing or unreadable.", error.c_str());
 }
 
-TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
+TEST_F(ExtensionFileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -221,7 +234,7 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
                "Line: 2, column: 16, Syntax error.", error.c_str());
 }
 
-TEST(ExtensionFileUtil, FailLoadingNonUTF8Scripts) {
+TEST_F(ExtensionFileUtilTest, FailLoadingNonUTF8Scripts) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -236,7 +249,7 @@ TEST(ExtensionFileUtil, FailLoadingNonUTF8Scripts) {
                "It isn't UTF-8 encoded.", error.c_str());
 }
 
-TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
+TEST_F(ExtensionFileUtilTest, ExtensionURLToRelativeFilePath) {
 #define URL_PREFIX "chrome-extension://extension-id/"
   struct TestCase {
     const char* url;
@@ -282,7 +295,7 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
   }
 }
 
-TEST(ExtensionFileUtil, ExtensionResourceURLToFilePath) {
+TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
   // Setup filesystem for testing.
   FilePath root_path;
   ASSERT_TRUE(file_util::CreateNewTempDirectory(
@@ -381,7 +394,7 @@ static scoped_refptr<Extension> LoadExtensionManifest(
 // http://crbug.com/108279
 #define ValidateThemeUTF8 DISABLED_ValidateThemeUTF8
 #endif
-TEST(ExtensionFileUtil, ValidateThemeUTF8) {
+TEST_F(ExtensionFileUtilTest, ValidateThemeUTF8) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -414,7 +427,7 @@ TEST(ExtensionFileUtil, ValidateThemeUTF8) {
 #else
 #define MAYBE_BackgroundScriptsMustExist BackgroundScriptsMustExist
 #endif
-TEST(ExtensionFileUtil, MAYBE_BackgroundScriptsMustExist) {
+TEST_F(ExtensionFileUtilTest, MAYBE_BackgroundScriptsMustExist) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -477,7 +490,7 @@ const char private_key[] =
     "g==\n"
     "-----END PRIVATE KEY-----\n";
 
-TEST(ExtensionFileUtil, FindPrivateKeyFiles) {
+TEST_F(ExtensionFileUtilTest, FindPrivateKeyFiles) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -503,7 +516,7 @@ TEST(ExtensionFileUtil, FindPrivateKeyFiles) {
               testing::Contains(src_path.AppendASCII("second_key.pem")));
 }
 
-TEST(ExtensionFileUtil, WarnOnPrivateKey) {
+TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -546,7 +559,7 @@ TEST(ExtensionFileUtil, WarnOnPrivateKey) {
                   "extension includes the key file.*ext_root.a_key.pem"));
 }
 
-TEST(ExtensionFileUtil, CheckZeroLengthImageFile) {
+TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
 

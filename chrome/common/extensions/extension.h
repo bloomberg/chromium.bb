@@ -21,7 +21,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -51,7 +50,7 @@ class ImageSkia;
 FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
-
+struct ActionInfo;
 class Manifest;
 class PermissionSet;
 
@@ -606,9 +605,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const UserScriptList& content_scripts() const { return content_scripts_; }
   const ActionInfo* page_action_info() const { return page_action_info_.get(); }
-  const ActionInfo* browser_action_info() const {
-    return browser_action_info_.get();
-  }
   const ActionInfo* system_indicator_info() const {
     return system_indicator_info_.get();
   }
@@ -958,9 +954,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's page action, if any.
   scoped_ptr<ActionInfo> page_action_info_;
-
-  // The extension's browser action, if any.
-  scoped_ptr<ActionInfo> browser_action_info_;
 
   // The extension's system indicator, if any.
   scoped_ptr<ActionInfo> system_indicator_info_;

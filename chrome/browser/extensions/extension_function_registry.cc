@@ -52,30 +52,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Register all functions here.
 
-  // Page Actions.
-  RegisterFunction<EnablePageActionsFunction>();
-  RegisterFunction<DisablePageActionsFunction>();
-  RegisterFunction<PageActionShowFunction>();
-  RegisterFunction<PageActionHideFunction>();
-  RegisterFunction<PageActionSetIconFunction>();
-  RegisterFunction<PageActionSetTitleFunction>();
-  RegisterFunction<PageActionSetPopupFunction>();
-  RegisterFunction<PageActionGetTitleFunction>();
-  RegisterFunction<PageActionGetPopupFunction>();
-
-  // Browser Actions.
-  RegisterFunction<extensions::BrowserActionSetIconFunction>();
-  RegisterFunction<extensions::BrowserActionSetTitleFunction>();
-  RegisterFunction<extensions::BrowserActionSetBadgeTextFunction>();
-  RegisterFunction<extensions::BrowserActionSetBadgeBackgroundColorFunction>();
-  RegisterFunction<extensions::BrowserActionSetPopupFunction>();
-  RegisterFunction<extensions::BrowserActionGetTitleFunction>();
-  RegisterFunction<extensions::BrowserActionGetBadgeTextFunction>();
-  RegisterFunction<extensions::BrowserActionGetBadgeBackgroundColorFunction>();
-  RegisterFunction<extensions::BrowserActionGetPopupFunction>();
-  RegisterFunction<extensions::BrowserActionEnableFunction>();
-  RegisterFunction<extensions::BrowserActionDisableFunction>();
-
   // Browsing Data.
   RegisterFunction<RemoveBrowsingDataFunction>();
   RegisterFunction<RemoveAppCacheFunction>();

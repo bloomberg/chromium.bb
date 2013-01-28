@@ -25,6 +25,7 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -536,7 +537,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (void)removeActionButtonForExtension:(const Extension*)extension {
-  if (!extension->browser_action_info())
+  if (!extensions::ActionInfo::GetBrowserActionInfo(extension))
     return;
 
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());

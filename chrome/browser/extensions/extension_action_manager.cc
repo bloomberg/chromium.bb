@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/notification_service.h"
@@ -130,7 +129,7 @@ ExtensionAction* ExtensionActionManager::GetPageAction(
 
 ExtensionAction* ExtensionActionManager::GetBrowserAction(
     const extensions::Extension& extension) const {
-  const ActionInfo* action_info = extension.browser_action_info();
+  const ActionInfo* action_info = ActionInfo::GetBrowserActionInfo(&extension);
   ActionInfo::Type action_type = ActionInfo::TYPE_BROWSER;
   if (FeatureSwitch::script_badges()->IsEnabled() &&
       extension.page_action_info()) {

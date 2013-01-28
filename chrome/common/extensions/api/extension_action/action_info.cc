@@ -29,6 +29,13 @@ ActionInfoData::ActionInfoData(ActionInfo* info) : action_info(info) {
 ActionInfoData::~ActionInfoData() {
 }
 
+static const ActionInfo* GetActionInfo(const Extension* extension,
+                                       const std::string& key) {
+  ActionInfoData* data = static_cast<ActionInfoData*>(
+      extension->GetManifestData(key));
+  return data ? data->action_info.get() : NULL;
+}
+
 }  // namespace
 
 ActionInfo::ActionInfo() {
@@ -38,10 +45,19 @@ ActionInfo::~ActionInfo() {
 }
 
 // static
+const ActionInfo* ActionInfo::GetBrowserActionInfo(const Extension* extension) {
+  return GetActionInfo(extension, extension_manifest_keys::kBrowserAction);
+}
+
+// static
 const ActionInfo* ActionInfo::GetScriptBadgeInfo(const Extension* extension) {
-  ActionInfoData* data = static_cast<ActionInfoData*>(
-      extension->GetManifestData(extension_manifest_keys::kScriptBadge));
-  return data ? data->action_info.get() : NULL;
+  return GetActionInfo(extension, extension_manifest_keys::kScriptBadge);
+}
+
+// static
+void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
+  extension->SetManifestData(extension_manifest_keys::kBrowserAction,
+                             new ActionInfoData(info));
 }
 
 // static

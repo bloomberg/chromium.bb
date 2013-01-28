@@ -916,10 +916,11 @@ std::set<FilePath> Extension::GetBrowserImages() const {
     }
   }
 
-  if (browser_action_info() && !browser_action_info()->default_icon.empty()) {
+  const ActionInfo* browser_action = ActionInfo::GetBrowserActionInfo(this);
+  if (browser_action && !browser_action->default_icon.empty()) {
     for (ExtensionIconSet::IconMap::const_iterator iter =
-             browser_action_info()->default_icon.map().begin();
-         iter != browser_action_info()->default_icon.map().end();
+             browser_action->default_icon.map().begin();
+         iter != browser_action->default_icon.map().end();
          ++iter) {
        image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
@@ -2381,7 +2382,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
   if (!LoadManifestHandlerFeatures(error) ||
       !LoadContentScripts(error) ||
       !LoadPageAction(error) ||
-      !LoadBrowserAction(error) ||
       !LoadSystemIndicator(api_permissions, error) ||
       !LoadIncognitoMode(error) ||
       !LoadContentSecurityPolicy(error))
@@ -2473,22 +2473,6 @@ bool Extension::LoadPageAction(string16* error) {
       return false;  // Failed to parse page action definition.
   }
 
-  return true;
-}
-
-bool Extension::LoadBrowserAction(string16* error) {
-  if (!manifest_->HasKey(keys::kBrowserAction))
-    return true;
-  DictionaryValue* browser_action_value = NULL;
-  if (!manifest_->GetDictionary(keys::kBrowserAction, &browser_action_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidBrowserAction);
-    return false;
-  }
-
-  browser_action_info_ = LoadExtensionActionInfoHelper(
-      this, browser_action_value, error);
-  if (!browser_action_info_.get())
-    return false;  // Failed to parse browser action definition.
   return true;
 }
 
@@ -2980,7 +2964,7 @@ bool Extension::HasMultipleUISurfaces() const {
   if (page_action_info())
     ++num_surfaces;
 
-  if (browser_action_info())
+  if (ActionInfo::GetBrowserActionInfo(this))
     ++num_surfaces;
 
   if (is_app())
