@@ -237,29 +237,6 @@ if ragel_involved:
       source=['obtain_binutils.py'],
       action='${PYTHON} ${SOURCES[0]} ${TARGETS[0]} ${TARGETS[1]}')
 
-  for bits in ('32', '64'):
-    (one_valid_instr_rl,) = env.AutoDepsCommand(
-        'one_valid_instruction_x86_%s.rl' % bits,
-        [gen_dfa, '-o', '${TARGET}'] + INSTRUCTION_DEFINITIONS +
-        ['-d', 'check_access,vex_prefix,opcode,parse_operands_states',
-         '-d', 'parse_operands,instruction_name',
-         '-m', {'32': 'ia32', '64': 'amd64'}[bits]])
-
-    include_dir = one_valid_instr_rl.dir.get_abspath()
-
-    (one_instr_xml,) = env.AutoDepsCommand(
-        'one_instruction_x86_%s.xml' % bits,
-        [ragel_binary,
-         '-x',
-         '-I%s' % include_dir,
-         '-I..',
-         env.File('unreviewed/one_instruction_x86_%s.rl' % bits),
-         '-o', '${TARGET}'],
-        extra_deps=[
-            one_valid_instr_rl,
-            'unreviewed/parse_instruction.rl',
-            byte_machines])
-
   check_decoders = []
 
   for bits, xml in [('32', decoder32_xml), ('64', decoder64_xml)]:
