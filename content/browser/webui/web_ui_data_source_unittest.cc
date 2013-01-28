@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/webui/web_ui_data_source.h"
+#include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,7 +54,7 @@ class WebUIDataSourceTest : public testing::Test {
  public:
   WebUIDataSourceTest() : result_data_(NULL), old_client_(NULL) {}
   virtual ~WebUIDataSourceTest() {}
-  ChromeWebUIDataSource* source() { return source_.get(); }
+  WebUIDataSourceImpl* source() { return source_.get(); }
 
   void StartDataRequest(const std::string& path) {
      source_->StartDataRequest(
@@ -74,8 +74,8 @@ class WebUIDataSourceTest : public testing::Test {
   virtual void SetUp() {
     old_client_ = GetContentClient();
     SetContentClient(&client_);
-    WebUIDataSource* source = ChromeWebUIDataSource::Create("host");
-    ChromeWebUIDataSource* source_impl = static_cast<ChromeWebUIDataSource*>(
+    WebUIDataSource* source = WebUIDataSourceImpl::Create("host");
+    WebUIDataSourceImpl* source_impl = static_cast<WebUIDataSourceImpl*>(
         source);
     source_impl->disable_set_font_strings_for_testing();
     source_ = make_scoped_refptr(source_impl);
@@ -90,7 +90,7 @@ class WebUIDataSourceTest : public testing::Test {
     result_data_ = data;
   }
 
-  scoped_refptr<ChromeWebUIDataSource> source_;
+  scoped_refptr<WebUIDataSourceImpl> source_;
   TestClient client_;
   ContentClient* old_client_;
 };

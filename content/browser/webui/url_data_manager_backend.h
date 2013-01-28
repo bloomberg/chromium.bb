@@ -15,34 +15,31 @@
 #include "content/browser/webui/url_data_manager.h"
 #include "net/url_request/url_request_job_factory.h"
 
-class ChromeURLDataManagerBackend;
 class GURL;
-class URLRequestChromeJob;
 
 namespace base {
 class RefCountedMemory;
 }
 
-namespace net {
-class URLRequest;
-class URLRequestJob;
-}
+namespace content {
+class URLDataManagerBackend;
+class URLDataSourceImpl;
+class URLRequestChromeJob;
 
-// ChromeURLDataManagerBackend is used internally by ChromeURLDataManager on the
-// IO thread. In most cases you can use the API in ChromeURLDataManager and
-// ignore this class. ChromeURLDataManagerBackend is owned by
-// ChromeURLRequestContext.
-class ChromeURLDataManagerBackend : public base::SupportsUserData::Data {
+// URLDataManagerBackend is used internally by ChromeURLDataManager on the IO
+// thread. In most cases you can use the API in ChromeURLDataManager and ignore
+// this class. URLDataManagerBackend is owned by ResourceContext.
+class URLDataManagerBackend : public base::SupportsUserData::Data {
  public:
   typedef int RequestID;
 
-  ChromeURLDataManagerBackend();
-  virtual ~ChromeURLDataManagerBackend();
+  URLDataManagerBackend();
+  virtual ~URLDataManagerBackend();
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
   // be set for incognito profiles.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
-      ChromeURLDataManagerBackend* backend,
+      URLDataManagerBackend* backend,
       bool is_incognito);
 
   // Adds a DataSource to the collection of data sources.
@@ -92,13 +89,15 @@ class ChromeURLDataManagerBackend : public base::SupportsUserData::Data {
   // The ID we'll use for the next request we receive.
   RequestID next_request_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManagerBackend);
+  DISALLOW_COPY_AND_ASSIGN(URLDataManagerBackend);
 };
 
 // Creates protocol handler for chrome-devtools://. |is_incognito| should be
 // set for incognito profiles.
 net::URLRequestJobFactory::ProtocolHandler*
-CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
+CreateDevToolsProtocolHandler(URLDataManagerBackend* backend,
                               bool is_incognito);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_BACKEND_H_

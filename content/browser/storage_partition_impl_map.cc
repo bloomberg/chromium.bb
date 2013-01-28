@@ -191,7 +191,7 @@ void InitializeURLRequestContext(
 
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kChromeUIScheme,
-      ChromeURLDataManagerBackend::CreateProtocolHandler(
+      URLDataManagerBackend::CreateProtocolHandler(
           GetURLDataManagerForResourceContext(resource_context),
           off_the_record));
   DCHECK(set_protocol);

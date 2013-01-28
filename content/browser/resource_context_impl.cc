@@ -65,14 +65,14 @@ HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
       context->GetUserData(kHostZoomMapKeyName))->host_zoom_map();
 }
 
-ChromeURLDataManagerBackend* GetURLDataManagerForResourceContext(
+URLDataManagerBackend* GetURLDataManagerForResourceContext(
     ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context->GetUserData(kURLDataManagerBackendKeyName)) {
     context->SetUserData(kURLDataManagerBackendKeyName,
-                         new ChromeURLDataManagerBackend());
+                         new URLDataManagerBackend());
   }
-  return static_cast<ChromeURLDataManagerBackend*>(
+  return static_cast<URLDataManagerBackend*>(
       context->GetUserData(kURLDataManagerBackendKeyName));
 }
 

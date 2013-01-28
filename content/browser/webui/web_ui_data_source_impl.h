@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_H_
-#define CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_H_
+#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_IMPL_H_
+#define CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_IMPL_H_
 
 #include <map>
 #include <string>
@@ -13,22 +13,20 @@
 #include "base/compiler_specific.h"
 #include "base/values.h"
 #include "content/browser/webui/url_data_manager.h"
+#include "content/browser/webui/url_data_source_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace content {
-class WebUIDataSource;
-class WebUIDataSourceTest;
-}
 
 // A data source that can help with implementing the common operations
 // needed by the chrome WEBUI settings/history/downloads pages.
-class CONTENT_EXPORT ChromeWebUIDataSource
+class CONTENT_EXPORT WebUIDataSourceImpl
     : public NON_EXPORTED_BASE(URLDataSourceImpl),
-      public NON_EXPORTED_BASE(content::WebUIDataSource) {
+      public NON_EXPORTED_BASE(WebUIDataSource) {
  public:
-  // content::WebUIDataSource implementation:
+  // WebUIDataSource implementation:
   virtual void AddString(const std::string& name,
                          const string16& value) OVERRIDE;
   virtual void AddString(const std::string& name,
@@ -43,7 +41,7 @@ class CONTENT_EXPORT ChromeWebUIDataSource
                                int resource_id) OVERRIDE;
   virtual void SetDefaultResource(int resource_id) OVERRIDE;
   virtual void SetRequestFilter(
-      const content::WebUIDataSource::HandleRequestCallback& callback) OVERRIDE;
+      const WebUIDataSource::HandleRequestCallback& callback) OVERRIDE;
   virtual void DisableContentSecurityPolicy() OVERRIDE;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) OVERRIDE;
@@ -52,32 +50,32 @@ class CONTENT_EXPORT ChromeWebUIDataSource
   virtual void DisableDenyXFrameOptions() OVERRIDE;
 
  protected:
-  virtual ~ChromeWebUIDataSource();
+  virtual ~WebUIDataSourceImpl();
 
   // Completes a request by sending our dictionary of localized strings.
   void SendLocalizedStringsAsJSON(
-      const content::URLDataSource::GotDataCallback& callback);
+      const URLDataSource::GotDataCallback& callback);
 
   // Completes a request by sending the file specified by |idr|.
   void SendFromResourceBundle(
-      const content::URLDataSource::GotDataCallback& callback, int idr);
+      const URLDataSource::GotDataCallback& callback, int idr);
 
  private:
   class InternalDataSource;
   friend class InternalDataSource;
-  friend class content::WebUIDataSource;
-  friend class content::WebUIDataSourceTest;
+  friend class WebUIDataSource;
+  friend class WebUIDataSourceTest;
 
-  explicit ChromeWebUIDataSource(const std::string& source_name);
+  explicit WebUIDataSourceImpl(const std::string& source_name);
 
-  // Methods that match content::URLDataSource which are called by
+  // Methods that match URLDataSource which are called by
   // InternalDataSource.
   std::string GetSource();
   std::string GetMimeType(const std::string& path) const;
   void StartDataRequest(
       const std::string& path,
       bool is_incognito,
-      const content::URLDataSource::GotDataCallback& callback);
+      const URLDataSource::GotDataCallback& callback);
 
   void disable_set_font_strings_for_testing() {
     disable_set_font_strings_ = true;
@@ -92,7 +90,7 @@ class CONTENT_EXPORT ChromeWebUIDataSource
   std::string json_path_;
   std::map<std::string, int> path_to_idr_map_;
   DictionaryValue localized_strings_;
-  content::WebUIDataSource::HandleRequestCallback filter_callback_;
+  WebUIDataSource::HandleRequestCallback filter_callback_;
   bool add_csp_;
   bool object_src_set_;
   std::string object_src_;
@@ -101,7 +99,9 @@ class CONTENT_EXPORT ChromeWebUIDataSource
   bool deny_xframe_options_;
   bool disable_set_font_strings_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebUIDataSource);
+  DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };
 
-#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_H_
+}  // content
+
+#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_DATA_SOURCE_IMPL_H_

@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "content/browser/webui/shared_resources_data_source.h"
+#include "content/browser/webui/url_data_source_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -30,7 +31,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 
-using content::BrowserThread;
+namespace content {
 
 namespace {
 
@@ -79,7 +80,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
   // |is_incognito| set when job is generated from an incognito profile.
   URLRequestChromeJob(net::URLRequest* request,
                       net::NetworkDelegate* network_delegate,
-                      ChromeURLDataManagerBackend* backend,
+                      URLDataManagerBackend* backend,
                       bool is_incognito);
 
   // net::URLRequestJob implementation.
@@ -169,7 +170,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
   const bool is_incognito_;
 
   // The backend is owned by ChromeURLRequestContext and always outlives us.
-  ChromeURLDataManagerBackend* backend_;
+  URLDataManagerBackend* backend_;
 
   base::WeakPtrFactory<URLRequestChromeJob> weak_factory_;
 
@@ -178,7 +179,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
                                          net::NetworkDelegate* network_delegate,
-                                         ChromeURLDataManagerBackend* backend,
+                                         URLDataManagerBackend* backend,
                                          bool is_incognito)
     : net::URLRequestJob(request, network_delegate),
       data_offset_(0),
@@ -332,7 +333,7 @@ class ChromeProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // |is_incognito| should be set for incognito profiles.
-  explicit ChromeProtocolHandler(ChromeURLDataManagerBackend* backend,
+  explicit ChromeProtocolHandler(URLDataManagerBackend* backend,
                                  bool is_incognito);
   ~ChromeProtocolHandler();
 
@@ -342,7 +343,7 @@ class ChromeProtocolHandler
 
  private:
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
-  ChromeURLDataManagerBackend* const backend_;
+  URLDataManagerBackend* const backend_;
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
@@ -351,7 +352,7 @@ class ChromeProtocolHandler
 };
 
 ChromeProtocolHandler::ChromeProtocolHandler(
-    ChromeURLDataManagerBackend* backend, bool is_incognito)
+    URLDataManagerBackend* backend, bool is_incognito)
     : backend_(backend), is_incognito_(is_incognito) {}
 
 ChromeProtocolHandler::~ChromeProtocolHandler() {}
@@ -367,15 +368,15 @@ net::URLRequestJob* ChromeProtocolHandler::MaybeCreateJob(
 
 }  // namespace
 
-ChromeURLDataManagerBackend::ChromeURLDataManagerBackend()
+URLDataManagerBackend::URLDataManagerBackend()
     : next_request_id_(0) {
-  content::URLDataSource* shared_source = new SharedResourcesDataSource();
+  URLDataSource* shared_source = new SharedResourcesDataSource();
   URLDataSourceImpl* source_impl =
       new URLDataSourceImpl(shared_source->GetSource(), shared_source);
   AddDataSource(source_impl);
 }
 
-ChromeURLDataManagerBackend::~ChromeURLDataManagerBackend() {
+URLDataManagerBackend::~URLDataManagerBackend() {
   for (DataSourceMap::iterator i = data_sources_.begin();
        i != data_sources_.end(); ++i) {
     i->second->backend_ = NULL;
@@ -385,13 +386,13 @@ ChromeURLDataManagerBackend::~ChromeURLDataManagerBackend() {
 
 // static
 net::URLRequestJobFactory::ProtocolHandler*
-ChromeURLDataManagerBackend::CreateProtocolHandler(
-    ChromeURLDataManagerBackend* backend, bool is_incognito) {
+URLDataManagerBackend::CreateProtocolHandler(
+    URLDataManagerBackend* backend, bool is_incognito) {
   DCHECK(backend);
   return new ChromeProtocolHandler(backend, is_incognito);
 }
 
-void ChromeURLDataManagerBackend::AddDataSource(
+void URLDataManagerBackend::AddDataSource(
     URLDataSourceImpl* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DataSourceMap::iterator i = data_sources_.find(source->source_name());
@@ -404,7 +405,7 @@ void ChromeURLDataManagerBackend::AddDataSource(
   source->backend_ = this;
 }
 
-bool ChromeURLDataManagerBackend::HasPendingJob(
+bool URLDataManagerBackend::HasPendingJob(
     URLRequestChromeJob* job) const {
   for (PendingRequestMap::const_iterator i = pending_requests_.begin();
        i != pending_requests_.end(); ++i) {
@@ -414,8 +415,8 @@ bool ChromeURLDataManagerBackend::HasPendingJob(
   return false;
 }
 
-bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
-                                               URLRequestChromeJob* job) {
+bool URLDataManagerBackend::StartRequest(const GURL& url,
+                                         URLRequestChromeJob* job) {
   // Parse the URL into a request for a source and path.
   std::string source_name;
   std::string path;
@@ -472,14 +473,14 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
     // usually the UI thread, for this path.
     target_message_loop->PostTask(
         FROM_HERE,
-        base::Bind(&ChromeURLDataManagerBackend::CallStartRequest,
+        base::Bind(&URLDataManagerBackend::CallStartRequest,
                    make_scoped_refptr(source), path, job->is_incognito(),
                    request_id));
   }
   return true;
 }
 
-void ChromeURLDataManagerBackend::CallStartRequest(
+void URLDataManagerBackend::CallStartRequest(
     scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
     bool is_incognito,
@@ -490,7 +491,7 @@ void ChromeURLDataManagerBackend::CallStartRequest(
       base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
 }
 
-void ChromeURLDataManagerBackend::RemoveRequest(URLRequestChromeJob* job) {
+void URLDataManagerBackend::RemoveRequest(URLRequestChromeJob* job) {
   // Remove the request from our list of pending requests.
   // If/when the source sends the data that was requested, the data will just
   // be thrown away.
@@ -503,8 +504,8 @@ void ChromeURLDataManagerBackend::RemoveRequest(URLRequestChromeJob* job) {
   }
 }
 
-void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
-                                                base::RefCountedMemory* bytes) {
+void URLDataManagerBackend::DataAvailable(RequestID request_id,
+                                          base::RefCountedMemory* bytes) {
   // Forward this data on to the pending net::URLRequest, if it exists.
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i != pending_requests_.end()) {
@@ -520,7 +521,7 @@ class DevToolsJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // |is_incognito| should be set for incognito profiles.
-  DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
+  DevToolsJobFactory(URLDataManagerBackend* backend,
                      bool is_incognito);
   virtual ~DevToolsJobFactory();
 
@@ -531,7 +532,7 @@ class DevToolsJobFactory
  private:
   // |backend_| and |network_delegate_| are owned by ProfileIOData, which owns
   // this ProtocolHandler.
-  ChromeURLDataManagerBackend* const backend_;
+  URLDataManagerBackend* const backend_;
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
@@ -539,7 +540,7 @@ class DevToolsJobFactory
   DISALLOW_COPY_AND_ASSIGN(DevToolsJobFactory);
 };
 
-DevToolsJobFactory::DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
+DevToolsJobFactory::DevToolsJobFactory(URLDataManagerBackend* backend,
                                        bool is_incognito)
     : backend_(backend),
       is_incognito_(is_incognito) {
@@ -558,7 +559,9 @@ DevToolsJobFactory::MaybeCreateJob(
 }  // namespace
 
 net::URLRequestJobFactory::ProtocolHandler*
-CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
+CreateDevToolsProtocolHandler(URLDataManagerBackend* backend,
                               bool is_incognito) {
   return new DevToolsJobFactory(backend, is_incognito);
 }
+
+}  // namespace content

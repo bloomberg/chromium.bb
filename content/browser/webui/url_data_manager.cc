@@ -9,38 +9,35 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/webui/url_data_manager_backend.h"
-#include "content/browser/webui/web_ui_data_source.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/webui/url_data_manager_backend.h"
+#include "content/browser/webui/url_data_source_impl.h"
+#include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-
+namespace content {
 namespace {
 
 const char kURLDataManagerKeyName[] = "url_data_manager";
 
 base::LazyInstance<base::Lock>::Leaky g_delete_lock = LAZY_INSTANCE_INITIALIZER;
 
-ChromeURLDataManager* GetFromBrowserContext(BrowserContext* context) {
+URLDataManager* GetFromBrowserContext(BrowserContext* context) {
   if (!context->GetUserData(kURLDataManagerKeyName)) {
-    context->SetUserData(kURLDataManagerKeyName,
-                         new ChromeURLDataManager(context));
+    context->SetUserData(kURLDataManagerKeyName, new URLDataManager(context));
   }
-  return static_cast<ChromeURLDataManager*>(
+  return static_cast<URLDataManager*>(
       context->GetUserData(kURLDataManagerKeyName));
 }
 
 // Invoked on the IO thread to do the actual adding of the DataSource.
 static void AddDataSourceOnIOThread(
-    content::ResourceContext* resource_context,
+    ResourceContext* resource_context,
     scoped_refptr<URLDataSourceImpl> data_source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GetURLDataManagerForResourceContext(resource_context)->AddDataSource(
@@ -49,20 +46,17 @@ static void AddDataSourceOnIOThread(
 
 }  // namespace
 
-
 // static
-ChromeURLDataManager::URLDataSources* ChromeURLDataManager::data_sources_ =
-    NULL;
+URLDataManager::URLDataSources* URLDataManager::data_sources_ = NULL;
 
-ChromeURLDataManager::ChromeURLDataManager(
-    content::BrowserContext* browser_context)
+URLDataManager::URLDataManager(BrowserContext* browser_context)
     : browser_context_(browser_context) {
 }
 
-ChromeURLDataManager::~ChromeURLDataManager() {
+URLDataManager::~URLDataManager() {
 }
 
-void ChromeURLDataManager::AddDataSource(URLDataSourceImpl* source) {
+void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -72,7 +66,7 @@ void ChromeURLDataManager::AddDataSource(URLDataSourceImpl* source) {
 }
 
 // static
-void ChromeURLDataManager::DeleteDataSources() {
+void URLDataManager::DeleteDataSources() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   URLDataSources sources;
   {
@@ -86,8 +80,7 @@ void ChromeURLDataManager::DeleteDataSources() {
 }
 
 // static
-void ChromeURLDataManager::DeleteDataSource(
-    const URLDataSourceImpl* data_source) {
+void URLDataManager::DeleteDataSource(const URLDataSourceImpl* data_source) {
   // Invoked when a DataSource is no longer referenced and needs to be deleted.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // We're on the UI thread, delete right away.
@@ -109,28 +102,26 @@ void ChromeURLDataManager::DeleteDataSource(
     // Schedule a task to delete the DataSource back on the UI thread.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&ChromeURLDataManager::DeleteDataSources));
+        base::Bind(&URLDataManager::DeleteDataSources));
   }
 }
 
 // static
-void ChromeURLDataManager::AddDataSource(
-    content::BrowserContext* browser_context,
-    content::URLDataSource* source) {
+void URLDataManager::AddDataSource(BrowserContext* browser_context,
+                                   URLDataSource* source) {
   GetFromBrowserContext(browser_context)->
       AddDataSource(new URLDataSourceImpl(source->GetSource(), source));
 }
 
 // static
-void ChromeURLDataManager::AddWebUIDataSource(
-    content::BrowserContext* browser_context,
-    content::WebUIDataSource* source) {
-  ChromeWebUIDataSource* impl = static_cast<ChromeWebUIDataSource*>(source);
+void URLDataManager::AddWebUIDataSource(BrowserContext* browser_context,
+                                        WebUIDataSource* source) {
+  WebUIDataSourceImpl* impl = static_cast<WebUIDataSourceImpl*>(source);
   GetFromBrowserContext(browser_context)->AddDataSource(impl);
 }
 
 // static
-bool ChromeURLDataManager::IsScheduledForDeletion(
+bool URLDataManager::IsScheduledForDeletion(
     const URLDataSourceImpl* data_source) {
   base::AutoLock lock(g_delete_lock.Get());
   if (!data_sources_)
@@ -139,45 +130,4 @@ bool ChromeURLDataManager::IsScheduledForDeletion(
       data_sources_->end();
 }
 
-URLDataSourceImpl::URLDataSourceImpl(const std::string& source_name,
-                                     content::URLDataSource* source)
-    : source_name_(source_name),
-      backend_(NULL),
-      source_(source) {
-}
-
-URLDataSourceImpl::~URLDataSourceImpl() {
-}
-
-void URLDataSourceImpl::SendResponse(
-    int request_id,
-    base::RefCountedMemory* bytes) {
-  // Take a ref-pointer on entry so byte->Release() will always get called.
-  scoped_refptr<base::RefCountedMemory> bytes_ptr(bytes);
-  if (ChromeURLDataManager::IsScheduledForDeletion(this)) {
-    // We're scheduled for deletion. Servicing the request would result in
-    // this->AddRef being invoked, even though the ref count is 0 and 'this' is
-    // about to be deleted. If the AddRef were allowed through, when 'this' is
-    // released it would be deleted again.
-    //
-    // This scenario occurs with DataSources that make history requests. Such
-    // DataSources do a history query in |StartDataRequest| and the request is
-    // live until the object is deleted (history requests don't up the ref
-    // count). This means it's entirely possible for the DataSource to invoke
-    // |SendResponse| between the time when there are no more refs and the time
-    // when the object is deleted.
-    return;
-  }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLDataSourceImpl::SendResponseOnIOThread, this, request_id,
-                 bytes_ptr));
-}
-
-void URLDataSourceImpl::SendResponseOnIOThread(
-    int request_id,
-    scoped_refptr<base::RefCountedMemory> bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (backend_)
-    backend_->DataAvailable(request_id, bytes);
-}
+}  // namespace content

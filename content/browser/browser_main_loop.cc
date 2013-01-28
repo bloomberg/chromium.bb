@@ -621,7 +621,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // I/O thread and isn't threadsafe.
   GamepadService::GetInstance()->Terminate();
 
-  ChromeURLDataManager::DeleteDataSources();
+  URLDataManager::DeleteDataSources();
 #endif  // !defined(OS_IOS)
 
   if (parts_.get())

@@ -7,13 +7,12 @@
 
 #include "content/public/browser/resource_context.h"
 
-class ChromeURLDataManagerBackend;
-
 namespace content {
 
 class ChromeBlobStorageContext;
 class BrowserContext;
 class HostZoomMap;
+class URLDataManagerBackend;
 
 // Getters for objects that are part of BrowserContext which are also used on
 // the IO thread. These are only accessed by content so they're not on the
@@ -24,7 +23,7 @@ ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
 
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
 
-ChromeURLDataManagerBackend* GetURLDataManagerForResourceContext(
+URLDataManagerBackend* GetURLDataManagerForResourceContext(
     ResourceContext* context);
 
 // Initialize the above data on the ResourceContext from a given BrowserContext.

@@ -11,7 +11,7 @@ namespace content {
 
 void URLDataSource::Add(BrowserContext* browser_context,
                         URLDataSource* source) {
-  ChromeURLDataManager::AddDataSource(browser_context, source);
+  URLDataManager::AddDataSource(browser_context, source);
 }
 
 MessageLoop* URLDataSource::MessageLoopForRequestPath(

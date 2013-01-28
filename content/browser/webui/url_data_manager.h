@@ -9,37 +9,24 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/supports_user_data.h"
-#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-
-class ChromeURLDataManagerBackend;
-class MessageLoop;
-
-namespace base {
-class RefCountedMemory;
-}
 
 namespace content {
 class BrowserContext;
 class URLDataSource;
-class WebUIDataSource;
-}
-
 class URLDataSourceImpl;
+class WebUIDataSource;
 
 // To serve dynamic data off of chrome: URLs, implement the
-// ChromeURLDataManager::DataSource interface and register your handler
+// URLDataManager::DataSource interface and register your handler
 // with AddDataSource. DataSources must be added on the UI thread (they are also
 // deleted on the UI thread). Internally the DataSources are maintained by
-// ChromeURLDataManagerBackend, see it for details.
-class CONTENT_EXPORT ChromeURLDataManager
-    : public base::SupportsUserData::Data {
+// URLDataManagerBackend, see it for details.
+class CONTENT_EXPORT URLDataManager : public base::SupportsUserData::Data {
  public:
-  explicit ChromeURLDataManager(content::BrowserContext* browser_context);
-  virtual ~ChromeURLDataManager();
+  explicit URLDataManager(BrowserContext* browser_context);
+  virtual ~URLDataManager();
 
   // Adds a DataSource to the collection of data sources. This *must* be invoked
   // on the UI thread.
@@ -58,16 +45,14 @@ class CONTENT_EXPORT ChromeURLDataManager
   static void DeleteDataSources();
 
   // Convenience wrapper function to add |source| to |browser_context|'s
-  // |ChromeURLDataManager|. Creates a URLDataSourceImpl to wrap the given
+  // |URLDataManager|. Creates a URLDataSourceImpl to wrap the given
   // source.
-  static void AddDataSource(
-      content::BrowserContext* browser_context,
-      content::URLDataSource* source);
+  static void AddDataSource(BrowserContext* browser_context,
+                            URLDataSource* source);
 
-  // Adds a WebUI data source to |browser_context|'s |ChromeURLDataManager|.
-  static void AddWebUIDataSource(
-      content::BrowserContext* browser_context,
-      content::WebUIDataSource* source);
+  // Adds a WebUI data source to |browser_context|'s |URLDataManager|.
+  static void AddWebUIDataSource(BrowserContext* browser_context,
+                                 WebUIDataSource* source);
 
  private:
   friend class URLDataSourceImpl;
@@ -83,85 +68,15 @@ class CONTENT_EXPORT ChromeURLDataManager
   // was invoked).
   static bool IsScheduledForDeletion(const URLDataSourceImpl* data_source);
 
-  content::BrowserContext* browser_context_;
+  BrowserContext* browser_context_;
 
   // |data_sources_| that are no longer referenced and scheduled for deletion.
   // Protected by g_delete_lock in the .cc file.
   static URLDataSources* data_sources_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManager);
+  DISALLOW_COPY_AND_ASSIGN(URLDataManager);
 };
 
-// Trait used to handle deleting a URLDataSource. Deletion happens on the UI
-// thread.
-//
-// Implementation note: the normal shutdown sequence is for the UI loop to
-// stop pumping events then the IO loop and thread are stopped. When the
-// URLDataSources are no longer referenced (which happens when IO thread stops)
-// they get added to the UI message loop for deletion. But because the UI loop
-// has stopped by the time this happens the URLDataSources would be leaked.
-//
-// To make sure URLDataSources are properly deleted ChromeURLDataManager manages
-// deletion of the URLDataSources.  When a URLDataSource is no longer referenced
-// it is added to |data_sources_| and a task is posted to the UI thread to
-// handle the actual deletion. During shutdown |DeleteDataSources| is invoked so
-// that all pending URLDataSources are properly deleted.
-struct DeleteURLDataSource {
-  static void Destruct(const URLDataSourceImpl* data_source) {
-    ChromeURLDataManager::DeleteDataSource(data_source);
-  }
-};
-
-// A URLDataSource is an object that can answer requests for data
-// asynchronously. URLDataSources are collectively owned with refcounting smart
-// pointers and should never be deleted on the IO thread, since their calls
-// are handled almost always on the UI thread and there's a possibility of a
-// data race.  The |DeleteDataSource| trait above is used to enforce this.
-class URLDataSourceImpl : public base::RefCountedThreadSafe<
-    URLDataSourceImpl, DeleteURLDataSource> {
- public:
-  // See source_name_ below for docs on that parameter. Takes ownership of
-  // |source|.
-  URLDataSourceImpl(const std::string& source_name,
-                    content::URLDataSource* source);
-
-  // Report that a request has resulted in the data |bytes|.
-  // If the request can't be satisfied, pass NULL for |bytes| to indicate
-  // the request is over.
-  virtual void SendResponse(int request_id, base::RefCountedMemory* bytes);
-
-  const std::string& source_name() const { return source_name_; }
-  content::URLDataSource* source() const { return source_.get(); }
-
- protected:
-  virtual ~URLDataSourceImpl();
-
- private:
-  friend class ChromeURLDataManagerBackend;
-  friend class ChromeURLDataManager;
-  friend class base::DeleteHelper<URLDataSourceImpl>;
-
-  // SendResponse invokes this on the IO thread. Notifies the backend to
-  // handle the actual work of sending the data.
-  virtual void SendResponseOnIOThread(
-      int request_id,
-      scoped_refptr<base::RefCountedMemory> bytes);
-
-  // The name of this source.
-  // E.g., for favicons, this could be "favicon", which results in paths for
-  // specific resources like "favicon/34" getting sent to this source.
-  const std::string source_name_;
-
-  // This field is set and maintained by ChromeURLDataManagerBackend. It is
-  // set when the DataSource is added, and unset if the DataSource is removed.
-  // A DataSource can be removed in two ways: the ChromeURLDataManagerBackend
-  // is deleted, or another DataSource is registered with the same
-  // name. backend_ should only be accessed on the IO thread.
-  // This reference can't be via a scoped_refptr else there would be a cycle
-  // between the backend and data source.
-  ChromeURLDataManagerBackend* backend_;
-
-  scoped_ptr<content::URLDataSource> source_;
-};
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_H_
