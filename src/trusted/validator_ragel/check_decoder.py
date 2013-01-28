@@ -46,26 +46,55 @@ class DfaState(object):
       'transitions',
       'is_final',
       'any_byte',
-      '_num_suffixes',
   ]
 
-  def __init__(self):
-    self._num_suffixes = None
 
-  @property
-  def num_suffixes(self):
-    if self._num_suffixes is not None:
-      return self._num_suffixes
-    else:
-      if self.is_final:
-        return 1
-      if self.any_byte:
-        count = self.transitions[0].num_suffixes
-      else:
-        count = sum(next_state.num_suffixes
-                    for next_state in self.transitions.values())
-      self._num_suffixes = count
-      return count
+def GetNumSuffixes(start_state):
+  """Compute number of minimal suffixes automaton accepts from each state.
+
+  For each state reachable from given state, compute number of paths in the
+  automaton that start from that state, end in the accepting state and do not
+  pass through accepting states in between.
+
+  It is assumed that there are no cyclic paths going entirely through
+  non-accepting states.
+
+  Args:
+    start_state: start state.
+
+  Returns:
+    Dictionary from reachable states to numbers of suffixes.
+  """
+  num_suffixes = {}
+
+  def ComputeNumSuffixes(state):
+    if state in num_suffixes:
+      return
+
+    if state.is_final:
+      num_suffixes[state] = 1
+
+      # Even though the state itself is final, there may be more reachable
+      # states behind it.
+      for next_state in state.transitions.values():
+        ComputeNumSuffixes(next_state)
+
+      return
+
+    if state.any_byte:
+      next_state = state.transitions[0]
+      ComputeNumSuffixes(next_state)
+      num_suffixes[state] = num_suffixes[next_state]
+      return
+
+    count = 0
+    for next_state in state.transitions.values():
+      ComputeNumSuffixes(next_state)
+      count += num_suffixes[next_state]
+    num_suffixes[state] = count
+
+  ComputeNumSuffixes(start_state)
+  return num_suffixes
 
 
 def ReadStates(dfa_tree):
@@ -300,16 +329,17 @@ def main():
 
   assert not initial_state.any_byte
 
-  # We can't just write 'initial_state.num_suffixes' because
+  num_suffixes = GetNumSuffixes(initial_state)
+  # We can't just write 'num_suffixes[initial_state]' because
   # initial state is accepting.
-  total_instructions = sum(st.num_suffixes
-                           for st in initial_state.transitions.values())
+  total_instructions = sum(num_suffixes[state]
+                           for state in initial_state.transitions.values())
   print total_instructions, 'instructions total'
 
   # We parallelize by first two bytes.
   tasks = []
   for byte1, state1 in sorted(initial_state.transitions.items()):
-    if state1.any_byte or state1.is_final or state1.num_suffixes < 10**7:
+    if state1.any_byte or state1.is_final or num_suffixes[state1] < 10**7:
       tasks.append((hex(byte1), state1))
       continue
     for byte2, state2 in sorted(state1.transitions.items()):
