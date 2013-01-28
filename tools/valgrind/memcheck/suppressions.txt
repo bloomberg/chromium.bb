@@ -6562,18 +6562,6 @@
    fun:_ZN9TestShell10initializeEv
 }
 {
-   bug_172279
-   Memcheck:Unaddressable
-   fun:CERT_DestroyCertificate
-   fun:_ZN3net15X509Certificate16FreeOSCertHandleEP18CERTCertificateStr
-   fun:_ZN3net15X509CertificateD1Ev
-   fun:_ZN4base20RefCountedThreadSafeIN3net15X509CertificateENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE14DeleteInternalEPKS2_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsIN3net15X509CertificateEE8DestructEPKS2_
-   fun:_ZNK4base20RefCountedThreadSafeIN3net15X509CertificateENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE7ReleaseEv
-   fun:_ZN13scoped_refptrIN3net15X509CertificateEED1Ev
-   fun:_ZN3net46ClientCertStoreImplTest_AllIssuersAllowed_Test8TestBodyEv
-}
-{
    bug_172282
    Memcheck:Leak
    fun:_Znw*
