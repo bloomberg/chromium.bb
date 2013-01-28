@@ -85,7 +85,6 @@ libtoytoolkit_la_SOURCES =			\
 	workspaces-client-protocol.h
 
 libtoytoolkit_la_LIBADD =			\
-	$(PIXMAN_LIBS)				\
 	$(CLIENT_LIBS)				\
 	$(CAIRO_EGL_LIBS)			\
 	../shared/libshared-cairo.la -lrt -lm
@@ -107,7 +106,7 @@ image_LDADD = libtoytoolkit.la
 
 cliptest_SOURCES = cliptest.c
 cliptest_CPPFLAGS = $(AM_CPPFLAGS) $(PIXMAN_CFLAGS)
-cliptest_LDADD = libtoytoolkit.la
+cliptest_LDADD = libtoytoolkit.la $(PIXMAN_LIBS)
 
 dnd_SOURCES = dnd.c
 dnd_LDADD = libtoytoolkit.la

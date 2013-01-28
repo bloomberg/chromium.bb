@@ -40,8 +40,6 @@
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
 
-#include <pixman.h>
-
 #ifdef HAVE_CAIRO_EGL
 #include <wayland-egl.h>
 
