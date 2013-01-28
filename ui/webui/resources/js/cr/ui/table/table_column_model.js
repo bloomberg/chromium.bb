@@ -177,7 +177,7 @@ cr.define('cr.ui.table', function() {
      */
     indexOf: function(id) {
       for (var i = 0; i < this.size; i++) {
-        if (element.id == id)
+        if (this.getId(i) == id)
           return i;
       }
       return -1;
