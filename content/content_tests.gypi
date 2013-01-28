@@ -717,6 +717,7 @@
             'browser/plugin_service_impl_browsertest.cc',
             'browser/renderer_host/render_view_host_browsertest.cc',
             'browser/renderer_host/render_view_host_manager_browsertest.cc',
+            'browser/renderer_host/render_widget_host_view_browsertest.cc',
             'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
             'browser/session_history_browsertest.cc',
             'browser/site_per_process_browsertest.cc',

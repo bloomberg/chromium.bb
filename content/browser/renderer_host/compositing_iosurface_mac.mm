@@ -298,6 +298,11 @@ void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
 }
 
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
+  // Make sure we still run the callback if we are being destroyed with an
+  // active copy_timer_ that has not yet fired.
+  if (copy_context_.started)
+    copy_context_.callback.Run(false);
+
   CVDisplayLinkRelease(display_link_);
   CGLSetCurrentContext(cglContext_);
   CleanupResourcesForCopy();

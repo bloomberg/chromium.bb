@@ -1396,6 +1396,10 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
           compositing_iosurface_->io_surface_size() == desired_size);
 }
 
+void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
+  compositing_iosurface_.reset();
+}
+
 void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {
   AckPendingSwapBuffers();
 }
