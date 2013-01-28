@@ -1577,10 +1577,12 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
 
-  // TODO(dominich): On other platforms we write |text| to the clipboard
-  // irregardless of |write_url|. Is this correct?
+  // On other platforms we write |text| to the clipboard irregardless of
+  // |write_url|.  We don't need to do that here because we fall through to
+  // the default signal handlers.
   if (write_url) {
     DoWriteToClipboard(url, text);
+    SetSelectedRange(selection);
 
     // Stop propagating the signal.
     static guint copy_signal_id =
