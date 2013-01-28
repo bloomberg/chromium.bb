@@ -595,7 +595,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
         profile()->GetHostContentSettingsMap();
     // The same patterns must be used as in other places (e.g. the infobar) in
     // order to override the existing rule. Otherwise a new rule is created.
-    // TODO(markusheintz): Extract to a helper so thath there is only a single
+    // TODO(markusheintz): Extract to a helper so that there is only a single
     // place to touch.
     ContentSettingsPattern primary_pattern =
         ContentSettingsPattern::FromURLNoWildcard(web_contents()->GetURL());
@@ -603,10 +603,10 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
         ContentSettingsPattern::Wildcard();
     content_settings->SetContentSetting(
         primary_pattern, secondary_pattern,
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "", setting);
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
     content_settings->SetContentSetting(
         primary_pattern, secondary_pattern,
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "", setting);
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
   }
 }
 

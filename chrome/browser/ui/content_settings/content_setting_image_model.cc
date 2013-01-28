@@ -196,8 +196,8 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
     return;
 
   set_tooltip(
-      l10n_util::GetStringUTF8(blocked ? IDS_MEDIASTREAM_BLOCKED_TOOLTIP
-                                       : IDS_MEDIASTREAM_ALLOWED_TOOLTIP));
+      l10n_util::GetStringUTF8(blocked ?
+          IDS_MEDIASTREAM_BLOCKED_TOOLTIP : IDS_MEDIASTREAM_ALLOWED_TOOLTIP));
   set_icon(blocked ? IDR_BLOCKED_MEDIA : IDR_ASK_MEDIA);
   set_visible(true);
 }
