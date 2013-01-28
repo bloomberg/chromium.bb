@@ -109,7 +109,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
         temp_dir_.path().AppendASCII("testfile_files"));
 
     // We need to construct a path that is *almost* kMaxFilePathLength long
-    long_file_name.resize(kMaxFilePathLength + long_file_name.length());
+    long_file_name.reserve(kMaxFilePathLength + long_file_name.length());
     while (long_file_name.length() < kMaxFilePathLength)
       long_file_name += long_file_name;
     long_file_name.resize(

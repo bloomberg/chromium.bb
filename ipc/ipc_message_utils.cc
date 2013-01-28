@@ -489,20 +489,13 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #endif  // defined(OS_POSIX)
 
 void ParamTraits<FilePath>::Write(Message* m, const param_type& p) {
-  ParamTraits<FilePath::StringType>::Write(m, p.value());
+  p.WriteToPickle(m);
 }
 
 bool ParamTraits<FilePath>::Read(const Message* m,
                                  PickleIterator* iter,
                                  param_type* r) {
-  FilePath::StringType value;
-  if (!ParamTraits<FilePath::StringType>::Read(m, iter, &value))
-    return false;
-  // Reject embedded NULs as they can cause security checks to go awry.
-  if (value.find(FILE_PATH_LITERAL('\0')) != FilePath::StringType::npos)
-    return false;
-  *r = FilePath(value);
-  return true;
+  return r->ReadFromPickle(iter);
 }
 
 void ParamTraits<FilePath>::Log(const param_type& p, std::string* l) {
