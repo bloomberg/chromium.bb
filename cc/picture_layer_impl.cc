@@ -208,7 +208,7 @@ void PictureLayerImpl::updateTilePriorities() {
       current_source_frame_number != last_source_frame_number_;
 
   double current_frame_time =
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+      (layerTreeImpl()->CurrentFrameTime() - base::TimeTicks()).InSecondsF();
   bool first_update_in_new_impl_frame =
       current_frame_time != last_impl_frame_time_;
 

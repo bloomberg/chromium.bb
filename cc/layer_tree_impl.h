@@ -60,6 +60,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindPendingTreeLayerById(int id);
   int MaxTextureSize() const;
   bool PinchGestureActive() const;
+  base::TimeTicks CurrentFrameTime() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

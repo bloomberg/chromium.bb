@@ -94,6 +94,7 @@ public:
 
         m_layerTreeHostImpl->activatePendingTreeIfNeeded();
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
+        m_layerTreeHostImpl->beginNextFrame();
     }
 
     void setActive(bool active)
@@ -1715,6 +1716,18 @@ void LayerTreeHostImpl::setTreePriority(TreePriority priority)
 
     new_state.tree_priority = priority;
     m_tileManager->SetGlobalState(new_state);
+}
+
+void LayerTreeHostImpl::beginNextFrame()
+{
+    m_currentFrameTime = base::TimeTicks();
+}
+
+base::TimeTicks LayerTreeHostImpl::currentFrameTime()
+{
+    if (m_currentFrameTime.is_null())
+        m_currentFrameTime = base::TimeTicks::Now();
+    return m_currentFrameTime;
 }
 
 // static

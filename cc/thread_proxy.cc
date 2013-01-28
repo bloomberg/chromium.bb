@@ -859,6 +859,8 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
     if (drawFrame)
         checkOutputSurfaceStatusOnImplThread();
 
+    m_layerTreeHostImpl->beginNextFrame();
+
     return result;
 }
 

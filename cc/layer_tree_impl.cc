@@ -325,6 +325,10 @@ bool LayerTreeImpl::PinchGestureActive() const {
   return layer_tree_host_impl_->pinchGestureActive();
 }
 
+base::TimeTicks LayerTreeImpl::CurrentFrameTime() const {
+  return layer_tree_host_impl_->currentFrameTime();
+}
+
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->setNeedsRedraw();
 }

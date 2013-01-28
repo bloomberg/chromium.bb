@@ -263,6 +263,9 @@ public:
 
     void setTreePriority(TreePriority priority);
 
+    void beginNextFrame();
+    base::TimeTicks currentFrameTime();
+
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
     void activatePendingTree();
@@ -362,6 +365,8 @@ private:
     size_t m_lastSentMemoryVisibleBytes;
     size_t m_lastSentMemoryVisibleAndNearbyBytes;
     size_t m_lastSentMemoryUseBytes;
+
+    base::TimeTicks m_currentFrameTime;
 
     scoped_ptr<AnimationRegistrar> m_animationRegistrar;
 

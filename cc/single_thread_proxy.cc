@@ -403,6 +403,8 @@ bool SingleThreadProxy::doComposite()
         m_layerTreeHostImpl->drawLayers(frame);
         m_layerTreeHostImpl->didDrawAllLayers(frame);
         m_outputSurfaceLost = m_layerTreeHostImpl->isContextLost();
+
+        m_layerTreeHostImpl->beginNextFrame();
     }
 
     if (m_outputSurfaceLost) {
