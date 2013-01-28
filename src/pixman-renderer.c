@@ -104,8 +104,72 @@ pixman_renderer_read_pixels(struct weston_output *output,
 	return 0;
 }
 
+#define D2F(v) pixman_double_to_fixed((double)v)
+
 static void
-repaint_region(struct weston_surface *es, struct weston_output *output,
+repaint_region_complex(struct weston_surface *es, struct weston_output *output,
+		pixman_region32_t *region)
+{
+	struct pixman_renderer *pr =
+		(struct pixman_renderer *) output->compositor->renderer;
+	struct pixman_surface_state *ps = get_surface_state(es);
+	struct pixman_output_state *po = get_output_state(output);
+	int nrects, i;
+	pixman_box32_t *rects;
+
+	/* Pixman supports only 2D transform matrix, but Weston uses 3D,
+	 * so we're omitting Z coordinate here
+	 */
+	pixman_transform_t transform = {{
+		{ D2F(es->transform.matrix.d[0]),
+		  D2F(es->transform.matrix.d[4]),
+		  D2F(es->transform.matrix.d[12]),
+		},
+		{ D2F(es->transform.matrix.d[1]),
+		  D2F(es->transform.matrix.d[5]),
+		  D2F(es->transform.matrix.d[13]),
+		},
+		{ D2F(es->transform.matrix.d[3]),
+		  D2F(es->transform.matrix.d[7]),
+		  D2F(es->transform.matrix.d[15]),
+		}
+	}};
+
+	pixman_transform_invert(&transform, &transform);
+
+	pixman_image_set_transform(ps->image, &transform);
+	pixman_image_set_filter(ps->image, PIXMAN_FILTER_BILINEAR, NULL, 0);
+
+	rects = pixman_region32_rectangles(region, &nrects);
+	for (i = 0; i < nrects; i++) {
+		pixman_image_composite32(PIXMAN_OP_OVER,
+			ps->image, /* src */
+			NULL /* mask */,
+			po->shadow_image, /* dest */
+			rects[i].x1, rects[i].y1, /* src_x, src_y */
+			0, 0, /* mask_x, mask_y */
+			rects[i].x1, rects[i].y1, /* dst_x, dst_y */
+			rects[i].x2 - rects[i].x1, /* width */
+			rects[i].y2 - rects[i].y1 /* height */
+			);
+
+		if (!pr->repaint_debug)
+			continue;
+
+		pixman_image_composite32(PIXMAN_OP_OVER,
+			pr->debug_color, /* src */
+			NULL /* mask */,
+			po->shadow_image, /* dest */
+			0, 0, /* src_x, src_y */
+			0, 0, /* mask_x, mask_y */
+			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
+			rects[i].x2 - rects[i].x1, /* width */
+			rects[i].y2 - rects[i].y1 /* height */);
+	}
+}
+
+static void
+repaint_region_simple(struct weston_surface *es, struct weston_output *output,
 		pixman_region32_t *region, pixman_region32_t *surf_region,
 		pixman_op_t pixman_op)
 {
@@ -126,15 +190,18 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 	pixman_region32_init(&final_region);
 	pixman_region32_copy(&final_region, surf_region);
 
-	if (es->transform.enabled) {
+	pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);
+	pixman_image_set_transform(ps->image, NULL);
+
+	if (!es->transform.enabled) {
+		pixman_region32_translate(&final_region, es->geometry.x, es->geometry.y);
+	} else {
 		weston_surface_to_global_float(es, 0, 0, &surface_x, &surface_y);
 		pixman_region32_translate(&final_region, (int)surface_x, (int)surface_y);
-	} else
-		pixman_region32_translate(&final_region, es->geometry.x, es->geometry.y);
+	}
 
 	/* That's what we need to paint */
 	pixman_region32_intersect(&final_region, &final_region, region);
-
 	rects = pixman_region32_rectangles(&final_region, &nrects);
 
 	for (i = 0; i < nrects; i++) {
@@ -192,20 +259,26 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 		goto out;
 	}
 
-	/* blended region is whole surface minus opaque region: */
-	pixman_region32_init_rect(&surface_blend, 0, 0,
-				  es->geometry.width, es->geometry.height);
-	pixman_region32_subtract(&surface_blend, &surface_blend, &es->opaque);
+	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
+	if (es->transform.enabled &&
+	    es->transform.matrix.type != WESTON_MATRIX_TRANSFORM_TRANSLATE) {
+		repaint_region_complex(es, output, &repaint);
+	} else {
+		/* blended region is whole surface minus opaque region: */
+		pixman_region32_init_rect(&surface_blend, 0, 0,
+					  es->geometry.width, es->geometry.height);
+		pixman_region32_subtract(&surface_blend, &surface_blend, &es->opaque);
 
-	if (pixman_region32_not_empty(&es->opaque)) {
-		repaint_region(es, output, &repaint, &es->opaque, PIXMAN_OP_SRC);
+		if (pixman_region32_not_empty(&es->opaque)) {
+			repaint_region_simple(es, output, &repaint, &es->opaque, PIXMAN_OP_SRC);
+		}
+
+		if (pixman_region32_not_empty(&surface_blend)) {
+			repaint_region_simple(es, output, &repaint, &surface_blend, PIXMAN_OP_OVER);
+		}
+		pixman_region32_fini(&surface_blend);
 	}
 
-	if (pixman_region32_not_empty(&surface_blend)) {
-		repaint_region(es, output, &repaint, &surface_blend, PIXMAN_OP_OVER);
-	}
-
-	pixman_region32_fini(&surface_blend);
 
 out:
 	pixman_region32_fini(&repaint);
