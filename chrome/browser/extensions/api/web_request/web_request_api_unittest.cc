@@ -5,6 +5,7 @@
 #include <map>
 #include <queue>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -43,6 +44,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace helpers = extension_web_request_api_helpers;
@@ -515,9 +517,6 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   // 3. With "requestBody", fire a POST URLRequest which is not a parseable
   //    HTML form. Raw data should be returned.
   // 4. Do the same, but with a PUT method. Result should be the same.
-  // Each of these steps is done once as if the channel was DEV or CANARY,
-  // and once as if it was BETA or STABLE. It is checked that parsed data is
-  // available on DEV/CANARY but not on BETA/STABLE.
   const std::string kMethodPost("POST");
   const std::string kMethodPut("PUT");
 
@@ -584,8 +583,9 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
     NULL,
     &raw,
     &raw,
-    NULL, NULL, NULL, NULL  // These are for the disabled cases.
   };
+  COMPILE_ASSERT(arraysize(kPath) == arraysize(kExpected),
+                 the_arrays_kPath_and_kExpected_need_to_be_the_same_size);
   // Header.
   const char kMultipart[] = "multipart/form-data; boundary=" kBoundary;
 #undef kBoundary
@@ -600,78 +600,60 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   int extra_info_spec_body = 0;
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
 
-  // All the tests are done twice, once with the release channel pretending to
-  // be one of DEV/CANARY, once BETA/STABLE. Hence two passes.
-  for (int pass = 0; pass < 2; ++pass) {
-    {
-      Feature::ScopedCurrentChannel sc(
-          pass > 0 ? VersionInfo::CHANNEL_BETA : VersionInfo::CHANNEL_CANARY);
+  // Part 1.
+  // Subscribe to OnBeforeRequest with requestBody requirement.
+  ASSERT_TRUE(GenerateInfoSpec(string_spec_post, &extra_info_spec_body));
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+      filter, extra_info_spec_body, -1, -1,
+      ipc_sender_factory.GetWeakPtr());
 
-      // Part 1.
-      // Subscribe to OnBeforeRequest with requestBody requirement.
-      ASSERT_TRUE(GenerateInfoSpec(string_spec_post, &extra_info_spec_body));
-      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-          &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
-          filter, extra_info_spec_body, -1, -1,
-          ipc_sender_factory.GetWeakPtr());
+  FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
-      FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
+  // We inspect the result in the message list of |ipc_sender_| later.
+  MessageLoop::current()->RunUntilIdle();
 
-      // We inspect the result in the message list of |ipc_sender_| later.
-      MessageLoop::current()->RunUntilIdle();
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension_id, kEventName + "/1");
 
-      ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-          &profile_, extension_id, kEventName + "/1");
-    }
+  // Part 2.
+  // Now subscribe to OnBeforeRequest *without* the requestBody requirement.
+  ASSERT_TRUE(
+      GenerateInfoSpec(string_spec_no_post, &extra_info_spec_empty));
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+      filter, extra_info_spec_empty, -1, -1,
+      ipc_sender_factory.GetWeakPtr());
 
-    {
-      Feature::ScopedCurrentChannel sc(
-          pass > 0 ? VersionInfo::CHANNEL_STABLE : VersionInfo::CHANNEL_DEV);
+  FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
-      // Part 2.
-      // Now subscribe to OnBeforeRequest *without* the requestBody requirement.
-      ASSERT_TRUE(
-          GenerateInfoSpec(string_spec_no_post, &extra_info_spec_empty));
-      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-          &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
-          filter, extra_info_spec_empty, -1, -1,
-          ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension_id, kEventName + "/1");
 
-      FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
+  // Subscribe to OnBeforeRequest with requestBody requirement.
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+      filter, extra_info_spec_body, -1, -1,
+      ipc_sender_factory.GetWeakPtr());
 
-      ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-          &profile_, extension_id, kEventName + "/1");
-    }
+  // Part 3.
+  // Now send a POST request with body which is not parseable as a form.
+  FireURLRequestWithData(kMethodPost, NULL /*no header*/, plain_1, plain_2);
 
-    {
-      Feature::ScopedCurrentChannel sc(
-          pass > 0 ? VersionInfo::CHANNEL_STABLE : VersionInfo::CHANNEL_DEV);
+  // Part 4.
+  // Now send a PUT request with the same body as above.
+  FireURLRequestWithData(kMethodPut, NULL /*no header*/, plain_1, plain_2);
 
-      // Subscribe to OnBeforeRequest with requestBody requirement.
-      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-          &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
-          filter, extra_info_spec_body, -1, -1,
-          ipc_sender_factory.GetWeakPtr());
+  MessageLoop::current()->RunUntilIdle();
 
-      // Part 3.
-      // Now send a POST request with body which is not parseable as a form.
-      FireURLRequestWithData(kMethodPost, NULL /*no header*/, plain_1, plain_2);
-
-      // Part 4.
-      // Now send a PUT request with the same body as above.
-      FireURLRequestWithData(kMethodPut, NULL /*no header*/, plain_1, plain_2);
-
-      MessageLoop::current()->RunUntilIdle();
-
-      // Clean-up.
-      ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-          &profile_, extension_id, kEventName + "/1");
-    }
-  }
+  // Clean-up.
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension_id, kEventName + "/1");
 
   IPC::Message* message = NULL;
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
   for (size_t test = 0; test < arraysize(kExpected); ++test) {
+    SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
     message = (i++)->get();
     const DictionaryValue* details;
@@ -679,11 +661,11 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != NULL);
     const Value* result = NULL;
-    EXPECT_EQ(
-        kExpected[test] != NULL,
-        details->Get(*(kPath[test % arraysize(kPath)]), &result));
-    if (kExpected[test] != NULL) {
+    if (kExpected[test]) {
+      EXPECT_TRUE(details->Get(*(kPath[test]), &result));
       EXPECT_TRUE(kExpected[test]->Equals(result));
+    } else {
+      EXPECT_FALSE(details->Get(*(kPath[test]), &result));
     }
   }
 
@@ -706,9 +688,6 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   int extra_info_spec = 0;
   ASSERT_TRUE(GenerateInfoSpec("blocking,requestBody", &extra_info_spec));
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
-
-  // We need to pretend to be on CANARY or DEV for the "requestBody" to work.
-  Feature::ScopedCurrentChannel sc(VersionInfo::CHANNEL_CANARY);
 
   // Subscribe to OnBeforeRequest with requestBody requirement.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
@@ -733,14 +712,14 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
 
   TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
   for (size_t test = 0; test < arraysize(kMethods); ++test, ++i) {
+    SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
     IPC::Message* message = i->get();
     const DictionaryValue* details = NULL;
     ExtensionMsg_MessageInvoke::Param param;
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != NULL);
-    EXPECT_FALSE(details->HasKey(keys::kRequestBodyKey))
-        << "Failed during iteration number " << test << ".";
+    EXPECT_FALSE(details->HasKey(keys::kRequestBodyKey));
   }
 
   EXPECT_EQ(i, ipc_sender_.sent_end());
@@ -995,20 +974,10 @@ TEST_F(ExtensionWebRequestTest, InitFromValue) {
       "asyncBlocking",
       true,
       ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING);
-  {
-    Feature::ScopedCurrentChannel sc(VersionInfo::CHANNEL_BETA);
-    TestInitFromValue(
-        "requestBody",
-        true,
-        0);
-  }
-  {
-    Feature::ScopedCurrentChannel sc(VersionInfo::CHANNEL_DEV);
-    TestInitFromValue(
-        "requestBody",
-        true,
-        ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_BODY);
-  }
+  TestInitFromValue(
+      "requestBody",
+      true,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_BODY);
 
   // Multiple valid values are bitwise-or'ed.
   TestInitFromValue(

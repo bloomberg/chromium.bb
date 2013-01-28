@@ -245,16 +245,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData1) {
-  // Request body access is only enabled on dev (and canary).
-  Feature::ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_DEV);
   // Test HTML form POST data access with the default and "url" encoding.
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post1.html")) <<
       message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData2) {
-  // Request body access is only enabled on dev (and canary).
-  Feature::ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_DEV);
   // Test HTML form POST data access with the multipart and plaintext encoding.
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post2.html")) <<
       message_;

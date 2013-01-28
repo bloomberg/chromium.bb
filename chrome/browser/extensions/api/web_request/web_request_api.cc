@@ -95,12 +95,6 @@ const char* const kWebRequestEvents[] = {
 
 #define ARRAYEND(array) (array + arraysize(array))
 
-// Access to request body (crbug.com/91191/) is currently only enabled in dev
-// and canary channels.
-bool IsWebRequestBodyDataAccessEnabled() {
-  return Feature::GetCurrentChannel() <= VersionInfo::CHANNEL_DEV;
-}
-
 const char* GetRequestStageAsString(
     ExtensionWebRequestEventRouter::EventTypes type) {
   switch (type) {
@@ -533,8 +527,7 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
     else if (str == "asyncBlocking")
       *extra_info_spec |= ASYNC_BLOCKING;
     else if (str == "requestBody")
-      *extra_info_spec |=
-          IsWebRequestBodyDataAccessEnabled() ? REQUEST_BODY : 0;
+      *extra_info_spec |= REQUEST_BODY;
     else
       return false;
 
