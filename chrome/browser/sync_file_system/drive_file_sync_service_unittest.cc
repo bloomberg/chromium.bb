@@ -124,14 +124,16 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    profile_.reset(new TestingProfile());
+
     // Add TestExtensionSystem with registered ExtensionIds used in tests.
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(&profile_)));
+            extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), FilePath(), false);
     ExtensionService* extension_service = extension_system->Get(
-        &profile_)->extension_service();
+        profile_.get())->extension_service();
     AddTestExtension(extension_service, FPL("example1"));
     AddTestExtension(extension_service, FPL("example2"));
 
@@ -139,11 +141,11 @@ class DriveFileSyncServiceTest : public testing::Test {
 
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
 
-    EXPECT_CALL(*mock_drive_service(), Initialize(&profile_));
+    EXPECT_CALL(*mock_drive_service(), Initialize(profile_.get()));
     EXPECT_CALL(*mock_drive_service(), AddObserver(_));
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
-        &profile_,
+        profile_.get(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         scoped_ptr<DriveServiceInterface>(mock_drive_service_),
         scoped_ptr<DriveUploaderInterface>()).Pass();
@@ -158,7 +160,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   void SetUpDriveSyncService() {
-    sync_service_ = DriveFileSyncService::CreateForTesting(&profile_,
+    sync_service_ = DriveFileSyncService::CreateForTesting(profile_.get(),
         base_dir_.path(), sync_client_.Pass(), metadata_store_.Pass()).Pass();
     sync_service_->AddObserver(&mock_remote_observer_);
   }
@@ -176,6 +178,8 @@ class DriveFileSyncServiceTest : public testing::Test {
     mock_drive_service_ = NULL;
 
     EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
+
+    profile_.reset();
     message_loop_.RunUntilIdle();
   }
 
@@ -323,7 +327,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   base::ScopedTempDir base_dir_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
 
   scoped_ptr<DriveFileSyncService> sync_service_;
 
