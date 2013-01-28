@@ -2069,6 +2069,14 @@ fullscreen_handler(struct window *window, void *data)
 	window_set_fullscreen(window, !window_is_fullscreen(terminal->window));
 }
 
+static void
+close_handler(struct window *window, void *data)
+{
+	struct terminal *terminal = data;
+
+	terminal_destroy(terminal);
+}
+
 static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
@@ -2541,6 +2549,7 @@ terminal_create(struct display *display)
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
 	window_set_fullscreen_handler(terminal->window, fullscreen_handler);
+	window_set_close_handler(terminal->window, close_handler);
 
 	widget_set_redraw_handler(terminal->widget, redraw_handler);
 	widget_set_resize_handler(terminal->widget, resize_handler);
