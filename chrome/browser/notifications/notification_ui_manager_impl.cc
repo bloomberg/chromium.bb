@@ -75,6 +75,15 @@ void NotificationUIManagerImpl::Add(const Notification& notification,
   CheckAndShowNotifications();
 }
 
+bool NotificationUIManagerImpl::DoesIdExist(const std::string& id) {
+  for (NotificationDeque::iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    if ((*iter)->notification().notification_id() == id)
+      return true;
+  }
+  return false;
+}
+
 bool NotificationUIManagerImpl::CancelById(const std::string& id) {
   // See if this ID hasn't been shown yet.
   for (NotificationDeque::iterator iter = show_queue_.begin();

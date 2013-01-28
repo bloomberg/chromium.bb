@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,11 @@
     DOMString message;
   };
 
-  dictionary ShowOptions {
+  dictionary NotificationOptions {
     // Which type of notification to display.
     //
     // simple: icon, title, message
-    // base: our MVP, with two buttons, expanded text, etc. TEMPORARY!
+    // basic: our MVP, with two buttons, expanded text, etc. TEMPORARY!
     DOMString type;
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
@@ -60,29 +60,52 @@
 
     // Items for multi-item notifications.
     NotificationItem[]? items;
-
-    DOMString replaceId;
-
-    // Used for internal event routing. Do not set or rely on its value.
-    [nodoc] long? srcId;
   };
 
-  dictionary ShowInfo {
-    boolean result;
-  };
+  callback CreateCallback = void (DOMString notificationId);
 
-  callback ShowCallback = void (ShowInfo showInfo);
+  callback UpdateCallback = void (boolean wasUpdated);
+
+  callback DeleteCallback = void (boolean wasDeleted);
 
   interface Functions {
-    static void show(ShowOptions options, ShowCallback callback);
+    // Creates and displays a notification having the contents in |options|,
+    // identified by the id |notificationId|. If |notificationId| is empty,
+    // |create| generates an id. |callback| returns the notification id (either
+    // supplied or generated) that represents the created notification.
+    static void create(DOMString notificationId,
+                       NotificationOptions options,
+                       CreateCallback callback);
+
+    // Updates an existing notification having the id |notificationId| and the
+    // options |options|. |callback| indicates whether a matching notification
+    // existed.
+    static void update(DOMString notificationId,
+                       NotificationOptions options,
+                       UpdateCallback callback);
+
+    // Given a |notificationId| returned by the |create| method, deletes the
+    // corresponding notification. |callback| indicates whether a matching
+    // notification existed.
+    static void delete(DOMString notificationId, DeleteCallback callback);
   };
 
   interface Events {
-    static void onDisplayed(DOMString replaceId);
-    static void onError(DOMString replaceId);
-    static void onClosed(DOMString replaceId, boolean byUser);
-    static void onClicked(DOMString replaceId);
-    static void onButtonClicked(DOMString replaceId, long buttonIndex);
+    // The system displayed the notification.
+    static void onDisplayed(DOMString notificationId);
+
+    // An error occurred. TODO(miket): which errors can happen, and when? In
+    // which form (string, ID) should we describe the error?
+    static void onError(DOMString notificationId);
+
+    // The notification closed, either by the system or by user action.
+    static void onClosed(DOMString notificationId, boolean byUser);
+
+    // The user clicked in a non-button area of the notification.
+    static void onClicked(DOMString notificationId);
+
+    // The user pressed a button in the notification.
+    static void onButtonClicked(DOMString notificationId, long buttonIndex);
   };
 
 };

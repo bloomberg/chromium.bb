@@ -54,15 +54,18 @@ class BalloonCollection {
   virtual void Add(const Notification& notification,
                    Profile* profile) = 0;
 
-  // Removes any balloons that have this notification id.  Returns
+  // Returns true if any balloon has this notification id.
+  virtual bool DoesIdExist(const std::string& id) = 0;
+
+  // Removes any balloons that have this notification id. Returns
   // true if anything was removed.
   virtual bool RemoveById(const std::string& id) = 0;
 
-  // Removes any balloons that have this source origin.  Returns
+  // Removes any balloons that have this source origin. Returns
   // true if anything was removed.
   virtual bool RemoveBySourceOrigin(const GURL& source_origin) = 0;
 
-  // Removes any balloons matching |profile.  Returns true if any were removed.
+  // Removes any balloons matching |profile. Returns true if any were removed.
   virtual bool RemoveByProfile(Profile* profile) = 0;
 
   // Removes all balloons.

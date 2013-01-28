@@ -13,9 +13,9 @@ namespace content {
 class RenderViewHost;
 }
 
-// Delegate for a notification. This class has two role, to implement
-// callback methods for notification, and provides an identify of
-// the associated notification.
+// Delegate for a notification. This class has two roles: to implement callback
+// methods for notification, and to provide an identity of the associated
+// notification.
 class NotificationDelegate
     : public base::RefCountedThreadSafe<NotificationDelegate> {
  public:

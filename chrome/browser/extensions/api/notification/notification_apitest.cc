@@ -23,42 +23,148 @@ class NotificationApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestSimpleNotification) {
-  scoped_refptr<extensions::NotificationShowFunction>
-      notification_show_function(new extensions::NotificationShowFunction());
+IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
+  // Create a new notification. A lingering output of this block is the
+  // notification ID, which we'll use in later parts of this test.
+  std::string notification_id;
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  {
+    scoped_refptr<extensions::NotificationCreateFunction>
+        notification_function(
+            new extensions::NotificationCreateFunction());
 
-  notification_show_function->set_extension(empty_extension.get());
-  notification_show_function->set_has_callback(true);
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_show_function,
-      "[{"
-      "\"type\": \"simple\","
-      "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
-      "common/images/chrome_logo_2x.png\","
-      "\"title\": \"Attention!\","
-      "\"message\": \"Check out Cirque du Soleil\","
-      "\"replaceId\": \"12345678\""
-      "}]",
-      browser(), utils::NONE));
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function,
+        "[\"\", "  // Empty string: ask API to generate ID
+        "{"
+        "\"type\": \"simple\","
+        "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
+        "common/images/chrome_logo_2x.png\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Check out Cirque du Soleil\""
+        "}]",
+        browser(), utils::NONE));
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
+    ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+    ASSERT_TRUE(result->GetAsString(&notification_id));
+    ASSERT_TRUE(notification_id.length() > 0);
+  }
 
-  // TODO(miket): confirm that the show succeeded.
+  // Update the existing notification.
+  {
+    scoped_refptr<extensions::NotificationUpdateFunction>
+        notification_function(
+            new extensions::NotificationUpdateFunction());
+
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function,
+        "[\"" + notification_id + "\", "
+        "{"
+        "\"type\": \"simple\","
+        "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
+        "common/images/chrome_logo_2x.png\","
+        "\"title\": \"Attention!\","
+        "\"message\": \"Too late! The show ended yesterday\""
+        "}]",
+        browser(), utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    ASSERT_TRUE(copy_bool_value);
+
+    // TODO(miket): add a testing method to query the message from the
+    // displayed notification, and assert it matches the updated message.
+    //
+    // TODO(miket): add a method to count the number of outstanding
+    // notifications, and confirm it remains at one at this point.
+  }
+
+  // Update a nonexistent notification.
+  {
+    scoped_refptr<extensions::NotificationUpdateFunction>
+        notification_function(
+            new extensions::NotificationUpdateFunction());
+
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function,
+        "[\"xxxxxxxxxxxx\", "
+        "{"
+        "\"type\": \"simple\","
+        "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
+        "common/images/chrome_logo_2x.png\","
+        "\"title\": \"!\","
+        "\"message\": \"!\""
+        "}]",
+        browser(), utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    ASSERT_FALSE(copy_bool_value);
+  }
+
+  // Delete a nonexistent notification.
+  {
+    scoped_refptr<extensions::NotificationDeleteFunction>
+        notification_function(
+            new extensions::NotificationDeleteFunction());
+
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function,
+        "[\"xxxxxxxxxxx\"]", browser(), utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    ASSERT_FALSE(copy_bool_value);
+  }
+
+  // Delete the notification we created.
+  {
+    scoped_refptr<extensions::NotificationDeleteFunction>
+        notification_function(
+            new extensions::NotificationDeleteFunction());
+
+    notification_function->set_extension(empty_extension.get());
+    notification_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_function,
+        "[\"" + notification_id + "\"]", browser(), utils::NONE));
+
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
+    bool copy_bool_value = false;
+    ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
+    ASSERT_TRUE(copy_bool_value);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
-  scoped_refptr<extensions::NotificationShowFunction>
-      notification_show_function(new extensions::NotificationShowFunction());
+  scoped_refptr<extensions::NotificationCreateFunction>
+      notification_create_function(
+          new extensions::NotificationCreateFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
-  notification_show_function->set_extension(empty_extension.get());
-  notification_show_function->set_has_callback(true);
+  notification_create_function->set_extension(empty_extension.get());
+  notification_create_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_show_function,
-      "[{"
+      notification_create_function,
+      "[\"\", "
+      "{"
       "\"type\": \"base\","
       "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
       "common/images/chrome_logo_2x.png\","
@@ -72,27 +178,29 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
       "\"buttonOneTitle\": \"Up\","
       "\"buttonTwoTitle\": \"Down\","
       "\"expandedMessage\": \"This is a longer expanded message.\","
-      "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\","
-      "\"replaceId\": \"12345678\""
+      "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\""
       "}]",
       browser(), utils::NONE));
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-
-  // TODO(miket): confirm that the show succeeded.
+  std::string notification_id;
+  ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+  ASSERT_TRUE(result->GetAsString(&notification_id));
+  ASSERT_TRUE(notification_id.length() > 0);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
-  scoped_refptr<extensions::NotificationShowFunction>
-      notification_show_function(new extensions::NotificationShowFunction());
+  scoped_refptr<extensions::NotificationCreateFunction>
+      notification_create_function(
+          new extensions::NotificationCreateFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
-  notification_show_function->set_extension(empty_extension.get());
-  notification_show_function->set_has_callback(true);
+  notification_create_function->set_extension(empty_extension.get());
+  notification_create_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_show_function,
-      "[{"
+      notification_create_function,
+      "[\"\", "
+      "{"
       "\"type\": \"multiple\","
       "\"iconUrl\": \"https://code.google.com/p/chromium/logo\","
       "\"title\": \"Multiple Item Notification Title\","
@@ -110,15 +218,15 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
       " \"message\": \"I saw Frank steal a sandwich :-)\"}"
       "],"
       "\"priority\": 1,"
-      "\"timestamp\": \"Fri, 16 Nov 2012 01:17:15 GMT\","
-      "\"replaceId\": \"12345678\""
+      "\"timestamp\": \"Fri, 16 Nov 2012 01:17:15 GMT\""
       "}]",
       browser(), utils::NONE));
   // TODO(dharcourt): [...], items = [{title: foo, message: bar}, ...], [...]
 
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-
-  // TODO(dharcourt): confirm that the show succeeded.
+  std::string notification_id;
+  ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+  ASSERT_TRUE(result->GetAsString(&notification_id));
+  ASSERT_TRUE(notification_id.length() > 0);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestEvents) {

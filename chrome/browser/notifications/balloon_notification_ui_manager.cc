@@ -44,6 +44,12 @@ void BalloonNotificationUIManager::SetBalloonCollection(
   balloon_collection_->set_space_change_listener(this);
 }
 
+bool BalloonNotificationUIManager::DoesIdExist(const std::string& id) {
+  if (NotificationUIManagerImpl::DoesIdExist(id))
+    return true;
+  return balloon_collection_->DoesIdExist(id);
+}
+
 bool BalloonNotificationUIManager::CancelById(const std::string& id) {
   // See if this ID hasn't been shown yet.
   if (NotificationUIManagerImpl::CancelById(id))
@@ -147,4 +153,3 @@ BalloonNotificationUIManager*
   return static_cast<BalloonNotificationUIManager*>(
       g_browser_process->notification_ui_manager());
 }
-

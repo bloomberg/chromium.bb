@@ -92,6 +92,10 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   AddImpl(notification, profile, false);
 }
 
+bool BalloonCollectionImpl::DoesIdExist(const std::string& id) {
+  return base_.DoesIdExist(id);
+}
+
 bool BalloonCollectionImpl::RemoveById(const std::string& id) {
   return base_.CloseById(id);
 }

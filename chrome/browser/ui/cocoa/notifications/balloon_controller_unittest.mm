@@ -34,6 +34,7 @@ namespace {
 class MockBalloonCollection : public BalloonCollection {
   virtual void Add(const Notification& notification,
                    Profile* profile) {}
+  virtual bool DoesIdExist(const std::string& id) { return false; }
   virtual bool RemoveById(const std::string& id) { return false; }
   virtual bool RemoveBySourceOrigin(const GURL& origin) { return false; }
   virtual bool RemoveByProfile(Profile* profile) { return false; }

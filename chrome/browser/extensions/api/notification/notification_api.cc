@@ -23,20 +23,25 @@ namespace {
 
 const char kResultKey[] = "result";
 
-const char kNotificationPrefix[] = "extension.api.";
-
 class NotificationApiDelegate : public NotificationDelegate {
  public:
   NotificationApiDelegate(ApiFunction* api_function,
                           Profile* profile,
                           const std::string& extension_id,
-                          const string16& replace_id)
+                          const std::string& id)
       : api_function_(api_function),
         profile_(profile),
         extension_id_(extension_id),
-        replace_id_(replace_id),
-        id_(kNotificationPrefix + base::Uint64ToString(next_id_++)) {
+        id_(id),
+        scoped_id_(CreateScopedIdentifier(extension_id, id)) {
     DCHECK(api_function_);
+  }
+
+  // Given an extension id and another id, returns an id that is unique
+  // relative to other extensions.
+  static std::string CreateScopedIdentifier(const std::string& extension_id,
+                                            const std::string& id) {
+    return extension_id + "-" + id;
   }
 
   virtual void Display() OVERRIDE {
@@ -67,7 +72,7 @@ class NotificationApiDelegate : public NotificationDelegate {
   }
 
   virtual std::string id() const OVERRIDE {
-    return id_;
+    return scoped_id_;
   }
 
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
@@ -89,38 +94,30 @@ class NotificationApiDelegate : public NotificationDelegate {
 
   scoped_ptr<ListValue> CreateBaseEventArgs() {
     scoped_ptr<ListValue> args(new ListValue());
-    args->Append(Value::CreateStringValue(replace_id_));
+    args->Append(Value::CreateStringValue(id_));
     return args.Pass();
   }
 
   scoped_refptr<ApiFunction> api_function_;
   Profile* profile_;
   const std::string extension_id_;
-  const string16 replace_id_;
-  std::string id_;
-
-  static uint64 next_id_;
+  const std::string id_;
+  const std::string scoped_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationApiDelegate);
 };
 
-uint64 NotificationApiDelegate::next_id_ = 0;
-
 }  // namespace
 
-NotificationShowFunction::NotificationShowFunction() {
+NotificationApiFunction::NotificationApiFunction() {
 }
 
-NotificationShowFunction::~NotificationShowFunction() {
+NotificationApiFunction::~NotificationApiFunction() {
 }
 
-bool NotificationShowFunction::RunImpl() {
-  params_ = api::experimental_notification::Show::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params_.get());
-
-  api::experimental_notification::ShowOptions* options = &params_->options;
-  scoped_ptr<DictionaryValue> options_dict(options->ToValue());
-
+void NotificationApiFunction::CreateNotification(
+    const std::string& id,
+    api::experimental_notification::NotificationOptions* options) {
   ui::notifications::NotificationType type =
       ui::notifications::StringToNotificationType(options->type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
@@ -184,22 +181,93 @@ bool NotificationShowFunction::RunImpl() {
     optional_fields->Set(ui::notifications::kItemsKey, items);
   }
 
-  string16 replace_id(UTF8ToUTF16(options->replace_id));
-
+  NotificationApiDelegate* api_delegate(new NotificationApiDelegate(
+      this,
+      profile(),
+      extension_->id(),
+      id));  // ownership is passed to Notification
   Notification notification(type, extension_->url(), icon_url, title, message,
                             WebKit::WebTextDirectionDefault,
-                            string16(), replace_id,
-                            optional_fields.get(),
-                            new NotificationApiDelegate(this,
-                                                        profile(),
-                                                        extension_->id(),
-                                                        replace_id));
-  g_browser_process->notification_ui_manager()->Add(notification, profile());
+                            string16(), UTF8ToUTF16(api_delegate->id()),
+                            optional_fields.get(), api_delegate);
 
-  // TODO(miket): why return a result if it's always true?
-  DictionaryValue* result = new DictionaryValue();
-  result->SetBoolean(kResultKey, true);
-  SetResult(result);
+  g_browser_process->notification_ui_manager()->Add(notification, profile());
+}
+
+const char kNotificationPrefix[] = "extension.api.";
+
+static uint64 next_id_ = 0;
+
+NotificationCreateFunction::NotificationCreateFunction() {
+}
+
+NotificationCreateFunction::~NotificationCreateFunction() {
+}
+
+bool NotificationCreateFunction::RunImpl() {
+  params_ = api::experimental_notification::Create::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  // If the caller provided a notificationId, use that. Otherwise, generate
+  // one. Note that there's nothing stopping an app developer from passing in
+  // arbitrary "extension.api.999" notificationIds that will collide with
+  // future generated IDs. It doesn't seem necessary to try to prevent this; if
+  // developers want to hurt themselves, we'll let them.
+  const std::string extension_id(extension_->id());
+  std::string notification_id;
+  if (!params_->notification_id.empty())
+    notification_id = params_->notification_id;
+  else
+    notification_id = kNotificationPrefix + base::Uint64ToString(next_id_++);
+
+  CreateNotification(notification_id, &params_->options);
+
+  SetResult(Value::CreateStringValue(notification_id));
+
+  SendResponse(true);
+
+  return true;
+}
+
+NotificationUpdateFunction::NotificationUpdateFunction() {
+}
+
+NotificationUpdateFunction::~NotificationUpdateFunction() {
+}
+
+bool NotificationUpdateFunction::RunImpl() {
+  params_ = api::experimental_notification::Update::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  if (g_browser_process->notification_ui_manager()->
+      DoesIdExist(NotificationApiDelegate::CreateScopedIdentifier(
+          extension_->id(), params_->notification_id))) {
+    CreateNotification(params_->notification_id, &params_->options);
+    SetResult(Value::CreateBooleanValue(true));
+  } else {
+    SetResult(Value::CreateBooleanValue(false));
+  }
+
+  SendResponse(true);
+
+  return true;
+}
+
+NotificationDeleteFunction::NotificationDeleteFunction() {
+}
+
+NotificationDeleteFunction::~NotificationDeleteFunction() {
+}
+
+bool NotificationDeleteFunction::RunImpl() {
+  params_ = api::experimental_notification::Delete::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  bool cancel_result = g_browser_process->notification_ui_manager()->
+      CancelById(NotificationApiDelegate::CreateScopedIdentifier(
+          extension_->id(), params_->notification_id));
+
+  SetResult(Value::CreateBooleanValue(cancel_result));
   SendResponse(true);
 
   return true;

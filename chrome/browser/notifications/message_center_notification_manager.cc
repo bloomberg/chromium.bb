@@ -30,6 +30,15 @@ MessageCenterNotificationManager::~MessageCenterNotificationManager() {
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationUIManager
 
+bool MessageCenterNotificationManager::DoesIdExist(const std::string& id) {
+  if (NotificationUIManagerImpl::DoesIdExist(id))
+    return true;
+  NotificationMap::iterator iter = profile_notifications_.find(id);
+  if (iter == profile_notifications_.end())
+    return false;
+  return true;
+}
+
 bool MessageCenterNotificationManager::CancelById(const std::string& id) {
   // See if this ID hasn't been shown yet.
   if (NotificationUIManagerImpl::CancelById(id))

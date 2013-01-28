@@ -35,6 +35,15 @@ void BalloonCollectionBase::Remove(Balloon* balloon) {
   }
 }
 
+bool BalloonCollectionBase::DoesIdExist(const std::string& id) {
+  Balloons::iterator iter;
+  for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
+    if ((*iter)->notification().notification_id() == id)
+      return true;
+  }
+  return false;
+}
+
 bool BalloonCollectionBase::CloseById(const std::string& id) {
   // Use a local list of balloons to close to avoid breaking
   // iterator changes on each close.

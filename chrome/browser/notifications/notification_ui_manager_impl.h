@@ -34,6 +34,7 @@ class NotificationUIManagerImpl
   // NotificationUIManager:
   virtual void Add(const Notification& notification,
                    Profile* profile) OVERRIDE;
+  virtual bool DoesIdExist(const std::string& notification_id) OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
   virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;
@@ -43,9 +44,9 @@ class NotificationUIManagerImpl
     std::vector<const Notification*>* notifications);
 
  protected:
-  // Attempts to pass a notification from a waiting queue to the sublass
-  // for presentation. Subclass can return 'false' if it can not show
-  // notificaiton right away. In this case it should invoke
+  // Attempts to pass a notification from a waiting queue to the subclass for
+  // presentation. The subclass can return 'false' if it cannot show the
+  // notification right away. In that case it should invoke
   // CheckAndShowNotificaitons() later.
   virtual bool ShowNotification(const Notification& notification,
                                 Profile* profile) = 0;
