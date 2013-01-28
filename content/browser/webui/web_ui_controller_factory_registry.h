@@ -29,9 +29,13 @@ class CONTENT_EXPORT WebUIControllerFactoryRegistry
                               const GURL& url) const OVERRIDE;
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE;
-  virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
-                                       const GURL& url,
-                                       bool data_urls_allowed) const OVERRIDE;
+
+  // Returns true if the given URL can be loaded by Web UI system. This allows
+  // URLs that UseWebUIForURL returns true for, and also URLs that can be loaded
+  // by normal tabs such as javascript: URLs or about:hang.
+  bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
+                               const GURL& url,
+                               bool data_urls_allowed) const;
 
  private:
   friend struct DefaultSingletonTraits<WebUIControllerFactoryRegistry>;

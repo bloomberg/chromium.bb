@@ -45,13 +45,6 @@ class CONTENT_EXPORT WebUIControllerFactory {
   // Returns true for the subset of WebUIs that actually need WebUI bindings.
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const = 0;
-
-  // Returns true if the given URL can be loaded by Web UI system. This allows
-  // URLs with WebUI types (as above) and also URLs that can be loaded by
-  // normal tabs such as javascript: URLs or about:hang.
-  virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
-                                       const GURL& url,
-                                       bool data_urls_allowed) const = 0;
 };
 
 }  // namespace content

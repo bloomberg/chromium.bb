@@ -62,13 +62,6 @@ class WebContentsImplTestWebUIControllerFactory
     return UseWebUI(url);
   }
 
-  virtual bool IsURLAcceptableForWebUI(
-      BrowserContext* browser_context,
-      const GURL& url,
-      bool data_urls_allowed) const {
-    return UseWebUI(url);
-  }
-
  private:
   bool UseWebUI(const GURL& url) const {
     return url == GURL(kTestWebUIUrl);

@@ -66,13 +66,6 @@ class RenderViewHostManagerTestWebUIControllerFactory
     return HasWebUIScheme(url);
   }
 
-  virtual bool IsURLAcceptableForWebUI(
-      BrowserContext* browser_context,
-      const GURL& url,
-      bool data_urls_allowed) const OVERRIDE {
-    return HasWebUIScheme(url);
-  }
-
  private:
   bool should_create_webui_;
 
