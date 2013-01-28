@@ -485,7 +485,12 @@
           'sources/': [
             ['exclude', '^common/automation_']
 	  ]
-        }]
+        }],
+        ['use_system_nspr==1', {
+          'dependencies': [
+            '<(DEPTH)/base/third_party/nspr/nspr.gyp:nspr',
+          ],
+        }],
       ],
       'target_conditions': [
         ['OS == "ios"', {
