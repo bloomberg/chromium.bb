@@ -189,7 +189,11 @@ table_files = \
 	pt-pt-g1.utb \
 	pt-pt-g2.ctb \
 	ro.ctb \
+	ru-chardefs.cti \
+	ru-compbrl.ctb \
 	ru.ctb \
+	ru-letters.dis \
+	ru-litbrl.ctb \
 	ru-ru.dis \
 	ru-ru-g1.utb \
 	sa.ctb \

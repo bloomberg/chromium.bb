@@ -1,3 +1,11 @@
+2013-01-28  Igor B. Poretsky <poretsky@mlbox.ru>
+
+	* tables/ru-litbrl.ctb:
+	* tables/ru-letters.dis:
+	* tables/ru-compbrl.ctb:
+	* tables/ru-chardefs.cti:
+	* tables/Makefile.am (table_files): Add new russian tables.
+
 2013-01-28  Knut Arne Bjørndal <bob+liblouis@cakebox.net>
 
 	* tables/no-no-g0.utb: Fixes for Emphasis marks in the norwegian

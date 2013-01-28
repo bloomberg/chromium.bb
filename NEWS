@@ -7,6 +7,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     - Korean grade 1 and grade 2 thanks to Joseph Lee
     - U.K. English 8 dot Computer braille table thanks to David
       Reynolds
+    - New russian literary and computer braille tables thanks to Igor
+      B. Poretsky. These replace the older russian tables which are
+      left for backwards compatibility.
 
 ** Braille Table Improvements
    - Corrections to Unified English Braille Code (Grade 2), thanks to
