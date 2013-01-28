@@ -519,7 +519,7 @@ void PortableDeviceWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
 bool PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
     const std::string& storage_device_id,
     string16* device_location,
-    string16* storage_object_id) {
+    string16* storage_object_id) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(device_location);
   DCHECK(storage_object_id);

@@ -18,9 +18,13 @@ namespace test {
 
 class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
  public:
+  // MTP device PnP identifiers.
   static const char16 kMTPDeviceWithMultipleStorages[];
   static const char16 kMTPDeviceWithInvalidInfo[];
   static const char16 kMTPDeviceWithValidInfo[];
+
+  // MTP device storage unique identifier.
+  static const char kStorageUniqueIdA[];
 
   TestPortableDeviceWatcherWin();
   virtual ~TestPortableDeviceWatcherWin();
@@ -49,10 +53,27 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
   static PortableDeviceWatcherWin::StorageObjects GetDeviceStorageObjects(
       const string16& pnp_device_id);
 
+  // Returns the path of the requested storage specified by the |storage_id|.
+  // Returns an empty string if |storage_id| is empty.
+  static string16 GetStoragePathFromStorageId(const std::string& storage_id);
+
+  // Used by MediaFileSystemRegistry unit test.
+  void set_use_dummy_mtp_storage_info(bool use_dummy_info) {
+    use_dummy_mtp_storage_info_ = use_dummy_info;
+  }
+
  private:
   // PortableDeviceWatcherWin:
   virtual void EnumerateAttachedDevices() OVERRIDE;
   virtual void HandleDeviceAttachEvent(const string16& pnp_device_id) OVERRIDE;
+  virtual bool GetMTPStorageInfoFromDeviceId(
+      const std::string& storage_device_id,
+      string16* device_location,
+      string16* storage_object_id) const OVERRIDE;
+
+  // Set to true to get dummy storage details from
+  // GetMTPStorageInfoFromDeviceId().
+  bool use_dummy_mtp_storage_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPortableDeviceWatcherWin);
 };

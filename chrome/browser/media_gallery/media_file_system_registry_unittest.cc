@@ -43,6 +43,13 @@
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/system_monitor/test_portable_device_watcher_win.h"
+#include "chrome/browser/system_monitor/test_removable_device_notifications_window_win.h"
+#include "chrome/browser/system_monitor/test_volume_mount_watcher_win.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
 namespace chrome {
 
 // Not anonymous so it can be friends with MediaFileSystemRegistry.
@@ -370,6 +377,10 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   // Needed for extension service & friends to work.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+
+#if defined(OS_WIN)
+  scoped_ptr<test::TestRemovableDeviceNotificationsWindowWin> window_;
+#endif
 
   // For AttachDevice() and DetachDevice().
   scoped_ptr<base::SystemMonitor> system_monitor_;
@@ -731,6 +742,17 @@ MediaFileSystemRegistryTest::GetAutoAddedGalleries(
 }
 
 void MediaFileSystemRegistryTest::SetUp() {
+#if defined(OS_WIN)
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableMediaTransferProtocolDeviceOperations);
+  test::TestPortableDeviceWatcherWin* portable_device_watcher =
+      new test::TestPortableDeviceWatcherWin;
+  portable_device_watcher->set_use_dummy_mtp_storage_info(true);
+  window_.reset(new test::TestRemovableDeviceNotificationsWindowWin(
+      new test::TestVolumeMountWatcherWin, portable_device_watcher));
+  window_->Init();
+#endif
+
 #if defined(OS_MACOSX)
   // This needs to happen before SystemMonitor's ctor.
   base::SystemMonitor::AllocateSystemIOPorts();
@@ -823,19 +845,18 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
   }
 }
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM) && !defined(OS_WIN)
-// TODO(kmadhusu) : On Windows, this test depends on
-// RemovableDeviceNotificationsWindowWin to get the attached MTP device
-// storage details. Enable this test after refactoring
-// removable_device_notifications_window_win_unittest.cc to share the
-// mock classes (TestRemovableDeviceNotificationsWindowWin,
-// TestPortableDeviceWatcherWin and TestVolumeMountWatcherWin).
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);
 
-  // TODO(port) On Windows, this is not an absolute path.
+#if defined(OS_WIN)
+  FilePath location(
+      test::TestPortableDeviceWatcherWin::GetStoragePathFromStorageId(
+          test::TestPortableDeviceWatcherWin::kStorageUniqueIdA));
+#else
   FilePath location(FILE_PATH_LITERAL("/mtp_bogus"));
+#endif
   AttachDevice(MediaStorageUtil::MTP_OR_PTP, "mtp_fake_id", location);
   CheckNewGalleryInfo(GetProfileState(0U), galleries_info, location,
                       true /*removable*/, true /* media device */);

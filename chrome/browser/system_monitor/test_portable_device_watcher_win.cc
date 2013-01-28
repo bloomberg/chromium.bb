@@ -20,8 +20,6 @@ const char16 kStorageLabelA[] = L"Camera V1.1 (s10001)";
 const char16 kStorageLabelB[] = L"Camera V1.1 (s20001)";
 const char16 kStorageObjectIdA[] = L"s10001";
 const char16 kStorageObjectIdB[] = L"s20001";
-const char kStorageUniqueIdA[] =
-    "mtp:StorageSerial:SID-{s10001, D, 12378}:123123";
 const char kStorageUniqueIdB[] =
     "mtp:StorageSerial:SID-{s20001, S, 2238}:123123";
 
@@ -50,8 +48,11 @@ const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithInvalidInfo[] =
     L"\\?\usb#vid_00&pid_00#0&2&1#{0000-0000-0000-0000-0000})";
 const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithValidInfo[] =
     L"\\?\usb#vid_ff&pid_000f#32&2&1#{abcd-1234-ffde-1112-9172})";
+const char TestPortableDeviceWatcherWin::kStorageUniqueIdA[] =
+    "mtp:StorageSerial:SID-{s10001, D, 12378}:123123";
 
-TestPortableDeviceWatcherWin::TestPortableDeviceWatcherWin() {
+TestPortableDeviceWatcherWin::TestPortableDeviceWatcherWin()
+    : use_dummy_mtp_storage_info_(false) {
 }
 
 TestPortableDeviceWatcherWin::~TestPortableDeviceWatcherWin() {
@@ -62,7 +63,7 @@ std::string TestPortableDeviceWatcherWin::GetMTPStorageUniqueId(
     const string16& pnp_device_id,
     const string16& storage_object_id) {
   if (storage_object_id == kStorageObjectIdA)
-    return kStorageUniqueIdA;
+    return TestPortableDeviceWatcherWin::kStorageUniqueIdA;
   return (storage_object_id == kStorageObjectIdB) ?
       kStorageUniqueIdB : std::string();
 }
@@ -113,6 +114,14 @@ TestPortableDeviceWatcherWin::GetDeviceStorageObjects(
   return storage_objects;
 }
 
+// static
+string16 TestPortableDeviceWatcherWin::GetStoragePathFromStorageId(
+    const std::string& storage_id) {
+  if (storage_id.empty())
+    return string16();
+  return ASCIIToUTF16("\\\\") + ASCIIToUTF16(storage_id);
+}
+
 void TestPortableDeviceWatcherWin::EnumerateAttachedDevices() {
 }
 
@@ -125,6 +134,23 @@ void TestPortableDeviceWatcherWin::HandleDeviceAttachEvent(
       GetDeviceStorageObjects(pnp_device_id)
   };
   OnDidHandleDeviceAttachEvent(&device_details, true);
+}
+
+bool TestPortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
+    const std::string& storage_device_id,
+    string16* device_location,
+    string16* storage_object_id) const {
+  DCHECK(!storage_device_id.empty());
+  if (use_dummy_mtp_storage_info_) {
+    if (storage_device_id == TestPortableDeviceWatcherWin::kStorageUniqueIdA) {
+      *device_location = kMTPDeviceWithValidInfo;
+      *storage_object_id = kStorageObjectIdA;
+      return true;
+    }
+    return false;
+  }
+  return PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
+      storage_device_id, device_location, storage_object_id);
 }
 
 }  // namespace test

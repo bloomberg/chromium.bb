@@ -82,9 +82,10 @@ class PortableDeviceWatcherWin {
   // On success, returns true and fills in |device_location| with device
   // interface details and |storage_object_id| with storage object temporary
   // identifier.
-  bool GetMTPStorageInfoFromDeviceId(const std::string& storage_device_id,
-                                     string16* device_location,
-                                     string16* storage_object_id);
+  virtual bool GetMTPStorageInfoFromDeviceId(
+      const std::string& storage_device_id,
+      string16* device_location,
+      string16* storage_object_id) const;
 
  private:
   friend class test::TestPortableDeviceWatcherWin;
