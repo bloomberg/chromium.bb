@@ -82,7 +82,7 @@ uplow \x00C8\x00E8 2346				# e with grave
 uplow \x00C9\x00E9 123456				# e with acute
 uplow \x00CC\x00EC 34				# i with grave above
 uplow \x00D2\x00F2 346			# o with grave above
-uplow \x00DA\x00FA 23456			# u with acute above
+uplow \x00D9\x00F9 23456			# u with grave above
 
 #----------------------------------------------------------------------------
 numsign 3456		#	number sign, just one operand
@@ -91,6 +91,8 @@ begcaps 4-6
 
 repeated *** 16-16-16
 prepunc `` 236
+prepunc " 236
+postpunc " 356
 
 repeated \s 0
 repeated \t 0
