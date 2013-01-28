@@ -1,5 +1,5 @@
 #<skip -- bug 120951>
-ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
+ROLE_SYSTEM_DOCUMENT state=FOCUSED,READONLY,FOCUSABLE
     ROLE_SYSTEM_LINK name='link with no href but onclick' state=FOCUSABLE,LINKED
         ROLE_SYSTEM_TEXT name='link with no href but onclick' state=READONLY,LINKED
     ROLE_SYSTEM_LINK name='link with no href and click handler added via script' state=FOCUSABLE,LINKED

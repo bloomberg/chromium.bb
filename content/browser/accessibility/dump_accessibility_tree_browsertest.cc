@@ -80,6 +80,7 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
   void AddDefaultFilters(std::vector<Filter>* filters) {
     filters->push_back(Filter(ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
     filters->push_back(Filter(ASCIIToUTF16("READONLY"), Filter::ALLOW));
+    filters->push_back(Filter(ASCIIToUTF16("*=''"), Filter::DENY));
   }
 
   void ParseFilters(const std::string& test_html,
@@ -90,9 +91,14 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
          iter != lines.end();
          ++iter) {
       const std::string& line = *iter;
+      const std::string& allow_empty_str = helper_.GetAllowEmptyString();
       const std::string& allow_str = helper_.GetAllowString();
       const std::string& deny_str = helper_.GetDenyString();
-      if (StartsWithASCII(line, allow_str, true)) {
+      if (StartsWithASCII(line, allow_empty_str, true)) {
+        filters->push_back(
+          Filter(UTF8ToUTF16(line.substr(allow_empty_str.size())),
+                 Filter::ALLOW_EMPTY));
+      } else if (StartsWithASCII(line, allow_str, true)) {
         filters->push_back(Filter(UTF8ToUTF16(line.substr(allow_str.size())),
                                   Filter::ALLOW));
       } else if (StartsWithASCII(line, deny_str, true)) {

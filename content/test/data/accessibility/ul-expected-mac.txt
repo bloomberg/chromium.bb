@@ -1,11 +1,11 @@
-AXWebArea title='' value=''
-    AXList subrole=AXContentList title='' value=''
-        AXGroup title='' value=''
-            AXListMarker title='' value='•'
-            AXStaticText title='' value='Item 1'
-        AXGroup title='' value=''
-            AXListMarker title='' value='•'
-            AXStaticText title='' value='Item 2'
-        AXGroup title='' value=''
-            AXListMarker title='' value='•'
-            AXStaticText title='' value='Item 3'
+AXWebArea
+    AXList subrole=AXContentList
+        AXGroup
+            AXListMarker value='•'
+            AXStaticText value='Item 1'
+        AXGroup
+            AXListMarker value='•'
+            AXStaticText value='Item 2'
+        AXGroup
+            AXListMarker value='•'
+            AXStaticText value='Item 3'

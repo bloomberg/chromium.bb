@@ -1,8 +1,8 @@
-ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE description=''
-    IA2_ROLE_SECTION name='' READONLY description=''
-        ROLE_SYSTEM_CHECKBUTTON name='Title0' FOCUSABLE description=''
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION READONLY
+        ROLE_SYSTEM_CHECKBUTTON name='Title0' FOCUSABLE
         ROLE_SYSTEM_CHECKBUTTON name='Label1' FOCUSABLE description='Title1'
         ROLE_SYSTEM_CHECKBUTTON name='AriaLabel2' FOCUSABLE description='Title2'
         ROLE_SYSTEM_CHECKBUTTON name='LabelledBy3' FOCUSABLE description='Title3'
         ROLE_SYSTEM_CHECKBUTTON name='LabelledBy4' FOCUSABLE description='DescribedBy4'
-        ROLE_SYSTEM_CHECKBUTTON name='DescribedBy5' FOCUSABLE description=''
+        ROLE_SYSTEM_CHECKBUTTON name='DescribedBy5' FOCUSABLE

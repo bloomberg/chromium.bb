@@ -31,6 +31,7 @@ class DumpAccessibilityTreeHelper {
   struct Filter {
     enum Type {
       ALLOW,
+      ALLOW_EMPTY,
       DENY
     };
     string16 match_str;
@@ -53,16 +54,19 @@ class DumpAccessibilityTreeHelper {
   const FilePath::StringType GetExpectedFileSuffix() const;
 
   // A platform-specific string that indicates a given line in a file
-  // is an allow or deny filter. Example:
+  // is an allow-empty, allow or deny filter. Example:
   // Mac values:
+  //   GetAllowEmptyString() -> "@MAC-ALLOW-EMPTY:"
   //   GetAllowString() -> "@MAC-ALLOW:"
   //   GetDenyString() -> "@MAC-DENY:"
   // Example html:
   // <!--
+  // @MAC-ALLOW-EMPTY:description*
   // @MAC-ALLOW:roleDescription*
   // @MAC-DENY:subrole*
   // -->
   // <p>Text</p>
+  const std::string GetAllowEmptyString() const;
   const std::string GetAllowString() const;
   const std::string GetDenyString() const;
 

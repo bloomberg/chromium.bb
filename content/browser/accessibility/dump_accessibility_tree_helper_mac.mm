@@ -18,7 +18,7 @@ string16 Format(BrowserAccessibility* node,
                 SEL selector,
                 const char *suffix) {
   BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
-  NSString* value = [cocoa_node performSelector:selector];
+  NSObject* value = [cocoa_node performSelector:selector];
   if (!value)
     return string16();
   NSString* format_str =
@@ -61,6 +61,10 @@ const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()
 const FilePath::StringType DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
     const {
   return FILE_PATH_LITERAL("-expected-mac.txt");
+}
+
+const std::string DumpAccessibilityTreeHelper::GetAllowEmptyString() const {
+  return "@MAC-ALLOW-EMPTY:";
 }
 
 const std::string DumpAccessibilityTreeHelper::GetAllowString() const {

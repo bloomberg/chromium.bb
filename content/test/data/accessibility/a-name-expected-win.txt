@@ -1,5 +1,5 @@
 #<skip -- bug 120946>
-ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
+ROLE_SYSTEM_DOCUMENT state=FOCUSED,READONLY,FOCUSABLE
     ROLE_SYSTEM_LINK name='named anchor' state=SELECTABLE
         ROLE_SYSTEM_TEXT name='named anchor' state=READONLY
     ROLE_SYSTEM_LINK name='both a named anchor and a link' state=FOCUSABLE,SELECTABLE,LINKED

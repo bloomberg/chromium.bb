@@ -1,2 +1,2 @@
-AXWebArea title='' value=''
-    AXGroup subrole=AXLandmarkApplication roleDescription='application' title='' value=''
+AXWebArea
+    AXGroup subrole=AXLandmarkApplication roleDescription='application'

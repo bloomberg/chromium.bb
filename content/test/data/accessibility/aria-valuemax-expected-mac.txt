@@ -1,4 +1,4 @@
-AXWebArea value='' maxValue='0'
+AXWebArea maxValue='0'
     AXProgressIndicator value='51' maxValue='101'
     AXScrollBar value='52' maxValue='102'
     AXSlider value='53' maxValue='103'

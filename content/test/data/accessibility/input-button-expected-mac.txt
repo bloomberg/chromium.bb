@@ -1,3 +1,3 @@
-AXWebArea title=''
-    AXGroup title=''
+AXWebArea
+    AXGroup
         AXButton title='Button'

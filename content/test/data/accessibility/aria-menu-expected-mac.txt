@@ -1,9 +1,9 @@
-AXWebArea title=''
-    AXMenuBar title=''
+AXWebArea
+    AXMenuBar
         AXMenuItem title='File'
         AXMenuItem title='Edit'
         AXMenuItem title='View'
-    AXMenu title='' description='File'
+    AXMenu description='File'
         AXMenuItem title='New'
         AXMenuItem title='Open'
         AXMenuItem title='Save'

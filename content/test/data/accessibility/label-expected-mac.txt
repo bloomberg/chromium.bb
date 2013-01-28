@@ -1,4 +1,4 @@
-AXWebArea title='' value=''
-    AXGroup title='' value=''
-        AXGroup title='' value=''
-            AXStaticText title='' value='Label'
+AXWebArea
+    AXGroup
+        AXGroup
+            AXStaticText value='Label'

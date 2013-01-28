@@ -1,5 +1,5 @@
-AXWebArea value=''
-    AXGroup value=''
+AXWebArea
+    AXGroup
         AXStaticText value='This paragraph has one '
         AXStaticText value='word'
         AXStaticText value=' in a span.'

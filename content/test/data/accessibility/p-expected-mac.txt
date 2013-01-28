@@ -1,7 +1,7 @@
-AXWebArea title='' value=''
-    AXGroup title='' value=''
-        AXStaticText title='' value='Before'
-    AXGroup title='' value=''
-        AXStaticText title='' value='Paragraph'
-    AXGroup title='' value=''
-        AXStaticText title='' value='After'
+AXWebArea
+    AXGroup
+        AXStaticText value='Before'
+    AXGroup
+        AXStaticText value='Paragraph'
+    AXGroup
+        AXStaticText value='After'

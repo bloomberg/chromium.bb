@@ -1,4 +1,4 @@
-AXWebArea title='' value=''
-    AXGroup title='' value=''
-        AXLink title='normal link' value=''
-            AXStaticText title='' value='normal link'
+AXWebArea
+    AXGroup
+        AXLink title='normal link'
+            AXStaticText value='normal link'

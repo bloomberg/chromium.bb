@@ -1,8 +1,8 @@
-AXWebArea title='' description='' help=''
-    AXGroup title='' description='' help=''
-        AXButton title='InnerText0' description='' help=''
-        AXButton title='InnerText1' description='' help='Title1'
+AXWebArea
+    AXGroup
+        AXButton title='InnerText0'
+        AXButton title='InnerText1' help='Title1'
         AXButton title='InnerText2' description='AriaLabel2' help='Title2'
         AXButton title='InnerText3' description='LabelledBy3' help='Title3'
         AXButton title='InnerText4' description='LabelledBy4' help='DescribedBy4'
-        AXButton title='InnerText5' description='' help='DescribedBy5'
+        AXButton title='InnerText5' help='DescribedBy5'

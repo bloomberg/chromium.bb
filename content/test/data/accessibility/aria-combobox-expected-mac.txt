@@ -1,7 +1,7 @@
-AXWebArea title='' value=''
-    AXGroup title='' value=''
-        AXStaticText title='' value='State'
-        AXComboBox title='' value=''
-    AXList title='' value=''
-        AXStaticText title='Alabama' value=''
-        AXStaticText title='Alaska' value=''
+AXWebArea
+    AXGroup
+        AXStaticText value='State'
+        AXComboBox
+    AXList
+        AXStaticText title='Alabama'
+        AXStaticText title='Alaska'

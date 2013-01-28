@@ -96,6 +96,9 @@ const FilePath::StringType DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
   return FILE_PATH_LITERAL("-expected-win.txt");
 }
 
+const std::string DumpAccessibilityTreeHelper::GetAllowEmptyString() const {
+  return "@WIN-ALLOW-EMPTY:";
+}
 
 const std::string DumpAccessibilityTreeHelper::GetAllowString() const {
   return "@WIN-ALLOW:";

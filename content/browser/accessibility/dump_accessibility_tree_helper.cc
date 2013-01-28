@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace content {
 namespace {
@@ -54,8 +55,14 @@ bool DumpAccessibilityTreeHelper::MatchesFilters(
   std::vector<Filter>::const_iterator iter = filters_.begin();
   bool allow = default_result;
   for (iter = filters_.begin(); iter != filters_.end(); ++iter) {
-    if (MatchPattern(text, iter->match_str))
-      allow = (iter->type == Filter::ALLOW);
+    if (MatchPattern(text, iter->match_str)) {
+      if (iter->type == Filter::ALLOW_EMPTY)
+        allow = true;
+      else if (iter->type == Filter::ALLOW)
+        allow = (!MatchPattern(text, UTF8ToUTF16("*=''")));
+      else
+        allow = false;
+    }
   }
   return allow;
 }
