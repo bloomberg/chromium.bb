@@ -17,6 +17,11 @@
 #include "content/shell/shell_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/message_loop.h"
+#include "base/message_pump_android.h"
+#endif
+
 #if defined(OS_WIN)
 #include "content/public/app/startup_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -52,6 +57,12 @@ class ContentShellTestSuiteInitializer
   DISALLOW_COPY_AND_ASSIGN(ContentShellTestSuiteInitializer);
 };
 
+#if defined(OS_ANDROID)
+base::MessagePump* CreateMessagePumpForUI() {
+  return new base::MessagePumpForUI();
+};
+#endif
+
 class ContentBrowserTestSuite : public ContentTestSuiteBase {
  public:
   ContentBrowserTestSuite(int argc, char** argv)
@@ -62,6 +73,14 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
 
  protected:
   virtual void Initialize() OVERRIDE {
+
+#if defined(OS_ANDROID)
+    // This needs to be done before base::TestSuite::Initialize() is called,
+    // as it also tries to set MessagePumpForUIFactory.
+    if (!MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI))
+      LOG(INFO) << "MessagePumpForUIFactory already set, unable to override.";
+#endif
+
     ContentTestSuiteBase::Initialize();
 
     testing::TestEventListeners& listeners =

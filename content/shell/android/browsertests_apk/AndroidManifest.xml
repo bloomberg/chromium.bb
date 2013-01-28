@@ -7,14 +7,14 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chromium.content_shell">
+    package="org.chromium.content_browsertests_apk">
 
     <permission android:name="org.chromium.content_shell.permission.SANDBOX"
             android:protectionLevel="signature" />
 
-    <application android:name="ContentShellApplication"
-            android:label="ContentShell">
-        <activity android:name="ContentShellActivity"
+    <application android:name="ContentBrowserTestsApplication"
+            android:label="ContentBrowserTests">
+        <activity android:name="ContentBrowserTestsActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"

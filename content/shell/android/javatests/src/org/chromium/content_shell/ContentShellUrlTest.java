@@ -7,6 +7,7 @@ package org.chromium.content_shell;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_shell_apk.ContentShellActivity;
 
 /**
  * Example test that just starts the content shell.

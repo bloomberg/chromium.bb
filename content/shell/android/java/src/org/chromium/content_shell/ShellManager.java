@@ -21,11 +21,12 @@ import org.chromium.ui.gfx.NativeWindow;
 @JNINamespace("content")
 public class ShellManager extends FrameLayout {
 
+    public static final String DEFAULT_SHELL_URL = "http://www.google.com";
     private static boolean sStartup = true;
     private NativeWindow mWindow;
     private Shell mActiveShell;
 
-    private String mStartupUrl = ContentShellActivity.DEFAULT_SHELL_URL;
+    private String mStartupUrl = DEFAULT_SHELL_URL;
 
     // The target for all content rendering.
     private ContentViewRenderView mContentViewRenderView;
@@ -71,7 +72,7 @@ public class ShellManager extends FrameLayout {
     /**
      * @return The currently visible shell view or null if one is not showing.
      */
-    protected Shell getActiveShell() {
+    public Shell getActiveShell() {
         return mActiveShell;
     }
 

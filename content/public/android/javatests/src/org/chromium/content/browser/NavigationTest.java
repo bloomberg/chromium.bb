@@ -8,8 +8,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content_shell.ContentShellActivity;
 import org.chromium.content_shell.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivity;
 
 /**
  * Tests for various aspects of navigation.
