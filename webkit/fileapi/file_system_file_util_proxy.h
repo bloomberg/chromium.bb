@@ -64,23 +64,18 @@ class FileSystemFileUtilProxy {
       int file_flags,
       const CreateOrOpenCallback& callback);
 
-  // Copies a file or a directory from |src_url| to |dest_url| by calling
-  // FileSystemFileUtil's following methods on the given context's
-  // task_runner.
-  // - CopyOrMoveFile() for same-filesystem operations
-  // - CopyInForeignFile() for (limited) cross-filesystem operations
-  //
-  // Error cases:
-  // If destination's parent doesn't exist.
-  // If source dir exists but destination url is an existing file.
-  // If source file exists but destination url is an existing directory.
-  // If source is a parent of destination.
-  // If source doesn't exist.
-  // If source and dest are the same url in the same filesystem.
-  static bool Copy(
+  // Copies a local file or a directory from |src_url| to |dest_url|.
+  static bool CopyFileLocal(
       FileSystemOperationContext* context,
-      FileSystemFileUtil* src_util,
-      FileSystemFileUtil* dest_util,
+      FileSystemFileUtil* file_util,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
+      const StatusCallback& callback);
+
+  // Moves a local file or a directory from |src_url| to |dest_url|.
+  static bool MoveFileLocal(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* file_util,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       const StatusCallback& callback);
@@ -89,23 +84,8 @@ class FileSystemFileUtilProxy {
   // Primarily used for the Syncable filesystem type (e.g. GDrive).
   static bool CopyInForeignFile(
       FileSystemOperationContext* context,
-      FileSystemFileUtil* dest_util,
+      FileSystemFileUtil* file_util,
       const FilePath& src_local_disk_file_path,
-      const FileSystemURL& dest_url,
-      const StatusCallback& callback);
-
-  // Moves a file or a directory from |src_url| to |dest_url| by calling
-  // FileSystemFileUtil's following methods on the given context's
-  // task_runner.
-  // - CopyOrMoveFile() for same-filesystem operations
-  // - CopyInForeignFile() for (limited) cross-filesystem operations
-  //
-  // This method returns an error on the same error cases with Copy.
-  static bool Move(
-      FileSystemOperationContext* context,
-      FileSystemFileUtil* src_util,
-      FileSystemFileUtil* dest_util,
-      const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       const StatusCallback& callback);
 

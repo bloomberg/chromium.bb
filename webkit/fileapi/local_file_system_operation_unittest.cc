@@ -685,7 +685,9 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_TRUE(FileExists(dest_dir_path.Append(
       VirtualPath::BaseName(child_dir_path)).Append(
       VirtualPath::BaseName(grandchild_file_path))));
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+
+  // For recursive copy we may record multiple read access.
+  EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 1);
 
   EXPECT_EQ(2, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());

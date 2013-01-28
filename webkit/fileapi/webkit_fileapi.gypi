@@ -5,6 +5,8 @@
 {
   'variables': {
     'webkit_fileapi_sources': [
+      '../fileapi/cross_operation_delegate.cc',
+      '../fileapi/cross_operation_delegate.h',
       '../fileapi/external_mount_points.cc',
       '../fileapi/external_mount_points.h',
       '../fileapi/file_observers.h',
@@ -78,6 +80,8 @@
       '../fileapi/native_file_util.h',
       '../fileapi/obfuscated_file_util.cc',
       '../fileapi/obfuscated_file_util.h',
+      '../fileapi/recursive_operation_delegate.cc',
+      '../fileapi/recursive_operation_delegate.h',
       '../fileapi/remote_file_system_proxy.h',
       '../fileapi/remove_operation_delegate.cc',
       '../fileapi/remove_operation_delegate.h',

@@ -159,7 +159,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   // The filesystem type of |src_url| and |dest_url| MUST be same.
   //
   // This returns:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
   // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
   // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
@@ -225,6 +225,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   // This returns:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
   // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  //
+  // The field values of |file_info| are undefined (implementation
+  // dependent) in error cases, and the caller should always
+  // check the return code.
   //
   virtual base::PlatformFileError CreateSnapshotFile(
       FileSystemOperationContext* context,

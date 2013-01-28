@@ -877,8 +877,10 @@ base::PlatformFileError ObfuscatedFileUtil::CreateSnapshotFile(
   *policy = kSnapshotFileLocal;
   base::PlatformFileError error = GetFileInfo(
       context, url, file_info, platform_path);
-  if (error == base::PLATFORM_FILE_OK && file_info->is_directory)
+  if (error == base::PLATFORM_FILE_OK && file_info->is_directory) {
+    *file_info = base::PlatformFileInfo();
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  }
   return error;
 }
 

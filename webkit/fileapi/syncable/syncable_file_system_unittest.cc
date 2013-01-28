@@ -268,7 +268,7 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
 
   // Now try copying the directory into the syncable file system, which should
   // fail if directory operation is disabled. (http://crbug.com/161442)
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+  EXPECT_NE(base::PLATFORM_FILE_OK,
             file_system_.Copy(kSrcDir, URL("dest")));
 
   other_file_system_.TearDown();
