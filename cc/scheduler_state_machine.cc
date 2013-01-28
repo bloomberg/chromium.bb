@@ -265,6 +265,7 @@ void SchedulerStateMachine::updateState(Action action)
         m_needsRedraw = false;
         m_needsForcedRedraw = false;
         m_drawIfPossibleFailed = false;
+        m_swapUsedIncompleteTile = false;
         if (m_insideVSync)
             m_lastFrameNumberWhereDrawWasCalled = m_currentFrameNumber;
         if (m_commitState == COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW) {
