@@ -47,6 +47,14 @@ enum TileManagerBinPriority {
   NUM_BIN_PRIORITIES = 2
 };
 
+enum TileRasterState {
+  IDLE_STATE = 0,
+  WAITING_FOR_RASTER_STATE = 1,
+  RASTER_STATE = 2,
+  SET_PIXELS_STATE = 3,
+  NUM_STATES = 4
+};
+
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
@@ -62,9 +70,11 @@ class CC_EXPORT ManagedTileState {
   bool contents_swizzled;
   bool need_to_gather_pixel_refs;
   std::list<skia::LazyPixelRef*> pending_pixel_refs;
+  TileRasterState raster_state;
 
   // Ephemeral state, valid only during Manage.
   TileManagerBin bin[NUM_BIN_PRIORITIES];
+  TileManagerBin tree_bin[NUM_TREES];
   // The bin that the tile would have if the GPU memory manager had a maximally permissive policy,
   // send to the GPU memory manager to determine policy.
   TileManagerBin gpu_memmgr_stats_bin;
@@ -93,8 +103,8 @@ class CC_EXPORT TileManager {
   void GetMemoryStats(size_t* memoryRequiredBytes,
                       size_t* memoryNiceToHaveBytes,
                       size_t* memoryUsedBytes);
-
   void GetRenderingStats(RenderingStats* stats);
+  bool HasPendingWorkScheduled(WhichTree tree) const;
 
  protected:
   // Methods called by Tile
@@ -123,6 +133,10 @@ class CC_EXPORT TileManager {
       scoped_ptr<ResourcePool::Resource> resource,
       int manage_tiles_call_count_when_dispatched);
   void DidFinishTileInitialization(Tile* tile);
+  void DidTileRasterStateChange(Tile* tile, TileRasterState state);
+  void DidTileBinChange(Tile* tile,
+                        TileManagerBin bin,
+                        WhichTree tree);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
@@ -149,6 +163,8 @@ class CC_EXPORT TileManager {
   int bytes_pending_set_pixels_;
 
   RenderingStats rendering_stats_;
+
+  int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

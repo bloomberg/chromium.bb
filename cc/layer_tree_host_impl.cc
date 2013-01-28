@@ -934,12 +934,16 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
     if (!pendingTree())
         return;
 
+    CHECK(m_tileManager);
+
     pendingTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
 
     // It's always fine to activate to an empty tree.  Otherwise, only
-    // activate once all visible resources in pending tree are ready.
+    // activate once all visible resources in pending tree are ready
+    // or tile manager has no work scheduled for pending tree.
     if (activeTree()->RootLayer() &&
-        !pendingTree()->AreVisibleResourcesReady())
+        !pendingTree()->AreVisibleResourcesReady() &&
+        m_tileManager->HasPendingWorkScheduled(PENDING_TREE))
       return;
 
     activatePendingTree();
