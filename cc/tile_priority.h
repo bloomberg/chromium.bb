@@ -8,9 +8,14 @@
 #include <limits>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/picture_pile.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+
+namespace base {
+class Value;
+}
 
 namespace cc {
 
@@ -20,7 +25,10 @@ enum WhichTree {
   ACTIVE_TREE = 0,
   PENDING_TREE = 1,
   NUM_TREES = 2
+  // Be sure to update WhichTreeAsValue when adding new fields.
 };
+scoped_ptr<base::Value> WhichTreeAsValue(
+    WhichTree tree);
 
 enum TileResolution {
   LOW_RESOLUTION = 0 ,
@@ -91,13 +99,20 @@ enum TileMemoryLimitPolicy {
 
   // You're the only thing in town. Go crazy.
   ALLOW_ANYTHING, // Venti.
+
+  // Be sure to update TreePriorityAsValue when adding new fields.
 };
+scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
+    TileMemoryLimitPolicy policy);
 
 enum TreePriority {
   SAME_PRIORITY_FOR_BOTH_TREES,
   SMOOTHNESS_TAKES_PRIORITY,
   NEW_CONTENT_TAKES_PRIORITY
+
+  // Be sure to update TreePriorityAsValue when adding new fields.
 };
+scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio);
 
 class GlobalStateThatImpactsTilePriority {
  public:
@@ -112,6 +127,8 @@ class GlobalStateThatImpactsTilePriority {
   size_t memory_limit_in_bytes;
 
   TreePriority tree_priority;
+
+  scoped_ptr<base::Value> AsValue() const;
 };
 
 }  // namespace cc

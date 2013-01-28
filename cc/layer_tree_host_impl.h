@@ -172,6 +172,7 @@ public:
     const LayerTreeImpl* recycleTree() const { return m_recycleTree.get(); }
     void createPendingTree();
     void checkForCompletedTileUploads();
+    scoped_ptr<base::Value> activationStateAsValue() const;
     virtual void activatePendingTreeIfNeeded();
 
     // Shortcuts to layers on the active tree.

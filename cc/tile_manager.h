@@ -39,7 +39,10 @@ enum TileManagerBin {
   EVENTUALLY_BIN = 2, // Nice to have, if we've got memory and time.
   NEVER_BIN = 3, // Dont bother.
   NUM_BINS = 4
+  // Be sure to update TileManagerBinAsValue when adding new fields.
 };
+scoped_ptr<base::Value> TileManagerBinAsValue(
+    TileManagerBin bin);
 
 enum TileManagerBinPriority {
   HIGH_PRIORITY_BIN = 0,
@@ -100,9 +103,11 @@ class CC_EXPORT TileManager {
 
   void ManageTiles();
   void CheckForCompletedTileUploads();
+
+  scoped_ptr<base::Value> AsValue() const;
   void GetMemoryStats(size_t* memoryRequiredBytes,
                       size_t* memoryNiceToHaveBytes,
-                      size_t* memoryUsedBytes);
+                      size_t* memoryUsedBytes) const;
   void GetRenderingStats(RenderingStats* stats);
   bool HasPendingWorkScheduled(WhichTree tree) const;
 
@@ -137,6 +142,7 @@ class CC_EXPORT TileManager {
   void DidTileBinChange(Tile* tile,
                         TileManagerBin bin,
                         WhichTree tree);
+  scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
@@ -160,7 +166,8 @@ class CC_EXPORT TileManager {
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_set_pixels_;
-  int bytes_pending_set_pixels_;
+  size_t bytes_pending_set_pixels_;
+  bool ever_exceeded_memory_budget_;
 
   RenderingStats rendering_stats_;
 

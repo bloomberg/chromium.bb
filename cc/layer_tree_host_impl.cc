@@ -920,6 +920,7 @@ void LayerTreeHostImpl::createPendingTree()
         m_pendingTree = LayerTreeImpl::create(this);
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree", m_pendingTree.get());
 }
 
 void LayerTreeHostImpl::checkForCompletedTileUploads()
@@ -927,6 +928,25 @@ void LayerTreeHostImpl::checkForCompletedTileUploads()
     DCHECK(!m_client->isInsideDraw()) << "Checking for completed uploads within a draw may trigger spurious redraws.";
     if (m_tileManager)
         m_tileManager->CheckForCompletedTileUploads();
+}
+
+scoped_ptr<base::Value> LayerTreeHostImpl::activationStateAsValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    state->SetBoolean("visible_resources_ready", pendingTree()->AreVisibleResourcesReady());
+    state->Set("tile_manager", m_tileManager->AsValue().release());
+    return state.PassAs<base::Value>();
+}
+
+namespace {
+
+std::string ValueToString(scoped_ptr<base::Value> value)
+{
+    std::string str;
+    base::JSONWriter::Write(value.get(), &str);
+    return str;
+}
+
 }
 
 void LayerTreeHostImpl::activatePendingTreeIfNeeded()
@@ -937,6 +957,10 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
     CHECK(m_tileManager);
 
     pendingTree()->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
+
+    TRACE_EVENT_ASYNC_STEP1("cc",
+                            "PendingTree", m_pendingTree.get(), "activate",
+                            "state", ValueToString(activationStateAsValue()));
 
     // It's always fine to activate to an empty tree.  Otherwise, only
     // activate once all visible resources in pending tree are ready
@@ -952,6 +976,7 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
 void LayerTreeHostImpl::activatePendingTree()
 {
     CHECK(m_pendingTree);
+    TRACE_EVENT_ASYNC_END0("cc", "PendingTree", m_pendingTree.get());
 
     m_activeTree->PushPersistedState(m_pendingTree.get());
     m_activeTree->SetRootLayer(TreeSynchronizer::synchronizeTrees(m_pendingTree->RootLayer(), m_activeTree->DetachLayerTree(), m_activeTree.get()));

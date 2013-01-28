@@ -4,6 +4,8 @@
 
 #include "cc/tile_priority.h"
 
+#include "base/values.h"
+
 namespace {
 
 // TODO(qinmin): modify ui/range/Range.h to support template so that we
@@ -53,6 +55,21 @@ namespace cc {
 
 const double TilePriority::kMaxTimeToVisibleInSeconds = 1000;
 
+scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
+  switch (tree) {
+  case ACTIVE_TREE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "ACTIVE_TREE"));
+  case PENDING_TREE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "PENDING_TREE"));
+  default:
+      DCHECK(false) << "Unrecognized WhichTree value";
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown WhichTree value>"));
+  }
+}
+
 int TilePriority::manhattanDistance(const gfx::RectF& a, const gfx::RectF& b) {
   gfx::RectF c = gfx::UnionRects(a, b);
   // Rects touching the edge of the screen should not be considered visible.
@@ -100,5 +117,54 @@ double TilePriority::TimeForBoundsToIntersect(gfx::RectF previous_bounds,
 
   return range.IsEmpty() ? kMaxTimeToVisibleInSeconds : range.start_;
 }
+
+scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
+    TileMemoryLimitPolicy policy) {
+  switch (policy) {
+  case ALLOW_NOTHING:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "ALLOW_NOTHING"));
+  case ALLOW_ABSOLUTE_MINIMUM:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "ALLOW_ABSOLUTE_MINIMUM"));
+  case ALLOW_PREPAINT_ONLY:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "ALLOW_PREPAINT_ONLY"));
+  case ALLOW_ANYTHING:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "ALLOW_ANYTHING"));
+  default:
+      DCHECK(false) << "Unrecognized policy value";
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown>"));
+  }
+}
+
+scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio) {
+  switch (prio) {
+  case SAME_PRIORITY_FOR_BOTH_TREES:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "SAME_PRIORITY_FOR_BOTH_TREES"));
+  case SMOOTHNESS_TAKES_PRIORITY:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "SMOOTHNESS_TAKES_PRIORITY"));
+  case NEW_CONTENT_TAKES_PRIORITY:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "NEW_CONTENT_TAKES_PRIORITY"));
+  default:
+      DCHECK(false) << "Unrecognized priority value";
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown>"));
+  }
+}
+
+scoped_ptr<base::Value> GlobalStateThatImpactsTilePriority::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->Set("memory_limit_policy", TileMemoryLimitPolicyAsValue(memory_limit_policy).release());
+  state->SetInteger("memory_limit_in_bytes", memory_limit_in_bytes);
+  state->Set("tree_priority", TreePriorityAsValue(tree_priority).release());
+  return state.PassAs<base::Value>();
+}
+
 
 }  // namespace cc
