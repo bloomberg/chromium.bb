@@ -160,7 +160,8 @@ WebContents* OpenApplicationTab(Profile* profile,
     // There's no current tab in this browser window, so add a new one.
     disposition = NEW_FOREGROUND_TAB;
   } else {
-    // For existing browser, ensure its window is activated.
+    // For existing browser, ensure its window is shown and activated.
+    browser->window()->Show();
     browser->window()->Activate();
   }
 
