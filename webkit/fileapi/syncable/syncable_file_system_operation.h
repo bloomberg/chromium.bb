@@ -89,9 +89,13 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
                 bool complete);
 
   void OnCancelled();
-
   void AbortOperation(const StatusCallback& callback,
                       base::PlatformFileError error);
+
+  // Just destruct this; used when we 9simply delegate the operation
+  // to the owning file_system_operation_.
+  // (See the comment at AsLocalFileSystemOperation())
+  void Destruct();
 
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
   LocalFileSystemOperation* file_system_operation_;
