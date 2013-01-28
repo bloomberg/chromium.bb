@@ -178,12 +178,22 @@ capsign 6							# single capital letter indicator
 begcaps 6-6						# a block of consecutive capital letters indicator
 endcaps 56
 
-begital 23
-begbold 23
-begunder 456
-endital 56
-endbold 56
-endunder 456
+lenitalphrase 1
+lenboldphrase 1
+
+firstwordital 23
+firstletterital 23
+firstwordbold 23
+firstletterbold 23
+firstwordunder 23
+firstletterunder 23
+
+lastworditalafter 56
+lastletterital 56
+lastwordboldafter 56
+lastletterbold 56
+lastwordunderafter 56
+lastletterunder 56
 
 midnum , 2
 midnum . 3

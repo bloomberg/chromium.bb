@@ -1,3 +1,8 @@
+2013-01-28  Knut Arne Bjørndal <bob+liblouis@cakebox.net>
+
+	* tables/no-no-g0.utb: Fixes for Emphasis marks in the norwegian
+	braille table.
+
 2013-01-25  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/no-no-g0.utb: Corrections for double angle quotation
