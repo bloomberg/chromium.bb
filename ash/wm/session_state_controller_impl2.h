@@ -182,7 +182,11 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
   // Triggers late animations on the lock screen.
   void OnLockScreenAnimationFinished();
 
-  void StartImmediatePreLockAnimation();
+  // If |request_lock_on_completion| is true, a lock request will be sent
+  // after the pre-lock animation completes.  (The pre-lock animation is
+  // also displayed in response to already-in-progress lock requests; in
+  // these cases an additional lock request is undesirable.)
+  void StartImmediatePreLockAnimation(bool request_lock_on_completion);
   void StartCancellablePreLockAnimation();
   void CancelPreLockAnimation();
   void StartPostLockAnimation();
@@ -192,7 +196,7 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
 
   // These methods are called when corresponding animation completes.
   void LockAnimationCancelled();
-  void PreLockAnimationFinished();
+  void PreLockAnimationFinished(bool request_lock);
   void PostLockAnimationFinished();
   void UnlockAnimationAfterUIDestroyedFinished();
 

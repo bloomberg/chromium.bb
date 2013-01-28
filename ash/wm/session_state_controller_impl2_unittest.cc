@@ -863,6 +863,10 @@ TEST_F(SessionStateControllerImpl2Test, LockWithoutButton) {
 
   ExpectPreLockAnimationStarted();
   EXPECT_FALSE(test_api_->is_lock_cancellable());
+
+  // TODO(antrim): After time-faking is fixed, let the pre-lock animation
+  // complete here and check that delegate_->num_lock_requests() is 0 to
+  // prevent http://crbug.com/172487 from regressing.
 }
 
 // When we hear that the process is exiting but we haven't had a chance to
