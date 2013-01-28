@@ -74,9 +74,9 @@ endif
 
 screenshooter = weston-screenshooter
 
-noinst_LIBRARIES = libtoytoolkit.a
+noinst_LTLIBRARIES = libtoytoolkit.la
 
-libtoytoolkit_a_SOURCES =			\
+libtoytoolkit_la_SOURCES =			\
 	window.c				\
 	window.h				\
 	text-cursor-position-protocol.c		\
@@ -84,56 +84,57 @@ libtoytoolkit_a_SOURCES =			\
 	workspaces-protocol.c			\
 	workspaces-client-protocol.h
 
-toolkit_libs =						\
-	libtoytoolkit.a					\
-	../shared/libshared-cairo.la			\
-	$(CLIENT_LIBS) $(CAIRO_EGL_LIBS) -lrt -lm
+libtoytoolkit_la_LIBADD =			\
+	$(PIXMAN_LIBS)				\
+	$(CLIENT_LIBS)				\
+	$(CAIRO_EGL_LIBS)			\
+	../shared/libshared-cairo.la -lrt -lm
 
 flower_SOURCES = flower.c
-flower_LDADD = $(toolkit_libs)
+flower_LDADD = libtoytoolkit.la
 
 weston_screenshooter_SOURCES =			\
 	screenshot.c				\
 	screenshooter-protocol.c		\
 	screenshooter-client-protocol.h
-weston_screenshooter_LDADD = $(toolkit_libs)
+weston_screenshooter_LDADD = libtoytoolkit.la
 
 weston_terminal_SOURCES = terminal.c
-weston_terminal_LDADD = $(toolkit_libs) -lutil
+weston_terminal_LDADD = libtoytoolkit.la -lutil
 
 image_SOURCES = image.c
-image_LDADD = $(toolkit_libs)
+image_LDADD = libtoytoolkit.la
 
 cliptest_SOURCES = cliptest.c
 cliptest_CPPFLAGS = $(AM_CPPFLAGS) $(PIXMAN_CFLAGS)
-cliptest_LDADD = $(toolkit_libs) $(PIXMAN_LIBS)
+cliptest_LDADD = libtoytoolkit.la
 
 dnd_SOURCES = dnd.c
-dnd_LDADD = $(toolkit_libs)
+dnd_LDADD = libtoytoolkit.la
 
 smoke_SOURCES = smoke.c
-smoke_LDADD = $(toolkit_libs)
+smoke_LDADD = libtoytoolkit.la
 
 resizor_SOURCES = resizor.c
-resizor_LDADD = $(toolkit_libs)
+resizor_LDADD = libtoytoolkit.la
 
 eventdemo_SOURCES = eventdemo.c
-eventdemo_LDADD = $(toolkit_libs)
+eventdemo_LDADD = libtoytoolkit.la
 
 clickdot_SOURCES = clickdot.c
-clickdot_LDADD = $(toolkit_libs)
+clickdot_LDADD = libtoytoolkit.la
 
 transformed_SOURCES = transformed.c
-transformed_LDADD = $(toolkit_libs)
+transformed_LDADD = libtoytoolkit.la
 
 calibrator_SOURCES = calibrator.c ../shared/matrix.c ../shared/matrix.h
-calibrator_LDADD = $(toolkit_libs)
+calibrator_LDADD = libtoytoolkit.la
 
 editor_SOURCES = 				\
 	editor.c				\
 	text-protocol.c				\
 	text-client-protocol.h
-editor_LDADD = $(toolkit_libs)
+editor_LDADD = libtoytoolkit.la
 
 keyboard = weston-keyboard
 weston_keyboard_SOURCES = 			\
@@ -142,7 +143,7 @@ weston_keyboard_SOURCES = 			\
 	desktop-shell-protocol.c		\
 	input-method-protocol.c			\
 	input-method-client-protocol.h
-weston_keyboard_LDADD = $(toolkit_libs)
+weston_keyboard_LDADD = libtoytoolkit.la
 
 weston_simple_im_SOURCES = 			\
 	weston-simple-im.c			\
@@ -160,13 +161,13 @@ weston_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c
-weston_desktop_shell_LDADD = $(toolkit_libs)
+weston_desktop_shell_LDADD = libtoytoolkit.la
 
 weston_tablet_shell_SOURCES =			\
 	tablet-shell.c				\
 	tablet-shell-client-protocol.h		\
 	tablet-shell-protocol.c
-weston_tablet_shell_LDADD = $(toolkit_libs)
+weston_tablet_shell_LDADD = libtoytoolkit.la
 
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
@@ -191,7 +192,7 @@ if BUILD_FULL_GL_CLIENTS
 full_gl_client_programs = gears
 
 gears_SOURCES = gears.c
-gears_LDADD = $(toolkit_libs)
+gears_LDADD = libtoytoolkit.la
 
 if HAVE_GLU
 screensaver = weston-screensaver
@@ -204,7 +205,7 @@ weston_screensaver_SOURCES =			\
 	wscreensaver-glue.h			\
 	glmatrix.c				\
 	matrix3.xpm
-weston_screensaver_LDADD = $(toolkit_libs) $(GLU_LIBS)
+weston_screensaver_LDADD = libtoytoolkit.la $(GLU_LIBS)
 weston_screensaver_CFLAGS = $(GLU_CFLAGS)
 endif
 
@@ -215,6 +216,6 @@ endif
 if HAVE_POPPLER
 poppler_programs = view
 view_SOURCES = view.c
-view_LDADD = $(toolkit_libs) $(POPPLER_LIBS)
+view_LDADD = libtoytoolkit.la $(POPPLER_LIBS)
 view_CPPFLAGS = $(AM_CPPFLAGS) $(POPPLER_CFLAGS)
 endif
