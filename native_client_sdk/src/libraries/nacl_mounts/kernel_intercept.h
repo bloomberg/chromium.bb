@@ -47,6 +47,8 @@ off_t ki_lseek(int fd, off_t offset, int whence);
 int ki_remove(const char* path);
 int ki_unlink(const char* path);
 int ki_access(const char* path, int amode);
+int ki_link(const char* oldpath, const char* newpath);
+int ki_symlink(const char* oldpath, const char* newpath);
 
 EXTERN_C_END
 

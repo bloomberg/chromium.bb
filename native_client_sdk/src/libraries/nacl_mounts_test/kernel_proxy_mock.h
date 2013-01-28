@@ -40,6 +40,8 @@ class KernelProxyMock : public KernelProxy {
   MOCK_METHOD1(umount, int(const char*));
   MOCK_METHOD1(unlink, int(const char*));
   MOCK_METHOD3(write, ssize_t(int, const void*, size_t));
+  MOCK_METHOD2(link, int(const char*, const char*));
+  MOCK_METHOD2(symlink, int(const char*, const char*));
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_TEST_KERNEL_PROXY_MOCK_H_

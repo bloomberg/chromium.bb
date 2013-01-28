@@ -126,6 +126,10 @@ int _isatty(int fd) {
   return ki_isatty(fd);
 }
 
+int link(const char* oldpath, const char* newpath) {
+  return ki_link(oldpath, newpath);
+}
+
 off_t _lseek(int fd, off_t offset, int whence) {
   return ki_lseek(fd, offset, whence);
 }
@@ -205,6 +209,10 @@ int _stat32i64(const char* path, struct _stat32i64* buf) {
   int res = ki_stat(path, &ki_buf);
   CopyStat(&ki_buf, buf);
   return res;
+}
+
+int symlink(const char* oldpath, const char* newpath) {
+  return ki_symlink(oldpath, newpath);
 }
 
 int umount(const char* path) {

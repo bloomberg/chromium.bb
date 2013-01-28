@@ -85,6 +85,9 @@ class KernelProxy : protected KernelObject {
   // access() uses the Mount's Stat().
   virtual int access(const char* path, int amode);
 
+  virtual int link(const char* oldpath, const char* newpath);
+  virtual int symlink(const char* oldpath, const char* newpath);
+
 protected:
   MountFactoryMap_t factories_;
   int dev_;

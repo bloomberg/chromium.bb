@@ -53,6 +53,7 @@ char* NAME(getcwd)(char* buf, getcwd_size_t size) NOTHROW;
 char* getwd(char* buf) NOTHROW;
 int getdents(int fd, void* buf, unsigned int count) NOTHROW;
 int NAME(isatty)(int fd) NOTHROW;
+int link(const char* oldpath, const char* newpath) NOTHROW;
 off_t NAME(lseek)(int fd, off_t offset, int whence) NOTHROW;
 #if defined(WIN32)
 int _mkdir(const char* path);
@@ -73,6 +74,7 @@ int _stat64i32(const char* path, struct _stat64i32* buf);
 #else
 int stat(const char* path, struct stat* buf) NOTHROW;
 #endif
+int symlink(const char* oldpath, const char* newpath) NOTHROW;
 int umount(const char* path) NOTHROW;
 int NAME(unlink)(const char* path) NOTHROW;
 read_ssize_t NAME(write)(int fd, const void* buf, size_t nbyte);

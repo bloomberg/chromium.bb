@@ -386,3 +386,13 @@ int KernelProxy::access(const char* path, int amode) {
   errno = EINVAL;
   return -1;
 }
+
+int KernelProxy::link(const char* oldpath, const char* newpath) {
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::symlink(const char* oldpath, const char* newpath) {
+  errno = EINVAL;
+  return -1;
+}

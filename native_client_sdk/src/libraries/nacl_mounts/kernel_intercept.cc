@@ -123,3 +123,11 @@ int ki_unlink(const char* path) {
 int ki_access(const char* path, int amode) {
   return s_kp->access(path, amode);
 }
+
+int ki_link(const char* oldpath, const char* newpath) {
+  return s_kp->link(oldpath, newpath);
+}
+
+int ki_symlink(const char* oldpath, const char* newpath) {
+  return s_kp->symlink(oldpath, newpath);
+}

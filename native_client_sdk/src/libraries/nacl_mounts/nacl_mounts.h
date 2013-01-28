@@ -34,9 +34,9 @@ void nacl_mounts_init();
  *   function.
  *
  * If you are using the PPAPI C++ interface:
- *   |instance| can be retrieved via the Instance::pp_instance() method.
+ *   |instance| can be retrieved via the pp::Instance::pp_instance() method.
  *   |get_interface| can be retrieved via
- *       pp::Module()::Get()->get_browser_interface()
+ *       pp::Module::Get()->get_browser_interface()
  */
 void nacl_mounts_init_ppapi(PP_Instance instance,
                             PPB_GetInterface get_interface);

@@ -200,6 +200,10 @@ int isatty(int fd) NOTHROW {
   return ki_isatty(fd);
 }
 
+int link(const char* oldpath, const char* newpath) NOTHROW {
+  return ki_link(oldpath, newpath);
+}
+
 int mkdir(const char* path, mode_t mode) NOTHROW {
   return ki_mkdir(path, mode);
 }
@@ -248,6 +252,10 @@ int WRAP(stat)(const char *pathname, struct nacl_abi_stat *nacl_buf) {
     return errno;
   stat_to_nacl_stat(&buf, nacl_buf);
   return 0;
+}
+
+int symlink(const char* oldpath, const char* newpath) NOTHROW {
+  return ki_symlink(oldpath, newpath);
 }
 
 int umount(const char* path) NOTHROW {

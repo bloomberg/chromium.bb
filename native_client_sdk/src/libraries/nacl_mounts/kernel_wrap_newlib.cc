@@ -104,6 +104,10 @@ int isatty(int fd) {
   return ki_isatty(fd);
 }
 
+int link(const char* oldpath, const char* newpath) {
+  return ki_link(oldpath, newpath);
+}
+
 int mkdir(const char* path, mode_t mode) {
   return ki_mkdir(path, mode);
 }
@@ -138,6 +142,10 @@ int WRAP(seek)(int fd, off_t offset, int whence, off_t* new_offset) {
 
 int WRAP(stat)(const char *pathname, struct stat *buf) {
   return (ki_stat(pathname, buf) < 0) ? errno : 0;
+}
+
+int symlink(const char* oldpath, const char* newpath) {
+  return ki_symlink(oldpath, newpath);
 }
 
 int umount(const char* path) {
