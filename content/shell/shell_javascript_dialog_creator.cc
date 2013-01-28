@@ -13,9 +13,6 @@
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
 #include "net/base/net_util.h"
-// TODO(jochen): Remove this include again after the next WebKit roll. We need
-// it to check for the TEST_RUNNER_MOVED_PRINTING define.
-#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 
 namespace content {
 
@@ -35,17 +32,6 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-#if !defined(TEST_RUNNER_MOVED_PRINTING)
-    WebKitTestResultPrinter* printer = WebKitTestController::Get()->printer();
-    if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT) {
-      printer->AddMessage(std::string("ALERT: ") + UTF16ToUTF8(message_text));
-    } else if (javascript_message_type == JAVASCRIPT_MESSAGE_TYPE_CONFIRM) {
-      printer->AddMessage(std::string("CONFIRM: ") + UTF16ToUTF8(message_text));
-    } else {  // JAVASCRIPT_MESSAGE_TYPE_PROMPT
-      printer->AddMessage(std::string("PROMPT: ") + UTF16ToUTF8(message_text) +
-                         "default text: " + UTF16ToUTF8(default_prompt_text));
-    }
-#endif
     callback.Run(true, string16());
     return;
   }
@@ -91,11 +77,6 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     bool is_reload,
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-#if !defined(TEST_RUNNER_MOVED_PRINTING)
-    WebKitTestResultPrinter* printer = WebKitTestController::Get()->printer();
-    printer->AddMessage(
-        std::string("CONFIRM NAVIGATION: ") + UTF16ToUTF8(message_text));
-#endif
     WebKitTestController* controller = WebKitTestController::Get();
     callback.Run(
         !controller->should_stay_on_page_after_handling_before_unload(),
