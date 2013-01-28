@@ -10,3 +10,4 @@ per-file *media_browsertest.cc=xhwang@chromium.org
 per-file child_process_security_policy_impl.cc=tsepez@chromium.org
 per-file child_process_security_policy_impl.cc=creis@chromium.org
 per-file child_process_security_policy_impl.cc=cevans@chromium.org
+per-file power_save_blocker_chromeos.cc=derat@chromium.org
