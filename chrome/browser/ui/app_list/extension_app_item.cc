@@ -543,9 +543,8 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
 
     if (controller_->CanShowCreateShortcutsDialog() &&
         extension->is_platform_app()) {
-      context_menu_model_->AddItemWithStringId(
-          CREATE_SHORTCUTS,
-          IDS_NEW_TAB_APP_CREATE_SHORTCUT);
+      context_menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
+                                               IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
 
     if (!extension->is_platform_app()) {
@@ -564,9 +563,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
       context_menu_model_->AddCheckItemWithStringId(
           LAUNCH_TYPE_FULLSCREEN,
           IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-    }
 
-    if (!extension->is_platform_app()) {
       context_menu_model_->AddSeparatorIfNecessary(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(OPTIONS,
                                                IDS_NEW_TAB_APP_OPTIONS);
