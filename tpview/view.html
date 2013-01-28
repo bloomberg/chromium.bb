@@ -3,17 +3,17 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>Touchpad Log Viewer</title>
 <link type="text/css" href="css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
-<script src="jquery-1.6.4.min.js"></script>
-<script src="jquery.mousewheel.js"></script>
-
+<script src="js/jquery-1.6.4.min.js"></script>
+<script src="js/jquery.mousewheel.js"></script>
 <script src="js/jquery-ui-1.8.16.custom.min.js"></script>
+<script src="js/bzip2.js"></script>
+<script src="js/base64-binary.js"></script>
+<script src="js/jsxcompressor.js"></script>
 
 <script src="finger_view_controller.js"></script>
 <script src="graph_controller.js"></script>
 <script src="secret_entries.js"></script>
-<script src="bzip2.js"></script>
-<script src="base64-binary.js"></script>
-<script src="jsxcompressor.js"></script>
+
 
 <link rel="stylesheet" href="style.css" type="text/css" media="all" />
 <script type="text/javascript" charset="utf-8">
@@ -386,6 +386,11 @@ function generateRadioButtons(obj) {
                  '</input><br/>';
   }
   document.getElementById('button_div').innerHTML = radioHTML;
+  if (layer > 1) {
+    $("#button_div").css("visibility", "visible");
+  } else {
+    $("#button_div").css("visibility", "hidden");
+  }
 }
 
 function generateUnittest() {
@@ -614,44 +619,66 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+<div id="container">
+  <h2>Touchpad Activity Viewer</h2>
+<div id="viewer">
 <div class="viewspan">
-<div class="heading">Input:</div>
+<h3>Input</h3>
 <canvas class="view" id="fview" width="480" height="320"></canvas><br/>
+<button class="button" id="in-resetzoom">Reset Zoom</button>
 <div id="intext">Time: 123123123.123<br/>Finger Cnt: 2<br/>Touch Cnt: 2</div>
-<button class="button" id="in-resetzoom">Reset Zoom</button><br/>
+</div>
+<div class="viewspan">
+<h3>Output</h3>
+<canvas class="view" id="gview" width="480" height="320"></canvas><br/>
+<button class="button" id="out-resetzoom">Reset Zoom</button>
+<input type="checkbox" id="out-lock-head" />
+<label for="out-lock-head">Lock Head Location</label>
 </div>
 <div class="midviewspan" id="button_div"></div>
-<div class="viewspan">
-<div class="heading">Output:</div>
-<canvas class="view" id="gview" width="480" height="320"></canvas><br/>
-<input type="checkbox" id="out-lock-head" />
-<label for="out-lock-head">Lock Head Location</label><br/>
-<button class="button" id="out-resetzoom">Reset Zoom</button><br/>
 </div>
 <div id="playbar">
+  <h2>Time Range</h2>
 <button id="playpause">Play</button>
+<button id="shrink">Shrink Range</button>
 <div id="sliderdiv"><div id="slider"></div></div>
+<div id="begin">
+  <h3>Begin Time</h3>
 <button id="begin_stepback">Begin Step Back</button>
 <button id="begin_stepforward">Begin Step Forward</button>
 Set begin time: <input type='text' id='input_begin_time'
                   onkeyup="setBeginTimestamp()" />
-<br/><textarea rows="4" id="begin_event" readonly="readonly"></textarea><br/>
+<br/><textarea rows="4" id="begin_event" readonly="readonly"></textarea>
+</div>
+<div id="end">
+  <h3>End Time</h3>
 <button id="end_stepback">End Step Back</button>
 <button id="end_stepforward">End Step Forward</button>
 Set end time: <input type='text' id='input_end_time'
                   onkeyup="setEndTimestamp()" />
-<br/><textarea rows="4" id="end_event" readonly="readonly"></textarea><br/>
-<div id='num_fts'></div>
+<br/><textarea rows="4" id="end_event" readonly="readonly"></textarea>
+</div>
+<div id="touchselect">
+<span id='num_fts'></span>
 <button id="first_finger_touch"> &lt;&lt; </button>
 <button id="prev_finger_touch"> &lt; </button>
 <button id="all_finger_touch"> all </button>
 <button id="next_finger_touch"> &gt; </button>
-<button id="last_finger_touch"> &gt;&gt; </button><br/><br/>
-<button id="shrink">Shrink Range</button>
+<button id="last_finger_touch"> &gt;&gt; </button>
 </div>
+</div>
+<div id="load">
+<h2>Load/Save Activity Log</h2>
+
 <div id="textdiv">
-<textarea rows="24" cols="80" id="text_box">Drag and drop a touchpad log file here.</textarea></div>
+  <h3>From Text File</h3>
+<textarea id="text_box">Drag and drop a touchpad log file here.</textarea></div>
+<div id="feedbackupload">
+  <h3>From Feedback Report</h3>
 Load from Feedback Report: <input type="file" id="bzipupload"></input>
+</div>
+<br style="clear: both;"/>
+</div>
 <div id="unittest_div">
 <input id="unittest_interpreter" value="InterpreterName"/>
 <input id="unittest_testname" value="TestName"/>
@@ -659,5 +686,6 @@ Load from Feedback Report: <input type="file" id="bzipupload"></input>
 <textarea rows="24" cols="80" id="unittest_box"></textarea>
 </div>
 
+</div>
 </body>
 </html>

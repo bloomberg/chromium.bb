@@ -199,7 +199,7 @@ FingerViewController.prototype = {
   getEvent: function(index) {
     if (index < 0 || index >= this.entries.length)
       return "N/A";
-    return JSON.stringify(this.entries[index]);
+    return JSON.stringify(this.entries[index], null, 2);
   },
   getSnippet: function(begin, end) {
     var snippet = {};

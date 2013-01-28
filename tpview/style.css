@@ -7,8 +7,31 @@
 
 body {
 	padding: 0;
-	margin: 0;
+	margin: 1em;
 	font: 13px Helvetica, Arial, Geneva, sans-serif;
+}
+
+h2, h3 {
+	text-align: center;
+}
+
+#container {
+	width: 1100px;
+	margin: auto;
+}
+
+#intext, #out-lock-head {
+	margin: 1em;
+}
+
+#in-resetzoom, #out-resetzoom {
+	float: right;
+}
+
+#viewer, #playbar, #load {
+	border-bottom: 2px solid #f0f0f0;
+	margin-bottom: 1em;
+	padding-bottom: 1em;
 }
 
 .viewspan {
@@ -20,8 +43,10 @@ body {
 }
 
 .midviewspan {
-	height: 0px;
-	display: inline-block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	visibility: hidden;
 }
 
 .heading {
@@ -42,15 +67,33 @@ body {
 	font-size: 11px;
 }
 
+#begin {
+	clear: both;
+	width: 500px;
+	float: left;
+}
+
+#end {
+	width: 500px;
+	float: right;
+}
+
+#shrink {
+	float: right;
+	margin-top: -0.5em;
+}
+
+#touchselect {
+	clear: both;
+}
+
 #playbar {
-	padding-top: 1em;
-	/*border: 1px solid #fff;*/
+
 }
 
 #playpause {
 	float: left;
 	margin-top: 0.8em;
-	margin-left: 1.5em;
 	visibility: hidden;
 }
 
@@ -63,11 +106,30 @@ body {
 }
 
 #sliderdiv {
-	margin: 1.2em 1.8em 1em 4.4em;
+	margin-right: 10em;
+}
+
+#load {
+	clear: both;
 }
 
 #textdiv {
-	margin: 2em 1em 1em 1em;
+	width: 500px;
+	float: left;
+}
+
+#textdiv textarea {
+	height: 150px;
+	border: 1px solid #ccc;
+}
+
+#feedbackupload {
+	float: right;
+	width: 500px;
+}
+
+#unittest_div {
+	visibility: hidden;
 }
 
 #text_box {
@@ -84,7 +146,8 @@ body {
 #begin_event, #end_event {
 	display:block;
 	width: 98%;
-	border: 0px inset #a3a6a6;
+	border: 1px solid #ccc;
 	margin:auto;
+	height: 150px;
 }
 
