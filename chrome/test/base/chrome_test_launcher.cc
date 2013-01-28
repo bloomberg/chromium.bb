@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_main_delegate.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/chrome_test_suite.h"
@@ -136,6 +137,8 @@ int main(int argc, char** argv) {
 #endif
 
 #endif
+
+  ChromeWebUIControllerFactory::UseTestFactoryForTesting();
 
   ChromeTestLauncherDelegate launcher_delegate;
   return content::LaunchTests(&launcher_delegate, argc, argv);
