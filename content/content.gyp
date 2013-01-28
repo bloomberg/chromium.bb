@@ -290,7 +290,6 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
-            '../media/media.gyp:media_java',
             '../net/net.gyp:net',
             '../ui/ui.gyp:ui_java',
             'common_aidl',

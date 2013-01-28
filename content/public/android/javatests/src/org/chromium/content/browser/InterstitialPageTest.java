@@ -12,8 +12,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.content_shell.ContentShellActivity;
 import org.chromium.content_shell.ContentShellTestBase;
-import org.chromium.content_shell_apk.ContentShellActivity;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;

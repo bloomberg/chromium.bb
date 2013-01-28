@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content_shell_apk;
+package org.chromium.content_shell;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -23,8 +23,6 @@ import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.TracingIntentHandler;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
-import org.chromium.content_shell.Shell;
-import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
 /**
@@ -40,6 +38,7 @@ public class ContentShellActivity extends ChromiumActivity {
             "org.chromium.content_shell.action.PROFILE_START";
     private static final String ACTION_STOP_TRACE =
             "org.chromium.content_shell.action.PROFILE_STOP";
+    public static final String DEFAULT_SHELL_URL = "http://www.google.com";
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     private ShellManager mShellManager;
@@ -77,7 +76,7 @@ public class ContentShellActivity extends ChromiumActivity {
                 mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
             }
             if (!ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC)) {
-                String shellUrl = ShellManager.DEFAULT_SHELL_URL;
+                String shellUrl = DEFAULT_SHELL_URL;
                 if (savedInstanceState != null
                     && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
                     shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);

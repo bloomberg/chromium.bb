@@ -53,10 +53,6 @@
         '..',
       ],
       'sources': [
-        'shell/android/shell_jni_registrar.cc',
-        'shell/android/shell_jni_registrar.h',
-        'shell/android/shell_manager.cc',
-        'shell/android/shell_manager.h',
         'shell/geolocation/shell_access_token_store.cc',
         'shell/geolocation/shell_access_token_store.h',
         'shell/minimal_ash.cc',
@@ -562,7 +558,6 @@
           'target_name': 'content_shell_jni_headers',
           'type': 'none',
           'sources': [
-            'shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java',
             'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
             'shell/android/java/src/org/chromium/content_shell/Shell.java',
           ],
@@ -591,6 +586,12 @@
           'sources': [
             'shell/android/shell_library_loader.cc',
             'shell/android/shell_library_loader.h',
+            'shell/android/shell_manager.cc',
+            'shell/android/shell_manager.h',
+          ],
+          'sources!': [
+            'shell/shell_main.cc',
+            'shell/shell_main.h',
           ],
           'conditions': [
             ['android_build_type==1', {
@@ -601,27 +602,11 @@
           ],
         },
         {
-          'target_name': 'content_shell_java',
-          'type': 'none',
-          'dependencies': [
-            'content_java',
-          ],
-          'variables': {
-            'package_name': 'content_shell',
-            'java_in_dir': '../content/shell/android/java',
-            'has_java_resources': 1,
-            'R_package': 'org.chromium.content_shell',
-            'R_package_relpath': 'org/chromium/content_shell',
-          },
-          'includes': [ '../build/java.gypi' ],
-        },
-        {
           # content_shell_apk creates a .jar as a side effect. Any java targets
           # that need that .jar in their classpath should depend on this target,
-          # content_shell_apk_java. Dependents of content_shell_apk receive its
-          # jar path in the variable 'apk_output_jar_path'. This target should
-          # only be used by targets which instrument content_shell_apk.
-          'target_name': 'content_shell_apk_java',
+          # content_shell_java. Dependents of content_shell_apk receive its jar
+          # path in the variable 'apk_output_jar_path'.
+          'target_name': 'content_shell_java',
           'type': 'none',
           'dependencies': [
             'content_shell_apk',
@@ -650,22 +635,21 @@
           'type': 'none',
           'dependencies': [
             'content_java',
-            'content_shell_java',
-            'libcontent_shell_content_view',
             '../base/base.gyp:base_java',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
             '../ui/ui.gyp:ui_java',
           ],
           'variables': {
-            'package_name': 'content_shell_apk',
+            'package_name': 'content_shell',
             'apk_name': 'ContentShell',
-            'manifest_package_name': 'org.chromium.content_shell_apk',
-            'java_in_dir': 'shell/android/shell_apk',
-            'resource_dir': 'res',
+            'manifest_package_name': 'org.chromium.content_shell',
+            'java_in_dir': 'shell/android/java',
+            # TODO(cjhopman): The resource directory of all apks should be in
+            # <java_in_dir>/res.
+            'resource_dir': '../res',
             'native_libs_paths': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
-            'asset_location': '<(ant_build_out)/content_shell/assets',
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

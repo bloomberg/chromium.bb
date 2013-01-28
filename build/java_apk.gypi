@@ -18,10 +18,12 @@
 #   'includes': ['path/to/this/gypi/file'],
 # }
 #
-# If you have package_name="content_shell" and
+# Note that this assumes that there's an ant buildfile <package_name>_apk.xml in
+# java_in_dir. So, if you have package_name="content_shell" and
 # java_in_dir="content/shell/android/java" you should have a directory structure
 # like:
 #
+# content/shell/android/java/content_shell_apk.xml
 # content/shell/android/java/src/org/chromium/base/Foo.java
 # content/shell/android/java/src/org/chromium/base/Bar.java
 #
@@ -39,8 +41,8 @@
 #    each directory in additional_res_dirs.
 #  additional_src_dirs - Additional directories with .java files to be compiled
 #    and included in the output of this target.
-#  asset_location - The absolute path to the directory where assets are located
-#    (default: <(ant_build_out)/<(package_name)/assets).
+#  asset_location - The directory where assets are located (default:
+#    <PRODUCT_DIR>/<package_name>/assets).
 #  generated_src_dirs - Same as additional_src_dirs except used for .java files
 #    that are generated at build time. This should be set automatically by a
 #    target's dependencies. The .java files in these directories are not

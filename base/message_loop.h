@@ -120,10 +120,9 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
   static void EnableHistogrammer(bool enable_histogrammer);
 
   typedef base::MessagePump* (MessagePumpFactory)();
-  // Uses the given base::MessagePumpForUIFactory to override the default
-  // MessagePump implementation for 'TYPE_UI'. Returns true if the factory
-  // was successfully registered.
-  static bool InitMessagePumpForUIFactory(MessagePumpFactory* factory);
+  // Using the given base::MessagePumpForUIFactory to override the default
+  // MessagePump implementation for 'TYPE_UI'.
+  static void InitMessagePumpForUIFactory(MessagePumpFactory* factory);
 
   // A DestructionObserver is notified when the current MessageLoop is being
   // destroyed.  These observers are notified prior to MessageLoop::current()

@@ -7,8 +7,8 @@ package org.chromium.content.browser;
 import android.util.Log;
 
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_shell.ContentShellActivity;
 import org.chromium.content_shell.ContentShellTestBase;
-import org.chromium.content_shell_apk.ContentShellActivity;
 
 public class ContentViewTestBase extends ContentShellTestBase {
 
