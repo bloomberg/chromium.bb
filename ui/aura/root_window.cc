@@ -598,15 +598,7 @@ void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)
     return;
 
-  // Send an exited event.
-  if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
-    ui::MouseEvent translated_event(event,
-                                    static_cast<Window*>(this),
-                                    mouse_moved_handler_,
-                                    ui::ET_MOUSE_EXITED,
-                                    event.flags());
-    ProcessEvent(mouse_moved_handler_, &translated_event);
-  }
+  DispatchMouseEnterOrExit(event, ui::ET_MOUSE_EXITED);
 
   if (mouse_event_dispatch_target_ != target) {
     mouse_moved_handler_ = NULL;
@@ -614,15 +606,21 @@ void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
   }
 
   mouse_moved_handler_ = target;
-  // Send an entered event.
-  if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
-    ui::MouseEvent translated_event(event,
-                                    static_cast<Window*>(this),
-                                    mouse_moved_handler_,
-                                    ui::ET_MOUSE_ENTERED,
-                                    event.flags());
-    ProcessEvent(mouse_moved_handler_, &translated_event);
-  }
+
+  DispatchMouseEnterOrExit(event, ui::ET_MOUSE_ENTERED);
+}
+
+void RootWindow::DispatchMouseEnterOrExit(const ui::MouseEvent& event,
+                                          ui::EventType type) {
+  if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate())
+    return;
+
+  ui::MouseEvent translated_event(event,
+                                  static_cast<Window*>(this),
+                                  mouse_moved_handler_,
+                                  type,
+                                  event.flags());
+  ProcessEvent(mouse_moved_handler_, &translated_event);
 }
 
 void RootWindow::ProcessEvent(Window* target, ui::Event* event) {
@@ -932,6 +930,12 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
   switch (event->type()) {
+    case ui::ET_MOUSE_EXITED:
+      if (!target) {
+        DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
+        mouse_moved_handler_ = NULL;
+      }
+      break;
     case ui::ET_MOUSE_MOVED:
       mouse_event_dispatch_target_ = target;
       HandleMouseMoved(*event, target);

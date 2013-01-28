@@ -1148,6 +1148,26 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_FALSE(d2.exited());
 }
 
+// Verifies that the WindowDelegate receives MouseExit from ET_MOUSE_EXITED.
+TEST_F(WindowTest, RootWindowHostExit) {
+  MouseEnterExitWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
+                                   root_window()));
+
+  test::EventGenerator generator(root_window());
+  generator.MoveMouseToCenterOf(w1.get());
+  EXPECT_TRUE(d1.entered());
+  EXPECT_FALSE(d1.exited());
+  d1.ResetExpectations();
+
+  ui::MouseEvent exit_event(
+      ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit_event);
+  EXPECT_FALSE(d1.entered());
+  EXPECT_TRUE(d1.exited());
+}
+
 #if !defined(OS_WIN)
 // Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
 // mouse transitions from window to window, even if the entered window sets

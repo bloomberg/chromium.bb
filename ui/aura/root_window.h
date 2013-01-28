@@ -283,6 +283,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
 
+  // Dispatches the specified event type (intended for enter/exit) to the
+  // |mouse_moved_handler_|.
+  void DispatchMouseEnterOrExit(const ui::MouseEvent& event,
+                                ui::EventType type);
+
   void ProcessEvent(Window* target, ui::Event* event);
 
   bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);

@@ -660,8 +660,6 @@ void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  if (event.flags() & ui::EF_IS_NON_CLIENT)
-    return false;
   return root_window_host_delegate_->OnHostMouseEvent(
       const_cast<ui::MouseEvent*>(&event));
 }
