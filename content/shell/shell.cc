@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -102,6 +103,7 @@ Shell* Shell::CreateShell(WebContents* web_contents) {
 
 void Shell::CloseAllWindows() {
   base::AutoReset<bool> auto_reset(&quit_message_loop_, false);
+  DevToolsManager::GetInstance()->CloseAllClientHosts();
   std::vector<Shell*> open_windows(windows_);
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();
