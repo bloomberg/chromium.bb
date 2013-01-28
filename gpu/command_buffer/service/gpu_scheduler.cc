@@ -251,15 +251,15 @@ bool GpuScheduler::IsPreempted() {
   if (!preemption_flag_.get())
     return false;
 
-  if (!was_preempted_ && !preemption_flag_->IsSet()) {
+  if (!was_preempted_ && preemption_flag_->IsSet()) {
     TRACE_COUNTER_ID1("gpu", "GpuScheduler::Preempted", this, 1);
     was_preempted_ = true;
-  } else if (was_preempted_) {
+  } else if (was_preempted_ && !preemption_flag_->IsSet()) {
     TRACE_COUNTER_ID1("gpu", "GpuScheduler::Preempted", this, 0);
     was_preempted_ = false;
   }
 
-  return !preemption_flag_->IsSet();
+  return preemption_flag_->IsSet();
 }
 
 void GpuScheduler::RescheduleTimeOut() {

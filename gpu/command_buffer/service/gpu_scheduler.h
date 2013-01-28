@@ -32,7 +32,7 @@ class PreemptionFlag
  public:
   PreemptionFlag() : flag_(0) {}
 
-  bool IsSet() { return base::AtomicRefCountIsZero(&flag_); }
+  bool IsSet() { return !base::AtomicRefCountIsZero(&flag_); }
   void Set() { base::AtomicRefCountInc(&flag_); }
   void Reset() { base::subtle::NoBarrier_Store(&flag_, 0); }
 
