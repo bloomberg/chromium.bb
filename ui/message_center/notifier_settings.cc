@@ -63,6 +63,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
       icon_view_->SetImage(icon);
       icon_view_->SetImageSize(gfx::Size(kSettingsIconSize, kSettingsIconSize));
     }
+    Layout();
     SchedulePaint();
   }
 
