@@ -26,5 +26,6 @@ libshared_cairo_la_LIBADD =			\
 libshared_cairo_la_SOURCES =			\
 	$(libshared_la_SOURCES)			\
 	image-loader.c				\
+	image-loader.h				\
 	cairo-util.c				\
 	cairo-util.h

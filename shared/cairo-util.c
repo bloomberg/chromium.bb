@@ -31,7 +31,8 @@
 #include <cairo.h>
 #include "cairo-util.h"
 
-#include "../shared/config-parser.h"
+#include "image-loader.h"
+#include "config-parser.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
