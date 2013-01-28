@@ -2895,7 +2895,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base22PosixDynamicThreadPool8PostTask*
-   ...
 }
 {
    bug_80462_a
@@ -5264,7 +5263,6 @@
    fun:_Znw*
    fun:_ZN4base22PosixDynamicThreadPool7AddTaskEPNS_11PendingTaskE
    fun:_ZN4base22PosixDynamicThreadPool8PostTask*
-   ...
 }
 {
    bug_139467
@@ -5570,7 +5568,6 @@
    fun:_ZN10extensions16SettingsFrontendC1ERK13scoped_refptrINS_22SettingsStorageFactoryEEP7Profile
    fun:_ZN10extensions16SettingsFrontend6CreateEP7Profile
    fun:_ZN16ExtensionServiceC1EP7ProfilePK11CommandLineRK8FilePathPN10extensions14ExtensionPrefs*
-   ...
 }
 {
    bug_145708
@@ -5915,17 +5912,17 @@
    fun:_ZN77GeolocationInfoBarQueueControllerTests_OneObservationPerInfoBarCancelled_Test8TestBodyEv
 }
 {
-  bug_156705
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN33GeolocationInfoBarQueueController21CreateInfoBarDelegateEP14InfoBarServicePS_iiiRK4GURLRKSs
-  fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP14InfoBarService
+   bug_156705
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN33GeolocationInfoBarQueueController21CreateInfoBarDelegateEP14InfoBarServicePS_iiiRK4GURLRKSs
+   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP14InfoBarService
 }
 {
-  bug_156829
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThread*
+   bug_156829
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThread*
 }
 {
    bug_158510
@@ -6508,25 +6505,24 @@
    fun:_ZN53AutofillPopupControllerUnitTest_GrowPopupInSpace_Test8TestBodyEv
 }
 {
-   bug_171722
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net12_GLOBAL__N_120URLRequestFtpJobTest9AddSocketEPNS_13MockReadWriteILNS_17MockReadWriteTypeE0EEEmPNS2_ILS3_1EEEm
-   ...
-}
-{
-   bug_171983
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos51MagnificationManagerTest_MagnificationObserver_Test8TestBodyEv
-}
-{
    bug_171567_c
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN31AutofillPopupControllerUnitTestC2Ev
    fun:_ZN53AutofillPopupControllerUnitTest_GrowPopupInSpace_TestC1Ev
    fun:_ZN7testing8internal15TestFactoryImplI53AutofillPopupControllerUnitTest_GrowPopupInSpace_TestE10CreateTestEv
+}
+{
+   bug_171722
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12_GLOBAL__N_120URLRequestFtpJobTest9AddSocketEPNS_13MockReadWriteILNS_17MockReadWriteTypeE0EEEmPNS2_ILS3_1EEEm
+}
+{
+   bug_171983
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos51MagnificationManagerTest_MagnificationObserver_Test8TestBodyEv
 }
 {
    bug_172005
