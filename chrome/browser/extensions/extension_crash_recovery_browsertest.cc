@@ -339,13 +339,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
 }
 
 // http://crbug.com/84719
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_TwoExtensionsShutdownWhileCrashed \
     DISABLED_TwoExtensionsShutdownWhileCrashed
 #else
 #define MAYBE_TwoExtensionsShutdownWhileCrashed \
     TwoExtensionsShutdownWhileCrashed
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
 // Make sure that when we don't do anything about the crashed extensions
 // and close the browser, it doesn't crash. The browser is closed implicitly
