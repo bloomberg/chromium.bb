@@ -5334,8 +5334,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK" desc="The first part of the sign-in promo paragraph. This part will be converted to a link and will get more text appended to it (see IDS_EXTENSION_INSTALLED_SIGNIN_PROMO). Keep this text short.">
         Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO" desc="The remaining text of the sign-in promo paragraph. Will be appended as a label to the string above.">
-        to get this extension, your history, and other Chrome settings on all your devices.
+      <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO" desc="The remaining text of the sign-in promo paragraph. Will be appended as a label to the string above. The triple single quotes are needed to preserve the space before the word 'to' (which is handy when the language (Chrome is being translated to) uses space as word separator).">
+        ''' to get this extension, your history, and other Chrome settings on all your devices.'''
       </message>
       <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
         Infobar Container

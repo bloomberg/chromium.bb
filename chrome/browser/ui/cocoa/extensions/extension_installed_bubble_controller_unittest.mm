@@ -145,26 +145,42 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
   // Height should equal the vertical padding + height of all messages.
   int correctHeight = 2 * extension_installed_bubble::kOuterVerticalMargin +
       2 * extension_installed_bubble::kInnerVerticalMargin +
-      [controller getExtensionInstalledMsgFrame].size.height +
-      [controller getExtensionInstalledInfoMsgFrame].size.height +
-      [controller getExtraInfoMsgFrame].size.height;
+      NSHeight([controller headingFrame]) +
+      NSHeight([controller frameOfHowToUse]) +
+      NSHeight([controller frameOfHowToManage]);
+  if ([controller showSyncPromo]) {
+    correctHeight += NSHeight([controller frameOfSigninPromo]) +
+                     extension_installed_bubble::kInnerVerticalMargin;
+  }
   EXPECT_EQ(height, correctHeight);
-
   [controller setMessageFrames:height];
-  NSRect msg3Frame = [controller getExtensionInstalledInfoMsgFrame];
-  // Bottom message should be kOuterVerticalMargin pixels above window edge.
-  EXPECT_EQ(msg3Frame.origin.y,
-      extension_installed_bubble::kOuterVerticalMargin);
-  NSRect msg2Frame = [controller getExtraInfoMsgFrame];
-  // Pageaction message should be kInnerVerticalMargin pixels above bottom msg.
-  EXPECT_EQ(msg2Frame.origin.y,
-            msg3Frame.origin.y + msg3Frame.size.height +
-            extension_installed_bubble::kInnerVerticalMargin);
-  NSRect msg1Frame = [controller getExtensionInstalledMsgFrame];
-  // Top message should be kInnerVerticalMargin pixels above Pageaction msg.
-  EXPECT_EQ(msg1Frame.origin.y,
-            msg2Frame.origin.y + msg2Frame.size.height +
-            extension_installed_bubble::kInnerVerticalMargin);
+
+  NSRect msg1Frame = [controller headingFrame];
+  NSRect msg2Frame = [controller frameOfHowToUse];
+  NSRect msg3Frame = [controller frameOfHowToManage];
+  NSRect msg4Frame = [controller frameOfSigninPromo];
+
+  int next_y = extension_installed_bubble::kOuterVerticalMargin;
+  if ([controller showSyncPromo]) {
+    // Bottom message should be kOuterVerticalMargin pixels above window edge.
+    EXPECT_EQ(next_y, NSMinY(msg4Frame));
+    next_y = NSMinY(msg4Frame) + NSHeight(msg4Frame) +
+            extension_installed_bubble::kInnerVerticalMargin;
+  }
+
+  // HowToManage frame should be kInnerVerticalMargin pixels above sync promo,
+  // unless sync promo is hidden, then kOuterVerticalMargin pixels above.
+  EXPECT_EQ(next_y, NSMinY(msg3Frame));
+
+  // Page action message should be kInnerVerticalMargin pixels above bottom msg.
+  EXPECT_EQ(NSMinY(msg3Frame) + NSHeight(msg3Frame) +
+                extension_installed_bubble::kInnerVerticalMargin,
+            NSMinY(msg2Frame));
+
+  // Top message should be kInnerVerticalMargin pixels above Page action msg.
+  EXPECT_EQ(NSMinY(msg2Frame) + NSHeight(msg2Frame) +
+                extension_installed_bubble::kInnerVerticalMargin,
+            NSMinY(msg1Frame));
 
   [controller setPageActionPreviewShowing:NO];
   [controller close];
@@ -189,26 +205,43 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
   // Height should equal the vertical padding + height of all messages.
   int correctHeight = 2 * extension_installed_bubble::kOuterVerticalMargin +
       2 * extension_installed_bubble::kInnerVerticalMargin +
-      [controller getExtensionInstalledMsgFrame].size.height +
-      [controller getExtensionInstalledInfoMsgFrame].size.height +
-      [controller getExtraInfoMsgFrame].size.height;
+      NSHeight([controller headingFrame]) +
+      NSHeight([controller frameOfHowToUse]) +
+      NSHeight([controller frameOfHowToManage]);
+  if ([controller showSyncPromo]) {
+    correctHeight += NSHeight([controller frameOfSigninPromo]) +
+                     extension_installed_bubble::kInnerVerticalMargin;
+  }
   EXPECT_EQ(height, correctHeight);
-
   [controller setMessageFrames:height];
-  NSRect msg3Frame = [controller getExtensionInstalledInfoMsgFrame];
-  // Bottom message should start kOuterVerticalMargin pixels above window edge.
-  EXPECT_EQ(msg3Frame.origin.y,
-      extension_installed_bubble::kOuterVerticalMargin);
-  NSRect msg2Frame = [controller getExtraInfoMsgFrame];
-  // Pageaction message should be kInnerVerticalMargin pixels above bottom msg.
-  EXPECT_EQ(NSMinY(msg2Frame),
-            NSMaxY(msg3Frame) +
-                extension_installed_bubble::kInnerVerticalMargin);
-  NSRect msg1Frame = [controller getExtensionInstalledMsgFrame];
-  // Top message should be kInnerVerticalMargin pixels above BrowserAction msg.
-  EXPECT_EQ(NSMinY(msg1Frame),
-            NSMaxY(msg2Frame) +
-                extension_installed_bubble::kInnerVerticalMargin);
+
+  NSRect msg1Frame = [controller headingFrame];
+  NSRect msg2Frame = [controller frameOfHowToUse];
+  NSRect msg3Frame = [controller frameOfHowToManage];
+  NSRect msg4Frame = [controller frameOfSigninPromo];
+
+  int next_y = extension_installed_bubble::kOuterVerticalMargin;
+  if ([controller showSyncPromo]) {
+    // Bottom message should be kOuterVerticalMargin pixels above window edge.
+    EXPECT_EQ(next_y, NSMinY(msg4Frame));
+    next_y = NSMinY(msg4Frame) + NSHeight(msg4Frame) +
+            extension_installed_bubble::kInnerVerticalMargin;
+  }
+
+  // HowToManage frame should be kInnerVerticalMargin pixels above sync promo,
+  // unless sync promo is hidden, then kOuterVerticalMargin pixels above.
+  EXPECT_EQ(next_y, NSMinY(msg3Frame));
+
+  // Browser action message should be kInnerVerticalMargin pixels above bottom
+  // msg.
+  EXPECT_EQ(NSMinY(msg3Frame) + NSHeight(msg3Frame) +
+                extension_installed_bubble::kInnerVerticalMargin,
+            NSMinY(msg2Frame));
+
+  // Top message should be kInnerVerticalMargin pixels above Browser action msg.
+  EXPECT_EQ(NSMinY(msg2Frame) + NSHeight(msg2Frame) +
+                extension_installed_bubble::kInnerVerticalMargin,
+            NSMinY(msg1Frame));
 
   [controller close];
 }
