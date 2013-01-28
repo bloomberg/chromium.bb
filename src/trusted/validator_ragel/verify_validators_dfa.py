@@ -9,7 +9,6 @@ Simple checker for the validator's DFA."""
 
 from __future__ import print_function
 
-import itertools
 import optparse
 import sys
 
@@ -349,7 +348,7 @@ def CollectSandboxing(start_state, transitions, collected_superinstructions):
   Args:
       start_state: start state of the DFA
       transitions: transitions collected so far
-                   note: we go back in graph here, not forward
+                   (note: we go back in graph here, not forward)
       collected_superinstructions: list to which we add superinstructions (each
                                    one is represented by a list of transitions)
   Returns:
@@ -381,12 +380,10 @@ def CollectSandboxing(start_state, transitions, collected_superinstructions):
     transitions.pop(0)
 
 
-def main(argv):
-  # Options processing
+def main():
+  # TODO(khim): get rid of options parser altogether if it turns out that it's
+  # not needed in the final version of the test.
   parser = optparse.OptionParser(__doc__)
-
-  parser.add_option('-e', '--entry',
-                    help='DFA of interest starts with entryname')
 
   (options, args) = parser.parse_args()
 
@@ -397,23 +394,12 @@ def main(argv):
   xmlfile = args[0]
   dfa_tree = etree.parse(xmlfile)
 
-  # Find entry point
-  if options.entry is None:
-    entries = dfa_tree.xpath('//entry')
-    if len(entries) != 1:
-      raise AssertionError('XML contains many entries and nothing is selected')
-  else:
-    entries = dfa_tree.xpath('//entry[@name={0}]'.format(options.entry))
-    if len(entries) != 1:
-      raise AssertionError('Can not find entry {0} in the XML'.format(entry))
-  entry = int(entries[0].text)
-
   start_state = dfa_tree.xpath('//start_state')
   if len(start_state) != 1:
     raise AssertionError('Can not find the initial state in the XML')
   start_state = int(start_state[0].text)
-  error_state = dfa_tree.xpath('//error_state')
-  assert len(error_state) == 1 and int(error_state[0].text) == 0
+  error_states = dfa_tree.xpath('//error_state')
+  assert len(error_states) == 1 and int(error_states[0].text) == 0
 
   states = ConvertXMLToStatesList(dfa_tree)
 
@@ -429,12 +415,11 @@ def main(argv):
     for superinstruction in superinstructions:
       all_superinstructions.add(
           '.byte ' + ', '.join(['0x{0:02x}'.format(transition.byte)
-                              for transition in superinstruction]))
+                                for transition in superinstruction]))
 
   for superinstruction in sorted(all_superinstructions):
     print(superinstruction)
 
 
 if __name__ == '__main__':
-  exitcode = main(sys.argv)
-  sys.exit(exitcode)
+  main()
