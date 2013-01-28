@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,144 +9,8 @@ Simple checker for the validator's DFA."""
 from __future__ import print_function
 
 import optparse
-import sys
 
-from lxml import etree
-
-
-def ConvertXMLToStatesList(dfa_tree):
-  """Reads state transitions from ragel XML file and returns python structure.
-
-  Converts lxml-parsed XML to list of states (connected by forward_transitions
-  and back_transitions).
-
-  Args:
-      dfa_tree: lxml-parsed ragel file
-
-  Returns:
-      List of State objects.
-  """
-
-  class State(object):
-    __slots__ = [
-        # List of forward transitions (always 256 elements in size) for the
-        # state:
-        #   Nth element is used if byte N is encountered by a DFA
-        #   If byte is not accepted then transtion is None
-        'forward_transitions',
-        # Backward transitions:
-        #   List of transitions which can bring us to a given state
-        'back_transitions',
-        # True if state is an accepting state
-        'is_accepting'
-    ]
-
-
-  class Transition(object):
-    __slots__ = [
-        # This transtion goes from the
-        'from_state',
-        # to the
-        'to_state',
-        # if
-        'byte',
-        # is encountered and it executes
-        'action_table'
-        # if that happens.
-    ]
-
-  actions = []
-  xml_actions = dfa_tree.xpath('//action')
-
-  for expected_action_id, action in enumerate(xml_actions):
-    # Ragel always dumps actions in order, but better to check that it's still
-    # true.
-    action_id = int(action.get('id'))
-    if action_id != expected_action_id:
-      raise AssertionError('action_id ({0}) != expected action_id ({1})'.format(
-          action_id, expected_action_id))
-    # If action have no name then use it's text as a name
-    action_name = action.get('name')
-    if action_name is None:
-      assert len(action) == 1
-      assert action[0].text is not None
-      action_name = action[0].text
-    actions.append(action_name)
-
-  action_tables = []
-  xml_action_tables = dfa_tree.xpath('//action_table')
-
-  for expected_action_table_id, action_table in enumerate(xml_action_tables):
-    # Ragel always dumps action tables in order, but better to check that it's
-    # still true.
-    action_table_id = int(action_table.get('id'))
-    if action_table_id != expected_action_table_id:
-      raise AssertionError(
-          'action_table_id ({0}) != expected action_table_id ({1})'.format(
-              action_table_id, expected_action_table_id))
-    action_list = [actions[int(action_id)]
-                   for action_id in action_table.text.split()]
-    action_tables.append(action_list)
-
-  # There are only one global error action and it's called "report_fatal_error"
-  assert action_tables[0] == ['report_fatal_error']
-
-  xml_states = dfa_tree.xpath('//state')
-
-  (error_state,) = dfa_tree.xpath('//error_state')
-  error_state_id = int(error_state.text)
-
-  states = [State() for _ in xml_states]
-
-  for expected_state_id, xml_state in enumerate(xml_states):
-    # Ragel always dumps states in order, but better to check that it's still
-    # true.
-    state_id = int(xml_state.get('id'))
-    if state_id != expected_state_id:
-      raise AssertionError('state_id ({0}) != expected state_id ({1})'.format(
-          state_id, expected_state_id))
-
-    state = states[state_id]
-    state.forward_transitions = [None] * 256
-    state.back_transitions = []
-    state.is_accepting = bool(xml_state.get('final'))
-
-    (xml_transitions,) = xml_state.xpath('trans_list')
-    # Mark available transitions.
-    for t in xml_transitions.getchildren():
-      range_begin, range_end, next_state, action_table_id = t.text.split(' ')
-      if next_state == 'x':
-        # This is error action. We are supposed to have just one of these.
-        assert action_table_id == '0'
-      else:
-        for byte in range(int(range_begin), int(range_end) + 1):
-          transition = Transition()
-          transition.from_state = states[state_id]
-          transition.byte = byte
-          transition.to_state = states[int(next_state)]
-          if action_table_id == 'x':
-            transition.action_table = None
-          else:
-            transition.action_table = action_tables[int(action_table_id)]
-          state.forward_transitions[byte] = transition
-
-    # State actions are only ever used in validator to detect error conditions
-    # in non-accepting states.  Check that it's always so.
-    state_actions = xml_state.xpath('state_actions')
-    if state.is_accepting or state_id == error_state_id:
-      assert len(state_actions) == 0
-    else:
-      assert len(state_actions) == 1
-      (state_actions,) = state_actions
-      assert state_actions.text == 'x x 0'
-
-  for state in states:
-    for transition in state.forward_transitions:
-      # Ignore error transitions
-      if transition is not None:
-        transition.to_state.back_transitions.append(transition)
-
-  return states
+import dfa_parser
 
 
 def CheckForProperCleanup(states):
@@ -159,15 +22,15 @@ def CheckForProperCleanup(states):
   Triggers an assert error if this rule is violated.
 
   Args:
-      states: list of State structures (as produced by ConvertXMLToStatesList)
+      states: list of State objects.
   Returns:
       None
   """
 
   for state in states:
-    for transition in state.forward_transitions:
-      if transition is not None and transition.to_state.is_accepting:
-        assert transition.action_table[-1] == 'end_of_instruction_cleanup'
+    for transition in state.forward_transitions.values():
+      if transition.to_state.is_accepting:
+        assert transition.actions[-1] == 'end_of_instruction_cleanup'
 
 
 def CheckDFAActions(start_state, states):
@@ -197,7 +60,7 @@ def CheckDFAActions(start_state, states):
 
   Args:
       start_state: start state of the DFA
-      states: list of State structures (as produced by ConvertXMLToStatesList)
+      states: list of State objects.
   Returns:
       List of collected dangerous paths (each one is represented by a list of
       transitions)
@@ -255,24 +118,23 @@ def CheckPathActions(start_state,
     # (whatever is accepted further along original path would be accepted
     # from starting state as well).
     return
-  for transition in state.forward_transitions:
-    if transition is not None:
-      main_transition = main_state.forward_transitions[transition.byte]
-      if (main_transition is None or
-          main_transition.action_table != transition.action_table):
-        transitions.append(transition)
-        CheckDangerousInstructionPath(start_state, transition.to_state,
-                                      transitions, collected_dangerous_paths)
-        transitions.pop()
-      else:
-        transitions.append(transition)
-        main_transitions.append(main_transition)
-        CheckPathActions(start_state,
-                         transition.to_state, main_transition.to_state,
-                         transitions, main_transitions,
-                         collected_dangerous_paths)
-        main_transitions.pop()
-        transitions.pop()
+  for transition in state.forward_transitions.values():
+    main_transition = main_state.forward_transitions.get(transition.byte)
+    if (main_transition is not None and
+        main_transition.actions == transition.actions):
+      transitions.append(transition)
+      main_transitions.append(main_transition)
+      CheckPathActions(start_state,
+                       transition.to_state, main_transition.to_state,
+                       transitions, main_transitions,
+                       collected_dangerous_paths)
+      main_transitions.pop()
+      transitions.pop()
+    else:
+      transitions.append(transition)
+      CheckDangerousInstructionPath(start_state, transition.to_state,
+                                    transitions, collected_dangerous_paths)
+      transitions.pop()
 
 
 def CheckDangerousInstructionPath(start_state, state, transitions,
@@ -318,12 +180,11 @@ def CheckDangerousInstructionPath(start_state, state, transitions,
     assert state is start_state
     collected_dangerous_paths.append(list(transitions))
   else:
-    for transition in state.forward_transitions:
-      if transition is not None:
-        transitions.append(transition)
-        CheckDangerousInstructionPath(start_state, transition.to_state,
-                                      transitions, collected_dangerous_paths)
-        transitions.pop()
+    for transition in state.forward_transitions.values():
+      transitions.append(transition)
+      CheckDangerousInstructionPath(start_state, transition.to_state,
+                                    transitions, collected_dangerous_paths)
+      transitions.pop()
 
 
 def CollectSandboxing(start_state, transitions, collected_superinstructions):
@@ -360,15 +221,14 @@ def CollectSandboxing(start_state, transitions, collected_superinstructions):
     # recognizable from the beginning.
     main_state = start_state
     for transition in transitions:
-      main_transition = main_state.forward_transitions[transition.byte]
+      main_transition = main_state.forward_transitions.get(transition.byte)
       # No suitable transitions.  We need to go deeper.
       if main_transition is None:
         break
-      else:
-        assert main_transition.action_table == transition.action_table
-        assert (main_transition.to_state.is_accepting ==
-                transition.to_state.is_accepting)
-        main_state = main_transition.to_state
+      assert main_transition.actions == transition.actions
+      assert (main_transition.to_state.is_accepting ==
+              transition.to_state.is_accepting)
+      main_state = main_transition.to_state
     else:
       # Transition is recognized from the initial path
       collected_superinstructions.append(list(transitions))
@@ -390,27 +250,17 @@ def main():
   if len(args) != 1:
     parser.error('need exactly one ragel XML file')
 
-  # Open file
-  xmlfile = args[0]
-  dfa_tree = etree.parse(xmlfile)
-
-  start_state = dfa_tree.xpath('//start_state')
-  if len(start_state) != 1:
-    raise AssertionError('Can not find the initial state in the XML')
-  start_state = int(start_state[0].text)
-  error_states = dfa_tree.xpath('//error_state')
-  assert len(error_states) == 1 and int(error_states[0].text) == 0
-
-  states = ConvertXMLToStatesList(dfa_tree)
+  xml_file = args[0]
+  states, start_state = dfa_parser.ParseXml(xml_file)
 
   CheckForProperCleanup(states)
 
-  collected_dangerous_paths = CheckDFAActions(states[start_state], states)
+  collected_dangerous_paths = CheckDFAActions(start_state, states)
 
   all_superinstructions = set()
   for dangerous_paths in collected_dangerous_paths:
     superinstructions = []
-    CollectSandboxing(states[start_state], dangerous_paths, superinstructions)
+    CollectSandboxing(start_state, dangerous_paths, superinstructions)
     assert len(superinstructions) > 0
     for superinstruction in superinstructions:
       all_superinstructions.add(
