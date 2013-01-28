@@ -6,6 +6,8 @@
 	* tables/ru-chardefs.cti:
 	* tables/Makefile.am (table_files): Add new russian tables.
 
+	* tables/hyph_ru.dic: Added russian hyphenation dictionary.
+
 2013-01-28  Knut Arne Bjørndal <bob+liblouis@cakebox.net>
 
 	* tables/no-no-g0.utb: Fixes for Emphasis marks in the norwegian

@@ -127,6 +127,7 @@ table_files = \
 	hyph_no_NO.dic \
 	hyph_pl_PL.dic \
 	hyph_pt_PT.dic \
+	hyph_ru.dic \
 	hyph_sv_SE.dic \
 	is-chardefs6.cti \
 	is-chardefs8.cti \
