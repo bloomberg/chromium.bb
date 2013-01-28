@@ -3224,7 +3224,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x790b, 0xffff, 4, 4, "3DSTATE_GS_SVB_INDEX" },
 		{ 0x790d, 0xffff, 3, 3, "3DSTATE_MULTISAMPLE", 6 },
 		{ 0x790d, 0xffff, 4, 4, "3DSTATE_MULTISAMPLE", 7 },
-		{ 0x7910, 0xffff, 2, 2, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x7910, 0x00ff, 2, 2, "3DSTATE_CLEAR_PARAMS" },
 		{ 0x7912, 0x00ff, 2, 2, "3DSTATE_PUSH_CONSTANT_ALLOC_VS" },
 		{ 0x7913, 0x00ff, 2, 2, "3DSTATE_PUSH_CONSTANT_ALLOC_HS" },
 		{ 0x7914, 0x00ff, 2, 2, "3DSTATE_PUSH_CONSTANT_ALLOC_DS" },
