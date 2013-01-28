@@ -6,6 +6,9 @@
   'variables': {
     'chromium_code': 1,
   },
+  'includes': [
+    'chromeos_tools.gypi'
+  ],
   'targets': [
     {
       'target_name': 'chromeos',
