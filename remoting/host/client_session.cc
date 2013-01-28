@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/message_loop_proxy.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
 #include "remoting/codec/audio_encoder_speex.h"

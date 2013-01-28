@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/capturer/shared_buffer.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/screen_capturer.h"
+#include "media/video/capture/screen/shared_buffer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -60,7 +60,7 @@ class DesktopSessionProxy
   scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
+  scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
 
@@ -88,7 +88,7 @@ class DesktopSessionProxy
   // StopAudioCapturer() has been called will be silently dropped.
   void StopAudioCapturer();
 
-  // APIs used to implement the VideoFrameCapturer interface. These must be
+  // APIs used to implement the media::ScreenCapturer interface. These must be
   // called on |video_capture_task_runner_|.
   void InvalidateRegion(const SkRegion& invalid_region);
   void CaptureFrame();
@@ -112,7 +112,7 @@ class DesktopSessionProxy
   virtual ~DesktopSessionProxy();
 
   // Returns a shared buffer from the list of known buffers.
-  scoped_refptr<SharedBuffer> GetSharedBuffer(int id);
+  scoped_refptr<media::SharedBuffer> GetSharedBuffer(int id);
 
   // Handles AudioPacket notification from the desktop session agent.
   void OnAudioPacket(const std::string& serialized_packet);
@@ -129,7 +129,7 @@ class DesktopSessionProxy
   void OnCaptureCompleted(const SerializedCapturedData& serialized_data);
 
   // Handles CursorShapeChanged notification from the desktop session agent.
-  void OnCursorShapeChanged(const MouseCursorShape& cursor_shape);
+  void OnCursorShapeChanged(const media::MouseCursorShape& cursor_shape);
 
   // Handles InjectClipboardEvent request from the desktop integration process.
   void OnInjectClipboardEvent(const std::string& serialized_event);
@@ -140,11 +140,12 @@ class DesktopSessionProxy
 
   // Posted to |video_capture_task_runner_| to pass a captured video frame back
   // to |video_capturer_|.
-  void PostCaptureCompleted(scoped_refptr<CaptureData> capture_data);
+  void PostCaptureCompleted(
+      scoped_refptr<media::ScreenCaptureData> capture_data);
 
   // Posted to |video_capture_task_runner_| to pass |cursor_shape| back to
   // |video_capturer_|.
-  void PostCursorShape(scoped_ptr<MouseCursorShape> cursor_shape);
+  void PostCursorShape(scoped_ptr<media::MouseCursorShape> cursor_shape);
 
   // Sends a message to the desktop session agent. The message is silently
   // deleted if the channel is broken.
@@ -182,7 +183,7 @@ class DesktopSessionProxy
 
   int pending_capture_frame_requests_;
 
-  typedef std::map<int, scoped_refptr<SharedBuffer> > SharedBuffers;
+  typedef std::map<int, scoped_refptr<media::SharedBuffer> > SharedBuffers;
   SharedBuffers shared_buffers_;
 
   // Points to the video capturer receiving captured video frames.

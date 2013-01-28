@@ -24,7 +24,7 @@ class VideoEncoderVerbatim : public VideoEncoder {
 
   // VideoEncoder interface.
   virtual void Encode(
-      scoped_refptr<CaptureData> capture_data,
+      scoped_refptr<media::ScreenCaptureData> capture_data,
       bool key_frame,
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
@@ -43,7 +43,7 @@ class VideoEncoderVerbatim : public VideoEncoder {
   // Submit |packet| to |callback_|.
   void SubmitMessage(VideoPacket* packet, size_t rect_index);
 
-  scoped_refptr<CaptureData> capture_data_;
+  scoped_refptr<media::ScreenCaptureData> capture_data_;
   DataAvailableCallback callback_;
   base::Time encode_start_time_;
 

@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session_proxy.h"
@@ -58,7 +58,7 @@ scoped_ptr<EventExecutor> IpcDesktopEnvironment::CreateEventExecutor(
                                                      ui_task_runner);
 }
 
-scoped_ptr<VideoFrameCapturer> IpcDesktopEnvironment::CreateVideoCapturer(
+scoped_ptr<media::ScreenCapturer> IpcDesktopEnvironment::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

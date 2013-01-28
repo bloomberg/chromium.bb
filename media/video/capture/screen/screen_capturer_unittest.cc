@@ -1,0 +1,106 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "media/video/capture/screen/screen_capturer.h"
+
+#include "base/bind.h"
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif  // defined(OS_MACOSX)
+#include "media/video/capture/screen/screen_capture_data.h"
+#include "media/video/capture/screen/screen_capturer_mock_objects.h"
+#include "media/video/capture/screen/shared_buffer_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
+using ::testing::AnyNumber;
+
+namespace media {
+
+class MockSharedBufferFactory : public SharedBufferFactory {
+ public:
+  MockSharedBufferFactory() {}
+  virtual ~MockSharedBufferFactory() {}
+
+  MOCK_METHOD1(CreateSharedBuffer, scoped_refptr<SharedBuffer>(uint32));
+  MOCK_METHOD1(ReleaseSharedBuffer, void(scoped_refptr<SharedBuffer>));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSharedBufferFactory);
+};
+
+MATCHER(DirtyRegionIsNonEmptyRect, "") {
+  const SkRegion& dirty_region = arg->dirty_region();
+  const SkIRect& dirty_region_bounds = dirty_region.getBounds();
+  if (dirty_region_bounds.isEmpty()) {
+    return false;
+  }
+  return dirty_region == SkRegion(dirty_region_bounds);
+}
+
+class ScreenCapturerTest : public testing::Test {
+ public:
+  scoped_refptr<SharedBuffer> CreateSharedBuffer(uint32 size);
+
+ protected:
+  scoped_ptr<ScreenCapturer> capturer_;
+  MockSharedBufferFactory shared_buffer_factory_;
+  MockScreenCapturerDelegate delegate_;
+};
+
+scoped_refptr<SharedBuffer> ScreenCapturerTest::CreateSharedBuffer(
+    uint32 size) {
+  return scoped_refptr<SharedBuffer>(new SharedBuffer(size));
+}
+
+TEST_F(ScreenCapturerTest, StartCapturer) {
+  capturer_ = ScreenCapturer::Create();
+  capturer_->Start(&delegate_);
+  capturer_->Stop();
+}
+
+#if defined(THREAD_SANITIZER)
+// ThreadSanitizer v2 reports a use-after-free, see http://crbug.com/163641.
+#define MAYBE_Capture DISABLED_Capture
+#else
+#define MAYBE_Capture Capture
+#endif
+TEST_F(ScreenCapturerTest, MAYBE_Capture) {
+  // Assume that Start() treats the screen as invalid initially.
+  EXPECT_CALL(delegate_,
+              OnCaptureCompleted(DirtyRegionIsNonEmptyRect()));
+  EXPECT_CALL(delegate_, OnCursorShapeChangedPtr(_))
+      .Times(AnyNumber());
+
+  capturer_ = ScreenCapturer::Create();
+  capturer_->Start(&delegate_);
+  capturer_->CaptureFrame();
+  capturer_->Stop();
+}
+
+#if defined(OS_WIN)
+
+TEST_F(ScreenCapturerTest, UseSharedBuffers) {
+  EXPECT_CALL(delegate_,
+              OnCaptureCompleted(DirtyRegionIsNonEmptyRect()));
+  EXPECT_CALL(delegate_, OnCursorShapeChangedPtr(_))
+      .Times(AnyNumber());
+
+  EXPECT_CALL(shared_buffer_factory_, CreateSharedBuffer(_))
+      .Times(1)
+      .WillOnce(Invoke(this, &ScreenCapturerTest::CreateSharedBuffer));
+  EXPECT_CALL(shared_buffer_factory_, ReleaseSharedBuffer(_))
+      .Times(1);
+
+  capturer_ = ScreenCapturer::CreateWithFactory(&shared_buffer_factory_);
+  capturer_->Start(&delegate_);
+  capturer_->CaptureFrame();
+  capturer_->Stop();
+  capturer_.reset();
+}
+
+#endif  // defined(OS_WIN)
+
+}  // namespace media

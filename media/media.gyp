@@ -19,6 +19,12 @@
         'use_ffmpeg%': 1,
         'use_libvpx%': 1,
       }],
+      # Screen capturer works only on Windows, OSX and Linux.
+      ['OS=="win" or OS=="mac" or OS=="linux"', {
+        'screen_capture_supported%': 1,
+      }, {
+        'screen_capture_supported%': 0,
+      }],
     ],
   },
   'targets': [
@@ -326,6 +332,39 @@
         'video/capture/mac/video_capture_device_mac.mm',
         'video/capture/mac/video_capture_device_qtkit_mac.h',
         'video/capture/mac/video_capture_device_qtkit_mac.mm',
+        'video/capture/screen/differ.cc',
+        'video/capture/screen/differ.h',
+        'video/capture/screen/differ_block.cc',
+        'video/capture/screen/differ_block.h',
+        'video/capture/screen/linux/x_server_pixel_buffer.cc',
+        'video/capture/screen/linux/x_server_pixel_buffer.h',
+        'video/capture/screen/mac/desktop_configuration.mm',
+        'video/capture/screen/mac/desktop_configuration.h',
+        'video/capture/screen/mac/scoped_pixel_buffer_object.cc',
+        'video/capture/screen/mac/scoped_pixel_buffer_object.h',
+        'video/capture/screen/mouse_cursor_shape.cc',
+        'video/capture/screen/mouse_cursor_shape.h',
+        'video/capture/screen/screen_capture_data.cc',
+        'video/capture/screen/screen_capture_data.h',
+        'video/capture/screen/screen_capture_frame.cc',
+        'video/capture/screen/screen_capture_frame.h',
+        'video/capture/screen/screen_capture_frame_queue.cc',
+        'video/capture/screen/screen_capture_frame_queue.h',
+        'video/capture/screen/screen_capturer.h',
+        'video/capture/screen/screen_capturer_fake.cc',
+        'video/capture/screen/screen_capturer_fake.h',
+        'video/capture/screen/screen_capturer_helper.cc',
+        'video/capture/screen/screen_capturer_helper.h',
+        'video/capture/screen/screen_capturer_linux.cc',
+        'video/capture/screen/screen_capturer_mac.mm',
+        'video/capture/screen/screen_capturer_win.cc',
+        'video/capture/screen/shared_buffer.cc',
+        'video/capture/screen/shared_buffer.h',
+        'video/capture/screen/shared_buffer_factory.h',
+        'video/capture/screen/win/desktop.cc',
+        'video/capture/screen/win/desktop.h',
+        'video/capture/screen/win/scoped_thread_desktop.cc',
+        'video/capture/screen/win/scoped_thread_desktop.h',
         'video/capture/video_capture.h',
         'video/capture/video_capture_device.h',
         'video/capture/video_capture_device_dummy.cc',
@@ -521,6 +560,14 @@
               }],
             ],
           },
+          'link_settings': {
+            'libraries': [
+              '-lX11',
+              '-lXdamage',
+              '-lXext',
+              '-lXfixes',
+            ],
+          },
           'conditions': [
             ['use_cras == 1', {
               'cflags': [
@@ -576,10 +623,11 @@
         ['OS=="mac"', {
           'link_settings': {
             'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
               '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
+              '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreAudio.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
+              '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
               '$(SDKROOT)/System/Library/Frameworks/QTKit.framework',
             ],
           },
@@ -644,6 +692,21 @@
             'mp4/track_run_iterator.h',
           ],
         }],
+        [ 'screen_capture_supported==0', {
+          'sources/': [
+            ['exclude', '^video/capture/screen/'],
+          ],
+        }],
+        [ 'screen_capture_supported==1 and (target_arch=="ia32" or target_arch=="x64")', {
+          'dependencies': [
+            'differ_block_sse2',
+          ],
+        }],
+        ['toolkit_uses_gtk==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
       ],
       'target_conditions': [
         ['OS == "ios"', {
@@ -705,13 +768,13 @@
         'base/audio_renderer_mixer_unittest.cc',
         'base/audio_splicer_unittest.cc',
         'base/audio_timestamp_helper_unittest.cc',
-        'base/bit_reader_unittest.cc',
         'base/bind_to_loop_unittest.cc',
+        'base/bit_reader_unittest.cc',
         'base/channel_mixer_unittest.cc',
         'base/clock_unittest.cc',
         'base/data_buffer_unittest.cc',
-        'base/decoder_buffer_unittest.cc',
         'base/decoder_buffer_queue_unittest.cc',
+        'base/decoder_buffer_unittest.cc',
         'base/djb2_unittest.cc',
         'base/filter_collection_unittest.cc',
         'base/gmock_callback_support_unittest.cc',
@@ -752,6 +815,12 @@
         'filters/source_buffer_stream_unittest.cc',
         'filters/video_decoder_selector_unittest.cc',
         'filters/video_renderer_base_unittest.cc',
+        'video/capture/screen/differ_block_unittest.cc',
+        'video/capture/screen/differ_unittest.cc',
+        'video/capture/screen/shared_buffer_unittest.cc',
+        'video/capture/screen/screen_capturer_helper_unittest.cc',
+        'video/capture/screen/screen_capturer_mac_unittest.cc',
+        'video/capture/screen/screen_capturer_unittest.cc',
         'video/capture/video_capture_device_unittest.cc',
         'webm/cluster_builder.cc',
         'webm/cluster_builder.h',
@@ -841,6 +910,11 @@
             'base/simd/convert_rgb_to_yuv_unittest.cc',
           ],
         }],
+        [ 'screen_capture_supported == 0', {
+          'sources/': [
+            ['exclude', '^video/capture/screen/'],
+          ],
+        }],
         ['proprietary_codecs==1 or branding=="Chrome"', {
           'sources': [
             'mp4/aac_unittest.cc',
@@ -860,6 +934,7 @@
       'dependencies': [
         'media',
         '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
@@ -881,6 +956,15 @@
         'base/mock_filters.h',
         'base/test_helpers.cc',
         'base/test_helpers.h',
+        'video/capture/screen/screen_capturer_mock_objects.cc',
+        'video/capture/screen/screen_capturer_mock_objects.h',
+      ],
+      'conditions': [
+        [ 'screen_capture_supported == 0', {
+          'sources/': [
+            ['exclude', '^video/capture/screen/'],
+          ],
+        }],
       ],
     },
   ],
@@ -1346,6 +1430,28 @@
           ],
         },
       ],
-    }]
+    }],
+    [ 'screen_capture_supported==1 and (target_arch=="ia32" or target_arch=="x64")', {
+      'targets': [
+        {
+          'target_name': 'differ_block_sse2',
+          'type': 'static_library',
+          'conditions': [
+            [ 'os_posix == 1 and OS != "mac"', {
+              'cflags': [
+                '-msse2',
+              ],
+            }],
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'video/capture/screen/differ_block_sse2.cc',
+            'video/capture/screen/differ_block_sse2.h',
+          ],
+        }, # end of target differ_block_sse2
+      ],
+    }],
   ],
 }

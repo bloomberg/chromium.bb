@@ -21,7 +21,7 @@ class VideoEncoderVp8 : public VideoEncoder {
   virtual ~VideoEncoderVp8();
 
   virtual void Encode(
-      scoped_refptr<CaptureData> capture_data,
+      scoped_refptr<media::ScreenCaptureData> capture_data,
       bool key_frame,
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
@@ -36,7 +36,7 @@ class VideoEncoderVp8 : public VideoEncoder {
 
   // Prepare |image_| for encoding. Write updated rectangles into
   // |updated_region|.
-  void PrepareImage(scoped_refptr<CaptureData> capture_data,
+  void PrepareImage(scoped_refptr<media::ScreenCaptureData> capture_data,
                     SkRegion* updated_region);
 
   // Update the active map according to |updated_region|. Active map is then

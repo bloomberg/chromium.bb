@@ -48,7 +48,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
-  virtual scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
+  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
 

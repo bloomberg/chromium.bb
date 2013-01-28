@@ -6,8 +6,8 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "media/video/capture/screen/screen_capturer_fake.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/capturer/video_frame_capturer_fake.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -19,8 +19,8 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::remoting::protocol::MockClientStub;
@@ -285,7 +285,7 @@ class ChromotingHostTest : public testing::Test {
     host_->OnSessionRouteChange(get_client(0), channel_name, route);
   }
 
-  // Creates a DesktopEnvironment with a fake VideoFrameCapturer, to mock
+  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment() {
     MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
@@ -311,12 +311,12 @@ class ChromotingHostTest : public testing::Test {
     return event_executor;
   }
 
-  // Creates a fake VideoFrameCapturer, to mock
+  // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  VideoFrameCapturer* CreateVideoCapturer(
+  media::ScreenCapturer* CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
-    return new VideoFrameCapturerFake();
+    return new media::ScreenCapturerFake();
   }
 
   void DisconnectAllClients() {

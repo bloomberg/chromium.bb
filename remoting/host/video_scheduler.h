@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/capture_scheduler.h"
 #include "remoting/proto/video.pb.h"
@@ -22,11 +22,14 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace media {
+class ScreenCaptureData;
+class ScreenCapturer;
+}  // namespace media
+
 namespace remoting {
 
-class CaptureData;
 class CursorShapeInfo;
-class VideoFrameCapturer;
 
 namespace protocol {
 class CursorShapeInfo;
@@ -34,7 +37,7 @@ class CursorShapeStub;
 class VideoStub;
 }  // namespace protocol
 
-// Class responsible for scheduling frame captures from a VideoFrameCapturer,
+// Class responsible for scheduling frame captures from a media::ScreenCapturer,
 // delivering them to a VideoEncoder to encode, and finally passing the encoded
 // video packets to the specified VideoStub to send on the network.
 //
@@ -71,7 +74,7 @@ class VideoStub;
 // too much CPU, or hogging the host's graphics subsystem.
 
 class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
-                       public VideoFrameCapturer::Delegate {
+                       public media::ScreenCapturer::Delegate {
  public:
   // Creates a VideoScheduler running capture, encode and network tasks on the
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
@@ -81,16 +84,16 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_ptr<VideoFrameCapturer> capturer,
+      scoped_ptr<media::ScreenCapturer> capturer,
       scoped_ptr<VideoEncoder> encoder,
       protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
 
-  // VideoFrameCapturer::Delegate implementation.
+  // media::ScreenCapturer::Delegate implementation.
   virtual void OnCaptureCompleted(
-      scoped_refptr<CaptureData> capture_data) OVERRIDE;
+      scoped_refptr<media::ScreenCaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(
-      scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
+      scoped_ptr<media::MouseCursorShape> cursor_shape) OVERRIDE;
 
   // Stop scheduling frame captures. This object cannot be re-used once
   // it has been stopped.
@@ -111,7 +114,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_ptr<VideoFrameCapturer> capturer,
+      scoped_ptr<media::ScreenCapturer> capturer,
       scoped_ptr<VideoEncoder> encoder,
       protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
@@ -149,18 +152,18 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Posted to the network thread to delete |capturer| on the thread that
   // created it.
-  void StopOnNetworkThread(scoped_ptr<VideoFrameCapturer> capturer);
+  void StopOnNetworkThread(scoped_ptr<media::ScreenCapturer> capturer);
 
   // Encoder thread -----------------------------------------------------------
 
   // Encode a frame, passing generated VideoPackets to SendVideoPacket().
-  void EncodeFrame(scoped_refptr<CaptureData> capture_data);
+  void EncodeFrame(scoped_refptr<media::ScreenCaptureData> capture_data);
 
   void EncodedDataAvailableCallback(scoped_ptr<VideoPacket> packet);
 
   // Used to synchronize capture and encode thread teardown, notifying the
   // network thread when done.
-  void StopOnEncodeThread(scoped_ptr<VideoFrameCapturer> capturer);
+  void StopOnEncodeThread(scoped_ptr<media::ScreenCapturer> capturer);
 
   // Task runners used by this class.
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
@@ -168,7 +171,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   // Used to capture frames. Always accessed on the capture thread.
-  scoped_ptr<VideoFrameCapturer> capturer_;
+  scoped_ptr<media::ScreenCapturer> capturer_;
 
   // Used to encode captured frames. Always accessed on the encode thread.
   scoped_ptr<VideoEncoder> encoder_;

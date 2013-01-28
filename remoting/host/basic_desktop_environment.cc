@@ -5,7 +5,7 @@
 #include "remoting/host/basic_desktop_environment.h"
 
 #include "base/logging.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/event_executor.h"
 
@@ -33,12 +33,12 @@ scoped_ptr<EventExecutor> BasicDesktopEnvironment::CreateEventExecutor(
   return EventExecutor::Create(input_task_runner, ui_task_runner);
 }
 
-scoped_ptr<VideoFrameCapturer> BasicDesktopEnvironment::CreateVideoCapturer(
+scoped_ptr<media::ScreenCapturer> BasicDesktopEnvironment::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
   DCHECK(CalledOnValidThread());
 
-  return VideoFrameCapturer::Create();
+  return media::ScreenCapturer::Create();
 }
 
 BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory() {

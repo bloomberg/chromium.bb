@@ -8,10 +8,10 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
-#include "remoting/capturer/capture_data.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/disconnect_window.h"
@@ -137,11 +137,11 @@ void DesktopSessionAgent::OnLocalMouseMoved(const SkIPoint& new_pos) {
   remote_input_filter_->LocalMouseMoved(new_pos);
 }
 
-scoped_refptr<SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
+scoped_refptr<media::SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
     uint32 size) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  scoped_refptr<SharedBuffer> buffer = new SharedBuffer(size);
+  scoped_refptr<media::SharedBuffer> buffer = new media::SharedBuffer(size);
   if (buffer->ptr() != NULL) {
     buffer->set_id(next_shared_buffer_id_);
     shared_buffers_.push_back(buffer);
@@ -164,7 +164,7 @@ scoped_refptr<SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
 }
 
 void DesktopSessionAgent::ReleaseSharedBuffer(
-    scoped_refptr<SharedBuffer> buffer) {
+    scoped_refptr<media::SharedBuffer> buffer) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
   DCHECK(buffer->id() != 0);
 
@@ -214,12 +214,12 @@ void DesktopSessionAgent::OnStartSessionAgent(
 }
 
 void DesktopSessionAgent::OnCaptureCompleted(
-    scoped_refptr<CaptureData> capture_data) {
+    scoped_refptr<media::ScreenCaptureData> capture_data) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
   current_size_ = capture_data->size();
 
-  // Serialize CaptureData
+  // Serialize media::ScreenCaptureData
   SerializedCapturedData serialized_data;
   serialized_data.shared_buffer_id = capture_data->shared_buffer()->id();
   serialized_data.bytes_per_row = capture_data->stride();
@@ -236,7 +236,7 @@ void DesktopSessionAgent::OnCaptureCompleted(
 }
 
 void DesktopSessionAgent::OnCursorShapeChanged(
-    scoped_ptr<MouseCursorShape> cursor_shape) {
+    scoped_ptr<media::MouseCursorShape> cursor_shape) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
   SendToNetwork(new ChromotingDesktopNetworkMsg_CursorShapeChanged(
@@ -325,10 +325,10 @@ void DesktopSessionAgent::OnCaptureFrame() {
     return;
   }
 
-  // VideoFrameCapturer supports a very few (currently 2) outstanding capture
+  // media::ScreenCapturer supports a very few (currently 2) outstanding capture
   // requests. The requests are serialized on |video_capture_task_runner()| task
   // runner. If the client issues more requests, pixel data in captured frames
-  // will likely be corrupted but stability of VideoFrameCapturer will not be
+  // will likely be corrupted but stability of media::ScreenCapturer will not be
   // affected.
   video_capturer_->CaptureFrame();
 }
@@ -486,7 +486,7 @@ void DesktopSessionAgent::StopAudioCapturer() {
 void DesktopSessionAgent::StartVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  video_capturer_ = VideoFrameCapturer::CreateWithFactory(this);
+  video_capturer_ = media::ScreenCapturer::CreateWithFactory(this);
   if (video_capturer_)
     video_capturer_->Start(this);
 }

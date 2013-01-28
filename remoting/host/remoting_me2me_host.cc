@@ -28,12 +28,12 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
-#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/host/basic_desktop_environment.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_host.h"
@@ -552,7 +552,7 @@ void HostProcess::StartOnUiThread() {
 #if defined(OS_LINUX)
   // TODO(sergeyu): Pass configuration parameters to the Linux-specific version
   // of DesktopEnvironmentFactory when we have it.
-  remoting::VideoFrameCapturer::EnableXDamage(true);
+  media::ScreenCapturer::EnableXDamage(true);
 
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.

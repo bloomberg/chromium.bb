@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/capturer/shared_buffer.h"
-#include "remoting/capturer/shared_buffer_factory.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/screen_capturer.h"
+#include "media/video/capture/screen/shared_buffer.h"
+#include "media/video/capture/screen/shared_buffer_factory.h"
 #include "remoting/host/mouse_move_observer.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -49,8 +49,8 @@ class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
       public MouseMoveObserver,
-      public SharedBufferFactory,
-      public VideoFrameCapturer::Delegate {
+      public media::SharedBufferFactory,
+      public media::ScreenCapturer::Delegate {
  public:
   class Delegate {
    public:
@@ -80,14 +80,16 @@ class DesktopSessionAgent
   virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
 
   // SharedBufferFactory implementation.
-  virtual scoped_refptr<SharedBuffer> CreateSharedBuffer(uint32 size) OVERRIDE;
-  virtual void ReleaseSharedBuffer(scoped_refptr<SharedBuffer> buffer) OVERRIDE;
+  virtual scoped_refptr<media::SharedBuffer> CreateSharedBuffer(
+      uint32 size) OVERRIDE;
+  virtual void ReleaseSharedBuffer(
+      scoped_refptr<media::SharedBuffer> buffer) OVERRIDE;
 
-  // VideoFrameCapturer::Delegate implementation.
+  // media::ScreenCapturer::Delegate implementation.
   virtual void OnCaptureCompleted(
-      scoped_refptr<CaptureData> capture_data) OVERRIDE;
+      scoped_refptr<media::ScreenCaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(
-      scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
+      scoped_ptr<media::MouseCursorShape> cursor_shape) OVERRIDE;
 
   // Forwards a local clipboard event though the IPC channel to the network
   // process.
@@ -233,14 +235,14 @@ class DesktopSessionAgent
   int next_shared_buffer_id_;
 
   // List of the shared buffers registered via |SharedBufferFactory| interface.
-  typedef std::list<scoped_refptr<SharedBuffer> > SharedBuffers;
+  typedef std::list<scoped_refptr<media::SharedBuffer> > SharedBuffers;
   SharedBuffers shared_buffers_;
 
   // True if the desktop session agent has been started.
   bool started_;
 
   // Captures the screen.
-  scoped_ptr<VideoFrameCapturer> video_capturer_;
+  scoped_ptr<media::ScreenCapturer> video_capturer_;
 
   UiStrings ui_strings_;
 

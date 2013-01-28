@@ -16,11 +16,14 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace media {
+class ScreenCapturer;
+}  // namespace media
+
 namespace remoting {
 
 class AudioCapturer;
 class EventExecutor;
-class VideoFrameCapturer;
 
 // Provides factory methods for creation of audio/video capturers and event
 // executor for a given desktop environment.
@@ -35,7 +38,7 @@ class DesktopEnvironment {
   virtual scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) = 0;
-  virtual scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
+  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) = 0;
 };

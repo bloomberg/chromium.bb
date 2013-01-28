@@ -6,9 +6,9 @@
 
 #include "base/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/audio_capturer.h"
@@ -34,10 +34,10 @@ scoped_ptr<EventExecutor> MockDesktopEnvironment::CreateEventExecutor(
                                                           ui_task_runner));
 }
 
-scoped_ptr<VideoFrameCapturer> MockDesktopEnvironment::CreateVideoCapturer(
+scoped_ptr<media::ScreenCapturer> MockDesktopEnvironment::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
-  return scoped_ptr<VideoFrameCapturer>(CreateVideoCapturerPtr(
+  return scoped_ptr<media::ScreenCapturer>(CreateVideoCapturerPtr(
       capture_task_runner, encode_task_runner));
 }
 

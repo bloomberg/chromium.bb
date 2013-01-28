@@ -246,80 +246,6 @@
   },
 
   'conditions': [
-    ['OS=="win" or OS=="mac" or OS=="linux"', {
-      'targets': [
-        {
-          'target_name': 'remoting_screen_capturer',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../skia/skia.gyp:skia',
-          ],
-          'sources': [
-            'capturer/capture_data.cc',
-            'capturer/capture_data.h',
-            'capturer/shared_buffer.cc',
-            'capturer/shared_buffer.h',
-            'capturer/shared_buffer_factory.h',
-            'capturer/differ.cc',
-            'capturer/differ.h',
-            'capturer/differ_block.cc',
-            'capturer/differ_block.h',
-            'capturer/linux/x_server_pixel_buffer.cc',
-            'capturer/linux/x_server_pixel_buffer.h',
-            'capturer/mac/desktop_configuration.mm',
-            'capturer/mac/desktop_configuration.h',
-            'capturer/mac/scoped_pixel_buffer_object.cc',
-            'capturer/mac/scoped_pixel_buffer_object.h',
-            'capturer/mouse_cursor_shape.cc',
-            'capturer/mouse_cursor_shape.h',
-            'capturer/video_frame.cc',
-            'capturer/video_frame.h',
-            'capturer/video_frame_capturer.h',
-            'capturer/video_frame_capturer_fake.cc',
-            'capturer/video_frame_capturer_fake.h',
-            'capturer/video_frame_capturer_helper.cc',
-            'capturer/video_frame_capturer_helper.h',
-            'capturer/video_frame_capturer_linux.cc',
-            'capturer/video_frame_capturer_mac.mm',
-            'capturer/video_frame_capturer_win.cc',
-            'capturer/video_frame_queue.cc',
-            'capturer/video_frame_queue.h',
-            'capturer/win/desktop.cc',
-            'capturer/win/desktop.h',
-            'capturer/win/scoped_thread_desktop.cc',
-            'capturer/win/scoped_thread_desktop.h',
-          ],
-          'conditions': [
-            [ 'target_arch == "ia32" or target_arch == "x64"', {
-              'dependencies': [
-                'differ_block_sse2',
-              ],
-            }],
-            ['OS=="linux"', {
-              'link_settings': {
-                'libraries': [
-                  '-lX11',
-                  '-lXdamage',
-                  '-lXext',
-                  '-lXfixes',
-                ],
-              },
-            }],
-            ['toolkit_uses_gtk==1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }, {  # else toolkit_uses_gtk!=1
-              'sources!': [
-                '*_gtk.cc',
-              ],
-            }],
-          ],
-        }, # end of target remoting_screen_capturer
-      ],  # end of 'targets'
-    }],  # 'OS==win or OS==mac or OS==linux'
-
     ['enable_remoting_host==1', {
       'targets': [
         {
@@ -330,9 +256,9 @@
             'remoting_base',
             'remoting_jingle_glue',
             'remoting_protocol',
-            'remoting_screen_capturer',
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
+            '../media/media.gyp:media',
             '../ipc/ipc.gyp:ipc',
           ],
           'defines': [
@@ -527,12 +453,6 @@
                 '../third_party/GTM/DebugUtils',
                 '../third_party/GTM/Foundation',
               ],
-              'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-                  'libpam.a',
-                ],
-              },
             }],
             ['OS=="win"', {
               'dependencies': [
@@ -2179,22 +2099,6 @@
       ],
     },  # end of target 'remoting_protocol'
 
-    {
-      'target_name': 'differ_block_sse2',
-      'type': 'static_library',
-      'conditions': [
-        [ 'os_posix == 1 and OS != "mac"', {
-          'cflags': [
-            '-msse2',
-          ],
-        }],
-      ],
-      'sources': [
-        'capturer/differ_block_sse2.cc',
-        'capturer/differ_block_sse2.h',
-      ],
-    }, # end of target differ_block_sse2
-
     # Remoting unit tests
     {
       'target_name': 'remoting_unittests',
@@ -2208,13 +2112,13 @@
         'remoting_host',
         'remoting_jingle_glue',
         'remoting_protocol',
-        'remoting_screen_capturer',
         'remoting_host_setup_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
+        '../media/media.gyp:media_test_support',
         '../net/net.gyp:net_test_support',
         '../ppapi/ppapi.gyp:ppapi_cpp',
         '../testing/gmock.gyp:gmock',
@@ -2237,14 +2141,6 @@
         'base/resources_unittest.cc',
         'base/typed_buffer_unittest.cc',
         'base/util_unittest.cc',
-        'capturer/video_capturer_mock_objects.cc',
-        'capturer/video_capturer_mock_objects.h',
-        'capturer/differ_block_unittest.cc',
-        'capturer/differ_unittest.cc',
-        'capturer/shared_buffer_unittest.cc',
-        'capturer/video_frame_capturer_helper_unittest.cc',
-        'capturer/video_frame_capturer_mac_unittest.cc',
-        'capturer/video_frame_capturer_unittest.cc',
         'client/audio_player_unittest.cc',
         'client/key_event_mapper_unittest.cc',
         'client/plugin/mac_key_event_processor_unittest.cc',

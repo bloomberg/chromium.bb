@@ -14,9 +14,9 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/time.h"
-#include "remoting/capturer/capture_data.h"
-#include "remoting/capturer/mouse_cursor_shape.h"
-#include "remoting/capturer/video_frame_capturer.h"
+#include "media/video/capture/screen/mouse_cursor_shape.h"
+#include "media/video/capture/screen/screen_capture_data.h"
+#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -36,7 +36,7 @@ scoped_refptr<VideoScheduler> VideoScheduler::Create(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_ptr<VideoFrameCapturer> capturer,
+    scoped_ptr<media::ScreenCapturer> capturer,
     scoped_ptr<VideoEncoder> encoder,
     protocol::CursorShapeStub* cursor_stub,
     protocol::VideoStub* video_stub) {
@@ -58,7 +58,7 @@ scoped_refptr<VideoScheduler> VideoScheduler::Create(
 // Public methods --------------------------------------------------------------
 
 void VideoScheduler::OnCaptureCompleted(
-    scoped_refptr<CaptureData> capture_data) {
+    scoped_refptr<media::ScreenCaptureData> capture_data) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (capture_data) {
@@ -78,7 +78,7 @@ void VideoScheduler::OnCaptureCompleted(
 }
 
 void VideoScheduler::OnCursorShapeChanged(
-    scoped_ptr<MouseCursorShape> cursor_shape) {
+    scoped_ptr<media::MouseCursorShape> cursor_shape) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
@@ -140,7 +140,7 @@ VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_ptr<VideoFrameCapturer> capturer,
+    scoped_ptr<media::ScreenCapturer> capturer,
     scoped_ptr<VideoEncoder> encoder,
     protocol::CursorShapeStub* cursor_stub,
     protocol::VideoStub* video_stub)
@@ -279,7 +279,7 @@ void VideoScheduler::SendCursorShape(
 }
 
 void VideoScheduler::StopOnNetworkThread(
-    scoped_ptr<VideoFrameCapturer> capturer) {
+    scoped_ptr<media::ScreenCapturer> capturer) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   // This is posted by StopOnEncodeThread meaning that both capture and encode
@@ -289,7 +289,7 @@ void VideoScheduler::StopOnNetworkThread(
 // Encoder thread --------------------------------------------------------------
 
 void VideoScheduler::EncodeFrame(
-    scoped_refptr<CaptureData> capture_data) {
+    scoped_refptr<media::ScreenCaptureData> capture_data) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   // If there is nothing to encode then send an empty keep-alive packet.
@@ -323,7 +323,7 @@ void VideoScheduler::EncodedDataAvailableCallback(
 }
 
 void VideoScheduler::StopOnEncodeThread(
-    scoped_ptr<VideoFrameCapturer> capturer) {
+    scoped_ptr<media::ScreenCapturer> capturer) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   // This is posted by StopOnCaptureThread, so we know that by the time we

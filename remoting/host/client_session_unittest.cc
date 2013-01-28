@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "media/video/capture/screen/screen_capturer_fake.h"
+#include "media/video/capture/screen/screen_capturer_mock_objects.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
-#include "remoting/capturer/video_capturer_mock_objects.h"
-#include "remoting/capturer/video_frame_capturer_fake.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
@@ -67,7 +67,7 @@ class ClientSessionTest : public testing::Test {
   void StopClientSession();
 
  protected:
-  // Creates a DesktopEnvironment with a fake VideoFrameCapturer, to mock
+  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
@@ -77,9 +77,9 @@ class ClientSessionTest : public testing::Test {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  // Creates a fake VideoFrameCapturer, to mock
+  // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  VideoFrameCapturer* CreateVideoCapturer(
+  media::ScreenCapturer* CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);
 
@@ -208,10 +208,10 @@ EventExecutor* ClientSessionTest::CreateEventExecutor(
   return event_executor_.release();
 }
 
-VideoFrameCapturer* ClientSessionTest::CreateVideoCapturer(
+media::ScreenCapturer* ClientSessionTest::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
-  return new VideoFrameCapturerFake();
+  return new media::ScreenCapturerFake();
 }
 
 void ClientSessionTest::ConnectClientSession() {
@@ -437,9 +437,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   int input_x[3] = { -999, 100, 999 };
-  int expected_x[3] = { 0, 100, VideoFrameCapturerFake::kWidth - 1 };
+  int expected_x[3] = { 0, 100, media::ScreenCapturerFake::kWidth - 1 };
   int input_y[3] = { -999, 50, 999 };
-  int expected_y[3] = { 0, 50, VideoFrameCapturerFake::kHeight - 1 };
+  int expected_y[3] = { 0, 50, media::ScreenCapturerFake::kHeight - 1 };
 
   protocol::MouseEvent expected_event;
   for (int j = 0; j < 3; j++) {

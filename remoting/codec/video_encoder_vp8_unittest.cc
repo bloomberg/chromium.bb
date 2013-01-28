@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/capturer/capture_data.h"
+#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/codec/codec_test.h"
 #include "remoting/proto/video.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +34,8 @@ class VideoEncoderCallback {
   }
 };
 
-// Test that calling Encode with a differently-sized CaptureData does not
-// leak memory.
+// Test that calling Encode with a differently-sized media::ScreenCaptureData
+// does not leak memory.
 TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
   int height = 1000;
   int width = 1000;
@@ -45,14 +45,15 @@ TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
   VideoEncoderCallback callback;
 
   std::vector<uint8> buffer(width * height * kBytesPerPixel);
-  scoped_refptr<CaptureData> capture_data(new CaptureData(
-      &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height)));
+  scoped_refptr<media::ScreenCaptureData> capture_data(
+      new media::ScreenCaptureData(&buffer.front(), width * kBytesPerPixel,
+                                   SkISize::Make(width, height)));
   encoder.Encode(capture_data, false,
                  base::Bind(&VideoEncoderCallback::DataAvailable,
                             base::Unretained(&callback)));
 
   height /= 2;
-  capture_data = new CaptureData(
+  capture_data = new media::ScreenCaptureData(
       &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height));
   encoder.Encode(capture_data, false,
                  base::Bind(&VideoEncoderCallback::DataAvailable,
@@ -67,8 +68,8 @@ class VideoEncoderDpiCallback {
   }
 };
 
-// Test that the DPI information is correctly propagated from the CaptureData
-// to the VideoPacket.
+// Test that the DPI information is correctly propagated from the
+// media::ScreenCaptureData to the VideoPacket.
 TEST(VideoEncoderVp8Test, TestDpiPropagation) {
   int height = 32;
   int width = 32;
@@ -78,8 +79,9 @@ TEST(VideoEncoderVp8Test, TestDpiPropagation) {
   VideoEncoderDpiCallback callback;
 
   std::vector<uint8> buffer(width * height * kBytesPerPixel);
-  scoped_refptr<CaptureData> capture_data(new CaptureData(
-      &buffer.front(), width * kBytesPerPixel, SkISize::Make(width, height)));
+  scoped_refptr<media::ScreenCaptureData> capture_data(
+      new media::ScreenCaptureData(&buffer.front(), width * kBytesPerPixel,
+                                   SkISize::Make(width, height)));
   capture_data->set_dpi(SkIPoint::Make(96, 97));
   encoder.Encode(capture_data, false,
                  base::Bind(&VideoEncoderDpiCallback::DataAvailable,

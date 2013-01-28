@@ -14,7 +14,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/capturer/mac/desktop_configuration.h"
+#include "media/video/capture/screen/mac/desktop_configuration.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
@@ -192,8 +192,8 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     // response to display-changed events. VideoFrameCapturer's VideoFrames
     // could be augmented to include native cursor coordinates for use by
     // MouseClampingFilter, removing the need for translation here.
-    MacDesktopConfiguration desktop_config
-        = MacDesktopConfiguration::GetCurrent();
+    media::MacDesktopConfiguration desktop_config =
+        media::MacDesktopConfiguration::GetCurrent();
 
     // Translate the mouse position into desktop coordinates.
     mouse_pos_ += SkIPoint::Make(desktop_config.pixel_bounds.left(),

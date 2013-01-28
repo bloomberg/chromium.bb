@@ -35,7 +35,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
                               scoped_refptr<base::SingleThreadTaskRunner>));
   MOCK_METHOD2(
       CreateVideoCapturerPtr,
-      VideoFrameCapturer*(scoped_refptr<base::SingleThreadTaskRunner>,
+      media::ScreenCapturer*(scoped_refptr<base::SingleThreadTaskRunner>,
                           scoped_refptr<base::SingleThreadTaskRunner>));
 
   // DesktopEnvironment implementation.
@@ -44,7 +44,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
-  virtual scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
+  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
 };

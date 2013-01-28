@@ -8,8 +8,8 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "media/base/yuv_convert.h"
+#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/base/util.h"
-#include "remoting/capturer/capture_data.h"
 #include "remoting/proto/video.pb.h"
 
 extern "C" {
@@ -146,8 +146,9 @@ bool VideoEncoderVp8::Init(const SkISize& size) {
   return true;
 }
 
-void VideoEncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
-                                   SkRegion* updated_region) {
+void VideoEncoderVp8::PrepareImage(
+    scoped_refptr<media::ScreenCaptureData> capture_data,
+    SkRegion* updated_region) {
   const SkRegion& region = capture_data->dirty_region();
   if (region.isEmpty()) {
     updated_region->setEmpty();
@@ -212,7 +213,7 @@ void VideoEncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
 }
 
 void VideoEncoderVp8::Encode(
-    scoped_refptr<CaptureData> capture_data,
+    scoped_refptr<media::ScreenCaptureData> capture_data,
     bool key_frame,
     const DataAvailableCallback& data_available_callback) {
   DCHECK_LE(32, capture_data->size().width());

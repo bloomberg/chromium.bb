@@ -180,7 +180,7 @@ class VideoDecoderTester {
     strict_ = strict;
   }
 
-  void set_capture_data(scoped_refptr<CaptureData> data) {
+  void set_capture_data(scoped_refptr<media::ScreenCaptureData> data) {
     capture_data_ = data;
   }
 
@@ -272,7 +272,7 @@ class VideoDecoderTester {
   SkRegion update_region_;
   VideoDecoder* decoder_;
   scoped_array<uint8> image_data_;
-  scoped_refptr<CaptureData> capture_data_;
+  scoped_refptr<media::ScreenCaptureData> capture_data_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderTester);
 };
@@ -317,8 +317,9 @@ class VideoEncoderTester {
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderTester);
 };
 
-scoped_refptr<CaptureData> PrepareEncodeData(const SkISize& size,
-                                             scoped_array<uint8>* memory) {
+scoped_refptr<media::ScreenCaptureData> PrepareEncodeData(
+    const SkISize& size,
+    scoped_array<uint8>* memory) {
   int memory_size = size.width() * size.height() * kBytesPerPixel;
 
   memory->reset(new uint8[memory_size]);
@@ -328,14 +329,14 @@ scoped_refptr<CaptureData> PrepareEncodeData(const SkISize& size,
     (*memory)[i] = rand() % 256;
   }
 
-  scoped_refptr<CaptureData> data =
-      new CaptureData(memory->get(), size.width() * kBytesPerPixel, size);
+  scoped_refptr<media::ScreenCaptureData> data = new media::ScreenCaptureData(
+      memory->get(), size.width() * kBytesPerPixel, size);
   return data;
 }
 
 static void TestEncodingRects(VideoEncoder* encoder,
                               VideoEncoderTester* tester,
-                              scoped_refptr<CaptureData> data,
+                              scoped_refptr<media::ScreenCaptureData> data,
                               const SkIRect* rects, int count) {
   data->mutable_dirty_region().setEmpty();
   for (int i = 0; i < count; ++i) {
@@ -360,7 +361,7 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
   for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
     for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
       SkISize size = SkISize::Make(kSizes[xi], kSizes[yi]);
-      scoped_refptr<CaptureData> data =
+      scoped_refptr<media::ScreenCaptureData> data =
           PrepareEncodeData(size, &memory);
       std::vector<std::vector<SkIRect> > test_rect_lists =
           MakeTestRectLists(size);
@@ -376,7 +377,7 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 static void TestEncodeDecodeRects(VideoEncoder* encoder,
                                   VideoEncoderTester* encoder_tester,
                                   VideoDecoderTester* decoder_tester,
-                                  scoped_refptr<CaptureData> data,
+                                  scoped_refptr<media::ScreenCaptureData> data,
                                   const SkIRect* rects, int count) {
   data->mutable_dirty_region().setRects(rects, count);
   encoder_tester->AddRects(rects, count);
@@ -413,7 +414,8 @@ void TestVideoEncoderDecoder(
   VideoEncoderTester encoder_tester(&message_tester);
 
   scoped_array<uint8> memory;
-  scoped_refptr<CaptureData> data = PrepareEncodeData(kSize, &memory);
+  scoped_refptr<media::ScreenCaptureData> data =
+      PrepareEncodeData(kSize, &memory);
 
   VideoDecoderTester decoder_tester(decoder, kSize, kSize);
   decoder_tester.set_strict(strict);
@@ -458,9 +460,9 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
       view_size.width() * view_size.height() * kBytesPerPixel]);
   FillWithGradient(expected_view_data.get(), view_size, view_rect);
 
-  scoped_refptr<CaptureData> capture_data =
-      new CaptureData(screen_data.get(), screen_size.width() * kBytesPerPixel,
-                      screen_size);
+  scoped_refptr<media::ScreenCaptureData> capture_data =
+      new media::ScreenCaptureData(
+          screen_data.get(), screen_size.width() * kBytesPerPixel, screen_size);
   capture_data->mutable_dirty_region().op(screen_rect, SkRegion::kUnion_Op);
 
   VideoDecoderTester decoder_tester(decoder, screen_size, view_size);

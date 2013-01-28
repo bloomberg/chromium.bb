@@ -13,8 +13,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
-#include "remoting/capturer/win/desktop.h"
-#include "remoting/capturer/win/scoped_thread_desktop.h"
+#include "media/video/capture/screen/win/desktop.h"
+#include "media/video/capture/screen/win/scoped_thread_desktop.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/proto/event.pb.h"
 
@@ -80,7 +80,7 @@ class SessionEventExecutorWin::Core
 
   scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner_;
 
-  ScopedThreadDesktop desktop_;
+  media::ScopedThreadDesktop desktop_;
 
   // Used to inject Secure Attention Sequence on Vista+.
   base::Closure inject_sas_;
@@ -182,7 +182,7 @@ SessionEventExecutorWin::Core::~Core() {
 void SessionEventExecutorWin::Core::SwitchToInputDesktop() {
   // Switch to the desktop receiving user input if different from the current
   // one.
-  scoped_ptr<Desktop> input_desktop = Desktop::GetInputDesktop();
+  scoped_ptr<media::Desktop> input_desktop = media::Desktop::GetInputDesktop();
   if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
     // If SetThreadDesktop() fails, the thread is still assigned a desktop.
     // So we can continue capture screen bits, just from a diffected desktop.

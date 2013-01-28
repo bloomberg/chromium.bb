@@ -14,8 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "remoting/capturer/win/desktop.h"
-#include "remoting/capturer/win/scoped_thread_desktop.h"
+#include "media/video/capture/screen/win/desktop.h"
+#include "media/video/capture/screen/win/scoped_thread_desktop.h"
 
 namespace remoting {
 
@@ -190,15 +190,15 @@ bool SasInjectorXp::InjectSas() {
   const wchar_t kSasWindowClassName[] = L"SAS window class";
   const wchar_t kSasWindowTitle[] = L"SAS window";
 
-  scoped_ptr<remoting::Desktop> winlogon_desktop(
-      remoting::Desktop::GetDesktop(kWinlogonDesktopName));
+  scoped_ptr<media::Desktop> winlogon_desktop(
+      media::Desktop::GetDesktop(kWinlogonDesktopName));
   if (!winlogon_desktop.get()) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to open '" << kWinlogonDesktopName << "' desktop";
     return false;
   }
 
-  remoting::ScopedThreadDesktop desktop;
+  media::ScopedThreadDesktop desktop;
   if (!desktop.SetThreadDesktop(winlogon_desktop.Pass())) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to switch to '" << kWinlogonDesktopName << "' desktop";

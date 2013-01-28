@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
+#include "media/video/capture/screen/screen_capture_data.h"
+#include "media/video/capture/screen/screen_capturer_mock_objects.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/capturer/capture_data.h"
-#include "remoting/capturer/video_capturer_mock_objects.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -56,7 +56,7 @@ class MockVideoEncoder : public VideoEncoder {
   virtual ~MockVideoEncoder();
 
   MOCK_METHOD3(Encode, void(
-      scoped_refptr<CaptureData> capture_data,
+      scoped_refptr<media::ScreenCaptureData> capture_data,
       bool key_frame,
       const DataAvailableCallback& data_available_callback));
 
@@ -74,11 +74,11 @@ class VideoSchedulerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
-  void StartVideoScheduler(scoped_ptr<VideoFrameCapturer> capturer);
+  void StartVideoScheduler(scoped_ptr<media::ScreenCapturer> capturer);
   void StopVideoScheduler();
 
-  // VideoFrameCapturer mocks.
-  void OnCapturerStart(VideoFrameCapturer::Delegate* delegate);
+  // media::ScreenCapturer mocks.
+  void OnCapturerStart(media::ScreenCapturer::Delegate* delegate);
   void OnCapturerStop();
   void OnCaptureFrame();
 
@@ -94,10 +94,10 @@ class VideoSchedulerTest : public testing::Test {
   // The following mock objects are owned by VideoScheduler.
   MockVideoEncoder* encoder_;
 
-  scoped_refptr<CaptureData> data_;
+  scoped_refptr<media::ScreenCaptureData> data_;
 
-  // Points to the delegate passed to VideoFrameCapturer::Start().
-  VideoFrameCapturer::Delegate* capturer_delegate_;
+  // Points to the delegate passed to media::ScreenCapturer::Start().
+  media::ScreenCapturer::Delegate* capturer_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoSchedulerTest);
@@ -116,7 +116,7 @@ void VideoSchedulerTest::SetUp() {
 }
 
 void VideoSchedulerTest::StartVideoScheduler(
-    scoped_ptr<VideoFrameCapturer> capturer) {
+    scoped_ptr<media::ScreenCapturer> capturer) {
   scheduler_ = VideoScheduler::Create(
       task_runner_, // Capture
       task_runner_, // Encode
@@ -133,7 +133,7 @@ void VideoSchedulerTest::StopVideoScheduler() {
 }
 
 void VideoSchedulerTest::OnCapturerStart(
-    VideoFrameCapturer::Delegate* delegate) {
+    media::ScreenCapturer::Delegate* delegate) {
   EXPECT_FALSE(capturer_delegate_);
   EXPECT_TRUE(delegate);
 
@@ -156,16 +156,18 @@ void VideoSchedulerTest::OnCaptureFrame() {
 // VideoScheduler is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
 TEST_F(VideoSchedulerTest, StartAndStop) {
-  scoped_ptr<MockVideoFrameCapturer> capturer_(new MockVideoFrameCapturer());
+  scoped_ptr<media::MockScreenCapturer> capturer(
+      new media::MockScreenCapturer());
   Expectation capturer_start =
-      EXPECT_CALL(*capturer_, Start(_))
+      EXPECT_CALL(*capturer, Start(_))
           .WillOnce(Invoke(this, &VideoSchedulerTest::OnCapturerStart));
 
-  data_ = new CaptureData(NULL, kWidth * CaptureData::kBytesPerPixel,
-                          SkISize::Make(kWidth, kHeight));
+  data_ = new media::ScreenCaptureData(
+      NULL, kWidth * media::ScreenCaptureData::kBytesPerPixel,
+      SkISize::Make(kWidth, kHeight));
 
   // First the capturer is called.
-  Expectation capturer_capture = EXPECT_CALL(*capturer_, CaptureFrame())
+  Expectation capturer_capture = EXPECT_CALL(*capturer, CaptureFrame())
       .After(capturer_start)
       .WillRepeatedly(Invoke(this, &VideoSchedulerTest::OnCaptureFrame));
 
@@ -185,12 +187,12 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
           InvokeWithoutArgs(this, &VideoSchedulerTest::StopVideoScheduler)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*capturer_, Stop())
+  EXPECT_CALL(*capturer, Stop())
       .After(capturer_capture)
       .WillOnce(Invoke(this, &VideoSchedulerTest::OnCapturerStop));
 
   // Start video frame capture.
-  StartVideoScheduler(capturer_.PassAs<VideoFrameCapturer>());
+  StartVideoScheduler(capturer.PassAs<media::ScreenCapturer>());
 
   task_runner_ = NULL;
   run_loop_.Run();

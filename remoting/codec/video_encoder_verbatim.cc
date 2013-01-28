@@ -5,8 +5,8 @@
 #include "remoting/codec/video_encoder_verbatim.h"
 
 #include "base/logging.h"
+#include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/base/util.h"
-#include "remoting/capturer/capture_data.h"
 #include "remoting/proto/video.pb.h"
 
 namespace remoting {
@@ -26,7 +26,7 @@ VideoEncoderVerbatim::~VideoEncoderVerbatim() {
 }
 
 void VideoEncoderVerbatim::Encode(
-    scoped_refptr<CaptureData> capture_data,
+    scoped_refptr<media::ScreenCaptureData> capture_data,
     bool key_frame,
     const DataAvailableCallback& data_available_callback) {
   capture_data_ = capture_data;
