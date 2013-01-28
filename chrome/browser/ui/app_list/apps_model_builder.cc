@@ -98,11 +98,8 @@ void AppsModelBuilder::PopulateApps() {
 
   std::sort(apps.begin(), apps.end(), &AppPrecedes);
 
-  for (Apps::const_iterator it = apps.begin();
-       it != apps.end();
-       ++it) {
-    model_->Add(*it);
-  }
+  for (size_t i = 0; i < apps.size(); ++i)
+    model_->Add(apps[i]);
 }
 
 void AppsModelBuilder::ResortApps() {
