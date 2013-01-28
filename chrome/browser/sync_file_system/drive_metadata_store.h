@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/file_path.h"
@@ -119,6 +120,10 @@ class DriveMetadataStore
     DCHECK(CalledOnValidThread());
     return incremental_sync_origins_;
   }
+
+  // Returns all origins that are tracked. i.e. Union of batch_sync_origins_ and
+  // incremental_sync_origins_.
+  void GetAllOrigins(std::vector<GURL>* origins);
 
  private:
   friend class DriveMetadataStoreTest;

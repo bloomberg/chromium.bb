@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -17,6 +20,8 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/mock_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/escape.h"
@@ -37,6 +42,10 @@ using google_apis::ResourceEntry;
 using google_apis::DriveServiceInterface;
 using google_apis::DriveUploaderInterface;
 using google_apis::test_util::LoadJSONFile;
+
+using extensions::Extension;
+using extensions::DictionaryBuilder;
+using extensions::ListBuilder;
 
 namespace sync_file_system {
 
@@ -68,6 +77,29 @@ void ExpectEqStatus(bool* done,
   EXPECT_EQ(expected, actual);
 }
 
+// Mocks adding an installed extension to ExtensionService.
+scoped_refptr<const extensions::Extension> AddTestExtension(
+    ExtensionService* extension_service,
+    const FilePath::StringType& extension_name) {
+  std::string id = Extension::GenerateIdForPath(FilePath(extension_name));
+
+  scoped_refptr<const Extension> extension =
+      extensions::ExtensionBuilder().SetManifest(
+          DictionaryBuilder()
+            .Set("name", extension_name)
+            .Set("version", "1.0"))
+          .SetID(id)
+      .Build();
+  extension_service->AddExtension(extension);
+  return extension;
+}
+
+// Converts extension_name to GURL version.
+GURL ExtensionNameToGURL(const FilePath::StringType& extension_name) {
+  std::string id = Extension::GenerateIdForPath(FilePath(extension_name));
+  return extensions::Extension::GetBaseURLFromExtensionId(id);
+}
+
 }  // namespace
 
 class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
@@ -86,11 +118,23 @@ class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
 class DriveFileSyncServiceTest : public testing::Test {
  public:
   DriveFileSyncServiceTest()
-      : file_thread_(content::BrowserThread::FILE, &message_loop_),
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE, &message_loop_),
         mock_drive_service_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
+    // Add TestExtensionSystem with registered ExtensionIds used in tests.
+    extensions::TestExtensionSystem* extension_system(
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(&profile_)));
+    extension_system->CreateExtensionService(
+        CommandLine::ForCurrentProcess(), FilePath(), false);
+    ExtensionService* extension_service = extension_system->Get(
+        &profile_)->extension_service();
+    AddTestExtension(extension_service, FPL("example1"));
+    AddTestExtension(extension_service, FPL("example2"));
+
     ASSERT_TRUE(fileapi::RegisterSyncableFileSystem(kServiceName));
 
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
@@ -114,7 +158,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   void SetUpDriveSyncService() {
-    sync_service_ = DriveFileSyncService::CreateForTesting(
+    sync_service_ = DriveFileSyncService::CreateForTesting(&profile_,
         base_dir_.path(), sync_client_.Pass(), metadata_store_.Pass()).Pass();
     sync_service_->AddObserver(&mock_remote_observer_);
   }
@@ -275,6 +319,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
   base::ScopedTempDir base_dir_;
@@ -400,8 +445,8 @@ TEST_F(DriveFileSyncServiceTest, GetSyncRoot) {
 }
 
 TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
-  const GURL kOrigin1("chrome-extension://example");
-  const GURL kOrigin2("chrome-extension://example2");
+  const GURL kOrigin1 = ExtensionNameToGURL(FPL("example1"));
+  const GURL kOrigin2 = ExtensionNameToGURL(FPL("example2"));
   const std::string kDirectoryResourceId1(
       "folder:origin_directory_resource_id");
   const std::string kDirectoryResourceId2(
@@ -608,8 +653,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
 }
 
 TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
-  const GURL kOrigin1("chrome-extension://example1");
-  const GURL kOrigin2("chrome-extension://example2");
+  const GURL kOrigin1 = ExtensionNameToGURL(FPL("example1"));
+  const GURL kOrigin2 = ExtensionNameToGURL(FPL("example2"));
   const std::string kDirectoryResourceId1(
       "folder:origin_directory_resource_id");
   const std::string kDirectoryResourceId2(
@@ -819,7 +864,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
-  const GURL kOrigin("chrome-extension://example");
+  const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const FilePath::StringType kFileName(FPL("File 1.mp3"));
@@ -873,7 +918,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
-  const GURL kOrigin("chrome-extension://example");
+  const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
   const FilePath::StringType kFileName(FPL("File 1.mp3"));

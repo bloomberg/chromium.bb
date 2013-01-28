@@ -14,6 +14,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
@@ -61,14 +63,17 @@ void DeleteTemporaryFile(const FilePath& file_path) {
                << file_path.value();
 }
 
-void DidUpdateConflictState(fileapi::SyncStatusCode status) {
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
-}
-
 void EmptyStatusCallback(fileapi::SyncStatusCode code) {}
 
 void EnablePolling(bool* polling_enabled) {
   *polling_enabled = true;
+}
+
+void DidRemoveOrigin(const GURL& origin, fileapi::SyncStatusCode status) {
+  // TODO(calvinlo): Disable syncing if status not ok (http://crbug.com/171611).
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
+  LOG(WARNING) << "Remove origin failed for: " << origin.spec()
+               << " status=" << status;
 }
 
 }  // namespace
@@ -224,7 +229,8 @@ bool DriveFileSyncService::RemoteChangeComparator::operator()(
 }
 
 DriveFileSyncService::DriveFileSyncService(Profile* profile)
-    : last_operation_status_(fileapi::SYNC_STATUS_OK),
+    : profile_(profile),
+      last_operation_status_(fileapi::SYNC_STATUS_OK),
       state_(REMOTE_SERVICE_OK),
       largest_fetched_changestamp_(0),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
@@ -243,7 +249,8 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
           content::BrowserThread::FILE)));
 
   metadata_store_->Initialize(
-      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore, AsWeakPtr(),
+      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
+                 AsWeakPtr(),
                  base::Passed(GetToken(FROM_HERE, TASK_TYPE_DATABASE,
                                        "Metadata database initialization"))));
 }
@@ -258,11 +265,12 @@ DriveFileSyncService::~DriveFileSyncService() {
 
 // static
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
+    Profile* profile,
     const FilePath& base_dir,
     scoped_ptr<DriveFileSyncClient> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   return make_scoped_ptr(new DriveFileSyncService(
-      base_dir, sync_client.Pass(), metadata_store.Pass()));
+      profile, base_dir, sync_client.Pass(), metadata_store.Pass()));
 }
 
 void DriveFileSyncService::AddObserver(Observer* observer) {
@@ -575,10 +583,12 @@ void DriveFileSyncService::OnNetworkConnected() {
 
 // Called by CreateForTesting.
 DriveFileSyncService::DriveFileSyncService(
+    Profile* profile,
     const FilePath& base_dir,
     scoped_ptr<DriveFileSyncClient> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store)
-    : last_operation_status_(fileapi::SYNC_STATUS_OK),
+    : profile_(profile),
+      last_operation_status_(fileapi::SYNC_STATUS_OK),
       state_(REMOTE_SERVICE_OK),
       largest_fetched_changestamp_(0),
       polling_enabled_(false),
@@ -724,6 +734,13 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
+  // Remove any origins that are not installed or enabled.
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  std::vector<GURL> tracked_origins;
+  metadata_store_->GetAllOrigins(&tracked_origins);
+  UnregisterInactiveExtensionsIds(extension_service, tracked_origins);
+
   DriveMetadataStore::URLAndResourceIdList to_be_fetched_files;
   status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
@@ -743,6 +760,27 @@ void DriveFileSyncService::DidInitializeMetadataStore(
        itr != metadata_store_->batch_sync_origins().end();
        ++itr) {
     StartBatchSyncForOrigin(itr->first, itr->second);
+  }
+}
+
+void DriveFileSyncService::UnregisterInactiveExtensionsIds(
+    ExtensionService* extension_service,
+    const std::vector<GURL>& tracked_origins) {
+  for (std::vector<GURL>::const_iterator itr = tracked_origins.begin();
+       itr != tracked_origins.end();
+       ++itr) {
+    // Make sure the registered extension is installed and enabled.
+    std::string extension_id = itr->host();
+    const extensions::Extension* installed_extension =
+        extension_service->GetExtensionById(extension_id,
+                                            false /* include_disabled */);
+    if (installed_extension != NULL)
+      continue;
+
+    // Extension is either disabled or uninstalled. Unregister origin.
+    GURL origin = extensions::Extension::GetBaseURLFromExtensionId(
+        extension_id);
+    metadata_store_->RemoveOrigin(origin, base::Bind(&DidRemoveOrigin, origin));
   }
 }
 

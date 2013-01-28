@@ -18,10 +18,13 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
+#include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
+
+class ExtensionService;
 
 namespace google_apis {
 class ResourceList;
@@ -32,8 +35,6 @@ class Location;
 }
 
 namespace sync_file_system {
-
-class DriveMetadataStore;
 
 // Maintains remote file changes.
 // Owned by SyncFileSystemService (which is a per-profile object).
@@ -51,6 +52,7 @@ class DriveFileSyncService
   // Creates DriveFileSyncClient instance for testing.
   // |metadata_store| must be initialized beforehand.
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
+      Profile* profile,
       const FilePath& base_dir,
       scoped_ptr<DriveFileSyncClient> sync_client,
       scoped_ptr<DriveMetadataStore> metadata_store);
@@ -167,7 +169,8 @@ class DriveFileSyncService
     LOCAL_SYNC_OPERATION_FAIL,
   };
 
-  DriveFileSyncService(const FilePath& base_dir,
+  DriveFileSyncService(Profile* profile,
+                       const FilePath& base_dir,
                        scoped_ptr<DriveFileSyncClient> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
 
@@ -230,6 +233,10 @@ class DriveFileSyncService
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
                                   bool created);
+  void UnregisterInactiveExtensionsIds(
+      ExtensionService* extension_service,
+      const std::vector<GURL>& tracked_origins);
+
   void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
                             const fileapi::SyncStatusCallback& callback);
   void DidGetSyncRootDirectory(scoped_ptr<TaskToken> token,
@@ -340,6 +347,7 @@ class DriveFileSyncService
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
 
+  Profile* profile_;
   fileapi::SyncStatusCode last_operation_status_;
   RemoteServiceState state_;
   std::deque<base::Closure> pending_tasks_;
