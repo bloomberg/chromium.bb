@@ -313,7 +313,7 @@
     "extension_types": ["platform_app"]
   },
   "syncFileSystem": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "systemIndicator": {

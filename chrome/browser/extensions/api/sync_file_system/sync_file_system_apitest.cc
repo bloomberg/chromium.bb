@@ -10,8 +10,6 @@
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -30,11 +28,7 @@ namespace {
 
 class SyncFileSystemApiTest : public ExtensionApiTest {
  public:
-  // Override the current channel to "trunk" as syncFileSystem is currently
-  // available only on trunk channel.
-  SyncFileSystemApiTest()
-      : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {
-  }
+  SyncFileSystemApiTest() {}
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
     mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
@@ -57,7 +51,6 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   }
 
  private:
-  extensions::Feature::ScopedCurrentChannel current_channel_;
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service_;
   int64 real_default_quota_;
 };
@@ -143,4 +136,3 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace chrome
-
