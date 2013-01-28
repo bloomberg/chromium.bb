@@ -30,6 +30,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -353,6 +354,42 @@ gfx::Image* CreateHSLShiftedImage(const gfx::Image& image,
       *src_image, hsl_shift));
 }
 
+// A ImageSkiaSource that scales 100P image to the target scale factor
+// if the ImageSkiaRep for the target scale factor isn't available.
+class ThemeImageSource: public gfx::ImageSkiaSource {
+ public:
+  ThemeImageSource(const gfx::ImageSkia& source) : source_(source) {
+  }
+  virtual ~ThemeImageSource() {}
+
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE {
+    if (source_.HasRepresentation(scale_factor))
+      return source_.GetRepresentation(scale_factor);
+    const gfx::ImageSkiaRep& rep_100p =
+        source_.GetRepresentation(ui::SCALE_FACTOR_100P);
+    float scale = ui::GetScaleFactorScale(scale_factor);
+    gfx::Size size(rep_100p.GetWidth() * scale, rep_100p.GetHeight() * scale);
+    SkBitmap resized_bitmap;
+    resized_bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(),
+                             size.height());
+    if (!resized_bitmap.allocPixels())
+      SK_CRASH();
+    resized_bitmap.eraseARGB(0, 0, 0, 0);
+    SkCanvas canvas(resized_bitmap);
+    SkRect resized_bounds = RectToSkRect(gfx::Rect(size));
+    // Note(oshima): The following scaling code doesn't work with
+    // a mask image.
+    canvas.drawBitmapRect(rep_100p.sk_bitmap(), NULL, resized_bounds);
+    return gfx::ImageSkiaRep(resized_bitmap, scale_factor);
+  }
+
+ private:
+  const gfx::ImageSkia source_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThemeImageSource);
+};
+
 class TabBackgroundImageSource: public gfx::CanvasImageSource {
  public:
   TabBackgroundImageSource(const gfx::ImageSkia& image_to_tint,
@@ -605,11 +642,10 @@ const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
 
   // TODO(pkotwicz): Do something better than loading the bitmaps
   // for all the scale factors associated with |idr_id|.
-  gfx::ImageSkia image_skia;
+  gfx::ImageSkia source_image_skia;
   for (size_t i = 0; i < scale_factors_.size(); ++i) {
     scoped_refptr<base::RefCountedMemory> memory =
         GetRawData(idr_id, scale_factors_[i]);
-
     if (memory.get()) {
       // Decode the PNG.
       SkBitmap bitmap;
@@ -617,19 +653,20 @@ const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
                                  &bitmap)) {
         NOTREACHED() << "Unable to decode theme image resource " << idr_id
                      << " from saved DataPack.";
-        return NULL;
+        continue;
       }
-      image_skia.AddRepresentation(
+      source_image_skia.AddRepresentation(
           gfx::ImageSkiaRep(bitmap, scale_factors_[i]));
     }
   }
 
-  if (!image_skia.isNull()) {
+  if (!source_image_skia.isNull()) {
+    ThemeImageSource* source = new ThemeImageSource(source_image_skia);
+    gfx::ImageSkia image_skia(source, source_image_skia.size());
     gfx::Image* ret = new gfx::Image(image_skia);
     images_on_ui_thread_[prs_id] = ret;
     return ret;
   }
-
   return NULL;
 }
 
