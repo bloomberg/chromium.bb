@@ -43,7 +43,7 @@ bool ObjectWatcher::StartWatching(HANDLE object, Delegate* delegate) {
 
   if (!RegisterWaitForSingleObject(&wait_object_, object, DoneWaiting,
                                    this, INFINITE, wait_flags)) {
-    NOTREACHED() << "RegisterWaitForSingleObject failed: " << GetLastError();
+    DLOG_GETLASTERROR(FATAL) << "RegisterWaitForSingleObject failed";
     object_ = NULL;
     wait_object_ = NULL;
     return false;
@@ -65,7 +65,7 @@ bool ObjectWatcher::StopWatching() {
   // Blocking call to cancel the wait. Any callbacks already in progress will
   // finish before we return from this call.
   if (!UnregisterWaitEx(wait_object_, INVALID_HANDLE_VALUE)) {
-    NOTREACHED() << "UnregisterWaitEx failed: " << GetLastError();
+    DLOG_GETLASTERROR(FATAL) << "UnregisterWaitEx failed";
     return false;
   }
 

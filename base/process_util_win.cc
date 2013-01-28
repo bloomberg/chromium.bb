@@ -409,8 +409,7 @@ bool KillProcessById(ProcessId process_id, int exit_code, bool wait) {
                                FALSE,  // Don't inherit handle
                                process_id);
   if (!process) {
-    DLOG(ERROR) << "Unable to open process " << process_id << " : "
-                << GetLastError();
+    DLOG_GETLASTERROR(ERROR) << "Unable to open process " << process_id;
     return false;
   }
   bool ret = KillProcess(process, exit_code, wait);
@@ -493,9 +492,9 @@ bool KillProcess(ProcessHandle process, int exit_code, bool wait) {
   if (result && wait) {
     // The process may not end immediately due to pending I/O
     if (WAIT_OBJECT_0 != WaitForSingleObject(process, 60 * 1000))
-      DLOG(ERROR) << "Error waiting for process exit: " << GetLastError();
+      DLOG_GETLASTERROR(ERROR) << "Error waiting for process exit";
   } else if (!result) {
-    DLOG(ERROR) << "Unable to terminate process: " << GetLastError();
+    DLOG_GETLASTERROR(ERROR) << "Unable to terminate process";
   }
   return result;
 }

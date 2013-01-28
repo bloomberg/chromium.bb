@@ -41,7 +41,7 @@ void SystemMonitor::ProcessWmPowerBroadcastMessage(int event_id) {
 bool SystemMonitor::IsBatteryPower() {
   SYSTEM_POWER_STATUS status;
   if (!GetSystemPowerStatus(&status)) {
-    DLOG(ERROR) << "GetSystemPowerStatus failed: " << GetLastError();
+    DLOG_GETLASTERROR(ERROR) << "GetSystemPowerStatus failed";
     return false;
   }
   return (status.ACLineStatus == 0);

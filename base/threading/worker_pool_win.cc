@@ -48,7 +48,7 @@ bool PostTaskInternal(PendingTask* pending_task, bool task_is_slow) {
     flags |= WT_EXECUTELONGFUNCTION;
 
   if (!QueueUserWorkItem(WorkItemCallback, pending_task, flags)) {
-    DLOG(ERROR) << "QueueUserWorkItem failed: " << GetLastError();
+    DLOG_GETLASTERROR(ERROR) << "QueueUserWorkItem failed";
     delete pending_task;
     return false;
   }

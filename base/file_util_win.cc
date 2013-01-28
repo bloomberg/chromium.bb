@@ -537,8 +537,8 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
                                           0,
                                           NULL));
   if (!file) {
-    DLOG(WARNING) << "CreateFile failed for path " << filename.value()
-                  << " error code=" << GetLastError();
+    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
+                               << filename.value();
     return -1;
   }
 
@@ -549,8 +549,8 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    DLOG(WARNING) << "writing file " << filename.value()
-                  << " failed, error code=" << GetLastError();
+    DLOG_GETLASTERROR(WARNING) << "writing file " << filename.value()
+                               << " failed";
   } else {
     // Didn't write all the bytes.
     DLOG(WARNING) << "wrote" << written << " bytes to "
@@ -569,8 +569,8 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
                                           0,
                                           NULL));
   if (!file) {
-    DLOG(WARNING) << "CreateFile failed for path " << filename.value()
-                  << " error code=" << GetLastError();
+    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
+                               << filename.value();
     return -1;
   }
 
@@ -581,8 +581,8 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    DLOG(WARNING) << "writing file " << filename.value()
-                  << " failed, error code=" << GetLastError();
+    DLOG_GETLASTERROR(WARNING) << "writing file " << filename.value()
+                               << " failed";
   } else {
     // Didn't write all the bytes.
     DLOG(WARNING) << "wrote" << written << " bytes to "
