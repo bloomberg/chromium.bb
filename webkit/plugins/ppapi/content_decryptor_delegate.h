@@ -105,17 +105,20 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   // Cancels the pending decrypt-and-decode callback for |stream_type|.
   void CancelDecode(media::Decryptor::StreamType stream_type);
 
-  // Fills |resource| with a PPB_Buffer_Impl and copies |data| into the buffer
-  // resource. This method reuses |audio_input_resource_| and
-  // |video_input_resource_| to reduce the latency in requesting new
-  // PPB_Buffer_Impl resources. The caller must make sure that
+  // Fills |resource| with a PPB_Buffer_Impl and copies the data from
+  // |encrypted_buffer| into the buffer resource. This method reuses
+  // |audio_input_resource_| and |video_input_resource_| to reduce the latency
+  // in requesting new PPB_Buffer_Impl resources. The caller must make sure that
   // |audio_input_resource_| or |video_input_resource_| is available before
   // calling this method.
-  // If |data| is NULL, sets |*resource| to NULL.
+  //
+  // An end of stream |encrypted_buffer| is represented as a null |resource|.
+  //
   // Returns true upon success and false if any error happened.
-  bool MakeMediaBufferResource(media::Decryptor::StreamType stream_type,
-                               const uint8* data, uint32_t size,
-                               scoped_refptr<PPB_Buffer_Impl>* resource);
+  bool MakeMediaBufferResource(
+      media::Decryptor::StreamType stream_type,
+      const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+      scoped_refptr<PPB_Buffer_Impl>* resource);
 
   void FreeBuffer(uint32_t buffer_id);
 

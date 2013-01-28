@@ -42,6 +42,9 @@ class FFmpegCdmAudioDecoder {
   // output in |decoded_frames| when output is available. Returns
   // |cdm::kNeedMoreData| when |compressed_frame| does not produce output.
   // Returns |cdm::kDecodeError| when decoding fails.
+  //
+  // A null |compressed_buffer| will attempt to flush the decoder of any
+  // remaining frames. |compressed_buffer_size| and |timestamp| are ignored.
   cdm::Status DecodeBuffer(const uint8_t* compressed_buffer,
                            int32_t compressed_buffer_size,
                            int64_t timestamp,

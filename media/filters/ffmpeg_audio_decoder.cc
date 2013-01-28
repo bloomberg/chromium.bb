@@ -351,8 +351,13 @@ void FFmpegAudioDecoder::RunDecodeLoop(
     bool skip_eos_append) {
   AVPacket packet;
   av_init_packet(&packet);
-  packet.data = const_cast<uint8*>(input->GetData());
-  packet.size = input->GetDataSize();
+  if (input->IsEndOfStream()) {
+    packet.data = NULL;
+    packet.size = 0;
+  } else {
+    packet.data = const_cast<uint8*>(input->GetData());
+    packet.size = input->GetDataSize();
+  }
 
   // Each audio packet may contain several frames, so we must call the decoder
   // until we've exhausted the packet.  Regardless of the packet size we always

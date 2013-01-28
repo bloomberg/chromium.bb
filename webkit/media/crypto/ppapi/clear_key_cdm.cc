@@ -412,12 +412,16 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   if (status != cdm::kSuccess)
     return status;
 
-  DCHECK(status == cdm::kSuccess);
-  DCHECK(buffer);
-  return video_decoder_->DecodeFrame(buffer.get()->GetData(),
-                                     buffer->GetDataSize(),
-                                     encrypted_buffer.timestamp,
-                                     decoded_frame);
+  const uint8_t* data = NULL;
+  int32_t size = 0;
+  int64_t timestamp = 0;
+  if (!buffer->IsEndOfStream()) {
+    data = buffer->GetData();
+    size = buffer->GetDataSize();
+    timestamp = encrypted_buffer.timestamp;
+  }
+
+  return video_decoder_->DecodeFrame(data, size, timestamp, decoded_frame);
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
@@ -432,12 +436,16 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     return status;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  DCHECK(status == cdm::kSuccess);
-  DCHECK(buffer);
-  return audio_decoder_->DecodeBuffer(buffer.get()->GetData(),
-                                      buffer->GetDataSize(),
-                                      encrypted_buffer.timestamp,
-                                      audio_frames);
+  const uint8_t* data = NULL;
+  int32_t size = 0;
+  int64_t timestamp = 0;
+  if (!buffer->IsEndOfStream()) {
+    data = buffer->GetData();
+    size = buffer->GetDataSize();
+    timestamp = encrypted_buffer.timestamp;
+  }
+
+  return audio_decoder_->DecodeBuffer(data, size, timestamp, audio_frames);
 #elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   int64 timestamp_in_microseconds = kNoTimestamp;
   if (!buffer->IsEndOfStream()) {

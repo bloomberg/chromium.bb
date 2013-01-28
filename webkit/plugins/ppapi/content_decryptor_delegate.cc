@@ -78,30 +78,32 @@ bool CopyStringToArray(const std::string& str, uint8 (&array)[array_size]) {
   return true;
 }
 
-// Fills the |block_info| with information from |decrypt_config|, |timestamp|
-// and |request_id|. |decrypt_config| can be NULL if the block is not encrypted.
-// This is useful for end-of-stream blocks.
+// Fills the |block_info| with information from |encrypted_buffer|.
+//
 // Returns true if |block_info| is successfully filled. Returns false
 // otherwise.
-bool MakeEncryptedBlockInfo(int data_size,
-                            const media::DecryptConfig* decrypt_config,
-                            int64_t timestamp,
-                            uint32_t request_id,
-                            PP_EncryptedBlockInfo* block_info) {
-  DCHECK(block_info);
-
+static bool MakeEncryptedBlockInfo(
+    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+    uint32_t request_id,
+    PP_EncryptedBlockInfo* block_info) {
   // TODO(xhwang): Fix initialization of PP_EncryptedBlockInfo here and
   // anywhere else.
   memset(block_info, 0, sizeof(*block_info));
-
   block_info->tracking_info.request_id = request_id;
-  block_info->tracking_info.timestamp = timestamp;
 
-  if (!decrypt_config)
+  // EOS buffers need a request ID and nothing more.
+  if (encrypted_buffer->IsEndOfStream())
     return true;
 
-  DCHECK(data_size) << "DecryptConfig is set on an empty buffer";
-  block_info->data_size = data_size;
+  DCHECK(encrypted_buffer->GetDataSize())
+      << "DecryptConfig is set on an empty buffer";
+
+  block_info->tracking_info.timestamp =
+      encrypted_buffer->GetTimestamp().InMicroseconds();
+  block_info->data_size = encrypted_buffer->GetDataSize();
+
+  const media::DecryptConfig* decrypt_config =
+      encrypted_buffer->GetDecryptConfig();
   block_info->data_offset = decrypt_config->data_offset();
 
   if (!CopyStringToArray(decrypt_config->key_id(), block_info->key_id) ||
@@ -352,8 +354,7 @@ bool ContentDecryptorDelegate::Decrypt(
   // time. This is enforced by the media pipeline.
   scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(stream_type,
-                               encrypted_buffer->GetData(),
-                               encrypted_buffer->GetDataSize(),
+                               encrypted_buffer,
                                &encrypted_resource) ||
       !encrypted_resource) {
     return false;
@@ -365,11 +366,7 @@ bool ContentDecryptorDelegate::Decrypt(
 
   PP_EncryptedBlockInfo block_info = {};
   DCHECK(encrypted_buffer->GetDecryptConfig());
-  if (!MakeEncryptedBlockInfo(encrypted_buffer->GetDataSize(),
-                              encrypted_buffer->GetDecryptConfig(),
-                              encrypted_buffer->GetTimestamp().InMicroseconds(),
-                              request_id,
-                              &block_info)) {
+  if (!MakeEncryptedBlockInfo(encrypted_buffer, request_id, &block_info)) {
     return false;
   }
 
@@ -528,20 +525,15 @@ bool ContentDecryptorDelegate::ResetDecoder(
 bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::AudioDecodeCB& audio_decode_cb) {
-  // If |encrypted_buffer| is end-of-stream buffer, GetData() and GetDataSize()
-  // return NULL and 0 respectively. In that case, we'll just create a NULL
-  // resource.
   // |audio_input_resource_| is not being used by the plugin now
   // because there is only one pending audio decode request at any time.
   // This is enforced by the media pipeline.
   scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(media::Decryptor::kAudio,
-                               encrypted_buffer->GetData(),
-                               encrypted_buffer->GetDataSize(),
+                               encrypted_buffer,
                                &encrypted_resource)) {
     return false;
   }
-  ScopedPPResource pp_resource(encrypted_resource.get());
 
   // The resource should not be NULL for non-EOS buffer.
   if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource)
@@ -551,12 +543,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   DVLOG(2) << "DecryptAndDecodeAudio() - request_id " << request_id;
 
   PP_EncryptedBlockInfo block_info = {};
-  if (!MakeEncryptedBlockInfo(
-      encrypted_buffer->GetDataSize(),
-      encrypted_buffer->GetDecryptConfig(),
-      encrypted_buffer->GetTimestamp().InMicroseconds(),
-      request_id,
-      &block_info)) {
+  if (!MakeEncryptedBlockInfo(encrypted_buffer, request_id, &block_info)) {
     return false;
   }
 
@@ -571,6 +558,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   pending_audio_decode_request_id_ = request_id;
   pending_audio_decode_cb_ = audio_decode_cb;
 
+  ScopedPPResource pp_resource(encrypted_resource.get());
   plugin_decryption_interface_->DecryptAndDecode(pp_instance_,
                                                  PP_DECRYPTORSTREAMTYPE_AUDIO,
                                                  pp_resource,
@@ -581,20 +569,15 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
 bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::VideoDecodeCB& video_decode_cb) {
-  // If |encrypted_buffer| is end-of-stream buffer, GetData() and GetDataSize()
-  // return NULL and 0 respectively. In that case, we'll just get a NULL
-  // resource.
   // |video_input_resource_| is not being used by the plugin now
   // because there is only one pending video decode request at any time.
   // This is enforced by the media pipeline.
   scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
   if (!MakeMediaBufferResource(media::Decryptor::kVideo,
-                               encrypted_buffer->GetData(),
-                               encrypted_buffer->GetDataSize(),
+                               encrypted_buffer,
                                &encrypted_resource)) {
     return false;
   }
-  ScopedPPResource pp_resource(encrypted_resource.get());
 
   // The resource should not be 0 for non-EOS buffer.
   if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource)
@@ -606,12 +589,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
       "eme", "ContentDecryptorDelegate::DecryptAndDecodeVideo", request_id);
 
   PP_EncryptedBlockInfo block_info = {};
-  if (!MakeEncryptedBlockInfo(
-      encrypted_buffer->GetDataSize(),
-      encrypted_buffer->GetDecryptConfig(),
-      encrypted_buffer->GetTimestamp().InMicroseconds(),
-      request_id,
-      &block_info)) {
+  if (!MakeEncryptedBlockInfo(encrypted_buffer, request_id, &block_info)) {
     return false;
   }
 
@@ -627,6 +605,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   pending_video_decode_cb_ = video_decode_cb;
 
   // TODO(tomfinegan): Need to get stream type from media stack.
+  ScopedPPResource pp_resource(encrypted_resource.get());
   plugin_decryption_interface_->DecryptAndDecode(pp_instance_,
                                                  PP_DECRYPTORSTREAMTYPE_VIDEO,
                                                  pp_resource,
@@ -979,15 +958,13 @@ void ContentDecryptorDelegate::CancelDecode(
 
 bool ContentDecryptorDelegate::MakeMediaBufferResource(
     media::Decryptor::StreamType stream_type,
-    const uint8* data, uint32_t size,
+    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     scoped_refptr<PPB_Buffer_Impl>* resource) {
   TRACE_EVENT0("eme", "ContentDecryptorDelegate::MakeMediaBufferResource");
 
-  DCHECK(resource);
-
-  if (!data || !size) {
-    DCHECK(!data && !size);
-    resource = NULL;
+  // End of stream buffers are represented as null resources.
+  if (encrypted_buffer->IsEndOfStream()) {
+    *resource = NULL;
     return true;
   }
 
@@ -996,7 +973,9 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
   scoped_refptr<PPB_Buffer_Impl>& media_resource =
       (stream_type == media::Decryptor::kAudio) ? audio_input_resource_ :
                                                   video_input_resource_;
-  if (!media_resource || (media_resource->size() < size)) {
+
+  const size_t data_size = static_cast<size_t>(encrypted_buffer->GetDataSize());
+  if (!media_resource || media_resource->size() < data_size) {
     // Either the buffer hasn't been created yet, or we have one that isn't big
     // enough to fit |size| bytes.
 
@@ -1008,7 +987,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
     const uint32_t kMinimumMediaBufferSize = 1024;
     uint32_t media_resource_size = media_resource ? media_resource->size() :
                                                     kMinimumMediaBufferSize;
-    while (media_resource_size < size)
+    while (media_resource_size < data_size)
       media_resource_size *= 2;
 
     DVLOG(2) << "Size of media buffer for "
@@ -1022,11 +1001,11 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
   }
 
   BufferAutoMapper mapper(media_resource);
-  if (!mapper.data() || mapper.size() < static_cast<size_t>(size)) {
+  if (!mapper.data() || mapper.size() < data_size) {
     media_resource = NULL;
     return false;
   }
-  memcpy(mapper.data(), data, size);
+  memcpy(mapper.data(), encrypted_buffer->GetData(), data_size);
 
   *resource = media_resource;
   return true;

@@ -45,8 +45,6 @@ static void EosOnReadDone(bool* got_eos_buffer,
   EXPECT_EQ(status, DemuxerStream::kOk);
   if (buffer->IsEndOfStream()) {
     *got_eos_buffer = true;
-    EXPECT_TRUE(!buffer->GetData());
-    EXPECT_EQ(buffer->GetDataSize(), 0);
     return;
   }
 

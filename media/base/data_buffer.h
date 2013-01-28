@@ -17,6 +17,8 @@ namespace media {
 //
 // Unlike DecoderBuffer, allocations are assumed to be allocated with the
 // default memory allocator (i.e., new uint8[]).
+//
+// NOTE: It is illegal to call any method when IsEndOfStream() is true.
 class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
  public:
   // Allocates buffer of size |buffer_size| >= 0.

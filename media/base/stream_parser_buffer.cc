@@ -35,7 +35,12 @@ StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
       is_keyframe_(is_keyframe),
       decode_timestamp_(kNoTimestamp()),
       config_id_(kInvalidConfigId) {
-  SetDuration(kNoTimestamp());
+  // TODO(scherkus): Should DataBuffer constructor accept a timestamp and
+  // duration to force clients to set them? Today they end up being zero which
+  // is both a common and valid value and could lead to bugs.
+  if (data) {
+    SetDuration(kNoTimestamp());
+  }
 }
 
 StreamParserBuffer::~StreamParserBuffer() {

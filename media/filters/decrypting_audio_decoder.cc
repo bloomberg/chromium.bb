@@ -342,10 +342,15 @@ void DecryptingAudioDecoder::DoDecryptAndDecodeBuffer(
 void DecryptingAudioDecoder::DecodePendingBuffer() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecode) << state_;
+
+  int buffer_size = 0;
+  if (!pending_buffer_to_decode_->IsEndOfStream()) {
+    buffer_size = pending_buffer_to_decode_->GetDataSize();
+  }
+
   decryptor_->DecryptAndDecodeAudio(
       pending_buffer_to_decode_,
-      base::Bind(&DecryptingAudioDecoder::DeliverFrame, this,
-                 pending_buffer_to_decode_->GetDataSize()));
+      base::Bind(&DecryptingAudioDecoder::DeliverFrame, this, buffer_size));
 }
 
 void DecryptingAudioDecoder::DeliverFrame(

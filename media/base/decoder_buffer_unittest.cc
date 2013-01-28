@@ -23,8 +23,6 @@ TEST(DecoderBufferTest, Constructors) {
 TEST(DecoderBufferTest, CreateEOSBuffer) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CreateEOSBuffer());
   EXPECT_TRUE(buffer->IsEndOfStream());
-  EXPECT_FALSE(buffer->GetData());
-  EXPECT_EQ(0, buffer->GetDataSize());
 }
 
 TEST(DecoderBufferTest, CopyFrom) {

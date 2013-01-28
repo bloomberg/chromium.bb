@@ -287,10 +287,15 @@ void DecryptingVideoDecoder::DecodePendingBuffer() {
   DCHECK_EQ(state_, kPendingDecode) << state_;
   TRACE_EVENT_ASYNC_BEGIN0(
       "eme", "DecryptingVideoDecoder::DecodePendingBuffer", ++trace_id_);
+
+  int buffer_size = 0;
+  if (!pending_buffer_to_decode_->IsEndOfStream()) {
+    buffer_size = pending_buffer_to_decode_->GetDataSize();
+  }
+
   decryptor_->DecryptAndDecodeVideo(
       pending_buffer_to_decode_, BindToCurrentLoop(base::Bind(
-          &DecryptingVideoDecoder::DeliverFrame, this,
-          pending_buffer_to_decode_->GetDataSize())));
+          &DecryptingVideoDecoder::DeliverFrame, this, buffer_size)));
 }
 
 void DecryptingVideoDecoder::DeliverFrame(
