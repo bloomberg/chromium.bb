@@ -2,25 +2,29 @@
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>Touchpad Log Viewer</title>
-<link type="text/css" href="css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 <script src="js/jquery-1.6.4.min.js"></script>
 <script src="js/jquery.mousewheel.js"></script>
 <script src="js/jquery-ui-1.8.16.custom.min.js"></script>
 <script src="js/bzip2.js"></script>
 <script src="js/base64-binary.js"></script>
 <script src="js/jsxcompressor.js"></script>
+<script src="js/purl.js"></script>
 
 <script src="finger_view_controller.js"></script>
 <script src="graph_controller.js"></script>
 <script src="secret_entries.js"></script>
 
 
-<link rel="stylesheet" href="style.css" type="text/css" media="all" />
+<link rel="stylesheet" href="/style.css" type="text/css" media="all" />
 <script type="text/javascript" charset="utf-8">
 
 var finger_view_controller;
 var current_layer = 0;
 var json_obj;
+
+var use_server = false;
+var logname = undefined;
 
 function update_range(event, ui) {
   finger_view_controller.setRange(ui.values[0], ui.values[1]);
@@ -371,6 +375,12 @@ function shrink() {
   var snippet = finger_view_controller.getSnippet(values[0], values[1]);
   $('#text_box').val(JSON.stringify(snippet, null, 2));
   loadLogObj(snippet, true);
+
+  if (use_server) {
+    $.post('/save/' + logname, JSON.stringify(snippet, null, 2), function () {
+      alert("Saved");
+    });
+  }
 }
 
 function generateRadioButtons(obj) {
@@ -613,7 +623,17 @@ $(document).ready(function() {
     };
     reader.readAsArrayBuffer(document.getElementById('bzipupload').files[0]);
   });
-  loadLog(secret_obj);
+
+  logname = $.url().fparam('id');
+  use_server = logname !== '';
+
+  if (use_server) {
+    $.get('/load/' + logname, function(data) {
+      loadLog(data);
+    }, 'json');
+  } else {
+    loadLog(secret_obj);
+  }
 });
 
 </script>
