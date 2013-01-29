@@ -906,10 +906,15 @@ class ParenthesizedExp(BitExpr):
 class Literal(BitExpr):
   """Models a literal unsigned integer."""
 
-  def __init__(self, value):
+  def __init__(self, value, name=None):
     if not isinstance(value, int):
       raise Exception("Can't create literal from %s" % value)
     self._value = value
+    if name == None: name = repr(value)
+    self._name = name
+
+  def name(self):
+      return self._name
 
   def value(self):
     return self._value
@@ -928,7 +933,10 @@ class Literal(BitExpr):
     return int(self.to_uint32())
 
   def neutral_repr(self):
-    return neutral_repr(self._value)
+    return self.name()
+
+  def __repr__(self):
+      return self.name()
 
 class BoolValue(BitExpr):
   """Models true and false."""

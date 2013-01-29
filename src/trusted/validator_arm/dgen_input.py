@@ -729,14 +729,12 @@ class Parser(object):
 
     match = _HEXIDECIMAL_PATTERN.match(word)
     if match:
-      return Literal(int(match.group(1), 16))
+      return Literal(int(match.group(1), 16), name=word)
 
     match = _BITSTRING_PATTERN.match(word)
     if match:
-      # TODO(karl): Use a separate bit expression class to
-      # denoten bit pattern strings.
       text = match.group(1)
-      l = dgen_core.Literal(int(text, 2))
+      l = dgen_core.Literal(int(text, 2), name=word)
       return dgen_core.BitField(l, len(text) - 1, 0)
 
     raise Exception('Nondecimal integer expected but not found: %s' % word)

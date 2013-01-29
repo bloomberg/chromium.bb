@@ -682,7 +682,7 @@ uses(Instruction inst) const {
 // Actual:
 //   {defs: {15, 14},
 //    relative: true,
-//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    relative_offset: SignExtend(inst(23:0):'00'(1:0), 32),
 //    safety: [true => MAY_BE_SAFE],
 //    uses: {15}}
 
@@ -705,7 +705,7 @@ is_relative_branch(Instruction inst) const {
 int32_t Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32)"
   return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
        ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
        : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
@@ -736,7 +736,7 @@ uses(Instruction inst) const {
 // Actual:
 //   {defs: {15},
 //    relative: true,
-//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    relative_offset: SignExtend(inst(23:0):'00'(1:0), 32),
 //    safety: [true => MAY_BE_SAFE],
 //    uses: {15}}
 
@@ -758,7 +758,7 @@ is_relative_branch(Instruction inst) const {
 int32_t Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32)"
   return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
        ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
        : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));

@@ -1764,7 +1764,7 @@ class Actual_BLX_register_cccc000100101111111111110011mmmm_case_1
 // Actual:
 //   {defs: {15, 14},
 //    relative: true,
-//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    relative_offset: SignExtend(inst(23:0):'00'(1:0), 32),
 //    safety: [true => MAY_BE_SAFE],
 //    uses: {15}}
 //
@@ -1777,7 +1777,7 @@ class Actual_BLX_register_cccc000100101111111111110011mmmm_case_1
 //    defs: {Pc, Lr},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
-//    imm32: SignExtend(imm24:0(1:0), 32),
+//    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
 //    relative_offset: imm32,
@@ -1805,7 +1805,7 @@ class Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
 // Actual:
 //   {defs: {15},
 //    relative: true,
-//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    relative_offset: SignExtend(inst(23:0):'00'(1:0), 32),
 //    safety: [true => MAY_BE_SAFE],
 //    uses: {15}}
 //
@@ -1817,7 +1817,7 @@ class Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
 //    defs: {Pc},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
-//    imm32: SignExtend(imm24:0(1:0), 32),
+//    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
 //    relative_offset: imm32,
@@ -2000,7 +2000,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    sat_imm: sat_imm(20:16),
 //    saturate_to: sat_imm + 1,
 //    sh: sh(6),
-//    shift: DecodeImmShift(sh:0(0), imm5),
+//    shift: DecodeImmShift(sh:'0'(0), imm5),
 //    uses: {Rn}}
 //
 // Baseline:
@@ -2015,7 +2015,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010001111ddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: SXTB16,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
@@ -2032,7 +2032,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010101111ddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: SXTB,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
@@ -2049,7 +2049,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011010111111ddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: SXTH,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
@@ -2093,7 +2093,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    sat_imm: sat_imm(20:16),
 //    saturate_to: sat_imm,
 //    sh: sh(6),
-//    shift: DecodeImmShift(sh:0(0), imm5),
+//    shift: DecodeImmShift(sh:'0'(0), imm5),
 //    uses: {Rn}}
 //
 // Baseline:
@@ -2108,7 +2108,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011001111ddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: UXTB16,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
@@ -2125,7 +2125,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011101111ddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: UXTB,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
@@ -2142,7 +2142,7 @@ class Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //    fields: [cond(31:28), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc011011111111ddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: UXTH,
 //    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //    uses: {Rm}}
@@ -4701,7 +4701,7 @@ class Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //    pattern: cccc01101000nnnnddddiiiiit01mmmm,
 //    rule: PKH,
 //    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
-//    shift: DecodeImmShift(tb:0(0), imm5),
+//    shift: DecodeImmShift(tb:'0'(0), imm5),
 //    tb: tb(6),
 //    tbform: tb(6)=1,
 //    uses: {Rn, Rm}}
@@ -7096,7 +7096,7 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101000nnnnddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: SXTAB16,
 //    safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //      Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -7115,7 +7115,7 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101010nnnnddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: SXTAB,
 //    safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //      Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -7134,7 +7134,7 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101011nnnnddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: SXTAH,
 //    safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //      Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -7153,7 +7153,7 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101100nnnnddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: UXTAB16,
 //    safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //      Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -7172,7 +7172,7 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101110nnnnddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: UXTAB,
 //    safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //      Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -7191,7 +7191,7 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
 //    fields: [cond(31:28), Rn(19:16), Rd(15:12), rotate(11:10), Rm(3:0)],
 //    pattern: cccc01101111nnnnddddrr000111mmmm,
 //    rotate: rotate(11:10),
-//    rotation: rotate:0(2:0),
+//    rotation: rotate:'000'(2:0),
 //    rule: UXTAH,
 //    safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //      Pc in {Rd, Rm} => UNPREDICTABLE],

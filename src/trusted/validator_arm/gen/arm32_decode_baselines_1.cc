@@ -1386,7 +1386,7 @@ uses(Instruction inst) const {
 //    defs: {Pc, Lr},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
-//    imm32: SignExtend(imm24:0(1:0), 32),
+//    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
 //    relative_offset: imm32,
@@ -1413,7 +1413,7 @@ is_relative_branch(Instruction inst) const {
 int32_t BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32)"
   return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
        ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
        : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
@@ -1448,7 +1448,7 @@ uses(Instruction inst) const {
 //    defs: {Pc},
 //    fields: [Cond(31:28), imm24(23:0)],
 //    imm24: imm24(23:0),
-//    imm32: SignExtend(imm24:0(1:0), 32),
+//    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
 //    relative_offset: imm32,
@@ -1474,7 +1474,7 @@ is_relative_branch(Instruction inst) const {
 int32_t B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32)"
   return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
        ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
        : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
@@ -6946,7 +6946,7 @@ uses(Instruction inst) const {
 //    pattern: cccc01101000nnnnddddiiiiit01mmmm,
 //    rule: PKH,
 //    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
-//    shift: DecodeImmShift(tb:0(0), imm5),
+//    shift: DecodeImmShift(tb:'0'(0), imm5),
 //    tb: tb(6),
 //    tbform: tb(6)=1,
 //    uses: {Rn, Rm}}
