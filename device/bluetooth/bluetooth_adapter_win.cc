@@ -65,8 +65,18 @@ bool BluetoothAdapterWin::IsDiscovering() const {
   return false;
 }
 
-void BluetoothAdapterWin::SetDiscovering(
-    bool discovering,
+bool BluetoothAdapterWin::IsScanning() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void BluetoothAdapterWin::StartDiscovering(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothAdapterWin::StopDiscovering(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();

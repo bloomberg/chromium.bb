@@ -24,6 +24,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
     MOCK_METHOD2(AdapterPresentChanged, void(BluetoothAdapter*, bool));
     MOCK_METHOD2(AdapterPoweredChanged, void(BluetoothAdapter*, bool));
     MOCK_METHOD2(AdapterDiscoveringChanged, void(BluetoothAdapter*, bool));
+    MOCK_METHOD2(AdapterScanningChanged, void(BluetoothAdapter*, bool));
     MOCK_METHOD2(DeviceAdded, void(BluetoothAdapter*, BluetoothDevice*));
     MOCK_METHOD2(DeviceChanged, void(BluetoothAdapter*, BluetoothDevice*));
     MOCK_METHOD2(DeviceRemoved, void(BluetoothAdapter*, BluetoothDevice*));
@@ -41,9 +42,12 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     const base::Closure& callback,
                     const ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(IsDiscovering, bool());
-  MOCK_METHOD3(SetDiscovering,
-               void(bool discovering,
-                    const base::Closure& callback,
+  MOCK_CONST_METHOD0(IsScanning, bool());
+  MOCK_METHOD2(StartDiscovering,
+               void(const base::Closure& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD2(StopDiscovering,
+               void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(GetDevices, BluetoothAdapter::ConstDeviceList());
   MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));

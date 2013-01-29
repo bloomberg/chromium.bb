@@ -45,11 +45,17 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
     // Called when the discovering state of the adapter |adapter| changes,
     // when |discovering| is true the adapter is seeking new devices, false
-    // means it is not. Note that device discovery involves both states when
-    // the adapter is seeking new devices and states when it is not because
-    // it is interrogating the devices it found.
+    // means it is not.
     virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
                                            bool discovering) {}
+
+    // Called when the scanning discovery state of the adapter |adapter|
+    // changes during discovery. When |scanning| is true the adapter is
+    // actively scanning for new devices and when false it is contacting
+    // the devices found to update information; the adapter will repeatedly
+    // cycle between both states during discovery.
+    virtual void AdapterScanningChanged(BluetoothAdapter* adapter,
+                                        bool scanning) {}
 
     // Called when a new device |device| is added to the adapter |adapter|,
     // either because it has been discovered or a connection made. |device|
@@ -111,18 +117,34 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
-  // Indicates whether the adapter is currently discovering new devices,
-  // note that a typical discovery process has phases of this being true
-  // followed by phases of being false when the adapter interrogates the
-  // devices found.
+  // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;
 
-  // Requests that the adapter either begin discovering new devices when
-  // |discovering| is true, or cease any discovery when false.  On success,
-  // callback will be called.  On failure, |error_callback| will be called.
-  virtual void SetDiscovering(bool discovering,
-                              const base::Closure& callback,
-                              const ErrorCallback& error_callback) = 0;
+  // Indicates whether the adapter is currently scanning for new devices
+  // during discovery; when false the adapter is contacting the devices found
+  // to obtain information.
+  virtual bool IsScanning() const = 0;
+
+  // Requests that the adapter begin discovering new devices, code must
+  // always call this method if they require the adapter be in discovery
+  // and should not make it conditional on the value of IsDiscovering()
+  // as other adapter users may be making the same request. Code must also
+  // call StopDiscovering() when done. On success |callback| will be called,
+  // on failure |error_callback| will be called instead.
+  //
+  // Since discovery may already be in progress when this method is called,
+  // callers should retrieve the current set of discovered devices by calling
+  // GetDevices() and checking for those with IsVisible() as true.
+  virtual void StartDiscovering(const base::Closure& callback,
+                                const ErrorCallback& error_callback) = 0;
+
+  // Requests that an earlier call to StartDiscovering() be cancelled; the
+  // adapter may not actually cease discovering devices if other callers
+  // have called StartDiscovering() and not yet called this method. On
+  // success |callback| will be called, on failure |error_callback| will be
+  // called instead.
+  virtual void StopDiscovering(const base::Closure& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // Requests the list of devices from the adapter, all are returned
   // including those currently connected and those paired. Use the

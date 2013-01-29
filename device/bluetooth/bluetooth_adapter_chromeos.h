@@ -50,8 +50,11 @@ class BluetoothAdapterChromeOs
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-  virtual void SetDiscovering(
-      bool discovering,
+  virtual bool IsScanning() const OVERRIDE;
+  virtual void StartDiscovering(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StopDiscovering(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual void ReadLocalOutOfBandPairingData(
@@ -113,19 +116,23 @@ class BluetoothAdapterChromeOs
   // and directly using values obtained from properties.
   void PoweredChanged(bool powered);
 
-  // Called by dbus:: in response to the method calls send by SetDiscovering().
-  // |callback| and |error_callback| are the callbacks passed to
-  // SetDiscovering().
+  // Called by BluetoothAdapterClient in response to the method call sent
+  // by StartDiscovering(), |callback| and |error_callback| are the callbacks
+  // provided to that method.
   void OnStartDiscovery(const base::Closure& callback,
                         const ErrorCallback& error_callback,
                         const dbus::ObjectPath& adapter_path,
                         bool success);
+
+  // Called by BluetoothAdapterClient in response to the method call sent
+  // by StopDiscovering(), |callback| and |error_callback| are the callbacks
+  // provided to that method.
   void OnStopDiscovery(const base::Closure& callback,
                        const ErrorCallback& error_callback,
                        const dbus::ObjectPath& adapter_path,
                        bool success);
 
-  // Updates the tracked state of the adapter's discovering state to
+  // Updates the tracked state of the adapter's scanning state to
   // |discovering| and notifies observers. Called on receipt of a property
   // changed signal, and directly using values obtained from properties.
   void DiscoveringChanged(bool discovering);
@@ -219,7 +226,11 @@ class BluetoothAdapterChromeOs
   // Tracked adapter state, cached locally so we only send change notifications
   // to observers on a genuine change.
   bool powered_;
-  bool discovering_;
+  bool scanning_;
+
+  // Count of callers to StartDiscovering() and StopDiscovering(), used to
+  // provide the IsDiscovering() status.
+  int discovering_count_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

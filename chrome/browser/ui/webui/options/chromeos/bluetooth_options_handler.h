@@ -191,6 +191,9 @@ class BluetoothOptionsHandler
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
+  // True while performing device discovery.
+  bool discovering_;
+
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than this object does.
   base::WeakPtrFactory<BluetoothOptionsHandler> weak_ptr_factory_;

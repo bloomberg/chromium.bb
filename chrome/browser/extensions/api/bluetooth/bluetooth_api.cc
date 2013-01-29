@@ -542,12 +542,12 @@ bool BluetoothGetLocalOutOfBandPairingDataFunction::DoWork(
 }
 
 void BluetoothStartDiscoveryFunction::OnSuccessCallback() {
-  GetEventRouter(profile())->SetResponsibleForDiscovery(true);
   SendResponse(true);
 }
 
 void BluetoothStartDiscoveryFunction::OnErrorCallback() {
   SetError(kStartDiscoveryFailed);
+  GetEventRouter(profile())->SetResponsibleForDiscovery(false);
   SendResponse(false);
 }
 
@@ -555,15 +555,14 @@ bool BluetoothStartDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(profile())->SetSendDiscoveryEvents(true);
 
-  // If the adapter is already discovering, there is nothing else to do.
-  if (adapter->IsDiscovering()) {
-    SendResponse(true);
-    return true;
+  // If this profile is already discovering devices, there should be nothing
+  // else to do.
+  if (!GetEventRouter(profile())->IsResponsibleForDiscovery()) {
+    GetEventRouter(profile())->SetResponsibleForDiscovery(true);
+    adapter->StartDiscovering(
+        base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
+        base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
   }
-
-  adapter->SetDiscovering(true,
-      base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
-      base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
 
   return true;
 }
@@ -574,6 +573,7 @@ void BluetoothStopDiscoveryFunction::OnSuccessCallback() {
 
 void BluetoothStopDiscoveryFunction::OnErrorCallback() {
   SetError(kStopDiscoveryFailed);
+  GetEventRouter(profile())->SetResponsibleForDiscovery(true);
   SendResponse(false);
 }
 
@@ -581,7 +581,7 @@ bool BluetoothStopDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(profile())->SetSendDiscoveryEvents(false);
   if (GetEventRouter(profile())->IsResponsibleForDiscovery()) {
-    adapter->SetDiscovering(false,
+    adapter->StopDiscovering(
         base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
         base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
   }

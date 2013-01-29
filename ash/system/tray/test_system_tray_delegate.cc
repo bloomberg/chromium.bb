@@ -168,7 +168,10 @@ void TestSystemTrayDelegate::GetAvailableBluetoothDevices(
     BluetoothDeviceList* list) {
 }
 
-void TestSystemTrayDelegate::BluetoothSetDiscovering(bool value) {
+void TestSystemTrayDelegate::BluetoothStartDiscovering() {
+}
+
+void TestSystemTrayDelegate::BluetoothStopDiscovering() {
 }
 
 void TestSystemTrayDelegate::ToggleBluetoothConnection(

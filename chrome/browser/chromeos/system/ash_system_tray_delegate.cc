@@ -500,8 +500,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
-  virtual void BluetoothSetDiscovering(bool value) OVERRIDE {
-    bluetooth_adapter_->SetDiscovering(value,
+  virtual void BluetoothStartDiscovering() OVERRIDE {
+    bluetooth_adapter_->StartDiscovering(
+        base::Bind(&base::DoNothing),
+        base::Bind(&BluetoothSetDiscoveringError));
+  }
+
+  virtual void BluetoothStopDiscovering() OVERRIDE {
+    bluetooth_adapter_->StopDiscovering(
         base::Bind(&base::DoNothing),
         base::Bind(&BluetoothSetDiscoveringError));
   }

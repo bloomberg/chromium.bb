@@ -79,11 +79,11 @@ class BluetoothDetailedView : public TrayDetailsView,
 
   virtual ~BluetoothDetailedView() {
     // Stop discovering bluetooth devices when exiting BT detailed view.
-    BluetoothSetDiscovering(false);
+    BluetoothStopDiscovering();
   }
 
   void Update() {
-    BluetoothSetDiscovering(true);
+    BluetoothStartDiscovering();
     UpdateBlueToothDeviceList();
 
     // Update UI.
@@ -99,19 +99,21 @@ class BluetoothDetailedView : public TrayDetailsView,
     AppendHeaderEntry();
   }
 
-  void BluetoothSetDiscovering(bool discovering) {
+  void BluetoothStartDiscovering() {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
-    if (discovering) {
-      bool bluetooth_enabled = delegate->GetBluetoothEnabled();
-      if (!bluetooth_discovering_ && bluetooth_enabled)
-        delegate->BluetoothSetDiscovering(true);
-      bluetooth_discovering_ = bluetooth_enabled;
-    } else {   // Stop bluetooth discovering.
-      if (bluetooth_discovering_) {
-        bluetooth_discovering_ = false;
-        delegate->BluetoothSetDiscovering(false);
-      }
+    bool bluetooth_enabled = delegate->GetBluetoothEnabled();
+    if (!bluetooth_discovering_ && bluetooth_enabled)
+      delegate->BluetoothStartDiscovering();
+    bluetooth_discovering_ = bluetooth_enabled;
+  }
+
+  void BluetoothStopDiscovering() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->system_tray_delegate();
+    if (bluetooth_discovering_) {
+      bluetooth_discovering_ = false;
+      delegate->BluetoothStopDiscovering();
     }
   }
 

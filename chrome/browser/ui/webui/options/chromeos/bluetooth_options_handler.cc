@@ -51,10 +51,17 @@ const char kConfirmPasskey[] = "bluetoothConfirmPasskey";
 namespace chromeos {
 namespace options {
 
-BluetoothOptionsHandler::BluetoothOptionsHandler() : weak_ptr_factory_(this) {
+BluetoothOptionsHandler::BluetoothOptionsHandler() : discovering_(false),
+                                                     weak_ptr_factory_(this) {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
+  if (discovering_) {
+    adapter_->StopDiscovering(
+        base::Bind(&base::DoNothing),
+        base::Bind(&base::DoNothing));
+    discovering_ = false;
+  }
   if (adapter_.get())
     adapter_->RemoveObserver(this);
 }
@@ -223,11 +230,13 @@ void BluetoothOptionsHandler::EnableChangeError() {
 
 void BluetoothOptionsHandler::FindDevicesCallback(
     const ListValue* args) {
-  adapter_->SetDiscovering(
-      true,
-      base::Bind(&base::DoNothing),
-      base::Bind(&BluetoothOptionsHandler::FindDevicesError,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (!discovering_) {
+    discovering_ = true;
+    adapter_->StartDiscovering(
+        base::Bind(&base::DoNothing),
+        base::Bind(&BluetoothOptionsHandler::FindDevicesError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void BluetoothOptionsHandler::FindDevicesError() {
@@ -366,11 +375,13 @@ void BluetoothOptionsHandler::ForgetError(const std::string& address) {
 
 void BluetoothOptionsHandler::StopDiscoveryCallback(
     const ListValue* args) {
-  adapter_->SetDiscovering(
-      false,
-      base::Bind(&base::DoNothing),
-      base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (discovering_) {
+    adapter_->StopDiscovering(
+        base::Bind(&base::DoNothing),
+        base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
+                   weak_ptr_factory_.GetWeakPtr()));
+    discovering_ = false;
+  }
 }
 
 void BluetoothOptionsHandler::StopDiscoveryError() {

@@ -228,11 +228,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   // Try with a failure to start
-  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_,
-              SetDiscovering(true,
-                             testing::_,
-                             testing::Truly(CallClosure)));
+              StartDiscovering(testing::_,
+                               testing::Truly(CallClosure)));
   scoped_refptr<api::BluetoothStartDiscoveryFunction> start_function;
   start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
   std::string error(
@@ -241,11 +239,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
 
   // Reset for a successful start
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_,
-              SetDiscovering(true,
-                             testing::Truly(CallClosure),
-                             testing::_));
+              StartDiscovering(testing::Truly(CallClosure),
+                               testing::_));
 
   start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
   (void)utils::RunFunctionAndReturnError(start_function, "[]", browser());
@@ -253,9 +249,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   // Reset to try stopping
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   EXPECT_CALL(*mock_adapter_,
-              SetDiscovering(false,
-                             testing::Truly(CallClosure),
-                             testing::_));
+              StopDiscovering(testing::Truly(CallClosure),
+                              testing::_));
   scoped_refptr<api::BluetoothStopDiscoveryFunction> stop_function;
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
   (void)utils::RunFunctionAndReturnSingleResult(stop_function, "[]", browser());
@@ -263,20 +258,18 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   // Reset to try stopping with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   EXPECT_CALL(*mock_adapter_,
-              SetDiscovering(false,
-                             testing::_,
-                             testing::Truly(CallClosure)));
+              StopDiscovering(testing::_,
+                              testing::Truly(CallClosure)));
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
   error = utils::RunFunctionAndReturnError(stop_function, "[]", browser());
   ASSERT_TRUE(!error.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
-  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_,
-              SetDiscovering(true, testing::Truly(CallClosure), testing::_));
+              StartDiscovering(testing::Truly(CallClosure), testing::_));
   EXPECT_CALL(*mock_adapter_,
-              SetDiscovering(false, testing::Truly(CallClosure), testing::_));
+              StopDiscovering(testing::Truly(CallClosure), testing::_));
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
@@ -306,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
 
   // Fake that the adapter is discovering
   EXPECT_CALL(*mock_adapter_, IsDiscovering())
-      .Times(2).WillRepeatedly(testing::Return(true));
+      .WillOnce(testing::Return(true));
   event_router()->AdapterDiscoveringChanged(mock_adapter_, true);
 
   // Cache a device before the extension starts discovering
@@ -314,6 +307,11 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
+
+  EXPECT_CALL(*mock_adapter_,
+              StartDiscovering(testing::Truly(CallClosure), testing::_));
+  EXPECT_CALL(*mock_adapter_,
+              StopDiscovering(testing::Truly(CallClosure), testing::_));
 
   ExtensionTestMessageListener discovery_started("ready", true);
   ASSERT_TRUE(LoadExtension(

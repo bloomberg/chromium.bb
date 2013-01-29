@@ -189,8 +189,11 @@ class SystemTrayDelegate {
   // Returns a list of available bluetooth devices.
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices) = 0;
 
-  // Requests bluetooth start or stop discovering devices.
-  virtual void BluetoothSetDiscovering(bool value) = 0;
+  // Requests bluetooth start discovering devices.
+  virtual void BluetoothStartDiscovering() = 0;
+
+  // Requests bluetooth stop discovering devices.
+  virtual void BluetoothStopDiscovering() = 0;
 
   // Toggles connection to a specific bluetooth device.
   virtual void ToggleBluetoothConnection(const std::string& address) = 0;
