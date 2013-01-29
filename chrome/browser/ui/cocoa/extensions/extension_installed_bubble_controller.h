@@ -33,8 +33,13 @@ const int kOuterVerticalMargin = 15;
 // Inner vertical margin for text messages.
 const int kInnerVerticalMargin = 10;
 
+// An offset we apply to position the point of the bubble's arrow pointing at
+// the NewTabButton.
+const int kAppsBubbleArrowOffset = 4;
+
 // We use a different kind of notification for each of these extension types.
 typedef enum {
+  kApp,
   kBrowserAction,
   kGeneric,
   kOmniboxKeyword,
@@ -75,6 +80,8 @@ typedef enum {
   // Only shown for browser actions, page actions and omnibox keywords.
   IBOutlet NSTextField* howToUse_;
   IBOutlet NSTextField* howToManage_;
+  // Only shown for app installs.
+  IBOutlet NSButton* appShortcutLink_;
   // Only shown for extensions with commands.
   IBOutlet NSButton* manageShortcutLink_;
   // Only shown if the sign-in promo is active.
@@ -122,6 +129,9 @@ typedef enum {
 // Opens the shortcut configuration UI.
 - (IBAction)onManageShortcutClicked:(id)sender;
 
+// Shows the new app installed animation.
+- (IBAction)onAppShortcutClicked:(id)sender;
+
 @end
 
 @interface ExtensionInstalledBubbleController (ExposedForTesting)
@@ -135,6 +145,7 @@ typedef enum {
 - (NSRect)frameOfHowToManage;
 - (NSRect)frameOfSigninPromo;
 - (BOOL)showSyncPromo;
+- (NSButton*)appInstalledShortcutLink;
 
 @end  // ExtensionInstalledBubbleController(ExposedForTesting)
 

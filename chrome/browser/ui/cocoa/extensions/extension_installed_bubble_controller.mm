@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,6 +24,8 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/cocoa/new_tab_button.h"
+#include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -119,6 +122,8 @@ class ExtensionLoadedNotificationObserver
 
     if (bundle_) {
       type_ = extension_installed_bubble::kBundle;
+    } else if (extension->is_app()) {
+      type_ = extension_installed_bubble::kApp;
     } else if (!extensions::OmniboxInfo::GetKeyword(extension).empty()) {
       type_ = extension_installed_bubble::kOmniboxKeyword;
     } else if (extension_action_manager->GetBrowserAction(*extension)) {
@@ -231,6 +236,16 @@ class ExtensionLoadedNotificationObserver
   NSPoint arrowPoint = NSZeroPoint;
 
   switch(type_) {
+    case extension_installed_bubble::kApp: {
+      TabStripView* view = [window->cocoa_controller() tabStripView];
+      NewTabButton* button = [view getNewTabButton];
+      NSRect bounds = [button bounds];
+      NSPoint anchor = NSMakePoint(
+          NSMidX(bounds),
+          NSMaxY(bounds) - extension_installed_bubble::kAppsBubbleArrowOffset);
+      arrowPoint = [button convertPoint:anchor toView:nil];
+      break;
+    }
     case extension_installed_bubble::kOmniboxKeyword: {
       LocationBarViewMac* locationBarView =
           [window->cocoa_controller() locationBarBridge];
@@ -487,12 +502,21 @@ class ExtensionLoadedNotificationObserver
         extension_installed_bubble::kInnerVerticalMargin;
   }
 
-  // Second part of extension installed message.
-  [[howToManage_ cell]
-      setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-  [GTMUILocalizerAndLayoutTweaker
-      sizeToFitFixedWidthTextField:howToManage_];
-  newWindowHeight += NSHeight([howToManage_ frame]);
+  // If type is app, hide howToManage_, and include a "show me" link in the
+  // bubble.
+  if (type_ == extension_installed_bubble::kApp) {
+    [howToManage_ setHidden:YES];
+    [appShortcutLink_ setHidden:NO];
+    newWindowHeight += 2 * extension_installed_bubble::kInnerVerticalMargin;
+    newWindowHeight += NSHeight([appShortcutLink_ frame]);
+  } else {
+    // Second part of extension installed message.
+    [[howToManage_ cell]
+        setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+    [GTMUILocalizerAndLayoutTweaker
+        sizeToFitFixedWidthTextField:howToManage_];
+    newWindowHeight += NSHeight([howToManage_ frame]);
+  }
 
   // Sync sign-in promo, if any.
   if (sync_promo_height > 0) {
@@ -645,6 +669,10 @@ class ExtensionLoadedNotificationObserver
   return [promo_ frame];
 }
 
+- (NSButton*)appInstalledShortcutLink {
+  return appShortcutLink_;
+}
+
 - (void)extensionUnloaded:(id)sender {
   extension_ = NULL;
 }
@@ -656,6 +684,10 @@ class ExtensionLoadedNotificationObserver
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser_, GURL(configure_url)));
   chrome::Navigate(&params);
+}
+
+- (IBAction)onAppShortcutClicked:(id)sender {
+  ExtensionInstallUI::OpenAppInstalledUI(browser_, extension_->id());
 }
 
 - (void)awakeFromNib {

@@ -98,11 +98,15 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
       ListValue* action_list = new ListValue;
       action_list->Append(action);
       extension_input_value.Set(keys::kPageActions, action_list);
-    } else {
+    } else if (type == extension_installed_bubble::kBrowserAction) {
       extension_input_value.SetString(keys::kName, "browser action extension");
       DictionaryValue* browser_action = new DictionaryValue;
       // An empty dictionary is enough to create a Browser Action.
       extension_input_value.Set(keys::kBrowserAction, browser_action);
+    } else if (type == extension_installed_bubble::kApp) {
+      extension_input_value.SetString(keys::kName, "test app");
+      extension_input_value.SetString(keys::kLaunchWebURL,
+                                      "http://www.example.com");
     }
 
     std::string error;
@@ -280,3 +284,30 @@ TEST_F(ExtensionInstalledBubbleControllerTest, ParentClose) {
   // Check that the appropriate notification was received.
   EXPECT_OCMOCK_VERIFY(observer);
 }
+
+TEST_F(ExtensionInstalledBubbleControllerTest, AppTest) {
+  extension_ = CreateExtension(extension_installed_bubble::kApp);
+  ExtensionInstalledBubbleControllerForTest* controller =
+      [[ExtensionInstalledBubbleControllerForTest alloc]
+          initWithParentWindow:window_
+                     extension:extension_.get()
+                        bundle:NULL
+                       browser:browser()
+                          icon:icon_];
+  EXPECT_TRUE(controller);
+  [controller initializeWindow];
+  EXPECT_TRUE([controller window]);
+
+  int height = [controller calculateWindowHeight];
+
+  // Make sure there is always enough room for the icon and margin.
+  int minHeight = extension_installed_bubble::kIconSize +
+    (2 * extension_installed_bubble::kOuterVerticalMargin);
+  EXPECT_GT(height, minHeight);
+
+  // Make sure the "show me" link is visible.
+  EXPECT_FALSE([[controller appInstalledShortcutLink] isHidden]);
+
+  [controller close];
+}
+
