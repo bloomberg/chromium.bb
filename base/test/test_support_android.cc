@@ -183,7 +183,8 @@ void InitAndroidTestPaths() {
 }
 
 void InitAndroidTestMessageLoop() {
-  MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIStub);
+  if (!MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIStub))
+    LOG(INFO) << "MessagePumpForUIFactory already set, unable to override.";
 }
 
 void InitAndroidTest() {

@@ -41,7 +41,7 @@ I_TEST = collections.namedtuple('InstrumentationTest', [
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     I_TEST('ContentShell',
            'ContentShell.apk',
-           'org.chromium.content_shell',
+           'org.chromium.content_shell_apk',
            'ContentShellTest',
            'content:content/test/data/android/device_files'),
     I_TEST('ChromiumTestShell',

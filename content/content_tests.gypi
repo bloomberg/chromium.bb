@@ -821,13 +821,11 @@
                 'common/content_constants_internal.h',
               ],
               'sources': [
-                'shell/android/shell_library_loader.cc',
-                'shell/android/shell_library_loader.cc',
-                'shell/android/shell_manager.cc',
-                'shell/android/shell_manager.h',
+                'shell/android/browsertests_apk/content_browser_tests_android.cc',
               ],
               'dependencies': [
                 'content_shell_jni_headers',
+                'content_shell_lib',
               ],
             }],
             ['OS=="mac"', {
@@ -966,6 +964,25 @@
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
+        {
+          'target_name': 'content_browsertests_apk',
+          'type': 'none',
+          'dependencies': [
+            'content_browsertests',
+            'content_java',
+            'content_shell_java',
+          ],
+          'variables': {
+            'package_name': 'content_browsertests_apk',
+            'apk_name': 'content_browsertests',
+            'java_in_dir': 'shell/android/browsertests_apk',
+            'resource_dir': 'res',
+            'native_libs_paths': ['<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_browsertests<(SHARED_LIB_SUFFIX)'],
+            'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
+            'asset_location': '<(ant_build_out)/content_shell/assets',
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
       ],
     }],
     ['OS == "android"', {
@@ -991,7 +1008,7 @@
           'dependencies': [
             'content_java',
             'content_java_test_support',
-            'content_shell_java',
+            'content_shell_apk_java',
             '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
             '../media/media.gyp:media_java',
@@ -1004,8 +1021,8 @@
             'package_name': 'content_shell_test',
             'apk_name': 'ContentShellTest',
             'java_in_dir': '../content/shell/android/javatests',
-            'resource_dir': '../res',
-            'additional_src_dirs': ['../content/public/android/javatests/'],
+            'additional_src_dirs': ['../content/public/android/javatests/',],
+            'resource_dir': '../shell_apk/res',
             'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],

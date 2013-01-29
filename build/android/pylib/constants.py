@@ -12,8 +12,8 @@ CHROME_ACTIVITY = 'com.google.android.apps.chrome.Main'
 CHROME_TESTS_PACKAGE = 'com.google.android.apps.chrome.tests'
 LEGACY_BROWSER_PACKAGE = 'com.google.android.browser'
 LEGACY_BROWSER_ACTIVITY = 'com.android.browser.BrowserActivity'
-CONTENT_SHELL_PACKAGE = "org.chromium.content_shell"
-CONTENT_SHELL_ACTIVITY = "org.chromium.content_shell.ContentShellActivity"
+CONTENT_SHELL_PACKAGE = "org.chromium.content_shell_apk"
+CONTENT_SHELL_ACTIVITY = "org.chromium.content_shell_apk.ContentShellActivity"
 CHROME_SHELL_PACKAGE = 'org.chromium.chrome.browser.test'
 CHROMIUM_TEST_SHELL_PACKAGE = 'org.chromium.chrome.testshell'
 

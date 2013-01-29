@@ -8,7 +8,7 @@
 #
 # Assumes you have sourced the build/android/envsetup.sh script.
 
-SHELL_PID_LINES=$(adb shell ps | grep ' org.chromium.content_shell')
+SHELL_PID_LINES=$(adb shell ps | grep ' org.chromium.content_shell_apk')
 VAL=$(echo "$SHELL_PID_LINES" | wc -l)
 if [ $VAL -lt 1 ] ; then
    echo "Not running Content shell."

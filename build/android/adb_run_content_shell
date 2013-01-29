@@ -10,5 +10,5 @@ fi
 
 adb shell am start \
   -a android.intent.action.VIEW \
-  -n org.chromium.content_shell/.ContentShellActivity \
+  -n org.chromium.content_shell_apk/.ContentShellActivity \
   $INTENT_ARGS

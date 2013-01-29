@@ -96,7 +96,7 @@ process_options() {
 rooted_phone=0
 
 root=$(dirname $0)/../..
-package_name=org.chromium.content_shell
+package_name=org.chromium.content_shell_apk
 shared_lib_dir=$root/out/${BUILDTYPE:-Debug}/lib.target
 gdb_args=''
 

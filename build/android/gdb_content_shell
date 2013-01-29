@@ -12,5 +12,5 @@ adb_gdb_content_shell instead!"
 if [ $# -gt 0 ]; then
   exec ${ROOT}/gdb_apk -r -g "$*"
 else
-  exec ${ROOT}/gdb_apk -r -p org.chromium.content_shell
+  exec ${ROOT}/gdb_apk -r -p org.chromium.content_shell_apk
 fi

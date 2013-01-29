@@ -12,5 +12,5 @@ export ADB_GDB_PROGNAME=$(basename "$0")
 export ADB_GDB_ACTIVITY=.ContentShellActivity
 "$PROGDIR"/adb_gdb \
     --program-name=ContentShell \
-    --package-name=org.chromium.content_shell \
+    --package-name=org.chromium.content_shell_apk \
     "$@"
