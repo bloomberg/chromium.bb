@@ -134,49 +134,6 @@ void CrosMountPointProvider::DeleteFileSystem(
   callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
 }
 
-bool CrosMountPointProvider::HasMountPoint(const FilePath& mount_point) const {
-  std::string mount_name = mount_point.BaseName().AsUTF8Unsafe();
-  FilePath path;
-
-  const bool valid = mount_points_->GetRegisteredPath(mount_name, &path);
-  return valid && path == mount_point;
-}
-
-bool CrosMountPointProvider::AddLocalMountPoint(const FilePath& mount_point) {
-  std::string mount_name = mount_point.BaseName().AsUTF8Unsafe();
-  return mount_points_->RegisterFileSystem(
-             mount_name,
-             fileapi::kFileSystemTypeNativeLocal,
-             mount_point);
-}
-
-bool CrosMountPointProvider::AddRestrictedLocalMountPoint(
-    const FilePath& mount_point) {
-  std::string mount_name = mount_point.BaseName().AsUTF8Unsafe();
-  return mount_points_->RegisterFileSystem(
-             mount_name,
-             fileapi::kFileSystemTypeRestrictedNativeLocal,
-             mount_point);
-}
-
-bool CrosMountPointProvider::AddRemoteMountPoint(
-    const FilePath& mount_point,
-    fileapi::RemoteFileSystemProxyInterface* remote_proxy) {
-  DCHECK(remote_proxy);
-  std::string mount_name = mount_point.BaseName().AsUTF8Unsafe();
-  return mount_points_->RegisterRemoteFileSystem(mount_name,
-                                                 fileapi::kFileSystemTypeDrive,
-                                                 remote_proxy,
-                                                 mount_point);
-}
-
-void CrosMountPointProvider::RemoveMountPoint(const FilePath& mount_point) {
-  if (!HasMountPoint(mount_point))
-    return;
-  std::string mount_name = mount_point.BaseName().AsUTF8Unsafe();
-  mount_points_->RevokeFileSystem(mount_name);
-}
-
 void CrosMountPointProvider::GrantFullAccessToExtension(
     const std::string& extension_id) {
   DCHECK(special_storage_policy_->IsFileHandler(extension_id));

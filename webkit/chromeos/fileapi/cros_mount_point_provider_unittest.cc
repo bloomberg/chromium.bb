@@ -88,95 +88,6 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
   EXPECT_TRUE(root_dirs_set.count(FilePath(FPL("/g/d/e"))));
 }
 
-TEST(CrosMountPointProviderTest, MountPointsVisibility) {
-  scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
-      new quota::MockSpecialStoragePolicy();
-  scoped_refptr<fileapi::ExternalMountPoints> mount_points(
-      fileapi::ExternalMountPoints::CreateRefCounted());
-  scoped_refptr<fileapi::ExternalMountPoints> sibling_mount_points(
-      fileapi::ExternalMountPoints::CreateRefCounted());
-
-  scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
-      fileapi::ExternalMountPoints::CreateRefCounted());
-
-  chromeos::CrosMountPointProvider provider(
-      storage_policy,
-      mount_points.get(),
-      system_mount_points.get());
-
-  // A provider that shares system_mount_points with |provider|.
-  chromeos::CrosMountPointProvider sibling_provider(
-      storage_policy,
-      sibling_mount_points.get(),
-      system_mount_points.get());
-
-  FilePath ignored;
-
-  // Adding empty mount point should fail.
-  EXPECT_FALSE(provider.AddLocalMountPoint(FilePath()));
-
-  // Add mount point to the provider.
-  EXPECT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/a/b/c"))));
-
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/a/b/c"))));
-  // The mount point with the same name exists, but path is different.
-  EXPECT_FALSE(provider.HasMountPoint(FilePath(FPL("/x/a/b/c"))));
-  EXPECT_FALSE(sibling_provider.HasMountPoint(FilePath(FPL("/a/b/c"))));
-  EXPECT_TRUE(mount_points->GetRegisteredPath("c", &ignored));
-  EXPECT_FALSE(system_mount_points->GetRegisteredPath("c", &ignored));
-
-  // Add mount point directly to |mount_points|. It should be seen by
-  // |provider|.
-  EXPECT_TRUE(mount_points->RegisterFileSystem(
-      "d", fileapi::kFileSystemTypeNativeLocal, FilePath(FPL("/b/c/d"))));
-
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/b/c/d"))));
-  EXPECT_FALSE(sibling_provider.HasMountPoint(FilePath(FPL("/b/c/d"))));
-
-  // Add mount point to system mount points.
-  EXPECT_TRUE(system_mount_points->RegisterFileSystem(
-      "e", fileapi::kFileSystemTypeNativeLocal, FilePath(FPL("/g/c/d/e"))));
-
-  EXPECT_FALSE(provider.HasMountPoint(FilePath(FPL("/g/c/d/e"))));
-  EXPECT_FALSE(sibling_provider.HasMountPoint(FilePath(FPL("/g/c/d/e"))));
-
-  // Can't remove system mount point.
-  provider.RemoveMountPoint(FilePath(FPL("/g/c/d/e")));
-  EXPECT_TRUE(system_mount_points->GetRegisteredPath("e", &ignored));
-
-  // Add a mount points whose paths overlap with the system one's.
-  // The same path:
-  EXPECT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/g/c/d/e"))));
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/g/c/d/e"))));
-  provider.RemoveMountPoint(FilePath(FPL("/g/c/d/e")));
-  EXPECT_FALSE(provider.HasMountPoint(FilePath(FPL("/g/c/d/e"))));
-  // Parent path:
-  EXPECT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/g"))));
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/g"))));
-  provider.RemoveMountPoint(FilePath(FPL("/g")));
-  // Child path:
-  EXPECT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/g/c/d/e/f/g"))));
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/g/c/d/e/f/g"))));
-  provider.RemoveMountPoint(FilePath(FPL("/g/c/d/e/f/g")));
-
-  // Add mount point with the same name as a global one. Should succeed.
-  EXPECT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/d/e"))));
-
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/d/e"))));
-
-  // Remove system mount point with the same name as the added one.
-  // Should fail.
-  provider.RemoveMountPoint(FilePath(FPL("/g/c/d/e")));
-
-  EXPECT_TRUE(provider.HasMountPoint(FilePath(FPL("/d/e"))));
-  EXPECT_TRUE(system_mount_points->GetRegisteredPath("e", &ignored));
-
-  // Remove mount point.
-  provider.RemoveMountPoint(FilePath(FPL("/d/e")));
-
-  EXPECT_FALSE(provider.HasMountPoint(FilePath(FPL("/d/e"))));
-}
-
 TEST(CrosMountPointProviderTest, AccessPermissions) {
   url_util::AddStandardScheme("chrome-extension");
 
@@ -196,11 +107,17 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   storage_policy->AddFileHandler(extension);
 
   // Initialize mount points.
-  system_mount_points->RegisterFileSystem("system",
-                                          fileapi::kFileSystemTypeNativeLocal,
-                                          FilePath(FPL("/g/system")));
-  ASSERT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/media/removable"))));
-  ASSERT_TRUE(provider.AddRestrictedLocalMountPoint(
+  ASSERT_TRUE(system_mount_points->RegisterFileSystem(
+      "system",
+      fileapi::kFileSystemTypeNativeLocal,
+      FilePath(FPL("/g/system"))));
+  ASSERT_TRUE(mount_points->RegisterFileSystem(
+      "removable",
+      fileapi::kFileSystemTypeNativeLocal,
+      FilePath(FPL("/media/removable"))));
+  ASSERT_TRUE(mount_points->RegisterFileSystem(
+      "oem",
+      fileapi::kFileSystemTypeRestrictedNativeLocal,
       FilePath(FPL("/usr/share/oem"))));
 
   // Provider specific mount point access.
@@ -245,7 +162,10 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
 
   // The extension cannot access new mount points.
   // TODO(tbarzic): This should probably be changed.
-  ASSERT_TRUE(provider.AddLocalMountPoint(FilePath(FPL("/foo/test"))));
+  ASSERT_TRUE(mount_points->RegisterFileSystem(
+      "test",
+      fileapi::kFileSystemTypeNativeLocal,
+      FilePath(FPL("/foo/test"))));
   EXPECT_FALSE(provider.IsAccessAllowed(
       CreateFileSystemURL(extension, "test_/foo", mount_points.get())));
 

@@ -96,17 +96,6 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
       const std::string& extension_id, const FilePath& virtual_path) OVERRIDE;
   virtual void RevokeAccessForExtension(
       const std::string& extension_id) OVERRIDE;
-  // Note: This will ignore |system_mount_points_|. The reasoning behind this is
-  // the method should be used paired with Add/RemoveMountPoint methods, which
-  // don't affect |system_mount_points_|.
-  virtual bool HasMountPoint(const FilePath& mount_point) const OVERRIDE;
-  virtual bool AddLocalMountPoint(const FilePath& mount_point) OVERRIDE;
-  virtual bool AddRestrictedLocalMountPoint(
-      const FilePath& mount_point) OVERRIDE;
-  virtual bool AddRemoteMountPoint(
-      const FilePath& mount_point,
-      fileapi::RemoteFileSystemProxyInterface* remote_proxy) OVERRIDE;
-  virtual void RemoveMountPoint(const FilePath& mount_point) OVERRIDE;
   virtual bool GetVirtualPath(const FilePath& filesystem_path,
                               FilePath* virtual_path) OVERRIDE;
 

@@ -146,19 +146,6 @@ class ExternalFileSystemMountPointProvider
   // Revokes file access from extension identified with |extension_id|.
   virtual void RevokeAccessForExtension(
         const std::string& extension_id) = 0;
-  // Checks if a given |mount_point| already exists.
-  virtual bool HasMountPoint(const FilePath& mount_point) const = 0;
-  // Adds a new local mount point.
-  virtual bool AddLocalMountPoint(const FilePath& mount_point) = 0;
-  // Adds a new local mount point that will be accessible only by extensions
-  // that have been granted full acess for all external file systems.
-  virtual bool AddRestrictedLocalMountPoint(const FilePath& mount_point) = 0;
-  // Adds a new remote mount point.
-  virtual bool AddRemoteMountPoint(
-      const FilePath& mount_point,
-      RemoteFileSystemProxyInterface* remote_proxy) = 0;
-  // Removes a mount point.
-  virtual void RemoveMountPoint(const FilePath& mount_point) = 0;
   // Gets virtual path by known filesystem path. Returns false when filesystem
   // path is not exposed by this provider.
   virtual bool GetVirtualPath(const FilePath& file_system_path,

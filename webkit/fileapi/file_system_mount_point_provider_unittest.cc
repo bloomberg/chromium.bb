@@ -212,17 +212,21 @@ class FileSystemMountPointProviderTest : public testing::Test {
 
  protected:
   void SetupNewContext(const FileSystemOptions& options) {
+    scoped_refptr<ExternalMountPoints> external_mount_points(
+        ExternalMountPoints::CreateRefCounted());
     file_system_context_ = new FileSystemContext(
         FileSystemTaskRunners::CreateMockTaskRunners(),
-        ExternalMountPoints::CreateRefCounted().get(),
+        external_mount_points.get(),
         special_storage_policy_,
         NULL,
         data_dir_.path(),
         options);
 #if defined(OS_CHROMEOS)
-    ExternalFileSystemMountPointProvider* external_provider =
-        file_system_context_->external_provider();
-    external_provider->AddLocalMountPoint(FilePath(kMountPoint));
+    FilePath mount_point_path = FilePath(kMountPoint);
+    external_mount_points->RegisterFileSystem(
+        mount_point_path.BaseName().AsUTF8Unsafe(),
+        kFileSystemTypeNativeLocal,
+        mount_point_path);
 #endif
   }
 
@@ -400,19 +404,5 @@ TEST_F(FileSystemMountPointProviderTest, IsRestrictedName) {
               provider(kFileSystemTypeTemporary)->IsRestrictedFileName(name));
   }
 }
-
-#if defined(OS_CHROMEOS)
-TEST_F(FileSystemMountPointProviderTest, ExternalMountPoints) {
-  SetupNewContext(CreateDisallowFileAccessOptions());
-  ExternalFileSystemMountPointProvider* external_provider =
-      file_system_context()->external_provider();
-  FilePath virtual_unused;
-  EXPECT_TRUE(external_provider->GetVirtualPath(FilePath(kMountPoint),
-                                                &virtual_unused));
-  external_provider->RemoveMountPoint(FilePath(kMountPoint));
-  EXPECT_FALSE(external_provider->GetVirtualPath(FilePath(kMountPoint),
-                                                 &virtual_unused));
-}
-#endif
 
 }  // namespace fileapi
