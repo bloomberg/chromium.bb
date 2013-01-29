@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -1230,10 +1229,6 @@ void ChromeLauncherControllerPerApp::SetShelfAutoHideBehaviorFromPrefs() {
 }
 
 void ChromeLauncherControllerPerApp::SetShelfAlignmentFromPrefs() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowLauncherAlignmentMenu))
-    return;
-
   ash::Shell::RootWindowList root_windows;
   if (ash::Shell::IsLauncherPerDisplayEnabled())
     root_windows = ash::Shell::GetAllRootWindows();
