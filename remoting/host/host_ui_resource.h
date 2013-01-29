@@ -4,25 +4,10 @@
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by host_service.rc
+// Used by host_ui.rc
 //
-
-// N.B. Values of |IDS_DISPLAY_SERVICE_NAME|, |IDS_SERVICE_DESCRIPTION|,
-//      |IDS_CONTROLLER| and |IDD_VERIFY_CONFIG_DIALOG| are hardcoded in
-//      remoting/host/install/chromoting.wxs. Make sure the values below and in
-//      the installation script match.
-#define IDS_DISPLAY_SERVICE_NAME        101
-#define IDS_SERVICE_DESCRIPTION         102
-#define IDS_CONTROLLER 103
-#define IDD_VERIFY_CONFIG_DIALOG 104
-#define IDC_MESSAGE 105
-#define IDC_EMAIL 106
-#define IDC_PIN 107
-#define IDC_EMAIL_LABEL 108
-#define IDC_PIN_LABEL 109
-
-#define IDD_DISCONNECT                  110
-#define IDD_CONTINUE                    111
+#define IDD_DISCONNECT                  101
+#define IDD_CONTINUE                    102
 #define IDC_DISCONNECT                  1001
 #define IDC_DISCONNECT_SHARINGWITH      1002
 #define IDC_DISCONNECT_USERNAME         1003
@@ -34,7 +19,7 @@
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        112
+#define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           101

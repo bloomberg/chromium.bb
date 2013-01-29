@@ -11,6 +11,7 @@
 #include <shellapi.h>
 #include <wtsapi32.h>
 
+#include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -19,9 +20,12 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/base/breakpad.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
@@ -32,12 +36,15 @@
 #include "remoting/host/daemon_process.h"
 #endif  // defined(REMOTING_MULTI_PROCESS)
 
-#include "remoting/host/win/core_resource.h"
+#include "remoting/host/usage_stats_consent.h"
+#include "remoting/host/win/host_service_resource.h"
 #include "remoting/host/win/wts_console_observer.h"
 
 #if !defined(REMOTING_MULTI_PROCESS)
 #include "remoting/host/win/wts_console_session_process_driver.h"
 #endif  // !defined(REMOTING_MULTI_PROCESS)
+
+using base::StringPrintf;
 
 namespace {
 
@@ -59,10 +66,28 @@ const char kConsoleSwitchName[] = "console";
 // a UAC prompt if necessary.
 const char kElevateSwitchName[] = "elevate";
 
+// "--help" or "--?" prints the usage message.
+const char kHelpSwitchName[] = "help";
+const char kQuestionSwitchName[] = "?";
+
+const wchar_t kUsageMessage[] =
+  L"\n"
+  L"Usage: %ls [options]\n"
+  L"\n"
+  L"Options:\n"
+  L"  --console       - Run the service interactively for debugging purposes.\n"
+  L"  --elevate=<...> - Run <...> elevated.\n"
+  L"  --help, --?     - Print this message.\n";
+
 // The command line parameters that should be copied from the service's command
 // line when launching an elevated child.
 const char* kCopiedSwitchNames[] = {
     "host-config", "daemon-pipe", switches::kV, switches::kVModule };
+
+void usage(const FilePath& program_name) {
+  LOG(INFO) << StringPrintf(kUsageMessage,
+                            UTF16ToWide(program_name.value()).c_str());
+}
 
 }  // namespace
 
@@ -432,3 +457,39 @@ LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
 }
 
 } // namespace remoting
+
+int CALLBACK WinMain(HINSTANCE instance,
+                     HINSTANCE previous_instance,
+                     LPSTR raw_command_line,
+                     int show_command) {
+#ifdef OFFICIAL_BUILD
+  if (remoting::IsUsageStatsAllowed()) {
+    remoting::InitializeCrashReporting();
+  }
+#endif  // OFFICIAL_BUILD
+
+  // This object instance is required by Chrome code (for example,
+  // FilePath, LazyInstance, MessageLoop, Singleton, etc).
+  base::AtExitManager exit_manager;
+
+  // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
+  // the command line from GetCommandLineW(), so we can safely pass NULL here.
+  CommandLine::Init(0, NULL);
+
+  remoting::InitHostLogging();
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kHelpSwitchName) ||
+      command_line->HasSwitch(kQuestionSwitchName)) {
+    usage(command_line->GetProgram());
+    return remoting::kSuccessExitCode;
+  }
+
+  remoting::HostService* service = remoting::HostService::GetInstance();
+  if (!service->InitWithCommandLine(command_line)) {
+    usage(command_line->GetProgram());
+    return remoting::kUsageExitCode;
+  }
+
+  return service->Run();
+}

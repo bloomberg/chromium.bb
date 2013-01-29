@@ -23,8 +23,6 @@
   <?define OmahaAppid = "{b210701e-ffc4-49e3-932b-370728c72662}" ?>
   <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
 
-  <?define CoreBinary = "remoting_core.dll" ?>
-
   <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
   <?define ControllerBinary = "remoting_controller.exe" ?>
   <?define ControllerClass = "ElevatedController Class" ?>
@@ -138,23 +136,6 @@
               Vital="yes"/>
       </Component>
 
-      <Component Id="remoting_core" Guid="*">
-        <File Id="$(var.CoreBinary)"
-              DiskId="1"
-              KeyPath="yes"
-              Name="$(var.CoreBinary)"
-              Vital="yes"/>
-
-        <util:EventSource xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
-                          Name="$(var.EventSourceName)"
-                          Log="Application"
-                          CategoryCount="1"
-                          CategoryMessageFile="[#$(var.CoreBinary)]"
-                          EventMessageFile="[#$(var.CoreBinary)]"
-                          SupportsErrors="yes"
-                          SupportsInformationals="yes"/>
-      </Component>
-
       <?if $(var.RemotingMultiProcess) != 0 ?>
         <Component Id="remoting_desktop" Guid="*">
           <File Id="remoting_desktop.exe"
@@ -196,6 +177,15 @@
               DiskId="1"
               Name="remoting_host.exe"
               Vital="yes"/>
+        <util:EventSource xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+                          Name="$(var.EventSourceName)"
+                          Log="Application"
+                          CategoryCount="1"
+                          CategoryMessageFile="[#remoting_host.exe]"
+                          EventMessageFile="[#remoting_host.exe]"
+                          SupportsErrors="yes"
+                          SupportsInformationals="yes"/>
+
         <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
                                 Id="me2me_firewall_exception"
                                 IgnoreFailure="yes"
@@ -283,7 +273,7 @@
 
               <RegistryValue Type="string"
                              Name="LocalizedString"
-                             Value="@[binaries]$(var.CoreBinary),-103"/>
+                             Value="@[#$(var.ControllerBinary)],-100"/>
 
               <RegistryKey Key="LocalServer32" Action="create">
                 <RegistryValue Type="string"
@@ -311,7 +301,7 @@
                                Value="1"/>
                 <RegistryValue Type="string"
                                Name="IconReference"
-                               Value="@[binaries]$(var.CoreBinary),-104"/>
+                               Value="@[#$(var.ControllerBinary)],-101"/>
               </RegistryKey>
             </RegistryKey>
           </RegistryKey>
@@ -350,7 +340,7 @@
                 <RegistryKey Key="0" Action="create">
                   <RegistryKey Key="win32" Action="create">
                     <RegistryValue Type="string"
-                                   Value="@[binaries]$(var.CoreBinary)"/>
+                                   Value="[#$(var.ControllerBinary)]"/>
                   </RegistryKey>
                 </RegistryKey>
 
@@ -447,10 +437,10 @@
 
     <CustomAction Id="set_service_display_name"
                   Property="chromoting_service_display_name"
-                  Value="@[binaries]$(var.CoreBinary),-101" />
+                  Value="@[binaries]remoting_daemon.exe,-101" />
     <CustomAction Id="set_service_description"
                   Property="chromoting_service_description"
-                  Value="@[binaries]$(var.CoreBinary),-102" />
+                  Value="@[binaries]remoting_daemon.exe,-102" />
 
     <!-- XP does not support MUI strings in the service name and description, so
          we fall back to plain strings on XP. -->
@@ -470,7 +460,6 @@
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
       <ComponentRef Id="remoting_controller"/>
-      <ComponentRef Id="remoting_core"/>
       <ComponentRef Id="remoting_daemon"/>
       <?if $(var.RemotingMultiProcess) != 0 ?>
         <ComponentRef Id="remoting_desktop"/>

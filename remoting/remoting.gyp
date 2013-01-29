@@ -236,9 +236,6 @@
     'include_dirs': [
       '..',  # Root of Chrome checkout
     ],
-    'variables': {
-      'win_debug_RuntimeChecks': '0',
-    },
     'conditions': [
       ['remoting_multi_process != 0', {
         'defines': [
@@ -466,20 +463,20 @@
         },  # end of target 'remoting_host'
 
         {
-          'target_name': 'remoting_me2me_host_static',
-          'type': 'static_library',
+          'target_name': 'remoting_me2me_host',
+          'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../media/media.gyp:media',
-            '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
             'remoting_jingle_glue',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../media/media.gyp:media',
+            '../net/net.gyp:net',
           ],
           'defines': [
             'VERSION=<(version_full)',
@@ -495,6 +492,7 @@
             'host/curtain_mode_win.cc',
             'host/posix/signal_handler.cc',
             'host/posix/signal_handler.h',
+            'host/remoting_me2me_host.cc',
           ],
           'conditions': [
             ['os_posix != 1', {
@@ -502,8 +500,84 @@
                 ['exclude', '^host/posix/'],
               ],
             }],
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'variables': {
+                 'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_ID@")',
+              },
+              'xcode_settings': {
+                'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
+                'INFOPLIST_PREPROCESS': 'YES',
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
+              },
+              'mac_bundle_resources': [
+                'host/disconnect_window.xib',
+                'host/remoting_me2me_host.icns',
+                'host/remoting_me2me_host-Info.plist',
+              ],
+              'mac_bundle_resources!': [
+                'host/remoting_me2me_host-Info.plist',
+              ],
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                  'defines': ['MAC_BREAKPAD'],
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                      'files': [
+                        '<(PRODUCT_DIR)/crash_inspector',
+                        '<(PRODUCT_DIR)/crash_report_sender.app'
+                      ],
+                    },
+                  ],
+                }],  # mac_breakpad==1
+              ],  # conditions
+            }],  # OS=mac
+            ['OS=="win"', {
+              'product_name': 'remoting_host',
+              'dependencies': [
+                'remoting_version_resources',
+              ],
+              'sources': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_me2me_version.rc',
+                'host/host_ui.rc',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '-lcomctl32.lib',
+                ],
+              },
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalOptions': [
+                    "\"/manifestdependency:type='win32' "
+                        "name='Microsoft.Windows.Common-Controls' "
+                        "version='6.0.0.0' "
+                        "processorArchitecture='*' "
+                        "publicKeyToken='6595b64144ccf1df' language='*'\"",
+                  ],
+                  'conditions': [
+                    ['buildtype == "Official" and remoting_multi_process == 0', {
+                      'AdditionalOptions': [
+                        "\"/MANIFESTUAC:level='requireAdministrator' "
+                            "uiAccess='true'\"",
+                      ],
+                    }],
+                  ],
+                  'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
+                  'OutputFile': '$(OutDir)\\remoting_host.exe',
+                  # 2 == /SUBSYSTEM:WINDOWS
+                  'SubSystem': '2',
+                },
+              },
+            }],
           ],  # end of 'conditions'
-        },  # end of target 'remoting_me2me_host_static'
+        },  # end of target 'remoting_me2me_host'
 
         {
           'target_name': 'remoting_host_keygen',
@@ -548,7 +622,7 @@
             ['OS=="win"', {
               'dependencies': [
                 '../google_update/google_update.gyp:google_update',
-                'remoting_controller_idl',
+                'remoting_elevated_controller',
               ],
             }],
           ],
@@ -572,7 +646,7 @@
           ],
           'sources': [
             'base/dispatch_win.h',
-            'host/win/core_resource.h',
+            'host/host_ui_resource.h',
             'host/plugin/host_log_handler.cc',
             'host/plugin/host_log_handler.h',
             'host/plugin/host_plugin.cc',
@@ -617,7 +691,7 @@
             }],  # OS=="mac"
             [ 'OS=="win"', {
               'dependencies': [
-                'remoting_controller_idl',
+                'remoting_elevated_controller',
                 'remoting_version_resources',
               ],
               'include_dirs': [
@@ -625,86 +699,78 @@
               ],
               'sources': [
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_plugin_version.rc',
-                'host/win/core.rc',
+                'host/host_ui.rc',
                 'host/plugin/host_plugin.def',
               ],
             }],
           ],
         },  # end of target 'remoting_host_plugin'
 
-      ],  # end of 'targets'
-    }],  # 'enable_remoting_host==1'
-
-    ['OS!="win" and enable_remoting_host==1', {
-      'targets': [
         {
-          'target_name': 'remoting_me2me_host',
+          'target_name': 'remoting_desktop',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
+          'defines': [
+            'REMOTING_MULTI_PROCESS',
+          ],
           'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../media/media.gyp:media',
-            '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
-            'remoting_host_event_logger',
             'remoting_host_logging',
-            'remoting_jingle_glue',
-            'remoting_me2me_host_static',
-          ],
-          'defines': [
-            'VERSION=<(version_full)',
+            '../base/base.gyp:base',
+            '../ipc/ipc.gyp:ipc',
           ],
           'sources': [
-            'host/remoting_me2me_host.cc',
-            'host/remoting_me2me_host.h',
+            'host/desktop_process.cc',
+            'host/desktop_process.h',
+            'host/desktop_process_main.cc',
+            'host/desktop_session_agent.cc',
+            'host/desktop_session_agent.h',
+            'host/desktop_session_agent_posix.cc',
+            'host/desktop_session_agent_win.cc',
           ],
           'conditions': [
-            ['OS=="mac"', {
-              'mac_bundle': 1,
-              'variables': {
-                 'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_ID@")',
-              },
-              'xcode_settings': {
-                'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
-                'INFOPLIST_PREPROCESS': 'YES',
-                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
-              },
-              'mac_bundle_resources': [
-                'host/disconnect_window.xib',
-                'host/remoting_me2me_host.icns',
-                'host/remoting_me2me_host-Info.plist',
+            ['OS=="win"', {
+              'dependencies': [
+                'remoting_version_resources',
               ],
-              'mac_bundle_resources!': [
-                'host/remoting_me2me_host-Info.plist',
+              'sources': [
+                'host/host_ui.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
               ],
-              'conditions': [
-                ['mac_breakpad==1', {
-                  'variables': {
-                    # A real .dSYM is needed for dump_syms to operate on.
-                    'mac_real_dsym': 1,
-                  },
-                  'defines': ['MAC_BREAKPAD'],
-                  'copies': [
-                    {
-                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
-                      'files': [
-                        '<(PRODUCT_DIR)/crash_inspector',
-                        '<(PRODUCT_DIR)/crash_report_sender.app'
-                      ],
-                    },
+              'link_settings': {
+                'libraries': [
+                  '-lcomctl32.lib',
+                ],
+              },
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalOptions': [
+                    "\"/manifestdependency:type='win32' "
+                        "name='Microsoft.Windows.Common-Controls' "
+                        "version='6.0.0.0' "
+                        "processorArchitecture='*' "
+                        "publicKeyToken='6595b64144ccf1df' language='*'\"",
                   ],
-                }],  # mac_breakpad==1
-              ],  # conditions
-            }],  # OS=mac
-          ],  # end of 'conditions'
-        },  # end of target 'remoting_me2me_host'
+                  'conditions': [
+                    ['buildtype == "Official"', {
+                      'AdditionalOptions': [
+                        "\"/MANIFESTUAC:level='requireAdministrator' "
+                            "uiAccess='true'\"",
+                      ],
+                    }],
+                  ],
+                  # 2 == /SUBSYSTEM:WINDOWS
+                  'SubSystem': '2',
+                },
+              },
+            }],
+          ],
+        },  # end of target 'remoting_desktop'
 
       ],  # end of 'targets'
-    }],  # 'OS!="win" and enable_remoting_host==1'
-
+    }],  # 'enable_remoting_host==1'
 
     ['OS=="linux" and chromeos==0', {
       'targets': [
@@ -966,7 +1032,7 @@
               'type': 'none',
               'dependencies': [
                 '../breakpad/breakpad.gyp:dump_syms',
-                'remoting_me2me_host',
+		'remoting_me2me_host',
               ],
               'actions': [
                 {
@@ -1007,7 +1073,7 @@
           ],
         },  # end of target 'remoting_breakpad_tester'
         {
-          'target_name': 'remoting_controller_idl',
+          'target_name': 'remoting_elevated_controller',
           'type': 'static_library',
           'sources': [
             'host/win/elevated_controller_idl.templ',
@@ -1047,7 +1113,7 @@
               'msvs_cygwin_shell': 1,
             },
           ],
-        },  # end of target 'remoting_controller_idl'
+        },  # end of target 'remoting_elevated_controller'
         {
           'target_name': 'remoting_configurer',
           'type': 'executable',
@@ -1084,18 +1150,64 @@
           },
         },  # end of target 'remoting_configurer'
         {
-          'target_name': 'remoting_core',
-          'type': 'shared_library',
+          'target_name': 'remoting_controller',
+          'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'defines' : [
             '_ATL_APARTMENT_THREADED',
             '_ATL_NO_AUTOMATIC_NAMESPACE',
             '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
-            'HOST_IMPLEMENTATION',
             'STRICT',
             'DAEMON_CONTROLLER_CLSID="{<(daemon_controller_clsid)}"',
-            'VERSION=<(version_full)',
           ],
+          'include_dirs': [
+            '<(INTERMEDIATE_DIR)',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_breakpad',
+            'remoting_elevated_controller',
+            'remoting_host',
+            'remoting_host_logging',
+            'remoting_protocol',
+            'remoting_version_resources',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_controller_version.rc',
+            'host/pin_hash.cc',
+            'host/pin_hash.h',
+            'host/verify_config_window_win.cc',
+            'host/verify_config_window_win.h',
+            'host/win/elevated_controller.cc',
+            'host/win/elevated_controller.h',
+            'host/win/elevated_controller.rc',
+            'host/win/elevated_controller_module.cc',
+            'host/win/omaha.cc',
+            'host/win/omaha.h',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lcomctl32.lib',
+            ],
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalOptions': [
+                "\"/manifestdependency:type='win32' "
+                    "name='Microsoft.Windows.Common-Controls' "
+                    "version='6.0.0.0' "
+                    "processorArchitecture='*' "
+                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+              ],
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        },  # end of target 'remoting_controller'
+        {
+          'target_name': 'remoting_daemon',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_static',
@@ -1104,17 +1216,12 @@
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
-            'remoting_controller_idl',
             'remoting_host',
-            'remoting_host_event_logger',
             'remoting_host_logging',
-            'remoting_me2me_host_static',
-            'remoting_protocol',
             'remoting_version_resources',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_core_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_daemon_version.rc',
             'base/scoped_sc_handle_win.h',
             '../media/video/capture/screen/win/desktop.cc',
             '../media/video/capture/screen/win/desktop.h',
@@ -1127,39 +1234,19 @@
             'host/daemon_process.cc',
             'host/daemon_process.h',
             'host/daemon_process_win.cc',
-            'host/desktop_process.cc',
-            'host/desktop_process.h',
-            'host/desktop_process_main.cc',
-            'host/desktop_process_main.h',
             'host/desktop_session.cc',
             'host/desktop_session.h',
-            'host/desktop_session_agent.cc',
-            'host/desktop_session_agent.h',
-            'host/desktop_session_agent_posix.cc',
-            'host/desktop_session_agent_win.cc',
             'host/desktop_session_win.cc',
             'host/desktop_session_win.h',
             'host/host_exit_codes.h',
-            'host/host_export.h',
             'host/ipc_constants.cc',
             'host/ipc_constants.h',
-            'host/remoting_me2me_host.cc',
-            'host/remoting_me2me_host.h',
             'host/sas_injector.h',
             'host/sas_injector_win.cc',
-            'host/verify_config_window_win.cc',
-            'host/verify_config_window_win.h',
-            'host/win/core.cc',
-            'host/win/core.rc',
-            'host/win/core_resource.h',
-            'host/win/daemon_process_main.cc',
-            'host/win/daemon_process_main.h',
-            'host/win/elevated_controller.cc',
-            'host/win/elevated_controller.h',
-            'host/win/elevated_controller_module.cc',
-            'host/win/elevated_controller_module.h',
             'host/win/host_service.cc',
             'host/win/host_service.h',
+            'host/win/host_service.rc',
+            'host/win/host_service_resource.h',
             'host/win/omaha.cc',
             'host/win/omaha.h',
             'host/win/unprivileged_process_delegate.cc',
@@ -1177,120 +1264,13 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'AdditionalDependencies': [
-                'comctl32.lib',
                 'wtsapi32.lib',
               ],
-              'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
-              ],
-            },
-          },
-        },  # end of target 'remoting_controller_static'
-        {
-          'target_name': 'remoting_controller',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_core',
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_controller_version.rc',
-            'host/win/elevated_controller_entry_point.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'EntryPointSymbol': 'ElevatedControllerEntryPoint',
-              'IgnoreAllDefaultLibraries': 'true',
-              'SubSystem': '2', # /SUBSYSTEM:WINDOWS
-            },
-          },
-        },  # end of target 'remoting_controller'
-        {
-          'target_name': 'remoting_daemon',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_core',
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_daemon_version.rc',
-            'host/win/daemon_process_entry_point.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'EntryPointSymbol': 'DaemonProcessEntryPoint',
-              'IgnoreAllDefaultLibraries': 'true',
-              'SubSystem': '2', # /SUBSYSTEM:WINDOWS
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
             },
           },
         },  # end of target 'remoting_daemon'
-
-        {
-          'target_name': 'remoting_desktop',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_core',
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
-            'host/win/desktop_process_entry_point.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'conditions': [
-                ['buildtype == "Official"', {
-                  'AdditionalOptions': [
-                    "\"/MANIFESTUAC:level='requireAdministrator' "
-                        "uiAccess='true'\"",
-                  ],
-                }],
-              ],
-              'EntryPointSymbol': 'DesktopProcessEntryPoint',
-              'IgnoreAllDefaultLibraries': 'true',
-              'SubSystem': '2', # /SUBSYSTEM:WINDOWS
-            },
-          },
-        },  # end of target 'remoting_desktop'
-
-        {
-          'target_name': 'remoting_host_exe',
-          'product_name': 'remoting_host',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_core',
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_version.rc',
-            'host/win/host_process_entry_point.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'conditions': [
-                ['buildtype == "Official" and remoting_multi_process == 0', {
-                  'AdditionalOptions': [
-                    "\"/MANIFESTUAC:level='requireAdministrator' "
-                        "uiAccess='true'\"",
-                  ],
-                }],
-              ],
-              'EntryPointSymbol': 'HostProcessEntryPoint',
-              'IgnoreAllDefaultLibraries': 'true',
-              'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
-              'OutputFile': '$(OutDir)\\remoting_host.exe',
-              'SubSystem': '2', # /SUBSYSTEM:WINDOWS
-            },
-          },
-        },  # end of target 'remoting_host_exe'
 
         # Generates the version information resources for the Windows binaries.
         # The .RC files are generated from the "version.rc.version" template and
@@ -1320,11 +1300,10 @@
           },
           'sources': [
             'host/plugin/remoting_host_plugin.ver',
+            'host/remoting_desktop.ver',
+            'host/remoting_host_me2me.ver',
             'host/win/remoting_controller.ver',
-            'host/win/remoting_core.ver',
             'host/win/remoting_daemon.ver',
-            'host/win/remoting_desktop.ver',
-            'host/win/remoting_host.ver',
           ],
           'rules': [
             {
@@ -1411,19 +1390,16 @@
           'type': 'none',
           'dependencies': [
             'remoting_controller',
-            'remoting_core',
             'remoting_daemon',
-            'remoting_host_exe',
+            'remoting_me2me_host',
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remoting_controller.exe',
-            '<(PRODUCT_DIR)/remoting_core.dll',
             '<(PRODUCT_DIR)/remoting_daemon.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
           ],
           'compiled_inputs_dst': [
             'files/remoting_controller.exe',
-            'files/remoting_core.dll',
             'files/remoting_daemon.exe',
             'files/remoting_host.exe',
           ],
