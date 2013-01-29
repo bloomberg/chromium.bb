@@ -453,6 +453,12 @@
                 '../third_party/GTM/DebugUtils',
                 '../third_party/GTM/Foundation',
               ],
+              'link_settings': {  
+                'libraries': [  
+                  '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',  
+                  'libpam.a', 
+               ],
+              },
             }],
             ['OS=="win"', {
               'dependencies': [
