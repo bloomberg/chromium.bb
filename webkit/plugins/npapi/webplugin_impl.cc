@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -82,21 +81,6 @@ namespace webkit {
 namespace npapi {
 
 namespace {
-
-const char kOctetStreamMimeType[] = "application/octet-stream";
-const char kHTMLMimeType[] = "text/html";
-const char kPlainTextMimeType[] = "text/plain";
-const char kPluginFlashMimeType[] = "Plugin.FlashMIMEType";
-
-enum {
-  MIME_TYPE_OK = 0,
-  MIME_TYPE_EMPTY,
-  MIME_TYPE_OCTETSTREAM,
-  MIME_TYPE_HTML,
-  MIME_TYPE_PLAINTEXT,
-  MIME_TYPE_OTHER,
-  MIME_TYPE_NUM_EVENTS
-};
 
 // This class handles individual multipart responses. It is instantiated when
 // we receive HTTP status code 206 in the HTTP response. This indicates
@@ -910,53 +894,6 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
 
   ResponseInfo response_info;
   GetResponseInfo(response, &response_info);
-
-  ClientInfo* client_info = GetClientInfoFromLoader(loader);
-  if (!client_info)
-    return;
-
-  // Defend against content confusion by the Flash plug-in.
-  if (client_info->is_plugin_src_load &&
-      mime_type_ == kFlashPluginSwfMimeType) {
-    std::string sniff =
-        response.httpHeaderField("X-Content-Type-Options").utf8();
-    std::string content_type =
-        response.httpHeaderField("Content-Type").utf8();
-    StringToLowerASCII(&sniff);
-    StringToLowerASCII(&content_type);
-    if (content_type.find(kFlashPluginSwfMimeType) != std::string::npos) {
-      UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
-                                MIME_TYPE_OK,
-                                MIME_TYPE_NUM_EVENTS);
-    } else if (content_type.empty()) {
-      UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
-                                MIME_TYPE_EMPTY,
-                                MIME_TYPE_NUM_EVENTS);
-    } else if (content_type.find(kOctetStreamMimeType) != std::string::npos) {
-      UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
-                                MIME_TYPE_OCTETSTREAM,
-                                MIME_TYPE_NUM_EVENTS);
-    } else if (content_type.find(kHTMLMimeType) != std::string::npos) {
-      UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
-                                MIME_TYPE_HTML,
-                                MIME_TYPE_NUM_EVENTS);
-    } else if (content_type.find(kPlainTextMimeType) != std::string::npos) {
-      UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
-                                MIME_TYPE_PLAINTEXT,
-                                MIME_TYPE_NUM_EVENTS);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(kPluginFlashMimeType,
-                                MIME_TYPE_OTHER,
-                                MIME_TYPE_NUM_EVENTS);
-    }
-    if (sniff.find("nosniff") != std::string::npos &&
-        !content_type.empty() &&
-        content_type.find(kFlashPluginSwfMimeType) == std::string::npos) {
-      loader->cancel();
-      client_info->client->DidFail();
-      return;
-    }
-  }
 
   bool request_is_seekable = true;
   if (client->IsMultiByteResponseExpected()) {
