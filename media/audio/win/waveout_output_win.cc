@@ -8,6 +8,7 @@
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 
+#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -215,7 +216,7 @@ void PCMWaveOutAudioOutputStream::Start(AudioSourceCallback* callback) {
   // From now on |pending_bytes_| would be accessed by callback thread.
   // Most likely waveOutPause() or waveOutRestart() has its own memory barrier,
   // but issuing our own is safer.
-  MemoryBarrier();
+  base::subtle::MemoryBarrier();
 
   MMRESULT result = ::waveOutPause(waveout_);
   if (result != MMSYSERR_NOERROR) {
@@ -250,7 +251,7 @@ void PCMWaveOutAudioOutputStream::Stop() {
   if (state_ != PCMA_PLAYING)
     return;
   state_ = PCMA_STOPPING;
-  MemoryBarrier();
+  base::subtle::MemoryBarrier();
 
   // Stop watching for buffer event, wait till all the callbacks are complete.
   // Should be done before ::waveOutReset() call to avoid race condition when
