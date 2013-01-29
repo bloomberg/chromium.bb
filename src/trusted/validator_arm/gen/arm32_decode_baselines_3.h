@@ -1562,6 +1562,60 @@ class VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0
       VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0);
 };
 
+// VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    add: op(6)=0,
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    pattern: cccc11100d00nnnndddd101snom0mmmm,
+//    rule: VMLA_VMLS_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+class VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0);
+};
+
 // VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0:
 //
 //   {D: D(22),
@@ -2768,6 +2822,57 @@ class VMUL_floating_point_A1_111100110d0snnnndddd1101nqm1mmmm_case_0
       VMUL_floating_point_A1_111100110d0snnnndddd1101nqm1mmmm_case_0);
 };
 
+// VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d10nnnndddd101sn0m0mmmm,
+//    rule: VMUL_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+class VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0);
+};
+
 // VMUL_integer_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0:
 //
 //   {D: D(22),
@@ -3070,6 +3175,113 @@ class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1);
+};
+
+// VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    VFPNegMul_VNMLA: 1,
+//    VFPNegMul_VNMLS: 2,
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    pattern: cccc11100d01nnnndddd101snom0mmmm,
+//    rule: VNMLA_VNMLS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    type: VFPNegMul_VNMLA
+//         if op(6)=1
+//         else VFPNegMul_VNMLS,
+//    uses: {}}
+class VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0);
+};
+
+// VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    VFPNegMul_VNMUL: 3,
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d10nnnndddd101sn1m0mmmm,
+//    rule: VNMUL,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    type: VFPNegMul_VNMUL,
+//    uses: {}}
+class VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0);
 };
 
 // VORN_register_111100100d11nnnndddd0001nqm1mmmm_case_0:
@@ -7604,6 +7816,57 @@ class VSUB_floating_point_A1_111100100d1snnnndddd1101nqm0mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VSUB_floating_point_A1_111100100d1snnnndddd1101nqm0mmmm_case_0);
+};
+
+// VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d11nnnndddd101sn1m0mmmm,
+//    rule: VSUB_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+class VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0);
 };
 
 // VSUB_integer_111100110dssnnnndddd1000nqm0mmmm_case_0:

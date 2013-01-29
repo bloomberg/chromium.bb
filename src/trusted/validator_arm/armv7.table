@@ -1941,36 +1941,66 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
            transfer_between_arm_core_and_extension_register_8_16_and_32_bit
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- floating_point_data_processing_instructions (A7.5 Table A7-16)
+*base
+   { cond(31:28), D(22), Vn(19:16), Vd(15:12), sz(8),
+     N(7), op(6), M(5), Vm(3:0) }
+   baseline := CondVfpOp;
+   dp_operation := sz=1;
+   d := D:Vd if dp_operation else Vd:D;
+   n := N:Vn if dp_operation else Vn:N;
+   m := M:Vm if dp_operation else Vm:M;
+   # TODO(karl): Add vector defs/uses etc.
+   defs := {};
+   uses := {};
+   # Note: we have explicitly added that cond(31:28)=~1111 to safety to meet
+   # table (ARM) restriction.
+   safety := cond=1111 => DECODER_ERROR;
+   arch := VFPv2;
+*Vml_a_s *base
+   { cond(31:28), D(22), Vn(19:16), Vd(15:12), sz(8),
+     N(7), op(6), M(5), Vm(3:0) }
+   advsimd := false;  add := op=0;
+*Vnml_a_s *base
+   type := VFPNegMul_VNMLA if op=1 else VFPNegMul_VNMLS;
+*Vnmul *base - { op }
+   type := VFPNegMul_VNMUL;
+*Vop *base - { op }
+   advsimd := false;
+*Vfnm_a_s *base
+   op1_neg := op=1;
+   arch := VFPv4;
+*Vfm_a_s *Vfnm_a_s
+   advsimd := false;
++--
 | opc1(23:20) opc3(7:6)
-| 0x00        -         = CondVfpOp => VfpOp
-                          Vmla_vmls_Rule_423_A2_P636
-                          cccc11100d00nnnndddd101snom0mmmm (VFPv2)
-| 0x01        -         = CondVfpOp => VfpOp
-                          Vnmla_vnmls_Rule_343_A1_P674
-                          cccc11100d01nnnndddd101snom0mmmm (VFPv2)
-| 0x10        x1        = CondVfpOp => VfpOp
-                          Vnmul_Rule_343_A2_P674
-                          cccc11100d10nnnndddd101sn1m0mmmm (VFPv2)
-| "           x0        = CondVfpOp => VfpOp
-                          Vmul_Rule_338_A2_P664
-                          cccc11100d10nnnndddd101sn0m0mmmm (VFPv2)
-| 0x11        x0        = CondVfpOp => VfpOp
-                          Vadd_Rule_271_A2_P536
-                          cccc11100d11nnnndddd101sn0m0mmmm (VFPv2)
-| "           x1        = CondVfpOp => VfpOp
-                          Vsub_Rule_402_A2_P790
-                          cccc11100d11nnnndddd101sn1m0mmmm (VFPv2)
-| 1x00        x0        = CondVfpOp => VfpOp
-                          Vdiv_Rule_301_A1_P590
-                          cccc11101d00nnnndddd101sn0m0mmmm (VFPv2)
-| 1x01        -         = CondVfpOp => VfpOp
-                          Vfnma_vfnms_Rule_A1
-                          cccc11101d01nnnndddd101snom0mmmm (VFPv4)
-| 1x10        -         = CondVfpOp => VfpOp
-                          Vfma_vfms_Rule_A1
-                          cccc11101d10nnnndddd101snom0mmmm (VFPv4)
+| 0x00        -         = *Vml_a_s
+                           pattern := cccc11100d00nnnndddd101snom0mmmm;
+                           rule := VMLA_VMLS_floating_point;
+| 0x01        -         = *Vnml_a_s
+                           pattern := cccc11100d01nnnndddd101snom0mmmm;
+                           rule := VNMLA_VNMLS;
+| 0x10        x1        = *Vnmul
+                           pattern := cccc11100d10nnnndddd101sn1m0mmmm;
+                           rule := VNMUL;
+| "           x0        = *Vop
+                           pattern := cccc11100d10nnnndddd101sn0m0mmmm;
+                           rule := VMUL_floating_point;
+| 0x11        x0        = *Vop
+                           pattern := cccc11100d11nnnndddd101sn0m0mmmm;
+                           rule := VADD_floating_point;
+| "           x1        = *Vop
+                           pattern := cccc11100d11nnnndddd101sn1m0mmmm;
+                           rule := VSUB_floating_point;
+| 1x00        x0        = *Vop
+                           pattern := cccc11101d00nnnndddd101sn0m0mmmm;
+                           rule := VDIV;
+| 1x01        -         = *Vfnm_a_s
+                           pattern := cccc11101d01nnnndddd101snom0mmmm;
+                           rule := VFNMA_VFNMS;
+| 1x10        -         = *Vfm_a_s
+                           pattern := cccc11101d10nnnndddd101snom0mmmm;
+                           rule := VFMA_VFMS;
 | 1x11        -         -> other_floating_point_data_processing_instructions
 +--
 

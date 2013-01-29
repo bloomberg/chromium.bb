@@ -49,6 +49,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
   , CondDecoder_instance_()
+  , CondVfpOp_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
@@ -1140,19 +1141,19 @@ const ClassDecoder& Arm32DecoderState::decode_floating_point_data_processing_ins
 {
   if ((inst.Bits() & 0x00B00000)  ==
           0x00300000 /* opc1(23:20)=0x11 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00800000 /* opc1(23:20)=1x00 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00900000 /* opc1(23:20)=1x01 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
@@ -1162,12 +1163,12 @@ const ClassDecoder& Arm32DecoderState::decode_floating_point_data_processing_ins
 
   if ((inst.Bits() & 0x00300000)  ==
           0x00200000 /* opc1(23:20)=xx10 */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   if ((inst.Bits() & 0x00A00000)  ==
           0x00000000 /* opc1(23:20)=0x0x */) {
-    return VfpOp_instance_;
+    return CondVfpOp_instance_;
   }
 
   // Catch any attempt to fall though ...

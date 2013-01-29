@@ -1197,14 +1197,47 @@ class SymbolTable(object):
   def disinherit(self):
     """Removes inheriting symbol tables."""
     # Install inheriting values not explicitly overridden.
-    inherits_st = self._dict.get(_INHERITS_SYMBOL)
+    excludes = set([_INHERITS_EXCLUDES_SYMBOL, _INHERITS_SYMBOL])
+    current_st = self
+    inherits_st = current_st.find(_INHERITS_SYMBOL)
     while inherits_st:
-      self.remove(_INHERITS_EXCLUDES_SYMBOL)
-      self.remove(_INHERITS_SYMBOL)
-      # Copy definitions in inherits to this.
+
+      # Start by updating symbols to be excluded from the current
+      # symbol table.
+      inherits_excludes = current_st.find(
+          _INHERITS_EXCLUDES_SYMBOL, install_inheriting=False)
+      if inherits_excludes:
+          for sym in inherits_excludes:
+              excludes.add(sym)
+
+      # Copy definitions in inherits to this, excluding symbols that
+      # should not be inherited.
       for key in inherits_st.keys():
-        self.define(key, inherits_st.find(key), fail_if_defined=False)
-      inherits_st = self.find(_INHERITS_SYMBOL)
+        if key not in excludes:
+
+            # If the key defines a fields argument, remove references
+            # to excluded fields.
+            value = inherits_st.find(key)
+            if key == 'fields' and isinstance(value, list):
+                filtered_fields = []
+                for field in value:
+                    subfield = field
+                    if isinstance(subfield, BitField):
+                        subfield = subfield.name()
+                    if (isinstance(subfield, IdRef)
+                        and subfield.name() in excludes):
+                        continue
+                    filtered_fields.append(field)
+                value = filtered_fields
+
+            # Install value.
+            self.define(key, value, fail_if_defined=False)
+      current_st = inherits_st
+      inherits_st = current_st.find(_INHERITS_SYMBOL)
+
+    # Before returning, remove inheriting entries.
+    self.remove(_INHERITS_EXCLUDES_SYMBOL)
+    self.remove(_INHERITS_SYMBOL)
 
   def keys(self):
     return [k for k in self._dict.keys() if k != _INHERITS_SYMBOL]

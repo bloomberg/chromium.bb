@@ -1870,6 +1870,379 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
       Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1);
 };
 
+// Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [inst(31:28)=1111 => DECODER_ERROR],
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d11nnnndddd101sn0m0mmmm,
+//    rule: VADD_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11101d00nnnndddd101sn0m0mmmm,
+//    rule: VDIV,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv4,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    op1_neg: op(6)=1,
+//    pattern: cccc11101d10nnnndddd101snom0mmmm,
+//    rule: VFMA_VFMS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv4,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    op1_neg: op(6)=1,
+//    pattern: cccc11101d01nnnndddd101snom0mmmm,
+//    rule: VFNMA_VFNMS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    add: op(6)=0,
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    pattern: cccc11100d00nnnndddd101snom0mmmm,
+//    rule: VMLA_VMLS_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d10nnnndddd101sn0m0mmmm,
+//    rule: VMUL_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    VFPNegMul_VNMLA: 1,
+//    VFPNegMul_VNMLS: 2,
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    pattern: cccc11100d01nnnndddd101snom0mmmm,
+//    rule: VNMLA_VNMLS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    type: VFPNegMul_VNMLA
+//         if op(6)=1
+//         else VFPNegMul_VNMLS,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    VFPNegMul_VNMUL: 3,
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d10nnnndddd101sn1m0mmmm,
+//    rule: VNMUL,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    type: VFPNegMul_VNMUL,
+//    uses: {}}
+//
+// Baseline:
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d11nnnndddd101sn1m0mmmm,
+//    rule: VSUB_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1);
+};
+
 // Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1
 //
 // Actual:

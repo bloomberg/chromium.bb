@@ -2953,6 +2953,74 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    add: op(6)=0,
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    pattern: cccc11100d00nnnndddd101snom0mmmm,
+//    rule: VMLA_VMLS_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0:
 //
 //   {D: D(22),
@@ -4798,6 +4866,71 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d10nnnndddd101sn0m0mmmm,
+//    rule: VMUL_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VMUL_integer_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0:
 //
 //   {D: D(22),
@@ -5243,6 +5376,141 @@ safety(Instruction inst) const {
 
 
 RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    VFPNegMul_VNMLA: 1,
+//    VFPNegMul_VNMLS: 2,
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    pattern: cccc11100d01nnnndddd101snom0mmmm,
+//    rule: VNMLA_VNMLS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    type: VFPNegMul_VNMLA
+//         if op(6)=1
+//         else VFPNegMul_VNMLS,
+//    uses: {}}
+RegisterList VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    VFPNegMul_VNMUL: 3,
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d10nnnndddd101sn1m0mmmm,
+//    rule: VNMUL,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    type: VFPNegMul_VNMUL,
+//    uses: {}}
+RegisterList VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
@@ -12297,6 +12565,71 @@ safety(Instruction inst) const {
 
 
 RegisterList VSUB_floating_point_A1_111100100d1snnnndddd1101nqm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d11nnnndddd101sn1m0mmmm,
+//    rule: VSUB_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

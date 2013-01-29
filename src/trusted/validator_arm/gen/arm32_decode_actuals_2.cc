@@ -251,6 +251,40 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [inst(31:28)=1111 => DECODER_ERROR],
+//    uses: {}}
+
+RegisterList Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1
 //
 // Actual:

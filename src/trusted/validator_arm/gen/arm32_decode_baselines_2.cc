@@ -6486,6 +6486,71 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11100d11nnnndddd101sn0m0mmmm,
+//    rule: VADD_floating_point,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_0:
 //
 //   {D: D(22),
@@ -8616,6 +8681,71 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv2,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    pattern: cccc11101d00nnnndddd101sn0m0mmmm,
+//    rule: VDIV,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0:
 //
 //   {B: B(22),
@@ -8863,6 +8993,74 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    advsimd: false,
+//    arch: VFPv4,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    false: false,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    op1_neg: op(6)=1,
+//    pattern: cccc11101d10nnnndddd101snom0mmmm,
+//    rule: VFMA_VFMS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VFMS_A1_111100100d10nnnndddd1100nqm1mmmm_case_0:
 //
 //   {D: D(22),
@@ -8939,6 +9137,72 @@ safety(Instruction inst) const {
 
 
 RegisterList VFMS_A1_111100100d10nnnndddd1100nqm1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    arch: VFPv4,
+//    baseline: CondVfpOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd
+//         if dp_operation
+//         else Vd:D,
+//    defs: {},
+//    dp_operation: sz(8)=1,
+//    fields: [cond(31:28),
+//      D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      sz(8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    m: M:Vm
+//         if dp_operation
+//         else Vm:M,
+//    n: N:Vn
+//         if dp_operation
+//         else Vn:N,
+//    op: op(6),
+//    op1_neg: op(6)=1,
+//    pattern: cccc11101d01nnnndddd101snom0mmmm,
+//    rule: VFNMA_VFNMS,
+//    safety: [cond(31:28)=1111 => DECODER_ERROR],
+//    sz: sz(8),
+//    uses: {}}
+RegisterList VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0xF0000000)  ==
+          0xF0000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

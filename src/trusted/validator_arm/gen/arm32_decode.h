@@ -182,6 +182,7 @@ class Arm32DecoderState : DecoderState {
   const BranchToRegister BranchToRegister_instance_;
   const BreakPointAndConstantPoolHead BreakPointAndConstantPoolHead_instance_;
   const CondDecoder CondDecoder_instance_;
+  const CondVfpOp CondVfpOp_instance_;
   const DataBarrier DataBarrier_instance_;
   const Deprecated Deprecated_instance_;
   const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;

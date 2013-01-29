@@ -1496,57 +1496,57 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_floating_point_data_proc
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00000000 /* opc1(23:20)=0x00 */) {
-    return CondVfpOp_Vmla_vmls_Rule_423_A2_P636_instance_;
+    return CondVfpOp_VMLA_VMLS_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00100000 /* opc1(23:20)=0x01 */) {
-    return CondVfpOp_Vnmla_vnmls_Rule_343_A1_P674_instance_;
+    return CondVfpOp_VNMLA_VNMLS_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00200000 /* opc1(23:20)=0x10 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_Vmul_Rule_338_A2_P664_instance_;
+    return CondVfpOp_VMUL_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00200000 /* opc1(23:20)=0x10 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_Vnmul_Rule_343_A2_P674_instance_;
+    return CondVfpOp_VNMUL_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00300000 /* opc1(23:20)=0x11 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_Vadd_Rule_271_A2_P536_instance_;
+    return CondVfpOp_VADD_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00300000 /* opc1(23:20)=0x11 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_Vsub_Rule_402_A2_P790_instance_;
+    return CondVfpOp_VSUB_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00800000 /* opc1(23:20)=1x00 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_Vdiv_Rule_301_A1_P590_instance_;
+    return CondVfpOp_VDIV_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00900000 /* opc1(23:20)=1x01 */) {
-    return CondVfpOp_Vfnma_vfnms_Rule_A1_instance_;
+    return CondVfpOp_VFNMA_VFNMS_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00A00000 /* opc1(23:20)=1x10 */) {
-    return CondVfpOp_Vfma_vfms_Rule_A1_instance_;
+    return CondVfpOp_VFMA_VFMS_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==

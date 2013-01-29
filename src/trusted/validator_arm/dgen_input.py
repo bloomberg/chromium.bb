@@ -128,6 +128,11 @@ _PREDEFINED_CONSTS = {
     'true': dgen_core.BoolValue(True),
     'false': dgen_core.BoolValue(False),
     'inst': dgen_core.Instruction(),
+    # Instruction value selectors used in ARM tables. Numbered sequentially
+    # to guarantee selectors are unique.
+    'VFPNegMul_VNMLA': dgen_core.Literal(1),
+    'VFPNegMul_VNMLS': dgen_core.Literal(2),
+    'VFPNegMul_VNMUL': dgen_core.Literal(3),
     }
 
 # Predefined regular expressions.
