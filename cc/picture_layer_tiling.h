@@ -52,6 +52,7 @@ class CC_EXPORT PictureLayerTiling {
   TileResolution resolution() const { return resolution_; }
 
   gfx::Rect ContentRect() const;
+  gfx::SizeF ContentSizeF() const;
   float contents_scale() const { return contents_scale_; }
 
   std::vector<Tile*> AllTilesForTesting() const {
@@ -91,7 +92,8 @@ class CC_EXPORT PictureLayerTiling {
    private:
     const PictureLayerTiling* tiling_;
     gfx::Rect dest_rect_;
-    float dest_to_content_scale_;
+    float dest_to_content_scale_x_;
+    float dest_to_content_scale_y_;
 
     Tile* current_tile_;
     gfx::Rect current_geometry_rect_;

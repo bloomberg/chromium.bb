@@ -5,7 +5,9 @@
 #include "cc/picture_layer_tiling.h"
 
 #include "cc/math_util.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
@@ -39,6 +41,10 @@ gfx::Rect PictureLayerTiling::ContentRect() const {
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds_, contents_scale_));
   return gfx::Rect(gfx::Point(), content_bounds);
+}
+
+gfx::SizeF PictureLayerTiling::ContentSizeF() const {
+  return gfx::ScaleSize(layer_bounds_, contents_scale_);
 }
 
 Tile* PictureLayerTiling::TileAt(int i, int j) const {
@@ -170,8 +176,9 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
                                        gfx::Rect dest_rect)
     : tiling_(tiling),
       dest_rect_(dest_rect),
-      dest_to_content_scale_(tiling_->contents_scale_ / dest_scale),
       current_tile_(NULL),
+      dest_to_content_scale_x_(0),
+      dest_to_content_scale_y_(0),
       tile_i_(0),
       tile_j_(0),
       left_(0),
@@ -182,8 +189,28 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
   if (dest_rect_.IsEmpty())
     return;
 
+  float dest_to_content_scale = tiling_->contents_scale_ / dest_scale;
+  dest_to_content_scale_x_ = dest_to_content_scale;
+  dest_to_content_scale_y_ = dest_to_content_scale;
+
+  // Do not draw last row/column of texels if they don't have enough
+  // rasterization coverage. i.e.: the ceiled content size does not equal the
+  // floored size.
+  gfx::SizeF content_size = tiling_->ContentSizeF();
+  gfx::Size content_size_ceil = gfx::ToCeiledSize(content_size);
+  gfx::Size content_size_floor = gfx::ToFlooredSize(content_size);
+
+  if (content_size_floor.width() != content_size_ceil.width())
+    dest_to_content_scale_x_ = dest_to_content_scale *
+        content_size_floor.width() / content_size_ceil.width();
+  if (content_size_floor.height() != content_size_ceil.height())
+    dest_to_content_scale_y_ = dest_to_content_scale *
+        content_size_floor.height() /content_size_ceil.height();
+
   gfx::Rect content_rect =
-      gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_, dest_to_content_scale_));
+      gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_,
+                                          dest_to_content_scale_x_,
+                                          dest_to_content_scale_y_));
   // IndexFromSrcCoord clamps to valid tile ranges, so it's necessary to
   // check for non-intersection first.
   content_rect.Intersect(gfx::Rect(tiling_->tiling_data_.total_size()));
@@ -225,13 +252,16 @@ PictureLayerTiling::Iterator& PictureLayerTiling::Iterator::operator++() {
   current_tile_ = tiling_->TileAt(tile_i_, tile_j_);
 
   // Calculate the current geometry rect.  Due to floating point rounding
-  // and ToEnclosedRect, tiles might overlap in destination space on the
+  // and ToEnclosingRect, tiles might overlap in destination space on the
   // edges.
   gfx::Rect last_geometry_rect = current_geometry_rect_;
 
   gfx::Rect content_rect = tiling_->tiling_data_.TileBounds(tile_i_, tile_j_);
+
   current_geometry_rect_ = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1 / dest_to_content_scale_));
+      gfx::ScaleRect(content_rect, 1 / dest_to_content_scale_x_,
+                                   1 / dest_to_content_scale_y_));
+
   current_geometry_rect_.Intersect(dest_rect_);
 
   if (first_time)
@@ -268,14 +298,14 @@ gfx::Rect PictureLayerTiling::Iterator::geometry_rect() const {
 }
 
 gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
-  gfx::Rect full_bounds = tiling_->tiling_data_.TileBoundsWithBorder(tile_i_,
-                                                                     tile_j_);
-  full_bounds.set_size(texture_size());
+  gfx::PointF tex_origin =
+      tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_).origin();
 
   // Convert from dest space => content space => texture space.
-  gfx::RectF texture_rect = gfx::ScaleRect(current_geometry_rect_,
-                                           dest_to_content_scale_);
-  texture_rect.Offset(-full_bounds.OffsetFromOrigin());
+  gfx::RectF texture_rect(current_geometry_rect_);
+  texture_rect.Scale(dest_to_content_scale_x_,
+                     dest_to_content_scale_y_);
+  texture_rect.Offset(-tex_origin.OffsetFromOrigin());
 
   DCHECK_GE(texture_rect.x(), 0);
   DCHECK_GE(texture_rect.y(), 0);
