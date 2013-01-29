@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
+#include "ui/gfx/display_observer.h"
 
 namespace extensions {
 
@@ -29,7 +30,7 @@ struct CpuUpdateInfo;
 // Since the system_monitor will be refactored along with media_gallery, once
 // http://crbug.com/145400 is fixed, we need to update SystemInfoEventRouter
 // accordingly.
-class SystemInfoEventRouter {
+class SystemInfoEventRouter: public gfx::DisplayObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
 
@@ -50,6 +51,11 @@ class SystemInfoEventRouter {
                                   const FilePath::StringType& location);
   void OnRemovableStorageDetached(const std::string& id);
 
+  // gfx::DisplayObserver implementation.
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+
  private:
   friend struct DefaultSingletonTraits<SystemInfoEventRouter>;
 
@@ -64,6 +70,9 @@ class SystemInfoEventRouter {
   // The callback for CPU sampling cycle. Called from FILE thread.
   void OnNextCpuSampling(
       scoped_ptr<api::experimental_system_info_cpu::CpuUpdateInfo> info);
+
+  // Called to dispatch the systemInfo.display.onDisplayChanged event.
+  void OnDisplayChanged();
 
   // Used to record the event names being watched.
   std::multiset<std::string> watching_event_set_;

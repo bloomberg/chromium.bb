@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -13,6 +14,11 @@
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/common/extensions/api/experimental_system_info_cpu.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
+
+#if defined(USE_ASH)
+#include "ash/screen_ash.h"
+#include "ash/shell.h"
+#endif
 
 namespace extensions {
 
@@ -23,17 +29,25 @@ using content::BrowserThread;
 
 namespace {
 
-const char kSystemInfoEventPrefix[] = "experimental.systemInfo";
+// The display events use the "systemInfo" prefix.
+const char kSystemInfoEventPrefix[] = "systemInfo";
+const char kDisplayEventPrefix[] = "systemInfo.display";
+
+// The storage and cpu events still use the "experimental.systemInfo" prefix.
+const char kExperimentalSystemInfoEventPrefix[] = "experimental.systemInfo";
 const char kStorageEventPrefix[] = "experimental.systemInfo.storage";
 const char kCpuEventPrefix[] = "experimental.systemInfo.cpu";
 
+static bool IsDisplayEvent(const std::string& event_name) {
+  return StartsWithASCII(event_name, kDisplayEventPrefix, true);
+}
+
 static bool IsStorageEvent(const std::string& event_name) {
-  return event_name.compare(0, strlen(kStorageEventPrefix),
-      kStorageEventPrefix) == 0;
+  return StartsWithASCII(event_name, kStorageEventPrefix, true);
 }
 
 static bool IsCpuEvent(const std::string& event_name) {
-  return event_name.compare(0, strlen(kCpuEventPrefix), kCpuEventPrefix) == 0;
+  return StartsWithASCII(event_name, kCpuEventPrefix, true);
 }
 
 }  // namespace
@@ -68,6 +82,13 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
                    base::Unretained(this)));
     return;
   }
+
+  // For systemInfo.display event.
+  if (IsDisplayEvent(event_name)) {
+#if defined(USE_ASH)
+    ash::Shell::GetScreen()->AddObserver(this);
+#endif
+  }
 }
 
 void SystemInfoEventRouter::RemoveEventListener(
@@ -86,12 +107,20 @@ void SystemInfoEventRouter::RemoveEventListener(
   if (IsCpuEvent(event_name)) {
     CpuInfoProvider::Get()->StopSampling();
   }
+
+  if (IsDisplayEvent(event_name)) {
+#if defined(USE_ASH)
+    ash::Shell::GetScreen()->RemoveObserver(this);
+#endif
+  }
 }
 
 // static
 bool SystemInfoEventRouter::IsSystemInfoEvent(const std::string& event_name) {
-  std::string prefix(kSystemInfoEventPrefix);
-  return event_name.compare(0, prefix.size(), prefix) == 0;
+  // TODO(hshi): simplify this once all systemInfo APIs are out of experimental.
+  return (StartsWithASCII(event_name, kSystemInfoEventPrefix, true) ||
+          StartsWithASCII(event_name, kExperimentalSystemInfoEventPrefix,
+                          true));
 }
 
 void SystemInfoEventRouter::OnStorageAvailableCapacityChanged(
@@ -121,6 +150,24 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(const std::string& id,
 
 void SystemInfoEventRouter::OnRemovableStorageDetached(const std::string& id) {
   // TODO(hongbo): Same as above.
+}
+
+void SystemInfoEventRouter::OnDisplayBoundsChanged(
+    const gfx::Display& display) {
+  OnDisplayChanged();
+}
+
+void SystemInfoEventRouter::OnDisplayAdded(const gfx::Display& new_display) {
+  OnDisplayChanged();
+}
+
+void SystemInfoEventRouter::OnDisplayRemoved(const gfx::Display& old_display) {
+  OnDisplayChanged();
+}
+
+void SystemInfoEventRouter::OnDisplayChanged() {
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  DispatchEvent(event_names::kOnDisplayChanged, args.Pass());
 }
 
 void SystemInfoEventRouter::DispatchEvent(const std::string& event_name,
