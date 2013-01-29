@@ -84,6 +84,65 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
   bus->ShutdownAndBlock();
 }
 
+TEST(BusTest, RemoveObjectProxy) {
+  // Setup the current thread's MessageLoop.
+  MessageLoop message_loop;
+
+  // Start the D-Bus thread.
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  base::Thread dbus_thread("D-Bus thread");
+  dbus_thread.StartWithOptions(thread_options);
+
+  // Create the bus.
+  dbus::Bus::Options options;
+  options.dbus_thread_message_loop_proxy = dbus_thread.message_loop_proxy();
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  ASSERT_FALSE(bus->shutdown_completed());
+
+  // Try to remove a non existant object proxy should return false.
+  ASSERT_FALSE(
+      bus->RemoveObjectProxy("org.chromium.TestService",
+                             dbus::ObjectPath("/org/chromium/TestObject"),
+                             base::Bind(&base::DoNothing)));
+
+  dbus::ObjectProxy* object_proxy1 =
+      bus->GetObjectProxy("org.chromium.TestService",
+                          dbus::ObjectPath("/org/chromium/TestObject"));
+  ASSERT_TRUE(object_proxy1);
+
+  // Increment the reference count to the object proxy to avoid destroying it
+  // while removing the object.
+  object_proxy1->AddRef();
+
+  // Remove the object from the bus. This will invalidate any other usage of
+  // object_proxy1 other than destroy it. We keep this object for a comparison
+  // at a later time.
+  ASSERT_TRUE(
+      bus->RemoveObjectProxy("org.chromium.TestService",
+                             dbus::ObjectPath("/org/chromium/TestObject"),
+                             base::Bind(&base::DoNothing)));
+
+  // This should return a different object because the first object was removed
+  // from the bus, but not deleted from memory.
+  dbus::ObjectProxy* object_proxy2 =
+      bus->GetObjectProxy("org.chromium.TestService",
+                          dbus::ObjectPath("/org/chromium/TestObject"));
+  ASSERT_TRUE(object_proxy2);
+
+  // Compare the new object with the first object. The first object still exists
+  // thanks to the increased reference.
+  EXPECT_NE(object_proxy1, object_proxy2);
+
+  // Release object_proxy1.
+  object_proxy1->Release();
+
+  // Shut down synchronously.
+  bus->ShutdownOnDBusThreadAndBlock();
+  EXPECT_TRUE(bus->shutdown_completed());
+  dbus_thread.Stop();
+}
+
 TEST(BusTest, GetExportedObject) {
   dbus::Bus::Options options;
   scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);

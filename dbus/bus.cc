@@ -235,6 +235,46 @@ ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
   return object_proxy.get();
 }
 
+bool Bus::RemoveObjectProxy(const std::string& service_name,
+                            const ObjectPath& object_path,
+                            const base::Closure& callback) {
+  return RemoveObjectProxyWithOptions(service_name, object_path,
+                                      ObjectProxy::DEFAULT_OPTIONS,
+                                      callback);
+}
+
+bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
+                                       const dbus::ObjectPath& object_path,
+                                       int options,
+                                       const base::Closure& callback) {
+  AssertOnOriginThread();
+
+  // Check if we have the requested object proxy.
+  const ObjectProxyTable::key_type key(service_name + object_path.value(),
+                                       options);
+  ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
+  if (iter != object_proxy_table_.end()) {
+    // Object is present. Remove it now and Detach in the DBus thread.
+    PostTaskToDBusThread(FROM_HERE, base::Bind(
+        &Bus::RemoveObjectProxyInternal,
+        this, iter->second, callback));
+
+    object_proxy_table_.erase(iter);
+    return true;
+  }
+  return false;
+}
+
+void Bus::RemoveObjectProxyInternal(
+    scoped_refptr<dbus::ObjectProxy> object_proxy,
+    const base::Closure& callback) {
+  AssertOnDBusThread();
+
+  object_proxy.get()->Detach();
+
+  PostTaskToOriginThread(FROM_HERE, callback);
+}
+
 ExportedObject* Bus::GetExportedObject(const ObjectPath& object_path) {
   AssertOnOriginThread();
 
@@ -410,19 +450,9 @@ void Bus::RequestOwnershipInternal(const std::string& service_name,
     success = RequestOwnershipAndBlock(service_name);
 
   PostTaskToOriginThread(FROM_HERE,
-                         base::Bind(&Bus::OnOwnership,
-                                    this,
-                                    on_ownership_callback,
+                         base::Bind(on_ownership_callback,
                                     service_name,
                                     success));
-}
-
-void Bus::OnOwnership(OnOwnershipCallback on_ownership_callback,
-                      const std::string& service_name,
-                      bool success) {
-  AssertOnOriginThread();
-
-  on_ownership_callback.Run(service_name, success);
 }
 
 bool Bus::RequestOwnershipAndBlock(const std::string& service_name) {

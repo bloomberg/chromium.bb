@@ -201,6 +201,8 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // - the requested service name.
   // - whether ownership has been obtained or not.
   typedef base::Callback<void (const std::string&, bool)> OnOwnershipCallback;
+  // TODO(satorux): Remove the service name parameter as the caller of
+  // RequestOwnership() knows the service name.
 
   // Gets the object proxy for the given service name and the object path.
   // The caller must not delete the returned object.
@@ -229,6 +231,42 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
       const std::string& service_name,
       const ObjectPath& object_path,
       int options);
+
+  // Removes the previously created object proxy for the given service
+  // name and the object path and releases its memory.
+  //
+  // If and object proxy for the given service name and object was
+  // created with GetObjectProxy, this function removes it from the
+  // bus object and detaches the ObjectProxy, invalidating any pointer
+  // previously acquired for it with GetObjectProxy. A subsequent call
+  // to GetObjectProxy will return a new object.
+  //
+  // All the object proxies are detached from remote objects at the
+  // shutdown time of the bus, but they can be detached early to reduce
+  // memory footprint and used match rules for the bus connection.
+  //
+  // |service_name| looks like "org.freedesktop.NetworkManager", and
+  // |object_path| looks like "/org/freedesktop/NetworkManager/Devices/0".
+  // |callback| is called when the object proxy is successfully removed and
+  // detached.
+  //
+  // The function returns true when there is an object proxy matching the
+  // |service_name| and |object_path| to remove, and calls |callback| when it
+  // is removed. Otherwise, it returns false and the |callback| function is
+  // never called. The |callback| argument must not be null.
+  //
+  // Must be called in the origin thread.
+  virtual bool RemoveObjectProxy(const std::string& service_name,
+                                 const ObjectPath& object_path,
+                                 const base::Closure& callback);
+
+  // Same as above, but also takes a bitfield of ObjectProxy::Options.
+  // See object_proxy.h for available options.
+  virtual bool RemoveObjectProxyWithOptions(
+      const std::string& service_name,
+      const ObjectPath& object_path,
+      int options,
+      const base::Closure& callback);
 
   // Gets the exported object for the given object path.
   // The caller must not delete the returned object.
@@ -449,6 +487,10 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
  private:
   friend class base::RefCountedThreadSafe<Bus>;
 
+  // Helper function used for RemoveObjectProxy().
+  void RemoveObjectProxyInternal(scoped_refptr<dbus::ObjectProxy> object_proxy,
+                                 const base::Closure& callback);
+
   // Helper function used for UnregisterExportedObject().
   void UnregisterExportedObjectInternal(
       scoped_refptr<dbus::ExportedObject> exported_object);
@@ -459,11 +501,6 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Helper function used for RequestOwnership().
   void RequestOwnershipInternal(const std::string& service_name,
                                 OnOwnershipCallback on_ownership_callback);
-
-  // Called when the ownership request is completed.
-  void OnOwnership(OnOwnershipCallback on_ownership_callback,
-                   const std::string& service_name,
-                   bool success);
 
   // Processes the all incoming data to the connection, if any.
   //
