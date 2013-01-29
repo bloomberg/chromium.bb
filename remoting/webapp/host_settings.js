@@ -82,7 +82,9 @@ remoting.HostSettings.loadInternal_ = function(hostId, callback) {
     var result = {};
     try {
       var result = jsonParseSafe(allHosts[remoting.HostSettings.KEY_]);
-      if (hostId in result && typeof(result[hostId] == 'Object')) {
+      if (typeof(result) == 'object' &&
+          hostId in result &&
+          typeof(result[hostId]) == 'object') {
         callback(result[hostId], /** @type {Object} */(result));
         return;
       }
