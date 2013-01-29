@@ -1457,6 +1457,31 @@
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
 {
+   bug_145703
+   Heapcheck:Leak
+   ...
+   fun:content::SiteInstanceImpl::GetProcess
+   fun:RenderViewHostImpl
+   fun:content::RenderViewHostFactory::Create
+   fun:content::RenderViewHostManager::Init
+   fun:content::WebContentsImpl::Init
+   fun:content::TestWebContents::Create
+   fun:content::WebContentsTester::CreateTestWebContents
+   fun:extensions::::TestExtensionEnvironment::MakeTab
+   fun:extensions::::DeclarativeContentActionTest_ShowPageAction_Test::TestBody
+}
+{
+   bug_145705
+   Heapcheck:Leak
+   ...
+   fun:extensions::SettingsFrontend::Create
+   fun:ExtensionService::ExtensionService
+   fun:extensions::TestExtensionSystem::CreateExtensionService
+   fun:extensions::::TestExtensionEnvironment::GetExtensionService
+   fun:extensions::::TestExtensionEnvironment::MakeExtension
+   fun:extensions::::DeclarativeContentActionTest_ShowPageAction_Test::TestBody
+}
+{
    bug_147755_a
    Heapcheck:Leak
    ...
