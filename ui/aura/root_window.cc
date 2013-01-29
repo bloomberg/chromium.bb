@@ -778,21 +778,22 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
 
   Window* target = mouse_pressed_handler_ ?
       mouse_pressed_handler_ : client::GetCaptureWindow(this);
+
   if (!target)
     target = GetEventHandlerForPoint(event->location());
 
-  if (target && target->delegate()) {
-    int flags = event->flags();
-    gfx::Point location_in_window = event->location();
-    Window::ConvertPointToTarget(this, target, &location_in_window);
-    if (IsNonClientLocation(target, location_in_window))
-      flags |= ui::EF_IS_NON_CLIENT;
-    event->set_flags(flags);
-    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    ProcessEvent(target, event);
-    return event->handled();
-  }
-  return false;
+  if (!target)
+    target = this;
+
+  int flags = event->flags();
+  gfx::Point location_in_window = event->location();
+  Window::ConvertPointToTarget(this, target, &location_in_window);
+  if (IsNonClientLocation(target, location_in_window))
+    flags |= ui::EF_IS_NON_CLIENT;
+  event->set_flags(flags);
+  event->ConvertLocationToTarget(static_cast<Window*>(this), target);
+  ProcessEvent(target, event);
+  return event->handled();
 }
 
 bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {

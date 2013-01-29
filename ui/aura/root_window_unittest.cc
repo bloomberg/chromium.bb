@@ -18,6 +18,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -370,6 +371,7 @@ TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
 
 // Tests that scroll events are dispatched correctly.
 TEST_F(RootWindowTest, ScrollEventDispatch) {
+  base::TimeDelta now = ui::EventTimeForNow();
   test::TestEventHandler* filter = new test::TestEventHandler;
   root_window()->SetEventFilter(filter);
 
@@ -377,15 +379,15 @@ TEST_F(RootWindowTest, ScrollEventDispatch) {
   scoped_ptr<Window> w1(CreateWindow(1, root_window(), &delegate));
   w1->SetBounds(gfx::Rect(20, 20, 40, 40));
 
-  // A scroll event on the root-window itself is not dispatched.
-  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(10, 10), 0, 0, -10);
+  // A scroll event on the root-window itself is dispatched.
+  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(10, 10), now, 0, 0, -10, 2);
   root_window()->AsRootWindowHostDelegate()->OnHostScrollEvent(&scroll1);
-  EXPECT_EQ(0, filter->num_scroll_events());
+  EXPECT_EQ(1, filter->num_scroll_events());
 
   // Scroll event on a window should be dispatched properly.
-  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(25, 30), 0, -10, 0);
+  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(25, 30), now, 0, -10, 0, 2);
   root_window()->AsRootWindowHostDelegate()->OnHostScrollEvent(&scroll2);
-  EXPECT_EQ(1, filter->num_scroll_events());
+  EXPECT_EQ(2, filter->num_scroll_events());
 }
 
 namespace {

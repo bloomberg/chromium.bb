@@ -640,12 +640,16 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
 
 ScrollEvent::ScrollEvent(EventType type,
                          const gfx::Point& location,
+                         base::TimeDelta time_stamp,
                          int flags,
                          float x_offset,
-                         float y_offset)
+                         float y_offset,
+                         int finger_count)
     : MouseEvent(type, location, location, flags),
       x_offset_(x_offset),
-      y_offset_(y_offset) {
+      y_offset_(y_offset),
+      finger_count_(finger_count) {
+  set_time_stamp(time_stamp);
   CHECK(IsScrollEvent());
 }
 
@@ -664,7 +668,11 @@ GestureEvent::GestureEvent(EventType type,
                            base::TimeDelta time_stamp,
                            const GestureEventDetails& details,
                            unsigned int touch_ids_bitfield)
-    : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), time_stamp, flags),
+    : LocatedEvent(type,
+                   gfx::Point(x, y),
+                   gfx::Point(x, y),
+                   time_stamp,
+                   flags | EF_FROM_TOUCH),
       details_(details),
       touch_ids_bitfield_(touch_ids_bitfield) {
 }

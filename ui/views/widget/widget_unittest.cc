@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -1290,7 +1291,13 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
   // Generate a scroll event on the cursor view. The focused view will receive a
   // wheel event, but since it doesn't process the event, the view under the
   // cursor will receive the wheel event.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(65, 5), 0, 0, 20);
+  ui::ScrollEvent scroll(ui::ET_SCROLL,
+                         gfx::Point(65, 5),
+                         ui::EventTimeForNow(),
+                         0,
+                         0,
+                         20,
+                         2);
   widget->OnScrollEvent(&scroll);
 
   EXPECT_EQ(0, focused_view->GetEventCount(ui::ET_SCROLL));
@@ -1302,7 +1309,13 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
   focused_view->ResetCounts();
   cursor_view->ResetCounts();
 
-  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(5, 5), 0, 0, 20);
+  ui::ScrollEvent scroll2(ui::ET_SCROLL,
+                          gfx::Point(5, 5),
+                          ui::EventTimeForNow(),
+                          0,
+                          0,
+                          20,
+                          2);
   widget->OnScrollEvent(&scroll2);
   EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_MOUSEWHEEL));

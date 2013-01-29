@@ -5,6 +5,9 @@
 #ifndef UI_AURA_TEST_EVENT_GENERATOR_H_
 #define UI_AURA_TEST_EVENT_GENERATOR_H_
 
+#include <list>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -16,6 +19,10 @@ class TimeDelta;
 
 namespace ui {
 class Event;
+class KeyEvent;
+class MouseEvent;
+class ScrollEvent;
+class TouchEvent;
 }
 
 namespace aura {
@@ -74,6 +81,9 @@ class EventGenerator {
     current_location_ = location;
   }
   const gfx::Point& current_location() const { return current_location_; }
+
+  void set_async(bool async) { async_ = async; }
+  bool async() const { return async_; }
 
   // Resets the event flags bitmask.
   void set_flags(int flags) { flags_ = flags; }
@@ -189,6 +199,22 @@ class EventGenerator {
                                 int move_x,
                                 int move_y);
 
+  // Generates scroll sequences of a FlingCancel, Scrolls, FlingStart, with
+  // constant deltas to |x_offset| and |y_offset| in |steps|.
+  void ScrollSequence(const gfx::Point& start,
+                      const base::TimeDelta& step_delay,
+                      float x_offset,
+                      float y_offset,
+                      int steps,
+                      int num_fingers);
+
+  // Generates scroll sequences of a FlingCancel, Scrolls, FlingStart, sending
+  // scrolls of each of the values in |offsets|.
+  void ScrollSequence(const gfx::Point& start,
+                      const base::TimeDelta& step_delay,
+                      const std::vector<gfx::Point>& offsets,
+                      int num_fingers);
+
   // Generates a key press event. On platforms except Windows and X11, a key
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
@@ -201,8 +227,8 @@ class EventGenerator {
   // TODO(yusukes): Support native_event() on all platforms.
   void ReleaseKey(ui::KeyboardCode key_code, int flags);
 
-  // Dispatch the |event| to the RootWindow.
-  void Dispatch(ui::Event& event);
+  // Dispatch the event to the RootWindow.
+  void Dispatch(ui::Event* event);
 
   void set_current_root_window(RootWindow* root_window) {
     current_root_window_ = root_window;
@@ -226,11 +252,17 @@ class EventGenerator {
   gfx::Point GetLocationInCurrentRoot() const;
   gfx::Point CenterOfWindow(const Window* window) const;
 
+  void DispatchNextPendingEvent();
+  void DoDispatchEvent(ui::Event* event, bool async);
+
   scoped_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;
   RootWindow* current_root_window_;
   int flags_;
   bool grab_;
+  std::list<ui::Event*> pending_events_;
+  // Set to true to cause events to be posted asynchronously.
+  bool async_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGenerator);
 };
