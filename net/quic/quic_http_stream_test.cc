@@ -172,7 +172,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     connection_->set_visitor(&visitor_);
     connection_->SetScheduler(scheduler_);
     connection_->SetCollector(collector_);
-    session_.reset(new QuicClientSession(connection_, helper_, NULL));
+    session_.reset(new QuicClientSession(connection_, helper_, NULL,
+                                         "www.google.com"));
     CryptoHandshakeMessage message;
     message.tag = kSHLO;
     session_->GetCryptoStream()->OnHandshakeMessage(message);

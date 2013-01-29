@@ -197,7 +197,8 @@ scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
 int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  session_ = factory_->CreateSession(address_list_, net_log_);
+  session_ = factory_->CreateSession(host_port_proxy_pair_.first.host(),
+                                     address_list_, net_log_);
   session_->StartReading();
   int rv = session_->CryptoConnect(
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
@@ -359,10 +360,11 @@ bool QuicStreamFactory::HasActiveSession(
 }
 
 QuicClientSession* QuicStreamFactory::CreateSession(
-    const AddressList& address_list_,
+    const std::string& host,
+    const AddressList& address_list,
     const BoundNetLog& net_log) {
   QuicGuid guid = random_generator_->RandUint64();
-  IPEndPoint addr = *address_list_.begin();
+  IPEndPoint addr = *address_list.begin();
   DatagramClientSocket* socket =
       client_socket_factory_->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
@@ -375,7 +377,8 @@ QuicClientSession* QuicStreamFactory::CreateSession(
       clock_.get(), random_generator_, socket);
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper);
-  QuicClientSession* session = new QuicClientSession(connection, helper, this);
+  QuicClientSession* session = new QuicClientSession(connection, helper, this,
+                                                     host);
   all_sessions_.insert(session);  // owning pointer
   return session;
 }

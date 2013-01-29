@@ -13,6 +13,8 @@ namespace net {
 namespace test {
 namespace {
 
+const char kServerHostname[] = "localhost";
+
 class TestQuicVisitor : public NoOpFramerVisitor {
  public:
   TestQuicVisitor() {}
@@ -99,7 +101,10 @@ void TestMockHelper::CheckClientHelloPacket(
 
   CryptoTagValueMap& tag_value_map =
       crypto_visitor.messages_[0].tag_value_map;
-  ASSERT_EQ(7u, tag_value_map.size());
+  ASSERT_EQ(8u, tag_value_map.size());
+
+  // kSNI
+  EXPECT_EQ(kServerHostname, tag_value_map[kSNI]);
 
   // kNONC
   // TODO(wtc): check the nonce.
@@ -165,7 +170,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   QuicCryptoClientStreamTest()
       : connection_(new MockConnection(1, addr_, new TestMockHelper())),
         session_(connection_, true),
-        stream_(&session_) {
+        stream_(&session_, kServerHostname) {
     message_.tag = kSHLO;
     message_.tag_value_map[1] = "abc";
     message_.tag_value_map[2] = "def";

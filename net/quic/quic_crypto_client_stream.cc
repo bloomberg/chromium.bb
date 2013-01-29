@@ -11,8 +11,10 @@
 
 namespace net {
 
-QuicCryptoClientStream::QuicCryptoClientStream(QuicSession* session)
-    : QuicCryptoStream(session) {
+QuicCryptoClientStream::QuicCryptoClientStream(QuicSession* session,
+                                               const string& server_hostname)
+    : QuicCryptoStream(session),
+      server_hostname_(server_hostname) {
 }
 
 
@@ -40,7 +42,8 @@ bool QuicCryptoClientStream::CryptoConnect() {
                              session()->connection()->random_generator(),
                              &nonce_);
   CryptoHandshakeMessage message;
-  CryptoUtils::FillClientHelloMessage(client_crypto_config_, nonce_, &message);
+  CryptoUtils::FillClientHelloMessage(client_crypto_config_, nonce_,
+                                      server_hostname_, &message);
   SendHandshakeMessage(message);
   return true;
 }

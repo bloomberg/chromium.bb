@@ -6,6 +6,7 @@
 #define NET_QUIC_QUIC_STREAM_FACTORY_H_
 
 #include <map>
+#include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "net/base/address_list.h"
@@ -111,8 +112,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory {
   void OnJobComplete(Job* job, int rv);
   bool HasActiveSession(const HostPortProxyPair& host_port_proxy_pair);
   bool HasActiveJob(const HostPortProxyPair& host_port_proxy_pair);
-  QuicClientSession* CreateSession(const AddressList& address_list_,
-                     const BoundNetLog& net_log);
+  QuicClientSession* CreateSession(const std::string& host,
+                                   const AddressList& address_list,
+                                   const BoundNetLog& net_log);
   void ActivateSession(const HostPortProxyPair& host_port_proxy_pair,
                        QuicClientSession* session);
 

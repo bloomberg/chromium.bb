@@ -31,9 +31,11 @@ class QuicStreamFactoryTest : public ::testing::Test {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructChlo() {
+    const std::string& host = host_port_proxy_pair_.first.host();
     scoped_ptr<QuicPacket> chlo(ConstructClientHelloPacket(0xDEADBEEF,
                                                            clock_,
-                                                           &random_generator_));
+                                                           &random_generator_,
+                                                           host));
     QuicFramer framer(QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
     return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*chlo));

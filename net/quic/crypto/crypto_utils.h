@@ -27,6 +27,7 @@ class NET_EXPORT_PRIVATE CryptoUtils {
 
   static void FillClientHelloMessage(const QuicClientCryptoConfig& config,
                                      const std::string& nonce,
+                                     const std::string& server_hostname,
                                      CryptoHandshakeMessage* message);
 };
 

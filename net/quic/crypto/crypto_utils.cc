@@ -5,6 +5,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 
 #include "base/string_piece.h"
+#include "net/base/net_util.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
@@ -29,6 +30,7 @@ void CryptoUtils::GenerateNonce(const QuicClock* clock,
 
 void CryptoUtils::FillClientHelloMessage(const QuicClientCryptoConfig& config,
                                          const string& nonce,
+                                         const string& server_hostname,
                                          CryptoHandshakeMessage* message) {
   message->tag = kCHLO;
 
@@ -69,8 +71,12 @@ void CryptoUtils::FillClientHelloMessage(const QuicClientCryptoConfig& config,
   message->tag_value_map[kNONC] = nonce;
 
   // Server name indication.
-  // TODO(wtc): if server_hostname_ is a DNS name, store it in
-  // message->tag_value_map[kSNI].
+  // If server_hostname is not an IP address literal, it is a DNS hostname.
+  IPAddressNumber ip_number;
+  if (!server_hostname.empty() &&
+      !ParseIPLiteralToNumber(server_hostname, &ip_number)) {
+    message->tag_value_map[kSNI] = server_hostname;
+  }
 }
 
 }  // namespace net

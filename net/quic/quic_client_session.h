@@ -10,6 +10,8 @@
 #ifndef NET_QUIC_QUIC_CLIENT_SESSION_H_
 #define NET_QUIC_QUIC_CLIENT_SESSION_H_
 
+#include <string>
+
 #include "base/hash_tables.h"
 #include "net/base/completion_callback.h"
 #include "net/quic/quic_crypto_client_stream.h"
@@ -28,7 +30,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // TODO(rch): decouple the factory from the session via a Delegate interface.
   QuicClientSession(QuicConnection* connection,
                     QuicConnectionHelper* helper,
-                    QuicStreamFactory* stream_factory);
+                    QuicStreamFactory* stream_factory,
+                    const std::string& server_hostname);
 
   virtual ~QuicClientSession();
 

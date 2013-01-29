@@ -17,12 +17,14 @@ namespace net {
 namespace test {
 namespace {
 
+const char kServerHostname[] = "www.example.com";
+
 class QuicClientSessionTest : public ::testing::Test {
  protected:
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint())),
-        session_(connection_, NULL, NULL) {
+        session_(connection_, NULL, NULL, kServerHostname) {
   }
 
   QuicGuid guid_;
@@ -36,7 +38,8 @@ TEST_F(QuicClientSessionTest, CryptoConnectSendsCorrectData) {
   EXPECT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
   ASSERT_EQ(1u, connection_->packets_.size());
   scoped_ptr<QuicPacket> chlo(ConstructClientHelloPacket(
-      guid_, connection_->clock(), connection_->random_generator()));
+      guid_, connection_->clock(), connection_->random_generator(),
+      kServerHostname));
   CompareQuicDataWithHexError("CHLO", connection_->packets_[0], chlo.get());
 }
 

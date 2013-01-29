@@ -35,7 +35,8 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag);
 // Constructs a ClientHello crypto handshake message
 QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
-                                       QuicRandom* random_generator);
+                                       QuicRandom* random_generator,
+                                       const std::string& server_hostname);
 
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
