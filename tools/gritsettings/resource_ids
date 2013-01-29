@@ -197,6 +197,9 @@
   "third_party/trace-viewer/src/tracing.grd": {
     "includes": [27000],
   },
+  "chrome/browser/resources/memory_internals_resources.grd": {
+    "includes": [27500],
+  },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }

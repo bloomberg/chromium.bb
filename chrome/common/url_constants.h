@@ -161,6 +161,7 @@ extern const char kChromeUIKillHost[];
 extern const char kChromeUILocalOmniboxPopupHost[];
 extern const char kChromeUIMediaInternalsHost[];
 extern const char kChromeUIMemoryHost[];
+extern const char kChromeUIMemoryInternalsHost[];
 extern const char kChromeUIMemoryRedirectHost[];
 extern const char kChromeUIMetroFlowHost[];
 extern const char kChromeUINaClHost[];

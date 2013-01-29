@@ -15,6 +15,13 @@
       # it easier for us to reference them internally.
       'actions': [
         {
+          'action_name': 'memory_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/memory_internals_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'net_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/net_internals_resources.grd',

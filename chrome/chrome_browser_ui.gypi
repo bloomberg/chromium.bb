@@ -1923,6 +1923,8 @@
         'browser/ui/webui/media/webrtc_internals_message_handler.h',
         'browser/ui/webui/media/webrtc_internals_ui.cc',
         'browser/ui/webui/media/webrtc_internals_ui.h',
+        'browser/ui/webui/memory_internals/memory_internals_ui.cc',
+        'browser/ui/webui/memory_internals/memory_internals_ui.h',
         'browser/ui/webui/metrics_handler.cc',
         'browser/ui/webui/metrics_handler.h',
         'browser/ui/webui/nacl_ui.cc',

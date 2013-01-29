@@ -88,6 +88,7 @@ class JSChecker(object):
         path.join(resources, 'extensions'),
         path.join(resources, 'help'),
         path.join(resources, 'history'),
+        path.join(resources, 'memory_internals'),
         path.join(resources, 'net_internals'),
         path.join(resources, 'network_action_predictor'),
         path.join(resources, 'ntp4'),

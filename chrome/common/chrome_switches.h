@@ -153,6 +153,7 @@ extern const char kEnableIPv6[];
 extern const char kEnableManagedStorage[];
 extern const char kEnableManagedUsers[];
 extern const char kEnableMemoryInfo[];
+extern const char kEnableMemoryInternalsUI[];
 extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
