@@ -22,6 +22,8 @@ Options include:
         generated actual classes.
   --auto-baseline-sep=name - Use as separator to split up automatically
         generated baseline classes.
+  --test-base=name - Test automatically genererated baseline for the
+        decoder table with the given name. May be repeated.
 
   name - Only generate tests for table 'name'. May be repeated.
 
@@ -63,6 +65,7 @@ def main(argv):
                'auto-actual': [],
                'auto-actual-sep': [],
                'auto-baseline-sep': [],
+               'test-base': [],
                'table_remove': [],
                'table': [],
                }

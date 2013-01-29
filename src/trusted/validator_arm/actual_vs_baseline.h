@@ -42,7 +42,10 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   // Note: we quit early if the safety values are not MAY_BE_SAFE
   bool MayBeSafe();
 
-  // Checks that each corresponding ClassDecoder virtual matches.
+  // Applies Sanity checks, as defined by the baseline tester.
+  // Returns true if the sanity checks pass.
+  virtual bool DoApplySanityChecks();
+
   void CheckDefs();
   void CheckBaseAddressRegisterWritebackSmallImmediate();
   void CheckBaseAddressRegister();

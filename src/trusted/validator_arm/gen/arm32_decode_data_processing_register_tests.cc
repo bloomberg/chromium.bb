@@ -13,6 +13,7 @@
 
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/actual_vs_baseline.h"
+#include "native_client/src/trusted/validator_arm/baseline_vs_baseline.h"
 #include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
@@ -2804,6 +2805,596 @@ TEST_F(Arm32DecoderStateTests,
   NamedActual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_MVN_register actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001111s0000ddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       defs: {NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rm(3:0)],
+//       generated_baseline: TST_register_cccc00010001nnnn0000iiiiitt0mmmm_case_0,
+//       pattern: cccc00010001nnnn0000iiiiitt0mmmm,
+//       rule: TST_register,
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary2RegisterImmedShiftedTestTester_Case0_TestCase0) {
+  Binary2RegisterImmedShiftedTestTester_Case0 old_baseline_tester;
+  NamedTST_register_cccc00010001nnnn0000iiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc00010001nnnn0000iiiiitt0mmmm");
+}
+
+// op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       defs: {NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rm(3:0)],
+//       generated_baseline: TEQ_register_cccc00010011nnnn0000iiiiitt0mmmm_case_0,
+//       pattern: cccc00010011nnnn0000iiiiitt0mmmm,
+//       rule: TEQ_register,
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary2RegisterImmedShiftedTestTester_Case1_TestCase1) {
+  Binary2RegisterImmedShiftedTestTester_Case1 old_baseline_tester;
+  NamedTEQ_register_cccc00010011nnnn0000iiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc00010011nnnn0000iiiiitt0mmmm");
+}
+
+// op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       defs: {NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rm(3:0)],
+//       generated_baseline: CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0,
+//       pattern: cccc00010101nnnn0000iiiiitt0mmmm,
+//       rule: CMP_register,
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary2RegisterImmedShiftedTestTester_Case2_TestCase2) {
+  Binary2RegisterImmedShiftedTestTester_Case2 old_baseline_tester;
+  NamedCMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc00010101nnnn0000iiiiitt0mmmm");
+}
+
+// op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       defs: {NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rm(3:0)],
+//       generated_baseline: CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0,
+//       pattern: cccc00010111nnnn0000iiiiitt0mmmm,
+//       rule: CMN_register,
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary2RegisterImmedShiftedTestTester_Case3_TestCase3) {
+  Binary2RegisterImmedShiftedTestTester_Case3 old_baseline_tester;
+  NamedCMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc00010111nnnn0000iiiiitt0mmmm");
+}
+
+// op1(24:20)=0000x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000000snnnnddddiiiiitt0mmmm,
+//       rule: AND_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case4_TestCase4) {
+  Binary3RegisterShiftedOpTester_Case4 old_baseline_tester;
+  NamedAND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000000snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0001x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000001snnnnddddiiiiitt0mmmm,
+//       rule: EOR_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case5_TestCase5) {
+  Binary3RegisterShiftedOpTester_Case5 old_baseline_tester;
+  NamedEOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000001snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0010x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: SUB_register_cccc0000010snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000010snnnnddddiiiiitt0mmmm,
+//       rule: SUB_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case6_TestCase6) {
+  Binary3RegisterShiftedOpTester_Case6 old_baseline_tester;
+  NamedSUB_register_cccc0000010snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000010snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0011x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000011snnnnddddiiiiitt0mmmm,
+//       rule: RSB_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case7_TestCase7) {
+  Binary3RegisterShiftedOpTester_Case7 old_baseline_tester;
+  NamedRSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000011snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0100x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000100snnnnddddiiiiitt0mmmm,
+//       rule: ADD_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case8_TestCase8) {
+  Binary3RegisterShiftedOpTester_Case8 old_baseline_tester;
+  NamedADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000100snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0101x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000101snnnnddddiiiiitt0mmmm,
+//       rule: ADC_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case9_TestCase9) {
+  Binary3RegisterShiftedOpTester_Case9 old_baseline_tester;
+  NamedADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000101snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0110x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000110snnnnddddiiiiitt0mmmm,
+//       rule: SBC_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case10_TestCase10) {
+  Binary3RegisterShiftedOpTester_Case10 old_baseline_tester;
+  NamedSBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000110snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=0111x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0000111snnnnddddiiiiitt0mmmm,
+//       rule: RSC_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case11_TestCase11) {
+  Binary3RegisterShiftedOpTester_Case11 old_baseline_tester;
+  NamedRSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0000111snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=1100x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0001100snnnnddddiiiiitt0mmmm,
+//       rule: ORR_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case12_TestCase12) {
+  Binary3RegisterShiftedOpTester_Case12 old_baseline_tester;
+  NamedORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001100snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), imm5(11:7), Rm(3:0)],
+//       generated_baseline: LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0,
+//       imm5: imm5(11:7),
+//       pattern: cccc0001101s0000ddddiiiii000mmmm,
+//       rule: LSL_immediate,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         imm5(11:7)=00000 => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterShiftedOpImmNotZeroTester_Case13_TestCase13) {
+  Unary2RegisterShiftedOpImmNotZeroTester_Case13 old_baseline_tester;
+  NamedLSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001101s0000ddddiiiii000mmmm");
+}
+
+// op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), imm5(11:7), Rm(3:0)],
+//       generated_baseline: ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0,
+//       imm5: imm5(11:7),
+//       pattern: cccc0001101s0000ddddiiiii110mmmm,
+//       rule: ROR_immediate,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         imm5(11:7)=00000 => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterShiftedOpImmNotZeroTester_Case14_TestCase14) {
+  Unary2RegisterShiftedOpImmNotZeroTester_Case14 old_baseline_tester;
+  NamedROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001101s0000ddddiiiii110mmmm");
+}
+
+// op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), Rm(3:0)],
+//       generated_baseline: MOV_register_cccc0001101s0000dddd00000000mmmm_case_0,
+//       pattern: cccc0001101s0000dddd00000000mmmm,
+//       rule: MOV_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterOpTester_Case15_TestCase15) {
+  Unary2RegisterOpTester_Case15 old_baseline_tester;
+  NamedMOV_register_cccc0001101s0000dddd00000000mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001101s0000dddd00000000mmmm");
+}
+
+// op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), Rm(3:0)],
+//       generated_baseline: RRX_cccc0001101s0000dddd00000110mmmm_case_0,
+//       pattern: cccc0001101s0000dddd00000110mmmm,
+//       rule: RRX,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterOpTester_Case16_TestCase16) {
+  Unary2RegisterOpTester_Case16 old_baseline_tester;
+  NamedRRX_cccc0001101s0000dddd00000110mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001101s0000dddd00000110mmmm");
+}
+
+// op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
+//       baseline: Unary2RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), Rm(3:0)],
+//       generated_baseline: LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0,
+//       pattern: cccc0001101s0000ddddiiiii010mmmm,
+//       rule: LSR_immediate,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterShiftedOpTester_Case17_TestCase17) {
+  Unary2RegisterShiftedOpTester_Case17 old_baseline_tester;
+  NamedLSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001101s0000ddddiiiii010mmmm");
+}
+
+// op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
+//       baseline: Unary2RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), Rm(3:0)],
+//       generated_baseline: ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0,
+//       pattern: cccc0001101s0000ddddiiiii100mmmm,
+//       rule: ASR_immediate,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterShiftedOpTester_Case18_TestCase18) {
+  Unary2RegisterShiftedOpTester_Case18 old_baseline_tester;
+  NamedASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001101s0000ddddiiiii100mmmm");
+}
+
+// op1(24:20)=1110x
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       S: S(20),
+//       actual: Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1,
+//       baseline: Binary3RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rn(19:16), Rd(15:12), Rm(3:0)],
+//       generated_baseline: BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0001110snnnnddddiiiiitt0mmmm,
+//       rule: BIC_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rn, Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Binary3RegisterShiftedOpTester_Case19_TestCase19) {
+  Binary3RegisterShiftedOpTester_Case19 old_baseline_tester;
+  NamedBIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001110snnnnddddiiiiitt0mmmm");
+}
+
+// op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
+//    = {NZCV: 16,
+//       None: 32,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       S: S(20),
+//       actual: Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1,
+//       baseline: Unary2RegisterShiftedOp,
+//       constraints: ,
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
+//       fields: [S(20), Rd(15:12), Rm(3:0)],
+//       generated_baseline: MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0,
+//       pattern: cccc0001111s0000ddddiiiiitt0mmmm,
+//       rule: MVN_register,
+//       safety: [(Rd(15:12)=1111 &&
+//            S(20)=1) => DECODER_ERROR,
+//         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//       uses: {Rm}}
+TEST_F(Arm32DecoderStateTests,
+       BvB_Unary2RegisterShiftedOpTester_Case20_TestCase20) {
+  Unary2RegisterShiftedOpTester_Case20 old_baseline_tester;
+  NamedMVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0 gen_baseline;
+  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
+  b_vs_b_tester.Test("cccc0001111s0000ddddiiiiitt0mmmm");
 }
 
 }  // namespace nacl_arm_test

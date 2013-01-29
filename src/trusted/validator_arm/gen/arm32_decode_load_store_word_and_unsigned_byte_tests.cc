@@ -13,6 +13,7 @@
 
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/actual_vs_baseline.h"
+#include "native_client/src/trusted/validator_arm/baseline_vs_baseline.h"
 #include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
