@@ -13,8 +13,6 @@ failure for convenience. If only one shard is to be run, a single subprocess
 is started for that shard and the output is identical to gtest's output.
 """
 
-
-import cStringIO
 import itertools
 import optparse
 import os
@@ -31,7 +29,7 @@ from xml.dom import minidom
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_PATH, ".."))
 try:
-  import find_depot_tools
+  import find_depot_tools  # pylint: disable=F0401,W0611
   # Fixes a bug in Windows where some shards die upon starting
   # TODO(charleslee): actually fix this bug
   import subprocess2 as subprocess
@@ -257,12 +255,12 @@ class ShardRunner(threading.Thread):
       shard = RunShard(
           self.supervisor.test, self.supervisor.total_shards, index,
           self.supervisor.gtest_args, subprocess.PIPE, subprocess.PIPE)
-      buffer = StdioBuffer(shard)
+      buf = StdioBuffer(shard)
       # Spawn two threads to collect stdio output
-      stdout_collector_thread = buffer.handle_pipe(sys.stdout, shard.stdout)
-      stderr_collector_thread = buffer.handle_pipe(sys.stderr, shard.stderr)
+      stdout_collector_thread = buf.handle_pipe(sys.stdout, shard.stdout)
+      stderr_collector_thread = buf.handle_pipe(sys.stderr, shard.stderr)
       while shard_running:
-        pipe, line = buffer.readline()
+        pipe, line = buf.readline()
         if pipe is None and line is None:
           shard_running = False
         if not line and not shard_running:
@@ -432,7 +430,7 @@ class ShardingSupervisor(object):
       for shard_index in range(self.num_shards_to_run):
         while True:
           try:
-            pipe, line = self.shard_output[shard_index].get(True, self.timeout)
+            _, line = self.shard_output[shard_index].get(True, self.timeout)
           except Queue.Empty:
             # Shard timed out, notice failure and move on.
             self.LogShardFailure(shard_index)
@@ -440,7 +438,7 @@ class ShardingSupervisor(object):
             # processing in the main thread.
             # TODO(maruel): Make sure the worker thread terminates.
             sys.stdout.write('TIMED OUT\n\n')
-            LogTestFailure(
+            self.LogTestFailure(
                 'FAILURE: SHARD %d TIMED OUT; %d seconds' % (
                     shard_index, self.timeout))
             break
@@ -453,7 +451,7 @@ class ShardingSupervisor(object):
       for shard_index in range(self.num_shards_to_run):
         while True:
           try:
-            pipe, line = self.shard_output[shard_index].get(False)
+            _, line = self.shard_output[shard_index].get(False)
           except Queue.Empty:
             # Shard timed out, notice failure and move on.
             self.LogShardFailure(shard_index)

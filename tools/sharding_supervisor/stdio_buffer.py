@@ -4,8 +4,6 @@
 """Syncronized Standard IO Linebuffer implemented with cStringIO."""
 
 import cStringIO
-import os
-import sys
 import threading
 import Queue
 
@@ -20,21 +18,21 @@ class StdioBuffer(object):
     """Helper method for collecting stdio output.  Output is collected until
     a newline is seen, at which point an event is triggered and the line is
     pushed to a buffer as a (stdio, line) tuple."""
-    buffer = cStringIO.StringIO()
+    buf = cStringIO.StringIO()
     pipe_running = True
     while pipe_running:
       char = program_pipe.read(1)
       if not char and self.shard.poll() is not None:
         pipe_running = False
-      buffer.write(char)
+      buf.write(char)
       if char == '\n' or not pipe_running:
-        line = buffer.getvalue()
+        line = buf.getvalue()
         if line:
           self.queue.put((system_pipe, line))
         if not pipe_running:
           self.queue.put((system_pipe, None))
-        buffer.close()
-        buffer = cStringIO.StringIO()
+        buf.close()
+        buf = cStringIO.StringIO()
 
   def handle_pipe(self, system_pipe, program_pipe):
     t = threading.Thread(target=self._pipe_handler, args=[system_pipe,
