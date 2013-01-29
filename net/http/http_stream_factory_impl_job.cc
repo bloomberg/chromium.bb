@@ -649,9 +649,9 @@ bool HttpStreamFactoryImpl::Job::ShouldForceSpdyWithoutSSL() const {
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
-  return session_->params().origin_port_to_force_quic_on == origin_.port()
-      && session_->params().origin_port_to_force_quic_on != 0
-      && proxy_info_.is_direct();
+  return session_->params().enable_quic &&
+      session_->params().origin_port_to_force_quic_on == origin_.port() &&
+      proxy_info_.is_direct();
 }
 
 int HttpStreamFactoryImpl::Job::DoWaitForJob() {

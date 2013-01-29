@@ -80,6 +80,7 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_max_concurrent_streams_limit;
     SpdySessionPool::TimeFunc time_func;
     std::string trusted_spdy_proxy;
+    bool enable_quic;
     uint16 origin_port_to_force_quic_on;
     bool use_spdy_over_quic;
   };

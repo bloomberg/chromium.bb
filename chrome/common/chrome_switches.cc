@@ -606,6 +606,9 @@ const char kEnableProfiling[]               = "enable-profiling";
 // Enables query extraction in the omnibox.
 const char kEnableQueryExtraction[]         = "enable-query-extraction";
 
+// Enables support for the QUIC protocol.  This is a temporary testing flag.
+const char kEnableQuic[]                    = "enable-quic";
+
 // Enables content settings based on host *and* plug-in in the user
 // preferences.
 const char kEnableResourceContentSettings[] =

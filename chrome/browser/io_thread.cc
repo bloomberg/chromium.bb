@@ -515,6 +515,9 @@ void IOThread::Init() {
     globals_->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
+  if (command_line.HasSwitch(switches::kEnableQuic)) {
+    globals_->enable_quic.set(true);
+  }
   if (command_line.HasSwitch(switches::kOriginPortToForceQuicOn)) {
     globals_->origin_port_to_force_quic_on.set(
         GetSwitchValueAsInt(command_line,
@@ -825,6 +828,7 @@ void IOThread::InitializeNetworkSessionParams(
       &params->enable_spdy_ping_based_connection_checking);
   globals_->spdy_default_protocol.CopyToIfSet(
       &params->spdy_default_protocol);
+  globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->origin_port_to_force_quic_on.CopyToIfSet(
       &params->origin_port_to_force_quic_on);
   globals_->use_spdy_over_quic.CopyToIfSet(&params->use_spdy_over_quic);

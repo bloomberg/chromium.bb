@@ -160,6 +160,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
+    Optional<bool> enable_quic;
     Optional<uint16> origin_port_to_force_quic_on;
     Optional<bool> use_spdy_over_quic;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
