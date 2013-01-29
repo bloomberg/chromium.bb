@@ -743,12 +743,30 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   var windowHeight = window.innerHeight;
   var desktopWidth = this.plugin.desktopWidth;
   var desktopHeight = this.plugin.desktopHeight;
-  var scale = 1.0;
+
+  // When configured to display a host at its original size, we aim to display
+  // it as close to its physical size as possible, without losing data:
+  // - If client and host have matching DPI, render the host pixel-for-pixel.
+  // - If the host has higher DPI then still render pixel-for-pixel.
+  // - If the host has lower DPI then let Chrome up-scale it to natural size.
+
+  // We specify the plugin dimensions in Density-Independent Pixels, so to
+  // render pixel-for-pixel we need to down-scale the host dimensions by the
+  // devicePixelRatio of the client. To match the host pixel density, we choose
+  // an initial scale factor based on the client devicePixelRatio and host DPI.
+
+  // Determine the effective device pixel ratio of the host, based on DPI.
+  var hostPixelRatioX = Math.ceil(this.plugin.desktopXDpi / 96);
+  var hostPixelRatioY = Math.ceil(this.plugin.desktopYDpi / 96);
+  var hostPixelRatio = Math.min(hostPixelRatioX, hostPixelRatioY);
+
+  // Down-scale by the smaller of the client and host ratios.
+  var scale = 1.0 / Math.min(window.devicePixelRatio, hostPixelRatio);
 
   if (this.shrinkToFit_) {
-    // Scale to fit the entire desktop in the client window.
-    var scaleFitWidth = Math.min(1.0, 1.0 * windowWidth / desktopWidth);
-    var scaleFitHeight = Math.min(1.0, 1.0 * windowHeight / desktopHeight);
+    // Reduce the scale, if necessary, to fit the whole desktop in the window.
+    var scaleFitWidth = Math.min(scale, 1.0 * windowWidth / desktopWidth);
+    var scaleFitHeight = Math.min(scale, 1.0 * windowHeight / desktopHeight);
     scale = Math.min(scaleFitHeight, scaleFitWidth);
 
     // If we're running full-screen then try to handle common side-by-side
