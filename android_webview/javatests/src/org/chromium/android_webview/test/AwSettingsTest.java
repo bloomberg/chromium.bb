@@ -1781,8 +1781,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    http://crbug.com/171492
+    */
+    @DisabledTest
     public void testLayoutAlgorithmWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
