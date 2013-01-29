@@ -151,3 +151,4 @@ void SearchBoxView::TextChanged() {
 }
 
 }  // namespace app_list
+

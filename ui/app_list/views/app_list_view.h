@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/signin_delegate_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 namespace views {
@@ -20,13 +19,10 @@ class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
 class PaginationModel;
-class SigninDelegate;
-class SigninView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
-class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
-                                    public SigninDelegateObserver {
+class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView {
  public:
   // Takes ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
@@ -52,9 +48,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void UpdateBounds();
 
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-
  private:
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
@@ -63,25 +56,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual void Layout() OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(
-      views::Widget* widget, bool visible) OVERRIDE;
-  virtual void OnWidgetActivationChanged(
-      views::Widget* widget, bool active) OVERRIDE;
-
-  // Overridden from SigninDelegateObserver:
-  virtual void OnSigninSuccess() OVERRIDE;
-
-  SigninDelegate* GetSigninDelegate();
+  virtual void OnWidgetActivationChanged(views::Widget* widget, bool active)
+      OVERRIDE;
 
   scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;
 
   AppListMainView*  app_list_main_view_;
-  SigninView* signin_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
