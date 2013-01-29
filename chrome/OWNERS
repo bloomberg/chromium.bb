@@ -25,3 +25,7 @@ per-file nacl.gypi=jvoung@chromium.org
 per-file nacl.gypi=mseaborn@chromium.org
 per-file nacl.gypi=noelallen@chromium.org
 per-file nacl.gypi=sehr@chromium.org
+
+# If you just remove, rename, or add a file to a non-test gypi file,
+# you can land that change TBR. Make sure to still add the people
+# you're TBRing to the review thread and to send them email.
