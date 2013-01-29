@@ -127,6 +127,9 @@ class MockPrinter {
   // Print selection.
   bool selection_only_;
 
+  // Print css backgrounds.
+  bool should_print_backgrounds_;
+
   // Cookie for the document to ensure correctness.
   int document_cookie_;
   int current_document_cookie_;

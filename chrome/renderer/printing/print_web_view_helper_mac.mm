@@ -77,8 +77,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   gfx::Size page_size;
-  RenderPage(printParams, page_number, print_preview_context_.frame(), true,
-             initial_render_metafile, &page_size, NULL);
+  RenderPage(printParams, page_number, print_preview_context_.prepared_frame(),
+             true, initial_render_metafile, &page_size, NULL);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 

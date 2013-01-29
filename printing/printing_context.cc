@@ -84,6 +84,11 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     NOTREACHED();
   }
 
+  if (!job_settings.GetBoolean(kSettingShouldPrintSelectionOnly,
+                               &settings_.selection_only)) {
+    NOTREACHED();
+  }
+
   return result;
 }
 

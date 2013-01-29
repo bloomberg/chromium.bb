@@ -138,6 +138,12 @@ class PrintWebViewHelper
   // Start the process of generating a print preview using |settings|.
   void OnPrintPreview(const base::DictionaryValue& settings);
 
+  // Prepare frame for creating preview document.
+  void PrepareFrameForPreviewDocument();
+
+  // Continue creating preview document.
+  void OnFramePreparedForPreviewDocument();
+
   // Initialize the print preview document.
   bool CreatePreviewDocument();
 
@@ -338,6 +344,8 @@ class PrintWebViewHelper
   scoped_ptr<base::DictionaryValue> header_footer_info_;
 
   // Keeps track of the state of print preview between messages.
+  // TODO(vitalybuka): Create PrintPreviewContext when needed and delete after
+  // use. Now it's interaction with various messages is confusing.
   class PrintPreviewContext {
    public:
     PrintPreviewContext();
@@ -352,9 +360,9 @@ class PrintWebViewHelper
     void OnPrintPreview();
 
     // Create the print preview document. |pages| is empty to print all pages.
-    bool CreatePreviewDocument(const PrintMsg_Print_Params& params,
-                               const std::vector<int>& pages,
-                               bool ignore_css_margins);
+    // Takes ownership of |prepared_frame|.
+    bool CreatePreviewDocument(PrepareFrameAndViewForPrint* prepared_frame,
+                               const std::vector<int>& pages);
 
     // Called after a page gets rendered. |page_time| is how long the
     // rendering took.
@@ -384,8 +392,18 @@ class PrintWebViewHelper
     void set_error(enum PrintPreviewErrorBuckets error);
 
     // Getters
-    WebKit::WebFrame* frame();
-    const WebKit::WebNode& node() const;
+    // Original frame for which preview was requested.
+    WebKit::WebFrame* source_frame();
+    // Original node for which preview was requested.
+    const WebKit::WebNode& source_node() const;
+
+    // Frame to be use to render preview. May be the same as source_frame(), or
+    // generated from it, e.g. copy of selected block.
+    WebKit::WebFrame* prepared_frame();
+    // Node to be use to render preview. May be the same as source_node(), or
+    // generated from it, e.g. copy of selected block.
+    const WebKit::WebNode& prepared_node() const;
+
     int total_page_count() const;
     bool generate_draft_pages() const;
     PreviewMetafile* metafile();
@@ -404,8 +422,8 @@ class PrintWebViewHelper
     void ClearContext();
 
     // Specifies what to render for print preview.
-    WebKit::WebFrame* frame_;
-    WebKit::WebNode node_;
+    WebKit::WebFrame* source_frame_;
+    WebKit::WebNode source_node_;
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
     scoped_ptr<PreviewMetafile> metafile_;

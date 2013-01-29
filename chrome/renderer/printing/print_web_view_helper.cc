@@ -501,7 +501,7 @@ class PrepareFrameAndViewForPrint : public WebKit::WebViewClient,
     return frame_;
   }
 
-  WebKit::WebNode node() const {
+  const WebKit::WebNode& node() const {
     return node_to_print_;
   }
 
@@ -534,6 +534,7 @@ class PrepareFrameAndViewForPrint : public WebKit::WebViewClient,
   base::Closure on_ready_;
   bool should_print_backgrounds_;
   bool should_print_selection_only_;
+  bool is_printing_started_;
 
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
@@ -549,7 +550,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
       should_close_web_view_(false),
       expected_pages_count_(0),
       should_print_backgrounds_(params.should_print_backgrounds),
-      should_print_selection_only_(params.selection_only) {
+      should_print_selection_only_(params.selection_only),
+      is_printing_started_(false) {
   PrintMsg_Print_Params print_params = params;
   if (!should_print_selection_only_ ||
       !PrintingNodeOrPdfFrame(frame_, node_to_print_)) {
@@ -595,6 +597,7 @@ void PrepareFrameAndViewForPrint::StartPrinting() {
   // https://bugs.webkit.org/show_bug.cgi?id=107718 is fixed.
   expected_pages_count_ = frame_->printBegin(web_print_params_, node_to_print_,
                                              NULL);
+  is_printing_started_ = true;
 }
 
 void PrepareFrameAndViewForPrint::CopySelectionIfNeeded(
@@ -653,7 +656,8 @@ gfx::Size PrepareFrameAndViewForPrint::GetPrintCanvasSize() const {
 
 void PrepareFrameAndViewForPrint::FinishPrinting() {
   if (frame_) {
-    frame_->printEnd();
+    if (is_printing_started_)
+      frame_->printEnd();
     WebKit::WebView* web_view = frame_->view();
     web_view->resize(prev_view_size_);
     if (WebKit::WebFrame* web_frame = web_view->mainFrame())
@@ -813,13 +817,13 @@ void PrintWebViewHelper::OnPrintPages() {
 }
 
 void PrintWebViewHelper::OnPrintForSystemDialog() {
-  WebKit::WebFrame* frame = print_preview_context_.frame();
+  WebKit::WebFrame* frame = print_preview_context_.source_frame();
   if (!frame) {
     NOTREACHED();
     return;
   }
 
-  Print(frame, print_preview_context_.node());
+  Print(frame, print_preview_context_.source_node());
 }
 
 void PrintWebViewHelper::GetPageSizeAndContentAreaFromPageLayout(
@@ -868,8 +872,8 @@ WebKit::WebPrintScalingOption PrintWebViewHelper::GetPrintScalingOption(
       return WebKit::WebPrintScalingOptionNone;
 
     bool no_plugin_scaling =
-        print_preview_context_.frame()->isPrintScalingDisabledForPlugin(
-            print_preview_context_.node());
+        print_preview_context_.source_frame()->isPrintScalingDisabledForPlugin(
+            print_preview_context_.source_node());
 
     if (params.is_first_request && no_plugin_scaling)
       return WebKit::WebPrintScalingOptionNone;
@@ -881,8 +885,8 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_enabled_);
   print_preview_context_.OnPrintPreview();
 
-  if (!UpdatePrintSettings(print_preview_context_.frame(),
-                           print_preview_context_.node(), settings)) {
+  if (!UpdatePrintSettings(print_preview_context_.source_frame(),
+                           print_preview_context_.source_node(), settings)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
           routing_id(), print_pages_params_->params.document_cookie));
@@ -916,8 +920,8 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   // message to browser.
   if (print_pages_params_->params.is_first_request &&
       !print_preview_context_.IsModifiable() &&
-      print_preview_context_.frame()->isPrintScalingDisabledForPlugin(
-          print_preview_context_.node())) {
+      print_preview_context_.source_frame()->isPrintScalingDisabledForPlugin(
+          print_preview_context_.source_node())) {
     Send(new PrintHostMsg_PrintPreviewScalingDisabled(routing_id()));
   }
 
@@ -935,6 +939,24 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   }
   print_preview_context_.set_generate_draft_pages(generate_draft_pages);
 
+  PrepareFrameForPreviewDocument();
+}
+
+void PrintWebViewHelper::PrepareFrameForPreviewDocument() {
+  const PrintMsg_Print_Params& print_params = print_pages_params_->params;
+
+  prep_frame_view_.reset(
+      new PrepareFrameAndViewForPrint(print_params,
+                                      print_preview_context_.source_frame(),
+                                      print_preview_context_.source_node(),
+                                      ignore_css_margins_));
+  prep_frame_view_->CopySelectionIfNeeded(
+      render_view()->GetWebkitPreferences(),
+      base::Bind(&PrintWebViewHelper::OnFramePreparedForPreviewDocument,
+                 base::Unretained(this)));
+}
+
+void PrintWebViewHelper::OnFramePreparedForPreviewDocument() {
   if (CreatePreviewDocument()) {
     DidFinishPrinting(OK);
   } else {
@@ -945,22 +967,26 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
 }
 
 bool PrintWebViewHelper::CreatePreviewDocument() {
+  if (CheckForCancel())
+    return false;
+
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   const std::vector<int>& pages = print_pages_params_->pages;
-  if (!print_preview_context_.CreatePreviewDocument(print_params, pages,
-                                                    ignore_css_margins_)) {
+
+  if (!print_preview_context_.CreatePreviewDocument(prep_frame_view_.release(),
+                                                    pages)) {
     return false;
   }
 
   PageSizeMargins default_page_layout;
-  ComputePageLayoutInPointsForCss(print_preview_context_.frame(), 0,
+  ComputePageLayoutInPointsForCss(print_preview_context_.prepared_frame(), 0,
                                   print_params, ignore_css_margins_, NULL,
                                   &default_page_layout);
 
   if (!old_print_pages_params_.get() ||
       !PageLayoutIsEqual(*old_print_pages_params_, *print_pages_params_)) {
     bool has_page_size_style = PrintingFrameHasPageSizeStyle(
-        print_preview_context_.frame(),
+        print_preview_context_.prepared_frame(),
         print_preview_context_.total_page_count());
     int dpi = GetDPI(&print_params);
 
@@ -1611,7 +1637,7 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
 }
 
 PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
-    : frame_(NULL),
+    : source_frame_(NULL),
       total_page_count_(0),
       current_page_index_(0),
       generate_draft_pages_(true),
@@ -1628,8 +1654,8 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
   DCHECK(web_frame);
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
-  frame_ = web_frame;
-  node_.reset();
+  source_frame_ = web_frame;
+  source_node_.reset();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
@@ -1638,8 +1664,8 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
   DCHECK(web_node.document().frame());
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
-  frame_ = web_node.document().frame();
-  node_ = web_node;
+  source_frame_ = web_node.document().frame();
+  source_node_ = web_node;
 }
 
 void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
@@ -1648,29 +1674,26 @@ void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
-    const PrintMsg_Print_Params& print_params,
-    const std::vector<int>& pages,
-    bool ignore_css_margins) {
+    PrepareFrameAndViewForPrint* prepared_frame,
+    const std::vector<int>& pages) {
   DCHECK_EQ(INITIALIZED, state_);
   state_ = RENDERING;
 
-  metafile_.reset(new PreviewMetafile);
-  if (!metafile_->Init()) {
-    set_error(PREVIEW_ERROR_METAFILE_INIT_FAILED);
-    LOG(ERROR) << "PreviewMetafile Init failed";
-    return false;
-  }
-
   // Need to make sure old object gets destroyed first.
-  prep_frame_view_.reset(
-      new PrepareFrameAndViewForPrint(print_params, frame(), node(),
-                                      ignore_css_margins));
+  prep_frame_view_.reset(prepared_frame);
   prep_frame_view_->StartPrinting();
 
   total_page_count_ = prep_frame_view_->GetExpectedPageCount();
   if (total_page_count_ == 0) {
     LOG(ERROR) << "CreatePreviewDocument got 0 page count";
     set_error(PREVIEW_ERROR_ZERO_PAGES);
+    return false;
+  }
+
+  metafile_.reset(new PreviewMetafile);
+  if (!metafile_->Init()) {
+    set_error(PREVIEW_ERROR_METAFILE_INIT_FAILED);
+    LOG(ERROR) << "PreviewMetafile Init failed";
     return false;
   }
 
@@ -1765,7 +1788,7 @@ bool PrintWebViewHelper::PrintPreviewContext::IsRendering() const {
 
 bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
   // The only kind of node we can print right now is a PDF node.
-  return !PrintingNodeOrPdfFrame(frame_, node_);
+  return !PrintingNodeOrPdfFrame(source_frame_, source_node_);
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()
@@ -1790,16 +1813,30 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
   error_ = error;
 }
 
-WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() {
+WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::source_frame() {
   // TODO(thestig) turn this back into a DCHECK when http://crbug.com/118303 is
   // resolved.
   CHECK(state_ != UNINITIALIZED);
-  return frame_;
+  return source_frame_;
 }
 
-const WebKit::WebNode& PrintWebViewHelper::PrintPreviewContext::node() const {
+const WebKit::WebNode&
+    PrintWebViewHelper::PrintPreviewContext::source_node() const {
   DCHECK(state_ != UNINITIALIZED);
-  return node_;
+  return source_node_;
+}
+
+WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::prepared_frame() {
+  // TODO(thestig) turn this back into a DCHECK when http://crbug.com/118303 is
+  // resolved.
+  CHECK(state_ != UNINITIALIZED);
+  return prep_frame_view_->frame();
+}
+
+const WebKit::WebNode&
+    PrintWebViewHelper::PrintPreviewContext::prepared_node() const {
+  DCHECK(state_ != UNINITIALIZED);
+  return prep_frame_view_->node();
 }
 
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {

@@ -184,6 +184,11 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
   }
   std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
   printer_->UpdateSettings(document_cookie, params, pages, margins_type);
+
+  job_settings.GetBoolean(printing::kSettingShouldPrintSelectionOnly,
+                          &params->params.selection_only);
+  job_settings.GetBoolean(printing::kSettingShouldPrintBackgrounds,
+                          &params->params.should_print_backgrounds);
 }
 
 MockPrinter* ChromeMockRenderThread::printer() {

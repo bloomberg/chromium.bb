@@ -57,6 +57,7 @@ MockPrinter::MockPrinter()
     min_shrink_(1.25),
     desired_dpi_(printing::kPointsPerInch),
     selection_only_(false),
+    should_print_backgrounds_(false),
     document_cookie_(-1),
     current_document_cookie_(0),
     printer_status_(PRINTER_READY),
@@ -107,6 +108,7 @@ void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
   min_shrink_ = params.min_shrink;
   desired_dpi_ = params.desired_dpi;
   selection_only_ = params.selection_only;
+  should_print_backgrounds_ = params.should_print_backgrounds;
   page_size_ = params.page_size;
   content_size_ = params.content_size;
   printable_area_ = params.printable_area;
@@ -146,6 +148,7 @@ void MockPrinter::ScriptedPrint(int cookie,
   settings->params.min_shrink = min_shrink_;
   settings->params.desired_dpi = desired_dpi_;
   settings->params.selection_only = selection_only_;
+  settings->params.should_print_backgrounds = should_print_backgrounds_;
   settings->params.document_cookie = document_cookie_;
   settings->params.page_size = page_size_;
   settings->params.content_size = content_size_;
@@ -298,6 +301,7 @@ void MockPrinter::SetPrintParams(PrintMsg_Print_Params* params) {
   params->min_shrink = min_shrink_;
   params->desired_dpi = desired_dpi_;
   params->selection_only = selection_only_;
+  params->should_print_backgrounds = should_print_backgrounds_;
   params->document_cookie = document_cookie_;
   params->page_size = page_size_;
   params->content_size = content_size_;
