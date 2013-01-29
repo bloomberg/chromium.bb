@@ -124,13 +124,13 @@ FileSystemContext::GetQuotaUtil(FileSystemType type) const {
   return mount_point_provider->GetQuotaUtil();
 }
 
-FileSystemFileUtil* FileSystemContext::GetFileUtil(
+AsyncFileUtil* FileSystemContext::GetAsyncFileUtil(
     FileSystemType type) const {
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(type);
   if (!mount_point_provider)
     return NULL;
-  return mount_point_provider->GetFileUtil(type);
+  return mount_point_provider->GetAsyncFileUtil(type);
 }
 
 FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
@@ -362,6 +362,15 @@ FileSystemURL FileSystemContext::CrackFileSystemURL(
   }
 
   return result;
+}
+
+FileSystemFileUtil* FileSystemContext::GetFileUtil(
+    FileSystemType type) const {
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->GetFileUtil(type);
 }
 
 }  // namespace fileapi

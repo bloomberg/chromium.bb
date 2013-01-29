@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "webkit/fileapi/file_snapshot_policy.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -24,6 +25,7 @@ class CrosMountPointProvider;
 
 namespace fileapi {
 
+class AsyncFileUtil;
 class FileSystemContext;
 class RecursiveOperationDelegate;
 
@@ -290,12 +292,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
       base::PlatformFileError rv,
       const base::PlatformFileInfo& file_info,
       const FilePath& platform_path,
-      FileSystemFileUtil::SnapshotFilePolicy snapshot_policy);
+      SnapshotFilePolicy snapshot_policy);
 
   // Checks the validity of a given |url| and populates |file_util| for |mode|.
   base::PlatformFileError SetUp(
       const FileSystemURL& url,
-      FileSystemFileUtil** file_util,
       SetUpMode mode);
 
   // Used only for internal assertions.
@@ -321,7 +322,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   scoped_refptr<FileSystemContext> file_system_context_;
 
   scoped_ptr<FileSystemOperationContext> operation_context_;
-  FileSystemFileUtil* file_util_;  // Not owned.
+  AsyncFileUtil* async_file_util_;  // Not owned.
 
   FileSystemOperationContext* overriding_operation_context_;
 

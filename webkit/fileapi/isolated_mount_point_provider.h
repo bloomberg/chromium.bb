@@ -11,15 +11,9 @@
 
 namespace fileapi {
 
-class DraggedFileUtil;
+class AsyncFileUtilAdapter;
 class IsolatedContext;
-class IsolatedFileUtil;
 class MediaPathFilter;
-class NativeMediaFileUtil;
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-class DeviceMediaFileUtil;
-#endif
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
@@ -38,6 +32,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
+  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;
@@ -67,12 +62,12 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
   scoped_ptr<MediaPathFilter> media_path_filter_;
 
-  scoped_ptr<IsolatedFileUtil> isolated_file_util_;
-  scoped_ptr<DraggedFileUtil> dragged_file_util_;
-  scoped_ptr<NativeMediaFileUtil> native_media_file_util_;
+  scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;
+  scoped_ptr<AsyncFileUtilAdapter> dragged_file_util_;
+  scoped_ptr<AsyncFileUtilAdapter> native_media_file_util_;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  scoped_ptr<DeviceMediaFileUtil> device_media_file_util_;
+  scoped_ptr<AsyncFileUtilAdapter> device_media_file_util_;
 #endif
 };
 

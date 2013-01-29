@@ -5,6 +5,9 @@
 {
   'variables': {
     'webkit_fileapi_sources': [
+      '../fileapi/async_file_util.h',
+      '../fileapi/async_file_util_adapter.cc',
+      '../fileapi/async_file_util_adapter.h',
       '../fileapi/cross_operation_delegate.cc',
       '../fileapi/cross_operation_delegate.h',
       '../fileapi/external_mount_points.cc',
@@ -25,8 +28,6 @@
       '../fileapi/file_system_file_stream_reader.h',
       '../fileapi/file_system_file_util.cc',
       '../fileapi/file_system_file_util.h',
-      '../fileapi/file_system_file_util_proxy.cc',
-      '../fileapi/file_system_file_util_proxy.h',
       '../fileapi/file_system_mount_point_provider.h',
       '../fileapi/file_system_operation.h',
       '../fileapi/file_system_operation_context.cc',

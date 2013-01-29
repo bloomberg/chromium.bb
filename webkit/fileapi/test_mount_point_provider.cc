@@ -69,7 +69,7 @@ TestMountPointProvider::TestMountPointProvider(
     const FilePath& base_path)
     : base_path_(base_path),
       task_runner_(task_runner),
-      local_file_util_(new LocalFileUtil()),
+      local_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
       quota_util_(new QuotaUtil) {
   UpdateObserverList::Source source;
   source.AddObserver(quota_util_.get(), task_runner_);
@@ -111,6 +111,11 @@ bool TestMountPointProvider::IsRestrictedFileName(
 }
 
 FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
+  DCHECK(local_file_util_.get());
+  return local_file_util_->sync_file_util();
+}
+
+AsyncFileUtil* TestMountPointProvider::GetAsyncFileUtil(FileSystemType type) {
   return local_file_util_.get();
 }
 

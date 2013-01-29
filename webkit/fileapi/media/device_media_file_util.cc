@@ -160,7 +160,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
   DCHECK(local_path);
   DCHECK(snapshot_policy);
   // We return a temporary file as a snapshot.
-  *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;
+  *snapshot_policy = kSnapshotFileTemporary;
 
   MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
   if (!delegate)

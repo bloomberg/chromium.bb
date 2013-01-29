@@ -18,6 +18,7 @@
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
 #include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
+#include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -52,7 +53,8 @@ CrosMountPointProvider::CrosMountPointProvider(
     fileapi::ExternalMountPoints* system_mount_points)
     : special_storage_policy_(special_storage_policy),
       file_access_permissions_(new FileAccessPermissions()),
-      local_file_util_(new fileapi::IsolatedFileUtil()),
+      local_file_util_(new fileapi::AsyncFileUtilAdapter(
+          new fileapi::IsolatedFileUtil())),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {
 }
@@ -233,6 +235,13 @@ std::vector<FilePath> CrosMountPointProvider::GetRootDirectories() const {
 }
 
 fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil(
+    fileapi::FileSystemType type) {
+  DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
+         type == fileapi::kFileSystemTypeRestrictedNativeLocal);
+  return local_file_util_->sync_file_util();
+}
+
+fileapi::AsyncFileUtil* CrosMountPointProvider::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
          type == fileapi::kFileSystemTypeRestrictedNativeLocal);

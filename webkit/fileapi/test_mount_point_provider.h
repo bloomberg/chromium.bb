@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -18,7 +19,7 @@ class SequencedTaskRunner;
 
 namespace fileapi {
 
-class LocalFileUtil;
+class AsyncFileUtilAdapter;
 class FileSystemQuotaUtil;
 
 // This should be only used for testing.
@@ -44,6 +45,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
+  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;
@@ -74,7 +76,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
 
   FilePath base_path_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<LocalFileUtil> local_file_util_;
+  scoped_ptr<AsyncFileUtilAdapter> local_file_util_;
   scoped_ptr<QuotaUtil> quota_util_;
   UpdateObserverList observers_;
 };

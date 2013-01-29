@@ -230,7 +230,7 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
   // Resolve the src_url's underlying file path.
   base::PlatformFileInfo file_info;
   FilePath platform_file_path;
-  FileSystemFileUtil::SnapshotFilePolicy snapshot_policy;
+  SnapshotFilePolicy snapshot_policy;
 
   PlatformFileError error = src_util_->CreateSnapshotFile(
       context_, src_url, &file_info, &platform_file_path, &snapshot_policy);
@@ -242,7 +242,7 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
   DCHECK(!platform_file_path.empty());
 
   scoped_ptr<ScopedFileDeleter> file_deleter;
-  if (snapshot_policy == FileSystemFileUtil::kSnapshotFileTemporary)
+  if (snapshot_policy == kSnapshotFileTemporary)
     file_deleter.reset(new ScopedFileDeleter(platform_file_path));
 
   // Call CopyInForeignFile() on the dest_util_ with the resolved source path

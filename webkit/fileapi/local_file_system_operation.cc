@@ -11,10 +11,10 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/async_file_util.h"
 #include "webkit/fileapi/cross_operation_delegate.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -76,7 +76,7 @@ void LocalFileSystemOperation::CreateFile(const FileSystemURL& url,
                                           const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCreateFile));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_CREATE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_CREATE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -96,7 +96,7 @@ void LocalFileSystemOperation::CreateDirectory(const FileSystemURL& url,
                                                const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCreateDirectory));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_CREATE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_CREATE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -114,8 +114,7 @@ void LocalFileSystemOperation::Copy(const FileSystemURL& src_url,
                                     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
 
-  base::PlatformFileError result = SetUp(
-      dest_url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(dest_url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -137,8 +136,7 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
                                     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
 
-  base::PlatformFileError result = SetUp(
-      src_url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(src_url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -159,15 +157,15 @@ void LocalFileSystemOperation::DirectoryExists(const FileSystemURL& url,
                                                const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationDirectoryExists));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::GetFileInfo(
-      operation_context(), file_util_, url,
+  async_file_util_->GetFileInfo(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidDirectoryExists,
                  base::Owned(this), callback));
 }
@@ -176,15 +174,15 @@ void LocalFileSystemOperation::FileExists(const FileSystemURL& url,
                                           const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationFileExists));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::GetFileInfo(
-      operation_context(), file_util_, url,
+  async_file_util_->GetFileInfo(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidFileExists,
                  base::Owned(this), callback));
 }
@@ -193,15 +191,15 @@ void LocalFileSystemOperation::GetMetadata(
     const FileSystemURL& url, const GetMetadataCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationGetMetadata));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result, base::PlatformFileInfo(), FilePath());
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::GetFileInfo(
-      operation_context(), file_util_, url,
+  async_file_util_->GetFileInfo(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidGetMetadata,
                  base::Owned(this), callback));
 }
@@ -210,15 +208,15 @@ void LocalFileSystemOperation::ReadDirectory(
     const FileSystemURL& url, const ReadDirectoryCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationReadDirectory));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result, std::vector<base::FileUtilProxy::Entry>(), false);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::ReadDirectory(
-      operation_context(), file_util_, url,
+  async_file_util_->ReadDirectory(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidReadDirectory,
                  base::Owned(this), callback));
 }
@@ -252,7 +250,7 @@ void LocalFileSystemOperation::Truncate(const FileSystemURL& url, int64 length,
                                         const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationTruncate));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -271,15 +269,15 @@ void LocalFileSystemOperation::TouchFile(const FileSystemURL& url,
                                          const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationTouchFile));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::Touch(
-      operation_context(), file_util_, url,
+  async_file_util_->Touch(
+      operation_context(), url,
       last_access_time, last_modified_time,
       base::Bind(&LocalFileSystemOperation::DidTouchFile,
                  base::Owned(this), callback));
@@ -307,13 +305,13 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
        base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
        base::PLATFORM_FILE_DELETE_ON_CLOSE |
        base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
-    base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_CREATE);
+    base::PlatformFileError result = SetUp(url, SETUP_FOR_CREATE);
     if (result != base::PLATFORM_FILE_OK) {
       callback.Run(result, base::PlatformFile(), base::ProcessHandle());
       return;
     }
   } else {
-    base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+    base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
     if (result != base::PLATFORM_FILE_OK) {
       callback.Run(result, base::PlatformFile(), base::ProcessHandle());
       return;
@@ -377,13 +375,16 @@ void LocalFileSystemOperation::SyncGetPlatformPath(const FileSystemURL& url,
                                                    FilePath* platform_path) {
   DCHECK(SetPendingOperationType(kOperationGetLocalPath));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
     delete this;
     return;
   }
 
-  file_util_->GetLocalFilePath(operation_context(), url, platform_path);
+  FileSystemFileUtil* file_util = file_system_context()->GetFileUtil(
+      url.type());
+  DCHECK(file_util);
+  file_util->GetLocalFilePath(operation_context(), url, platform_path);
 
   delete this;
 }
@@ -393,15 +394,15 @@ void LocalFileSystemOperation::CreateSnapshotFile(
     const SnapshotFileCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCreateSnapshotFile));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_READ);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result, base::PlatformFileInfo(), FilePath(), NULL);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::CreateSnapshotFile(
-      operation_context(), file_util_, url,
+  async_file_util_->CreateSnapshotFile(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidCreateSnapshotFile,
                  base::Owned(this), callback));
 }
@@ -412,8 +413,7 @@ void LocalFileSystemOperation::CopyInForeignFile(
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopyInForeignFile));
 
-  base::PlatformFileError result = SetUp(
-      dest_url, &file_util_, SETUP_FOR_CREATE);
+  base::PlatformFileError result = SetUp(dest_url, SETUP_FOR_CREATE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -432,15 +432,15 @@ void LocalFileSystemOperation::RemoveFile(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationRemove));
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::DeleteFile(
-      operation_context(), file_util_, url,
+  async_file_util_->DeleteFile(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -449,15 +449,15 @@ void LocalFileSystemOperation::RemoveDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationRemove));
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
     return;
   }
 
-  FileSystemFileUtilProxy::DeleteDirectory(
-      operation_context(), file_util_, url,
+  async_file_util_->DeleteDirectory(
+      operation_context(), url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -470,9 +470,9 @@ void LocalFileSystemOperation::CopyFileLocal(
   DCHECK_EQ(src_url.origin(), dest_url.origin());
   DCHECK_EQ(src_url.type(), dest_url.type());
 
-  base::PlatformFileError result = SetUp(src_url, &file_util_, SETUP_FOR_READ);
+  base::PlatformFileError result = SetUp(src_url, SETUP_FOR_READ);
   if (result == base::PLATFORM_FILE_OK)
-    result = SetUp(dest_url, &file_util_, SETUP_FOR_CREATE);
+    result = SetUp(dest_url, SETUP_FOR_CREATE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -501,9 +501,9 @@ void LocalFileSystemOperation::MoveFileLocal(
   DCHECK_EQ(src_url.origin(), dest_url.origin());
   DCHECK_EQ(src_url.type(), dest_url.type());
 
-  base::PlatformFileError result = SetUp(src_url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(src_url, SETUP_FOR_WRITE);
   if (result == base::PLATFORM_FILE_OK)
-    result = SetUp(dest_url, &file_util_, SETUP_FOR_CREATE);
+    result = SetUp(dest_url, SETUP_FOR_CREATE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -526,7 +526,7 @@ LocalFileSystemOperation::LocalFileSystemOperation(
     scoped_ptr<FileSystemOperationContext> operation_context)
     : file_system_context_(file_system_context),
       operation_context_(operation_context.Pass()),
-      file_util_(NULL),
+      async_file_util_(NULL),
       overriding_operation_context_(NULL),
       peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
@@ -581,7 +581,7 @@ base::Closure LocalFileSystemOperation::GetWriteClosure(
     const WriteCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationWrite));
 
-  base::PlatformFileError result = SetUp(url, &file_util_, SETUP_FOR_WRITE);
+  base::PlatformFileError result = SetUp(url, SETUP_FOR_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     return base::Bind(&LocalFileSystemOperation::DidFailWrite,
                       base::Owned(this), callback, result);
@@ -625,9 +625,8 @@ void LocalFileSystemOperation::DoCreateFile(
     const FileSystemURL& url,
     const StatusCallback& callback,
     bool exclusive) {
-  FileSystemFileUtilProxy::EnsureFileExists(
-      operation_context(),
-      file_util_, url,
+  async_file_util_->EnsureFileExists(
+      operation_context(), url,
       base::Bind(
           exclusive ?
               &LocalFileSystemOperation::DidEnsureFileExistsExclusive :
@@ -639,9 +638,9 @@ void LocalFileSystemOperation::DoCreateDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback,
     bool exclusive, bool recursive) {
-  FileSystemFileUtilProxy::CreateDirectory(
+  async_file_util_->CreateDirectory(
       operation_context(),
-      file_util_, url, exclusive, recursive,
+      url, exclusive, recursive,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -650,9 +649,8 @@ void LocalFileSystemOperation::DoCopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  FileSystemFileUtilProxy::CopyFileLocal(
-      operation_context(),
-      file_util_, src_url, dest_url,
+  async_file_util_->CopyFileLocal(
+      operation_context(), src_url, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -661,9 +659,8 @@ void LocalFileSystemOperation::DoMoveFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  FileSystemFileUtilProxy::MoveFileLocal(
-      operation_context(),
-      file_util_, src_url, dest_url,
+  async_file_util_->MoveFileLocal(
+      operation_context(), src_url, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -672,9 +669,9 @@ void LocalFileSystemOperation::DoCopyInForeignFile(
     const FilePath& src_local_disk_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  FileSystemFileUtilProxy::CopyInForeignFile(
+  async_file_util_->CopyInForeignFile(
       operation_context(),
-      file_util_, src_local_disk_file_path, dest_url,
+      src_local_disk_file_path, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -682,8 +679,8 @@ void LocalFileSystemOperation::DoCopyInForeignFile(
 void LocalFileSystemOperation::DoTruncate(const FileSystemURL& url,
                                           const StatusCallback& callback,
                                           int64 length) {
-  FileSystemFileUtilProxy::Truncate(
-      operation_context(), file_util_, url, length,
+  async_file_util_->Truncate(
+      operation_context(), url, length,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -691,8 +688,8 @@ void LocalFileSystemOperation::DoTruncate(const FileSystemURL& url,
 void LocalFileSystemOperation::DoOpenFile(const FileSystemURL& url,
                                           const OpenFileCallback& callback,
                                           int file_flags) {
-  FileSystemFileUtilProxy::CreateOrOpen(
-      operation_context(), file_util_, url, file_flags,
+  async_file_util_->CreateOrOpen(
+      operation_context(), url, file_flags,
       base::Bind(&LocalFileSystemOperation::DidOpenFile,
                  base::Owned(this), callback));
 }
@@ -816,10 +813,10 @@ void LocalFileSystemOperation::DidCreateSnapshotFile(
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path,
-    FileSystemFileUtil::SnapshotFilePolicy snapshot_policy) {
+    SnapshotFilePolicy snapshot_policy) {
   scoped_refptr<ShareableFileReference> file_ref;
   if (result == base::PLATFORM_FILE_OK &&
-      snapshot_policy == FileSystemFileUtil::kSnapshotFileTemporary) {
+      snapshot_policy == kSnapshotFileTemporary) {
     file_ref = ShareableFileReference::GetOrCreate(
         platform_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
         file_system_context()->task_runners()->file_task_runner());
@@ -829,7 +826,6 @@ void LocalFileSystemOperation::DidCreateSnapshotFile(
 
 base::PlatformFileError LocalFileSystemOperation::SetUp(
     const FileSystemURL& url,
-    FileSystemFileUtil** file_util,
     SetUpMode mode) {
   if (!url.is_valid())
     return base::PLATFORM_FILE_ERROR_INVALID_URL;
@@ -839,10 +835,8 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
       mode != SETUP_FOR_READ)
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
-  DCHECK(file_util);
-  if (!*file_util)
-    *file_util = file_system_context()->GetFileUtil(url.type());
-  if (!*file_util)
+  async_file_util_ = file_system_context()->GetAsyncFileUtil(url.type());
+  if (!async_file_util_)
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   // If this operation is created for recursive sub-operations (i.e.

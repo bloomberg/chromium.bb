@@ -186,10 +186,7 @@ void LocalFileSystemTestOriginHelper::SetUpFileUtil() {
             file_system_context_->task_runners()->file_task_runner(),
             file_system_context_->partition_path()));
   }
-  FileSystemMountPointProvider* mount_point_provider =
-      file_system_context_->GetMountPointProvider(type_);
-  DCHECK(mount_point_provider);
-  file_util_ = mount_point_provider->GetFileUtil(type_);
+  file_util_ = file_system_context_->GetFileUtil(type_);
   DCHECK(file_util_);
 }
 

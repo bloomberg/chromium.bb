@@ -13,6 +13,7 @@
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
 #include "webkit/blob/local_file_stream_reader.h"
+#include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
@@ -37,13 +38,15 @@ IsolatedMountPointProvider::IsolatedMountPointProvider(
     const FilePath& profile_path)
     : profile_path_(profile_path),
       media_path_filter_(new MediaPathFilter()),
-      isolated_file_util_(new IsolatedFileUtil()),
-      dragged_file_util_(new DraggedFileUtil()),
-      native_media_file_util_(new NativeMediaFileUtil()) {
+      isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
+      dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())),
+      native_media_file_util_(
+          new AsyncFileUtilAdapter(new NativeMediaFileUtil())) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // TODO(kmadhusu): Initialize |device_media_file_util_| in
   // initialization list.
-  device_media_file_util_.reset(new DeviceMediaFileUtil(profile_path_));
+  device_media_file_util_.reset(
+      new AsyncFileUtilAdapter(new DeviceMediaFileUtil(profile_path_)));
 #endif
 }
 
@@ -84,6 +87,25 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
     FileSystemType type) {
   switch (type) {
     case kFileSystemTypeNativeLocal:
+      return isolated_file_util_->sync_file_util();
+    case kFileSystemTypeDragged:
+      return dragged_file_util_->sync_file_util();
+    case kFileSystemTypeNativeMedia:
+      return native_media_file_util_->sync_file_util();
+    case kFileSystemTypeDeviceMedia:
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+      return device_media_file_util_->sync_file_util();
+#endif
+    default:
+      NOTREACHED();
+  }
+  return NULL;
+}
+
+AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
+    FileSystemType type) {
+  switch (type) {
+    case kFileSystemTypeNativeLocal:
       return isolated_file_util_.get();
     case kFileSystemTypeDragged:
       return dragged_file_util_.get();
@@ -93,7 +115,6 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
       return device_media_file_util_.get();
 #endif
-
     default:
       NOTREACHED();
   }

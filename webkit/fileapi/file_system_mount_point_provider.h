@@ -21,6 +21,7 @@ class FileStreamReader;
 
 namespace fileapi {
 
+class AsyncFileUtil;
 class FileSystemURL;
 class FileStreamWriter;
 class FileSystemContext;
@@ -67,7 +68,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
   virtual bool IsRestrictedFileName(const FilePath& filename) const = 0;
 
   // Returns the specialized FileSystemFileUtil for this mount point.
+  // It is ok to return NULL if the filesystem doesn't support synchronous
+  // version of FileUtil.
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) = 0;
+
+  // Returns the specialized AsyncFileUtil for this mount point.
+  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;
 
   // Returns file permission policy we should apply for the given |url|.
   virtual FilePermissionPolicy GetPermissionPolicy(

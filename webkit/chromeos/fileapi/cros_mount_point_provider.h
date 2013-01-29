@@ -18,11 +18,11 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
+class AsyncFileUtilAdapter;
 class ExternalMountPoints;
 class FileSystemFileUtil;
 class FileSystemURL;
 class IsolatedContext;
-class LocalFileUtil;
 }
 
 namespace chromeos {
@@ -62,6 +62,8 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
   virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
+      fileapi::FileSystemType type) OVERRIDE;
+  virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::FilePermissionPolicy GetPermissionPolicy(
       const fileapi::FileSystemURL& url,
@@ -114,7 +116,7 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
-  scoped_ptr<fileapi::LocalFileUtil> local_file_util_;
+  scoped_ptr<fileapi::AsyncFileUtilAdapter> local_file_util_;
 
   // Mount points specific to the owning context.
   //

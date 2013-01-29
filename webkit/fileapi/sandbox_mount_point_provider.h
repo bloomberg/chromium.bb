@@ -31,6 +31,7 @@ class QuotaManagerProxy;
 
 namespace fileapi {
 
+class AsyncFileUtilAdapter;
 class LocalFileSystemOperation;
 class ObfuscatedFileUtil;
 class SandboxQuotaObserver;
@@ -83,6 +84,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
+  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;
@@ -108,7 +110,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
   // Returns an origin enumerator of this provider.
   // This method can only be called on the file thread.
-  OriginEnumerator* CreateOriginEnumerator() const;
+  OriginEnumerator* CreateOriginEnumerator();
 
   // Gets a base directory path of the sandboxed filesystem that is
   // specified by |origin_url| and |type|.
@@ -119,7 +121,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   FilePath GetBaseDirectoryForOriginAndType(
       const GURL& origin_url,
       FileSystemType type,
-      bool create) const;
+      bool create);
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
@@ -174,7 +176,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // Returns a path to the usage cache file.
   FilePath GetUsageCachePathForOriginAndType(
       const GURL& origin_url,
-      FileSystemType type) const;
+      FileSystemType type);
 
   // Returns a path to the usage cache file (static version).
   static FilePath GetUsageCachePathForOriginAndType(
@@ -196,13 +198,15 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
     return enable_sync_directory_operation_;
   }
 
+  ObfuscatedFileUtil* sandbox_sync_file_util();
+
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   const FilePath profile_path_;
 
   FileSystemOptions file_system_options_;
 
-  scoped_ptr<ObfuscatedFileUtil> sandbox_file_util_;
+  scoped_ptr<AsyncFileUtilAdapter> sandbox_file_util_;
 
   scoped_ptr<SandboxQuotaObserver> quota_observer_;
 
