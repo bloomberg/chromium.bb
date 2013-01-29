@@ -7,7 +7,6 @@
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
     'TestWebKitAPI',
-    'components_unittests',
     'sandbox_linux_unittests',
     'webkit_unit_tests',
 ]
@@ -19,6 +18,7 @@ STABLE_TEST_SUITES = [
     'android_webview_unittests',
     'base_unittests',
     'cc_unittests',
+    'components_unittests',
     'content_unittests',
     'gpu_unittests',
     'ipc_tests',
