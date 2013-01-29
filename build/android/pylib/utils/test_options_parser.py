@@ -37,6 +37,11 @@ def AddInstallAPKOption(option_parser):
   option_parser.add_option('--apk_package',
                            help=('The package name used by the apk containing '
                                  'the application.'))
+  option_parser.add_option('--keep_data',
+                           action='store_true',
+                           default=False,
+                           help=('Keep the package data when installing '
+                                 'the application.'))
 
 
 def ValidateInstallAPKOption(option_parser, options):
