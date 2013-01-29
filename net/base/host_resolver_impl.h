@@ -248,6 +248,8 @@ class NET_EXPORT HostResolverImpl
   // Parameters for ProcTask.
   ProcTaskParams proc_params_;
 
+  NetLog* net_log_;
+
   // Address family to use when the request doesn't specify one.
   AddressFamily default_address_family_;
 
@@ -270,10 +272,12 @@ class NET_EXPORT HostResolverImpl
   // of the IPv6 probe job are ignored.
   bool ipv6_probe_monitoring_;
 
+  // True iff ProcTask has successfully resolved a hostname known to have IPv6
+  // addresses using ADDRESS_FAMILY_UNSPECIFIED. Reset on IP address change.
+  bool resolved_known_ipv6_hostname_;
+
   // Any resolver flags that should be added to a request by default.
   HostResolverFlags additional_resolver_flags_;
-
-  NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverImpl);
 };
