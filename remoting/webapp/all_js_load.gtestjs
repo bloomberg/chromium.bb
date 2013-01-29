@@ -46,6 +46,8 @@ AllJsLoadTest.prototype = {
                              // |window.addEventListener| when loaded.
     'oauth2.js',
     'plugin_settings.js',
+    //'xhr_proxy.js',        // Disabled because it accesses |XMLHttpRequest|
+                             // when loaded, which is not available to tests.
     'remoting.js',
     'server_log_entry.js',
     'stats_accumulator.js',
@@ -57,6 +59,9 @@ AllJsLoadTest.prototype = {
     //'wcs_iq_client_proto.js',  // Only used by jscompiler.
     'wcs.js',
     'wcs_loader.js',
+    //'wcs_sandbox_content.js',  // Disabled because it calls
+                                 // |window.addEventListener| when loaded.
+    'wcs_sandbox_container.js',
     'xhr.js',
   ],
 };

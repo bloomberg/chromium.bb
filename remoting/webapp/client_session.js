@@ -24,6 +24,7 @@ var remoting = remoting || {};
 
 /**
  * @param {string} hostJid The jid of the host to connect to.
+ * @param {string} clientJid The jid of the WCS client.
  * @param {string} hostPublicKey The base64 encoded version of the host's
  *     public key.
  * @param {string} sharedSecret The access code for IT2Me or the PIN
@@ -38,18 +39,19 @@ var remoting = remoting || {};
  *     The callback to invoke when the session changes state.
  * @constructor
  */
-remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
+remoting.ClientSession = function(hostJid, clientJid,
+                                  hostPublicKey, sharedSecret,
                                   authenticationMethods, hostId,
                                   mode, onStateChange) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
+  this.clientJid = clientJid;
   this.hostPublicKey = hostPublicKey;
   this.sharedSecret = sharedSecret;
   this.authenticationMethods = authenticationMethods;
   this.hostId = hostId;
   this.mode = mode;
-  this.clientJid = '';
   this.sessionId = '';
   /** @type {remoting.ClientPlugin} */
   this.plugin = null;
@@ -385,23 +387,21 @@ remoting.ClientSession.prototype.disconnect = function() {
   this.logToServer.logClientSessionStateChange(
       remoting.ClientSession.State.CLOSED,
       remoting.ClientSession.ConnectionError.NONE, this.mode);
-  if (remoting.wcs) {
-    remoting.wcs.setOnIq(function(stanza) {});
-    this.sendIq_(
-        '<cli:iq ' +
-            'to="' + this.hostJid + '" ' +
-            'type="set" ' +
-            'id="session-terminate" ' +
-            'xmlns:cli="jabber:client">' +
-          '<jingle ' +
-              'xmlns="urn:xmpp:jingle:1" ' +
-              'action="session-terminate" ' +
-              'initiator="' + this.clientJid + '" ' +
-              'sid="' + this.sessionId + '">' +
-            '<reason><success/></reason>' +
-          '</jingle>' +
-        '</cli:iq>');
-  }
+  remoting.wcsSandbox.setOnIq(null);
+  this.sendIq_(
+      '<cli:iq ' +
+          'to="' + this.hostJid + '" ' +
+          'type="set" ' +
+          'id="session-terminate" ' +
+          'xmlns:cli="jabber:client">' +
+        '<jingle ' +
+            'xmlns="urn:xmpp:jingle:1" ' +
+            'action="session-terminate" ' +
+            'initiator="' + this.clientJid + '" ' +
+            'sid="' + this.sessionId + '">' +
+          '<reason><success/></reason>' +
+        '</jingle>' +
+      '</cli:iq>');
   this.removePlugin();
 };
 
@@ -549,12 +549,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(msg));
 
   // Send the stanza.
-  if (remoting.wcs) {
-    remoting.wcs.sendIq(msg);
-  } else {
-    console.error('Tried to send IQ before WCS was ready.');
-    this.setState_(remoting.ClientSession.State.FAILED);
-  }
+  remoting.wcsSandbox.sendIq(msg);
 };
 
 /**
@@ -564,10 +559,6 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
-  this.clientJid = remoting.wcs.getJid();
-  if (this.clientJid == '') {
-    console.error('Tried to connect without a full JID.');
-  }
   remoting.formatIq.setJids(this.clientJid, this.hostJid);
   var plugin = this.plugin;
   var forwardIq = plugin.onIncomingIq.bind(plugin);
@@ -591,7 +582,7 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
                 remoting.formatIq.prettifyReceiveIq(stanza));
     forwardIq(stanza);
   }
-  remoting.wcs.setOnIq(onIncomingIq);
+  remoting.wcsSandbox.setOnIq(onIncomingIq);
   this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
                       this.sharedSecret, this.authenticationMethods,
                       this.hostId);

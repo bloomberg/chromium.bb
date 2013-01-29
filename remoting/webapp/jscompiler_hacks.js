@@ -44,6 +44,9 @@ HTMLEmbedElement.prototype.height;
 /** @type {number} */
 HTMLEmbedElement.prototype.width;
 
+/** @type {Window} */
+HTMLIFrameElement.prototype.contentWindow;
+
 /** @constructor */
 var MutationRecord = function() {};
 

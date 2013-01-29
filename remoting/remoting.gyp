@@ -163,6 +163,7 @@
       'webapp/scale-to-fit.png',
       'webapp/spinner.gif',
       'webapp/toolbar.css',
+      'webapp/wcs_sandbox.html',
     ],
     'remoting_webapp_js_files': [
       'webapp/client_plugin.js',
@@ -188,6 +189,7 @@
       'webapp/oauth2.js',
       'webapp/oauth2_callback.js',
       'webapp/plugin_settings.js',
+      'webapp/xhr_proxy.js',
       'webapp/remoting.js',
       'webapp/server_log_entry.js',
       'webapp/stats_accumulator.js',
@@ -197,6 +199,8 @@
       'webapp/ui_mode.js',
       'webapp/wcs.js',
       'webapp/wcs_loader.js',
+      'webapp/wcs_sandbox_container.js',
+      'webapp/wcs_sandbox_content.js',
       'webapp/xhr.js',
     ],
     'remoting_host_installer_mac_roots': [

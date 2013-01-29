@@ -163,10 +163,6 @@ remoting.LogToServer.prototype.log = function(entry) {
   entry.toDebugLog(1);
   // Store a stanza for the entry.
   this.pendingEntries.push(entry.toStanza());
-  // Stop if there's no connection to the server.
-  if (!remoting.wcs) {
-    return;
-  }
   // Send all pending entries to the server.
   console.log('Sending ' + this.pendingEntries.length + ' log ' +
               ((this.pendingEntries.length == 1) ? 'entry' : 'entries') +
@@ -177,7 +173,7 @@ remoting.LogToServer.prototype.log = function(entry) {
     stanza += /** @type string */ this.pendingEntries.shift();
   }
   stanza += '</gr:log></cli:iq>';
-  remoting.wcs.sendIq(stanza);
+  remoting.wcsSandbox.sendIq(stanza);
 };
 
 /**

@@ -62,8 +62,16 @@ remoting.currentConnectionType = null;
  */
 remoting.connectIt2Me = function() {
   remoting.currentConnectionType = remoting.ClientSession.Mode.IT2ME;
-  remoting.WcsLoader.load(connectIt2MeWithAccessToken_,
-                          remoting.showErrorMessage);
+  /** @param {string} token */
+  var startWcsAndConnect = function(token) {
+    remoting.wcsSandbox.setOnReady(
+        connectIt2MeWithAccessToken_.bind(null, token));
+    remoting.wcsSandbox.setOnError(remoting.showErrorMessage);
+    remoting.wcsSandbox.setAccessToken(token);
+    startAccessTokenRefreshTimer_();
+  };
+  remoting.identity.callWithToken(startWcsAndConnect,
+                                  remoting.showErrorMessage);
 };
 
 /**
@@ -160,9 +168,10 @@ remoting.sendPrintScreen = function() {
  * report an error.
  *
  * @param {string} token The OAuth2 access token.
+ * @param {string} clientJid The full JID of the WCS client.
  * @return {void} Nothing.
  */
-function connectIt2MeWithAccessToken_(token) {
+function connectIt2MeWithAccessToken_(token, clientJid) {
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.accessCode = normalizeAccessCode_(accessCode);
   // At present, only 12-digit access codes are supported, of which the first
@@ -176,7 +185,7 @@ function connectIt2MeWithAccessToken_(token) {
   } else {
     var supportId = remoting.accessCode.substring(0, kSupportIdLen);
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    resolveSupportId(supportId, token);
+    resolveSupportId(clientJid, supportId, token);
   }
 }
 
@@ -311,15 +320,17 @@ function retryConnectOrReportOffline_() {
 /**
  * Create the client session object and initiate the connection.
  *
+ * @param {string} clientJid The full JID of the WCS client.
  * @return {void} Nothing.
  */
-function startSession_() {
+function startSession_(clientJid) {
   console.log('Starting session...');
   var accessCode = document.getElementById('access-code-entry');
   accessCode.value = '';  // The code has been validated and won't work again.
   remoting.clientSession =
       new remoting.ClientSession(
-          remoting.hostJid, remoting.hostPublicKey,
+          remoting.hostJid, clientJid,
+          remoting.hostPublicKey,
           remoting.accessCode, 'spake2_plain', '',
           remoting.ClientSession.Mode.IT2ME,
           onClientStateChange_);
@@ -367,10 +378,11 @@ function setConnectionInterruptedButtonsText_() {
 /**
  * Parse the response from the server to a request to resolve a support id.
  *
+ * @param {string} clientJid The full JID of the WCS client.
  * @param {XMLHttpRequest} xhr The XMLHttpRequest object.
  * @return {void} Nothing.
  */
-function parseServerResponse_(xhr) {
+function parseServerResponse_(clientJid, xhr) {
   remoting.supportHostsXhr_ = null;
   console.log('parseServerResponse: xhr =', xhr);
   if (xhr.status == 200) {
@@ -381,7 +393,7 @@ function parseServerResponse_(xhr) {
       remoting.hostPublicKey = host.data.publicKey;
       var split = remoting.hostJid.split('/');
       document.getElementById('connected-to').innerText = split[0];
-      startSession_();
+      startSession_(clientJid);
       return;
     } else {
       console.error('Invalid "support-hosts" response from server.');
@@ -415,10 +427,11 @@ function normalizeAccessCode_(accessCode) {
 /**
  * Initiate a request to the server to resolve a support ID.
  *
+ * @param {string} clientJid The full JID of the WCS client.
  * @param {string} supportId The canonicalized support ID.
  * @param {string} token The OAuth access token.
  */
-function resolveSupportId(supportId, token) {
+function resolveSupportId(clientJid, supportId, token) {
   var headers = {
     'Authorization': 'OAuth ' + token
   };
@@ -426,7 +439,7 @@ function resolveSupportId(supportId, token) {
   remoting.supportHostsXhr_ = remoting.xhr.get(
       'https://www.googleapis.com/chromoting/v1/support-hosts/' +
           encodeURIComponent(supportId),
-      parseServerResponse_,
+      parseServerResponse_.bind(null, clientJid),
       '',
       headers);
 }
@@ -497,27 +510,64 @@ remoting.connectMe2MeWithPin = function() {
   document.title = host.hostName + ' - ' +
       chrome.i18n.getMessage('PRODUCT_NAME');
 
-  remoting.WcsLoader.load(connectMe2MeWithAccessToken_,
-                          remoting.showErrorMessage);
+  /** @param {string} token */
+  var startWcsAndConnect = function(token) {
+    remoting.wcsSandbox.setOnReady(
+        connectMe2MeWithAccessToken_.bind(null, token));
+    remoting.wcsSandbox.setOnError(remoting.showErrorMessage);
+    remoting.wcsSandbox.setAccessToken(token);
+    startAccessTokenRefreshTimer_();
+  };
+  remoting.identity.callWithToken(startWcsAndConnect,
+                                  remoting.showErrorMessage);
 };
 
 /**
  * Continue making the connection to a host, once WCS has initialized.
  *
  * @param {string} token The OAuth2 access token.
+ * @param {string} clientJid The full JID of the WCS client.
  * @return {void} Nothing.
  */
-function connectMe2MeWithAccessToken_(token) {
+function connectMe2MeWithAccessToken_(token, clientJid) {
   /** @type {string} */
   var pin = document.getElementById('pin-entry').value;
 
   remoting.clientSession =
       new remoting.ClientSession(
-          remoting.hostJid, remoting.hostPublicKey,
+          remoting.hostJid, clientJid, remoting.hostPublicKey,
           pin, 'spake2_hmac,spake2_plain', remoting.hostId,
           remoting.ClientSession.Mode.ME2ME, onClientStateChange_);
   // Don't log errors for cached JIDs.
   remoting.clientSession.logErrors(!remoting.retryIfOffline);
   remoting.clientSession.createPluginAndConnect(
       document.getElementById('session-mode'));
+}
+
+/** @type {number} */
+remoting.wcsAccessTokenRefreshTimer = 0;
+
+function startAccessTokenRefreshTimer_() {
+  if (remoting.wcsAccessTokenRefreshTimer != 0) {
+    return;
+  }
+
+  /** @param {string} token */
+  var updateAccessToken = function(token) {
+    remoting.wcsSandbox.setAccessToken(token);
+  };
+  /** @param {remoting.Error} error */
+  var logError = function(error) {
+    console.error('updateAccessToken: Authentication failed: ' + error);
+  };
+  var refreshAccessToken = function() {
+    remoting.identity.callWithToken(updateAccessToken, logError);
+  };
+  /**
+   * A timer that polls for an updated access token.
+   * @type {number}
+   * @private
+   */
+  remoting.wcsAccessTokenRefreshTimer = setInterval(refreshAccessToken,
+                                                    60 * 1000);
 }

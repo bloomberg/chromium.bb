@@ -93,7 +93,7 @@ index a52b1da..fdae490 100644
      "https://accounts.google.com/*",
      "https://www.googleapis.com/chromoting/*",
      "https://*.talkgadget.google.com/talkgadget/*",
-@@ -31,12 +25,12 @@
+@@ -31,14 +25,17 @@
      "clipboardRead",
      "clipboardWrite"
    ],
@@ -112,6 +112,11 @@ index a52b1da..fdae490 100644
    "requirements": {
      "plugins": {
        "npapi": false
+     }
++  },
++  "sandbox": {
++    "pages": [ "wcs_sandbox.html" ]
+   }
 diff --git a/remoting/webapp/remoting.js b/remoting/webapp/remoting.js
 index a8ab35b..9c6df35 100644
 --- a/remoting.js
@@ -138,3 +143,13 @@ index a8ab35b..9c6df35 100644
    remoting.hostSetupDialog =
        new remoting.HostSetupDialog(remoting.hostController);
    // Display the cached host list, then asynchronously update and re-display it.
+diff --git a/remoting/webapp/xhr_proxy.js b/remoting/webapp/xhr_proxy.js
+index 4c45780..653b481 100644
+--- a/xhr_proxy.js
++++ b/xhr_proxy.js
+@@ -90,4 +90,4 @@ remoting.XMLHttpRequestProxy.prototype.DONE = 4;
+
+ // Since the WCS driver code constructs XHRs directly, the only mechanism for
+ // proxying them is to replace the XMLHttpRequest constructor.
+-//XMLHttpRequest = remoting.XMLHttpRequestProxy;
++XMLHttpRequest = remoting.XMLHttpRequestProxy;

@@ -83,6 +83,9 @@ remoting.init = function() {
         }
       }
   );
+  var sandbox = /** @type {HTMLIFrameElement} */
+      document.getElementById('wcs-sandbox');
+  remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
 
   remoting.identity.getEmail(remoting.onEmail, remoting.showErrorMessage);
 

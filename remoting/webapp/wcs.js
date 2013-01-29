@@ -20,8 +20,7 @@ remoting.wcs = null;
  * @constructor
  * @param {remoting.WcsIqClient} wcsIqClient The WCS client.
  * @param {string} token An OAuth2 access token.
- * @param {function(boolean): void} onReady A function called when the WCS
- *     client has received a full JID.
+ * @param {function(string): void} onReady Called with the WCS client's JID.
  */
 remoting.Wcs = function(wcsIqClient, token, onReady) {
   /**
@@ -40,7 +39,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
 
   /**
    * The function called when the WCS client has received a full JID.
-   * @type {function(boolean): void}
+   * @type {?function(string): void}
    * @private
    */
   this.onReady_ = onReady;
@@ -51,23 +50,6 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
    * @private
    */
   this.clientFullJid_ = '';
-
-  var updateAccessToken = this.updateAccessToken_.bind(this);
-  /** @param {remoting.Error} error */
-  var onError = function(error) {
-    console.error('updateAccessToken: Authentication failed: ' + error);
-  };
-
-  /**
-   * A timer that polls for an updated access token.
-   * @type {number}
-   * @private
-   */
-  this.pollForUpdatedToken_ = setInterval(
-      function() {
-        remoting.identity.callWithToken(updateAccessToken, onError);
-      },
-      60 * 1000);
 
   /**
    * A function called when an IQ stanza is received.
@@ -88,9 +70,8 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
  *
  * @param {string} tokenNew A (possibly updated) access token.
  * @return {void} Nothing.
- * @private
  */
-remoting.Wcs.prototype.updateAccessToken_ = function(tokenNew) {
+remoting.Wcs.prototype.updateAccessToken = function(tokenNew) {
   if (tokenNew != this.token_) {
     this.token_ = tokenNew;
     this.wcsIqClient_.updateAccessToken(this.token_);
@@ -110,8 +91,10 @@ remoting.Wcs.prototype.onMessage_ = function(msg) {
   } else if (msg[0] == 'cfj') {
     this.clientFullJid_ = msg[1];
     console.log('Received JID: ' + this.clientFullJid_);
-    this.onReady_(true);
-    this.onReady_ = function(success) {};
+    if (this.onReady_) {
+      this.onReady_(this.clientFullJid_);
+      this.onReady_ = null;
+    }
   }
 };
 
