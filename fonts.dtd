@@ -189,7 +189,7 @@
 <!ELEMENT edit (%expr;)*>
 <!ATTLIST edit
 	  name CDATA	    #REQUIRED
-	  mode (assign|assign_replace|prepend|append|prepend_first|append_last) "assign"
+	  mode (assign|assign_replace|prepend|append|prepend_first|append_last|delete|delete_all) "assign"
 	  binding (weak|strong|same) "weak">
 
 <!--

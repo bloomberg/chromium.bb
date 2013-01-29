@@ -260,6 +260,8 @@ FcExprDestroy (FcExpr *e)
     case FcOpPrependFirst:
     case FcOpAppend:
     case FcOpAppendLast:
+    case FcOpDelete:
+    case FcOpDeleteAll:
 	break;
     case FcOpOr:
     case FcOpAnd:
@@ -2321,6 +2323,8 @@ static const FcOpMap fcModeOps[] = {
     { "prepend_first",	FcOpPrependFirst    },
     { "append",		FcOpAppend	    },
     { "append_last",	FcOpAppendLast	    },
+    { "delete",		FcOpDelete	    },
+    { "delete_all",	FcOpDeleteAll	    },
 };
 
 #define NUM_MODE_OPS (int) (sizeof fcModeOps / sizeof fcModeOps[0])
@@ -2363,6 +2367,13 @@ FcParseEdit (FcConfigParse *parse)
 	return;
 
     expr = FcPopBinary (parse, FcOpComma);
+    if ((mode == FcOpDelete || mode == FcOpDeleteAll) &&
+	expr != NULL)
+    {
+	FcConfigMessage (parse, FcSevereWarning, "Expression doesn't take any effects for delete and delete_all");
+	FcExprDestroy (expr);
+	expr = NULL;
+    }
     edit = FcEditCreate (parse, FcObjectFromName ((char *) name),
 			 mode, expr, binding);
     if (!edit)
