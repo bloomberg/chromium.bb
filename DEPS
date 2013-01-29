@@ -202,6 +202,9 @@ deps = {
   "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/workers@" +
     Var("webkit_revision"),
+  "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/files":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/files@" +
+    Var("webkit_revision"),
   "src/content/test/data/layout_tests/LayoutTests/platform/chromium/fast/events":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/events@" +
     Var("webkit_revision"),
