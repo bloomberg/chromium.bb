@@ -177,9 +177,6 @@ class ASH_EXPORT LauncherView : public views::View,
   // button creation and every time when shelf alignment is changed.
   void UpdateFirstButtonPadding();
 
-  // Invoked after the fading out animation for item deletion is ended.
-  void OnFadeOutAnimationEnded();
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
