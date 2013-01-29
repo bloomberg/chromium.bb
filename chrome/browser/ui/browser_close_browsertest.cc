@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -176,7 +177,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
     Browser* new_browser = new Browser(Browser::CreateParams(profile));
     chrome::AddSelectedTabWithURL(new_browser, GURL(chrome::kAboutBlankURL),
                                   content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-    content::WaitForLoadStop(chrome::GetActiveWebContents(new_browser));
+    content::WaitForLoadStop(
+        new_browser->tab_strip_model()->GetActiveWebContents());
     new_browser->window()->Show();
     return new_browser;
   }

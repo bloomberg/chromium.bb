@@ -1532,8 +1532,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
   if (browser_->is_app()) {
-    WebContents* contents =
-        browser_->tab_strip_model()->GetActiveWebContents();
+    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
     extensions::TabHelper* extensions_tab_helper =
         contents ? extensions::TabHelper::FromWebContents(contents) : NULL;
     if (extensions_tab_helper && extensions_tab_helper->GetExtensionAppIcon())
@@ -2545,8 +2544,7 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
                                  int windows_msg_id,
 #endif
                                  int command_id) {
-  WebContents* contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
     return;
   if (DoCutCopyPasteForWebContents(contents, method))

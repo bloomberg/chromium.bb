@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -82,7 +82,8 @@ class ChromePluginTest : public InProcessBrowserTest {
   }
 
   static void LoadAndWait(Browser* window, const GURL& url, bool pass) {
-    content::WebContents* web_contents = chrome::GetActiveWebContents(window);
+    content::WebContents* web_contents =
+        window->tab_strip_model()->GetActiveWebContents();
     string16 expected_title(ASCIIToUTF16(pass ? "OK" : "plugin_not_found"));
     content::TitleWatcher title_watcher(web_contents, expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));

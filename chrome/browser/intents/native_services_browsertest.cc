@@ -17,7 +17,7 @@
 #include "chrome/browser/intents/native_services.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -158,7 +158,8 @@ class NativeServicesBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileSelected) {
-  content::WebContents* tab = chrome::GetActiveWebContents(GetBrowser());
+  content::WebContents* tab =
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
   webkit_glue::WebIntentData intent;
   intent.action = ASCIIToUTF16(web_intents::kActionPick);
@@ -187,7 +188,8 @@ IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileSelected) {
 
 IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileCancelled) {
   picker_success_mode = false;
-  content::WebContents* tab = chrome::GetActiveWebContents(GetBrowser());
+  content::WebContents* tab =
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
   webkit_glue::WebIntentData intent;
   intent.action = ASCIIToUTF16(web_intents::kActionPick);

@@ -10,8 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_controls.h"
@@ -231,9 +231,8 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
 // of the selected tab.
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
-  HWND hwnd_render_widget_host_view =
-      chrome::GetActiveWebContents(browser())->GetRenderWidgetHostView()->
-          GetNativeView();
+  HWND hwnd_render_widget_host_view = browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderWidgetHostView()->GetNativeView();
 
   // Invoke windows screen reader detection by sending the WM_GETOBJECT message
   // with kIdCustom as the LPARAM.
@@ -252,7 +251,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(wstring script) {
-  chrome::GetActiveWebContents(browser())->GetRenderViewHost()->
+  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(L"", script);
 }
 

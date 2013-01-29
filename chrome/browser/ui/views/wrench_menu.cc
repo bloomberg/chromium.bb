@@ -15,10 +15,10 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -625,7 +625,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   void UpdateZoomControls() {
     bool enable_increment = false;
     bool enable_decrement = false;
-    WebContents* selected_tab = chrome::GetActiveWebContents(menu_->browser_);
+    WebContents* selected_tab =
+        menu_->browser_->tab_strip_model()->GetActiveWebContents();
     int zoom = 100;
     if (selected_tab)
       zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
@@ -645,7 +646,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
     int max_w = 0;
 
-    WebContents* selected_tab = chrome::GetActiveWebContents(menu_->browser_);
+    WebContents* selected_tab =
+        menu_->browser_->tab_strip_model()->GetActiveWebContents();
     if (selected_tab) {
       int min_percent = selected_tab->GetMinimumZoomPercent();
       int max_percent = selected_tab->GetMaximumZoomPercent();

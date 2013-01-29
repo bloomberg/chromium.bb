@@ -24,8 +24,6 @@ class Rect;
 
 namespace chrome {
 
-content::WebContents* GetActiveWebContents(const Browser* browser);
-
 // Adds a blank tab to the tab strip of the specified browser; an |index| of -1
 // means to append it to the end of the tab strip.
 void AddBlankTabAt(Browser* browser, int index, bool foreground);

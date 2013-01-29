@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   focused_browser->window()->Activate();
 
   ASSERT_TRUE(content::ExecuteScript(
-      chrome::GetActiveWebContents(unfocused_browser),
+      unfocused_browser->tab_strip_model()->GetActiveWebContents(),
       "stealFocus();"));
 
   // Make sure the first browser is still active.

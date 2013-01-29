@@ -18,10 +18,6 @@
 
 namespace chrome {
 
-content::WebContents* GetActiveWebContents(const Browser* browser) {
-  return browser->tab_strip_model()->GetActiveWebContents();
-}
-
 void AddBlankTabAt(Browser* browser, int index, bool foreground) {
   // TODO(scottmg): http://crbug.com/128578
   // This is necessary because WebContentsViewAura doesn't have enough context

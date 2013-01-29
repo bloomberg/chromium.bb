@@ -24,12 +24,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -270,7 +270,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
   if (owner_browser) {
     base_window = owner_browser->window();
-    web_contents = chrome::GetActiveWebContents(owner_browser);
+    web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();
     profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   } else if (owner_window) {
     // If an owner_window was supplied but we couldn't find a browser, this

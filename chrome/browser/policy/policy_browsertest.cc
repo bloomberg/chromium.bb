@@ -1794,7 +1794,7 @@ class MediaStreamDevicesControllerBrowserTest
                                         content::MEDIA_NO_SERVICE);
     TabSpecificContentSettings* content_settings =
         TabSpecificContentSettings::FromWebContents(
-            chrome::GetActiveWebContents(browser()));
+            browser()->tab_strip_model()->GetActiveWebContents());
     MediaStreamDevicesController controller(
         browser()->profile(),
         content_settings,
@@ -1812,7 +1812,7 @@ class MediaStreamDevicesControllerBrowserTest
                                         content::MEDIA_DEVICE_VIDEO_CAPTURE);
     TabSpecificContentSettings* content_settings =
         TabSpecificContentSettings::FromWebContents(
-            chrome::GetActiveWebContents(browser()));
+            browser()->tab_strip_model()->GetActiveWebContents());
     MediaStreamDevicesController controller(
         browser()->profile(), content_settings, request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));

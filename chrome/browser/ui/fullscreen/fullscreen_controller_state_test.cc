@@ -10,9 +10,9 @@
 #include <iostream>
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -305,11 +305,11 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
       break;
     case TAB_FULLSCREEN_TRUE:
       GetFullscreenController()->ToggleFullscreenModeForTab(
-           chrome::GetActiveWebContents(GetBrowser()), true);
+           GetBrowser()->tab_strip_model()->GetActiveWebContents(), true);
       break;
     case TAB_FULLSCREEN_FALSE:
       GetFullscreenController()->ToggleFullscreenModeForTab(
-           chrome::GetActiveWebContents(GetBrowser()), false);
+           GetBrowser()->tab_strip_model()->GetActiveWebContents(), false);
       break;
 #if defined(OS_WIN)
     case METRO_SNAP_TRUE:
