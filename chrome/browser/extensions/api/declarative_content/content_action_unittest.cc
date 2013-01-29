@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -36,14 +37,31 @@ class TestExtensionEnvironment {
  public:
   TestExtensionEnvironment()
       : ui_thread_(BrowserThread::UI, &loop_),
-        extension_service_(NULL) {}
+        file_thread_(BrowserThread::FILE),
+        file_blocking_thread_(BrowserThread::FILE_USER_BLOCKING),
+        io_thread_(BrowserThread::IO),
+        profile_(new TestingProfile),
+        extension_service_(NULL) {
+    file_thread_.Start();
+    file_blocking_thread_.Start();
+    io_thread_.StartIOThread();
+  }
 
-  TestingProfile* profile() { return &profile_; }
+  ~TestExtensionEnvironment() {
+    profile_.reset();
+    // Delete the profile, and then cycle the message loop to clear
+    // out delayed deletions.
+    base::RunLoop run_loop;
+    loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  TestingProfile* profile() { return profile_.get(); }
 
   ExtensionService* GetExtensionService() {
     if (extension_service_ == NULL) {
       TestExtensionSystem* extension_system =
-          static_cast<TestExtensionSystem*>(ExtensionSystem::Get(&profile_));
+          static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
       extension_service_ = extension_system->CreateExtensionService(
           CommandLine::ForCurrentProcess(), FilePath(), false);
     }
@@ -67,7 +85,7 @@ class TestExtensionEnvironment {
 
   scoped_ptr<content::WebContents> MakeTab() {
     scoped_ptr<content::WebContents> contents(
-        content::WebContentsTester::CreateTestWebContents(&profile_, NULL));
+        content::WebContentsTester::CreateTestWebContents(profile(), NULL));
     // Create a tab id.
     SessionTabHelper::CreateForWebContents(contents.get());
     return contents.Pass();
@@ -76,10 +94,13 @@ class TestExtensionEnvironment {
  private:
   MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread file_blocking_thread_;
+  content::TestBrowserThread io_thread_;
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
 #endif
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
 };
 
