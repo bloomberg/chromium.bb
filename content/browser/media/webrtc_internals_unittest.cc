@@ -5,8 +5,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/media/chrome_webrtc_internals.h"
-#include "chrome/browser/media/webrtc_internals_ui_observer.h"
+#include "content/browser/media/webrtc_internals.h"
+#include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,6 +14,9 @@ using base::Value;
 using base::DictionaryValue;
 using std::string;
 
+namespace content {
+
+namespace {
 static const string kContraints = "c";
 static const string kServers = "s";
 static const string kUrl = "u";
@@ -40,14 +43,9 @@ class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
 
 class WebRTCInternalsTest : public testing::Test {
  public:
-  WebRTCInternalsTest()
-      : io_thread_(content::BrowserThread::UI, &io_loop_) {}
+  WebRTCInternalsTest() : io_thread_(BrowserThread::UI, &io_loop_) {}
 
  protected:
-  virtual void SetUp() {
-    webrtc_internals_ = ChromeWebRTCInternals::GetInstance();
-  }
-
   string ExpectedInfo(string prefix,
                            string id,
                            string suffix) {
@@ -59,30 +57,29 @@ class WebRTCInternalsTest : public testing::Test {
   }
 
   MessageLoop io_loop_;
-  content::TestBrowserThread io_thread_;
-  ChromeWebRTCInternals* webrtc_internals_;
+  TestBrowserThread io_thread_;
 };
 
-TEST_F(WebRTCInternalsTest, GetInstance) {
-  EXPECT_TRUE(webrtc_internals_);
-}
+}  // namespace
 
 TEST_F(WebRTCInternalsTest, AddRemoveObserver) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(
       new MockWebRTCInternalsProxy());
-  webrtc_internals_->AddObserver(observer.get());
-  webrtc_internals_->RemoveObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(3, 4, kUrl, kServers, kContraints);
+  WebRTCInternals::GetInstance()->AddObserver(observer.get());
+  WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
+  WebRTCInternals::GetInstance()->AddPeerConnection(
+      3, 4, kUrl, kServers, kContraints);
   EXPECT_EQ("", observer->command());
 
-  webrtc_internals_->RemovePeerConnection(3, 4);
+  WebRTCInternals::GetInstance()->RemovePeerConnection(3, 4);
 }
 
 TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(
       new MockWebRTCInternalsProxy());
-  webrtc_internals_->AddObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(1, 2, kUrl, kServers, kContraints);
+  WebRTCInternals::GetInstance()->AddObserver(observer.get());
+  WebRTCInternals::GetInstance()->AddPeerConnection(
+      1, 2, kUrl, kServers, kContraints);
   EXPECT_EQ("addPeerConnection", observer->command());
 
   DictionaryValue* dict = NULL;
@@ -102,16 +99,17 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
   EXPECT_TRUE(dict->GetString("constraints", &value));
   EXPECT_EQ(kContraints, value);
 
-  webrtc_internals_->RemoveObserver(observer.get());
-  webrtc_internals_->RemovePeerConnection(1, 2);
+  WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
+  WebRTCInternals::GetInstance()->RemovePeerConnection(1, 2);
 }
 
 TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(
       new MockWebRTCInternalsProxy());
-  webrtc_internals_->AddObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(1, 2, kUrl, kServers, kContraints);
-  webrtc_internals_->RemovePeerConnection(1, 2);
+  WebRTCInternals::GetInstance()->AddObserver(observer.get());
+  WebRTCInternals::GetInstance()->AddPeerConnection(
+      1, 2, kUrl, kServers, kContraints);
+  WebRTCInternals::GetInstance()->RemovePeerConnection(1, 2);
   EXPECT_EQ("removePeerConnection", observer->command());
 
   DictionaryValue* dict = NULL;
@@ -123,18 +121,20 @@ TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
   EXPECT_TRUE(dict->GetInteger("lid", &int_value));
   EXPECT_EQ(2, int_value);
 
-  webrtc_internals_->RemoveObserver(observer.get());
+  WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
 
 TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(
       new MockWebRTCInternalsProxy());
-  webrtc_internals_->AddObserver(observer.get());
-  webrtc_internals_->AddPeerConnection(1, 2, kUrl, kServers, kContraints);
+  WebRTCInternals::GetInstance()->AddObserver(observer.get());
+  WebRTCInternals::GetInstance()->AddPeerConnection(
+      1, 2, kUrl, kServers, kContraints);
 
   const string update_type = "fakeType";
   const string update_value = "fakeValue";
-  webrtc_internals_->UpdatePeerConnection(1, 2, update_type, update_value);
+  WebRTCInternals::GetInstance()->UpdatePeerConnection(
+      1, 2, update_type, update_value);
 
   EXPECT_EQ("updatePeerConnection", observer->command());
 
@@ -153,6 +153,8 @@ TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
   EXPECT_TRUE(dict->GetString("value", &value));
   EXPECT_EQ(update_value, value);
 
-  webrtc_internals_->RemovePeerConnection(1, 2);
-  webrtc_internals_->RemoveObserver(observer.get());
+  WebRTCInternals::GetInstance()->RemovePeerConnection(1, 2);
+  WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
+
+}  // namespace content

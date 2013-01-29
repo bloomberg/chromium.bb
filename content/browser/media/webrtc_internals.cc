@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/chrome_webrtc_internals.h"
+#include "content/browser/media/webrtc_internals.h"
 
-#include "chrome/browser/media/webrtc_internals_ui_observer.h"
+#include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::DictionaryValue;
 using base::ListValue;
 using base::ProcessId;
-using content::BrowserThread;
 using std::string;
 
+namespace content {
+
+namespace {
 // Makes sure that |dict| has a ListValue under path "log".
 static ListValue* EnsureLogList(DictionaryValue* dict) {
   ListValue* log = NULL;
@@ -24,17 +26,19 @@ static ListValue* EnsureLogList(DictionaryValue* dict) {
   return log;
 }
 
-ChromeWebRTCInternals::ChromeWebRTCInternals() {
+}  // namespace
+
+WebRTCInternals::WebRTCInternals() {
 }
 
-ChromeWebRTCInternals::~ChromeWebRTCInternals() {
+WebRTCInternals::~WebRTCInternals() {
 }
 
-ChromeWebRTCInternals* ChromeWebRTCInternals::GetInstance() {
-  return Singleton<ChromeWebRTCInternals>::get();
+WebRTCInternals* WebRTCInternals::GetInstance() {
+  return Singleton<WebRTCInternals>::get();
 }
 
-void ChromeWebRTCInternals::AddPeerConnection(ProcessId pid,
+void WebRTCInternals::AddPeerConnection(ProcessId pid,
                                         int lid,
                                         const string& url,
                                         const string& servers,
@@ -56,7 +60,7 @@ void ChromeWebRTCInternals::AddPeerConnection(ProcessId pid,
     SendUpdate("addPeerConnection", dict);
 }
 
-void ChromeWebRTCInternals::RemovePeerConnection(ProcessId pid, int lid) {
+void WebRTCInternals::RemovePeerConnection(ProcessId pid, int lid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
     DictionaryValue* dict = NULL;
@@ -82,7 +86,7 @@ void ChromeWebRTCInternals::RemovePeerConnection(ProcessId pid, int lid) {
   }
 }
 
-void ChromeWebRTCInternals::UpdatePeerConnection(
+void WebRTCInternals::UpdatePeerConnection(
     ProcessId pid, int lid, const string& type, const string& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -123,27 +127,27 @@ void ChromeWebRTCInternals::UpdatePeerConnection(
   }
 }
 
-void ChromeWebRTCInternals::AddObserver(
-      WebRTCInternalsUIObserver *observer) {
+void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver *observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void ChromeWebRTCInternals::RemoveObserver(
-      WebRTCInternalsUIObserver *observer) {
+void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
 
-void ChromeWebRTCInternals::SendAllUpdates() {
+void WebRTCInternals::SendAllUpdates() {
   if (observers_.size() > 0)
     SendUpdate("updateAllPeerConnections", &peer_connection_data_);
 }
 
-void ChromeWebRTCInternals::SendUpdate(const string& command, Value* value) {
+void WebRTCInternals::SendUpdate(const string& command, Value* value) {
   DCHECK_GT(observers_.size(), (size_t)0);
 
   FOR_EACH_OBSERVER(WebRTCInternalsUIObserver,
                     observers_,
                     OnUpdate(command, value));
 }
+
+}  // namespace content

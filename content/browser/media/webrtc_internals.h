@@ -2,35 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_CHROME_WEBRTC_INTERNALS_H_
-#define CHROME_BROWSER_MEDIA_CHROME_WEBRTC_INTERNALS_H_
+#ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
+#define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/process.h"
 #include "base/values.h"
-#include "content/public/browser/webrtc_internals.h"
+#include "content/common/content_export.h"
 
+namespace content {
 class WebRTCInternalsUIObserver;
 
 // This is a singleton class running in the browser UI thread.
 // It collects peer connection infomation from the renderers,
 // forwards the data to WebRTCInternalsUIObserver and
 // sends data collecting commands to the renderers.
-class ChromeWebRTCInternals : public content::WebRTCInternals {
+class CONTENT_EXPORT WebRTCInternals {
  public:
-  static ChromeWebRTCInternals* GetInstance();
+  static WebRTCInternals* GetInstance();
 
-  virtual void AddPeerConnection(base::ProcessId pid,
-                                 int lid,
-                                 const std::string& url,
-                                 const std::string& servers,
-                                 const std::string& constraints) OVERRIDE;
-  virtual void RemovePeerConnection(base::ProcessId pid, int lid) OVERRIDE;
-  virtual void UpdatePeerConnection(base::ProcessId pid,
-                                    int lid,
-                                    const std::string& type,
-                                    const std::string& value) OVERRIDE;
+  // This method is called when a PeerConnection is created.
+  // |pid| is the renderer process id, |lid| is the renderer local id used to
+  // identify a PeerConnection, |url| is the url of the tab owning the
+  // PeerConnection, |servers| is the servers configuration, |constraints| is
+  // the media constraints used to initialize the PeerConnection.
+  void AddPeerConnection(base::ProcessId pid,
+                         int lid,
+                         const std::string& url,
+                         const std::string& servers,
+                         const std::string& constraints);
+
+  // This method is called when PeerConnection is destroyed.
+  // |pid| is the renderer process id, |lid| is the renderer local id.
+  void RemovePeerConnection(base::ProcessId pid, int lid);
+
+  // This method is called when a PeerConnection is updated.
+  // |pid| is the renderer process id, |lid| is the renderer local id,
+  // |type| is the update type, |value| is the detail of the update.
+  void UpdatePeerConnection(base::ProcessId pid,
+                            int lid,
+                            const std::string& type,
+                            const std::string& value);
 
   // Methods for adding or removing WebRTCInternalsUIObserver.
   void AddObserver(WebRTCInternalsUIObserver *observer);
@@ -40,10 +53,10 @@ class ChromeWebRTCInternals : public content::WebRTCInternals {
   void SendAllUpdates();
 
  private:
-  friend struct DefaultSingletonTraits<ChromeWebRTCInternals>;
+  friend struct DefaultSingletonTraits<WebRTCInternals>;
 
-  ChromeWebRTCInternals();
-  virtual ~ChromeWebRTCInternals();
+  WebRTCInternals();
+  virtual ~WebRTCInternals();
 
   void SendUpdate(const std::string& command, base::Value* value);
 
@@ -64,4 +77,6 @@ class ChromeWebRTCInternals : public content::WebRTCInternals {
   base::ListValue peer_connection_data_;
 };
 
-#endif  // CHROME_BROWSER_MEDIA_CHROME_WEBRTC_INTERNALS_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_

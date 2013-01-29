@@ -41,6 +41,7 @@ const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUITcmallocHost[] = "tcmalloc";
+const char kChromeUIWebRTCInternalsHost[] = "webrtc-internals";
 
 const char kChromeUICrashURL[] = "chrome://crash";
 const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";

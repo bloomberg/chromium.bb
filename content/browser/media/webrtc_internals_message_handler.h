@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
+#ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
+#define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/media/webrtc_internals_ui_observer.h"
+#include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
 class ListValue;
 }  // namespace base
 
+namespace content {
+
 // This class handles messages to and from WebRTCInternalsUI.
 // It delegates all its work to WebRTCInternalsProxy on the IO thread.
-class WebRTCInternalsMessageHandler : public content::WebUIMessageHandler,
+class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
                                       public WebRTCInternalsUIObserver{
  public:
   WebRTCInternalsMessageHandler();
@@ -35,4 +37,6 @@ class WebRTCInternalsMessageHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_

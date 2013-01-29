@@ -843,7 +843,6 @@
         'browser/managed_mode/managed_mode_unittest.cc',
         'browser/managed_mode/managed_mode_url_filter_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
-        'browser/media/chrome_webrtc_internals_unittest.cc',
         'browser/media/media_internals_unittest.cc',
         'browser/media_gallery/linux/mtp_device_object_enumerator_unittest.cc',
         'browser/media_gallery/media_file_system_registry_unittest.cc',

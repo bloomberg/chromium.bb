@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media/webrtc_internals_message_handler.h"
+#include "content/browser/media/webrtc_internals_message_handler.h"
 
-#include "chrome/browser/media/chrome_webrtc_internals.h"
+#include "content/browser/media/webrtc_internals.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
-using content::BrowserThread;
+namespace content {
 
 WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler() {
-  ChromeWebRTCInternals::GetInstance()->AddObserver(this);
+  WebRTCInternals::GetInstance()->AddObserver(this);
 }
 
 WebRTCInternalsMessageHandler::~WebRTCInternalsMessageHandler() {
-  ChromeWebRTCInternals::GetInstance()->RemoveObserver(this);
+  WebRTCInternals::GetInstance()->RemoveObserver(this);
 }
 
 void WebRTCInternalsMessageHandler::RegisterMessages() {
@@ -28,7 +28,7 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
 
 void WebRTCInternalsMessageHandler::OnGetAllUpdates(
     const base::ListValue* list) {
-  ChromeWebRTCInternals::GetInstance()->SendAllUpdates();
+  WebRTCInternals::GetInstance()->SendAllUpdates();
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
@@ -36,10 +36,11 @@ void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<const Value*> args_vector;
   args_vector.push_back(args);
-  string16 update = content::WebUI::GetJavascriptCall(command, args_vector);
+  string16 update = WebUI::GetJavascriptCall(command, args_vector);
 
-  content::RenderViewHost* host =
-      web_ui()->GetWebContents()->GetRenderViewHost();
+  RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
   if (host)
     host->ExecuteJavascriptInWebFrame(string16(), update);
 }
+
+}  // namespace content

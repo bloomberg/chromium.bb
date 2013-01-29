@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/trace_controller_impl.h"
+#include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
@@ -336,11 +337,13 @@ void BrowserMainLoop::MainMessageLoopStart() {
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   audio_manager_.reset(media::AudioManager::Create());
-#if !defined(OS_IOS)
-  audio_mirroring_manager_.reset(new AudioMirroringManager());
-#endif
 
 #if !defined(OS_IOS)
+  WebUIControllerFactory::RegisterFactory(
+      ContentWebUIControllerFactory::GetInstance());
+
+  audio_mirroring_manager_.reset(new AudioMirroringManager());
+
   // Start tracing to a file if needed.
   if (base::debug::TraceLog::GetInstance()->IsEnabled()) {
     TraceControllerImpl::GetInstance()->InitStartupTracing(

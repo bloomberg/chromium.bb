@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media/webrtc_internals_ui.h"
+#include "content/browser/media/webrtc_internals_ui.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/media/webrtc_internals_message_handler.h"
-#include "chrome/common/url_constants.h"
+#include "content/browser/media/webrtc_internals_message_handler.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/browser_resources.h"
+#include "content/public/common/url_constants.h"
+#include "grit/content_resources.h"
 
-using content::WebContents;
-
+namespace content {
 namespace {
 
-content::WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIWebRTCInternalsHost);
+WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
+  WebUIDataSource* source =
+      WebUIDataSource::Create(chrome::kChromeUIWebRTCInternalsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("webrtc_internals.js", IDR_WEBRTC_INTERNALS_JS);
@@ -33,10 +32,13 @@ content::WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-WebRTCInternalsUI::WebRTCInternalsUI(content::WebUI* web_ui)
+WebRTCInternalsUI::WebRTCInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new WebRTCInternalsMessageHandler());
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateWebRTCInternalsHTMLSource());
+  BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  WebUIDataSource::Add(browser_context, CreateWebRTCInternalsHTMLSource());
 }
+
+}  // namespace content
