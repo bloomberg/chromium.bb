@@ -235,10 +235,6 @@ IN_PROC_BROWSER_TEST_F(GpuMemoryTest, SingleWindowDoesNotExceedLimit) {
   if (!AllowTestsToRun())
     return;
 
-  // crbug.com/171512, timeout on Win Debug.
-  if (GPUTestBotConfig::CurrentConfigMatches("WIN DEBUG"))
-    return;
-
   content::Shell* tab = CreateNewTab();
   LoadPage(tab, PAGE_CSS3D, kMemoryLimitMB);
   // Make sure that the CSS3D page maxes out a single tab's budget (otherwise
