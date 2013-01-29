@@ -84,6 +84,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
 
   SharedQuadState* sharedQuadState =
       quadSink.useSharedQuadState(createSharedQuadState());
+  appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
+
   bool clipped = false;
   gfx::QuadF target_quad = MathUtil::mapQuad(
       drawTransform(),
@@ -580,6 +582,12 @@ void PictureLayerImpl::CleanUpUnusedTilings(
 
   for (size_t i = 0; i < to_remove.size(); ++i)
     tilings_->Remove(to_remove[i]);
+}
+
+void PictureLayerImpl::getDebugBorderProperties(
+    SkColor* color, float* width) const {
+  *color = DebugColors::TiledContentLayerBorderColor();
+  *width = DebugColors::TiledContentLayerBorderWidth(layerTreeImpl());
 }
 
 }  // namespace cc

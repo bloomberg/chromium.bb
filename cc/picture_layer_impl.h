@@ -72,6 +72,9 @@ protected:
   void ManageTilings(float ideal_contents_scale);
   void CleanUpUnusedTilings(std::vector<PictureLayerTiling*> used_tilings);
 
+  virtual void getDebugBorderProperties(
+      SkColor* color, float* width) const OVERRIDE;
+
   scoped_ptr<PictureLayerTilingSet> tilings_;
   scoped_refptr<PicturePileImpl> pile_;
   Region invalidation_;
