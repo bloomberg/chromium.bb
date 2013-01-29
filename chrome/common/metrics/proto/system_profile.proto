@@ -40,6 +40,11 @@ message SystemProfileProto {
   // specific.
   optional string app_version = 2;
 
+  // The brand code or distribution tag assigned to a partner, if available.
+  // Brand codes are only available on Windows.  Not every Windows install
+  // though will have a brand code.
+  optional string brand_code = 12;
+
   // The possible channels for an installation, from least to most stable.
   enum Channel {
     CHANNEL_UNKNOWN = 0;  // Unknown channel -- perhaps an unofficial build?

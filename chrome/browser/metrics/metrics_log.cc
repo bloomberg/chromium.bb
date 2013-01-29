@@ -27,6 +27,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -861,6 +862,11 @@ void MetricsLog::RecordEnvironmentProto(
     const std::vector<webkit::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics) {
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+
+  std::string brand_code;
+  if (google_util::GetBrand(&brand_code))
+    system_profile->set_brand_code(brand_code);
+
   int enabled_date;
   bool success = base::StringToInt(GetMetricsEnabledDate(GetPrefService()),
                                    &enabled_date);

@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -37,6 +38,7 @@ const int kScreenWidth = 1024;
 const int kScreenHeight = 768;
 const int kScreenCount = 3;
 const float kScreenScaleFactor = 2;
+const char kBrandForTesting[] = "brand_for_testing";
 const chrome_variations::ActiveGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
@@ -46,7 +48,8 @@ const chrome_variations::ActiveGroupId kFieldTrialIds[] = {
 class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id, int session_id)
-      : MetricsLog(client_id, session_id) {
+      : MetricsLog(client_id, session_id),
+        brand_for_testing_(kBrandForTesting) {
     chrome::RegisterLocalState(&prefs_);
 
 #if defined(OS_CHROMEOS)
@@ -99,6 +102,8 @@ class TestMetricsLog : public MetricsLog {
 
   TestingPrefServiceSimple prefs_;
 
+  google_util::BrandForTesting brand_for_testing_;
+
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 
@@ -125,6 +130,8 @@ class MetricsLogTest : public testing::Test {
       EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
       EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
     }
+
+    EXPECT_EQ(kBrandForTesting, system_profile.brand_code());
 
     const metrics::SystemProfileProto::Hardware& hardware =
         system_profile.hardware();
