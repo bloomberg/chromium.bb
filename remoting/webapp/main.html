@@ -264,10 +264,14 @@ found in the LICENSE file.
         <form id="ask-pin-form"
               data-ui-mode="home.host-setup.ask-pin"
               action="">
-          <p class="message"
-             i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"
-             i18n-value-1="<b>"
-             i18n-value-2="</b>"></p>
+          <p class="message">
+            <span i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"
+                  i18n-value-1="<b>"
+                  i18n-value-2="</b>"></span>
+            <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=1649523"
+               target="_blank"
+               i18n-content="WHY_IS_THIS_SAFE"></a>
+          </p>
           <table id="set-pin-table">
             <tr>
               <td class="table-label">
@@ -292,21 +296,17 @@ found in the LICENSE file.
               </td>
             <tr>
           </table>
+          <div id="daemon-pin-error-div" class="message centered" hidden>
+            <span id="daemon-pin-error-message" class="error-state">
+            </span>
+          </div>
           <div id="usagestats-consent" hidden>
             <label class="checkbox-label">
               <input id="usagestats-consent-checkbox" type="checkbox">
               <span i18n-content="HOST_SETUP_CRASH_REPORTING_MESSAGE"></span>
             </label>
           </div>
-          <div id="daemon-pin-error-div" class="message centered" hidden>
-            <span id="daemon-pin-error-message" class="error-state">
-            </span>
-          </div>
           <div class="box">
-            <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=1649523"
-               target="_blank"
-               id="why-is-this-safe"
-               i18n-content="WHY_IS_THIS_SAFE"></a>
             <div class="box-spacer"></div>
             <button id="daemon-pin-ok" type="submit" i18n-content="OK">
             </button>

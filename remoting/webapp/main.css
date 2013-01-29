@@ -570,7 +570,6 @@ button {
 
 #set-pin-table td {
   border-bottom: 6px solid transparent;
-  text-align: right;
 }
 
 #top-secondary {
@@ -579,11 +578,6 @@ button {
 
 #webapp-description {
   margin-bottom: 10px;
-}
-
-#why-is-this-safe {
-  display: inline-block;
-  margin-top: 7px;
 }
 
 * {
