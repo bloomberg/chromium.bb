@@ -46,7 +46,8 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       align_arrow_and_shortcut(false),
       offset_context_menus(false),
       native_theme(theme),
-      show_delay(400) {
+      show_delay(400),
+      corner_radius(0) {
   // Use 40px tall menu items when running in touch optimized mode.
   // For Windows use 40px tall menu items when running in touch optimized mode.
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {

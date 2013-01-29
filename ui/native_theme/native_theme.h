@@ -135,6 +135,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool has_gutter;
   };
 
+  struct MenuBackgroundExtraParams {
+    int corner_radius;
+  };
+
   struct ProgressBarExtraParams {
     double animated_seconds;
     bool determinate;
@@ -190,6 +194,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     MenuItemExtraParams menu_item;
     MenuListExtraParams menu_list;
     MenuSeparatorExtraParams menu_separator;
+    MenuBackgroundExtraParams menu_background;
     ProgressBarExtraParams progress_bar;
     ScrollbarArrowExtraParams scrollbar_arrow;
     ScrollbarTrackExtraParams scrollbar_track;

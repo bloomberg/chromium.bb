@@ -9,6 +9,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -193,9 +194,28 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
   return kInvalidColorIdColor;
 }
 
-void NativeThemeAura::PaintMenuPopupBackground(SkCanvas* canvas,
-                                               const gfx::Size& size) const {
-  canvas->drawColor(kMenuBackgroundColor, SkXfermode::kSrc_Mode);
+void NativeThemeAura::PaintMenuPopupBackground(
+    SkCanvas* canvas,
+    const gfx::Size& size,
+    const MenuBackgroundExtraParams& menu_background) const {
+  if (menu_background.corner_radius > 0) {
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(kMenuBackgroundColor);
+
+    gfx::Path path;
+    SkRect rect = SkRect::MakeWH(SkIntToScalar(size.width()),
+                                 SkIntToScalar(size.height()));
+    SkScalar radius = SkIntToScalar(menu_background.corner_radius);
+    SkScalar radii[8] = {radius, radius, radius, radius,
+                         radius, radius, radius, radius};
+    path.addRoundRect(rect, radii);
+
+    canvas->drawPath(path, paint);
+  } else {
+    canvas->drawColor(kMenuBackgroundColor, SkXfermode::kSrc_Mode);
+  }
 }
 
 void NativeThemeAura::PaintScrollbarTrack(

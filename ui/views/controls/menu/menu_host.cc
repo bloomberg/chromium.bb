@@ -36,16 +36,17 @@ void MenuHost::InitMenuHost(Widget* parent,
   params.has_dropshadow = true;
   params.parent = parent ? parent->GetNativeView() : NULL;
   params.bounds = bounds;
+
+  const MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  const MenuConfig& menu_config = submenu_->GetMenuItem()->GetMenuConfig();
+  if (menu_controller && menu_config.corner_radius > 0)
+    params.transparent = true;
   Init(params);
 
-  if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
-    // TODO(yefim): Investigate it more on aura.
-    gfx::Path path;
-    RoundRectPainter::CreateRoundRectPath(bounds, &path);
-    SetShape(path.CreateNativeRegion());
-  }
-
   SetContentsView(contents_view);
+  if (menu_controller && menu_config.corner_radius > 0)
+    SetOpacity(0);
   ShowMenuHost(do_capture);
 }
 

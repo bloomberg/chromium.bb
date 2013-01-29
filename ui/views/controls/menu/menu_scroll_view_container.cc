@@ -26,6 +26,8 @@ namespace views {
 
 namespace {
 
+static const int kBorderPaddingDueToRoundedCorners = 1;
+
 // MenuScrollButton ------------------------------------------------------------
 
 // MenuScrollButton is used for the scroll buttons when not all menu items fit
@@ -175,20 +177,21 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   const MenuConfig& menu_config =
       content_view_->GetMenuItem()->GetMenuConfig();
 
+  int padding = menu_config.corner_radius > 0 ?
+        kBorderPaddingDueToRoundedCorners : 0;
+  int top = menu_config.menu_vertical_border_size + padding;
+  int left = menu_config.menu_horizontal_border_size + padding;
+  int bottom = menu_config.menu_vertical_border_size + padding;
+  int right = menu_config.menu_horizontal_border_size + padding;
+
   if (NativeTheme::IsNewMenuStyleEnabled()) {
     set_border(views::Border::CreateBorderPainter(
         new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
-                ui::NativeTheme::kColorId_MenuBorderColor)),
-        gfx::Insets(menu_config.menu_vertical_border_size,
-                    menu_config.menu_horizontal_border_size,
-                    menu_config.menu_vertical_border_size,
-                    menu_config.menu_horizontal_border_size)));
+                ui::NativeTheme::kColorId_MenuBorderColor),
+            menu_config.corner_radius),
+            gfx::Insets(top, left, bottom, right)));
   } else {
-    set_border(
-        Border::CreateEmptyBorder(menu_config.menu_vertical_border_size,
-                                  menu_config.menu_horizontal_border_size,
-                                  menu_config.menu_vertical_border_size,
-                                  menu_config.menu_horizontal_border_size));
+    set_border(Border::CreateEmptyBorder(top, left, bottom, right));
   }
 }
 
@@ -200,6 +203,8 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
 
   gfx::Rect bounds(0, 0, width(), height());
   NativeTheme::ExtraParams extra;
+  const MenuConfig& menu_config = content_view_->GetMenuItem()->GetMenuConfig();
+  extra.menu_background.corner_radius = menu_config.corner_radius;
   GetNativeTheme()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuPopupBackground, NativeTheme::kNormal, bounds, extra);
 }

@@ -14,6 +14,14 @@
 
 namespace views {
 
+namespace {
+#if defined(OS_WIN)
+static const int kMenuCornerRadiusForAura = 0;
+#else
+static const int kMenuCornerRadiusForAura = 2;
+#endif
+}  // namespace
+
 #if !defined(OS_WIN)
 void MenuConfig::Init(const ui::NativeTheme* theme) {
   InitAura();
@@ -47,6 +55,7 @@ void MenuConfig::InitAura() {
   always_use_icon_to_label_padding = true;
   align_arrow_and_shortcut = true;
   offset_context_menus = true;
+  corner_radius = kMenuCornerRadiusForAura;
 }
 
 #if !defined(OS_WIN)

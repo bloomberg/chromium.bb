@@ -22,8 +22,10 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
 
   // Overridden from NativeThemeBase:
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
-  virtual void PaintMenuPopupBackground(SkCanvas* canvas,
-                                        const gfx::Size& size) const OVERRIDE;
+  virtual void PaintMenuPopupBackground(
+      SkCanvas* canvas,
+      const gfx::Size& size,
+      const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
   virtual void PaintScrollbarTrack(
       SkCanvas* canvas,
       Part part,

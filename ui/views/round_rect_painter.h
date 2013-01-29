@@ -20,17 +20,15 @@ namespace views {
 // Painter to draw a border with rounded corners.
 class VIEWS_EXPORT RoundRectPainter : public Painter {
  public:
-  explicit RoundRectPainter(SkColor border_color);
+  RoundRectPainter(SkColor border_color, int corner_radius);
   virtual ~RoundRectPainter();
 
   // Painter overrides:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
-  // Creates |path| for the same rectangle Paint() will draw.
-  static void CreateRoundRectPath(const gfx::Rect& bounds, gfx::Path* path);
-
  private:
   const SkColor border_color_;
+  const int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundRectPainter);
 };

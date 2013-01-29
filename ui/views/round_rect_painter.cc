@@ -10,10 +10,9 @@
 
 namespace views {
 
-static const int kRadius = 2;
-
-RoundRectPainter::RoundRectPainter(SkColor border_color)
-    : border_color_(border_color) {
+RoundRectPainter::RoundRectPainter(SkColor border_color, int corner_radius)
+    : border_color_(border_color),
+      corner_radius_(corner_radius) {
 }
 
 RoundRectPainter::~RoundRectPainter() {
@@ -29,19 +28,8 @@ void RoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   rect.Inset(0, 0, 1, 1);
   SkRect skia_rect = gfx::RectToSkRect(rect);
   skia_rect.offset(.5, .5);
-  canvas->sk_canvas()->drawRoundRect(skia_rect, SkIntToScalar(kRadius),
-      SkIntToScalar(kRadius), paint);
-}
-
-// static
-void RoundRectPainter::CreateRoundRectPath(const gfx::Rect& bounds,
-                                           gfx::Path* path) {
-  SkRect rect = SkRect::MakeWH(SkIntToScalar(bounds.width()),
-                               SkIntToScalar(bounds.height()));
-  SkScalar radius = SkIntToScalar(kRadius);
-  SkScalar radii[8] = {radius, radius, radius, radius,
-                       radius, radius, radius, radius};
-  path->addRoundRect(rect, radii);
+  canvas->sk_canvas()->drawRoundRect(skia_rect, SkIntToScalar(corner_radius_),
+      SkIntToScalar(corner_radius_), paint);
 }
 
 }  // namespace views
