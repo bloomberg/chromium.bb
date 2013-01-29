@@ -1155,7 +1155,6 @@ bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
       return !event.IsAltDown() && event.IsControlDown();
 
     case ui::VKEY_BACK:
-    case ui::VKEY_OEM_PLUS:
       return true;
 
     default:
