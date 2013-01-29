@@ -355,6 +355,11 @@ void WebUIBrowserTest::CleanUpOnMainThread() {
   content::WebUIControllerFactory::UnregisterFactoryForTesting(
       test_factory_.get());
 
+  // This is needed to avoid a debug assert after the test completes, see stack
+  // trace in http://crrev.com/179347
+  content::WebUIControllerFactory::RegisterFactory(
+      ChromeWebUIControllerFactory::GetInstance());
+
   test_factory_.reset();
 }
 
