@@ -12,6 +12,7 @@ namespace app_list {
 class AppListItemModel;
 class AppListModel;
 class SearchResult;
+class SigninDelegate;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
@@ -21,6 +22,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked to set the model that AppListView uses.
   // Note that AppListView owns the model.
   virtual void SetModel(AppListModel* model) = 0;
+
+  // Gets the SigninDelegate for the app list. Owned by the AppListViewDelegate.
+  virtual SigninDelegate* GetSigninDelegate() = 0;
 
   // Invoked when an AppListeItemModelView is activated by click or enter key.
   virtual void ActivateAppListItem(AppListItemModel* item,
