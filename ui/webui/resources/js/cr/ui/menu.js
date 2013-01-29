@@ -27,6 +27,11 @@ cr.define('cr.ui', function() {
     contextElement: null,
 
     /**
+     * Selector for children which are menu items.
+     */
+    menuItemSelector: '*',
+
+    /**
      * Initializes the menu element.
      */
     decorate: function() {
@@ -113,7 +118,7 @@ cr.define('cr.ui', function() {
     },
 
     get menuItems() {
-      return this.querySelectorAll('[role=menuitem]');
+      return this.querySelectorAll(this.menuItemSelector);
     },
 
     /**
@@ -223,7 +228,7 @@ cr.define('cr.ui', function() {
       var menuItems = this.menuItems;
 
       for (var i = 0, menuItem; menuItem = menuItems[i]; i++)
-        menuItems.updateCommand(node);
+        menuItem.updateCommand(node);
     }
   };
 
