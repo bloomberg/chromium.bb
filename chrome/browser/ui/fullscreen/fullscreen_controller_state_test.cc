@@ -16,6 +16,10 @@
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 FullscreenControllerStateTest::FullscreenControllerStateTest()
     : state_(STATE_NORMAL),
       reentrant_(false) {
@@ -293,7 +297,11 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
 
   switch (event) {
     case TOGGLE_FULLSCREEN:
+#if defined(OS_MACOSX)
+      GetFullscreenController()->TogglePresentationMode();
+#else
       GetFullscreenController()->ToggleFullscreenMode();
+#endif
       break;
     case TAB_FULLSCREEN_TRUE:
       GetFullscreenController()->ToggleFullscreenModeForTab(
@@ -343,7 +351,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
   switch (state_) {
     case STATE_NORMAL:
 #if defined(OS_MACOSX)
-      EXPECT_FALSE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
+          << GetAndClearDebugLog();
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
 #endif
       EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser())
@@ -355,7 +365,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
     case STATE_BROWSER_FULLSCREEN_NO_CHROME:
 #if defined(OS_MACOSX)
-      EXPECT_FALSE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
+          << GetAndClearDebugLog();
+      EXPECT_TRUE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
 #endif
       EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser())
@@ -367,7 +379,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
 #if defined(OS_WIN)
     case STATE_METRO_SNAP:
-      // No expectation for InPresentationMode.
+      // http://crbug.com/169138
+      // No expectation for IsFullscreenWithChrome() or
+      // IsFullscreenWithoutChrome()
 
       // TODO(scheib) IsFullscreenForBrowser and IsFullscreenForTabOrPending
       // are returning true and false in interactive tests with real window.
@@ -382,7 +396,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
 #endif
     case STATE_TAB_FULLSCREEN:
 #if defined(OS_MACOSX)
-      EXPECT_TRUE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
+          << GetAndClearDebugLog();
+      EXPECT_TRUE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
 #endif
       EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser())
@@ -394,7 +410,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
     case STATE_TAB_BROWSER_FULLSCREEN:
 #if defined(OS_MACOSX)
-      EXPECT_FALSE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
+          << GetAndClearDebugLog();
+      EXPECT_TRUE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
 #endif
       EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser())
@@ -406,7 +424,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
     case STATE_TO_NORMAL:
 #if defined(OS_MACOSX)
-      EXPECT_FALSE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
+          << GetAndClearDebugLog();
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
 #endif
       // No expectation for IsFullscreenForBrowser.
@@ -416,7 +436,9 @@ void FullscreenControllerStateTest::VerifyWindowState() {
       break;
     case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
 #if defined(OS_MACOSX)
-      EXPECT_FALSE(GetBrowser()->window()->InPresentationMode())
+      EXPECT_FALSE(GetBrowser()->window()->IsFullscreenWithChrome())
+          << GetAndClearDebugLog();
+      EXPECT_TRUE(GetBrowser()->window()->IsFullscreenWithoutChrome())
           << GetAndClearDebugLog();
       EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser())
           << GetAndClearDebugLog();

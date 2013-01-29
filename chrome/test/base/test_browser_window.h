@@ -120,11 +120,9 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void Paste() OVERRIDE {}
 #if defined(OS_MACOSX)
   virtual void OpenTabpose() OVERRIDE {}
-  virtual void EnterPresentationMode(
-      const GURL& url,
-      FullscreenExitBubbleType bubble_type) OVERRIDE {}
-  virtual void ExitPresentationMode() OVERRIDE {}
-  virtual bool InPresentationMode() OVERRIDE;
+  virtual void EnterFullscreenWithChrome() OVERRIDE {}
+  virtual bool IsFullscreenWithChrome() OVERRIDE;
+  virtual bool IsFullscreenWithoutChrome() OVERRIDE;
 #endif
 
   virtual gfx::Rect GetInstantBounds() OVERRIDE;

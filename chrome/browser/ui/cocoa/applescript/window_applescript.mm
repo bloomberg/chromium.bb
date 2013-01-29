@@ -249,20 +249,20 @@
 - (NSNumber*)presenting {
   BOOL presentingValue = NO;
   if (browser_->window())
-    presentingValue = browser_->window()->InPresentationMode();
+    presentingValue = browser_->window()->IsFullscreenWithoutChrome();
   return [NSNumber numberWithBool:presentingValue];
 }
 
 - (void)handlesEnterPresentationMode:(NSScriptCommand*)command {
   if (browser_->window()) {
-    browser_->window()->EnterPresentationMode(
+    browser_->window()->EnterFullscreen(
         GURL(), FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION);
   }
 }
 
 - (void)handlesExitPresentationMode:(NSScriptCommand*)command {
   if (browser_->window())
-    browser_->window()->ExitPresentationMode();
+    browser_->window()->ExitFullscreen();
 }
 
 @end

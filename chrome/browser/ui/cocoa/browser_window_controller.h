@@ -390,8 +390,7 @@ class WebContents;
 
 // Enters (or exits) fullscreen mode.  This method is safe to call on all OS
 // versions.
-- (void)enterFullscreenForURL:(const GURL&)url
-                   bubbleType:(FullscreenExitBubbleType)bubbleType;
+- (void)enterFullscreen;
 - (void)exitFullscreen;
 
 // Updates the contents of the fullscreen exit bubble with |url| and

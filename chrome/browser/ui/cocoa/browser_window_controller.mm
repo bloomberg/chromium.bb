@@ -2007,9 +2007,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // "Enter Full Screen" menu item.  On Snow Leopard, this function is never
 // called by the UI directly, but it provides the implementation for
 // |-setPresentationMode:|.
-- (void)setFullscreen:(BOOL)fullscreen
-                  url:(const GURL&)url
-           bubbleType:(FullscreenExitBubbleType)bubbleType {
+- (void)setFullscreen:(BOOL)fullscreen {
   if (fullscreen == [self isFullscreen])
     return;
 
@@ -2028,14 +2026,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
   }
 }
 
-- (void)enterFullscreenForURL:(const GURL&)url
-                   bubbleType:(FullscreenExitBubbleType)bubbleType {
-  [self setFullscreen:YES url:url bubbleType:bubbleType];
+- (void)enterFullscreen {
+  [self setFullscreen:YES];
 }
 
 - (void)exitFullscreen {
-  // url: and bubbleType: are ignored when leaving fullscreen.
-  [self setFullscreen:NO url:GURL() bubbleType:FEB_TYPE_NONE];
+  [self setFullscreen:NO];
 }
 
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
@@ -2065,7 +2061,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   // Presentation mode on Snow Leopard maps directly to fullscreen mode.
   if (base::mac::IsOSSnowLeopard()) {
-    [self setFullscreen:presentationMode url:url bubbleType:bubbleType];
+    [self setFullscreen:presentationMode];
     return;
   }
 

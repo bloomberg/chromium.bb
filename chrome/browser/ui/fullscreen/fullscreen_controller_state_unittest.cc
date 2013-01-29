@@ -51,11 +51,9 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   virtual bool IsInMetroSnapMode() const OVERRIDE;
 #endif
 #if defined(OS_MACOSX)
-  virtual void EnterPresentationMode(
-      const GURL& url,
-      FullscreenExitBubbleType bubble_type) OVERRIDE;
-  virtual void ExitPresentationMode() OVERRIDE;
-  virtual bool InPresentationMode() OVERRIDE;
+  virtual void EnterFullscreenWithChrome() OVERRIDE;
+  virtual bool IsFullscreenWithChrome() OVERRIDE;
+  virtual bool IsFullscreenWithoutChrome() OVERRIDE;
 #endif
 
   static const char* GetWindowStateString(WindowState state);
@@ -71,7 +69,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
 
  private:
   WindowState state_;
-  bool mac_presentation_mode_;
+  bool mac_with_chrome_mode_;
   Browser* browser_;
 
   // Causes reentrant calls to be made by calling
@@ -82,7 +80,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
 
 FullscreenControllerTestWindow::FullscreenControllerTestWindow()
     : state_(NORMAL),
-      mac_presentation_mode_(false),
+      mac_with_chrome_mode_(false),
       browser_(NULL),
       reentrant_(false) {
 }
@@ -93,6 +91,7 @@ void FullscreenControllerTestWindow::EnterFullscreen(
 }
 
 void FullscreenControllerTestWindow::EnterFullscreen() {
+  mac_with_chrome_mode_ = false;
   if (!IsFullscreen()) {
     state_ = TO_FULLSCREEN;
     ChangeWindowFullscreenStateIfReentrant();
@@ -102,7 +101,7 @@ void FullscreenControllerTestWindow::EnterFullscreen() {
 void FullscreenControllerTestWindow::ExitFullscreen() {
   if (IsFullscreen()) {
     state_ = TO_NORMAL;
-    mac_presentation_mode_ = false;
+    mac_with_chrome_mode_ = false;
     ChangeWindowFullscreenStateIfReentrant();
   }
 }
@@ -132,22 +131,17 @@ bool FullscreenControllerTestWindow::IsInMetroSnapMode() const {
 #endif
 
 #if defined(OS_MACOSX)
-void FullscreenControllerTestWindow::EnterPresentationMode(
-    const GURL& url,
-    FullscreenExitBubbleType bubble_type) {
-  mac_presentation_mode_ = true;
+void FullscreenControllerTestWindow::EnterFullscreenWithChrome() {
   EnterFullscreen();
+  mac_with_chrome_mode_ = true;
 }
 
-void FullscreenControllerTestWindow::ExitPresentationMode() {
-  if (InPresentationMode()) {
-    mac_presentation_mode_ = false;
-    ExitFullscreen();
-  }
+bool FullscreenControllerTestWindow::IsFullscreenWithChrome() {
+  return IsFullscreen() && mac_with_chrome_mode_;
 }
 
-bool FullscreenControllerTestWindow::InPresentationMode() {
-  return mac_presentation_mode_;
+bool FullscreenControllerTestWindow::IsFullscreenWithoutChrome() {
+  return IsFullscreen() && !mac_with_chrome_mode_;
 }
 #endif
 
@@ -317,6 +311,20 @@ Browser* FullscreenControllerStateUnitTest::GetBrowser() {
 
 // Tests -----------------------------------------------------------------------
 
+#define TEST_EVENT_INNER(state, event, reentrant, reentrant_id) \
+    TEST_F(FullscreenControllerStateUnitTest, \
+           state##__##event##reentrant_id) { \
+      AddTab(browser(), GURL(chrome::kAboutBlankURL)); \
+      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event, reentrant)) \
+          << GetAndClearDebugLog(); \
+    }
+    // Progress of tests can be examined by inserting the following line:
+    // LOG(INFO) << GetAndClearDebugLog(); }
+
+#define TEST_EVENT(state, event) \
+    TEST_EVENT_INNER(state, event, false, ); \
+    TEST_EVENT_INNER(state, event, true, _Reentrant);
+
 // Soak tests:
 
 // Tests all states with all permutations of multiple events to detect lingering
@@ -336,20 +344,6 @@ TEST_F(FullscreenControllerStateUnitTest, TransitionsForEachState) {
 
 
 // Individual tests for each pair of state and event:
-
-#define TEST_EVENT_INNER(state, event, reentrant, reentrant_id) \
-    TEST_F(FullscreenControllerStateUnitTest, \
-           state##__##event##reentrant_id) { \
-      AddTab(browser(), GURL(chrome::kAboutBlankURL)); \
-      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event, reentrant)) \
-          << GetAndClearDebugLog(); \
-    }
-    // Progress of tests can be examined by inserting the following line:
-    // LOG(INFO) << GetAndClearDebugLog(); }
-
-#define TEST_EVENT(state, event) \
-    TEST_EVENT_INNER(state, event, false, ); \
-    TEST_EVENT_INNER(state, event, true, _Reentrant);
 
 TEST_EVENT(STATE_NORMAL, TOGGLE_FULLSCREEN);
 TEST_EVENT(STATE_NORMAL, TAB_FULLSCREEN_TRUE);

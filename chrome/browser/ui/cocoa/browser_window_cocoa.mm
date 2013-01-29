@@ -339,8 +339,8 @@ void BrowserWindowCocoa::Restore() {
 
 void BrowserWindowCocoa::EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType bubble_type) {
-  [controller_ enterFullscreenForURL:url
-                          bubbleType:bubble_type];
+  [controller_ enterPresentationModeForURL:url
+                                bubbleType:bubble_type];
 }
 
 void BrowserWindowCocoa::ExitFullscreen() {
@@ -354,6 +354,8 @@ void BrowserWindowCocoa::UpdateFullscreenExitBubbleContent(
 }
 
 bool BrowserWindowCocoa::IsFullscreen() const {
+  if ([controller_ inPresentationMode])
+    CHECK([controller_ isFullscreen]);  // Presentation mode must be fullscreen.
   return [controller_ isFullscreen];
 }
 
@@ -586,19 +588,20 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
-void BrowserWindowCocoa::EnterPresentationMode(
-      const GURL& url,
-      FullscreenExitBubbleType bubble_type) {
-  [controller_ enterPresentationModeForURL:url
-                                bubbleType:bubble_type];
+void BrowserWindowCocoa::EnterFullscreenWithChrome() {
+  CHECK(base::mac::IsOSLionOrLater());
+  if ([controller_ inPresentationMode])
+    [controller_ exitPresentationMode];
+  else
+    [controller_ enterFullscreen];
 }
 
-void BrowserWindowCocoa::ExitPresentationMode() {
-  [controller_ exitPresentationMode];
+bool BrowserWindowCocoa::IsFullscreenWithChrome() {
+  return IsFullscreen() && ![controller_ inPresentationMode];
 }
 
-bool BrowserWindowCocoa::InPresentationMode() {
-  return [controller_ inPresentationMode];
+bool BrowserWindowCocoa::IsFullscreenWithoutChrome() {
+  return IsFullscreen() && [controller_ inPresentationMode];
 }
 
 gfx::Rect BrowserWindowCocoa::GetInstantBounds() {

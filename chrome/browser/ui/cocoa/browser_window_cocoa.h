@@ -127,11 +127,9 @@ class BrowserWindowCocoa :
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
   virtual void OpenTabpose() OVERRIDE;
-  virtual void EnterPresentationMode(
-      const GURL& url,
-      FullscreenExitBubbleType bubble_type) OVERRIDE;
-  virtual void ExitPresentationMode() OVERRIDE;
-  virtual bool InPresentationMode() OVERRIDE;
+  virtual void EnterFullscreenWithChrome() OVERRIDE;
+  virtual bool IsFullscreenWithChrome() OVERRIDE;
+  virtual bool IsFullscreenWithoutChrome() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;

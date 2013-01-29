@@ -24,6 +24,10 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using content::RenderViewHost;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -83,9 +87,6 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
 #endif
 
   bool in_browser_or_tab_fullscreen_mode = window_->IsFullscreen();
-#if defined(OS_MACOSX)
-  in_browser_or_tab_fullscreen_mode |= window_->InPresentationMode();
-#endif
 
   if (enter_fullscreen) {
     SetFullscreenedTab(web_contents);
@@ -252,9 +253,7 @@ void FullscreenController::WindowFullscreenStateChanged() {
   reentrant_window_state_change_call_check_ = true;
 
   bool exiting_fullscreen = !window_->IsFullscreen();
-#if defined(OS_MACOSX)
-  exiting_fullscreen &= !window_->InPresentationMode();
-#endif
+
   PostFullscreenChangeNotification(!exiting_fullscreen);
   if (exiting_fullscreen)
     NotifyTabOfExitIfNecessary();
@@ -275,10 +274,15 @@ bool FullscreenController::HandleUserPressedEscape() {
 }
 
 void FullscreenController::ExitTabOrBrowserFullscreenToPreviousState() {
-  if (IsFullscreenForTabOrPending())
+  if (IsFullscreenForTabOrPending()) {
     ExitTabFullscreenOrMouseLockIfNecessary();
-  else if (IsFullscreenForBrowser())
+  } else if (IsFullscreenForBrowser()) {
+#if defined(OS_MACOSX)
+    TogglePresentationMode();
+#else
     ToggleFullscreenMode();
+#endif
+  }
 }
 
 void FullscreenController::OnAcceptFullscreenPermission() {
@@ -501,6 +505,12 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
 #endif
 
   toggled_into_fullscreen_ = !window_->IsFullscreen();
+#if defined(OS_MACOSX)
+  // When a Mac user requests a toggle they may be transitioning from
+  // FullscreenWithoutChrome to FullscreenWithChrome.
+  if (!IsFullscreenForTabOrPending())
+    toggled_into_fullscreen_ |= window_->IsFullscreenWithoutChrome();
+#endif
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
@@ -519,19 +529,21 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
     content::RecordAction(UserMetricsAction("ToggleFullscreen"));
   }
   if (toggled_into_fullscreen_) {
+#if defined(OS_MACOSX)
+    CHECK(!for_tab);  // EnterFullscreenWithChrome invalid for tab fullscreen.
+    CHECK(base::mac::IsOSLionOrLater());
+    window_->EnterFullscreenWithChrome();
+#else
     window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
+#endif
   } else {
 #if defined(OS_MACOSX)
     // Mac windows report a state change instantly, and so we must also clear
     // tab_caused_fullscreen_ to match them else other logic using
     // tab_caused_fullscreen_ will be incorrect.
     NotifyTabOfExitIfNecessary();
-
-    if (window_->InPresentationMode() && !for_tab)
-      window_->ExitPresentationMode();
-    else
 #endif
-      window_->ExitFullscreen();
+    window_->ExitFullscreen();
     extension_caused_fullscreen_ = GURL();
   }
   UpdateFullscreenExitBubbleContent();
@@ -544,15 +556,15 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
 
 #if defined(OS_MACOSX)
 void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
-  toggled_into_fullscreen_ = !window_->InPresentationMode();
+  toggled_into_fullscreen_ = !window_->IsFullscreenWithoutChrome();
   GURL url;
   if (for_tab) {
     url = chrome::GetActiveWebContents(browser_)->GetURL();
     tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   }
-  if (!window_->InPresentationMode()) {
-    window_->EnterPresentationMode(url, GetFullscreenExitBubbleType());
+  if (!window_->IsFullscreenWithoutChrome()) {
+    window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
   } else {
     window_->ExitFullscreen();
 
