@@ -55,7 +55,7 @@ surface_to_from_global(void *data)
 
 	weston_surface_from_global_fixed(surface, wl_fixed_from_int(21),
 					 wl_fixed_from_int(100), &fx, &fy);
-	assert(fx = wl_fixed_from_int(16) && fy == wl_fixed_from_int(90));
+	assert(fx == wl_fixed_from_int(16) && fy == wl_fixed_from_int(90));
 
 	weston_surface_from_global(surface, 0, 0, &ix, &iy);
 	assert(ix == -5 && iy == -10);
