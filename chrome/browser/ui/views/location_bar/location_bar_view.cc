@@ -431,6 +431,9 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   if (star_view_ && !extensions::FeatureSwitch::action_box()->IsEnabled())
     star_view_->SetVisible(star_enabled);
 
+  if (action_box_button_view_)
+    action_box_button_view_->SetVisible(!model_->GetInputInProgress());
+
   string16 search_provider;
   if (!model_->GetInputInProgress() &&
       model_->WouldReplaceSearchURLWithSearchTerms()) {
@@ -742,7 +745,7 @@ void LocationBarView::Layout() {
         location_icon_view_);
   }
 
-  if (action_box_button_view_) {
+  if (action_box_button_view_ && action_box_button_view_->visible()) {
     right_decorations.AddDecoration(
         kVerticalEdgeThickness - ActionBoxButtonView::kBorderOverlap, 0, false,
         0, 0, 0, 0, action_box_button_view_);
