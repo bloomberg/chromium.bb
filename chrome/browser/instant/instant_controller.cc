@@ -559,8 +559,12 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
       // last_omnibox_text_. Clicking on the overlay commits what is currently
       // showing, so add in the gray text in that case.
       std::string query(UTF16ToUTF8(last_omnibox_text_));
-      if (type != INSTANT_COMMIT_PRESSED_ENTER)
+      if (type != INSTANT_COMMIT_PRESSED_ENTER) {
         query += UTF16ToUTF8(last_suggestion_.text);
+        // Update |last_omnibox_text_| so that the controller commits the proper
+        // query if the user focuses the omnibox and presses Enter.
+        last_omnibox_text_ += last_suggestion_.text;
+      }
       entry->SetVirtualURL(GURL(
           url + "#q=" +
           net::EscapeQueryParamValue(query, true)));
@@ -760,11 +764,14 @@ void InstantController::SetSuggestions(
 
   if (instant_tab_ && search_mode_.is_search_results() &&
       suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
+    // Update |last_omnibox_text_| so that the controller commits the proper
+    // query if the user focuses the omnibox and presses Enter.
+    last_omnibox_text_ = suggestion.text;
+    last_suggestion_ = InstantSuggestion();
+    last_match_was_search_ = suggestion.type == INSTANT_SUGGESTION_SEARCH;
     // This means a committed page in state search called setValue(). We should
     // update the omnibox to reflect what the search page says.
     browser_->SetInstantSuggestion(suggestion);
-    // Don't update last_omnibox_text_ or last_suggestion_ since the user is not
-    // currently editing text in the omnibox.
     return;
   }
 
