@@ -125,15 +125,15 @@ class CONTENT_EXPORT BrowserThread {
       const base::Closure& task,
       const base::Closure& reply);
 
-  template <typename ReturnType>
+  template <typename ReturnType, typename ReplyArgType>
   static bool PostTaskAndReplyWithResult(
       ID identifier,
       const tracked_objects::Location& from_here,
       const base::Callback<ReturnType(void)>& task,
-      const base::Callback<void(ReturnType)>& reply) {
+      const base::Callback<void(ReplyArgType)>& reply) {
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
         GetMessageLoopProxyForThread(identifier);
-    return base::PostTaskAndReplyWithResult<ReturnType>(
+    return base::PostTaskAndReplyWithResult(
         message_loop_proxy.get(), from_here, task, reply);
   }
 
