@@ -208,8 +208,7 @@ public abstract class AwContentsClient extends ContentViewClient {
     //             WebView specific methods that map directly to WebViewClient / WebChromeClient
     //--------------------------------------------------------------------------------------------
 
-    // TODO(boliu): Make this abstract.
-    public void getVisitedHistory(ValueCallback<String[]> callback) {}
+    public abstract void getVisitedHistory(ValueCallback<String[]> callback);
 
     public abstract void doUpdateVisitedHistory(String url, boolean isReload);
 
@@ -228,8 +227,7 @@ public abstract class AwContentsClient extends ContentViewClient {
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
 
-    // TODO(boliu): Make this abstract.
-    public void onReceivedLoginRequest(String realm, String account, String args) {}
+    public abstract void onReceivedLoginRequest(String realm, String account, String args);
 
     public abstract void onFormResubmission(Message dontResend, Message resend);
 
