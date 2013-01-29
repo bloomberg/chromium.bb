@@ -128,7 +128,7 @@ deps = {
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@c960eb11ccda80b10ed50be39df4f0663b371d1d',
     'src/tools/deps2git':
-        Var('git_url') + '/chromium/tools/deps2git.git@f8041c7e3dc3c6e295235c56c50d3bba0b618a28',
+        Var('git_url') + '/chromium/tools/deps2git.git@820cd92c9c2f28f60f4af8f4d73423d1d6ac2e9e',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@ca6c225d0059dd17b476c934e744a3c4f60e2df2',
     'src/tools/gyp':
@@ -136,7 +136,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
-        Var('git_url') + '/chromium/tools/swarm_client.git@e1e1bff58a907eeece3a70d9c2280d0ea45b7203',
+        Var('git_url') + '/chromium/tools/swarm_client.git@f14633beee7e5f54267a84ef6745f16862338f82',
     'src/v8':
         Var('git_url') + '/external/v8.git@c47dff5fc3b12ecc3a7a9fc61fbd02868548dde6',
     'src/webkit/media/crypto/ppapi/cdm':
