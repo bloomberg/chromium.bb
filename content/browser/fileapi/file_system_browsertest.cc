@@ -108,7 +108,13 @@ IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, AsyncOperations) {
   RunLayoutTest("async-operations.html");
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, CrossFilesystemOp) {
+#if defined(OS_WIN)
+// Flaky timeouts on windows.  http://crbug.com/172787
+# define MAYBE_CrossFilesystemOp DISABLED_CrossFilesystemOp
+#else
+# define MAYBE_CrossFilesystemOp CrossFilesystemOp
+#endif
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, MAYBE_CrossFilesystemOp) {
   RunLayoutTest("cross-filesystem-op.html");
 }
 
