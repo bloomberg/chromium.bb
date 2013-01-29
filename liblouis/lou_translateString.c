@@ -260,7 +260,12 @@ trace_translate (const char *tableList, const widechar * inbufx,
       srcSpacing[srcmax] = 0;
     }
   if (cursorPos != NULL)
+    {
+    if (outputPos != NULL) 
+    *cursorPos = outputPos[*cursorPos];
+    else
     *cursorPos = cursorPosition;
+    }
   if (rulesLen != NULL)
     *rulesLen = appliedRulesCount;
   return goodTrans;
