@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        color: white;
+        background-color: black;
+      }
+
+      #table { display: table; }
+      #table > div { display: table-row; }
+      #table > div > div { display: table-cell; }
+    </style>
+  </head>
+  <body onload="main()">
+    <div id="buttons"></div>
+    <div id="table">
+      <div>
+        <div>Image</div>
+        <div id="video_header"></div>
+      </div>
+      <div>
+        <div><img src="blackwhite.png"></div>
+        <div><video autoplay></video></div>
+      </div>
+    </div>
+
+    <p>
+      TODO(scherkus): Expand this test to use &lt;canvas&gt; to verify
+      pixel values. For now we only test playability.
+    </p>
+
+    <script>
+      function loadVideo(name) {
+        var videoElem = document.querySelector('video');
+        videoElem.src = 'blackwhite_' + name;
+
+        var headerElem = document.getElementById('video_header');
+        headerElem.textContent = name;
+      }
+
+      function onVideoEvent(e) {
+        document.title = e.type.toUpperCase();
+      }
+
+      function main() {
+        // Programatically create buttons for each clip for manual testing.
+        var buttonsElem = document.getElementById('buttons');
+
+        function createButton(name) {
+          var buttonElem = document.createElement('button');
+          buttonElem.textContent = name;
+          buttonElem.addEventListener('click', function() {
+            loadVideo(name);
+          });
+          buttonsElem.appendChild(buttonElem);
+        }
+
+        var VIDEOS = [
+          'yuv420p.ogv',
+          'yuv422p.ogv',
+          'yuv444p.ogv',
+          'yuv420p.webm',
+          'yuv420p.mp4',
+          'yuvj420p.mp4',
+          'yuv422p.mp4',
+          'yuv444p.mp4',
+          'yuv420p.avi'
+        ];
+
+        for (var i = 0; i < VIDEOS.length; ++i) {
+          createButton(VIDEOS[i]);
+        }
+
+        // Video event handlers.
+        var videoElem = document.querySelector('video');
+        videoElem.addEventListener('error', onVideoEvent);
+        videoElem.addEventListener('ended', onVideoEvent);
+
+        // Check if a query parameter was provided for automated tests.
+        if (window.location.search.length > 1) {
+          loadVideo(window.location.search.substr(1));
+        }
+      }
+    </script>
+  </body>
+</html>
