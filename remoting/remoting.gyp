@@ -1219,6 +1219,7 @@
             '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ipc/ipc.gyp:ipc',
+            '../media/media.gyp:media',
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
@@ -1229,10 +1230,6 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_daemon_version.rc',
             'base/scoped_sc_handle_win.h',
-            '../media/video/capture/screen/win/desktop.cc',
-            '../media/video/capture/screen/win/desktop.h',
-            '../media/video/capture/screen/win/scoped_thread_desktop.cc',
-            '../media/video/capture/screen/win/scoped_thread_desktop.h',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
             'host/config_file_watcher.cc',
