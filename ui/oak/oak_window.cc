@@ -68,6 +68,7 @@ bool OakWindow::ShouldShowWindowIcon() const {
 
 void OakWindow::DeleteDelegate() {
   instance = NULL;
+  delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
