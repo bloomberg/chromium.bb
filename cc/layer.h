@@ -94,7 +94,6 @@ public:
 
     virtual void setNeedsDisplayRect(const gfx::RectF& dirtyRect);
     void setNeedsDisplay() { setNeedsDisplayRect(gfx::RectF(gfx::PointF(), bounds())); }
-    virtual bool needsDisplay() const;
 
     void setOpacity(float);
     float opacity() const;
@@ -294,6 +293,9 @@ public:
 
     // Constructs a LayerImpl of the correct runtime type for this Layer type.
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl);
+
+    bool needsDisplayForTesting() const { return m_needsDisplay; }
+    void resetNeedsDisplayForTesting() { m_needsDisplay = false; }
 
 protected:
     friend class LayerImpl;

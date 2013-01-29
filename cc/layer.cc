@@ -391,11 +391,6 @@ void Layer::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFi
         LayerTreeHost::setNeedsFilterContext(true);
 }
 
-bool Layer::needsDisplay() const
-{
-    return m_needsDisplay;
-}
-
 void Layer::setOpacity(float opacity)
 {
     if (m_opacity == opacity)
@@ -419,7 +414,7 @@ void Layer::setContentsOpaque(bool opaque)
     if (m_contentsOpaque == opaque)
         return;
     m_contentsOpaque = opaque;
-    setNeedsDisplay();
+    setNeedsCommit();
 }
 
 void Layer::setPosition(const gfx::PointF& position)
@@ -557,14 +552,12 @@ void Layer::setIsDrawable(bool isDrawable)
 void Layer::setNeedsDisplayRect(const gfx::RectF& dirtyRect)
 {
     m_updateRect.Union(dirtyRect);
+    m_needsDisplay = true;
 
     // Simply mark the contents as dirty. For non-root layers, the call to
     // setNeedsCommit will schedule a fresh compositing pass.
     // For the root layer, setNeedsCommit has no effect.
-    if (!dirtyRect.IsEmpty())
-        m_needsDisplay = true;
-
-    if (drawsContent())
+    if (drawsContent() && !m_updateRect.IsEmpty())
         setNeedsCommit();
 }
 
@@ -715,8 +708,10 @@ void Layer::forceAutomaticRasterScaleToBeRecomputed()
 {
     if (!m_automaticallyComputeRasterScale)
         return;
+    if (!m_rasterScale)
+        return;
     m_rasterScale = 0;
-    setNeedsDisplay();
+    setNeedsCommit();
 }
 
 void Layer::setBoundsContainPageScale(bool boundsContainPageScale)

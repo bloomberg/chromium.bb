@@ -305,6 +305,37 @@ TEST_F(LayerTest, replaceChildWithNewChild)
     EXPECT_FALSE(child4->parent());
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
+    EXPECT_FALSE(m_parent->needsDisplayForTesting());
+    EXPECT_FALSE(m_child1->needsDisplayForTesting());
+    EXPECT_FALSE(m_child2->needsDisplayForTesting());
+    EXPECT_FALSE(m_child3->needsDisplayForTesting());
+    EXPECT_FALSE(child4->needsDisplayForTesting());
+
+    ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
+    EXPECT_EQ(m_child1, m_parent->children()[0]);
+    EXPECT_EQ(child4, m_parent->children()[1]);
+    EXPECT_EQ(m_child3, m_parent->children()[2]);
+    EXPECT_EQ(m_parent.get(), child4->parent());
+
+    EXPECT_FALSE(m_child2->parent());
+}
+
+TEST_F(LayerTest, replaceChildWithNewChildAutomaticRasterScale)
+{
+    createSimpleTestTree();
+    scoped_refptr<Layer> child4 = Layer::create();
+    EXPECT_SET_NEEDS_COMMIT(1, m_child1->setAutomaticallyComputeRasterScale(true));
+    EXPECT_SET_NEEDS_COMMIT(1, m_child2->setAutomaticallyComputeRasterScale(true));
+    EXPECT_SET_NEEDS_COMMIT(1, m_child3->setAutomaticallyComputeRasterScale(true));
+
+    EXPECT_FALSE(child4->parent());
+
+    EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
+    EXPECT_FALSE(m_parent->needsDisplayForTesting());
+    EXPECT_FALSE(m_child1->needsDisplayForTesting());
+    EXPECT_FALSE(m_child2->needsDisplayForTesting());
+    EXPECT_FALSE(m_child3->needsDisplayForTesting());
+    EXPECT_FALSE(child4->needsDisplayForTesting());
 
     ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
     EXPECT_EQ(m_child1, m_parent->children()[0]);
@@ -466,51 +497,36 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
     gfx::RectF outOfBoundsDirtyRect = gfx::RectF(400, 405, 500, 502);
 
     // Before anything, testLayer should not be dirty.
-    EXPECT_FALSE(testLayer->needsDisplay());
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
 
     // This is just initialization, but setNeedsCommit behavior is verified anyway to avoid warnings.
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(testBounds));
-    testLayer = Layer::create();
-    testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
-    EXPECT_FALSE(testLayer->needsDisplay());
+    EXPECT_TRUE(testLayer->needsDisplayForTesting());
 
     // The real test begins here.
+    testLayer->resetNeedsDisplayForTesting();
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
 
-    // Case 1: needsDisplay flag should not change because of an empty dirty rect.
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(emptyDirtyRect));
-    EXPECT_FALSE(testLayer->needsDisplay());
-
-    // Case 2: basic.
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(dirty1));
-    EXPECT_TRUE(testLayer->needsDisplay());
-
-    // Case 3: a second dirty rect.
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(dirty2));
-    EXPECT_TRUE(testLayer->needsDisplay());
-
-    // Case 4: Layer should accept dirty rects that go beyond its bounds.
-    testLayer = Layer::create();
-    testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(testBounds));
+    // Case 1: Layer should accept dirty rects that go beyond its bounds.
+    testLayer->resetNeedsDisplayForTesting();
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplayRect(outOfBoundsDirtyRect));
-    EXPECT_TRUE(testLayer->needsDisplay());
+    EXPECT_TRUE(testLayer->needsDisplayForTesting());
+    testLayer->resetNeedsDisplayForTesting();
 
-    // Case 5: setNeedsDisplay() without the dirty rect arg.
-    testLayer = Layer::create();
-    testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(testBounds));
+    // Case 2: setNeedsDisplay() without the dirty rect arg.
+    testLayer->resetNeedsDisplayForTesting();
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNeedsDisplay());
-    EXPECT_TRUE(testLayer->needsDisplay());
+    EXPECT_TRUE(testLayer->needsDisplayForTesting());
+    testLayer->resetNeedsDisplayForTesting();
 
-    // Case 6: setNeedsDisplay() with a non-drawable layer
-    testLayer = Layer::create();
-    testLayer->setLayerTreeHost(m_layerTreeHost.get());
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setBounds(testBounds));
+    // Case 3: setNeedsDisplay() with a non-drawable layer
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(false));
+    testLayer->resetNeedsDisplayForTesting();
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
     EXPECT_SET_NEEDS_COMMIT(0, testLayer->setNeedsDisplayRect(dirty1));
-    EXPECT_TRUE(testLayer->needsDisplay());
+    EXPECT_TRUE(testLayer->needsDisplayForTesting());
 }
 
 TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
@@ -522,7 +538,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     scoped_refptr<Layer> dummyLayer = Layer::create(); // just a dummy layer for this test case.
 
     // sanity check of initial test condition
-    EXPECT_FALSE(testLayer->needsDisplay());
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
 
     // Next, test properties that should call setNeedsCommit (but not setNeedsDisplay)
     // All properties need to be set to new values in order for setNeedsCommit to be called.
@@ -549,11 +565,27 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setReplicaLayer(dummyLayer.get()));
 
     // The above tests should not have caused a change to the needsDisplay flag.
-    EXPECT_FALSE(testLayer->needsDisplay());
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
+}
 
-    // Test properties that should call setNeedsDisplay and setNeedsCommit
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(gfx::Size(5, 10)));
-    EXPECT_TRUE(testLayer->needsDisplay());
+TEST_F(LayerTest, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds)
+{
+    scoped_refptr<Layer> testLayer = Layer::create();
+    testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setIsDrawable(true));
+
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(gfx::Size(0, 10)));
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(gfx::Size(10, 10)));
+    EXPECT_TRUE(testLayer->needsDisplayForTesting());
+
+    testLayer->resetNeedsDisplayForTesting();
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
+
+    // Calling setBounds only invalidates on the first time.
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setBounds(gfx::Size(7, 10)));
+    EXPECT_FALSE(testLayer->needsDisplayForTesting());
 }
 
 TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
@@ -837,26 +869,6 @@ TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
 
     // Case 2: with a layerTreeHost, the animation should be accepted.
     EXPECT_TRUE(addTestAnimation(layer.get()));
-}
-
-class MockLayer : public Layer {
-public:
-    bool needsDisplay() const { return m_needsDisplay; }
-
-private:
-    virtual ~MockLayer()
-    {
-    }
-};
-
-TEST(LayerTestWithoutFixture, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds)
-{
-    scoped_refptr<MockLayer> layer(new MockLayer);
-    EXPECT_FALSE(layer->needsDisplay());
-    layer->setBounds(gfx::Size(0, 10));
-    EXPECT_FALSE(layer->needsDisplay());
-    layer->setBounds(gfx::Size(10, 10));
-    EXPECT_TRUE(layer->needsDisplay());
 }
 
 }  // namespace
