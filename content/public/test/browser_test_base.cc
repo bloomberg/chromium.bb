@@ -27,8 +27,12 @@ namespace {
 // OS. See http://crbug.com/141302.
 static int g_browser_process_pid;
 static void DumpStackTraceSignalHandler(int signal) {
-  if (g_browser_process_pid == base::GetCurrentProcId())
+  if (g_browser_process_pid == base::GetCurrentProcId()) {
+    logging::RawLog(logging::LOG_ERROR,
+                    "BrowserTestBase signal handler received SIGTERM. "
+                    "Backtrace:\n");
     base::debug::StackTrace().PrintBacktrace();
+  }
   _exit(128 + signal);
 }
 #endif  // defined(OS_POSIX)
