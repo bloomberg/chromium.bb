@@ -52,23 +52,9 @@ void CopyResultFromGetChangestampCallback(
 }  // namespace
 
 class DriveResourceMetadataTest : public testing::Test {
- public:
+ protected:
   DriveResourceMetadataTest();
 
- protected:
-  // Creates a DriveEntryProto.
-  DriveEntryProto CreateDriveEntryProto(int sequence_id,
-                                        bool is_directory,
-                                        const std::string& parent_resource_id);
-
-  // Adds a DriveEntryProto to the metadata tree. Returns true on success.
-  bool AddDriveEntryProto(int sequence_id,
-                          bool is_directory,
-                          const std::string& parent_resource_id);
-
-  DriveResourceMetadata resource_metadata_;
-
- private:
   // Creates the following files/directories
   // drive/dir1/
   // drive/dir2/
@@ -80,45 +66,72 @@ class DriveResourceMetadataTest : public testing::Test {
   // drive/dir2/file8
   // drive/dir1/dir3/file9
   // drive/dir1/dir3/file10
-  void Init();
+  static void Init(DriveResourceMetadataInterface* resource_metadata);
 
+  // Creates a DriveEntryProto.
+  static DriveEntryProto CreateDriveEntryProto(
+      int sequence_id,
+      bool is_directory,
+      const std::string& parent_resource_id);
+
+  // Adds a DriveEntryProto to the metadata tree. Returns true on success.
+  static bool AddDriveEntryProto(
+      DriveResourceMetadataInterface* resource_metadata,
+      int sequence_id,
+      bool is_directory,
+      const std::string& parent_resource_id);
+
+  scoped_ptr<DriveResourceMetadataInterface> resource_metadata_;
+
+ private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 
 DriveResourceMetadataTest::DriveResourceMetadataTest()
-    : resource_metadata_(kTestRootResourceId),
-      ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  Init();
+    : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  resource_metadata_.reset(new DriveResourceMetadata(kTestRootResourceId));
+
+  Init(resource_metadata_.get());
 }
 
-void DriveResourceMetadataTest::Init() {
+// static
+void DriveResourceMetadataTest::Init(
+    DriveResourceMetadataInterface* resource_metadata) {
   int sequence_id = 1;
   ASSERT_TRUE(AddDriveEntryProto(
-      sequence_id++, true, kTestRootResourceId));
+      resource_metadata, sequence_id++, true, kTestRootResourceId));
   ASSERT_TRUE(AddDriveEntryProto(
-      sequence_id++, true, kTestRootResourceId));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir1"));
+      resource_metadata, sequence_id++, true, kTestRootResourceId));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, true, "resource_id:dir1"));
 
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir1"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir1"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir1"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir1"));
 
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir2"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir2"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir2"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir2"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir2"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir2"));
 
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir3"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, false, "resource_id:dir3"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir3"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata, sequence_id++, false, "resource_id:dir3"));
 }
 
+// static
 DriveEntryProto DriveResourceMetadataTest::CreateDriveEntryProto(
     int sequence_id,
     bool is_directory,
     const std::string& parent_resource_id) {
   DriveEntryProto entry_proto;
   const std::string sequence_id_str = base::IntToString(sequence_id);
-  const std::string title = (is_directory ? "dir" : "file") +
-                                sequence_id_str;
+  const std::string title = (is_directory ? "dir" : "file") + sequence_id_str;
   const std::string resource_id = "resource_id:" + title;
   entry_proto.set_title(title);
   entry_proto.set_resource_id(resource_id);
@@ -137,6 +150,7 @@ DriveEntryProto DriveResourceMetadataTest::CreateDriveEntryProto(
 }
 
 bool DriveResourceMetadataTest::AddDriveEntryProto(
+    DriveResourceMetadataInterface* resource_metadata,
     int sequence_id,
     bool is_directory,
     const std::string& parent_resource_id) {
@@ -146,7 +160,7 @@ bool DriveResourceMetadataTest::AddDriveEntryProto(
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath drive_file_path;
 
-  resource_metadata_.AddEntryToParent(
+  resource_metadata->AddEntryToParent(
       entry_proto,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -234,7 +248,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       "resource_id:file4",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -247,7 +261,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
   // Confirm that a non existing file is not found.
   error = DRIVE_FILE_ERROR_FAILED;
   entry_proto.reset();
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       "file:non_existing",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -260,7 +274,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that an existing file is found.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -272,7 +286,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that a non existing file is not found.
   error = DRIVE_FILE_ERROR_FAILED;
   entry_proto.reset();
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/non_existing"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -285,7 +299,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that an existing directory is found.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
-  resource_metadata_.ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
@@ -307,7 +321,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that a non existing directory is not found.
   error = DRIVE_FILE_ERROR_FAILED;
   entries.reset();
-  resource_metadata_.ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/non_existing"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
@@ -318,7 +332,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that reading a file results in DRIVE_FILE_ERROR_NOT_A_DIRECTORY.
   error = DRIVE_FILE_ERROR_FAILED;
   entries.reset();
-  resource_metadata_.ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
@@ -330,7 +344,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
 TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
   // Confirm that existing two files are found.
   scoped_ptr<EntryInfoPairResult> pair_result;
-  resource_metadata_.GetEntryInfoPairByPaths(
+  resource_metadata_->GetEntryInfoPairByPaths(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       FilePath::FromUTF8Unsafe("drive/dir1/file5"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
@@ -351,7 +365,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
 
   // Confirm that the first non existent file is not found.
   pair_result.reset();
-  resource_metadata_.GetEntryInfoPairByPaths(
+  resource_metadata_->GetEntryInfoPairByPaths(
       FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
       FilePath::FromUTF8Unsafe("drive/dir1/file5"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
@@ -369,7 +383,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
 
   // Confirm that the second non existent file is not found.
   pair_result.reset();
-  resource_metadata_.GetEntryInfoPairByPaths(
+  resource_metadata_->GetEntryInfoPairByPaths(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
@@ -395,12 +409,15 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
+  DriveResourceMetadata resource_metadata(kTestRootResourceId);
+  Init(&resource_metadata);
+
   FilePath db_path(DriveCache::GetCacheRootPath(&profile).
       AppendASCII("meta").AppendASCII("resource_metadata.db"));
   // InitFromDB should fail with DRIVE_FILE_ERROR_NOT_FOUND since the db
   // doesn't exist.
   DriveFileError db_error;
-  resource_metadata_.InitFromDB(
+  resource_metadata.InitFromDB(
       db_path,
       blocking_task_runner,
       base::Bind(&CopyResultsFromInitFromDBCallback, &db_error));
@@ -411,11 +428,11 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
   // We cannot call SaveToDB without first having called InitFromDB because
   // InitFrom initializes the db_path and blocking_task_runner needed by
   // SaveToDB.
-  resource_metadata_.SaveToDB();
+  resource_metadata.SaveToDB();
   google_apis::test_util::RunBlockingPoolTask();
 
   // InitFromDB should fail with DRIVE_FILE_ERROR_IN_USE.
-  resource_metadata_.InitFromDB(
+  resource_metadata.InitFromDB(
       db_path,
       blocking_task_runner,
       base::Bind(&CopyResultsFromInitFromDBCallback, &db_error));
@@ -450,7 +467,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   FilePath drive_file_path;
   const std::string file9_resource_id = "resource_id:file9";
   scoped_ptr<DriveEntryProto> entry_proto;
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       file9_resource_id,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -461,7 +478,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ("file9", entry_proto->base_name());
 
   // Remove file9 using RemoveEntryFromParent.
-  resource_metadata_.RemoveEntryFromParent(
+  resource_metadata_->RemoveEntryFromParent(
       file9_resource_id,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -470,7 +487,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
 
   // file9 should no longer exist.
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       file9_resource_id,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -480,7 +497,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
 
   // Look for dir3.
   const std::string dir3_resource_id = "resource_id:dir3";
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       dir3_resource_id,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -491,7 +508,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ("dir3", entry_proto->base_name());
 
   // Remove dir3 using RemoveEntryFromParent.
-  resource_metadata_.RemoveEntryFromParent(
+  resource_metadata_->RemoveEntryFromParent(
       dir3_resource_id,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -500,7 +517,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1"), drive_file_path);
 
   // dir3 should no longer exist.
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       dir3_resource_id,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -509,7 +526,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_FALSE(entry_proto.get());
 
   // Remove unknown resource_id using RemoveEntryFromParent.
-  resource_metadata_.RemoveEntryFromParent(
+  resource_metadata_->RemoveEntryFromParent(
       "foo",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -517,7 +534,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   // Try removing root. This should fail.
-  resource_metadata_.RemoveEntryFromParent(
+  resource_metadata_->RemoveEntryFromParent(
       kTestRootResourceId,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -531,7 +548,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Move file8 to drive/dir1.
-  resource_metadata_.MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectory(
       FilePath::FromUTF8Unsafe("drive/dir2/file8"),
       FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -541,7 +558,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file8"), drive_file_path);
 
   // Look up the entry by its resource id and make sure it really moved.
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       "resource_id:file8",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -550,7 +567,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file8"), drive_file_path);
 
   // Move non-existent file to drive/dir1. This should fail.
-  resource_metadata_.MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectory(
       FilePath::FromUTF8Unsafe("drive/dir2/file8"),
       FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -560,7 +577,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath(), drive_file_path);
 
   // Move existing file to non-existent directory. This should fail.
-  resource_metadata_.MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectory(
       FilePath::FromUTF8Unsafe("drive/dir1/file8"),
       FilePath::FromUTF8Unsafe("drive/dir4"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -570,7 +587,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath(), drive_file_path);
 
   // Move existing file to existing file (non-directory). This should fail.
-  resource_metadata_.MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectory(
       FilePath::FromUTF8Unsafe("drive/dir1/file8"),
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -580,7 +597,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath(), drive_file_path);
 
   // Move the file to root.
-  resource_metadata_.MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectory(
       FilePath::FromUTF8Unsafe("drive/dir1/file8"),
       FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -590,7 +607,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/file8"), drive_file_path);
 
   // Move the file from root.
-  resource_metadata_.MoveEntryToDirectory(
+  resource_metadata_->MoveEntryToDirectory(
       FilePath::FromUTF8Unsafe("drive/file8"),
       FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -600,7 +617,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file8"), drive_file_path);
 
   // Make sure file is still ok.
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       "resource_id:file8",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -615,7 +632,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Rename file8 to file11.
-  resource_metadata_.RenameEntry(
+  resource_metadata_->RenameEntry(
       FilePath::FromUTF8Unsafe("drive/dir2/file8"),
       "file11",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -625,7 +642,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file11"), drive_file_path);
 
   // Lookup the file by resource id to make sure the file actually got renamed.
-  resource_metadata_.GetEntryInfoByResourceId(
+  resource_metadata_->GetEntryInfoByResourceId(
       "resource_id:file8",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -634,7 +651,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file11"), drive_file_path);
 
   // Rename to file7 to force a duplicate name.
-  resource_metadata_.RenameEntry(
+  resource_metadata_->RenameEntry(
       FilePath::FromUTF8Unsafe("drive/dir2/file11"),
       "file7",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -644,7 +661,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file7 (2)"), drive_file_path);
 
   // Rename to same name. This should fail.
-  resource_metadata_.RenameEntry(
+  resource_metadata_->RenameEntry(
       FilePath::FromUTF8Unsafe("drive/dir2/file7 (2)"),
       "file7 (2)",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -654,7 +671,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(FilePath(), drive_file_path);
 
   // Rename non-existent.
-  resource_metadata_.RenameEntry(
+  resource_metadata_->RenameEntry(
       FilePath::FromUTF8Unsafe("drive/dir2/file11"),
       "file11",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
@@ -670,7 +687,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Get file9.
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -687,7 +704,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   file_entry_proto.mutable_file_specific_info()->set_file_md5(updated_md5);
   file_entry_proto.set_title("file100");
   entry_proto.reset();
-  resource_metadata_.RefreshEntry(
+  resource_metadata_->RefreshEntry(
       file_entry_proto,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -702,7 +719,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
 
   // Make sure we get the same thing from GetEntryInfoByPath.
   entry_proto.reset();
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -715,7 +732,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
 
   // Get dir2.
   entry_proto.reset();
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -730,7 +747,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   dir_entry_proto.set_title("dir100");
   dir_entry_proto.set_parent_resource_id("resource_id:dir3");
   entry_proto.reset();
-  resource_metadata_.RefreshEntry(
+  resource_metadata_->RefreshEntry(
       dir_entry_proto,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -745,7 +762,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
 
   // Make sure the children have moved over. Test file6.
   entry_proto.reset();
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100/file6"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -755,7 +772,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   EXPECT_EQ("file6", entry_proto->base_name());
 
   // Make sure dir2 no longer exists.
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -771,7 +788,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Get root.
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -787,7 +804,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   DriveEntryProto dir_entry_proto(*entry_proto);
   dir_entry_proto.set_upload_url("http://root.upload.url/");
   entry_proto.reset();
-  resource_metadata_.RefreshEntry(
+  resource_metadata_->RefreshEntry(
       dir_entry_proto,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -802,7 +819,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
 
   // Make sure the children have moved over. Test file9.
   entry_proto.reset();
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -821,7 +838,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   FilePath drive_file_path;
 
   // Add to dir3.
-  resource_metadata_.AddEntryToParent(
+  resource_metadata_->AddEntryToParent(
       file_entry_proto,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -834,7 +851,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   DriveEntryProto file_entry_proto2 = CreateDriveEntryProto(
       sequence_id++, false, "");
 
-  resource_metadata_.AddEntryToParent(
+  resource_metadata_->AddEntryToParent(
       file_entry_proto2,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -846,7 +863,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   DriveEntryProto dir_entry_proto = CreateDriveEntryProto(
       sequence_id++, true, "resource_id:dir1");
 
-  resource_metadata_.AddEntryToParent(
+  resource_metadata_->AddEntryToParent(
       dir_entry_proto,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -858,7 +875,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   DriveEntryProto file_entry_proto3 = CreateDriveEntryProto(
       sequence_id++, false, "resource_id:invalid");
 
-  resource_metadata_.AddEntryToParent(
+  resource_metadata_->AddEntryToParent(
       file_entry_proto3,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -870,21 +887,21 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
   std::set<FilePath> child_directories;
 
   // file9: not a directory, so no children.
-  resource_metadata_.GetChildDirectories("resource_id:file9",
+  resource_metadata_->GetChildDirectories("resource_id:file9",
       base::Bind(&CopyResultFromGetChildDirectoriesCallback,
                  &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(child_directories.empty());
 
   // dir2: no child directories.
-  resource_metadata_.GetChildDirectories("resource_id:dir2",
+  resource_metadata_->GetChildDirectories("resource_id:dir2",
       base::Bind(&CopyResultFromGetChildDirectoriesCallback,
                  &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_TRUE(child_directories.empty());
 
   // dir1: dir3 is the only child
-  resource_metadata_.GetChildDirectories("resource_id:dir1",
+  resource_metadata_->GetChildDirectories("resource_id:dir1",
       base::Bind(&CopyResultFromGetChildDirectoriesCallback,
                  &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
@@ -902,16 +919,24 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
   // dir2/dir101/dir102/dir105/dir106
   // dir2/dir101/dir102/dir105/dir106/dir107
   int sequence_id = 100;
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir2"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir2"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir101"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir101"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir101"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir102"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir105"));
-  ASSERT_TRUE(AddDriveEntryProto(sequence_id++, true, "resource_id:dir106"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir2"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir2"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir101"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir101"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir101"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir102"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir105"));
+  ASSERT_TRUE(AddDriveEntryProto(
+      resource_metadata_.get(), sequence_id++, true, "resource_id:dir106"));
 
-  resource_metadata_.GetChildDirectories("resource_id:dir2",
+  resource_metadata_->GetChildDirectories("resource_id:dir2",
       base::Bind(&CopyResultFromGetChildDirectoriesCallback,
                  &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
@@ -929,7 +954,7 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   scoped_ptr<DriveEntryProtoVector> entries;
 
   // root has children.
-  resource_metadata_.ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
@@ -939,14 +964,14 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   ASSERT_FALSE(entries->empty());
 
   // remove all children.
-  resource_metadata_.RemoveAll(base::Bind(&base::DoNothing));
+  resource_metadata_->RemoveAll(base::Bind(&base::DoNothing));
   google_apis::test_util::RunBlockingPoolTask();
 
   FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // root should continue to exist.
-  resource_metadata_.GetEntryInfoByPath(
+  resource_metadata_->GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
@@ -958,7 +983,7 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
 
   // root should have no children.
-  resource_metadata_.ReadDirectoryByPath(
+  resource_metadata_->ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));

@@ -113,6 +113,8 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
 // Interface class for resource metadata storage.
 class DriveResourceMetadataInterface {
  public:
+  virtual ~DriveResourceMetadataInterface() {}
+
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
   virtual void GetLargestChangestamp(
@@ -198,7 +200,6 @@ class DriveResourceMetadataInterface {
 
  protected:
   DriveResourceMetadataInterface() {}
-  virtual ~DriveResourceMetadataInterface() {}
 };
 
 // Storage for Drive Metadata.
