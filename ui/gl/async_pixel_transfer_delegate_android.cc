@@ -144,7 +144,6 @@ class TransferStateInternal
         needs_late_bind_(false),
         transfer_in_progress_(false),
         egl_image_(EGL_NO_IMAGE_KHR),
-        egl_image_created_sync_(EGL_NO_SYNC_KHR),
         wait_for_uploads_(wait_for_uploads),
         wait_for_egl_images_(wait_for_egl_images) {
     static const AsyncTexImage2DParams zero_params = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -182,7 +181,6 @@ class TransferStateInternal
     TRACE_EVENT0("gpu", "eglCreateImageKHR");
     DCHECK(texture_id);
     DCHECK_EQ(egl_image_, EGL_NO_IMAGE_KHR);
-    DCHECK_EQ(egl_image_created_sync_, EGL_NO_SYNC_KHR);
 
     EGLDisplay egl_display = eglGetCurrentDisplay();
     EGLContext egl_context = eglGetCurrentContext();
@@ -200,10 +198,6 @@ class TransferStateInternal
         egl_target,
         egl_buffer,
         egl_attrib_list);
-
-    if (wait_for_egl_images_)
-      egl_image_created_sync_ =
-          eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
   }
 
   void CreateEglImageOnUploadThread() {
@@ -218,14 +212,11 @@ class TransferStateInternal
   void WaitOnEglImageCreation() {
     // On Qualcomm, we need to wait on egl image creation before
     // doing the first upload (or the texture remains black).
-    if (egl_image_created_sync_ != EGL_NO_SYNC_KHR) {
-      TRACE_EVENT0("gpu", "eglWaitSync");
-      EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
-      EGLTimeKHR time = EGL_FOREVER_KHR;
-      EGLDisplay display = eglGetCurrentDisplay();
-      eglClientWaitSyncKHR(display, egl_image_created_sync_, flags, time);
-      eglDestroySyncKHR(display, egl_image_created_sync_);
-      egl_image_created_sync_ = EGL_NO_SYNC_KHR;
+    // A fence after image creation didn't always work, but glFinish
+    // seems to always work, and this only happens on the upload thread.
+    if (wait_for_egl_images_) {
+      TRACE_EVENT0("gpu", "glFinish");
+      glFinish();
     }
   }
 
@@ -259,10 +250,6 @@ class TransferStateInternal
       EGLDisplay display = eglGetCurrentDisplay();
       eglDestroyImageKHR(display, egl_image_);
     }
-    if (egl_image_created_sync_ != EGL_NO_SYNC_KHR) {
-      EGLDisplay display = eglGetCurrentDisplay();
-      eglDestroySyncKHR(display, egl_image_created_sync_);
-    }
     if (thread_texture_id_) {
       transfer_message_loop_proxy()->PostTask(FROM_HERE,
           base::Bind(&DeleteTexture, thread_texture_id_));
@@ -289,7 +276,6 @@ class TransferStateInternal
   // every upload, but I found that didn't work, so this stores
   // one for the lifetime of the texture.
   EGLImageKHR egl_image_;
-  EGLSyncKHR egl_image_created_sync_;
 
   // Time spent performing last transfer.
   base::TimeDelta last_transfer_time_;
