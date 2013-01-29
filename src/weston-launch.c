@@ -556,6 +556,12 @@ main(int argc, char *argv[])
 	if (wl.pw == NULL)
 		error(1, errno, "failed to get username");
 
+	clearenv();
+	setenv("USER", wl.pw->pw_name, 1);
+	setenv("LOGNAME", wl.pw->pw_name, 1);
+	setenv("HOME", wl.pw->pw_dir, 1);
+	setenv("SHELL", wl.pw->pw_shell, 1);
+
 	if (!weston_launch_allowed(&wl))
 		error(1, 0, "Permission denied. You should either:\n"
 #ifdef HAVE_SYSTEMD_LOGIN
@@ -605,12 +611,6 @@ main(int argc, char *argv[])
 			sleep(sleep_fork);
 		}
 
-		if (new_user) {
-			setenv("USER", wl.pw->pw_name, 1);
-			setenv("LOGNAME", wl.pw->pw_name, 1);
-			setenv("HOME", wl.pw->pw_dir, 1);
-			setenv("SHELL", wl.pw->pw_shell, 1);
-		}
 		env = pam_getenvlist(wl.ph);
 		if (env) {
 			for (i = 0; env[i]; ++i) {
