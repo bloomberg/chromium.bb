@@ -109,6 +109,9 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
+  virtual void BeforeUnloadFired(content::WebContents* tab,
+                                 bool proceed,
+                                 bool* proceed_to_fire_unload) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);
@@ -128,6 +131,14 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   ui::WebDialogDelegate* delegate_;
 
   views::WebView* web_view_;
+
+  // Whether user is attempting to close the dialog and we are processing
+  // beforeunload event.
+  bool is_attempting_close_dialog_;
+
+  // Whether beforeunload event has been fired and we have finished processing
+  // beforeunload event.
+  bool before_unload_fired_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };
