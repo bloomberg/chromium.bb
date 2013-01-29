@@ -54,16 +54,23 @@ function failTest(msg) {
     failMessage = msg.target + '.' + msg.type;
   else
     failMessage = msg;
-  setDocTitle('FAILED');
+  setResultInTitle('FAILED');
 }
 
-function setDocTitle(title) {
-  document.title = title.toUpperCase();
+var titleChanged = false;
+function setResultInTitle(title) {
+  // If document title is 'ENDED', then update it with new title to possibly
+  // mark a test as failure.  Otherwise, keep the first title change in place.
+  if (!titleChanged || document.title.toUpperCase() == 'ENDED')
+    document.title = title.toUpperCase();
+  console.log('Set document title to: ' + title + ', updated title: ' +
+              document.title);
+  titleChanged = true;
 }
 
 function installTitleEventHandler(element, event) {
   element.addEventListener(event, function(e) {
-    setDocTitle(event.toString());
+    setResultInTitle(event.toString());
   }, false);
 }
 
@@ -108,7 +115,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
       video.webkitGenerateKeyRequest(keySystem, e.initData);
     }
     catch(error) {
-      setDocTitle("GenerateKeyRequestException");
+      setResultInTitle("GenerateKeyRequestException");
     }
   }
 

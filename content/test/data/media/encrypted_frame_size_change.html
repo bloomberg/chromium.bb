@@ -31,11 +31,11 @@
         video.addEventListener('pause', function() {
           video.addEventListener('seeked', function() {
             if (!firstVideoSeek) {
-              setDocTitle('One video seeked.');
+              console.log('One video seeked.');
               firstVideoSeek = true;
               return;
             }
-            setDocTitle('ENDED');
+            setResultInTitle('ENDED');
           });
           video.currentTime = 0.5;
         });
