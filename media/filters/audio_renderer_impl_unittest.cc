@@ -7,7 +7,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/test/mock_time_provider.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
 #include "media/base/gmock_callback_support.h"
@@ -22,7 +21,6 @@ using ::base::TimeDelta;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
-using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::NiceMock;
@@ -49,6 +47,10 @@ class AudioRendererImplTest : public ::testing::Test {
         .WillRepeatedly(Return(DemuxerStream::AUDIO));
     EXPECT_CALL(*demuxer_stream_, audio_decoder_config())
         .WillRepeatedly(ReturnRef(audio_config_));
+
+    // Stub out time.
+    renderer_->set_now_cb_for_testing(base::Bind(
+        &AudioRendererImplTest::GetTime, base::Unretained(this)));
 
     // Queue all reads from the decoder by default.
     ON_CALL(*decoder_, Read(_))
@@ -274,12 +276,6 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void EndOfStreamTest(float playback_rate) {
-    // Inject a mock time provider so we can control ended event execution.
-    StrictMock<base::MockTimeProvider> mock_time;
-    renderer_->set_time_provider_for_testing(
-        &base::MockTimeProvider::StaticNow);
-    EXPECT_CALL(mock_time, Now()).WillRepeatedly(Return(Time()));
-
     Initialize();
     Preroll();
     Play();
@@ -304,22 +300,19 @@ class AudioRendererImplTest : public ::testing::Test {
     // nor have a read until we drain the internal buffer.
     DeliverEndOfStream();
 
-    InSequence s;
-
-    // Advance the mock timer by 10% each time.
-    const int kUnendingCycles = 10;
-    for (int i = 1; i < kUnendingCycles; ++i) {
-      EXPECT_CALL(mock_time, Now()).Times(2).WillRepeatedly(Return(
-          Time() + (i * audio_play_time / kUnendingCycles)));
-      ConsumeBufferedData(bytes_buffered(), NULL);
-    }
-
-    // Advance clock such that audio should have completed playout and ensure
-    // the ended event fires.
-    EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time() + audio_play_time));
-    EXPECT_CALL(*this, OnEnded());
-    EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time()));
+    // Advance time half way without an ended expectation.
+    AdvanceTime(audio_play_time / 2);
     ConsumeBufferedData(bytes_buffered(), NULL);
+
+    // Advance time by other half and expect the ended event.
+    AdvanceTime(audio_play_time / 2);
+    EXPECT_CALL(*this, OnEnded());
+    ConsumeBufferedData(bytes_buffered(), NULL);
+  }
+
+  void AdvanceTime(TimeDelta time) {
+    base::AutoLock auto_lock(lock_);
+    time_ += time;
   }
 
   // Fixture members.
@@ -333,10 +326,18 @@ class AudioRendererImplTest : public ::testing::Test {
   MessageLoop message_loop_;
 
  private:
+  Time GetTime() {
+    base::AutoLock auto_lock(lock_);
+    return time_;
+  }
+
   void SaveReadCallback(const AudioDecoder::ReadCB& callback) {
     CHECK(read_cb_.is_null()) << "Overlapping reads are not permitted";
     read_cb_ = callback;
   }
+
+  base::Lock lock_;
+  Time time_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
 };
@@ -443,11 +444,6 @@ TEST_F(AudioRendererImplTest, Underflow) {
 }
 
 TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
-  StrictMock<base::MockTimeProvider> mock_time;
-  renderer_->set_time_provider_for_testing(
-      &base::MockTimeProvider::StaticNow);
-  EXPECT_CALL(mock_time, Now()).WillRepeatedly(Return(Time()));
-
   Initialize();
   Preroll();
   Play();
@@ -496,10 +492,8 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
   // fired the ended callback http://crbug.com/106641
   DeliverEndOfStream();
 
-  InSequence s;
-  EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time() + time_until_ended));
+  AdvanceTime(time_until_ended);
   EXPECT_CALL(*this, OnEnded());
-  EXPECT_CALL(mock_time, Now()).WillOnce(Return(Time()));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
 }

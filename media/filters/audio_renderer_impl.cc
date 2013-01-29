@@ -30,7 +30,7 @@ AudioRendererImpl::AudioRendererImpl(
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : sink_(sink),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
-      time_provider_(&base::Time::Now),
+      now_cb_(base::Bind(&base::Time::Now)),
       state_(kUninitialized),
       pending_read_(false),
       received_end_of_stream_(false),
@@ -68,7 +68,7 @@ void AudioRendererImpl::DoPlay() {
   DCHECK(sink_);
   {
     base::AutoLock auto_lock(lock_);
-    earliest_end_time_ = time_provider_();
+    earliest_end_time_ = now_cb_.Run();
   }
   sink_->Play();
 }
@@ -161,7 +161,7 @@ void AudioRendererImpl::Preroll(base::TimeDelta time,
 
     // |algorithm_| will request more reads.
     algorithm_->FlushBuffers();
-    earliest_end_time_ = time_provider_();
+    earliest_end_time_ = now_cb_.Run();
   }
 
   // Pause and flush the stream when we preroll to a new location.
@@ -517,7 +517,7 @@ uint32 AudioRendererImpl::FillBuffer(uint8* dest,
     //
     // Otherwise fill the buffer with whatever data we can send to the device.
     if (!algorithm_->CanFillBuffer() && received_end_of_stream_ &&
-        !rendered_end_of_stream_ && time_provider_() >= earliest_end_time_) {
+        !rendered_end_of_stream_ && now_cb_.Run() >= earliest_end_time_) {
       rendered_end_of_stream_ = true;
       ended_cb_.Run();
     } else if (!algorithm_->CanFillBuffer() && !received_end_of_stream_ &&
@@ -571,7 +571,7 @@ uint32 AudioRendererImpl::FillBuffer(uint8* dest,
     audio_time_buffered_ = max_time;
 
     UpdateEarliestEndTime_Locked(
-        frames_written, playback_delay, time_provider_());
+        frames_written, playback_delay, now_cb_.Run());
   }
 
   if (current_time != kNoTimestamp() && max_time != kNoTimestamp()) {

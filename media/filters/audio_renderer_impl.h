@@ -73,10 +73,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Initialize().
   void DisableUnderflowForTesting();
 
-  // Allows injection of a mock time provider for non-realtime testing.
-  typedef base::Time(TimeProvider)();
-  void set_time_provider_for_testing(TimeProvider* time_provider) {
-    time_provider_ = time_provider;
+  // Allows injection of a custom time callback for non-realtime testing.
+  typedef base::Callback<base::Time()> NowCB;
+  void set_now_cb_for_testing(const NowCB& now_cb) {
+    now_cb_ = now_cb;
   }
 
  protected:
@@ -191,8 +191,8 @@ class MEDIA_EXPORT AudioRendererImpl
   // Callback provided to Preroll().
   PipelineStatusCB preroll_cb_;
 
-  // Called as a proxy to base::Time::Now() or a mock time provider.
-  TimeProvider* time_provider_;
+  // Typically calls base::Time::Now() but can be overridden by a test.
+  NowCB now_cb_;
 
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
