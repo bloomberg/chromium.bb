@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/web_ui_browsertest.h"
+#include "chrome/browser/ui/webui/web_ui_browsertest.h"
 
 #include <string>
 #include <vector>
@@ -20,10 +20,10 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
@@ -320,16 +320,20 @@ base::LazyInstance<MockWebUIProvider> mock_provider_ =
 }  // namespace
 
 void WebUIBrowserTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+
   logging::SetLogMessageHandler(&LogHandler);
+}
 
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(
-      ChromeWebUIControllerFactory::GetInstance());
+void WebUIBrowserTest::CleanUpOnMainThread() {
+  InProcessBrowserTest::CleanUpOnMainThread();
 
-  test_factory_.reset(new TestChromeWebUIControllerFactory);
+  logging::SetLogMessageHandler(NULL);
+}
 
-  content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
-
-  test_factory_->AddFactoryOverride(
+void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
+  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  TestChromeWebUIControllerFactory::AddFactoryOverride(
       GURL(kDummyURL).host(), mock_provider_.Pointer());
 
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
@@ -348,14 +352,10 @@ void WebUIBrowserTest::SetUpOnMainThread() {
   AddLibrary(FilePath(kWebUILibraryJS));
 }
 
-void WebUIBrowserTest::CleanUpOnMainThread() {
-  logging::SetLogMessageHandler(NULL);
-
-  test_factory_->RemoveFactoryOverride(GURL(kDummyURL).host());
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(
-      test_factory_.get());
-
-  test_factory_.reset();
+void WebUIBrowserTest::TearDownInProcessBrowserTestFixture() {
+  InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+  TestChromeWebUIControllerFactory::RemoveFactoryOverride(
+      GURL(kDummyURL).host());
 }
 
 void WebUIBrowserTest::SetWebUIInstance(content::WebUI* web_ui) {

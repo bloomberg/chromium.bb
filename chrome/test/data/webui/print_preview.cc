@@ -4,9 +4,6 @@
 
 #include "chrome/test/data/webui/print_preview.h"
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-
 PrintPreviewWebUITest::PrintPreviewWebUITest() {}
 
 PrintPreviewWebUITest::~PrintPreviewWebUITest() {}

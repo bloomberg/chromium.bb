@@ -17,7 +17,11 @@ void WebUIControllerFactory::RegisterFactory(WebUIControllerFactory* factory) {
   g_factories.Pointer()->push_back(factory);
 }
 
-void WebUIControllerFactory::UnregisterFactoryForTesting(
+WebUIControllerFactoryRegistry* WebUIControllerFactoryRegistry::GetInstance() {
+  return Singleton<WebUIControllerFactoryRegistry>::get();
+}
+
+void WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(
     WebUIControllerFactory* factory) {
   std::vector<WebUIControllerFactory*>* factories = g_factories.Pointer();
   for (size_t i = 0; i < factories->size(); ++i) {
@@ -27,10 +31,6 @@ void WebUIControllerFactory::UnregisterFactoryForTesting(
     }
   }
   NOTREACHED() << "Tried to unregister a factory but it wasn't found";
-}
-
-WebUIControllerFactoryRegistry* WebUIControllerFactoryRegistry::GetInstance() {
-  return Singleton<WebUIControllerFactoryRegistry>::get();
 }
 
 WebUIController* WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(

@@ -45,6 +45,7 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
   virtual ~ChromeWebUIControllerFactory();
 
  private:
+
   friend struct DefaultSingletonTraits<ChromeWebUIControllerFactory>;
 
   // Gets the data for the favicon for a WebUI page. Returns NULL if the WebUI

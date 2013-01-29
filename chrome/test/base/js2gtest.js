@@ -91,7 +91,7 @@ if (testType === 'unit') {
   testF = 'TEST_F';
   addSetPreloadInfo = false;
 } else {
-  print('#include "chrome/test/base/web_ui_browsertest.h"');
+  print('#include "chrome/browser/ui/webui/web_ui_browsertest.h"');
   testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
   testF = 'IN_PROC_BROWSER_TEST_F';
   addSetPreloadInfo = true;

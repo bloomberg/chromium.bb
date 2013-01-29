@@ -84,7 +84,7 @@ class RenderViewHostManagerTest
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+    WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(&factory_);
   }
 
   void set_should_create_webui(bool should_create_webui) {
