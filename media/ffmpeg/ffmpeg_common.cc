@@ -464,7 +464,11 @@ VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
   switch (pixel_format) {
     case PIX_FMT_YUV422P:
       return VideoFrame::YV16;
+    // TODO(scherkus): We should be paying attention to the color range of each
+    // format and scaling as appropriate when rendering. Regular YUV has a range
+    // of 16-239 where as YUVJ has a range of 0-255.
     case PIX_FMT_YUV420P:
+    case PIX_FMT_YUVJ420P:
       return VideoFrame::YV12;
     default:
       DVLOG(1) << "Unsupported PixelFormat: " << pixel_format;

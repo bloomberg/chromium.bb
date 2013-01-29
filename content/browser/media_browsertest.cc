@@ -26,44 +26,57 @@ class MediaTest : public testing::WithParamInterface<bool>,
  public:
   // Play specified audio over http:// or file:// depending on |http| setting.
   void PlayAudio(const char* media_file, bool http) {
-    ASSERT_NO_FATAL_FAILURE(PlayMedia("audio", media_file, http));
+    PlayMedia("audio", media_file, http);
   }
 
   // Play specified video over http:// or file:// depending on |http| setting.
   void PlayVideo(const char* media_file, bool http) {
-    ASSERT_NO_FATAL_FAILURE(PlayMedia("video", media_file, http));
+    PlayMedia("video", media_file, http);
+  }
+
+  // Run specified color format test with the expected result.
+  void RunColorFormatTest(const char* media_file, const char* expected) {
+    FilePath test_file_path = GetTestFilePath("media", "blackwhite.html");
+    RunTest(GetFileUrlWithQuery(test_file_path, media_file), expected);
   }
 
  private:
-  GURL GetTestURL(const char* tag, const char* media_file, bool http) {
+  void PlayMedia(const char* tag, const char* media_file, bool http) {
+    GURL gurl;
+
     if (http) {
-      return test_server()->GetURL(
+      if (!test_server()->Start()) {
+        ADD_FAILURE() << "Failed to start test server";
+        return;
+      }
+
+      gurl = test_server()->GetURL(
           base::StringPrintf("files/media/player.html?%s=%s", tag, media_file));
+    } else {
+      FilePath test_file_path = GetTestFilePath("media", "player.html");
+      gurl = GetFileUrlWithQuery(
+          test_file_path, base::StringPrintf("%s=%s", tag, media_file));
     }
 
-    FilePath test_file_path = GetTestFilePath("media", "player.html");
-    std::string query = base::StringPrintf("%s=%s", tag, media_file);
-    return GetFileUrlWithQuery(test_file_path, query);
+    RunTest(gurl, "ENDED");
   }
 
-  void PlayMedia(const char* tag, const char* media_file, bool http) {
-    if (http)
-      ASSERT_TRUE(test_server()->Start());
-
-    GURL player_gurl = GetTestURL(tag, media_file, http);
-
-    // Allow the media file to be loaded.
+  void RunTest(const GURL& gurl, const char* expected) {
+    const string16 kExpected = ASCIIToUTF16(expected);
     const string16 kEnded = ASCIIToUTF16("ENDED");
     const string16 kError = ASCIIToUTF16("ERROR");
     const string16 kFailed = ASCIIToUTF16("FAILED");
+    DCHECK(kExpected == kEnded || kExpected == kError || kExpected == kFailed)
+        << kExpected;
+
     TitleWatcher title_watcher(shell()->web_contents(), kEnded);
     title_watcher.AlsoWaitForTitle(kFailed);
     title_watcher.AlsoWaitForTitle(kError);
 
-    NavigateToURL(shell(), player_gurl);
+    NavigateToURL(shell(), gurl);
 
     string16 final_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(kEnded, final_title);
+    EXPECT_EQ(kExpected, final_title);
   }
 };
 
@@ -178,5 +191,47 @@ IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoLoopTest) {
 IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoNoAutoplayTest) {
   RunLayoutTest("video-no-autoplay.html");
 }
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pTheora) {
+  RunColorFormatTest("yuv420p.ogv", "ENDED");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv422pTheora) {
+  RunColorFormatTest("yuv422p.ogv", "ENDED");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv444pTheora) {
+  // TODO(scherkus): Support YUV444 http://crbug.com/104711
+  RunColorFormatTest("yuv424p.ogv", "ERROR");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pVp8) {
+  RunColorFormatTest("yuv420p.webm", "ENDED");
+}
+
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pH264) {
+  RunColorFormatTest("yuv420p.mp4", "ENDED");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuvj420pH264) {
+  RunColorFormatTest("yuvj420p.mp4", "ENDED");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv422pH264) {
+  RunColorFormatTest("yuv422p.mp4", "ENDED");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv444pH264) {
+  // TODO(scherkus): Support YUV444 http://crbug.com/104711
+  RunColorFormatTest("yuv444p.mp4", "ERROR");
+}
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pMpeg4) {
+  RunColorFormatTest("yuv420p.avi", "ENDED");
+}
+#endif
+#endif
 
 }  // namespace content
