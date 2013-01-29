@@ -114,6 +114,11 @@ SUPPORTED_ATTRIBUTES = [
 ]
 
 
+def Attribute(name):
+  assert name in SUPPORTED_ATTRIBUTES
+  return name
+
+
 class Operand(object):
 
   __slots__ = [
@@ -187,6 +192,12 @@ class Operand(object):
     """
     if self.size == 'b':
       return '8bit'
+    if self.size == 'w':
+      return '16bit'
+    if self.size == 'd':
+      return '32bit'
+    if self.size == 'q':
+      return '64bit'
     # TODO(shcherbina): support other formats.
     raise NotImplementedError()
 
@@ -204,7 +215,24 @@ class Instruction(object):
       'name',
       'operands',
       'opcodes',
-      'attributes']
+      'attributes',
+      'rex']
+
+  class RexStatus(object):
+    __slots__ = [
+        'b_matters',
+        'x_matters',
+        'r_matters',
+        'w_matters',
+        'w_set']
+
+  def __init__(self):
+    self.rex = self.RexStatus()
+    self.rex.b_matters = False
+    self.rex.x_matters = False
+    self.rex.r_matters = False
+    self.rex.w_matters = True
+    self.rex.w_set = False
 
   @staticmethod
   def Parse(line):
@@ -329,6 +357,10 @@ class Instruction(object):
     """
     return re.sub(r'\W', '_', self.name)
 
+  def IsVexOrXop(self):
+    return (self.opcodes[0] == '0xc4' and self.name != 'les' or
+            self.opcodes[0] == '0x8f' and self.name != 'pop')
+
   def __str__(self):
     return ' '.join([self.name] + map(str, self.operands))
 
@@ -349,7 +381,22 @@ class InstructionPrinter(object):
   def GetContent(self):
     return self._out.getvalue()
 
+  def _PrintRexPrefix(self, instruction):
+    """Print machine for REX prefix."""
+    if self._bitness != 64:
+      return
+    if instruction.IsVexOrXop():
+      return
+    if Attribute('norex') in instruction.attributes:
+      return
+
+    if instruction.rex.w_set:
+      self._out.write('REXW_RXB\n')
+    else:
+      self._out.write('REX_RXB?\n')
+
   def _PrintOpcode(self, instruction):
+    """Print machine for opcode."""
     main_opcode_part = instruction.GetMainOpcodePart()
     if instruction.HasRegisterInOpcode():
       assert not instruction.HasModRM()
@@ -403,10 +450,24 @@ class InstructionPrinter(object):
     # TODO(shcherbina): print info about CPU features.
     # TODO(shcherbina): att_show_name_suffix.
 
-    # TODO(shcherbina): print spurious REX stuff (probably not in this
-    # function).
+    if (self._mode == DECODER and
+        self._bitness == 64 and
+        not instruction.IsVexOrXop()):
+      # Note that even if 'norex' attribute is present, we print
+      # @spurious_rex_... actions because NOP needs them (and it has REX
+      # prefix specified as part of the opcode).
+      # TODO(shcherbina): fix that?
+      if not instruction.rex.b_matters:
+        self._out.write('@set_spurious_rex_b\n')
+      if not instruction.rex.x_matters:
+        self._out.write('@set_spurious_rex_x\n')
+      if not instruction.rex.r_matters:
+        self._out.write('@set_spurious_rex_r\n')
+      if not instruction.rex.w_matters:
+        self._out.write('@set_spurious_rex_w\n')
 
   def _PrintOperandSource(self, operand, source):
+    """Print action specifying operand source."""
     # TODO(shcherbina): add mechanism to check that all operand sources are
     # printed.
     self._out.write('@operand%d_%s\n' % (operand.index, source))
@@ -427,9 +488,12 @@ class InstructionPrinter(object):
 
   def PrintInstructionWithoutModRM(self, instruction):
     # TODO(shcherbina): print legacy prefixes.
-    # TODO(shcherbina): print REX prefix.
 
+    assert not instruction.IsVexOrXop(), 'not supported yet'
     assert not instruction.HasModRM()
+
+    self._PrintRexPrefix(instruction)
+
     assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
 
     self._PrintOpcode(instruction)

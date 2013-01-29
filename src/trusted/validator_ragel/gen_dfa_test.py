@@ -186,6 +186,48 @@ class TestInstructionPrinter(unittest.TestCase):
         @operand0_jmp_to
         """.split())
 
+  def test_no_modrm_with_rex(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'movabs Od !ad, 0xa0, amd64 nacl-forbidden')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        REX_RXB?
+        0xa0
+        @instruction_movabs
+        @operands_count_is_2
+        @operand0_32bit
+        @operand1_32bit
+        @set_spurious_rex_b
+        @set_spurious_rex_x
+        @set_spurious_rex_r
+        @operand1_rax
+        @operand0_absolute_disp
+        disp64
+        """.split())
+
+  def test_nop_with_rex(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'nop, 0x40 0x90, amd64 norex')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x40 0x90
+        @instruction_nop
+        @operands_count_is_0
+        @set_spurious_rex_b
+        @set_spurious_rex_x
+        @set_spurious_rex_r
+        """.split())
+
 
 class TestParser(unittest.TestCase):
 
