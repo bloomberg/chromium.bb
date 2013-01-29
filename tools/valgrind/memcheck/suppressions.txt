@@ -4786,16 +4786,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_122249c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25TestWebKitPlatformSupport10idbFactoryEv
-   fun:_ZN6WebKit22IDBFactoryBackendProxyC1Ev
-   fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
-   fun:_ZN7WebCore15PlatformSupport10idbFactoryEv
-   fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
-}
-{
    bug_122429
    Memcheck:Leak
    fun:_Znw*
