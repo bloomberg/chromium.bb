@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.test.UiThreadTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -47,6 +48,46 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         // NOTE this test runs on UI thread, so we cannot call any async methods.
         createAwTestContainerView(mContentsClient).getAwContents().destroy();
     }
+
+    /*
+     * @LargeTest
+     * @Feature({"AndroidWebView"})
+     * Disabled until we switch to final rendering pipeline.
+     */
+    @DisabledTest
+    public void testCreateLoadDestroyManyTimes() throws Throwable {
+        final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
+        for (int i = 0; i < CREATE_AND_DESTROY_REPEAT_COUNT; ++i) {
+            AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+            AwContents awContents = testView.getAwContents();
+
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+            destroyAwContentsOnMainSync(awContents);
+        }
+    }
+
+    /*
+     * @LargeTest
+     * @Feature({"AndroidWebView"})
+     * Disabled until we switch to final rendering pipeline.
+     */
+    @DisabledTest
+    public void testCreateLoadDestroyManyAtOnce() throws Throwable {
+        final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
+        AwTestContainerView views[] = new AwTestContainerView[CREATE_AND_DESTROY_REPEAT_COUNT];
+
+        for (int i = 0; i < views.length; ++i) {
+            views[i] = createAwTestContainerViewOnMainSync(mContentsClient);
+            loadUrlSync(views[i].getAwContents(), mContentsClient.getOnPageFinishedHelper(),
+                    "about:blank");
+        }
+
+        for (int i = 0; i < views.length; ++i) {
+            destroyAwContentsOnMainSync(views[i].getAwContents());
+            views[i] = null;
+        }
+    }
+
 
     private int callDocumentHasImagesSync(final AwContents awContents)
             throws Throwable, InterruptedException {
