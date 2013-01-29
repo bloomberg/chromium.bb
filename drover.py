@@ -169,7 +169,7 @@ def _isMinimumSVNVersion(version, major, minor, patch=0):
   else:
     return False
 
-def checkoutRevision(url, revision, branch_url, revert=False):
+def checkoutRevision(url, revision, branch_url, revert=False, pop=True):
   files_info = getFileInfo(url, revision)
   paths = getBestMergePaths2(files_info, revision)
   export_map = getBestExportPathsMap2(files_info, revision)
@@ -194,7 +194,15 @@ def checkoutRevision(url, revision, branch_url, revert=False):
       print "Exclude new directory " + path
       continue
     subpaths = path.split('/')
-    subpaths.pop(0)
+    #In the normal case, where no url override is specified and it's just
+    # chromium source, it's necessary to remove the 'trunk' from the filepath,
+    # since in the checkout we include 'trunk' or 'branch/\d+'.
+    #
+    # However, when a url is specified we want to preserve that because it's
+    # a part of the filepath and necessary for path operations on svn (because
+    # frankly, we are checking out the correct top level, and not hacking it).
+    if pop:
+      subpaths.pop(0)
     base = ''
     for subpath in subpaths:
       base += '/' + subpath
@@ -516,6 +524,9 @@ def drover(options, args):
     url = BRANCH_URL.replace("$branch", options.branch)
   elif options.merge and options.sbranch:
     url = BRANCH_URL.replace("$branch", options.sbranch)
+  elif options.revert and options.url:
+      url = options.url
+      file_pattern_ = r"[ ]+([MADUC])[ ]+((/.*)/(.*))"
   else:
     url = TRUNK_URL
 
@@ -563,7 +574,8 @@ def drover(options, args):
     action = "Revert"
     if options.branch:
       url = BRANCH_URL.replace("$branch", options.branch)
-    checkoutRevision(url, revision, url, True)
+    pop_em = not options.url
+    checkoutRevision(url, revision, url, True, pop_em)
     revertRevision(url, revision)
     revertExportRevision(url, revision)
 
@@ -647,6 +659,8 @@ def main():
                            help='Revision to revert')
   option_parser.add_option('-w', '--workdir',
                            help='subdir to use for the revert')
+  option_parser.add_option('-u', '--url',
+                           help='svn url to use for the revert')
   option_parser.add_option('-a', '--auditor',
                            help='overrides the author for reviewer')
   option_parser.add_option('', '--revertbot', action='store_true',
