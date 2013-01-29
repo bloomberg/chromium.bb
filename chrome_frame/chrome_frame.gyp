@@ -985,10 +985,10 @@
         # Intended as the build phase for our coverage bots.
         #
         # Builds unit test bundles needed for coverage.
-        # Outputs this list of bundles into coverage_bundles.py.
+        # Outputs this list of bundles into gcf_coverage_bundles.py.
         #
         # If you want to both build and run coverage from your IDE,
-        # use the 'coverage' target.
+        # use the 'gcf_coverage' target.
         {
           'target_name': 'gcf_coverage_build',
           'suppress_wildcard': 1,
@@ -1021,22 +1021,22 @@
               # output executable name.
               # Is there a better way to force this action to run, always?
               #
-              # If a test bundle is added to this coverage_build target it
+              # If a test bundle is added to this gcf_coverage_build target it
               # necessarily means this file (chrome_frame.gyp) is changed,
-              # so the action is run (coverage_bundles.py is generated).
+              # so the action is run (gcf_coverage_bundles.py is generated).
               # Exceptions to that rule are theoretically possible
               # (e.g. re-gyp with a GYP_DEFINES set).
               # Else it's the same list of bundles as last time.  They are
               # built (since on the deps list) but the action may not run.
               # For now, things work, but it's less than ideal.
               'inputs': [ 'chrome_frame.gyp' ],
-              'outputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
+              'outputs': [ '<(PRODUCT_DIR)/gcf_coverage_bundles.py' ],
               'action_name': 'gcf_coverage_build',
               'action': [ 'python', '-c',
                           'import os; '
                           'f = open(' \
                           '\'<(PRODUCT_DIR)\' + os.path.sep + ' \
-                          '\'coverage_bundles.py\'' \
+                          '\'gcf_coverage_bundles.py\'' \
                           ', \'w\'); ' \
                           'deplist = \'' \
                           '<@(_dependencies)' \
@@ -1064,8 +1064,8 @@
           'actions': [
             {
               # MSVS must have an input file and an output file.
-              'inputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
-              'outputs': [ '<(PRODUCT_DIR)/coverage.info' ],
+              'inputs': [ '<(PRODUCT_DIR)/gcf_coverage_bundles.py' ],
+              'outputs': [ '<(PRODUCT_DIR)/gcf_coverage.info' ],
               'action_name': 'gcf_coverage_run',
               'action': [ 'python',
                           '../tools/code_coverage/coverage_posix.py',
@@ -1074,7 +1074,7 @@
                           '--src_root',
                           '.',
                           '--bundles',
-                          '<(PRODUCT_DIR)/coverage_bundles.py',
+                          '<(PRODUCT_DIR)/gcf_coverage_bundles.py',
                         ],
               # Use outputs of this action as inputs for the main target build.
               # Seems as a misnomer but makes this happy on Linux (scons).
