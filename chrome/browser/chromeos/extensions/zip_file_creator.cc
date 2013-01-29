@@ -35,7 +35,8 @@ ZipFileCreator::ZipFileCreator(
       observer_(observer),
       src_dir_(src_dir),
       src_relative_paths_(src_relative_paths),
-      dest_file_(dest_file) {
+      dest_file_(dest_file),
+      got_response_(false) {
 }
 
 void ZipFileCreator::Start() {
@@ -78,7 +79,10 @@ void ZipFileCreator::OpenFileHandleOnBlockingThreadPool() {
 
   if (error_code != base::PLATFORM_FILE_OK) {
     LOG(ERROR) << "Failed to create dest zip file " << dest_file_.value();
-    ReportDone(false);
+
+    BrowserThread::GetMessageLoopProxyForThread(thread_identifier_)->PostTask(
+        FROM_HERE,
+        base::Bind(&ZipFileCreator::ReportDone, this, false));
     return;
   }
 
@@ -99,23 +103,23 @@ void ZipFileCreator::StartProcessOnIOThread(base::PlatformFile dest_file) {
 }
 
 void ZipFileCreator::OnCreateZipFileSucceeded() {
-  // Skip check for unittests.
-  if (thread_identifier_ != BrowserThread::ID_COUNT)
-    CHECK(BrowserThread::CurrentlyOn(thread_identifier_));
-  got_response_ = true;
-
   ReportDone(true);
 }
 
 void ZipFileCreator::OnCreateZipFileFailed() {
-  // Skip check for unittests.
-  if (thread_identifier_ != BrowserThread::ID_COUNT)
-    CHECK(BrowserThread::CurrentlyOn(thread_identifier_));
-  got_response_ = true;
   ReportDone(false);
 }
 
 void ZipFileCreator::ReportDone(bool success) {
+  // Skip check for unittests.
+  if (thread_identifier_ != BrowserThread::ID_COUNT)
+    DCHECK(BrowserThread::CurrentlyOn(thread_identifier_));
+
+  // Guard against calling observer multiple times.
+  if (got_response_)
+    return;
+
+  got_response_ = true;
   observer_->OnZipDone(success);
 }
 

@@ -3135,10 +3135,11 @@ bool ZipSelectionFunction::RunImpl() {
 
   zip_file_creator_ = new ZipFileCreator(this, src_dir, src_relative_paths,
                                          dest_file);
-  zip_file_creator_->Start();
 
   // Keep the refcount until the zipping is complete on utility process.
   AddRef();
+
+  zip_file_creator_->Start();
   return true;
 }
 
