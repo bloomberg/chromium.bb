@@ -555,8 +555,13 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   chrome::ViewType view_type = chrome::GetViewType(web_contents);
 
+  // TODO(kalman): Also enable speech bubble for extension popups
+  // (VIEW_TYPE_EXTENSION_POPUP) once popup-like control UI works properly in
+  // extensions: http://crbug.com/163851.
+  // Right now the extension popup closes and dismisses immediately on user
+  // click.
   if (view_type == chrome::VIEW_TYPE_TAB_CONTENTS ||
-      web_contents->GetRenderProcessHost()->IsGuest()) {
+      view_type == chrome::VIEW_TYPE_APP_SHELL) {
     // If it is a tab, we can show the speech input bubble or ask for
     // permission.
 

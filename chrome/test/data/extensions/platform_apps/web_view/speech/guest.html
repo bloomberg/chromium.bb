@@ -1,0 +1,30 @@
+<!doctype html>
+<!--
+ * Copyright (c) 2013 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+<head>
+  <title>Waiting</title>
+</head>
+<body style="padding: 0; margin: 0;">
+  <div style="position: relative; overflow: hidden; height: 10px;">
+    <div style="position: absolute: left: -5px; top: -5px;">
+      <input id='speechInput' x-webkit-speech style="width: 10px;">
+    </div>
+  </div>
+  <script>
+    var speechInputElement = document.getElementById('speechInput');
+    var onSpeechInputChanged = function() {
+      if (speechInputElement.value == 'Pictures of the moon') {
+        document.title = 'PASSED';
+      } else {
+        document.title = 'FAILED';
+      }
+    };
+    speechInputElement.onwebkitspeechchange = onSpeechInputChanged;
+    speechInputElement.onchange = onSpeechInputChanged;
+  </script>
+</body>
+</html>

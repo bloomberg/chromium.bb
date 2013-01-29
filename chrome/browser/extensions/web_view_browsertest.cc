@@ -4,6 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_util.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fake_speech_recognition_manager.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
@@ -24,6 +26,34 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
           command_line, gfx::kGLImplementationOSMesaName)) <<
           "kUseGL must not be set by test framework code!";
 #endif
+  }
+
+  virtual void SetUp() OVERRIDE {
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+
+    // SpeechRecognition test specific SetUp.
+    if (!strcmp(test_info->name(), "SpeechRecognition")) {
+      fake_speech_recognition_manager_.reset(
+          new content::FakeSpeechRecognitionManager());
+      fake_speech_recognition_manager_->set_should_send_fake_response(true);
+      // Inject the fake manager factory so that the test result is returned to
+      // the web page.
+      content::SpeechRecognitionManager::SetManagerForTests(
+          fake_speech_recognition_manager_.get());
+    }
+
+    extensions::PlatformAppBrowserTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // SpeechRecognition test specific TearDown.
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    if (!strcmp(test_info->name(), "SpeechRecognition"))
+      content::SpeechRecognitionManager::SetManagerForTests(NULL);
+
+    extensions::PlatformAppBrowserTest::TearDown();
   }
 
   // This method is responsible for initializing a packaged app, which contains
@@ -202,6 +232,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     EXPECT_TRUE(content::ExecuteScript(web_contents, script));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
+
+  scoped_ptr<content::FakeSpeechRecognitionManager>
+      fake_speech_recognition_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim) {
@@ -594,4 +627,38 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ExecuteScriptWaitForTitle(browser()->tab_strip_model()->GetWebContentsAt(0),
                             script, "db not found");
   ExecuteScriptWaitForTitle(default_tag_contents1, script, "db not found");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
+  ASSERT_TRUE(StartTestServer());
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(host_str);
+
+  GURL guest_url = test_server()->GetURL(
+      "files/extensions/platform_apps/web_view/speech/guest.html");
+  guest_url = guest_url.ReplaceComponents(replace_host);
+
+  ui_test_utils::UrlLoadObserver guest_observer(
+      guest_url, content::NotificationService::AllSources());
+
+  ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
+  LoadAndLaunchPlatformApp("web_view/speech");
+  guest_observer.Wait();
+
+  content::Source<content::NavigationController> source =
+      guest_observer.source();
+  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
+
+  ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
+  content::WebContents* guest_web_contents = source->GetWebContents();
+  // Click on the guest (center of the WebContents), the guest is rendered in a
+  // way that this will trigger clicking on speech recognition input mic.
+  SimulateMouseClick(guest_web_contents, 0, WebKit::WebMouseEvent::ButtonLeft);
+
+  string16 expected_title(ASCIIToUTF16("PASSED"));
+  string16 error_title(ASCIIToUTF16("FAILED"));
+  content::TitleWatcher title_watcher(guest_web_contents, expected_title);
+  title_watcher.AlsoWaitForTitle(error_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }

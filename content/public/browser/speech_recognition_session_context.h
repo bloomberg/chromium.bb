@@ -26,6 +26,9 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
 
   int render_process_id;
   int render_view_id;
+  // Browser plugin guest's render view id, if this context represents a speech
+  // recognition request from an embedder on behalf of the guest.
+  int guest_render_view_id;
   int request_id;
 
   // Determines whether recognition was requested by a page element (in which

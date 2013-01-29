@@ -26,6 +26,8 @@ using base::Callback;
 
 namespace content {
 
+SpeechRecognitionManager* SpeechRecognitionManager::manager_for_tests_;
+
 namespace {
 
 SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
@@ -41,7 +43,14 @@ void ShowAudioInputSettingsOnFileThread() {
 }  // namespace
 
 SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
+  if (manager_for_tests_)
+    return manager_for_tests_;
   return SpeechRecognitionManagerImpl::GetInstance();
+}
+
+void SpeechRecognitionManager::SetManagerForTests(
+    SpeechRecognitionManager* manager) {
+  manager_for_tests_ = manager;
 }
 
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {

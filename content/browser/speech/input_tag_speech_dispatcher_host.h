@@ -56,9 +56,6 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // Singleton manager setter useful for tests.
-  static void SetManagerForTests(SpeechRecognitionManager* manager);
-
  private:
   virtual ~InputTagSpeechDispatcherHost();
 
@@ -69,6 +66,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
 
   void StartRecognitionOnIO(
       int render_process_id,
+      int guest_render_view_id,
       const InputTagSpeechHostMsg_StartRecognition_Params& params);
   // Returns the speech recognition manager to forward events to, creating one
   // if needed.
@@ -78,8 +76,6 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<SpeechRecognitionPreferences> recognition_preferences_;
-
-  static SpeechRecognitionManager* manager_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(InputTagSpeechDispatcherHost);
 };

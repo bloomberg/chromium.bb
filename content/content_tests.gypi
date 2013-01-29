@@ -35,6 +35,8 @@
         'public/test/content_test_suite_base.h',
         'public/test/download_test_observer.cc',
         'public/test/download_test_observer.h',
+        'public/test/fake_speech_recognition_manager.cc',
+        'public/test/fake_speech_recognition_manager.h',
         'public/test/js_injection_ready_observer.h',
         'public/test/layouttest_support.h',
         'public/test/mock_download_item.cc',

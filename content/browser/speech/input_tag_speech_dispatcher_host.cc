@@ -20,12 +20,6 @@ const uint32 kMaxHypothesesForSpeechInputTag = 6;
 }
 
 namespace content {
-SpeechRecognitionManager* InputTagSpeechDispatcherHost::manager_for_tests_;
-
-void InputTagSpeechDispatcherHost::SetManagerForTests(
-    SpeechRecognitionManager* manager) {
-  manager_for_tests_ = manager;
-}
 
 InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
     bool guest,
@@ -46,8 +40,6 @@ InputTagSpeechDispatcherHost::~InputTagSpeechDispatcherHost() {
 }
 
 SpeechRecognitionManager* InputTagSpeechDispatcherHost::manager() {
-  if (manager_for_tests_)
-    return manager_for_tests_;
   return SpeechRecognitionManager::GetInstance();
 }
 
@@ -86,6 +78,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
   // The chrome layer is mostly oblivious to BrowserPlugin guests and so it
   // cannot correctly place the speech bubble relative to a guest. Thus, we
   // set up the speech recognition context relative to the embedder.
+  int guest_render_view_id = 0;
   if (guest_) {
     RenderViewHostImpl* render_view_host =
         RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
@@ -94,6 +87,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
     BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
     input_params.element_rect.set_origin(
         guest->GetScreenCoordinates(input_params.element_rect.origin()));
+    guest_render_view_id = params.render_view_id;
     render_process_id =
         guest->embedder_web_contents()->GetRenderProcessHost()->GetID();
     input_params.render_view_id =
@@ -107,18 +101,21 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
             &InputTagSpeechDispatcherHost::StartRecognitionOnIO,
             this,
             render_process_id,
+            guest_render_view_id,
             input_params));
   } else {
-    StartRecognitionOnIO(render_process_id, params);
+    StartRecognitionOnIO(render_process_id, guest_render_view_id, params);
   }
 }
 
 void InputTagSpeechDispatcherHost::StartRecognitionOnIO(
     int render_process_id,
+    int guest_render_view_id,
     const InputTagSpeechHostMsg_StartRecognition_Params& params) {
   SpeechRecognitionSessionContext context;
   context.render_process_id = render_process_id;
   context.render_view_id = params.render_view_id;
+  context.guest_render_view_id = guest_render_view_id;
   context.request_id = params.request_id;
   context.element_rect = params.element_rect;
 
@@ -176,8 +173,10 @@ void InputTagSpeechDispatcherHost::OnRecognitionResults(
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
 
+  int render_view_id = context.guest_render_view_id ?
+      context.guest_render_view_id : context.render_view_id;
   Send(new InputTagSpeechMsg_SetRecognitionResults(
-      context.render_view_id,
+      render_view_id,
       context.request_id,
       results));
   DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionResults exit";
@@ -188,8 +187,9 @@ void InputTagSpeechDispatcherHost::OnAudioEnd(int session_id) {
 
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
-
-  Send(new InputTagSpeechMsg_RecordingComplete(context.render_view_id,
+  int render_view_id = context.guest_render_view_id ?
+      context.guest_render_view_id : context.render_view_id;
+  Send(new InputTagSpeechMsg_RecordingComplete(render_view_id,
                                                context.request_id));
   DVLOG(1) << "InputTagSpeechDispatcherHost::OnAudioEnd exit";
 }
@@ -198,7 +198,9 @@ void InputTagSpeechDispatcherHost::OnRecognitionEnd(int session_id) {
   DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionEnd enter";
   const SpeechRecognitionSessionContext& context =
       manager()->GetSessionContext(session_id);
-  Send(new InputTagSpeechMsg_RecognitionComplete(context.render_view_id,
+  int render_view_id = context.guest_render_view_id ?
+      context.guest_render_view_id : context.render_view_id;
+  Send(new InputTagSpeechMsg_RecognitionComplete(render_view_id,
                                                  context.request_id));
   DVLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionEnd exit";
 }

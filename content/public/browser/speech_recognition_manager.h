@@ -34,6 +34,10 @@ class SpeechRecognitionManager {
   // Returns the singleton instance.
   static CONTENT_EXPORT SpeechRecognitionManager* GetInstance();
 
+  // Singleton manager setter useful for tests.
+  static void CONTENT_EXPORT SetManagerForTests(
+      SpeechRecognitionManager* manager);
+
   // Creates a new recognition session.
   virtual int CreateSession(const SpeechRecognitionSessionConfig& config) = 0;
 
@@ -86,7 +90,10 @@ class SpeechRecognitionManager {
   virtual void ShowAudioInputSettings() = 0;
 
  protected:
-   virtual ~SpeechRecognitionManager() {}
+  virtual ~SpeechRecognitionManager() {}
+
+ private:
+  static SpeechRecognitionManager* manager_for_tests_;
 };
 
 }  // namespace content
