@@ -127,6 +127,33 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
     @SmallTest
     @Feature({"Sync"})
+    public void testReady() {
+       /**
+        * Test plan: call ready. Verify that the service sets the client id correctly and reissues
+        * pending registrations.
+        */
+
+        // Persist some registrations.
+        InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
+        EditContext editContext = invPrefs.edit();
+        invPrefs.setSyncTypes(editContext, Lists.newArrayList("BOOKMARK", "SESSION"));
+        assertTrue(invPrefs.commit(editContext));
+
+        // Issue ready.
+        getService().ready(CLIENT_ID);
+        assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
+        byte[] otherCid = "otherCid".getBytes();
+        getService().ready(otherCid);
+        assertTrue(Arrays.equals(otherCid, InvalidationService.getClientIdForTest()));
+
+        // Verify registrations issued.
+        assertEquals(
+                Sets.newHashSet(ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId()),
+                Sets.newHashSet(getService().mRegistrations.get(0)));
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
     public void testReissueRegistrations() {
         /*
          * Test plan: call the reissueRegistrations method of the listener with both empty and

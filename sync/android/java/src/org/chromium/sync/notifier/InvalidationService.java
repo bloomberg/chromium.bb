@@ -170,6 +170,11 @@ public class InvalidationService extends AndroidListener {
 
     @Override
     public void ready(byte[] clientId) {
+        setClientId(clientId);
+
+        // We might have accumulated some registrations to do while we were waiting for the client
+        // to become ready.
+        reissueRegistrations(clientId);
     }
 
     @Override
@@ -178,10 +183,6 @@ public class InvalidationService extends AndroidListener {
         if (!desiredRegistrations.isEmpty()) {
             register(clientId, desiredRegistrations);
         }
-        // TODO(dsmyers): [misc] reissue registrations is not guaranteed to be called by spec,
-        // although it will happen in practice. This code should be changed not to rely on it.
-        // Bug: https://code.google.com/p/chromium/issues/detail?id=172390
-        setClientId(clientId);
     }
 
     @Override
@@ -316,8 +317,7 @@ public class InvalidationService extends AndroidListener {
         prefs.commit(editContext);
 
         // If we do not have a ready invalidation client, we cannot change its registrations, so
-        // return. Later, when the client is ready, we will get a reissueRegistrations upcall and
-        // will supply the new registrations then.
+        // return. Later, when the client is ready, we will supply the new registrations.
         if (sClientId == null) {
             return;
         }
@@ -429,6 +429,12 @@ public class InvalidationService extends AndroidListener {
     @VisibleForTesting
     static boolean getIsClientStartedForTest() {
         return sIsClientStarted;
+    }
+
+    /** Returns the notification client id, for tests. */
+    @VisibleForTesting
+    @Nullable static byte[] getClientIdForTest() {
+        return sClientId;
     }
 
     /** Returns the client name used for the notification client. */
