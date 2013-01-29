@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -77,6 +78,11 @@ class ExtensionTabUtil {
   static void ScrubTabValueForExtension(const content::WebContents* contents,
                                         const extensions::Extension* extension,
                                         base::DictionaryValue* tab_info);
+
+  // Removes any privacy-sensitive fields from a Tab object if appropriate,
+  // given the permissions of the extension in question.
+  static void ScrubTabForExtension(const extensions::Extension* extension,
+                                   extensions::api::tabs::Tab* tab);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
   static bool GetTabStripModel(const content::WebContents* web_contents,
