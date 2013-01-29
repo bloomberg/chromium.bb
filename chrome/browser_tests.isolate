@@ -238,6 +238,7 @@
         ],
         'isolate_dependency_untracked': [
           '../third_party/WebKit/Tools/Scripts/webkitpy/',
+          '../third_party/accessibility-developer-tools/gen/',
           '../third_party/bidichecker/',
           '<(PRODUCT_DIR)/lib64/',
           '<(PRODUCT_DIR)/nacl_test_data/glibc/pm_exit_status_test_libs/lib64/',
@@ -276,7 +277,6 @@
           'tools/build/repack_locales.py',
         ],
         'isolate_dependency_untracked': [
-          '../third_party/accessibility-developer-tools/gen/',
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/psyco_win32/psyco/',
           '../third_party/python_26/DLLs/',
