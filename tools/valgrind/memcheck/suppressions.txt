@@ -5543,6 +5543,7 @@
    bug_145703
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN7content16SiteInstanceImpl10GetProcessEv
    fun:_ZN7content18RenderViewHostImplC1EPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
    fun:_ZN7content21RenderViewHostFactory6CreateEPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
@@ -6489,6 +6490,14 @@
    fun:_ZN18ManagedUserService4InitEv
    fun:_ZN18ManagedUserServiceC1EP7Profile
    fun:_ZN61ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test8TestBodyEv
+}
+{
+   bug_171567
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN17AutofillPopupView6CreateEP23AutofillPopupController
+   fun:_ZN27AutofillPopupControllerImpl4ShowERKSt6vectorISbItN4base20string16_char_traitsESaItEESaIS4_EES8_S8_RKS0_IiSaIiEE
+   fun:_ZN53AutofillPopupControllerUnitTest_GrowPopupInSpace_Test8TestBodyEv
 }
 {
    bug_171722
