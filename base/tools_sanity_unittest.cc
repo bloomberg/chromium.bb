@@ -90,14 +90,23 @@ TEST(ToolsSanityTest, MemoryLeak) {
 // error report mecanism is different than with Asan so those test will fail.
 #define MAYBE_AccessesToNewMemory DISABLED_AccessesToNewMemory
 #define MAYBE_AccessesToMallocMemory DISABLED_AccessesToMallocMemory
-#define MAYBE_ArrayDeletedWithoutBraces DISABLED_ArrayDeletedWithoutBraces
-#define MAYBE_SingleElementDeletedWithBraces \
-    DISABLED_SingleElementDeletedWithBraces
 #else
 #define MAYBE_AccessesToNewMemory AccessesToNewMemory
 #define MAYBE_AccessesToMallocMemory AccessesToMallocMemory
 #define MAYBE_ArrayDeletedWithoutBraces ArrayDeletedWithoutBraces
 #define MAYBE_SingleElementDeletedWithBraces SingleElementDeletedWithBraces
+#endif
+
+// The following tests pass with Clang r170392, but not r172454, which
+// makes AddressSanitizer detect errors in them. We disable these tests under
+// AddressSanitizer until we fully switch to Clang r172454. After that the
+// tests should be put back under the (defined(OS_IOS) || defined(OS_WIN))
+// clause above.
+// See also http://crbug.com/172614.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_SingleElementDeletedWithBraces \
+    DISABLED_SingleElementDeletedWithBraces
+#define MAYBE_ArrayDeletedWithoutBraces DISABLED_ArrayDeletedWithoutBraces
 #endif
 TEST(ToolsSanityTest, MAYBE_AccessesToNewMemory) {
   char *foo = new char[10];
