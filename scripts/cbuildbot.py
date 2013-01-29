@@ -1129,8 +1129,18 @@ def main(argv):
     cros_build_lib.logger.setLevel(logging.WARNING)
 
     # Verify configs are valid.
+    # If hwtest flag is enabled, verify that config board is in whitelist.
     for bot in args:
-      _GetConfig(bot)
+      build_config = _GetConfig(bot)
+      if options.hwtest:
+        if not set(build_config['boards']).issubset(
+               set(constants.HWTEST_BOARD_WHITELIST)):
+          cros_build_lib.Die('The test lab is unable to run hwtest tryjobs '
+                             'with the given board(s). The currently '
+                             'supported boards are %s. If you are root '
+                             'causing a critical bug and need temporary '
+                             'support please contact the lab '
+                             'team.' % constants.HWTEST_BOARD_WHITELIST)
 
     # Verify gerrit patches are valid.
     print 'Verifying patches...'
@@ -1156,6 +1166,9 @@ def main(argv):
         'In the future, --local will be required to run the local '
         'trybot.')
     time.sleep(5)
+
+  if options.hwtest:
+    cros_build_lib.Die('The --hwtest flag is only supported for remote jobs.')
 
   # Only expecting one config
   bot_id = args[-1]
