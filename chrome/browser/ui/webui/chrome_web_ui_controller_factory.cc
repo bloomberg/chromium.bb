@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
-#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/browser/ui/webui/version_ui.h"
@@ -408,20 +407,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   return NULL;
 }
 
-// When the test-type switch is set, return a TestType object, which should be a
-// subclass of Type. The logic is provided here in the traits class, rather than
-// in GetInstance() so that the choice is made only once, when the Singleton is
-// first instantiated, rather than every time GetInstance() is called.
-template<typename Type, typename TestType>
-struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
-  static Type* New() {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
-      return DefaultSingletonTraits<TestType>::New();
-    else
-      return DefaultSingletonTraits<Type>::New();
-  }
-};
-
 void RunFaviconCallbackAsync(
     const FaviconService::FaviconResultsCallback& callback,
     const std::vector<history::FaviconBitmapResult>* results) {
@@ -519,8 +504,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 
 // static
 ChromeWebUIControllerFactory* ChromeWebUIControllerFactory::GetInstance() {
-  return Singleton< ChromeWebUIControllerFactory, PossibleTestSingletonTraits<
-      ChromeWebUIControllerFactory, TestChromeWebUIControllerFactory> >::get();
+  return Singleton<ChromeWebUIControllerFactory>::get();
 }
 
 ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {

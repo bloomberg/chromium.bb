@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
-#define CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
+#ifndef CHROME_TEST_BASE_WEB_UI_BROWSERTEST_H_
+#define CHROME_TEST_BASE_WEB_UI_BROWSERTEST_H_
 
 #include <string>
 #include <vector>
@@ -24,6 +24,7 @@ class WebUI;
 class WebUIMessageHandler;
 }
 
+class TestChromeWebUIControllerFactory;
 class WebUITestHandler;
 
 // This macro simplifies the declaration of simple javascript unit tests.
@@ -128,12 +129,6 @@ class WebUIBrowserTest
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
-  // Set up test path & override for |kDummyURL|.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-
-  // Tear down override for |kDummyURL|.
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
-
   // Set a WebUI instance to run tests on.
   void SetWebUIInstance(content::WebUI* web_ui);
 
@@ -198,6 +193,8 @@ class WebUIBrowserTest
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.
   content::WebUI* override_selected_web_ui_;
+
+  scoped_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
+#endif  // CHROME_TEST_BASE_WEB_UI_BROWSERTEST_H_

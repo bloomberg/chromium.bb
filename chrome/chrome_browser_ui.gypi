@@ -2132,8 +2132,6 @@
         'browser/ui/webui/task_manager/task_manager_handler.h',
         'browser/ui/webui/task_manager/task_manager_ui.cc',
         'browser/ui/webui/task_manager/task_manager_ui.h',
-        'browser/ui/webui/test_chrome_web_ui_controller_factory.cc',
-        'browser/ui/webui/test_chrome_web_ui_controller_factory.h',
         'browser/ui/webui/theme_source.cc',
         'browser/ui/webui/theme_source.h',
         'browser/ui/webui/tracing_ui.cc',

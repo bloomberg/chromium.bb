@@ -17,8 +17,6 @@ class CONTENT_EXPORT WebUIControllerFactoryRegistry
  public:
   static WebUIControllerFactoryRegistry* GetInstance();
 
-  static void UnregisterFactoryForTesting(WebUIControllerFactory* factory);
-
   // WebUIControllerFactory implementation. Each method loops through the same
   // method on all the factories.
   virtual WebUIController* CreateWebUIControllerForURL(

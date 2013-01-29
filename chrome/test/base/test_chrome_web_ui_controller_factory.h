@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_TEST_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
-#define CHROME_BROWSER_UI_WEBUI_TEST_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
+#ifndef CHROME_TEST_BASE_TEST_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
+#define CHROME_TEST_BASE_TEST_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
 
 #include <functional>
 #include <map>
@@ -31,12 +31,14 @@ class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
 
   typedef std::map<std::string, WebUIProvider*> FactoryOverridesMap;
 
+  TestChromeWebUIControllerFactory();
+  virtual ~TestChromeWebUIControllerFactory();
+
   // Override the creation for urls having |host| with |provider|.
-  static void AddFactoryOverride(const std::string& host,
-                                 WebUIProvider* provider);
+  void AddFactoryOverride(const std::string& host, WebUIProvider* provider);
 
   // Remove the override for urls having |host|.
-  static void RemoveFactoryOverride(const std::string& host);
+  void RemoveFactoryOverride(const std::string& host);
 
   // ChromeWebUIFactory overrides.
   virtual content::WebUI::TypeID GetWebUIType(
@@ -45,15 +47,7 @@ class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
   virtual content::WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui, const GURL& url) const OVERRIDE;
 
-  // Return the singleton instance.
-  static TestChromeWebUIControllerFactory* GetInstance();
-
  private:
-  TestChromeWebUIControllerFactory();
-  virtual ~TestChromeWebUIControllerFactory();
-
-  friend struct DefaultSingletonTraits<TestChromeWebUIControllerFactory>;
-
   // Return the WebUIProvider for the |url|'s host if it exists, otherwise NULL.
   WebUIProvider* GetWebUIProvider(Profile* profile, const GURL& url) const;
 
@@ -63,4 +57,4 @@ class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestChromeWebUIControllerFactory);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_TEST_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
+#endif  // CHROME_TEST_BASE_TEST_CHROME_WEB_UI_CONTROLLER_FACTORY_H_

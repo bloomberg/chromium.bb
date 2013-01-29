@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -43,19 +43,27 @@ const char kChromeTestChromeWebUIControllerFactory[] =
 // going to this handler.
 class TestChromeWebUIControllerFactoryTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    TestChromeWebUIControllerFactory::AddFactoryOverride(
+  virtual void SetUpOnMainThread() OVERRIDE {
+    content::WebUIControllerFactory::UnregisterFactoryForTesting(
+        ChromeWebUIControllerFactory::GetInstance());
+    test_factory_.reset(new TestChromeWebUIControllerFactory);
+    content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
+    test_factory_->AddFactoryOverride(
         GURL(kChromeTestChromeWebUIControllerFactory).host(), &mock_provider_);
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    TestChromeWebUIControllerFactory::RemoveFactoryOverride(
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    test_factory_->RemoveFactoryOverride(
         GURL(kChromeTestChromeWebUIControllerFactory).host());
+    content::WebUIControllerFactory::UnregisterFactoryForTesting(
+        test_factory_.get());
+
+    test_factory_.reset();
   }
 
  protected:
   StrictMock<MockWebUIProvider> mock_provider_;
+  scoped_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
 
 }  // namespace

@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_BIDI_CHECKER_WEB_UI_TEST_H_
 #define CHROME_BROWSER_UI_WEBUI_BIDI_CHECKER_WEB_UI_TEST_H_
 
-#include <string>
-
 #include "base/command_line.h"
-#include "chrome/browser/ui/webui/web_ui_browsertest.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/web_ui_browsertest.h"
 
 namespace base {
 class WaitableEvent;

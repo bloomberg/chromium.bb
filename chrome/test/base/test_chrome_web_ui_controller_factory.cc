@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -22,14 +22,14 @@ TestChromeWebUIControllerFactory::~TestChromeWebUIControllerFactory() {
 
 void TestChromeWebUIControllerFactory::AddFactoryOverride(
     const std::string& host, WebUIProvider* provider) {
-  DCHECK_EQ(0U, GetInstance()->factory_overrides_.count(host));
-  GetInstance()->factory_overrides_[host] = provider;
+  DCHECK_EQ(0U, factory_overrides_.count(host));
+  factory_overrides_[host] = provider;
 }
 
 void TestChromeWebUIControllerFactory::RemoveFactoryOverride(
     const std::string& host) {
-  DCHECK_EQ(1U, GetInstance()->factory_overrides_.count(host));
-  GetInstance()->factory_overrides_.erase(host);
+  DCHECK_EQ(1U, factory_overrides_.count(host));
+  factory_overrides_.erase(host);
 }
 
 WebUI::TypeID TestChromeWebUIControllerFactory::GetWebUIType(
@@ -46,12 +46,6 @@ WebUIController* TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
   WebUIProvider* provider = GetWebUIProvider(profile, url);
   return provider ? provider->NewWebUI(web_ui, url) :
       ChromeWebUIControllerFactory::CreateWebUIControllerForURL(web_ui, url);
-}
-
-TestChromeWebUIControllerFactory*
-    TestChromeWebUIControllerFactory::GetInstance() {
-  return static_cast<TestChromeWebUIControllerFactory*>(
-      ChromeWebUIControllerFactory::GetInstance());
 }
 
 TestChromeWebUIControllerFactory::WebUIProvider*
