@@ -113,7 +113,8 @@ class SubmenuArrowImageSource : public gfx::CanvasImageSource {
 
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* r = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
+    const gfx::ImageSkia* r =
+        rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia();
     canvas->Scale(-1, 1);
     canvas->DrawImageInt(*r, - r->width(), 0);
   }
@@ -121,7 +122,7 @@ class SubmenuArrowImageSource : public gfx::CanvasImageSource {
  private:
   static gfx::Size GetSubmenuArrowSize() {
     return ui::ResourceBundle::GetSharedInstance()
-        .GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->size();
+        .GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia()->size();
   }
 
   DISALLOW_COPY_AND_ASSIGN(SubmenuArrowImageSource);
@@ -165,8 +166,9 @@ const gfx::ImageSkia* GetRadioButtonImage(bool selected) {
 
 const gfx::ImageSkia* GetSubmenuArrowImage() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return base::i18n::IsRTL() ? GetRtlSubmenuArrowImage()
-                             : rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
+  return base::i18n::IsRTL()
+      ? GetRtlSubmenuArrowImage()
+      : rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia();
 }
 
 }  // namespace views

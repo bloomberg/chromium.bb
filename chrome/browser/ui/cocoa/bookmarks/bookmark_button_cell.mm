@@ -11,11 +11,14 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
 using content::UserMetricsAction;
 
+const int kHierarchyButtonXMargin = 4;
 
 @interface BookmarkButtonCell(Private)
 - (void)configureBookmarkButtonCell;
@@ -223,8 +226,9 @@ using content::UserMetricsAction;
 - (void)setDrawFolderArrow:(BOOL)draw {
   drawFolderArrow_ = draw;
   if (draw && !arrowImage_) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     arrowImage_.reset(
-        [gfx::GetCachedImageWithName(@"menu_hierarchy_arrow.pdf") retain]);
+        [rb.GetNativeImageNamed(IDR_MENU_HIERARCHY_ARROW).ToNSImage() retain]);
   }
 }
 
@@ -233,7 +237,7 @@ using content::UserMetricsAction;
 - (NSSize)cellSize {
   NSSize cellSize = [super cellSize];
   if (drawFolderArrow_) {
-    cellSize.width += [arrowImage_ size].width;  // plus margin?
+    cellSize.width += [arrowImage_ size].width + 2 * kHierarchyButtonXMargin;
   }
   return cellSize;
 }
@@ -252,7 +256,8 @@ using content::UserMetricsAction;
     NSRect imageRect = NSZeroRect;
     imageRect.size = [arrowImage_ size];
     const CGFloat kArrowOffset = 1.0;  // Required for proper centering.
-    CGFloat dX = NSWidth(cellFrame) - NSWidth(imageRect);
+    CGFloat dX =
+        NSWidth(cellFrame) - NSWidth(imageRect) - kHierarchyButtonXMargin;
     CGFloat dY = (NSHeight(cellFrame) / 2.0) - (NSHeight(imageRect) / 2.0) +
         kArrowOffset;
     NSRect drawRect = NSOffsetRect(imageRect, dX, dY);

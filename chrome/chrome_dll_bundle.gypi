@@ -58,7 +58,6 @@
     '<@(mac_all_xibs)',
     'app/theme/find_next_Template.pdf',
     'app/theme/find_prev_Template.pdf',
-    'app/theme/menu_hierarchy_arrow.pdf',
     'app/theme/menu_overflow_down.pdf',
     'app/theme/menu_overflow_up.pdf',
     'browser/mac/install.sh',

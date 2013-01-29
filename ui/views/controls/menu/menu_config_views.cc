@@ -38,7 +38,8 @@ void MenuConfig::InitAura() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   arrow_to_edge_padding = 20;
   icon_to_label_padding = 4;
-  arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->width();
+  arrow_width =
+      rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia()->width();
   const gfx::ImageSkia* check = GetMenuCheckImage();
   // Add 4 to force some padding between check and label.
   check_width = check->width() + 4;
