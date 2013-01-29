@@ -168,7 +168,7 @@ bool Layer::hasAncestor(Layer* ancestor) const
 
 void Layer::addChild(scoped_refptr<Layer> child)
 {
-    insertChild(child, numChildren());
+    insertChild(child, m_children.size());
 }
 
 void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
@@ -178,8 +178,7 @@ void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
     child->m_stackingOrderChanged = true;
 
     index = std::min(index, m_children.size());
-    LayerList::iterator iter = m_children.begin();
-    m_children.insert(iter + index, child);
+    m_children.insert(m_children.begin() + index, child);
     setNeedsFullTreeSync();
 }
 
@@ -227,7 +226,7 @@ void Layer::replaceChild(Layer* reference, scoped_refptr<Layer> newLayer)
 
 int Layer::indexOfChild(const Layer* reference)
 {
-    for (size_t i = 0; i < m_children.size(); i++) {
+    for (size_t i = 0; i < m_children.size(); ++i) {
         if (m_children[i] == reference)
             return i;
     }
@@ -279,8 +278,7 @@ void Layer::setChildren(const LayerList& children)
         return;
 
     removeAllChildren();
-    size_t listSize = children.size();
-    for (size_t i = 0; i < listSize; i++)
+    for (size_t i = 0; i < children.size(); ++i)
         addChild(children[i]);
 }
 

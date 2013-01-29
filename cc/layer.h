@@ -334,8 +334,6 @@ private:
     bool hasAncestor(Layer*) const;
     bool descendantIsFixedToContainerLayer() const;
 
-    size_t numChildren() const { return m_children.size(); }
-
     // Returns the index of the child or -1 if not found.
     int indexOfChild(const Layer*);
 

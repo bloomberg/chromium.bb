@@ -93,7 +93,7 @@ protected:
 
     void verifyTestTreeInitialState() const
     {
-        ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
+        ASSERT_EQ(3U, m_parent->children().size());
         EXPECT_EQ(m_child1, m_parent->children()[0]);
         EXPECT_EQ(m_child2, m_parent->children()[1]);
         EXPECT_EQ(m_child3, m_parent->children()[2]);
@@ -101,17 +101,17 @@ protected:
         EXPECT_EQ(m_parent.get(), m_child2->parent());
         EXPECT_EQ(m_parent.get(), m_child3->parent());
 
-        ASSERT_EQ(static_cast<size_t>(2), m_child1->children().size());
+        ASSERT_EQ(2U, m_child1->children().size());
         EXPECT_EQ(m_grandChild1, m_child1->children()[0]);
         EXPECT_EQ(m_grandChild2, m_child1->children()[1]);
         EXPECT_EQ(m_child1.get(), m_grandChild1->parent());
         EXPECT_EQ(m_child1.get(), m_grandChild2->parent());
 
-        ASSERT_EQ(static_cast<size_t>(1), m_child2->children().size());
+        ASSERT_EQ(1U, m_child2->children().size());
         EXPECT_EQ(m_grandChild3, m_child2->children()[0]);
         EXPECT_EQ(m_child2.get(), m_grandChild3->parent());
 
-        ASSERT_EQ(static_cast<size_t>(0), m_child3->children().size());
+        ASSERT_EQ(0U, m_child3->children().size());
     }
 
     void createSimpleTestTree()
@@ -167,13 +167,13 @@ TEST_F(LayerTest, addAndRemoveChild)
     scoped_refptr<Layer> child = Layer::create();
 
     // Upon creation, layers should not have children or parent.
-    ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
+    ASSERT_EQ(0U, parent->children().size());
     EXPECT_FALSE(child->parent());
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, m_layerTreeHost->setRootLayer(parent));
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->addChild(child));
 
-    ASSERT_EQ(static_cast<size_t>(1), parent->children().size());
+    ASSERT_EQ(1U, parent->children().size());
     EXPECT_EQ(child.get(), parent->children()[0]);
     EXPECT_EQ(parent.get(), child->parent());
     EXPECT_EQ(parent.get(), child->rootLayer());
@@ -211,24 +211,24 @@ TEST_F(LayerTest, insertChild)
 
     parent->setLayerTreeHost(m_layerTreeHost.get());
 
-    ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
+    ASSERT_EQ(0U, parent->children().size());
 
     // Case 1: inserting to empty list.
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child3, 0));
-    ASSERT_EQ(static_cast<size_t>(1), parent->children().size());
+    ASSERT_EQ(1U, parent->children().size());
     EXPECT_EQ(child3, parent->children()[0]);
     EXPECT_EQ(parent.get(), child3->parent());
 
     // Case 2: inserting to beginning of list
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child1, 0));
-    ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
+    ASSERT_EQ(2U, parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child3, parent->children()[1]);
     EXPECT_EQ(parent.get(), child1->parent());
 
     // Case 3: inserting to middle of list
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child2, 1));
-    ASSERT_EQ(static_cast<size_t>(3), parent->children().size());
+    ASSERT_EQ(3U, parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child2, parent->children()[1]);
     EXPECT_EQ(child3, parent->children()[2]);
@@ -237,7 +237,7 @@ TEST_F(LayerTest, insertChild)
     // Case 4: inserting to end of list
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child4, 3));
 
-    ASSERT_EQ(static_cast<size_t>(4), parent->children().size());
+    ASSERT_EQ(4U, parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child2, parent->children()[1]);
     EXPECT_EQ(child3, parent->children()[2]);
@@ -253,18 +253,18 @@ TEST_F(LayerTest, insertChildPastEndOfList)
     scoped_refptr<Layer> child1 = Layer::create();
     scoped_refptr<Layer> child2 = Layer::create();
 
-    ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
+    ASSERT_EQ(0U, parent->children().size());
 
     // insert to an out-of-bounds index
     parent->insertChild(child1, 53);
 
-    ASSERT_EQ(static_cast<size_t>(1), parent->children().size());
+    ASSERT_EQ(1U, parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
 
     // insert another child to out-of-bounds, when list is not already empty.
     parent->insertChild(child2, 2459);
 
-    ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
+    ASSERT_EQ(2U, parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child2, parent->children()[1]);
 }
@@ -277,12 +277,12 @@ TEST_F(LayerTest, insertSameChildTwice)
 
     parent->setLayerTreeHost(m_layerTreeHost.get());
 
-    ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
+    ASSERT_EQ(0U, parent->children().size());
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child1, 0));
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->insertChild(child2, 1));
 
-    ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
+    ASSERT_EQ(2U, parent->children().size());
     EXPECT_EQ(child1, parent->children()[0]);
     EXPECT_EQ(child2, parent->children()[1]);
 
@@ -290,7 +290,7 @@ TEST_F(LayerTest, insertSameChildTwice)
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), parent->insertChild(child1, 1));
 
     // child1 should now be at the end of the list.
-    ASSERT_EQ(static_cast<size_t>(2), parent->children().size());
+    ASSERT_EQ(2U, parent->children().size());
     EXPECT_EQ(child2, parent->children()[0]);
     EXPECT_EQ(child1, parent->children()[1]);
 
@@ -337,7 +337,7 @@ TEST_F(LayerTest, replaceChildWithNewChildAutomaticRasterScale)
     EXPECT_FALSE(m_child3->needsDisplayForTesting());
     EXPECT_FALSE(child4->needsDisplayForTesting());
 
-    ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
+    ASSERT_EQ(3U, m_parent->children().size());
     EXPECT_EQ(m_child1, m_parent->children()[0]);
     EXPECT_EQ(child4, m_parent->children()[1]);
     EXPECT_EQ(m_child3, m_parent->children()[2]);
@@ -354,13 +354,13 @@ TEST_F(LayerTest, replaceChildWithNewChildThatHasOtherParent)
     scoped_refptr<Layer> testLayer = Layer::create();
     scoped_refptr<Layer> child4 = Layer::create();
     testLayer->addChild(child4);
-    ASSERT_EQ(static_cast<size_t>(1), testLayer->children().size());
+    ASSERT_EQ(1U, testLayer->children().size());
     EXPECT_EQ(child4, testLayer->children()[0]);
     EXPECT_EQ(testLayer.get(), child4->parent());
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), m_parent->replaceChild(m_child2.get(), child4));
 
-    ASSERT_EQ(static_cast<size_t>(3), m_parent->children().size());
+    ASSERT_EQ(3U, m_parent->children().size());
     EXPECT_EQ(m_child1, m_parent->children()[0]);
     EXPECT_EQ(child4, m_parent->children()[1]);
     EXPECT_EQ(m_child3, m_parent->children()[2]);
@@ -368,7 +368,7 @@ TEST_F(LayerTest, replaceChildWithNewChildThatHasOtherParent)
 
     // testLayer should no longer have child4,
     // and child2 should no longer have a parent.
-    ASSERT_EQ(static_cast<size_t>(0), testLayer->children().size());
+    ASSERT_EQ(0U, testLayer->children().size());
     EXPECT_FALSE(m_child2->parent());
 }
 
@@ -390,7 +390,7 @@ TEST_F(LayerTest, removeAllChildren)
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(3), m_parent->removeAllChildren());
 
-    ASSERT_EQ(static_cast<size_t>(0), m_parent->children().size());
+    ASSERT_EQ(0U, m_parent->children().size());
     EXPECT_FALSE(m_child1->parent());
     EXPECT_FALSE(m_child2->parent());
     EXPECT_FALSE(m_child3->parent());
@@ -410,7 +410,7 @@ TEST_F(LayerTest, setChildren)
 
     // Set up and verify initial test conditions: child1 has a parent, child2 has no parent.
     oldParent->addChild(child1);
-    ASSERT_EQ(static_cast<size_t>(0), newParent->children().size());
+    ASSERT_EQ(0U, newParent->children().size());
     EXPECT_EQ(oldParent.get(), child1->parent());
     EXPECT_FALSE(child2->parent());
 
@@ -418,7 +418,7 @@ TEST_F(LayerTest, setChildren)
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), newParent->setChildren(newChildren));
 
-    ASSERT_EQ(static_cast<size_t>(2), newParent->children().size());
+    ASSERT_EQ(2U, newParent->children().size());
     EXPECT_EQ(newParent.get(), child1->parent());
     EXPECT_EQ(newParent.get(), child2->parent());
 
