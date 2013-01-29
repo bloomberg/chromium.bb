@@ -16,7 +16,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -65,7 +65,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
                    content::NotificationService::AllSources());
 
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser());
+        browser()->tab_strip_model()->GetActiveWebContents();
     printing::PrintViewManager::FromWebContents(web_contents)->PrintNow();
     content::RunMessageLoop();
     registrar_.RemoveAll();

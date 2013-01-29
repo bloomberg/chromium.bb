@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -124,7 +123,8 @@ void EncodingMenuModel::Build() {
 }
 
 bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
-  WebContents* current_tab = chrome::GetActiveWebContents(browser_);
+  WebContents* current_tab =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!current_tab)
     return false;
   EncodingMenuController controller;
@@ -275,7 +275,8 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 #elif defined(OS_WIN)
     case IDC_PIN_TO_START_SCREEN: {
       int string_id = IDS_PIN_TO_START_SCREEN;
-      WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+      WebContents* web_contents =
+          browser_->tab_strip_model()->GetActiveWebContents();
       MetroPinTabHelper* tab_helper =
           web_contents ? MetroPinTabHelper::FromWebContents(web_contents)
                        : NULL;
@@ -725,9 +726,10 @@ void WrenchMenuModel::UpdateZoomControls() {
   bool enable_increment = false;
   bool enable_decrement = false;
   int zoom_percent = 100;
-  if (chrome::GetActiveWebContents(browser_)) {
-    zoom_percent = chrome::GetActiveWebContents(browser_)->GetZoomPercent(
-        &enable_increment, &enable_decrement);
+  if (browser_->tab_strip_model()->GetActiveWebContents()) {
+    zoom_percent =
+        browser_->tab_strip_model()->GetActiveWebContents()->GetZoomPercent(
+            &enable_increment, &enable_decrement);
   }
   zoom_label_ = l10n_util::GetStringFUTF16(
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));

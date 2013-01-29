@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -167,7 +166,7 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
   DCHECK(browser);
   DCHECK(contents);
 
-  *contents = chrome::GetActiveWebContents(browser);
+  *contents = browser->tab_strip_model()->GetActiveWebContents();
   if (*contents) {
     if (tab_id)
       *tab_id = GetTabId(*contents);

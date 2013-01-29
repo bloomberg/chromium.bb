@@ -9,7 +9,7 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,7 +40,8 @@ void ShowBadFlagsPrompt(Browser* browser) {
   }
 
   if (bad_flag) {
-    content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+    content::WebContents* web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
     if (!web_contents)
       return;
     SimpleAlertInfoBarDelegate::Create(

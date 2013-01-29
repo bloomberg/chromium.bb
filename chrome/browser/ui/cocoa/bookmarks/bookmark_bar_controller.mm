@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
@@ -46,6 +45,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_ui.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -808,8 +808,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     parent = bookmarkModel_->bookmark_bar_node();
   GURL url;
   string16 title;
-  chrome::GetURLAndTitleToBookmark(chrome::GetActiveWebContents(browser_),
-                                   &url, &title);
+  chrome::GetURLAndTitleToBookmark(
+      browser_->tab_strip_model()->GetActiveWebContents(),
+      &url, &title);
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        BookmarkEditor::EditDetails::AddNodeInFolder(

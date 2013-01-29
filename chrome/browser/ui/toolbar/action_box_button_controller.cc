@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -225,7 +225,8 @@ void ActionBoxButtonController::Observe(
 
 void ActionBoxButtonController::TriggerExplicitShareIntent(
     const GURL& share_service_url) {
-  const GURL& current_url = chrome::GetActiveWebContents(browser_)->GetURL();
+  const GURL& current_url =
+      browser_->tab_strip_model()->GetActiveWebContents()->GetURL();
   webkit_glue::WebIntentData intent_data(
       ASCIIToUTF16(kShareIntentAction),
       ASCIIToUTF16(kShareIntentMimeType),

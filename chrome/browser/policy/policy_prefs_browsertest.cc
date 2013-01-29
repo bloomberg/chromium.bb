@@ -27,7 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -328,7 +328,8 @@ void VerifyControlledSettingIndicators(Browser* browser,
              << "  indicators.push(indicator)"
              << "}"
              << "domAutomationController.send(JSON.stringify(indicators));";
-  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   std::string json;
   // Retrieve the state of all controlled setting indicators matching the
   // |selector| as JSON.
@@ -499,7 +500,7 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
     ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
     if (!(*pref_mapping)->indicator_test_setup_js().empty()) {
       ASSERT_TRUE(content::ExecuteScript(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           (*pref_mapping)->indicator_test_setup_js()));
     }
 

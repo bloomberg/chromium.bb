@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
@@ -43,6 +42,7 @@
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -284,7 +284,7 @@ void BrowserWindowCocoa::BookmarkBarStateChanged(
 
 void BrowserWindowCocoa::UpdateDevTools() {
   [controller_ updateDevToolsForContents:
-      chrome::GetActiveWebContents(browser_)];
+      browser_->tab_strip_model()->GetActiveWebContents()];
 }
 
 void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
@@ -684,7 +684,8 @@ void BrowserWindowCocoa::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
     const content::PasswordForm& form,
     autofill::PasswordGenerator* password_generator) {
-  WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+  WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
   // We want to point to the middle of the rect instead of the right side.
   NSPoint point = GetPointForBubble(web_contents,
                                     rect.x() + rect.width()/2,

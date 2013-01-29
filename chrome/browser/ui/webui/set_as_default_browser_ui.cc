@@ -18,10 +18,10 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -337,7 +337,7 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
     // dialog the actual browser window had to remain hidden. Now it's time to
     // show it.
     BrowserWindow* window = browser_->window();
-    WebContents* contents = chrome::GetActiveWebContents(browser_);
+    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
     window->Show();
     if (contents)
       contents->GetView()->SetInitialFocus();

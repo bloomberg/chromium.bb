@@ -17,13 +17,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
@@ -854,7 +854,8 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (int)currentTabId {
-  content::WebContents* active_tab = chrome::GetActiveWebContents(browser_);
+  content::WebContents* active_tab =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!active_tab)
     return -1;
 

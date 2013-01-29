@@ -23,8 +23,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -309,7 +309,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   }
 
   WebContents* GetCurrentTab(Browser* browser) const {
-    WebContents* current_tab = chrome::GetActiveWebContents(browser);
+    WebContents* current_tab =
+        browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(current_tab);
     return current_tab;
   }

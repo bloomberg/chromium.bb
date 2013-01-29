@@ -32,9 +32,9 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -506,7 +506,8 @@ void FirstRunBubbleLauncher::Observe(
     return;
   }
 
-  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
 
   // Suppress the first run bubble if a Gaia sign in page is showing.
   if (SyncPromoUI::UseWebBasedSigninFlow() &&

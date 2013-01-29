@@ -188,7 +188,8 @@ WebContents* OpenApplicationTab(Profile* profile,
   params.disposition = disposition;
 
   if (disposition == CURRENT_TAB) {
-    WebContents* existing_tab = chrome::GetActiveWebContents(browser);
+    WebContents* existing_tab =
+        browser->tab_strip_model()->GetActiveWebContents();
     TabStripModel* model = browser->tab_strip_model();
     int tab_index = model->GetIndexOfWebContents(existing_tab);
 
@@ -198,7 +199,7 @@ WebContents* OpenApplicationTab(Profile* profile,
                             WebKit::WebReferrerPolicyDefault),
           disposition, content::PAGE_TRANSITION_LINK, false));
     // Reset existing_tab as OpenURL() may have clobbered it.
-    existing_tab = chrome::GetActiveWebContents(browser);
+    existing_tab = browser->tab_strip_model()->GetActiveWebContents();
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       // Pinning may have moved the tab.

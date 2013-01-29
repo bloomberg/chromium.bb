@@ -23,7 +23,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -770,7 +770,7 @@ class NotificationBridge
   }
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
-  chrome::GetActiveWebContents(browser_)->OpenURL(params);
+  browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)
@@ -787,7 +787,7 @@ class NotificationBridge
 
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
-  chrome::GetActiveWebContents(browser_)->OpenURL(params);
+  browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)

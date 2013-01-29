@@ -15,8 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
@@ -115,8 +115,9 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
       GURL url;
       string16 title;
-      chrome::GetURLAndTitleToBookmark(chrome::GetActiveWebContents(browser_),
-                                       &url, &title);
+      chrome::GetURLAndTitleToBookmark(
+          browser_->tab_strip_model()->GetActiveWebContents(),
+          &url, &title);
       BookmarkEditor::Show(parent_widget_->GetNativeWindow(),
                            profile_,
                            BookmarkEditor::EditDetails::AddNodeInFolder(

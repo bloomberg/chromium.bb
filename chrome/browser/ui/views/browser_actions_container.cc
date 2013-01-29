@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -474,7 +474,8 @@ void BrowserActionsContainer::InspectPopup(ExtensionAction* action) {
 }
 
 int BrowserActionsContainer::GetCurrentTabId() const {
-  content::WebContents* active_tab = chrome::GetActiveWebContents(browser_);
+  content::WebContents* active_tab =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!active_tab)
     return -1;
 
@@ -498,7 +499,8 @@ gfx::Point BrowserActionsContainer::GetViewContentOffset() const {
 
 extensions::ActiveTabPermissionGranter*
     BrowserActionsContainer::GetActiveTabPermissionGranter() {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+  content::WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return NULL;
   return extensions::TabHelper::FromWebContents(web_contents)->

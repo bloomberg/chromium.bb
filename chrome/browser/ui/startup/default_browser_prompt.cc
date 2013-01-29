@@ -16,7 +16,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -180,7 +180,8 @@ void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
 
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return;
 

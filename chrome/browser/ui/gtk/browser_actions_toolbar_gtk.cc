@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -586,7 +586,8 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
 }
 
 int BrowserActionsToolbarGtk::GetCurrentTabId() const {
-  content::WebContents* active_tab = chrome::GetActiveWebContents(browser_);
+  content::WebContents* active_tab =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!active_tab)
     return -1;
 

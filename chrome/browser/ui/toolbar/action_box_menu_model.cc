@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -40,7 +40,7 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
   }
 
   BookmarkTabHelper* bookmark_tab_helper = BookmarkTabHelper::FromWebContents(
-      chrome::GetActiveWebContents(browser_));
+      browser_->tab_strip_model()->GetActiveWebContents());
   bool starred = bookmark_tab_helper->is_starred();
   AddItemWithStringId(IDC_BOOKMARK_PAGE_FROM_STAR,
                       starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);

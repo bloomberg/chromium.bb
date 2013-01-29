@@ -833,7 +833,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 
     first_tab = false;
   }
-  if (!chrome::GetActiveWebContents(browser)) {
+  if (!browser->tab_strip_model()->GetActiveWebContents()) {
     // TODO: this is a work around for 110909. Figure out why it's needed.
     if (!browser->tab_strip_model()->count())
       chrome::AddBlankTabAt(browser, -1, true);
@@ -871,7 +871,7 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     if (!command_line_.HasSwitch(switches::kTestType)) {
       chrome::ObsoleteOSInfoBar::Create(
           InfoBarService::FromWebContents(
-              chrome::GetActiveWebContents(browser)));
+              browser->tab_strip_model()->GetActiveWebContents()));
     }
 
     if (browser_defaults::kOSSupportsOtherBrowsers &&

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_version_info.h"
@@ -60,7 +59,7 @@ bool CanShowBookmarkPrompt(Browser* browser) {
 bool IsActiveWebContents(Browser* browser, WebContents* web_contents) {
   if (!browser->window()->IsActive())
     return false;
-  return chrome::GetActiveWebContents(browser) == web_contents;
+  return browser->tab_strip_model()->GetActiveWebContents() == web_contents;
 }
 
 bool IsBookmarked(Browser* browser, const GURL& url) {
@@ -319,7 +318,8 @@ void BookmarkPromptController::SetBrowser(Browser* browser) {
   browser_ = browser;
   if (browser_)
     browser_->tab_strip_model()->AddObserver(this);
-  SetWebContents(browser_ ? chrome::GetActiveWebContents(browser_) : NULL);
+  SetWebContents(browser_ ? browser_->tab_strip_model()->GetActiveWebContents()
+                          : NULL);
 }
 
 void BookmarkPromptController::SetWebContents(WebContents* web_contents) {

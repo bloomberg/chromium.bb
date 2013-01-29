@@ -14,13 +14,14 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -187,7 +188,8 @@ bool ShowAutolaunchPrompt(Browser* browser) {
     return false;
   }
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   AutolaunchInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), profile->GetPrefs(),

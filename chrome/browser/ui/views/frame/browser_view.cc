@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/ntp_background_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -237,7 +236,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
     int height = 0;
-    WebContents* contents = chrome::GetActiveWebContents(browser_);
+    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
     if (contents && contents->GetView())
       height = contents->GetView()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
@@ -1533,7 +1532,8 @@ bool BrowserView::ShouldShowWindowTitle() const {
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
   if (browser_->is_app()) {
-    WebContents* contents = chrome::GetActiveWebContents(browser_.get());
+    WebContents* contents =
+        browser_->tab_strip_model()->GetActiveWebContents();
     extensions::TabHelper* extensions_tab_helper =
         contents ? extensions::TabHelper::FromWebContents(contents) : NULL;
     if (extensions_tab_helper && extensions_tab_helper->GetExtensionAppIcon())
@@ -2015,7 +2015,8 @@ void BrowserView::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
+    WebContents* web_contents =
+        browser_->tab_strip_model()->GetActiveWebContents();
     // GetActiveWebContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on a timer
     // through LoadingAnimationCallback.
@@ -2544,7 +2545,8 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
                                  int windows_msg_id,
 #endif
                                  int command_id) {
-  WebContents* contents = chrome::GetActiveWebContents(browser_.get());
+  WebContents* contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
     return;
   if (DoCutCopyPasteForWebContents(contents, method))

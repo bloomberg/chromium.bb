@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -238,8 +238,10 @@ bool ChromeToMobileService::UpdateAndGetCommandState(Browser* browser) {
     const ChromeToMobileService* service =
         ChromeToMobileServiceFactory::GetForProfile(browser->profile());
     DCHECK(!browser->profile()->IsOffTheRecord() || !service);
-    enabled = service && service->HasMobiles() &&
-        CanSendURL(chrome::GetActiveWebContents(browser)->GetURL());
+    enabled =
+        service && service->HasMobiles() &&
+        CanSendURL(
+            browser->tab_strip_model()->GetActiveWebContents()->GetURL());
   }
   browser->command_controller()->command_updater()->
       UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
@@ -327,7 +329,8 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
   data->mobile_os = (mobile_os.compare(kTypeAndroid) == 0) ? ANDROID : IOS;
   if (!mobile->GetString("id", &data->mobile_id))
     NOTREACHED();
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   DCHECK(CanSendURL(web_contents->GetURL()));
   data->url = web_contents->GetURL();
   data->title = web_contents->GetTitle();
@@ -498,8 +501,9 @@ void ChromeToMobileService::SnapshotFileCreated(
 
   // Generate the snapshot and callback SnapshotGenerated, or signal failure.
   Browser* browser = chrome::FindBrowserWithID(browser_id);
-  if (!path.empty() && browser && chrome::GetActiveWebContents(browser)) {
-    chrome::GetActiveWebContents(browser)->GenerateMHTML(path,
+  if (!path.empty() && browser &&
+      browser->tab_strip_model()->GetActiveWebContents()) {
+    browser->tab_strip_model()->GetActiveWebContents()->GenerateMHTML(path,
         base::Bind(&ChromeToMobileService::SnapshotGenerated,
                    weak_ptr_factory_.GetWeakPtr(), observer));
   } else {

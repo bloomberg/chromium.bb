@@ -24,8 +24,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
 // base::GetTerminationStatus(), so there's not much we can do.
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
                        DISABLED_RendererKilledEvent) {
-  content::CrashTab(chrome::GetActiveWebContents(browser()));
+  content::CrashTab(browser()->tab_strip_model()->GetActiveWebContents());
 
   Database::EventVector events = GetEvents();
 

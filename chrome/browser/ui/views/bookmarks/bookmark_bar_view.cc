@@ -29,8 +29,8 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
@@ -1109,8 +1109,10 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
   bool close_on_remove =
       (parent == BookmarkModelFactory::GetForProfile(profile)->other_node()) &&
       (parent->child_count() == 1);
-  context_menu_.reset(new BookmarkContextMenu(GetWidget(), browser_, profile,
-    chrome::GetActiveWebContents(browser_), parent, nodes, close_on_remove));
+  context_menu_.reset(new BookmarkContextMenu(
+      GetWidget(), browser_, profile,
+      browser_->tab_strip_model()->GetActiveWebContents(),
+      parent, nodes, close_on_remove));
   context_menu_->RunMenuAt(point);
 }
 

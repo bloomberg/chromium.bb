@@ -19,11 +19,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -76,7 +77,8 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 void KeystonePromotionInfoBarDelegate::Create() {
   Browser* browser = chrome::GetLastActiveBrowser();
   if (browser) {
-    content::WebContents* webContents = chrome::GetActiveWebContents(browser);
+    content::WebContents* webContents =
+        browser->tab_strip_model()->GetActiveWebContents();
 
     if (webContents) {
       InfoBarService* infobar_service =

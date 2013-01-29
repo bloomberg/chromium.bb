@@ -19,7 +19,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -524,7 +524,7 @@ void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
   current_tab_info->title = base::win::LocalAllocAndCopyString(
       browser->GetWindowTitleForCurrentTab());
 
-  WebContents* current_tab = chrome::GetActiveWebContents(browser);
+  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   DCHECK(current_tab);
 
   current_tab_info->url = base::win::LocalAllocAndCopyString(

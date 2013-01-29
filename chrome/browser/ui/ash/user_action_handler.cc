@@ -7,8 +7,8 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
 // Returns the currently-active WebContents belonging to the active browser, or
@@ -21,7 +21,7 @@ content::WebContents* GetActiveWebContents() {
   if (!ash::wm::IsActiveWindow(browser->window()->GetNativeWindow()))
     return NULL;
 
-  return chrome::GetActiveWebContents(browser);
+  return browser->tab_strip_model()->GetActiveWebContents();
 }
 
 UserActionHandler::UserActionHandler() {}

@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -747,8 +746,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void RemoveLinkElement(int i) const {
-    chrome::GetActiveWebContents(current_browser())->GetRenderViewHost()->
-        ExecuteJavascriptInWebFrame(
+    current_browser()->tab_strip_model()->GetActiveWebContents()->
+        GetRenderViewHost()->ExecuteJavascriptInWebFrame(
             string16(),
             ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
   }
@@ -757,8 +756,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     content::WindowedNotificationObserver new_page_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-    RenderViewHost* render_view_host =
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost();
+    RenderViewHost* render_view_host = current_browser()->tab_strip_model()->
+        GetActiveWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16("ClickOpenLink()"));
@@ -790,7 +789,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser()),
+        current_browser()->tab_strip_model()->GetActiveWebContents(),
         "window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
@@ -800,7 +799,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   // in. This must be called when the prerendered page is the current page
   // in the active tab.
   void GoBackToPageBeforePrerender() {
-    WebContents* tab = chrome::GetActiveWebContents(current_browser());
+    WebContents* tab =
+        current_browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(tab);
     EXPECT_FALSE(tab->IsLoading());
     content::WindowedNotificationObserver back_nav_observer(
@@ -862,7 +862,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
             "receivedPrerenderStartEvents[%d]))", index);
 
     CHECK(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser()),
+        current_browser()->tab_strip_model()->GetActiveWebContents(),
         expression,
         &received_prerender_started));
     return received_prerender_started;
@@ -875,7 +875,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
             "receivedPrerenderLoadEvents[%d]))", index);
 
     CHECK(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser()),
+        current_browser()->tab_strip_model()->GetActiveWebContents(),
         expression,
         &received_prerender_loaded));
     return received_prerender_loaded;
@@ -888,7 +888,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
             "receivedPrerenderStopEvents[%d]))", index);
 
     CHECK(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser()),
+        current_browser()->tab_strip_model()->GetActiveWebContents(),
         expression,
         &received_prerender_stopped));
     return received_prerender_stopped;
@@ -897,7 +897,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   bool HadPrerenderEventErrors() const {
     bool had_prerender_event_errors;
     CHECK(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(current_browser()),
+        current_browser()->tab_strip_model()->GetActiveWebContents(),
         "window.domAutomationController.send(Boolean("
         "    hadPrerenderEventErrors))",
         &had_prerender_event_errors));
@@ -1034,7 +1034,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     // We construct launch_nav_observer so that we can be certain our loader
     // page has finished loading before continuing. This prevents ambiguous
     // NOTIFICATION_LOAD_STOP events from making tests flaky.
-    WebContents* web_contents = chrome::GetActiveWebContents(current_browser());
+    WebContents* web_contents =
+        current_browser()->tab_strip_model()->GetActiveWebContents();
     content::WindowedNotificationObserver loader_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
@@ -1140,8 +1141,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     TestPrerenderContents* prerender_contents = GetPrerenderContents();
     ASSERT_NE(static_cast<PrerenderContents*>(NULL), prerender_contents);
 
-    RenderViewHost* render_view_host =
-        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost();
+    RenderViewHost* render_view_host = current_browser()->tab_strip_model()->
+        GetActiveWebContents()->GetRenderViewHost();
 
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(), ASCIIToUTF16(javascript_function_name));
@@ -1181,8 +1182,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(
-      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -1200,8 +1201,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPagePending) {
 
   ChannelDestructionWatcher first_channel_close_watcher;
 
-  first_channel_close_watcher.WatchChannel(
-    chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  first_channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   // NavigateToDestURL doesn't run a message loop. Normally that's fine, but in
   // this case, we need the pending prerenders to start.
@@ -1220,8 +1221,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPagePending) {
 
   // Now navigate to our target page.
   ChannelDestructionWatcher second_channel_close_watcher;
-  second_channel_close_watcher.WatchChannel(
-    chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  second_channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(), prerender_page_url, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
@@ -1237,8 +1238,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovesPending) {
                    FINAL_STATUS_USED, 1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(
-      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -1336,8 +1337,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(
-      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -1435,7 +1436,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
   // TODO(mmenke):  While this should reliably fail on regressions, the
   //                reliability depends on the specifics of ppapi plugin
   //                loading.  It would be great if we could avoid that.
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   bool display_test_result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents,
@@ -1977,8 +1979,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(
-      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -2388,7 +2390,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderUnload) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   string16 expected_title = ASCIIToUTF16("Unloaded");
   content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(current_browser()), expected_title);
+      current_browser()->tab_strip_model()->GetActiveWebContents(),
+      expected_title);
   NavigateToDestURL();
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -2543,7 +2546,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
-  WebContents* web_contents = chrome::GetActiveWebContents(current_browser());
+  WebContents* web_contents =
+      current_browser()->tab_strip_model()->GetActiveWebContents();
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(
       web_contents->GetRenderViewHost()));
   DevToolsManager* manager = DevToolsManager::GetInstance();
@@ -2623,7 +2627,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
 
   // To avoid any chance of a race, we have to let the script send its response
   // asynchronously.
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   bool display_test_result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents,
                                                    "DidDisplayReallyPass()",
@@ -2695,8 +2700,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(
-      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -2717,8 +2722,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(
-      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 

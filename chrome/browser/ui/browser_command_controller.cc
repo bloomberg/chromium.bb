@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -995,7 +994,8 @@ void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
 }
 
 void BrowserCommandController::UpdateCommandsForTabState() {
-  WebContents* current_web_contents = chrome::GetActiveWebContents(browser_);
+  WebContents* current_web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!current_web_contents)  // May be NULL during tab restore.
     return;
 

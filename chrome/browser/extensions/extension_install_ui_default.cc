@@ -205,7 +205,8 @@ void ExtensionInstallUIDefault::OnInstallFailure(
 
   Browser* browser = chrome::FindLastActiveWithProfile(profile_,
       chrome::GetActiveDesktop());
-  WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return;
   ErrorInfobarDelegate::Create(InfoBarService::FromWebContents(web_contents),

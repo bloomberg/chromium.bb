@@ -27,10 +27,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -1116,7 +1116,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   if (!page_action_views_.empty() && contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
-    GURL url = chrome::GetActiveWebContents(browser)->GetURL();
+    GURL url = browser->tab_strip_model()->GetActiveWebContents()->GetURL();
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {

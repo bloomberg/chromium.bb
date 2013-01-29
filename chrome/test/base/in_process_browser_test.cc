@@ -333,7 +333,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
     if (browser_->window()->IsMaximized())
       browser_->window()->Restore();
 #endif
-    content::WaitForLoadStop(chrome::GetActiveWebContents(browser_));
+    content::WaitForLoadStop(
+        browser_->tab_strip_model()->GetActiveWebContents());
   }
 
   // Pump any pending events that were created as a result of creating a

@@ -10,7 +10,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #import "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -66,7 +66,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerWebAppBrowserTest,
   EXPECT_EQ(2u, BrowserList::size());
 
   Browser* browser = *(BrowserList::begin());
-  GURL current_url = chrome::GetActiveWebContents(browser)->GetURL();
+  GURL current_url =
+      browser->tab_strip_model()->GetActiveWebContents()->GetURL();
   EXPECT_EQ(GetAppURL(), current_url.spec());
 }
 

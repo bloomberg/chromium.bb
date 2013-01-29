@@ -215,7 +215,8 @@ class MakeRequestFail {
 void CheckCanOpenURL(Browser* browser, const char* spec) {
   GURL url(spec);
   ui_test_utils::NavigateToURL(browser, url);
-  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
   EXPECT_EQ(net::FormatUrl(url, std::string()), contents->GetTitle());
 }
@@ -224,7 +225,8 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
 void CheckURLIsBlocked(Browser* browser, const char* spec) {
   GURL url(spec);
   ui_test_utils::NavigateToURL(browser, url);
-  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
   string16 title = UTF8ToUTF16(url.spec() + " is not available");
   EXPECT_EQ(title, contents->GetTitle());
@@ -707,7 +709,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "stuff to search for");
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   GURL expected("http://search.example/search?q=stuff+to+search+for");
   EXPECT_EQ(expected, web_contents->GetURL());
 
@@ -744,7 +747,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
   no_safesearch_observer.Wait();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   GURL expected_without("http://google.com/");
   EXPECT_EQ(expected_without, web_contents->GetURL());
 
@@ -771,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   safesearch_observer.Wait();
   model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
-  web_contents = chrome::GetActiveWebContents(browser());
+  web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   std::string expected_url("http://google.com/?");
   expected_url += std::string(chrome::kSafeSearchSafeParameter) + "&" +
                   chrome::kSafeSearchSsuiParameter;
@@ -883,7 +887,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   // WebGL is enabled by default.
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsWebGLEnabled(contents));
   // Disable with a policy.
   PolicyMap policies;
@@ -1042,7 +1047,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   // No plugins at startup.
   EXPECT_EQ(0, CountPlugins());
 
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
   ASSERT_TRUE(infobar_service);
@@ -1076,7 +1082,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
 
   // Open devtools.
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
 
   // Disable devtools via policy.
@@ -1257,7 +1264,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
       prefs::kHomePageIsNewTabPage, false);
   EXPECT_EQ(GURL(chrome::kChromeUIPolicyURL),
             browser()->profile()->GetHomePage());
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(GURL(chrome::kAboutBlankURL), contents->GetURL());
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   EXPECT_EQ(GURL(chrome::kChromeUIPolicyURL), contents->GetURL());
@@ -1306,7 +1314,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   // Verifies that Javascript can be disabled.
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsJavascriptEnabled(contents));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_CONSOLE));
@@ -1366,7 +1375,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   // Verifies that translate can be forced enabled or disabled by policy.
 
   // Get the InfoBarService, and verify that there are no infobars on startup.
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
   ASSERT_TRUE(infobar_service);
@@ -1731,7 +1741,8 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
                                std::string(content::kStandardSchemeSeparator) +
                                std::string(chrome::kChromeUIHistogramHost));
   ui_test_utils::NavigateToURL(browser(), kAboutHistograms);
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   std::string text;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       contents,

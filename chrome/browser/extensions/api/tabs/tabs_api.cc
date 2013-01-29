@@ -1642,7 +1642,7 @@ bool TabsCaptureVisibleTabFunction::GetTabToCapture(
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  *web_contents = chrome::GetActiveWebContents(browser);
+  *web_contents = browser->tab_strip_model()->GetActiveWebContents();
   if (*web_contents == NULL) {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;

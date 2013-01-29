@@ -13,7 +13,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_source.h"
@@ -39,7 +39,8 @@ void ThemeInstalledInfoBarDelegate::Create(
   if (!browser)
     return;
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return;
   InfoBarService* infobar_service =

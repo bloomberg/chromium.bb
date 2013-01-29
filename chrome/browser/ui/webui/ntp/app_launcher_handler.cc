@@ -511,7 +511,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
         web_ui()->GetWebContents());
     WebContents* old_contents = NULL;
     if (browser)
-      old_contents = chrome::GetActiveWebContents(browser);
+      old_contents = browser->tab_strip_model()->GetActiveWebContents();
 
     LaunchParams params(profile, extension,
                         old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);

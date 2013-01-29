@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
@@ -215,7 +214,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       return;
     TabRestoreServiceDelegate* delegate =
         TabRestoreServiceDelegate::FindDelegateForWebContents(
-            chrome::GetActiveWebContents(browser_));
+            browser_->tab_strip_model()->GetActiveWebContents());
     if (!delegate)
       return;
     service->RestoreEntryById(delegate, item.tab_id,
@@ -230,7 +229,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     if (tab->navigations.empty())
       return;
     SessionRestore::RestoreForeignSessionTab(
-        chrome::GetActiveWebContents(browser_), *tab, disposition);
+        browser_->tab_strip_model()->GetActiveWebContents(), *tab, disposition);
   }
 }
 
