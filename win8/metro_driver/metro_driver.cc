@@ -14,7 +14,6 @@
 #include "base/logging_win.h"
 #include "base/win/scoped_comptr.h"
 #include "win8/metro_driver/winrt_utils.h"
-#include "sandbox/win/src/sidestep/preamble_patcher.h"
 
 #if !defined(USE_AURA)
 #include "win8/metro_driver/chrome_app_view.h"
@@ -59,84 +58,6 @@ const GUID kChromeTraceProviderName = {
 base::AtExitManager at_exit;
 #endif
 
-namespace Hacks {
-
-typedef BOOL (WINAPI* IsImmersiveFunctionPtr)(HANDLE process);
-char* g_real_is_immersive_proc_stub = NULL;
-
-HMODULE g_webrtc_quartz_dll_handle = NULL;
-bool g_fake_is_immersive_process_ret = false;
-
-BOOL WINAPI MetroChromeIsImmersiveIntercept(HANDLE process) {
-  if (g_fake_is_immersive_process_ret && process == ::GetCurrentProcess())
-    return FALSE;
-
-  IsImmersiveFunctionPtr real_proc =
-      reinterpret_cast<IsImmersiveFunctionPtr>(
-          static_cast<char*>(g_real_is_immersive_proc_stub));
-  return real_proc(process);
-}
-
-void MetroSpecificHacksInitialize() {
-  // The quartz dll which is used by the webrtc code in Chrome fails in a metro
-  // app. It checks this via the IsImmersiveProcess export in user32. We
-  // intercept the same and spoof the value as false. This is ok as technically
-  // a metro browser is not a real metro application. The webrtc functionality
-  // works fine with this hack.
-  // TODO(tommi)
-  // BUG:- https://code.google.com/p/chromium/issues/detail?id=140545
-  // We should look into using media foundation on windows 8 in metro chrome.
-  IsImmersiveFunctionPtr is_immersive_func_address =
-      reinterpret_cast<IsImmersiveFunctionPtr>(::GetProcAddress(
-          ::GetModuleHandle(L"user32.dll"), "IsImmersiveProcess"));
-  DCHECK(is_immersive_func_address);
-
-  // Allow the function to be patched by changing the protections on the page.
-  DWORD old_protect = 0;
-  ::VirtualProtect(is_immersive_func_address, 5, PAGE_EXECUTE_READWRITE,
-                   &old_protect);
-
-  DCHECK(g_real_is_immersive_proc_stub == NULL);
-  g_real_is_immersive_proc_stub = reinterpret_cast<char*>(VirtualAllocEx(
-      ::GetCurrentProcess(), NULL, sidestep::kMaxPreambleStubSize,
-      MEM_COMMIT, PAGE_EXECUTE_READWRITE));
-  DCHECK(g_real_is_immersive_proc_stub);
-
-  sidestep::SideStepError patch_result =
-      sidestep::PreamblePatcher::Patch(
-          is_immersive_func_address, MetroChromeIsImmersiveIntercept,
-          g_real_is_immersive_proc_stub, sidestep::kMaxPreambleStubSize);
-
-  DCHECK(patch_result == sidestep::SIDESTEP_SUCCESS);
-
-  // Restore the permissions on the page in user32 containing the
-  // IsImmersiveProcess function code.
-  DWORD dummy = 0;
-  ::VirtualProtect(is_immersive_func_address, 5, old_protect, &dummy);
-
-  // Mimic the original page permissions from the IsImmersiveProcess page
-  // on our stub.
-  ::VirtualProtect(g_real_is_immersive_proc_stub,
-                   sidestep::kMaxPreambleStubSize,
-                   old_protect,
-                   &old_protect);
-
-  g_fake_is_immersive_process_ret = true;
-  g_webrtc_quartz_dll_handle = LoadLibrary(L"quartz.dll");
-  g_fake_is_immersive_process_ret = false;
-
-  DCHECK(g_webrtc_quartz_dll_handle);
-  if (!g_webrtc_quartz_dll_handle) {
-    DVLOG(1) << "Quartz dll load failed with error: " << GetLastError();
-  } else {
-    // Pin the quartz module to protect against it being inadvarently unloaded.
-    ::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN, L"quartz.dll",
-                        &g_webrtc_quartz_dll_handle);
-  }
-}
-
-}  // namespace Hacks
-
 extern "C" __declspec(dllexport)
 int InitMetro(LPTHREAD_START_ROUTINE thread_proc, void* context) {
   // Initialize the command line.
@@ -178,12 +99,6 @@ int InitMetro(LPTHREAD_START_ROUTINE thread_proc, void* context) {
   CheckHR(hr, "Failed to create app factory");
   if (FAILED(hr))
     return 1;
-
-#if !defined(USE_AURA)
-  // The metro specific hacks code assumes that there is only one thread active
-  // at the moment. This better be the case or we may have race conditions.
-  Hacks::MetroSpecificHacksInitialize();
-#endif
 
   auto view_factory = mswr::Make<ChromeAppViewFactory>(
       core_app.Get(), thread_proc, context);
