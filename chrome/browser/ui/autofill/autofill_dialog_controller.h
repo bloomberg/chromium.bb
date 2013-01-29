@@ -53,18 +53,22 @@ class AutofillDialogController {
   // |section|.
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const = 0;
+
   // Returns the combobox model for inputs of type |type|, or NULL if the input
   // should be a text field.
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
       AutofillFieldType type) = 0;
+
   // Returns the model for suggestions for fields that fall under |section|.
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) = 0;
+
   virtual string16 LabelForSection(DialogSection section) const = 0;
   virtual string16 SuggestionTextForSection(DialogSection section) = 0;
   virtual gfx::Image SuggestionIconForSection(DialogSection section) = 0;
   virtual void EditClickedForSection(DialogSection section) = 0;
   virtual bool InputIsValid(const DetailInput* input,
                             const string16& value) = 0;
+
   // Called when the user changes the contents of a text field or activates it
   // (by focusing and then clicking it). |was_edit| is true when the function
   // was called in response to the user editing the text field.
@@ -74,10 +78,12 @@ class AutofillDialogController {
                                           const gfx::Rect& content_bounds,
                                           const string16& field_contents,
                                           bool was_edit) = 0;
+
   // The view forwards keypresses in text inputs. Returns true if there should
   // be no further processing of the event.
   virtual bool HandleKeyPressEventInInput(
       const content::NativeWebKeyboardEvent& event) = 0;
+
   // Called when focus has changed position within the view.
   virtual void FocusMoved() = 0;
 
@@ -86,14 +92,19 @@ class AutofillDialogController {
   // Called when the view has been closed. The value for |action| indicates
   // whether the Autofill operation should be aborted.
   virtual void ViewClosed(DialogAction action) = 0;
+
   // Returns any dialog notification that should currently be showing.
   virtual DialogNotification CurrentNotification() const = 0;
+
   // Begins the flow to sign into Wallet.
   virtual void StartSignInFlow() = 0;
+
   // Marks the signin flow into Wallet complete.
   virtual void EndSignInFlow() = 0;
+
   // Returns the profile for this dialog.
   virtual Profile* profile() = 0;
+
   // The web contents that prompted the dialog.
   virtual content::WebContents* web_contents() = 0;
 

@@ -25,71 +25,13 @@ class Address;
 class Cart;
 class FullWallet;
 class Instrument;
+class WalletClientObserver;
 class WalletItems;
 
 // WalletClient is responsible for making calls to the Online Wallet backend on
 // the user's behalf.
 class WalletClient : public net::URLFetcherDelegate {
  public:
-  // WalletClientObserver is to be implemented any classes making calls with
-  // WalletClient. The appropriate callback method will be called on
-  // WalletClientObserver with the response from the Online Wallet backend.
-  class WalletClientObserver {
-   public:
-    // Called when an AcceptLegalDocuments request finishes successfully.
-    virtual void OnDidAcceptLegalDocuments() = 0;
-
-    // Called when an EncryptOtp request finishes successfully. |encrypted_otp|
-    // and |session_material| must be used when calling GetFullWallet.
-    virtual void OnDidEncryptOtp(const std::string& encrypted_otp,
-                                 const std::string& session_material) = 0;
-
-    // Called when an EscrowSensitiveInformation request finishes successfully.
-    // |escrow_handle| must be used when saving a new instrument using
-    // SaveInstrument or SaveAdressAndInstrument.
-    virtual void OnDidEscrowSensitiveInformation(
-        const std::string& escrow_handle) = 0;
-
-    // Called when a GetFullWallet request finishes successfully. Caller owns
-    // the input pointer.
-    virtual void OnDidGetFullWallet(FullWallet* full_wallet) = 0;
-
-    // Called when a GetWalletItems request finishes successfully. Caller owns
-    // the input pointer.
-    virtual void OnDidGetWalletItems(WalletItems* wallet_items) = 0;
-
-    // Called when a SaveAddress request finishes successfully. |address_id| can
-    // be used in subsequent GetFullWallet calls.
-    virtual void OnDidSaveAddress(const std::string& address_id) = 0;
-
-    // Called when a SaveInstrument request finishes sucessfully.
-    // |instrument_id| can be used in subsequent GetFullWallet calls.
-    virtual void OnDidSaveInstrument(const std::string& instrument_id) = 0;
-
-    // Called when a SaveInstrumentAndAddress request finishes succesfully.
-    // |instrument_id| and |address_id| can be used in subsequent
-    // GetFullWallet calls.
-    virtual void OnDidSaveInstrumentAndAddress(
-        const std::string& instrument_id,
-        const std::string& address_id) = 0;
-
-    // Called when a SendAutocheckoutStatus request finishes successfully.
-    virtual void OnDidSendAutocheckoutStatus() = 0;
-
-    // TODO(ahutter): This is going to need more arguments, probably an error
-    // code and a message for the user.
-    // Called when a request fails due to an Online Wallet error.
-    virtual void OnWalletError() = 0;
-
-    // Called when a request fails due to a malformed response.
-    virtual void OnMalformedResponse() = 0;
-
-    // Called when a request fails due to a network error.
-    virtual void OnNetworkError(int response_code) = 0;
-
-   protected:
-    virtual ~WalletClientObserver() {}
-  };
   explicit WalletClient(net::URLRequestContextGetter* context_getter);
   virtual ~WalletClient();
 
@@ -181,7 +123,7 @@ class WalletClient : public net::URLFetcherDelegate {
 
   void MakeWalletRequest(const GURL& url,
                          const std::string& post_body,
-                         WalletClient::WalletClientObserver* observer,
+                         WalletClientObserver* observer,
                          const std::string& content_type);
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
   void HandleMalformedResponse(net::URLFetcher* request);
@@ -193,14 +135,18 @@ class WalletClient : public net::URLFetcherDelegate {
   // The context for the request. Ensures the gdToken cookie is set as a header
   // in the requests to Online Wallet if it is present.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
+
   // Observer class that has its various On* methods called based on the results
   // of a request to Online Wallet.
   WalletClientObserver* observer_;
+
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;
+
   // The type of the current request. Must be NO_PENDING_REQUEST for a request
   // to be initiated as only one request may be running at a given time.
   RequestType request_type_;
+
   DISALLOW_COPY_AND_ASSIGN(WalletClient);
 };
 

@@ -18,6 +18,7 @@ SkColor DialogNotification::GetBackgroundColor() const {
     case DialogNotification::SUBMISSION_OPTION:
       return SK_ColorBLUE;
     case DialogNotification::REQUIRED_ACTION:
+      return SK_ColorGRAY;
     case DialogNotification::SECURITY_WARNING:
     case DialogNotification::VALIDATION_ERROR:
     case DialogNotification::WALLET_ERROR:

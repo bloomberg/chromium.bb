@@ -186,11 +186,13 @@ class WalletItems {
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest,
                            CreateWalletItemsWithRequiredActions);
+
   WalletItems(const std::vector<RequiredAction>& required_actions,
               const std::string& google_transaction_id,
               const std::string& default_instrument_id,
               const std::string& default_address_id,
               const std::string& obfuscated_gaia_id);
+
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
   std::vector<RequiredAction> required_actions_;
@@ -201,6 +203,7 @@ class WalletItems {
   ScopedVector<MaskedInstrument> instruments_;
   ScopedVector<Address> addresses_;
   ScopedVector<LegalDocument> legal_documents_;
+
   DISALLOW_COPY_AND_ASSIGN(WalletItems);
 };
 

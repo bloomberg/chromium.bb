@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_client.h"
+#include "chrome/browser/autofill/wallet/wallet_client_observer.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_test_util.h"
 #include "chrome/common/autofill/autocheckout_status.h"
@@ -347,10 +349,10 @@ class WalletClientTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 };
 
-class MockWalletClientObserver
-    : public wallet::WalletClient::WalletClientObserver {
+class MockWalletClientObserver : public WalletClientObserver {
  public:
-  MockWalletClientObserver() {}
+  MockWalletClientObserver()
+      : full_wallets_received_(0), wallet_items_received_(0) {}
   ~MockWalletClientObserver() {}
 
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
@@ -358,8 +360,6 @@ class MockWalletClientObserver
                                   const std::string& session_material));
   MOCK_METHOD1(OnDidEscrowSensitiveInformation,
                void(const std::string& escrow_handle));
-  MOCK_METHOD1(OnDidGetFullWallet, void(FullWallet* full_wallet));
-  MOCK_METHOD1(OnDidGetWalletItems, void(WalletItems* wallet_items));
   MOCK_METHOD1(OnDidSaveAddress, void(const std::string& address_id));
   MOCK_METHOD1(OnDidSaveInstrument, void(const std::string& instrument_id));
   MOCK_METHOD2(OnDidSaveInstrumentAndAddress,
@@ -369,6 +369,22 @@ class MockWalletClientObserver
   MOCK_METHOD0(OnWalletError, void());
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
+
+  virtual void OnDidGetFullWallet(scoped_ptr<FullWallet> full_wallet) OVERRIDE {
+    EXPECT_TRUE(full_wallet);
+    ++full_wallets_received_;
+  }
+  virtual void OnDidGetWalletItems(scoped_ptr<WalletItems> wallet_items)
+      OVERRIDE {
+    EXPECT_TRUE(wallet_items);
+    ++wallet_items_received_;
+  }
+  size_t full_wallets_received() const { return full_wallets_received_; }
+  size_t wallet_items_received() const { return wallet_items_received_; }
+
+ private:
+  size_t full_wallets_received_;
+  size_t wallet_items_received_;
 };
 
 // TODO(ahutter): Implement API compatibility tests. See
@@ -498,8 +514,6 @@ TEST_F(WalletClientTest, EscrowSensitiveInformationFailure) {
 
 TEST_F(WalletClientTest, GetFullWallet) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnDidGetFullWallet(testing::NotNull())).Times(1);
-
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
@@ -518,6 +532,8 @@ TEST_F(WalletClientTest, GetFullWallet) {
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetFullWalletValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  EXPECT_EQ(1U, observer.full_wallets_received());
 }
 
 TEST_F(WalletClientTest, AcceptLegalDocuments) {
@@ -542,8 +558,6 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
 
 TEST_F(WalletClientTest, GetWalletItems) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnDidGetWalletItems(testing::NotNull())).Times(1);
-
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
@@ -554,6 +568,8 @@ TEST_F(WalletClientTest, GetWalletItems) {
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetWalletItemsValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  EXPECT_EQ(1U, observer.wallet_items_received());
 }
 
 TEST_F(WalletClientTest, SaveAddressSucceeded) {

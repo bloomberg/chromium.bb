@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
+#include "chrome/browser/autofill/wallet/wallet_client_observer.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "googleurl/src/gurl.h"
@@ -55,7 +56,7 @@ namespace wallet {
 void WalletClient::AcceptLegalDocuments(
     const std::vector<std::string>& document_ids,
     const std::string& google_transaction_id,
-    WalletClient::WalletClientObserver* observer) {
+    WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ACCEPT_LEGAL_DOCUMENTS;
 
@@ -79,10 +80,9 @@ void WalletClient::AcceptLegalDocuments(
                     kJsonMimeType);
 }
 
-void WalletClient::EncryptOtp(
-    const void* otp,
-    size_t length,
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::EncryptOtp(const void* otp,
+                              size_t length,
+                              WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   size_t num_bits = length * 8;
   DCHECK_LT(num_bits, kMaxBits);
@@ -102,7 +102,7 @@ void WalletClient::EncryptOtp(
 void WalletClient::EscrowSensitiveInformation(
     const Instrument& new_instrument,
     const std::string& obfuscated_gaia_id,
-    WalletClient::WalletClientObserver* observer) {
+    WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ESCROW_SENSITIVE_INFORMATION;
 
@@ -116,15 +116,14 @@ void WalletClient::EscrowSensitiveInformation(
 }
 
 
-void WalletClient::GetFullWallet(
-    const std::string& instrument_id,
-    const std::string& address_id,
-    const std::string& merchant_domain,
-    const Cart& cart,
-    const std::string& google_transaction_id,
-    const std::string& encrypted_otp,
-    const std::string& session_material,
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::GetFullWallet(const std::string& instrument_id,
+                                 const std::string& address_id,
+                                 const std::string& merchant_domain,
+                                 const Cart& cart,
+                                 const std::string& google_transaction_id,
+                                 const std::string& encrypted_otp,
+                                 const std::string& session_material,
+                                 WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = GET_FULL_WALLET;
 
@@ -145,8 +144,7 @@ void WalletClient::GetFullWallet(
   MakeWalletRequest(GetGetFullWalletUrl(), post_body, observer, kJsonMimeType);
 }
 
-void WalletClient::GetWalletItems(
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::GetWalletItems(WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = GET_WALLET_ITEMS;
 
@@ -160,9 +158,8 @@ void WalletClient::GetWalletItems(
   MakeWalletRequest(GetGetWalletItemsUrl(), post_body, observer, kJsonMimeType);
 }
 
-void WalletClient::SaveAddress(
-    const Address& shipping_address,
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::SaveAddress(const Address& shipping_address,
+                               WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = SAVE_ADDRESS;
 
@@ -172,10 +169,9 @@ void WalletClient::SaveAddress(
                observer);
 }
 
-void WalletClient::SaveInstrument(
-    const Instrument& instrument,
-    const std::string& escrow_handle,
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::SaveInstrument(const Instrument& instrument,
+                                  const std::string& escrow_handle,
+                                  WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = SAVE_INSTRUMENT;
 
@@ -185,11 +181,10 @@ void WalletClient::SaveInstrument(
                observer);
 }
 
-void WalletClient::SaveInstrumentAndAddress(
-    const Instrument& instrument,
-    const std::string& escrow_handle,
-    const Address& address,
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::SaveInstrumentAndAddress(const Instrument& instrument,
+                                            const std::string& escrow_handle,
+                                            const Address& address,
+                                            WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = SAVE_INSTRUMENT_AND_ADDRESS;
 
@@ -199,11 +194,10 @@ void WalletClient::SaveInstrumentAndAddress(
                observer);
 }
 
-void WalletClient::SaveToWallet(
-    const Instrument* instrument,
-    const std::string& escrow_handle,
-    const Address* shipping_address,
-    WalletClient::WalletClientObserver* observer) {
+void WalletClient::SaveToWallet(const Instrument* instrument,
+                                const std::string& escrow_handle,
+                                const Address* shipping_address,
+                                WalletClientObserver* observer) {
   DictionaryValue request_dict;
   request_dict.SetString("api_key", wallet::kApiKey);
   request_dict.SetString("risk_params", GetRiskParams());
@@ -230,7 +224,7 @@ void WalletClient::SendAutocheckoutStatus(
     autofill::AutocheckoutStatus status,
     const std::string& merchant_domain,
     const std::string& google_transaction_id,
-    WalletClient::WalletClientObserver* observer) {
+    WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = SEND_STATUS;
 
@@ -250,11 +244,10 @@ void WalletClient::SendAutocheckoutStatus(
   MakeWalletRequest(GetSendStatusUrl(), post_body, observer, kJsonMimeType);
 }
 
-void WalletClient::MakeWalletRequest(
-    const GURL& url,
-    const std::string& post_body,
-    WalletClient::WalletClientObserver* observer,
-    const std::string& content_type) {
+void WalletClient::MakeWalletRequest(const GURL& url,
+                                     const std::string& post_body,
+                                     WalletClientObserver* observer,
+                                     const std::string& content_type) {
   DCHECK(!request_.get()) << "Tried to fetch two things at once!";
   DCHECK(observer);
 
@@ -263,7 +256,8 @@ void WalletClient::MakeWalletRequest(
   request_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, this));
   request_->SetRequestContext(context_getter_);
-  DVLOG(1) << "Request body: " << post_body;
+  DVLOG(1) << "url=" << url << ", post_body=" << post_body
+           << ", content_type=" << content_type;
   request_->SetUploadData(content_type, post_body);
   request_->Start();
 }
@@ -273,11 +267,14 @@ void WalletClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
   scoped_ptr<net::URLFetcher> old_request = request_.Pass();
   DCHECK_EQ(source, old_request.get());
-
   DVLOG(1) << "Got response from " << source->GetOriginalURL();
 
   std::string data;
+  source->GetResponseAsString(&data);
+  DVLOG(1) << "Response body: " << data;
+
   scoped_ptr<DictionaryValue> response_dict;
+
   int response_code = source->GetResponseCode();
   switch (response_code) {
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
@@ -290,8 +287,6 @@ void WalletClient::OnURLFetchComplete(
     // error code and message for the user.
     case net::HTTP_OK:
     case net::HTTP_INTERNAL_SERVER_ERROR: {
-      source->GetResponseAsString(&data);
-      DVLOG(1) << "Response body: " << data;
       scoped_ptr<Value> message_value(base::JSONReader::Read(data));
       if (message_value.get() &&
           message_value->IsType(Value::TYPE_DICTIONARY)) {
@@ -348,7 +343,7 @@ void WalletClient::OnURLFetchComplete(
         scoped_ptr<FullWallet> full_wallet(
             FullWallet::CreateFullWallet(*response_dict));
         if (full_wallet)
-          observer_->OnDidGetFullWallet(full_wallet.get());
+          observer_->OnDidGetFullWallet(full_wallet.Pass());
         else
           HandleMalformedResponse(old_request.get());
       } else {
@@ -360,7 +355,7 @@ void WalletClient::OnURLFetchComplete(
         scoped_ptr<WalletItems> wallet_items(
             WalletItems::CreateWalletItems(*response_dict));
         if (wallet_items)
-          observer_->OnDidGetWalletItems(wallet_items.get());
+          observer_->OnDidGetWalletItems(wallet_items.Pass());
         else
           HandleMalformedResponse(old_request.get());
       } else {

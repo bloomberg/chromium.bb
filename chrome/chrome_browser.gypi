@@ -265,6 +265,7 @@
         'browser/autofill/wallet/wallet_address.h',
         'browser/autofill/wallet/wallet_client.cc',
         'browser/autofill/wallet/wallet_client.h',
+        'browser/autofill/wallet/wallet_client_observer.h',
         'browser/autofill/wallet/wallet_items.cc',
         'browser/autofill/wallet/wallet_items.h',
         'browser/autofill/wallet/wallet_service_url.cc',

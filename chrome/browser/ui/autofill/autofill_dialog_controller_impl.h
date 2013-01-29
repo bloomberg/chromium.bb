@@ -13,6 +13,9 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/wallet/required_action.h"
+#include "chrome/browser/autofill/wallet/wallet_client.h"
+#include "chrome/browser/autofill/wallet/wallet_client_observer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
@@ -41,7 +44,8 @@ class AutofillDialogView;
 class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
-                                     public SuggestionsMenuModelDelegate {
+                                     public SuggestionsMenuModelDelegate,
+                                     public wallet::WalletClientObserver {
  public:
   AutofillDialogControllerImpl(
       content::WebContents* contents,
@@ -109,6 +113,26 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void SuggestionItemSelected(const SuggestionsMenuModel& model)
       OVERRIDE;
 
+  // wallet::WalletClientObserver implementation.
+  virtual void OnDidAcceptLegalDocuments() OVERRIDE;
+  virtual void OnDidEncryptOtp(const std::string& encrypted_otp,
+                               const std::string& session_material) OVERRIDE;
+  virtual void OnDidEscrowSensitiveInformation(
+      const std::string& escrow_handle) OVERRIDE;
+  virtual void OnDidGetFullWallet(
+      scoped_ptr<wallet::FullWallet> full_wallet) OVERRIDE;
+  virtual void OnDidGetWalletItems(
+      scoped_ptr<wallet::WalletItems> wallet_items) OVERRIDE;
+  virtual void OnDidSaveAddress(const std::string& address_id) OVERRIDE;
+  virtual void OnDidSaveInstrument(const std::string& instrument_id) OVERRIDE;
+  virtual void OnDidSaveInstrumentAndAddress(
+      const std::string& instrument_id,
+      const std::string& address_id) OVERRIDE;
+  virtual void OnDidSendAutocheckoutStatus() OVERRIDE;
+  virtual void OnWalletError() OVERRIDE;
+  virtual void OnMalformedResponse() OVERRIDE;
+  virtual void OnNetworkError(int response_code) OVERRIDE;
+
  private:
   // Determines whether |input| and |field| match.
   typedef base::Callback<bool(const DetailInput& input,
@@ -168,6 +192,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
 
+  // Turns a required action into a notification.
+  DialogNotification RequiredActionNotification(
+      const std::vector<wallet::RequiredAction>& required_actions) const;
+
   // Hides |popup_controller_|'s popup view, if it exists.
   void HidePopup();
 
@@ -191,6 +219,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // The callback via which we return the collected data.
   base::Callback<void(const FormStructure*)> callback_;
+
+  // A client to talk to the Online Wallet API.
+  wallet::WalletClient wallet_client_;
+
+  // The most recently received WalletItems retrieved via |wallet_client_|.
+  scoped_ptr<wallet::WalletItems> wallet_items_;
 
   // The fields for billing and shipping which the page has actually requested.
   DetailInputs requested_email_fields_;

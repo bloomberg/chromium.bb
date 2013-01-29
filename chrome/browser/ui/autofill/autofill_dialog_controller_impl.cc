@@ -15,6 +15,8 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/wallet/full_wallet.h"
+#include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -130,6 +132,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       source_url_(source_url),
       ssl_status_(ssl_status),
       callback_(callback),
+      wallet_client_(profile_->GetRequestContext()),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
@@ -218,12 +221,18 @@ void AutofillDialogControllerImpl::Show() {
   // fields. First we must figure out what the "right" fields are.
   view_.reset(AutofillDialogView::Create(this));
   view_->Show();
+
+  // Request sugar info after the view is showing to simplify code for now.
+  wallet_client_.GetWalletItems(this);
 }
 
 void AutofillDialogControllerImpl::Hide() {
   if (view_)
     view_->Hide();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillDialogController implementation.
 
 string16 AutofillDialogControllerImpl::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
@@ -504,6 +513,39 @@ void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
 }
 
 DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
+  if (wallet_items_ && !wallet_items_->required_actions().empty()) {
+    switch (wallet_items_->required_actions()[0]) {
+      case wallet::UNKNOWN_TYPE:
+        NOTREACHED();
+        break;
+      // TODO(dbeam): da real i18nz.
+      case wallet::SETUP_WALLET:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Set up da walletz"));
+      case wallet::ACCEPT_TOS:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Accept da ToS"));
+      case wallet::GAIA_AUTH:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Sign in to da Googlez"));
+      case wallet::UPDATE_EXPIRATION_DATE:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Update da expiration datez"));
+      case wallet::UPGRADE_MIN_ADDRESS:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Upgrade da min addrezz"));
+      case wallet::INVALID_FORM_FIELD:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Da form field is invalid"));
+      case wallet::VERIFY_CVV:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Verify da CVVz"));
+      case wallet::PASSIVE_GAIA_AUTH:
+        return DialogNotification(DialogNotification::REQUIRED_ACTION,
+                                  ASCIIToUTF16("Passively sign in to Googlez"));
+    }
+  }
+
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
     return DialogNotification(
         DialogNotification::SECURITY_WARNING,
@@ -541,6 +583,9 @@ Profile* AutofillDialogControllerImpl::profile() {
 content::WebContents* AutofillDialogControllerImpl::web_contents() {
   return contents_;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPopupDelegate
 
 void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.
@@ -581,6 +626,9 @@ void AutofillDialogControllerImpl::ControllerDestroyed() {
   popup_controller_ = NULL;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// content::NotificationObserver
+
 void AutofillDialogControllerImpl::Observe(
     int type,
     const content::NotificationSource& source,
@@ -592,12 +640,81 @@ void AutofillDialogControllerImpl::Observe(
     EndSignInFlow();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// SuggestionsMenuModelDelegate
+
 void AutofillDialogControllerImpl::SuggestionItemSelected(
     const SuggestionsMenuModel& model) {
   DialogSection section = SectionForSuggestionsMenuModel(model);
   section_editing_state_[section] = false;
   view_->UpdateSection(section);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// wallet::WalletClientObserver
+
+void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
+  NOTIMPLEMENTED();
+}
+
+void AutofillDialogControllerImpl::OnDidEncryptOtp(
+    const std::string& encrypted_otp, const std::string& session_material) {
+  NOTIMPLEMENTED() << " encrypted_otp=" << encrypted_otp
+                   << ", session_material=" << session_material;
+}
+
+void AutofillDialogControllerImpl::OnDidEscrowSensitiveInformation(
+    const std::string& escrow_handle) {
+  NOTIMPLEMENTED() << " escrow_handle=" << escrow_handle;
+}
+
+void AutofillDialogControllerImpl::OnDidGetFullWallet(
+    scoped_ptr<wallet::FullWallet> full_wallet) {
+  NOTIMPLEMENTED();
+}
+
+void AutofillDialogControllerImpl::OnDidGetWalletItems(
+    scoped_ptr<wallet::WalletItems> wallet_items) {
+  wallet_items_ = wallet_items.Pass();
+  view_->UpdateNotificationArea();
+}
+
+void AutofillDialogControllerImpl::OnDidSaveAddress(
+    const std::string& address_id) {
+  NOTIMPLEMENTED() << " address_id=" << address_id;
+}
+
+void AutofillDialogControllerImpl::OnDidSaveInstrument(
+    const std::string& instrument_id) {
+  NOTIMPLEMENTED() << " instrument_id=" << instrument_id;
+}
+
+void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
+    const std::string& instrument_id, const std::string& address_id) {
+  NOTIMPLEMENTED() << " instrument_id=" << instrument_id
+                   << ", address_id=" << address_id;
+}
+
+void AutofillDialogControllerImpl::OnDidSendAutocheckoutStatus() {
+  NOTIMPLEMENTED();
+}
+
+void AutofillDialogControllerImpl::OnWalletError() {
+  NOTIMPLEMENTED();
+  wallet_items_.reset();
+}
+
+void AutofillDialogControllerImpl::OnMalformedResponse() {
+  NOTIMPLEMENTED();
+  wallet_items_.reset();
+}
+
+void AutofillDialogControllerImpl::OnNetworkError(int response_code) {
+  NOTIMPLEMENTED() << " response_code=" << response_code;
+  wallet_items_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
     const content::NativeWebKeyboardEvent& event) {

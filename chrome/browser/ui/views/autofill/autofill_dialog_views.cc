@@ -566,6 +566,9 @@ views::View* AutofillDialogViews::CreateNotificationArea() {
   DCHECK(!notification_label_);
   notification_label_ = new views::Label();
   notification_label_->SetAutoColorReadabilityEnabled(false);
+  notification_label_->SetMultiLine(true);
+  notification_label_->set_collapse_when_hidden(true);
+
   notification_area->AddChildView(notification_label_);
 
   return notification_area;
@@ -573,10 +576,21 @@ views::View* AutofillDialogViews::CreateNotificationArea() {
 
 void AutofillDialogViews::UpdateNotificationArea() {
   DCHECK(notification_label_);
+
   const DialogNotification& notification = controller_->CurrentNotification();
+  const string16& display_text = notification.display_text();
+
+  notification_label_->parent()->SetVisible(!display_text.empty());
+  notification_label_->SetVisible(!display_text.empty());
+
+  notification_label_->SetText(display_text);
   notification_label_->parent()->background()->SetNativeControlColor(
       notification.GetBackgroundColor());
-  notification_label_->SetText(notification.display_text());
+
+  if (GetWidget())
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+
+  contents_->Layout();
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
