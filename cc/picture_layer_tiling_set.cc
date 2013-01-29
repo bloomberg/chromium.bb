@@ -258,15 +258,22 @@ PictureLayerTilingSet::Iterator::operator bool() const {
 void PictureLayerTilingSet::UpdateTilePriorities(
     WhichTree tree,
     const gfx::Size& device_viewport,
+    const gfx::Rect viewport_in_content_space,
     float layer_content_scale_x,
     float layer_content_scale_y,
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
     double time_delta) {
+  gfx::RectF viewport_in_layer_space = gfx::ScaleRect(
+    viewport_in_content_space,
+    1.f / layer_content_scale_x,
+    1.f / layer_content_scale_y);
+
   for (size_t i = 0; i < tilings_.size(); ++i) {
     tilings_[i]->UpdateTilePriorities(
         tree,
         device_viewport,
+        viewport_in_layer_space,
         layer_content_scale_x,
         layer_content_scale_y,
         last_screen_transform,

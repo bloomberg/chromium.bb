@@ -33,16 +33,45 @@ scoped_ptr<base::Value> WhichTreeAsValue(
 enum TileResolution {
   LOW_RESOLUTION = 0 ,
   HIGH_RESOLUTION = 1,
-  NON_IDEAL_RESOLUTION = 2
+  NON_IDEAL_RESOLUTION = 2,
 };
 
 struct CC_EXPORT TilePriority {
   TilePriority()
-     : resolution(NON_IDEAL_RESOLUTION),
+     : is_live(false),
+       resolution(NON_IDEAL_RESOLUTION),
        time_to_visible_in_seconds(std::numeric_limits<float>::max()),
        distance_to_visible_in_pixels(std::numeric_limits<float>::max()) {}
 
+  TilePriority(
+    TileResolution resolution,
+    float time_to_visible_in_seconds,
+    float distance_to_visible_in_pixels)
+     : is_live(true),
+       resolution(resolution),
+       time_to_visible_in_seconds(time_to_visible_in_seconds),
+       distance_to_visible_in_pixels(distance_to_visible_in_pixels) {}
+
   TilePriority(const TilePriority& active, const TilePriority& pending) {
+    if (!pending.is_live) {
+      if (!active.is_live) {
+        is_live = false;
+        return;
+      }
+      is_live = true;
+      resolution = active.resolution;
+      time_to_visible_in_seconds = active.time_to_visible_in_seconds;
+      distance_to_visible_in_pixels = active.distance_to_visible_in_pixels;
+      return;
+    } else if (!active.is_live) {
+      is_live = true;
+      resolution = pending.resolution;
+      time_to_visible_in_seconds = pending.time_to_visible_in_seconds;
+      distance_to_visible_in_pixels = pending.distance_to_visible_in_pixels;
+      return;
+    }
+
+    is_live = true;
     if (active.resolution == HIGH_RESOLUTION ||
         pending.resolution == HIGH_RESOLUTION)
       resolution = HIGH_RESOLUTION;
@@ -61,6 +90,7 @@ struct CC_EXPORT TilePriority {
   }
 
   static const double kMaxTimeToVisibleInSeconds;
+  static const double kMaxDistanceInContentSpace;
 
   static int manhattanDistance(const gfx::RectF& a, const gfx::RectF& b);
 
@@ -72,6 +102,8 @@ struct CC_EXPORT TilePriority {
                                          double time_delta,
                                          gfx::RectF target_bounds);
 
+  // If a tile is not live, then all other fields are invalid.
+  bool is_live;
   TileResolution resolution;
   float time_to_visible_in_seconds;
   float distance_to_visible_in_pixels;

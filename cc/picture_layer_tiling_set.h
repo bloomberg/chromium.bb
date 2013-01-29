@@ -52,6 +52,7 @@ class CC_EXPORT PictureLayerTilingSet {
   void UpdateTilePriorities(
       WhichTree tree,
       const gfx::Size& device_viewport,
+      gfx::Rect viewport_in_content_space,
       float layer_content_scale_x,
       float layer_content_scale_y,
       const gfx::Transform& last_screen_transform,

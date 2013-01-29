@@ -53,7 +53,8 @@ Range TimeRangeValueLargerThanThreshold(
 
 namespace cc {
 
-const double TilePriority::kMaxTimeToVisibleInSeconds = 1000;
+const double TilePriority::kMaxTimeToVisibleInSeconds = 1000.0;
+const double TilePriority::kMaxDistanceInContentSpace = 4096.0;
 
 scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
   switch (tree) {

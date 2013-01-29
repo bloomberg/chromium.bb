@@ -35,22 +35,17 @@ const int kMaxPendingUploadBytes = 100 * 1024 * 1024;
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 TileManagerBin BinFromTilePriority(const TilePriority& prio) {
+  if (!prio.is_live)
+    return NEVER_BIN;
 
   // The amount of time for which we want to have prepainting coverage.
   const double prepainting_window_time_seconds = 1.0;
   const double backfling_guard_distance_pixels = 314.0;
 
-  // Explicitly limit how far ahead we will prepaint for low and non-low res.
-  const double max_lores_paint_distance_pixels = 8192.0;
-  const double max_hires_paint_distance_pixels = 4096.0;
-  if (prio.resolution == cc::LOW_RESOLUTION) {
-    if (prio.distance_to_visible_in_pixels > max_lores_paint_distance_pixels)
-      return cc::NEVER_BIN;
-  }
-  else {
-    if (prio.distance_to_visible_in_pixels > max_hires_paint_distance_pixels)
-      return cc::NEVER_BIN;
-  }
+  // Explicitly limit how far ahead we will prepaint to limit memory usage.
+  if (prio.distance_to_visible_in_pixels >
+      TilePriority::kMaxDistanceInContentSpace)
+    return NEVER_BIN;
 
   if (prio.time_to_visible_in_seconds == std::numeric_limits<float>::max())
     return NEVER_BIN;

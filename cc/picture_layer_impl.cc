@@ -232,10 +232,20 @@ void PictureLayerImpl::updateTilePriorities() {
       last_content_scale_ == contentsScaleX()) {
     time_delta = current_frame_time - last_impl_frame_time_;
   }
+
+  gfx::Rect viewport_in_content_space;
+  gfx::Transform screenToLayer(gfx::Transform::kSkipInitialization);
+  if (screenSpaceTransform().GetInverse(&screenToLayer)) {
+    gfx::Rect device_viewport(layerTreeImpl()->device_viewport_size());
+    viewport_in_content_space = gfx::ToEnclosingRect(
+        MathUtil::projectClippedRect(screenToLayer, device_viewport));
+  }
+
   WhichTree tree = layerTreeImpl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   tilings_->UpdateTilePriorities(
       tree,
       layerTreeImpl()->device_viewport_size(),
+      viewport_in_content_space,
       last_content_scale_,
       contentsScaleX(),
       last_screen_space_transform_,

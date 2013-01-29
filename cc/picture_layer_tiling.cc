@@ -292,6 +292,7 @@ gfx::Size PictureLayerTiling::Iterator::texture_size() const {
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     const gfx::Size& device_viewport,
+    const gfx::RectF viewport_in_layer_space,
     float last_layer_contents_scale,
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
@@ -301,10 +302,40 @@ void PictureLayerTiling::UpdateTilePriorities(
   if (content_rect.IsEmpty())
     return;
 
-  gfx::Rect view_rect(gfx::Point(), device_viewport);
+  gfx::Rect viewport_in_content_space =
+      gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,
+                                          contents_scale_));
+  gfx::Rect inflated_rect = viewport_in_content_space;
+  inflated_rect.Inset(
+      -TilePriority::kMaxDistanceInContentSpace,
+      -TilePriority::kMaxDistanceInContentSpace,
+      -TilePriority::kMaxDistanceInContentSpace,
+      -TilePriority::kMaxDistanceInContentSpace);
+  inflated_rect.Intersect(ContentRect());
+
+  // Iterate through all of the tiles that were live last frame but will
+  // not be live this frame, and mark them as being dead.
+  for (TilingData::DifferenceIterator iter(&tiling_data_,
+                                           last_prioritized_rect_,
+                                           inflated_rect);
+       iter;
+       ++iter) {
+    TileMap::iterator find = tiles_.find(iter.index());
+    if (find == tiles_.end())
+      continue;
+
+    TilePriority priority;
+    DCHECK(!priority.is_live);
+    Tile* tile = find->second.get();
+    tile->set_priority(tree, priority);
+  }
+  last_prioritized_rect_ = inflated_rect;
+
+  gfx::Rect view_rect(device_viewport);
   float current_scale = current_layer_contents_scale / contents_scale_;
   float last_scale = last_layer_contents_scale / contents_scale_;
 
+  // Fast path tile priority calculation when both transforms are translations.
   if (last_screen_transform.IsIdentityOrTranslation() &&
       current_screen_transform.IsIdentityOrTranslation())
   {
@@ -315,60 +346,72 @@ void PictureLayerTiling::UpdateTilePriorities(
         last_screen_transform.matrix().get(0, 3),
         last_screen_transform.matrix().get(1, 3));
 
-    for (TileMap::const_iterator it = tiles_.begin();
-        it != tiles_.end(); ++it) {
-      TileMapKey key = it->first;
-      TilePriority priority;
-      priority.resolution = resolution_;
+    for (TilingData::Iterator iter(&tiling_data_, inflated_rect);
+         iter; ++iter) {
+      TileMap::iterator find = tiles_.find(iter.index());
+      if (find == tiles_.end())
+        continue;
+      Tile* tile = find->second.get();
 
-      gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
+      gfx::Rect tile_bounds =
+          tiling_data_.TileBounds(iter.index_x(), iter.index_y());
       gfx::RectF current_screen_rect = gfx::ScaleRect(
-          tile_bound,
+          tile_bounds,
           current_scale,
           current_scale) + current_offset;
       gfx::RectF last_screen_rect = gfx::ScaleRect(
-          tile_bound,
+          tile_bounds,
           last_scale,
           last_scale) + last_offset;
 
-      priority.time_to_visible_in_seconds =
+      float time_to_visible_in_seconds =
           TilePriority::TimeForBoundsToIntersect(
               last_screen_rect, current_screen_rect, time_delta, view_rect);
-
-      priority.distance_to_visible_in_pixels =
+      float distance_to_visible_in_pixels =
           TilePriority::manhattanDistance(current_screen_rect, view_rect);
-      it->second->set_priority(tree, priority);
+
+      TilePriority priority(
+          resolution_,
+          time_to_visible_in_seconds,
+          distance_to_visible_in_pixels);
+      tile->set_priority(tree, priority);
     }
   }
   else
   {
-    for (TileMap::const_iterator it = tiles_.begin();
-           it != tiles_.end(); ++it) {
-      TileMapKey key = it->first;
-      TilePriority priority;
-      priority.resolution = resolution_;
+    for (TilingData::Iterator iter(&tiling_data_, inflated_rect);
+         iter; ++iter) {
+      TileMap::iterator find = tiles_.find(iter.index());
+      if (find == tiles_.end())
+        continue;
+      Tile* tile = find->second.get();
 
-      gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
+      gfx::Rect tile_bounds =
+          tiling_data_.TileBounds(iter.index_x(), iter.index_y());
       gfx::RectF current_layer_content_rect = gfx::ScaleRect(
-          tile_bound,
+          tile_bounds,
           current_scale,
           current_scale);
       gfx::RectF current_screen_rect = MathUtil::mapClippedRect(
           current_screen_transform, current_layer_content_rect);
       gfx::RectF last_layer_content_rect = gfx::ScaleRect(
-          tile_bound,
+          tile_bounds,
           last_scale,
           last_scale);
       gfx::RectF last_screen_rect  = MathUtil::mapClippedRect(
           last_screen_transform, last_layer_content_rect);
 
-      priority.time_to_visible_in_seconds =
+      float time_to_visible_in_seconds =
           TilePriority::TimeForBoundsToIntersect(
               last_screen_rect, current_screen_rect, time_delta, view_rect);
-
-      priority.distance_to_visible_in_pixels =
+      float distance_to_visible_in_pixels =
           TilePriority::manhattanDistance(current_screen_rect, view_rect);
-      it->second->set_priority(tree, priority);
+
+      TilePriority priority(
+          resolution_,
+          time_to_visible_in_seconds,
+          distance_to_visible_in_pixels);
+      tile->set_priority(tree, priority);
     }
   }
 }
