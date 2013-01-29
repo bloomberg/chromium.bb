@@ -246,7 +246,7 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
 
   virtual void TearDown() {
     RenderViewHostImplTestHarness::TearDown();
-    WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(&factory_);
+    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
   }
 
  private:

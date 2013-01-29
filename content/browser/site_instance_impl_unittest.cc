@@ -63,7 +63,7 @@ class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
   }
 
   ~SiteInstanceTestBrowserClient() {
-    WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(&factory_);
+    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
   }
 
   virtual bool IsSuitableHost(RenderProcessHost* process_host,

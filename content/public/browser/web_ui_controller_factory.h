@@ -25,6 +25,8 @@ class CONTENT_EXPORT WebUIControllerFactory {
   // Call to register a factory.
   static void RegisterFactory(WebUIControllerFactory* factory);
 
+  static void UnregisterFactoryForTesting(WebUIControllerFactory* factory);
+
   // Returns a WebUIController instance for the given URL, or NULL if the URL
   // doesn't correspond to a WebUI.
   virtual WebUIController* CreateWebUIControllerForURL(
