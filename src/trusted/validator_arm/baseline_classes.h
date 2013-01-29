@@ -1078,6 +1078,7 @@ class PreloadRegisterImm12Op : public ClassDecoder {
   PreloadRegisterImm12Op() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   virtual bool is_literal_load(Instruction i) const;
 
@@ -1114,6 +1115,7 @@ class PreloadRegisterPairOp : public ClassDecoder {
   PreloadRegisterPairOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
  private:

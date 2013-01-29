@@ -164,6 +164,7 @@ class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
 class Deprecated : UnsafeCondDecoder
 class Forbidden : UnsafeCondDecoder
 class Undefined : UnsafeCondDecoder
+class Unpredictable : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
 class ForbiddenUncondDecoder : UnsafeUncondDecoder
 class LdrImmediateOp : Load2RegisterImm12Op
@@ -2447,97 +2448,162 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                        = *Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
-+-- memory_hints_advanced_simd_instructions_and_miscellaneous_instructions (See Section A5.7.1)
++-- memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
+    (See Section A5.7.1)
+*Nop
+  baseline := CondDecoder;
+  defs := {};
+  uses := {};
+*Forbidden *Nop
+  baseline := Forbidden;
+  safety := true => FORBIDDEN;
+*Undefined *Nop
+  baseline := Undefined;
+  safety := true => UNDEFINED;
+*Unpredictable *Nop
+  baseline := Unpredictable;
+  safety := true => UNPREDICTABLE;
+*DataBarrier
+  { option(3:0) }
+  baseline := DataBarrier;
+  safety := not option in
+            {'1111', '1110', '1011', '1010',
+             '0111', '0110', '0011', '0010'} => FORBIDDEN_OPERANDS;
+*InstructionBarrier
+  { option(3:0) }
+  baseline := InstructionBarrier;
+  safety := option=~1111 => FORBIDDEN_OPERANDS;
+*PreloadLit
+  { U(23), imm12(11:0) }
+  baseline := PreloadRegisterImm12Op;
+  imm32 := ZeroExtend(imm12, 32);  add := U=1;
+  base := Pc;
+  defs := {};
+  uses := {Pc};
+  safety := true => MAY_BE_SAFE;
+*PreloadData *PreloadLit
+  { U(23), R(22), Rn(19:16), imm12(11:0) }
+  is_pldw := R=0;
+  base := Rn;
+  uses := {Rn};
+  safety := Rn=1111 => DECODER_ERROR;
+*PreloadDataReg
+  { U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0) }
+  baseline := PreloadRegisterPairOp;  
+  add := U=1; is_pldw := R=1;
+  shift := DecodeImmShift(type, imm5);
+  base := Rn;
+  defs := {};
+  uses := {Rm, Rn};
+  safety :=  Rm == Pc | (Rn == Pc & is_pldw) => UNPREDICTABLE &
+             true => FORBIDDEN_OPERANDS;
+*PreloadInst
+  { U(23), Rn(19:16), imm12(11:0) }
+  baseline := PreloadRegisterImm12Op;
+  imm32 := ZeroExtend(imm12, 32);  add := U=1;
+  base := Rn;
+  defs := {};
+  uses := {Rn};
+  safety := true => MAY_BE_SAFE;
+  is_literal_load := Rn == Pc;
+*PreloadInstReg
+  { U(23), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0) }
+  baseline := PreloadRegisterPairOp;
+  add := U=1;
+  shift := DecodeImmShift(type, imm5);
+  base := Rn;
+  defs := {};
+  uses := {Rm, Rn};
+  safety :=  Rm == Pc => UNPREDICTABLE &
+             true => FORBIDDEN_OPERANDS;
++--
 | op1(26:20) op2(7:4) Rn(19:16)
-| 001_0000   xx0x     xxx0  = ForbiddenUncondDecoder => Forbidden
-                              Cps_Rule_b6_1_1_A1_B6_3
-                              111100010000iii00000000iii0iiiii (v6)
-| 001_0000   0000     xxx1  = ForbiddenUncondDecoder => Forbidden
-                              Setend_Rule_157_P314
-                              1111000100000001000000i000000000 (v6)
-| 01x_xxxx   -        -     ->advanced_simd_data_processing_instructions
-| 100_xxx0   -        -     ->advanced_simd_element_or_structure_load_store_instructions
-| 100_x001   -        -     = ForbiddenUncondDecoder => Forbidden
-                              Unallocated_hints
-                              # Manual says these are treated as NOPs, disallow
-                              # until proven necessary.
-                              11110100x001xxxxxxxxxxxxxxxxxxxx (MPExt)
-| 100_x101   -        -     = PreloadRegisterImm12Op
-                              Pli_Rule_120_A1_P242
-                              11110100u101nnnn1111iiiiiiiiiiii (v7)
-| 100_xx11   -        -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              11110100xx11xxxxxxxxxxxxxxxxxxxx
-| 101_x001   -        ~1111 = PreloadRegisterImm12Op
-                              Pldw_Rule_117_A1_P236
-                              11110101u001nnnn1111iiiiiiiiiiii
-                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx (MP)
-| "          -        1111  = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              11110101x001xxxxxxxxxxxxxxxxxxxx
-| 101_x101   -        ~1111 = PreloadRegisterImm12Op
-                              Pld_Rule_117_A1_P236
-                              11110101u101nnnn1111iiiiiiiiiiii
-                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx (v5TE)
-| "          -        1111  = PreloadRegisterImm12Op
-                              Pld_Rule_118_A1_P238
-                              11110101u10111111111iiiiiiiiiiii (v5TE)
-| 101_0011   -        -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              111101010011xxxxxxxxxxxxxxxxxxxx
-| 101_0111   0000     -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              111101010111xxxxxxxxxxxx0000xxxx
-| "          0001     -     = ForbiddenUncondDecoder => Forbidden
-                              # Might affect global exclusive access record.
-                              # Disallow until proven useful.
-                              Clrex_Rule_30_A1_P70
-                              11110101011111111111000000011111 (v6K)
-| "          001x     -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              111101010111xxxxxxxxxxxx001xxxxx
-| "          0100     -     = DataBarrier
-                              Dsb_Rule_42_A1_P92
-                              # Note: Has safety constraint that xxxx in:
-                              # {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
-                              1111010101111111111100000100xxxx (v6T2)
-| "          0101     -     = DataBarrier
-                              Dmb_Rule_41_A1_P90
-                              # Note: Has safety constraint that xxxx in
-                              # {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
-                              1111010101111111111100000101xxxx (v7)
-| "          0110     -     = InstructionBarrier
-                              Isb_Rule_49_A1_P102
-                              # Note: Has safety constraint that xxxx = 1111
-                              1111010101111111111100000110xxxx (v6T2)
-| "          0111     -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              111101010111xxxxxxxxxxxx0111xxxx
-| "          1xxx     -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              111101010111xxxxxxxxxxxx1xxxxxxx
-| 101_1x11   -        -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              111101011x11xxxxxxxxxxxxxxxxxxxx
-| 110_x001   xxx0     -     = ForbiddenUncondDecoder => Forbidden
-                              Unallocated_hints
-                              # Manual says these are treated as NOPs, disallow
-                              # until proven necessary.
-                              11110110x001xxxxxxxxxxxxxxx0xxxx (MPExt)
-| 110_x101   xxx0     -     = PreloadRegisterPairOp
-                              Pli_Rule_121_A1_P244
-                              11110110u101nnnn1111iiiiitt0mmmm (v7)
-| 111_x001   xxx0     -     = PreloadRegisterPairOp
-                              Pldw_Rule_119_A1_P240
-                              11110111u001nnnn1111iiiiitt0mmmm (MPExt)
-| 111_x101   xxx0     -     = PreloadRegisterPairOp
-                              Pld_Rule_119_A1_P240
-                              11110111u101nnnn1111iiiiitt0mmmm (v5TE)
-| 11x_xx11   xxx0     -     = UnpredictableUncondDecoder => Unpredictable
-                              Unpredictable
-                              1111011xxx11xxxxxxxxxxxxxxx0xxxx
-| else:                     = Undefined   # Note on page A5-31
+| 001_0000   xx0x     xxx0  = *Forbidden
+                               pattern := 111100010000iii00000000iii0iiiii;
+                               rule := CPS;
+                               arch := v6;
+| 001_0000   0000     xxx1  = *Forbidden
+                               pattern := 1111000100000001000000i000000000;
+                               rule := SETEND;
+                               arch := v6;
+| 01x_xxxx   -        -     -> advanced_simd_data_processing_instructions
+| 100_xxx0   -        -     ->
+               advanced_simd_element_or_structure_load_store_instructions
+| 100_x001   -        -     = *Forbidden
+                               # Manual says these are treated as NOPs,
+                               # disallow until proven necessary.
+                               pattern := 11110100x001xxxxxxxxxxxxxxxxxxxx;
+                               arch := MPExt;
+| 100_x101   -        -     = *PreloadInst
+                               pattern := 11110100u101nnnn1111iiiiiiiiiiii;
+                               rule := PLI_immediate_literal;
+                               arch := v7;
+| 100_xx11   -        -     = *Unpredictable
+                               pattern := 11110100xx11xxxxxxxxxxxxxxxxxxxx;
+| 101_x001   -        ~1111 = *PreloadData
+                               pattern := 11110101ur01nnnn1111iiiiiiiiiiii;
+                               rule := PLD_PLDW_immediate;
+                               arch := MPExt;
+| "          -        1111  = *Unpredictable
+                               pattern := 11110101x001xxxxxxxxxxxxxxxxxxxx;
+| 101_x101   -        ~1111 = *PreloadData
+                               pattern := 11110101ur01nnnn1111iiiiiiiiiiii;
+                               rule := PLD_PLDW_immediate;
+                               arch := v5TE;
+| "          -        1111  = *PreloadLit
+                               pattern := 11110101u10111111111iiiiiiiiiiii;
+                               rule := PLD_literal;
+                               arch := v5TE;                           
+| 101_0011   -        -     = *Unpredictable
+                               pattern := 111101010011xxxxxxxxxxxxxxxxxxxx;
+| 101_0111   0000     -     = *Unpredictable
+                               pattern := 111101010111xxxxxxxxxxxx0000xxxx;
+| "          0001     -     = *Forbidden
+                               # Might affect global exclusive access record.
+                               # Disallow until proven useful.
+                               pattern := 11110101011111111111000000011111;
+                               rule := CLREX;
+                               arch := V6K;
+| "          001x     -     = *Unpredictable
+                               pattern := 111101010111xxxxxxxxxxxx001xxxxx;
+| "          0100     -     = *DataBarrier
+                               pattern := 1111010101111111111100000100xxxx;
+                               rule := DSB;
+                               arch := v6T2;
+| "          0101     -     = *DataBarrier
+                               pattern := 1111010101111111111100000101xxxx;
+                               rule := DMB;
+                               arch := v7;
+| "          0110     -     = *InstructionBarrier
+                               pattern := 1111010101111111111100000110xxxx;
+                               rule := ISB;
+                               arch := v6T2;
+| "          0111     -     = *Unpredictable
+                               pattern := 111101010111xxxxxxxxxxxx0111xxxx;
+| "          1xxx     -     = *Unpredictable
+                               pattern := 111101010111xxxxxxxxxxxx1xxxxxxx;
+| 101_1x11   -        -     = *Unpredictable
+                               pattern := 111101011x11xxxxxxxxxxxxxxxxxxxx;
+| 110_x001   xxx0     -     = *Forbidden
+                               # Manual says these are treated as NOPs,
+                               # disallow until proven necessary.
+                               pattern := 11110110x001xxxxxxxxxxxxxxx0xxxx;
+                               arch := MPExt;
+| 110_x101   xxx0     -     = *PreloadInstReg
+                               pattern := 11110110u101nnnn1111iiiiitt0mmmm;
+                               rule := PLI_register;
+                               arch := v7;
+| 111_x001   xxx0     -     = *PreloadDataReg
+                               pattern := 11110111u001nnnn1111iiiiitt0mmmm;
+                               rule := PLD_PLDW_register;
+                               arch := MPExt;
+| 111_x101   xxx0     -     = *PreloadDataReg
+                               pattern := 11110111u101nnnn1111iiiiitt0mmmm;
+                               rule := PLD_PLDW_register;
+                               arch := v5TE;
+| 11x_xx11   xxx0     -     = *Unpredictable
+                               pattern := 1111011xxx11xxxxxxxxxxxxxxx0xxxx;
+| else:                     = *Undefined   # See note on ARM table.
 +--
 
 # TODO(karl): Add uses to corresponding classes.

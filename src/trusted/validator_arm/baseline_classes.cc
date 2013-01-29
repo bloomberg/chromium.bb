@@ -730,6 +730,10 @@ RegisterList PreloadRegisterImm12Op::defs(Instruction i) const {
   return RegisterList();
 }
 
+RegisterList PreloadRegisterImm12Op::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
+
 Register PreloadRegisterImm12Op::base_address_register(Instruction i) const {
   return n.reg(i);
 }
@@ -751,6 +755,10 @@ SafetyLevel PreloadRegisterPairOp::safety(Instruction i) const {
 RegisterList PreloadRegisterPairOp::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
+}
+
+RegisterList PreloadRegisterPairOp::uses(Instruction i) const {
+  return RegisterList().Add(n.reg(i)).Add(m.reg(i));
 }
 
 Register PreloadRegisterPairOp::base_address_register(Instruction i) const {

@@ -1624,6 +1624,43 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// CLREX_11110101011111111111000000011111_case_0:
+//
+//   {arch: V6K,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110101011111111111000000011111,
+//    rule: CLREX,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList CLREX_11110101011111111111000000011111_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel CLREX_11110101011111111111000000011111_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList CLREX_11110101011111111111000000011111_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // CLZ_cccc000101101111dddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -1965,6 +2002,43 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
 }
 
+// CPS_111100010000iii00000000iii0iiiii_case_0:
+//
+//   {arch: v6,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111100010000iii00000000iii0iiiii,
+//    rule: CPS,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList CPS_111100010000iii00000000iii0iiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel CPS_111100010000iii00000000iii0iiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList CPS_111100010000iii00000000iii0iiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0:
 //
 //   {D: D(22),
@@ -2056,6 +2130,94 @@ uses(Instruction inst) const {
   // uses: '{}'
   return RegisterList();
 }
+
+// DMB_1111010101111111111100000101xxxx_case_0:
+//
+//   {arch: v7,
+//    baseline: DataBarrier,
+//    constraints: ,
+//    fields: [option(3:0)],
+//    option: option(3:0),
+//    pattern: 1111010101111111111100000101xxxx,
+//    rule: DMB,
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+SafetyLevel DMB_1111010101111111111100000101xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // not '1111'(3:0)  ==
+  //          inst(3:0) ||
+  //       '1110'(3:0)  ==
+  //          inst(3:0) ||
+  //       '1011'(3:0)  ==
+  //          inst(3:0) ||
+  //       '1010'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0111'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0110'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0011'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0010'(3:0)  ==
+  //          inst(3:0) => FORBIDDEN_OPERANDS
+  if (!(((((inst.Bits() & 0x0000000F)) == ((15 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((14 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((11 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((10 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((7 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((6 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((3 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((2 & 0x0000000F))))))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+// DSB_1111010101111111111100000100xxxx_case_0:
+//
+//   {arch: v6T2,
+//    baseline: DataBarrier,
+//    constraints: ,
+//    fields: [option(3:0)],
+//    option: option(3:0),
+//    pattern: 1111010101111111111100000100xxxx,
+//    rule: DSB,
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+SafetyLevel DSB_1111010101111111111100000100xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // not '1111'(3:0)  ==
+  //          inst(3:0) ||
+  //       '1110'(3:0)  ==
+  //          inst(3:0) ||
+  //       '1011'(3:0)  ==
+  //          inst(3:0) ||
+  //       '1010'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0111'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0110'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0011'(3:0)  ==
+  //          inst(3:0) ||
+  //       '0010'(3:0)  ==
+  //          inst(3:0) => FORBIDDEN_OPERANDS
+  if (!(((((inst.Bits() & 0x0000000F)) == ((15 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((14 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((11 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((10 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((7 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((6 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((3 & 0x0000000F)))) ||
+       ((((inst.Bits() & 0x0000000F)) == ((2 & 0x0000000F))))))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
 
 // EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0:
 //
@@ -2271,6 +2433,29 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F))).
    Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
 }
+
+// ISB_1111010101111111111100000110xxxx_case_0:
+//
+//   {arch: v6T2,
+//    baseline: InstructionBarrier,
+//    constraints: ,
+//    fields: [option(3:0)],
+//    option: option(3:0),
+//    pattern: 1111010101111111111100000110xxxx,
+//    rule: ISB,
+//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS]}
+SafetyLevel ISB_1111010101111111111100000110xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(3:0)=~1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000000F)  !=
+          0x0000000F)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
 
 // LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0:
 //
@@ -6986,6 +7171,444 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+// PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: MPExt,
+//    base: Rn,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_pldw: R(22)=0,
+//    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
+//    rule: PLD_PLDW_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR],
+//    true: true,
+//    uses: {Rn}}
+Register PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Rn,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_pldw: R(22)=0,
+//    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
+//    rule: PLD_PLDW_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR],
+//    true: true,
+//    uses: {Rn}}
+Register PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: MPExt,
+//    base: Rn,
+//    baseline: PreloadRegisterPairOp,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
+//    imm5: imm5(11:7),
+//    is_pldw: R(22)=1,
+//    pattern: 11110111u001nnnn1111iiiiitt0mmmm,
+//    rule: PLD_PLDW_register,
+//    safety: [Rm  ==
+//            Pc ||
+//         (Rn  ==
+//            Pc &&
+//         is_pldw) => UNPREDICTABLE,
+//      true => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    true: true,
+//    type: type(6:5),
+//    uses: {Rm, Rn}}
+Register PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(3:0) ||
+  //       (15  ==
+  //          inst(19:16) &&
+  //       inst(22)=1) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000000F)) == (15))) ||
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) &&
+       ((inst.Bits() & 0x00400000)  ==
+          0x00400000))))
+    return UNPREDICTABLE;
+
+  // true => FORBIDDEN_OPERANDS
+  if (true)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(19:16)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Rn,
+//    baseline: PreloadRegisterPairOp,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
+//    imm5: imm5(11:7),
+//    is_pldw: R(22)=1,
+//    pattern: 11110111u101nnnn1111iiiiitt0mmmm,
+//    rule: PLD_PLDW_register,
+//    safety: [Rm  ==
+//            Pc ||
+//         (Rn  ==
+//            Pc &&
+//         is_pldw) => UNPREDICTABLE,
+//      true => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    true: true,
+//    type: type(6:5),
+//    uses: {Rm, Rn}}
+Register PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(3:0) ||
+  //       (15  ==
+  //          inst(19:16) &&
+  //       inst(22)=1) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000000F)) == (15))) ||
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) &&
+       ((inst.Bits() & 0x00400000)  ==
+          0x00400000))))
+    return UNPREDICTABLE;
+
+  // true => FORBIDDEN_OPERANDS
+  if (true)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(19:16)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Pc,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    pattern: 11110101u10111111111iiiiiiiiiiii,
+//    rule: PLD_literal,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Pc}}
+Register PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v7,
+//    base: Rn,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: Rn  ==
+//            Pc,
+//    pattern: 11110100u101nnnn1111iiiiiiiiiiii,
+//    rule: PLI_immediate_literal,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Rn}}
+Register PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+bool PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: '15  ==
+  //          inst(19:16)'
+  return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
+}
+
+SafetyLevel PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v7,
+//    base: Rn,
+//    baseline: PreloadRegisterPairOp,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: 11110110u101nnnn1111iiiiitt0mmmm,
+//    rule: PLI_register,
+//    safety: [Rm  ==
+//            Pc => UNPREDICTABLE,
+//      true => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    true: true,
+//    type: type(6:5),
+//    uses: {Rm, Rn}}
+Register PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000000F)) == (15)))
+    return UNPREDICTABLE;
+
+  // true => FORBIDDEN_OPERANDS
+  if (true)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(19:16)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
 // QADD16_cccc01100010nnnndddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -8892,6 +9515,43 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SETEND_1111000100000001000000i000000000_case_0:
+//
+//   {arch: v6,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 1111000100000001000000i000000000,
+//    rule: SETEND,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList SETEND_1111000100000001000000i000000000_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel SETEND_1111000100000001000000i000000000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SETEND_1111000100000001000000i000000000_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
 }
 
 // SEV_cccc0011001000001111000000000100_case_0:

@@ -2926,6 +2926,250 @@ class UXTH_cccc011011111111ddddrr000111mmmm_case_0
       UXTH_cccc011011111111ddddrr000111mmmm_case_0);
 };
 
+// Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {arch: MPExt,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110100x001xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0);
+};
+
+// Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110100xx11xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0);
+};
+
+// Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010011xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0);
+};
+
+// Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx0000xxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0);
+};
+
+// Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx001xxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0);
+};
+
+// Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx0111xxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0);
+};
+
+// Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx1xxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0);
+};
+
+// Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101011x11xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0);
+};
+
+// Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110101x001xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0);
+};
+
+// Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0:
+//
+//   {arch: MPExt,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110110x001xxxxxxxxxxxxxxx0xxxx,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0);
+};
+
+// Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 1111011xxx11xxxxxxxxxxxxxxx0xxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+class Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0
+     : public ClassDecoder {
+ public:
+  Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0);
+};
+
 // Unnamed_case_0:
 //
 //   {baseline: Forbidden,

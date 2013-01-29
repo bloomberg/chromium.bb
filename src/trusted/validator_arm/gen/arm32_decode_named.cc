@@ -1898,7 +1898,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00010000 /* Rn(19:16)=xxx1 */ &&
       (inst.Bits() & 0x000EFD0F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000 */) {
-    return ForbiddenUncondDecoder_Setend_Rule_157_P314_instance_;
+    return Forbidden_SETEND_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
@@ -1909,19 +1909,19 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00000000 /* Rn(19:16)=xxx0 */ &&
       (inst.Bits() & 0x0000FE00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx */) {
-    return ForbiddenUncondDecoder_Cps_Rule_b6_1_1_A1_B6_3_instance_;
+    return Forbidden_CPS_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
           0x05300000 /* op1(26:20)=1010011 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
           0x05700000 /* op1(26:20)=1010111 */ &&
       (inst.Bits() & 0x000000F0)  ==
           0x00000000 /* op2(7:4)=0000 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
@@ -1930,7 +1930,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00000010 /* op2(7:4)=0001 */ &&
       (inst.Bits() & 0x000FFF0F)  ==
           0x000FF00F /* $pattern(31:0)=xxxxxxxxxxxx111111110000xxxx1111 */) {
-    return ForbiddenUncondDecoder_Clrex_Rule_30_A1_P70_instance_;
+    return Forbidden_CLREX_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
@@ -1939,7 +1939,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00000040 /* op2(7:4)=0100 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FF000 /* $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx */) {
-    return DataBarrier_Dsb_Rule_42_A1_P92_instance_;
+    return DataBarrier_DSB_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
@@ -1948,7 +1948,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00000050 /* op2(7:4)=0101 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FF000 /* $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx */) {
-    return DataBarrier_Dmb_Rule_41_A1_P90_instance_;
+    return DataBarrier_DMB_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
@@ -1957,65 +1957,47 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00000060 /* op2(7:4)=0110 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FF000 /* $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx */) {
-    return InstructionBarrier_Isb_Rule_49_A1_P102_instance_;
+    return InstructionBarrier_ISB_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
           0x05700000 /* op1(26:20)=1010111 */ &&
       (inst.Bits() & 0x000000F0)  ==
           0x00000070 /* op2(7:4)=0111 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
           0x05700000 /* op1(26:20)=1010111 */ &&
       (inst.Bits() & 0x000000E0)  ==
           0x00000020 /* op2(7:4)=001x */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07F00000)  ==
           0x05700000 /* op1(26:20)=1010111 */ &&
       (inst.Bits() & 0x00000080)  ==
           0x00000080 /* op2(7:4)=1xxx */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07700000)  ==
           0x04100000 /* op1(26:20)=100x001 */) {
-    return ForbiddenUncondDecoder_Unallocated_hints_instance_;
+    return Forbidden_None_instance_;
   }
 
   if ((inst.Bits() & 0x07700000)  ==
           0x04500000 /* op1(26:20)=100x101 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterImm12Op_Pli_Rule_120_A1_P242_instance_;
-  }
-
-  if ((inst.Bits() & 0x07700000)  ==
-          0x05100000 /* op1(26:20)=101x001 */ &&
-      (inst.Bits() & 0x000F0000)  !=
-          0x000F0000 /* Rn(19:16)=~1111 */ &&
-      (inst.Bits() & 0x0000F000)  ==
-          0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterImm12Op_Pldw_Rule_117_A1_P236_instance_;
+    return PreloadRegisterImm12Op_PLI_immediate_literal_instance_;
   }
 
   if ((inst.Bits() & 0x07700000)  ==
           0x05100000 /* op1(26:20)=101x001 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x000F0000 /* Rn(19:16)=1111 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
-  }
-
-  if ((inst.Bits() & 0x07700000)  ==
-          0x05500000 /* op1(26:20)=101x101 */ &&
-      (inst.Bits() & 0x000F0000)  !=
-          0x000F0000 /* Rn(19:16)=~1111 */ &&
-      (inst.Bits() & 0x0000F000)  ==
-          0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterImm12Op_Pld_Rule_117_A1_P236_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07700000)  ==
@@ -2024,14 +2006,14 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterImm12Op_Pld_Rule_118_A1_P238_instance_;
+    return PreloadRegisterImm12Op_PLD_literal_instance_;
   }
 
   if ((inst.Bits() & 0x07700000)  ==
           0x06100000 /* op1(26:20)=110x001 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* op2(7:4)=xxx0 */) {
-    return ForbiddenUncondDecoder_Unallocated_hints_instance_;
+    return Forbidden_None_instance_;
   }
 
   if ((inst.Bits() & 0x07700000)  ==
@@ -2040,42 +2022,42 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
           0x00000000 /* op2(7:4)=xxx0 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOp_Pli_Rule_121_A1_P244_instance_;
-  }
-
-  if ((inst.Bits() & 0x07700000)  ==
-          0x07100000 /* op1(26:20)=111x001 */ &&
-      (inst.Bits() & 0x00000010)  ==
-          0x00000000 /* op2(7:4)=xxx0 */ &&
-      (inst.Bits() & 0x0000F000)  ==
-          0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOp_Pldw_Rule_119_A1_P240_instance_;
-  }
-
-  if ((inst.Bits() & 0x07700000)  ==
-          0x07500000 /* op1(26:20)=111x101 */ &&
-      (inst.Bits() & 0x00000010)  ==
-          0x00000000 /* op2(7:4)=xxx0 */ &&
-      (inst.Bits() & 0x0000F000)  ==
-          0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOp_Pld_Rule_119_A1_P240_instance_;
+    return PreloadRegisterPairOp_PLI_register_instance_;
   }
 
   if ((inst.Bits() & 0x07B00000)  ==
           0x05B00000 /* op1(26:20)=1011x11 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07300000)  ==
           0x04300000 /* op1(26:20)=100xx11 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
+  }
+
+  if ((inst.Bits() & 0x07300000)  ==
+          0x05100000 /* op1(26:20)=101xx01 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000F0000 /* Rn(19:16)=~1111 */ &&
+      (inst.Bits() & 0x0000F000)  ==
+          0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return PreloadRegisterImm12Op_PLD_PLDW_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x07300000)  ==
+          0x07100000 /* op1(26:20)=111xx01 */ &&
+      (inst.Bits() & 0x00000010)  ==
+          0x00000000 /* op2(7:4)=xxx0 */ &&
+      (inst.Bits() & 0x0000F000)  ==
+          0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return PreloadRegisterPairOp_PLD_PLDW_register_instance_;
   }
 
   if ((inst.Bits() & 0x06300000)  ==
           0x06300000 /* op1(26:20)=11xxx11 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* op2(7:4)=xxx0 */) {
-    return UnpredictableUncondDecoder_Unpredictable_instance_;
+    return Unpredictable_None_instance_;
   }
 
   if ((inst.Bits() & 0x07100000)  ==

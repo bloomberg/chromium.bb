@@ -934,6 +934,30 @@ class CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0
       CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0);
 };
 
+// CLREX_11110101011111111111000000011111_case_0:
+//
+//   {arch: V6K,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110101011111111111000000011111,
+//    rule: CLREX,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class CLREX_11110101011111111111000000011111_case_0
+     : public ClassDecoder {
+ public:
+  CLREX_11110101011111111111000000011111_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      CLREX_11110101011111111111000000011111_case_0);
+};
+
 // CLZ_cccc000101101111dddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -1154,6 +1178,30 @@ class CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0
       CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0);
 };
 
+// CPS_111100010000iii00000000iii0iiiii_case_0:
+//
+//   {arch: v6,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111100010000iii00000000iii0iiiii,
+//    rule: CPS,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class CPS_111100010000iii00000000iii0iiiii_case_0
+     : public ClassDecoder {
+ public:
+  CPS_111100010000iii00000000iii0iiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      CPS_111100010000iii00000000iii0iiiii_case_0);
+};
+
 // CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0:
 //
 //   {D: D(22),
@@ -1213,6 +1261,48 @@ class DBG_cccc001100100000111100001111iiii_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       DBG_cccc001100100000111100001111iiii_case_0);
+};
+
+// DMB_1111010101111111111100000101xxxx_case_0:
+//
+//   {arch: v7,
+//    baseline: DataBarrier,
+//    constraints: ,
+//    fields: [option(3:0)],
+//    option: option(3:0),
+//    pattern: 1111010101111111111100000101xxxx,
+//    rule: DMB,
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+class DMB_1111010101111111111100000101xxxx_case_0
+     : public ClassDecoder {
+ public:
+  DMB_1111010101111111111100000101xxxx_case_0()
+     : ClassDecoder() {}
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      DMB_1111010101111111111100000101xxxx_case_0);
+};
+
+// DSB_1111010101111111111100000100xxxx_case_0:
+//
+//   {arch: v6T2,
+//    baseline: DataBarrier,
+//    constraints: ,
+//    fields: [option(3:0)],
+//    option: option(3:0),
+//    pattern: 1111010101111111111100000100xxxx,
+//    rule: DSB,
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+class DSB_1111010101111111111100000100xxxx_case_0
+     : public ClassDecoder {
+ public:
+  DSB_1111010101111111111100000100xxxx_case_0()
+     : ClassDecoder() {}
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      DSB_1111010101111111111100000100xxxx_case_0);
 };
 
 // EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0:
@@ -1335,6 +1425,27 @@ class EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0);
+};
+
+// ISB_1111010101111111111100000110xxxx_case_0:
+//
+//   {arch: v6T2,
+//    baseline: InstructionBarrier,
+//    constraints: ,
+//    fields: [option(3:0)],
+//    option: option(3:0),
+//    pattern: 1111010101111111111100000110xxxx,
+//    rule: ISB,
+//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS]}
+class ISB_1111010101111111111100000110xxxx_case_0
+     : public ClassDecoder {
+ public:
+  ISB_1111010101111111111100000110xxxx_case_0()
+     : ClassDecoder() {}
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      ISB_1111010101111111111100000110xxxx_case_0);
 };
 
 // LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0:
@@ -3833,6 +3944,265 @@ class PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0
       PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0);
 };
 
+// PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: MPExt,
+//    base: Rn,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_pldw: R(22)=0,
+//    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
+//    rule: PLD_PLDW_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR],
+//    true: true,
+//    uses: {Rn}}
+class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0);
+};
+
+// PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Rn,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_pldw: R(22)=0,
+//    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
+//    rule: PLD_PLDW_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR],
+//    true: true,
+//    uses: {Rn}}
+class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1);
+};
+
+// PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: MPExt,
+//    base: Rn,
+//    baseline: PreloadRegisterPairOp,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
+//    imm5: imm5(11:7),
+//    is_pldw: R(22)=1,
+//    pattern: 11110111u001nnnn1111iiiiitt0mmmm,
+//    rule: PLD_PLDW_register,
+//    safety: [Rm  ==
+//            Pc ||
+//         (Rn  ==
+//            Pc &&
+//         is_pldw) => UNPREDICTABLE,
+//      true => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    true: true,
+//    type: type(6:5),
+//    uses: {Rm, Rn}}
+class PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0);
+};
+
+// PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0:
+//
+//   {Pc: 15,
+//    R: R(22),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Rn,
+//    baseline: PreloadRegisterPairOp,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
+//    imm5: imm5(11:7),
+//    is_pldw: R(22)=1,
+//    pattern: 11110111u101nnnn1111iiiiitt0mmmm,
+//    rule: PLD_PLDW_register,
+//    safety: [Rm  ==
+//            Pc ||
+//         (Rn  ==
+//            Pc &&
+//         is_pldw) => UNPREDICTABLE,
+//      true => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    true: true,
+//    type: type(6:5),
+//    uses: {Rm, Rn}}
+class PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0);
+};
+
+// PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Pc,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    pattern: 11110101u10111111111iiiiiiiiiiii,
+//    rule: PLD_literal,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Pc}}
+class PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0);
+};
+
+// PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v7,
+//    base: Rn,
+//    baseline: PreloadRegisterImm12Op,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: Rn  ==
+//            Pc,
+//    pattern: 11110100u101nnnn1111iiiiiiiiiiii,
+//    rule: PLI_immediate_literal,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Rn}}
+class PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0);
+};
+
+// PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    add: U(23)=1,
+//    arch: v7,
+//    base: Rn,
+//    baseline: PreloadRegisterPairOp,
+//    constraints: ,
+//    defs: {},
+//    fields: [U(23), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: 11110110u101nnnn1111iiiiitt0mmmm,
+//    rule: PLI_register,
+//    safety: [Rm  ==
+//            Pc => UNPREDICTABLE,
+//      true => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    true: true,
+//    type: type(6:5),
+//    uses: {Rm, Rn}}
+class PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_0);
+};
+
 // QADD16_cccc01100010nnnndddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -4910,6 +5280,30 @@ class SEL_cccc01101000nnnndddd11111011mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       SEL_cccc01101000nnnndddd11111011mmmm_case_0);
+};
+
+// SETEND_1111000100000001000000i000000000_case_0:
+//
+//   {arch: v6,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 1111000100000001000000i000000000,
+//    rule: SETEND,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class SETEND_1111000100000001000000i000000000_case_0
+     : public ClassDecoder {
+ public:
+  SETEND_1111000100000001000000i000000000_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      SETEND_1111000100000001000000i000000000_case_0);
 };
 
 // SEV_cccc0011001000001111000000000100_case_0:

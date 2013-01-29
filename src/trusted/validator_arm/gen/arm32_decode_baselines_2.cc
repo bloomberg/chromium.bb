@@ -5391,6 +5391,393 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+// Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {arch: MPExt,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110100x001xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110100xx11xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010011xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx0000xxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx001xxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx0111xxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101010111xxxxxxxxxxxx1xxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 111101011x11xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110101x001xxxxxxxxxxxxxxxxxxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0:
+//
+//   {arch: MPExt,
+//    baseline: Forbidden,
+//    constraints: ,
+//    defs: {},
+//    pattern: 11110110x001xxxxxxxxxxxxxxx0xxxx,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0:
+//
+//   {baseline: Unpredictable,
+//    constraints: ,
+//    defs: {},
+//    pattern: 1111011xxx11xxxxxxxxxxxxxxx0xxxx,
+//    safety: [true => UNPREDICTABLE],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNPREDICTABLE
+  if (true)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Unnamed_case_0:
 //
 //   {baseline: Forbidden,
