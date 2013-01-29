@@ -611,9 +611,6 @@ const char kEnableQueryExtraction[]         = "enable-query-extraction";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
-// Enables rich templated notifications and NotificationCenter.
-const char kEnableRichNotifications[]       = "enable-rich-notifications";
-
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
 // use "--enable-sdch=0" as command line argument. SDCH is currently only

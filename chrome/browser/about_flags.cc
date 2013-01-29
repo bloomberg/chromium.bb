@@ -32,6 +32,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/surface_switches.h"
 
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center_switches.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #endif
@@ -1220,13 +1224,15 @@ const Experiment kExperiments[] = {
     kOsWin | kOsMac | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kLoadCloudPolicyOnSignin)
   },
+#if defined(ENABLE_MESSAGE_CENTER)
   {
     "enable-rich-notifications",
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION,
     kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableRichNotifications)
+    SINGLE_VALUE_TYPE(message_center::switches::kEnableRichNotifications)
   },
+#endif
   {
     "full-history-sync",
     IDS_FLAGS_FULL_HISTORY_SYNC_NAME,

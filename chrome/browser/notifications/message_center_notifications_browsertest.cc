@@ -14,9 +14,12 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/message_center/message_center.h"
+
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center_switches.h"
+#endif
 
 class MessageCenterNotificationsTest : public InProcessBrowserTest {
  public:
@@ -25,7 +28,10 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // This switch enables the new piping of Notifications through Message
     // Center.
-    command_line->AppendSwitch(switches::kEnableRichNotifications);
+#if defined(ENABLE_MESSAGE_CENTER)
+    command_line->AppendSwitch(
+        message_center::switches::kEnableRichNotifications);
+#endif
   }
 
   MessageCenterNotificationManager* manager() {
