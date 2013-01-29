@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/power/power_state_override.h"
@@ -22,6 +23,11 @@ class PowerSaveBlockerImpl::Delegate
   // management behavior.
   void ApplyBlock() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    // Do nothing when not running on real CrOS devices.
+    if (!base::chromeos::IsRunningOnChromeOS())
+      return;
+
     chromeos::PowerStateOverride::Mode mode =
         chromeos::PowerStateOverride::BLOCK_SYSTEM_SUSPEND;
     switch (type_) {
