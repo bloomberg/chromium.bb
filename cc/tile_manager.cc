@@ -52,17 +52,17 @@ TileManagerBin BinFromTilePriority(const TilePriority& prio) {
       return cc::NEVER_BIN;
   }
 
-  if (prio.time_to_needed_in_seconds() == std::numeric_limits<float>::max())
+  if (prio.time_to_visible_in_seconds == std::numeric_limits<float>::max())
     return NEVER_BIN;
 
-  if (prio.time_to_needed_in_seconds() == 0 ||
+  if (prio.time_to_visible_in_seconds == 0 ||
       prio.distance_to_visible_in_pixels < backfling_guard_distance_pixels)
     return NOW_BIN;
 
   if (prio.resolution == NON_IDEAL_RESOLUTION)
     return EVENTUALLY_BIN;
 
-  if (prio.time_to_needed_in_seconds() < prepainting_window_time_seconds)
+  if (prio.time_to_visible_in_seconds < prepainting_window_time_seconds)
     return SOON_BIN;
 
   return EVENTUALLY_BIN;
@@ -272,7 +272,7 @@ void TileManager::ManageTiles() {
 
     mts.resolution = prio[HIGH_PRIORITY_BIN].resolution;
     mts.time_to_needed_in_seconds =
-        prio[HIGH_PRIORITY_BIN].time_to_needed_in_seconds();
+        prio[HIGH_PRIORITY_BIN].time_to_visible_in_seconds;
     mts.bin[HIGH_PRIORITY_BIN] = BinFromTilePriority(prio[HIGH_PRIORITY_BIN]);
     mts.bin[LOW_PRIORITY_BIN] = BinFromTilePriority(prio[LOW_PRIORITY_BIN]);
     mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());

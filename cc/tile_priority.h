@@ -40,7 +40,6 @@ struct CC_EXPORT TilePriority {
   TilePriority()
      : resolution(NON_IDEAL_RESOLUTION),
        time_to_visible_in_seconds(std::numeric_limits<float>::max()),
-       time_to_ideal_resolution_in_seconds(std::numeric_limits<float>::max()),
        distance_to_visible_in_pixels(std::numeric_limits<float>::max()) {}
 
   TilePriority(const TilePriority& active, const TilePriority& pending) {
@@ -56,17 +55,9 @@ struct CC_EXPORT TilePriority {
     time_to_visible_in_seconds =
       std::min(active.time_to_visible_in_seconds,
                pending.time_to_visible_in_seconds);
-    time_to_ideal_resolution_in_seconds =
-      std::min(active.time_to_ideal_resolution_in_seconds,
-               pending.time_to_ideal_resolution_in_seconds);
     distance_to_visible_in_pixels =
       std::min(active.distance_to_visible_in_pixels,
                pending.distance_to_visible_in_pixels);
-  }
-
-  float time_to_needed_in_seconds() const {
-    return std::min(time_to_visible_in_seconds,
-                    time_to_ideal_resolution_in_seconds);
   }
 
   static const double kMaxTimeToVisibleInSeconds;
@@ -83,7 +74,6 @@ struct CC_EXPORT TilePriority {
 
   TileResolution resolution;
   float time_to_visible_in_seconds;
-  float time_to_ideal_resolution_in_seconds;
   float distance_to_visible_in_pixels;
 };
 
