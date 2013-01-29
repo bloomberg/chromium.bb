@@ -2788,6 +2788,7 @@
                   '-fsanitize=address',
                   '-fno-omit-frame-pointer',
                   '-w',  # http://crbug.com/162783
+                  '-gline-tables-only',
                 ],
                 'ldflags': [
                   '-fsanitize=address',
