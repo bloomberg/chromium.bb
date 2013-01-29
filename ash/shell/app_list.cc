@@ -225,6 +225,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     DecorateSearchBox(model_->search_box());
   }
 
+  virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE {
+    return NULL;
+  }
+
   virtual void ActivateAppListItem(app_list::AppListItemModel* item,
                                    int event_flags) OVERRIDE {
     static_cast<WindowTypeLauncherItem*>(item)->Activate(event_flags);

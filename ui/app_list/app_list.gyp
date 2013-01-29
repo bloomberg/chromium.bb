@@ -49,6 +49,9 @@
         'search_result.h',
         'search_result_list_view_delegate.h',
         'search_result_view_delegate.h',
+        'signin_delegate.cc',
+        'signin_delegate.h',
+        'signin_delegate_observer.h',
         'views/app_list_background.cc',
         'views/app_list_background.h',
         'views/app_list_item_view.cc',
@@ -71,6 +74,8 @@
         'views/search_result_list_view.h',
         'views/search_result_view.cc',
         'views/search_result_view.h',
+        'views/signin_view.cc',
+        'views/signin_view.h',
       ],
       'conditions': [
         ['use_aura==1', {
@@ -80,6 +85,8 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
+            '../../content/content.gyp:content_browser',
+            '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
           ],
         }, {  # toolkit_views==0
