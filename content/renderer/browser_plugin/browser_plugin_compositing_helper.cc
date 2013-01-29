@@ -22,8 +22,11 @@ BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
     BrowserPluginManager* manager,
     int host_routing_id)
     : host_routing_id_(host_routing_id),
+      last_gpu_route_id_(0),
+      last_gpu_host_id_(0),
       last_mailbox_valid_(false),
       ack_pending_(true),
+      ack_pending_for_crashed_guest_(false),
       container_(container),
       browser_plugin_manager_(manager) {
 }
@@ -86,6 +89,31 @@ void BrowserPluginCompositingHelper::MailboxReleased(
     int gpu_route_id,
     int gpu_host_id,
     unsigned sync_point) {
+  // This means the GPU process crashed and we have nothing further to do.
+  // Nobody is expecting an ACK and the buffer doesn't need to be deleted
+  // because it went away with the GPU process.
+  if (last_gpu_host_id_ != gpu_host_id)
+    return;
+
+  // This means the guest crashed.
+  // Either ACK the last buffer, so texture transport could
+  // be destroyed of delete the mailbox if nobody wants it back.
+  if (last_gpu_route_id_ != gpu_route_id) {
+    if (!ack_pending_for_crashed_guest_) {
+      FreeMailboxMemory(mailbox_name, sync_point);
+    } else {
+      ack_pending_for_crashed_guest_ = false;
+      browser_plugin_manager_->Send(
+          new BrowserPluginHostMsg_BuffersSwappedACK(
+              host_routing_id_,
+              gpu_route_id,
+              gpu_host_id,
+              mailbox_name,
+              sync_point));
+    }
+    return;
+  }
+
   // We need to send an ACK to TextureImageTransportSurface
   // for every buffer it sends us. However, if a buffer is freed up from
   // the compositor in cases like switching back to SW mode without a new
@@ -120,6 +148,22 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     const std::string& mailbox_name,
     int gpu_route_id,
     int gpu_host_id) {
+  // If the guest crashed but the GPU process didn't, we may still have
+  // a transport surface waiting on an ACK, which we must send to
+  // avoid leaking.
+  if (last_gpu_route_id_ != gpu_route_id && last_gpu_host_id_ == gpu_host_id)
+    ack_pending_for_crashed_guest_ = ack_pending_;
+
+  // If these mismatch, we are either just starting up, GPU process crashed or
+  // guest renderer crashed.
+  // In this case, we are communicating with a new image transport
+  // surface and must ACK with the new ID's and an empty mailbox.
+  if (last_gpu_route_id_ != gpu_route_id || last_gpu_host_id_ != gpu_host_id)
+    last_mailbox_valid_ = false;
+
+  last_gpu_route_id_ = gpu_route_id;
+  last_gpu_host_id_ = gpu_host_id;
+
   ack_pending_ = true;
   // Browser plugin getting destroyed, do a fast ACK.
   if (!texture_layer_) {

@@ -51,8 +51,11 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                        unsigned sync_point);
 
   int host_routing_id_;
+  int last_gpu_route_id_;
+  int last_gpu_host_id_;
   bool last_mailbox_valid_;
   bool ack_pending_;
+  bool ack_pending_for_crashed_guest_;
 
   gfx::Size buffer_size_;
 
