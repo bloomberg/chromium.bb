@@ -17,7 +17,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermissionManifest) {
+// Disabled after createHTMLNotification removal
+// (http://trac.webkit.org/changeset/140983)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DISABLED_NotificationsHasPermissionManifest) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
