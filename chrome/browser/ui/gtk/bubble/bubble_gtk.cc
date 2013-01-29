@@ -191,19 +191,22 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   // Resizing is handled by the program, not user.
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
 
-  // Attach all of the accelerators to the bubble.
-  for (BubbleAcceleratorsGtk::const_iterator i(BubbleAcceleratorsGtk::begin());
-       i != BubbleAcceleratorsGtk::end(); ++i) {
-    gtk_accel_group_connect(accel_group_,
-                            i->keyval,
-                            i->modifier_type,
-                            GtkAccelFlags(0),
-                            g_cclosure_new(G_CALLBACK(&OnGtkAcceleratorThunk),
-                                           this,
-                                           NULL));
+  if (!(attribute_flags & NO_ACCELERATORS)) {
+    // Attach all of the accelerators to the bubble.
+    for (BubbleAcceleratorsGtk::const_iterator
+             i(BubbleAcceleratorsGtk::begin());
+         i != BubbleAcceleratorsGtk::end();
+         ++i) {
+      gtk_accel_group_connect(accel_group_,
+                              i->keyval,
+                              i->modifier_type,
+                              GtkAccelFlags(0),
+                              g_cclosure_new(G_CALLBACK(&OnGtkAcceleratorThunk),
+                                             this,
+                                             NULL));
+    }
+    gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
   }
-
-  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
 
   // |requested_frame_style_| is used instead of |actual_frame_style_| here
   // because |actual_frame_style_| is only correct after calling
@@ -540,6 +543,10 @@ void BubbleGtk::StopGrabbingInput() {
     return;
   grab_input_ = false;
   gtk_grab_remove(window_);
+}
+
+GtkWindow* BubbleGtk::GetNativeWindow() {
+  return GTK_WINDOW(window_);
 }
 
 void BubbleGtk::Close() {

@@ -40,7 +40,7 @@ class BubbleDelegateGtk {
 };
 
 // This is the GTK implementation of Bubbles. Bubbles are like dialogs, but they
-// point to a given element on the screen. You should call BubbleGtk::Show,
+// can point to a given element on the screen. You should call BubbleGtk::Show,
 // which will create and display a bubble. The object is self deleting, when the
 // bubble is closed, you will be notified via
 // BubbleDelegateGtk::BubbleClosing(). Then the widgets and the underlying
@@ -67,6 +67,8 @@ class BubbleGtk : public content::NotificationObserver {
     MATCH_SYSTEM_THEME = 1 << 0,  // Matches system colors/themes when possible.
     POPUP_WINDOW = 1 << 1,  // Displays as popup instead of top-level window.
     GRAB_INPUT = 1 << 2,  // Causes bubble to grab keyboard/pointer input.
+    NO_ACCELERATORS = 1 << 3, // Does not register any of the default bubble
+                              // accelerators.
   };
 
   // Show a bubble, pointing at the area |rect| (in coordinates relative to
@@ -100,6 +102,8 @@ class BubbleGtk : public content::NotificationObserver {
   // a window that does not auto close, and is useful if an auto closing window
   // starts being inspected.
   void StopGrabbingInput();
+
+  GtkWindow* GetNativeWindow();
 
   GtkWidget* anchor_widget() { return anchor_widget_; }
 
