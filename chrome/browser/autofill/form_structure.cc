@@ -16,12 +16,13 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/autofill/autocheckout_page_meta_data.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_data_predictions.h"
 #include "chrome/common/form_field_data.h"
@@ -230,8 +231,6 @@ FormStructure::FormStructure(const FormData& form)
       checkable_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
-      current_page_number_(-1),
-      total_pages_(-1),
       has_author_specified_types_(false),
       experimental_form_filling_enabled_(
           CommandLine::ForCurrentProcess()->HasSwitch(
@@ -414,9 +413,11 @@ bool FormStructure::EncodeQueryRequest(
 }
 
 // static
-void FormStructure::ParseQueryResponse(const std::string& response_xml,
-                                       const std::vector<FormStructure*>& forms,
-                                       const AutofillMetrics& metric_logger) {
+void FormStructure::ParseQueryResponse(
+    const std::string& response_xml,
+    const std::vector<FormStructure*>& forms,
+    autofill::AutocheckoutPageMetaData* page_meta_data,
+    const AutofillMetrics& metric_logger) {
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
@@ -429,6 +430,16 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
   if (!parse_handler.succeeded())
     return;
+
+  page_meta_data->current_page_number = parse_handler.current_page_number();
+  page_meta_data->total_pages = parse_handler.total_pages();
+  if (parse_handler.proceed_element_descriptor()) {
+    page_meta_data->proceed_element_descriptor.reset(
+        new autofill::WebElementDescriptor(
+            *parse_handler.proceed_element_descriptor()));
+  } else {
+    page_meta_data->proceed_element_descriptor.reset();
+  }
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
   metric_logger.LogServerExperimentIdForQuery(experiment_id);
@@ -444,13 +455,6 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     FormStructure* form = *iter;
     form->upload_required_ = upload_required;
     form->server_experiment_id_ = experiment_id;
-    form->current_page_number_ = parse_handler.current_page_number();
-    form->total_pages_ = parse_handler.total_pages();
-    if (parse_handler.proceed_element_descriptor()) {
-      form->proceed_element_descriptor_.reset(
-          new autofill::WebElementDescriptor(
-              *parse_handler.proceed_element_descriptor()));
-    }
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field, ++current_info) {
@@ -1053,14 +1057,6 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     else if (field_type_token == "tel-local-suffix")
       field->set_phone_part(AutofillField::PHONE_SUFFIX);
   }
-}
-
-bool FormStructure::IsStartOfAutofillableFlow() const {
-  return current_page_number_ == 0 && total_pages_ > 0;
-}
-
-bool FormStructure::IsInAutofillableFlow() const {
-  return current_page_number_ >= 0 && current_page_number_ < total_pages_;
 }
 
 void FormStructure::IdentifySections(bool has_author_specified_sections) {

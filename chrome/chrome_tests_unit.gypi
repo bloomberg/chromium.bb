@@ -434,6 +434,7 @@
         'browser/autocomplete/shortcuts_provider_unittest.cc',
         'browser/autofill/address_field_unittest.cc',
         'browser/autofill/address_unittest.cc',
+        'browser/autofill/autocheckout_page_meta_data_unittest.cc',
         'browser/autofill/autocomplete_history_manager_unittest.cc',
         'browser/autofill/autofill_country_unittest.cc',
         'browser/autofill/autofill_download_unittest.cc',

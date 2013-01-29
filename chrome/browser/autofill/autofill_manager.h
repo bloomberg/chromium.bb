@@ -23,6 +23,7 @@
 #include "base/time.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
+#include "chrome/browser/autofill/autocheckout_page_meta_data.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/autofill_manager_delegate.h"
@@ -385,6 +386,10 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
+
+  // To be passed to FormStructure::ParseQueryResponse to gather the page meta
+  // data.
+  autofill::AutocheckoutPageMetaData page_meta_data_;
 
   // GUID to ID mapping.  We keep two maps to convert back and forth.
   mutable std::map<PersonalDataManager::GUIDPair, int> guid_id_map_;

@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autocheckout_infobar_delegate.h"
+#include "chrome/browser/autofill/autocheckout_page_meta_data.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -1301,9 +1302,12 @@ TEST_F(AutofillMetricsTest, ServerQueryExperimentIdForQuery) {
   EXPECT_CALL(metric_logger,
               LogServerQueryMetric(
                   AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));
+  autofill::AutocheckoutPageMetaData page_meta_data;
   FormStructure::ParseQueryResponse(
       "<autofillqueryresponse></autofillqueryresponse>",
-      std::vector<FormStructure*>(), metric_logger);
+      std::vector<FormStructure*>(),
+      &page_meta_data,
+      metric_logger);
 
   // Experiment "ar1" specified.
   EXPECT_CALL(metric_logger,
@@ -1317,7 +1321,9 @@ TEST_F(AutofillMetricsTest, ServerQueryExperimentIdForQuery) {
                   AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS));
   FormStructure::ParseQueryResponse(
       "<autofillqueryresponse experimentid=\"ar1\"></autofillqueryresponse>",
-      std::vector<FormStructure*>(), metric_logger);
+      std::vector<FormStructure*>(),
+      &page_meta_data,
+      metric_logger);
 }
 
 // Verify that we correctly log user happiness metrics dealing with form loading
