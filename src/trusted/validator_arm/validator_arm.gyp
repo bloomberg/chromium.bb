@@ -47,7 +47,8 @@
         'model.cc',
         'validator.cc',
         'gen/arm32_decode.cc',
-        'gen/arm32_decode_actuals.cc'
+        'gen/arm32_decode_actuals_1.cc',
+        'gen/arm32_decode_actuals_2.cc'
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features'

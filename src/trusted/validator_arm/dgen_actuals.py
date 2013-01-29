@@ -155,6 +155,51 @@ def _AddActualToRow(r):
   row = dgen_core.Row(patterns, action)
   return row
 
+ACTUAL_BASE_H_HEADER="""%(FILE_HEADER)s
+#ifndef %(IFDEF_NAME)s
+#define %(IFDEF_NAME)s
+
+// Note: actual decoders are spread out over multiple files so that
+// they are small enough to be handled by the Rietveld server.
+"""
+
+ACTUAL_BASE_INCLUDE=(
+"""#include "%(FILEBASE)s_%(filename_index)s.h"
+""")
+
+ACTUAL_BASE_H_FOOTER="""
+#endif  // %(IFDEF_NAME)s
+"""
+
+def generate_actuals_base_h(decoder, decoder_name,
+                               filename, out, cl_args):
+  """Generates actual decoder C++ declarations in the given file.
+
+    Args:
+        decoder: The decoder tables.
+        decoder_name: The name of the decoder state to build.
+        filename: The (localized) name for the .h file.
+        out: a COutput object to write to.
+        cl_args: A dictionary of additional command line arguments.
+        """
+  if not decoder.primary: raise Exception('No tables provided.')
+
+  num_blocks = dgen_output.GetNumberCodeBlocks(cl_args['auto-actual-sep'])
+
+  assert filename.endswith('actuals.h')
+
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'IFDEF_NAME' : dgen_output.ifdef_name(filename),
+      'FILEBASE'   : filename[:-len('.h')],
+      'decoder_name': decoder_name,
+      }
+  out.write(ACTUAL_BASE_H_HEADER % values)
+  for block in range(1, num_blocks+1):
+    values['filename_index'] = block
+    out.write(ACTUAL_BASE_INCLUDE % values)
+  out.write(ACTUAL_BASE_H_FOOTER % values)
+
 ACTUAL_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s
 #define %(IFDEF_NAME)s
@@ -183,7 +228,11 @@ def generate_actuals_h(decoder, decoder_name, filename, out, cl_args):
         """
   if not decoder.primary: raise Exception('No tables provided.')
 
-  assert filename.endswith('actuals.h')
+  separators = cl_args['auto-actual-sep']
+  num_blocks = dgen_output.GetNumberCodeBlocks(separators)
+
+  # Find block to print
+  block = dgen_output.FindBlockIndex(filename, 'actuals_%s.h', num_blocks)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -191,7 +240,8 @@ def generate_actuals_h(decoder, decoder_name, filename, out, cl_args):
       'decoder_name': decoder_name,
       }
   out.write(ACTUAL_H_HEADER % values)
-  _print_actual_headers(GetActualDecoders(decoder), out)
+  _print_actual_headers(
+    GetActualDecodersBlock(decoder, block, separators), out)
   out.write(ACTUAL_H_FOOTER % values)
 
 ACTUAL_CC_HEADER="""%(FILE_HEADER)s
@@ -218,7 +268,11 @@ def generate_actuals_cc(decoder, decoder_name, filename, out, cl_args):
 
   if not decoder.primary: raise Exception('No tables provided.')
 
-  assert filename.endswith('actuals.cc')
+  separators = cl_args['auto-actual-sep']
+  num_blocks = dgen_output.GetNumberCodeBlocks(separators)
+
+  # Find block to print
+  block = dgen_output.FindBlockIndex(filename, 'actuals_%s.cc', num_blocks)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -226,7 +280,8 @@ def generate_actuals_cc(decoder, decoder_name, filename, out, cl_args):
       }
 
   out.write(ACTUAL_CC_HEADER % values)
-  _print_actual_classes(GetActualDecoders(decoder), out)
+  _print_actual_classes(
+    GetActualDecodersBlock(decoder, block, separators), out)
   out.write(ACTUAL_CC_FOOTER % values)
 
 ACTUAL_CLASS_HEADER="""
@@ -310,3 +365,18 @@ def _FixActualToBaselineMap():
     ACTUAL_TO_BASELINE_MAP[actual] = sorted(
         ACTUAL_TO_BASELINE_MAP[actual],
         key=dgen_decoder.BaselineNameAndBaseline)
+
+def GetActualDecodersBlock(decoder, n, separators):
+  """Returns the (sorted) list of actual classes to include
+     in block n, assuming actual classes are split using
+     the list of separators."""
+  return dgen_output.GetDecodersBlock(n, separators,
+                                      GetActualDecoders(decoder),
+                                      _ActualNameLessActualPrefix)
+
+def _ActualNameLessActualPrefix(decoder):
+  name = ActualName(decoder)
+  if name.startswith('Actual_'):
+    return name[len('Actual_'):]
+  else:
+    return name

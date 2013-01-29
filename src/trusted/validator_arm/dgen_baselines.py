@@ -114,7 +114,8 @@ def generate_baselines_base_h(decoder, decoder_name,
         """
   if not decoder.primary: raise Exception('No tables provided.')
 
-  num_blocks = GetNumberCodeBlocks(cl_args)
+  separators = cl_args['auto-baseline-sep']
+  num_blocks = dgen_output.GetNumberCodeBlocks(separators)
 
   assert filename.endswith('baselines.h')
 
@@ -160,10 +161,10 @@ def generate_baselines_h(decoder, decoder_name,
   if not decoder.primary: raise Exception('No tables provided.')
 
   separators = cl_args['auto-baseline-sep']
-  num_blocks = GetNumberCodeBlocksFromSeparators(separators)
+  num_blocks = dgen_output.GetNumberCodeBlocks(separators)
 
   # Find block to print
-  block = FindBlockIndex(filename, 'baselines_%s.h', num_blocks)
+  block = dgen_output.FindBlockIndex(filename, 'baselines_%s.h', num_blocks)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -201,10 +202,10 @@ def generate_baselines_cc(decoder, decoder_name, filename,
   if not decoder.primary: raise Exception('No tables provided.')
 
   separators = cl_args['auto-baseline-sep']
-  num_blocks = GetNumberCodeBlocks(cl_args)
+  num_blocks = dgen_output.GetNumberCodeBlocks(separators)
 
   # Find block to print
-  block = FindBlockIndex(filename, 'baselines_%s.cc', num_blocks)
+  block = dgen_output.FindBlockIndex(filename, 'baselines_%s.cc', num_blocks)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -283,46 +284,9 @@ def GetBaselineDecodersBlock(decoder, n, separators):
   """Returns the (sorted) list of baseline class to include
      in block n, assuming baseline classes are split using
      the list of separators."""
-  num_blocks = GetNumberCodeBlocksFromSeparators(separators)
-  assert n > 0 and n <= num_blocks
-  baselines = GetBaselineDecoders(decoder)
-  return [base for base in baselines
-          if ((n == 1
-               or IsPrefixLeBaseline(separators[n-2], base)) and
-              (n == num_blocks or
-               not IsPrefixLeBaseline(separators[n-1], base)))]
-
-def IsPrefixLeBaseline(prefix, baseline):
-  """Returns true if the prefix is less than or equal to the
-     corresponding prefix length of the baseline name."""
-  baseline_name = BaselineName(baseline)
-  prefix_len = len(prefix)
-  baseline_len = len(baseline_name)
-  baseline_prefix = (baseline_name[0:prefix_len]
-                     if prefix_len < baseline_len
-                     else baseline_name)
-  return prefix <= baseline_prefix
-
-def GetNumberCodeBlocksFromSeparators(separators):
-  """Returns the number of code blocks to use, base on the
-     list of spearators to use.
-     """
-  num_blocks = len(separators) + 1
-  assert num_blocks >= 2
-  return num_blocks
-
-def GetNumberCodeBlocks(cl_args):
-  """Gets the number of code blocks to break baseline classes into."""
-  num_blocks = len(cl_args['auto-baseline-sep']) + 1
-  assert num_blocks >= 2
-  return num_blocks
-
-def FindBlockIndex(filename, format, num_blocks):
-  for block in range(1, num_blocks+1):
-    suffix = format % block
-    if filename.endswith(suffix):
-      return block
-  raise Exception("Can't find block index: %s" % filename)
+  return dgen_output.GetDecodersBlock(n, separators,
+                                      GetBaselineDecoders(decoder),
+                                      BaselineName)
 
 def AddBaselinesToDecoder(decoder, tables=None):
   """Adds the automatically generated baseline decoders (in files

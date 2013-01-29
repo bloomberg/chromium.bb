@@ -32,8 +32,11 @@ if env.Bit('linux') and not env.Bit('android'):
 #       up to date.
 gen_env = env.Clone()
 
-# Defines this source directory.
-GEN_SRC_DIR = '${MAIN_DIR}/src/trusted/validator_arm/gen'
+# The subdirectory that generated source is put into.
+GEN_DIR = 'gen'
+
+# Defines this generated source directory.
+GEN_SRC_DIR = '${MAIN_DIR}/src/trusted/validator_arm/%s' % GEN_DIR
 
 # The list of command line arguments to be passed to the code generators.
 GEN_CL_ARGS=""
@@ -91,14 +94,32 @@ AUTO_GEN_TABLES = ["ARMv7",
                    "multiply_and_multiply_accumulate",
                    ]
 
+# The separators to use for splitting up automatically generated actual
+# classes.
+AUTO_ACTUAL_SEPARATORS = ['VABD']
+AUTO_ACTUAL_H_FORMAT = 'arm32_decode_actuals_%s.h'
+AUTO_ACTUAL_CC_FORMAT = 'arm32_decode_actuals_%s.cc'
+
 # The separators to use for splitting up automatically generated baseline
 # classes.
 AUTO_BASELINE_SEPARATORS = ['SMM', 'VLD']
+AUTO_BASELINE_H_FORMAT = 'arm32_decode_baselines_%s.h'
+AUTO_BASELINE_CC_FORMAT = 'arm32_decode_baselines_%s.cc'
+
+# Generates the corresponding automatically generated classes, when
+# split into files using the given separators.
+def GenerateSeparatorFiles(format, separators):
+  return [(format % (n+1)) for n in range(len(separators)+1)]
+
+# Generates the corresponding automatically generated actual classes,
+# when split into files using the separators in AUTO_ACTUAL_SEPARATORS
+def GenerateActualFiles(format):
+  return GenerateSeparatorFiles(format, AUTO_ACTUAL_SEPARATORS)
 
 # Generates the corresponding automatically generated baseline classes,
 # when split into files using the separators in AUTO_BASELINE_SEPARATORS
 def GenerateBaselineFiles(format):
-  return [(format % (n+1)) for n in range(len(AUTO_BASELINE_SEPARATORS)+1)]
+  return GenerateSeparatorFiles(format, AUTO_BASELINE_SEPARATORS)
 
 # Changes table name to test name.
 def _TableTestName(tbl):
@@ -108,23 +129,36 @@ def _TableTestName(tbl):
 def _gen_file(filename):
   return '%s/%s' % (GEN_SRC_DIR, filename)
 
+# Defines the full file name for a list of generated files.
+def _gen_files(filenames):
+  return [_gen_file(f) for f in filenames]
+
+# Extends a name to be in the GEN_DIR.
+def _gen_dir(filename):
+  return '%s/%s' % (GEN_DIR, filename)
+
+# Extends the names to be in the GEN_DIR.
+def _gen_dirs(filenames):
+  return [_gen_dir(f) for f in filenames]
+
 # The set of generated test files.
 GEN_TEST_LIST = [_TableTestName(x) + '.cc' for x in GEN_TABLES]
 
 # Other files, besides test files, that are generated.
 GEN_OTHER_LIST = (['arm32_decode.cc', 'arm32_decode.h',
                    'arm32_decode_actuals.h',
-                   'arm32_decode_actuals.cc',
                    'arm32_decode_baselines.h',
                    'arm32_decode_named.cc' ,
                    'arm32_decode_named_classes.h',
                    'arm32_decode_named_bases.h',
                    'arm32_decode_named_decoder.h'] +
-                  GenerateBaselineFiles('arm32_decode_baselines_%s.h') +
-                  GenerateBaselineFiles('arm32_decode_baselines_%s.cc'))
+                  GenerateActualFiles(AUTO_ACTUAL_H_FORMAT) +
+                  GenerateActualFiles(AUTO_ACTUAL_CC_FORMAT) +
+                  GenerateBaselineFiles(AUTO_BASELINE_H_FORMAT) +
+                  GenerateBaselineFiles(AUTO_BASELINE_CC_FORMAT))
 
 # Set of generated source files.
-GEN_LIST = [_gen_file(x) for x in (GEN_TEST_LIST + GEN_OTHER_LIST)]
+GEN_LIST = _gen_files(GEN_TEST_LIST + GEN_OTHER_LIST)
 
 generate = False
 gen_env = env.Clone()
@@ -143,6 +177,8 @@ def _generate_source(filename, table=None):
     cl_args += ' --table=' + table
   for tbl in AUTO_GEN_TABLES:
     cl_args += ' --auto-actual=' + tbl
+  for sep in AUTO_ACTUAL_SEPARATORS:
+    cl_args += ' --auto-actual-sep=' + sep
   for sep in AUTO_BASELINE_SEPARATORS:
     cl_args += ' --auto-baseline-sep=' + sep
   env.Command(target=_gen_file(filename),
@@ -172,12 +208,12 @@ for tbl in GEN_TABLES:
 env.ComponentLibrary('arm_validator_core',
                      ['address_set.cc',
                       'actual_classes.cc',
-                      'gen/arm32_decode_actuals.cc',
                       'baseline_classes.cc',
                       'inst_classes.cc',
                       'model.cc',
                       'validator.cc',
-                      'gen/arm32_decode.cc'])
+                      _gen_dir('arm32_decode.cc')] +
+                     _gen_dirs(GenerateActualFiles(AUTO_ACTUAL_CC_FORMAT)))
 
 env.ComponentLibrary('ncvalidate_arm_v2',
                      ['ncvalidate.cc'],
@@ -257,12 +293,12 @@ if env.Bit('target_arm'):
 gtest_env.ComponentLibrary('decoder_test_tools',
                            ['decoder_tester.cc',
                             'inst_classes_testers.cc',
-                            'gen/arm32_decode_baselines_1.cc',
-                            'gen/arm32_decode_baselines_2.cc',
-                            'gen/arm32_decode_baselines_3.cc',
                             'actual_vs_baseline.cc',
                             'named_class_decoder.cc',
-                            'gen/arm32_decode_named.cc'])
+                            _gen_dir('arm32_decode_named.cc')] +
+                           _gen_dirs(GenerateBaselineFiles(
+                               AUTO_BASELINE_CC_FORMAT)))
+
 
 gtest_env.ComponentLibrary('arm_validator_tester',
                            ['validator_tests.cc'])

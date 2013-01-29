@@ -18,6 +18,8 @@ Options include:
   --table_remove=name - Remove table 'name' from decoder. May be repeated.
   --auto-actual=name - Install automatically generated actuals into the
         decoder table with the given name. May be repeated.
+  --auto-actual-sep=name - Use as separator to split up automatically
+        generated actual classes.
   --auto-baseline-sep=name - Use as separator to split up automatically
         generated baseline classes.
 
@@ -59,6 +61,7 @@ def main(argv):
     # Define default command line arguments.
     cl_args = {'add-rule-patterns': 'True',
                'auto-actual': [],
+               'auto-actual-sep': [],
                'auto-baseline-sep': [],
                'table_remove': [],
                'table': [],
@@ -84,6 +87,7 @@ def main(argv):
           cl_args[cl_name] = cl_value
 
     # Fix separators by sorting.
+    cl_args['auto-actual-sep'] = sorted(cl_args['auto-actual-sep'])
     cl_args['auto-baseline-sep'] = sorted(cl_args['auto-baseline-sep'])
 
     print "cl args = %s" % cl_args
@@ -132,6 +136,10 @@ def main(argv):
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
     elif output_filename.endswith('_actuals.h'):
+      dgen_actuals.generate_actuals_base_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
+    elif _actual_suffix_in(output_filename, 'actuals_%s.h', cl_args):
       dgen_actuals.generate_actuals_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
@@ -155,7 +163,7 @@ def main(argv):
       dgen_test_output.generate_named_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
-    elif output_filename.endswith('_actuals.cc'):
+    elif _actual_suffix_in(output_filename, 'actuals_%s.cc', cl_args):
       dgen_actuals.generate_actuals_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
@@ -174,13 +182,19 @@ def main(argv):
 
     return 0
 
-def _baseline_suffix_in(name, format, cl_args):
-  num_baselines = len(cl_args['auto-baseline-sep']) + 1
-  assert num_baselines > 1
-  for n in range(1, num_baselines + 1):
+def _cl_arg_suffix_in(name, format, separators):
+  num_separators = len(separators) + 1
+  assert num_separators > 1
+  for n in range(1, num_separators + 1):
     if name.endswith(format % n):
       return True
   return False
+
+def _actual_suffix_in(name, format, cl_args):
+  return _cl_arg_suffix_in(name, format, cl_args['auto-actual-sep'])
+
+def _baseline_suffix_in(name, format, cl_args):
+  return _cl_arg_suffix_in(name, format, cl_args['auto-baseline-sep'])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
