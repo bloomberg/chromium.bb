@@ -180,11 +180,25 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   enum SafeBrowsingRequestType {
     NO_REQUEST = 0,     // No requests in progress
     UPDATE_REQUEST,     // Request for redirect URLs
+    BACKUP_UPDATE_REQUEST, // Request for redirect URLs to a backup URL.
     CHUNK_REQUEST,      // Request for a specific chunk
+  };
+
+  // Which type of backup update request is being used.
+  enum BackupUpdateReason {
+    BACKUP_UPDATE_REASON_CONNECT,
+    BACKUP_UPDATE_REASON_HTTP,
+    BACKUP_UPDATE_REASON_NETWORK,
+    BACKUP_UPDATE_REASON_MAX,
   };
 
   // Generates Update URL for querying about the latest set of chunk updates.
   GURL UpdateUrl() const;
+
+  // Generates backup Update URL for querying about the latest set of chunk
+  // updates. |url_prefix| is the base prefix to use.
+  GURL BackupUpdateUrl(BackupUpdateReason reason) const;
+
   // Generates GetHash request URL for retrieving full hashes.
   GURL GetHashUrl() const;
   // Generates URL for reporting safe browsing hits for UMA users.
@@ -216,6 +230,14 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // requires a database query (run on the database thread), and the request
   // is sent upon completion of that query in OnGetChunksComplete.
   void IssueUpdateRequest();
+
+  // Sends a backup request for a list of chunks to download, when the primary
+  // update request failed. |reason| specifies why the backup is needed. Unlike
+  // the primary IssueUpdateRequest, this does not need to hit the local
+  // SafeBrowsing database since the existing chunk numbers are remembered from
+  // the primary update request. Returns whether the backup request was issued -
+  // this may be false in cases where there is not a prefix specified.
+  bool IssueBackupUpdateRequest(BackupUpdateReason reason);
 
   // Sends a request for a chunk to the SafeBrowsing servers.
   void IssueChunkRequest();
@@ -338,6 +360,15 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
 
   // URL prefix where browser fetches safebrowsing chunk updates, and hashes.
   std::string url_prefix_;
+
+  // Backup URL prefixes for updates.
+  std::string backup_url_prefixes_[BACKUP_UPDATE_REASON_MAX];
+
+  // The current reason why the backup update request is happening.
+  BackupUpdateReason backup_update_reason_;
+
+  // Data to POST when doing an update.
+  std::string update_list_data_;
 
   // When true, protocol manager will not start an update unless
   // ForceScheduleNextUpdate() is called. This is set for testing purpose.

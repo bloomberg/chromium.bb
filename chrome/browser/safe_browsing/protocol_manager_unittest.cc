@@ -23,6 +23,9 @@ using testing::_;
 using testing::Invoke;
 
 static const char kUrlPrefix[] = "https://prefix.com/foo";
+static const char kBackupConnectUrlPrefix[] = "https://alt1-prefix.com/foo";
+static const char kBackupHttpUrlPrefix[] = "https://alt2-prefix.com/foo";
+static const char kBackupNetworkUrlPrefix[] = "https://alt3-prefix.com/foo";
 static const char kClient[] = "unittest";
 static const char kAppVer[] = "1.0";
 static const char kAdditionalQuery[] = "additional_query";
@@ -45,20 +48,29 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     SafeBrowsingProtocolConfig config;
     config.client_name = kClient;
     config.url_prefix = kUrlPrefix;
+    config.backup_connect_error_url_prefix = kBackupConnectUrlPrefix;
+    config.backup_http_error_url_prefix = kBackupHttpUrlPrefix;
+    config.backup_network_error_url_prefix = kBackupNetworkUrlPrefix;
     config.version = kAppVer;
 
     return scoped_ptr<SafeBrowsingProtocolManager>(
         SafeBrowsingProtocolManager::Create(delegate, NULL, config));
   }
 
-  void ValidateUpdateFetcherRequest(const net::TestURLFetcher* url_fetcher) {
+  void ValidateUpdateFetcherRequest(
+      const net::TestURLFetcher* url_fetcher,
+      const std::string& expected_prefix) {
     ASSERT_TRUE(url_fetcher);
     EXPECT_EQ(net::LOAD_DISABLE_CACHE, url_fetcher->GetLoadFlags());
     EXPECT_EQ("goog-phish-shavar;\ngoog-malware-shavar;\n",
               url_fetcher->upload_data());
-    EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
+    EXPECT_EQ(GURL(expected_prefix + "/downloads?client=unittest&appver=1.0"
                    "&pver=2.2" + key_param_),
               url_fetcher->GetOriginalURL());
+  }
+
+  void ValidateUpdateFetcherRequest(const net::TestURLFetcher* url_fetcher) {
+    ValidateUpdateFetcherRequest(url_fetcher, kUrlPrefix);
   }
 
   void ValidateRedirectFetcherRequest(const net::TestURLFetcher* url_fetcher,
@@ -372,7 +384,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
   EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
-TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
+TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBodyBackupSuccess) {
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
@@ -384,7 +396,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
       Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
                                     std::vector<SBListChunkRanges>(),
                                     false)));
-  EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
   scoped_ptr<SafeBrowsingProtocolManager> pm(
       CreateProtocolManager(&test_delegate));
@@ -403,11 +415,24 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBody) {
   url_fetcher->SetResponseString("THIS_IS_A_BAD_RESPONSE");
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
+  // There should now be a backup request.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupHttpUrlPrefix);
+
+  // Respond to the backup successfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(200);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
   EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
-// Tests what happens when there is an error in the update response.
-TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpError) {
+// Tests what happens when there is an HTTP error response to the update
+// request, as well as an error response to the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupError) {
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
@@ -438,11 +463,122 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpError) {
   url_fetcher->SetResponseString("");
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
+  // There should now be a backup request.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix);
+
+  // Respond to the backup unsuccessfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(404);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
   EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
-// Tests what happens when there is an error with the connection.
-TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseConnectionError) {
+// Tests what happens when there is an HTTP error response to the update
+// request, followed by a successful response to the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupSuccess) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // We should have an URLFetcher at this point in time.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+
+  // Go ahead and respond to it.
+  url_fetcher->set_status(net::URLRequestStatus());
+  url_fetcher->set_response_code(404);
+  url_fetcher->SetResponseString("");
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // There should now be a backup request.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupHttpUrlPrefix);
+
+  // Respond to the backup successfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(200);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests what happens when there is an HTTP error response to the update
+// request, and a timeout on the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupTimeout) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(false)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // We should have an URLFetcher at this point in time.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+
+  // Go ahead and respond to it.
+  url_fetcher->set_status(net::URLRequestStatus());
+  url_fetcher->set_response_code(404);
+  url_fetcher->SetResponseString("");
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // There should now be a backup request.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix);
+
+  // Either one or two calls to RunPendingTasks are needed here. The first run
+  // of RunPendingTasks will run the canceled timeout task associated with
+  // the first Update request. Depending on timing, this will either directly
+  // call the timeout task from the backup request, or schedule another task
+  // to run that in the future.
+  // TODO(cbentzel): Less fragile approach.
+  runner->RunPendingTasks();
+  if (!pm->IsUpdateScheduled())
+    runner->RunPendingTasks();
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests what happens when there is a connection error when issuing the update
+// request, and an error with the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest,
+       UpdateResponseConnectionErrorBackupError) {
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
@@ -472,11 +608,72 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseConnectionError) {
                                                 net::ERR_CONNECTION_RESET));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
+  // There should be a backup URLFetcher now.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupConnectUrlPrefix);
+
+  // Respond to the backup unsuccessfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(404);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
   EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
-// Tests what happens when there is a timeout before an update response.
-TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeout) {
+// Tests what happens when there is a connection error when issuing the update
+// request, and a successful response to the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest,
+       UpdateResponseConnectionErrorBackupSuccess) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // We should have an URLFetcher at this point in time.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+
+  // Go ahead and respond to it.
+  url_fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                                net::ERR_CONNECTION_RESET));
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // There should be a backup URLFetcher now.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupConnectUrlPrefix);
+
+  // Respond to the backup unsuccessfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(200);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+// Tests what happens when there is a network state error when issuing the
+// update request, and an error with the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest,
+       UpdateResponseNetworkErrorBackupError) {
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner());
   base::ThreadTaskRunnerHandle runner_handler(runner);
@@ -501,9 +698,117 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeout) {
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
   ValidateUpdateFetcherRequest(url_fetcher);
 
+  // Go ahead and respond to it.
+  url_fetcher->set_status(
+      net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                            net::ERR_INTERNET_DISCONNECTED));
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // There should be a backup URLFetcher now.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupNetworkUrlPrefix);
+
+  // Respond to the backup unsuccessfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(404);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests what happens when there is a network state error when issuing the
+// update request, and a successful response to the backup update request.
+TEST_F(SafeBrowsingProtocolManagerTest,
+       UpdateResponseNetworkErrorBackupSuccess) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // We should have an URLFetcher at this point in time.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+
+  // Go ahead and respond to it.
+  url_fetcher->set_status(
+      net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                            net::ERR_INTERNET_DISCONNECTED));
+  url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+
+  // There should be a backup URLFetcher now.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupNetworkUrlPrefix);
+
+  // Respond to the backup unsuccessfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(200);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
+
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+// Tests what happens when there is a timeout before an update response.
+TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeoutBackupSuccess) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory url_fetcher_factory;
+
+  testing::StrictMock<MockProtocolDelegate> test_delegate;
+  EXPECT_CALL(test_delegate, UpdateStarted()).Times(1);
+  EXPECT_CALL(test_delegate, GetChunks(_)).WillOnce(
+      Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
+                                    std::vector<SBListChunkRanges>(),
+                                    false)));
+  EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
+
+  scoped_ptr<SafeBrowsingProtocolManager> pm(
+      CreateProtocolManager(&test_delegate));
+
+  // Kick off initialization. This returns chunks from the DB synchronously.
+  pm->ForceScheduleNextUpdate(TimeDelta());
+  runner->RunPendingTasks();
+
+  // We should have an URLFetcher at this point in time.
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
+  ValidateUpdateFetcherRequest(url_fetcher);
+
   // The first time RunPendingTasks is called above, the update timeout timer is
   // not handled. This call of RunPendingTasks will handle the update.
   runner->RunPendingTasks();
+
+  // There should be a backup URLFetcher now.
+  net::TestURLFetcher* backup_url_fetcher =
+      url_fetcher_factory.GetFetcherByID(1);
+  ValidateUpdateFetcherRequest(backup_url_fetcher,
+                               kBackupConnectUrlPrefix);
+
+  // Respond to the backup unsuccessfully.
+  backup_url_fetcher->set_status(net::URLRequestStatus());
+  backup_url_fetcher->set_response_code(200);
+  backup_url_fetcher->SetResponseString("");
+  backup_url_fetcher->delegate()->OnURLFetchComplete(backup_url_fetcher);
 
   EXPECT_TRUE(pm->IsUpdateScheduled());
 }

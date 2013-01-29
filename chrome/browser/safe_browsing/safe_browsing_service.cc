@@ -59,6 +59,20 @@ const FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
 const char* const kSbDefaultURLPrefix =
     "https://safebrowsing.google.com/safebrowsing";
 
+// The backup URL prefix used when there are issues establishing a connection
+// with the server at the primary URL.
+const char* const kSbBackupConnectErrorURLPrefix =
+    "https://alt1-safebrowsing.google.com/safebrowsing";
+
+// The backup URL prefix used when there are HTTP-specific issues with the
+// server at the primary URL.
+const char* const kSbBackupHttpErrorURLPrefix =
+    "https://alt2-safebrowsing.google.com/safebrowsing";
+
+// The backup URL prefix used when there are local network specific issues.
+const char* const kSbBackupNetworkErrorURLPrefix =
+    "https://alt3-safebrowsing.google.com/safebrowsing";
+
 FilePath CookieFilePath() {
   return FilePath(
       SafeBrowsingService::GetBaseFilename().value() + kCookiesFile);
@@ -345,6 +359,9 @@ void SafeBrowsingService::StartOnIOThread() {
       cmdline->HasSwitch(switches::kSbURLPrefix) ?
       cmdline->GetSwitchValueASCII(switches::kSbURLPrefix) :
       kSbDefaultURLPrefix;
+  config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;
+  config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
+  config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
 
 #if defined(FULL_SAFE_BROWSING)
   DCHECK(database_manager_);
