@@ -406,6 +406,11 @@ class InstructionPrinter(object):
     # TODO(shcherbina): print spurious REX stuff (probably not in this
     # function).
 
+  def _PrintOperandSource(self, operand, source):
+    # TODO(shcherbina): add mechanism to check that all operand sources are
+    # printed.
+    self._out.write('@operand%d_%s\n' % (operand.index, source))
+
   def _PrintImplicitOperandSources(self, instruction):
     """Print actions specifying sources of implicit operands.
 
@@ -417,7 +422,7 @@ class InstructionPrinter(object):
     """
     operand = instruction.FindOperand('a')
     if operand is not None:
-      self._out.write('@operand%d_rax\n' % operand.index)
+      self._PrintOperandSource(operand, 'rax')
     # TODO(shcherbina): handle other implicit operands.
 
   def PrintInstructionWithoutModRM(self, instruction):
@@ -433,16 +438,27 @@ class InstructionPrinter(object):
     self._PrintSignature(instruction)
     self._PrintImplicitOperandSources(instruction)
 
-    # TODO(shcherbina): print immediate or relative args.
+    # TODO(shcherbina): print immediate args.
 
     # Displacement encoded in the instruction.
     operand = instruction.FindOperand('O')
     if operand is not None:
-      self._out.write('@operand%d_absolute_disp\n' % operand.index)
+      self._PrintOperandSource(operand, 'absolute_disp')
       self._out.write('disp%d\n' % self._bitness)
 
-    # TODO(shcherbina): add mechanism to check that all operand sources are
-    # printed.
+    # Relative jump/call target encoded in the instruction.
+    operand = instruction.FindOperand('J')
+    if operand is not None:
+      format = operand.GetFormat()
+      if format == '8bit':
+        self._out.write('rel8\n')
+      elif format == '16bit':
+        self._out.write('rel16\n')
+      elif format == '32bit':
+        self._out.write('rel32\n')
+      else:
+        assert False, format
+      self._PrintOperandSource(operand, 'jmp_to')
 
     # TODO(shcherbina): subtract NOP from XCHG
 

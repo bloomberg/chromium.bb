@@ -169,6 +169,23 @@ class TestInstructionPrinter(unittest.TestCase):
         disp32
         """.split())
 
+  def test_relative(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse('jmp Jb, 0xeb')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0xeb
+        @instruction_jmp
+        @operands_count_is_1
+        @operand0_8bit
+        rel8
+        @operand0_jmp_to
+        """.split())
+
 
 class TestParser(unittest.TestCase):
 
