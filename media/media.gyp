@@ -1073,11 +1073,19 @@
             }],
             [ 'OS=="win"', {
               'variables': {
-                'yasm_flags': [
-                  '-DWIN32',
-                  '-DMSVC',
-                  '-DCHROMIUM',
-                  '-Isimd',
+                'conditions': [
+                  [ 'target_arch=="ia32"', {
+                    'yasm_flags': [
+                      '-DCHROMIUM',
+                      '-Isimd',
+                    ],
+                  }, {
+                    'yasm_flags': [
+                      '-DARCH_X86_64',
+                      '-DCHROMIUM',
+                      '-Isimd',
+                    ],
+                  }],
                 ],
               },
             }],
