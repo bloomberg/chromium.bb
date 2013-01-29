@@ -26,10 +26,18 @@ BOT_ASSIGNMENT = {
         python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
     'win7-64-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
+
+    ### OBSOLETE REMOVE BEGIN ###
     'win8-64-glibc-dbg':
         python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
     'win8-64-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
+    ### OBSOLETE REMOVE END ###
+
+    'win8-64-newlib-dbg':
+        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
+    'win8-64-newlib-opt':
+        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'xp-bare-newlib-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
     'xp-bare-glibc-opt':
@@ -160,10 +168,18 @@ BOT_ASSIGNMENT = {
         python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'nacl-win64_glibc_opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
+
+    ### OBSOLETE REMOVE BEGIN ###
     'nacl-win8-64_glibc_dbg':
         python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
     'nacl-win8-64_glibc_opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
+    ### OBSOLETE REMOVE END ###
+
+    'nacl-win8-64_newlib_dbg':
+        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
+    'nacl-win8-64_newlib_opt':
+        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'nacl-win7_64_arm_newlib_opt':
         python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
     'nacl-mac10.6_newlib_opt':
