@@ -225,14 +225,13 @@ MessageView::MessageView(
     const NotificationList::Notification& notification)
     : list_delegate_(list_delegate),
       notification_(notification),
-      close_button_(NULL),
       scroller_(NULL) {
   ControlButton *close = new ControlButton(this);
   close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
   close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
   close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
   close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
-  close_button_ = close;
+  close_button_.reset(close);
 }
 
 MessageView::MessageView() {

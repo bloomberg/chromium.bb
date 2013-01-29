@@ -4,6 +4,7 @@
 
 #include "ui/message_center/notification_view.h"
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -11,6 +12,8 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_simple_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -194,6 +197,17 @@ namespace message_center {
 MessageView* NotificationView::ViewForNotification(
     const NotificationList::Notification& notification,
     NotificationList::Delegate* list_delegate) {
+  // For the time being, use MessageSimpleView for simple notifications unless
+  // one of the use-the-new-style flags are set. This preserves the appearance
+  // of notifications created by existing code that uses webkitNotifications.
+  if (notification.type == ui::notifications::NOTIFICATION_TYPE_SIMPLE &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          message_center::switches::kEnableRichNotifications) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          message_center::switches::kEnableNewSimpleNotifications)) {
+    return new MessageSimpleView(list_delegate, notification);
+  }
+
   switch (notification.type) {
     case ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT:
     case ui::notifications::NOTIFICATION_TYPE_IMAGE:
