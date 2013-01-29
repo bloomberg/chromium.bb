@@ -793,7 +793,7 @@ def BuildStepTarBundle(pepper_ver, tarfile):
 
 def BuildStepRunUnittests():
   buildbot_common.BuildStep('Run unittests')
-  test_all_py = os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')
+  test_all_py = os.path.join(SDK_SRC_DIR, 'test_all.py')
   buildbot_common.Run([sys.executable, test_all_py])
 
 

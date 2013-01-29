@@ -9,8 +9,8 @@ import os
 
 # add tools folder to sys.path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SDK_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-sys.path.append(os.path.join(SDK_DIR, 'tools', 'tests'))
+sys.path.append(os.path.join(SCRIPT_DIR, 'tools', 'tests'))
+sys.path.append(os.path.join(SCRIPT_DIR, 'build_tools', 'tests'))
 
 TEST_MODULES = [
     'oshelpers_test',

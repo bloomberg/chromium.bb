@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -85,9 +86,30 @@ class TestNmfUtils(unittest.TestCase):
     self.objdump = os.path.join(self.toolchain, 'bin', 'i686-nacl-objdump')
     if os.name == 'nt':
       self.objdump += '.exe'
-    self.dyn_nexe = os.path.join(DATA_DIR, 'test_dynamic_x86_32.nexe')
-    self.dyn_deps = set(['libc.so.51fe1ff9', 'runnable-ld.so',
-                         'libgcc_s.so.1', 'libpthread.so.51fe1ff9'])
+    self.Mktemp()
+    self.dyn_nexe = self.createTestNexe('test_dynamic_x86_32.nexe', True,
+                                        'i686')
+    self.dyn_deps = set(['libc.so', 'runnable-ld.so',
+                         'libgcc_s.so', 'libpthread.so'])
+
+  def createTestNexe(self, name, dynamic, arch):
+    """Create an empty test .nexe file for use in create_nmf tests.
+
+    This is used rather than checking in test binaries since the
+    checked in binaries depend on .so files that only exist in the
+    certain SDK that build them.
+    """
+    compiler = os.path.join(self.toolchain, 'bin', '%s-nacl-g++' % arch)
+    if os.name == 'nt':
+      compiler += '.exe'
+      os.environ['CYGWIN'] = 'nodosfilewarning'
+    program = 'int main() { return 0; }'
+    name = os.path.join(self.tempdir, name)
+    cmd = [compiler, '-pthread', '-x' , 'c', '-o', name, '-']
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    p.communicate(input=program)
+    self.assertEqual(p.returncode, 0)
+    return name
 
   def tearDown(self):
     if self.tempdir:
@@ -115,6 +137,21 @@ class TestNmfUtils(unittest.TestCase):
     archfile = needed.values()[0]
     self.assertEqual(archfile.arch, 'x86-32')
 
+  def StripDependencies(self, deps):
+    """Strip the dirnames and version suffixs from
+    a list of nexe dependencies.
+
+    e.g:
+    /path/to/libpthread.so.1a2d3fsa -> libpthread.so
+    """
+    names = []
+    for name in deps:
+      name = os.path.basename(name)
+      if '.so.' in name:
+        name = name.rsplit('.', 1)[0]
+      names.append(name)
+    return names
+
   def testGetNeededDynamic(self):
     nmf = self.CreateNmfUtils()
     needed = nmf.GetNeeded()
@@ -124,7 +161,7 @@ class TestNmfUtils(unittest.TestCase):
     expected = set(self.dyn_deps)
     expected.add(os.path.basename(self.dyn_nexe))
 
-    basenames = set(os.path.basename(n) for n in names)
+    basenames = set(self.StripDependencies(names))
     self.assertEqual(expected, basenames)
 
   def testStageDependencies(self):
@@ -139,7 +176,9 @@ class TestNmfUtils(unittest.TestCase):
     expectedContents = set((os.path.basename(self.dyn_nexe), 'lib32'))
     self.assertEqual(contents, expectedContents)
 
-    contents = set(os.listdir(os.path.join(self.tempdir, 'lib32')))
+    contents = os.listdir(os.path.join(self.tempdir, 'lib32'))
+    contents = self.StripDependencies(contents)
+    contents = set(contents)
     expectedContents = self.dyn_deps
     self.assertEqual(contents, expectedContents)
 
