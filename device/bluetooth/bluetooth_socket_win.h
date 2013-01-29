@@ -5,7 +5,16 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_WIN_H_
 
+#include <string>
+
 #include "device/bluetooth/bluetooth_socket.h"
+
+namespace net {
+
+class DrainableIOBuffer;
+class GrowableIOBuffer;
+
+}  // namespace net
 
 namespace device {
 
@@ -13,6 +22,10 @@ class BluetoothSocketWin : public BluetoothSocket {
  public:
   // BluetoothSocket override
   virtual int fd() const OVERRIDE;
+
+  virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;
+  virtual bool Send(net::DrainableIOBuffer* buffer) OVERRIDE;
+  virtual std::string GetLastErrorMessage() const OVERRIDE;
 
  private:
   BluetoothSocketWin();

@@ -4,19 +4,22 @@
 
 #include "device/bluetooth/bluetooth_socket_chromeos.h"
 
-#include <vector>
-
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
 
+#include <string>
+
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/rfcomm.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+
 #include "base/logging.h"
+#include "base/safe_strerror_posix.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_utils.h"
+#include "net/base/io_buffer.h"
 
 using device::BluetoothServiceRecord;
 using device::BluetoothSocket;
@@ -66,6 +69,43 @@ scoped_refptr<BluetoothSocket> BluetoothSocketChromeOs::CreateBluetoothSocket(
 
 int BluetoothSocketChromeOs::fd() const {
   return fd_;
+}
+
+bool BluetoothSocketChromeOs::Receive(net::GrowableIOBuffer* buffer) {
+  buffer->SetCapacity(1024);
+  ssize_t bytes_read;
+  do {
+    if (buffer->RemainingCapacity() == 0)
+      buffer->SetCapacity(buffer->capacity() * 2);
+    bytes_read = read(fd_, buffer, buffer->RemainingCapacity());
+    if (bytes_read > 0)
+      buffer->set_offset(buffer->offset() + bytes_read);
+  } while (bytes_read > 0);
+
+  if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+    error_message_ = safe_strerror(errno);
+    return false;
+  }
+  return true;
+}
+
+bool BluetoothSocketChromeOs::Send(net::DrainableIOBuffer* buffer) {
+  ssize_t bytes_written;
+  do {
+    bytes_written = write(fd_, buffer, buffer->BytesRemaining());
+    if (bytes_written > 0)
+      buffer->DidConsume(bytes_written);
+  } while (buffer->BytesRemaining() > 0 && bytes_written > 0);
+
+  if (bytes_written < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+    error_message_ = safe_strerror(errno);
+    return false;
+  }
+  return true;
+}
+
+std::string BluetoothSocketChromeOs::GetLastErrorMessage() const {
+  return error_message_;
 }
 
 }  // namespace chromeos

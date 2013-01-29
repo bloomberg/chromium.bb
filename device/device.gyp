@@ -14,6 +14,7 @@
           '../base/base.gyp:base',
           '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
           '../chrome/chrome_resources.gyp:chrome_strings',
+          '../net/net.gyp:net',
           '../third_party/libxml/libxml.gyp:libxml',
           '../ui/ui.gyp:ui'
       ],

@@ -16,6 +16,13 @@ class BluetoothServiceRecord;
 
 }  // namespace device
 
+namespace net {
+
+class DrainableIOBuffer;
+class GrowableIOBuffer;
+
+}  // namespace net
+
 namespace chromeos {
 
 // This class is an implementation of BluetoothSocket class for Chrome OS
@@ -27,6 +34,9 @@ class BluetoothSocketChromeOs : public device::BluetoothSocket {
 
   // BluetoothSocket override
   virtual int fd() const OVERRIDE;
+  virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;
+  virtual bool Send(net::DrainableIOBuffer* buffer) OVERRIDE;
+  virtual std::string GetLastErrorMessage() const OVERRIDE;
 
  protected:
   virtual ~BluetoothSocketChromeOs();
@@ -36,6 +46,7 @@ class BluetoothSocketChromeOs : public device::BluetoothSocket {
 
   const std::string address_;
   const int fd_;
+  std::string error_message_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSocketChromeOs);
 };

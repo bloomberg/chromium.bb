@@ -5,7 +5,16 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
+
+namespace net {
+
+class DrainableIOBuffer;
+class GrowableIOBuffer;
+
+}  // namespace net
 
 namespace device {
 
@@ -19,6 +28,18 @@ class BluetoothSocket : public base::RefCounted<BluetoothSocket> {
   // added. This interface is platform-independent and file descriptor is
   // linux-specific hence this method has to be renamed.
   virtual int fd() const = 0;
+
+  // Receives data from the socket and stores it in |buffer|. It returns whether
+  // the reception has been successful. If it fails, the caller can get the
+  // error message through |GetLastErrorMessage()|.
+  virtual bool Receive(net::GrowableIOBuffer* buffer) = 0;
+
+  // Sends |buffer| to the socket. It returns whether the sending has been
+  // successful. If it fails, the caller can get the error message through
+  // |GetLastErrorMessage()|.
+  virtual bool Send(net::DrainableIOBuffer* buffer) = 0;
+
+  virtual std::string GetLastErrorMessage() const = 0;
 
  protected:
   friend class base::RefCounted<BluetoothSocket>;

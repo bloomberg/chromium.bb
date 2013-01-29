@@ -4,10 +4,6 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 
-#if defined(OS_CHROMEOS)
-#include <errno.h>
-#endif
-
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -27,10 +23,7 @@
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_utils.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/safe_strerror_posix.h"
-#endif
+#include "net/base/io_buffer.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
@@ -341,44 +334,18 @@ bool BluetoothReadFunction::Prepare() {
 }
 
 void BluetoothReadFunction::Work() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
   if (!socket_.get())
     return;
 
-#if defined(OS_CHROMEOS)
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-  char* all_bytes = NULL;
-  ssize_t buffer_size = 0;
-  ssize_t total_bytes_read = 0;
-  int errsv;
-  while (true) {
-    buffer_size += 1024;
-    all_bytes = static_cast<char*>(realloc(all_bytes, buffer_size));
-    CHECK(all_bytes) << "Failed to grow Bluetooth socket buffer";
-
-    // bluetooth sockets are non-blocking, so read until we hit an error
-    ssize_t bytes_read = read(socket_->fd(), all_bytes + total_bytes_read,
-        buffer_size - total_bytes_read);
-    errsv = errno;
-    if (bytes_read <= 0)
-      break;
-
-    total_bytes_read += bytes_read;
-  }
-
-  if (total_bytes_read > 0) {
-    success_ = true;
-    SetResult(base::BinaryValue::CreateWithCopiedBuffer(all_bytes,
-        total_bytes_read));
-    free(all_bytes);
-  } else {
-    success_ = (errsv == EAGAIN || errsv == EWOULDBLOCK);
-    free(all_bytes);
-  }
-
-  if (!success_)
-    SetError(safe_strerror(errsv));
-#endif
+  scoped_refptr<net::GrowableIOBuffer> buffer(new net::GrowableIOBuffer);
+  success_ = socket_->Receive(buffer);
+  if (success_)
+    SetResult(base::BinaryValue::CreateWithCopiedBuffer(buffer->StartOfBuffer(),
+                                                        buffer->offset()));
+  else
+    SetError(socket_->GetLastErrorMessage());
 }
 
 bool BluetoothReadFunction::Respond() {
@@ -420,22 +387,20 @@ void BluetoothWriteFunction::Work() {
   if (socket_.get() == NULL)
     return;
 
-#if defined(OS_CHROMEOS)
-  ssize_t bytes_written = write(socket_->fd(),
-      data_to_write_->GetBuffer(), data_to_write_->GetSize());
-  int errsv = errno;
-
-  if (bytes_written > 0) {
-    SetResult(Value::CreateIntegerValue(bytes_written));
-    success_ = true;
+  scoped_refptr<net::WrappedIOBuffer> wrapped_io_buffer(
+      new net::WrappedIOBuffer(data_to_write_->GetBuffer()));
+  scoped_refptr<net::DrainableIOBuffer> drainable_io_buffer(
+      new net::DrainableIOBuffer(wrapped_io_buffer, data_to_write_->GetSize()));
+  success_ = socket_->Send(drainable_io_buffer);
+  if (success_) {
+    if (drainable_io_buffer->BytesConsumed() > 0)
+      SetResult(
+          Value::CreateIntegerValue(drainable_io_buffer->BytesConsumed()));
+    else
+      results_.reset();
   } else {
-    results_.reset();
-    success_ = (errsv == EAGAIN || errsv == EWOULDBLOCK);
+    SetError(socket_->GetLastErrorMessage());
   }
-
-  if (!success_)
-    SetError(safe_strerror(errsv));
-#endif
 }
 
 bool BluetoothWriteFunction::Respond() {

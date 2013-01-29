@@ -2,6 +2,7 @@ include_rules = [
   "+chromeos/dbus",
   "+dbus",
   "+grit",
+  "+net/base",
   "+ui/base/l10n",
   "+third_party/cros_system_api/dbus",
   "+third_party/libxml/chromium",
