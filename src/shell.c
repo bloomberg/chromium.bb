@@ -243,12 +243,12 @@ shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
 	struct weston_surface *top_fs_es;
 
 	shell = shell_surface_get_shell(shsurf);
-	
+
 	if (wl_list_empty(&shell->fullscreen_layer.surface_list))
 		return false;
 
 	top_fs_es = container_of(shell->fullscreen_layer.surface_list.next,
-			         struct weston_surface, 
+			         struct weston_surface,
 				 layer_link);
 	return (shsurf == get_shell_surface(top_fs_es));
 }
@@ -1223,7 +1223,7 @@ busy_cursor_grab_button(struct wl_pointer_grab *base,
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
 	struct shell_surface *shsurf;
-	struct weston_surface *surface = 
+	struct weston_surface *surface =
 		(struct weston_surface *) grab->grab.pointer->current;
 	struct weston_seat *seat =
 		(struct weston_seat *) grab->grab.pointer->seat;
@@ -1697,13 +1697,13 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER:
 		if (shell_surface_is_top_fullscreen(shsurf)) {
-			struct weston_mode mode = {0, 
+			struct weston_mode mode = {0,
 				surface->geometry.width,
 				surface->geometry.height,
 				shsurf->fullscreen.framerate};
 
 			if (weston_output_switch_mode(output, &mode) == 0) {
-				weston_surface_configure(shsurf->fullscreen.black_surface, 
+				weston_surface_configure(shsurf->fullscreen.black_surface,
 					                 output->x, output->y,
 							 output->width,
 							 output->height);
@@ -2663,7 +2663,7 @@ black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 }
 
-static bool 
+static bool
 is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
 {
 	if (es->configure == black_surface_configure) {
