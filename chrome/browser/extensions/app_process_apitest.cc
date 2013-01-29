@@ -133,7 +133,13 @@ class BlockedAppApiTest : public AppApiTest {
 
 // Tests that hosted apps with the background permission get a process-per-app
 // model, since all pages need to be able to script the background page.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+// http://crbug.com/172750
+#if defined(OS_WIN)
+#define MAYBE_AppProcess DISABLED_AppProcess
+#else
+#define MAYBE_AppProcess AppProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   LOG(INFO) << "Start of test.";
 
   extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
