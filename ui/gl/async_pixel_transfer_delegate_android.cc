@@ -60,13 +60,17 @@ SharedMemory* DuplicateSharedMemory(SharedMemory* shared_memory, uint32 size) {
   SharedMemoryHandle duped_shared_memory_handle;
   if (!shared_memory->ShareToProcess(
       base::GetCurrentProcessHandle(),
-      &duped_shared_memory_handle))
+      &duped_shared_memory_handle)) {
+    CHECK(false); // Diagnosing a crash.
     return NULL;
+  }
   scoped_ptr<SharedMemory> duped_shared_memory(
       new SharedMemory(duped_shared_memory_handle, false));
   // Map the shared memory into this process. This validates the size.
-  if (!duped_shared_memory->Map(size))
+  if (!duped_shared_memory->Map(size)) {
+    CHECK(false); // Diagnosing a crash.
     return NULL;
+  }
   return duped_shared_memory.release();
 }
 
@@ -74,8 +78,8 @@ SharedMemory* DuplicateSharedMemory(SharedMemory* shared_memory, uint32 size) {
 void* GetAddress(SharedMemory* shared_memory, uint32 shm_data_offset) {
   // Memory bounds have already been validated, so there
   // is just DCHECKS here.
-  DCHECK(shared_memory);
-  DCHECK(shared_memory->memory());
+  CHECK(shared_memory);
+  CHECK(shared_memory->memory());
   return static_cast<int8*>(shared_memory->memory()) + shm_data_offset;
 }
 
