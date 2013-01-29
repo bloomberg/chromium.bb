@@ -8,15 +8,16 @@
 #include <list>
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/renderer.h"
 #include "cc/resource.h"
 
 namespace cc {
 class ResourceProvider;
 
-class ResourcePool {
+class CC_EXPORT ResourcePool {
  public:
-  class Resource : public cc::Resource {
+  class CC_EXPORT Resource : public cc::Resource {
    public:
     Resource(ResourceProvider* resource_provider,
              const gfx::Size& size,

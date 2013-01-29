@@ -54,6 +54,14 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect ContentRect() const;
   float contents_scale() const { return contents_scale_; }
 
+  std::vector<Tile*> AllTilesForTesting() const {
+    std::vector<Tile*> all_tiles;
+    for (TileMap::const_iterator it = tiles_.begin();
+         it != tiles_.end(); ++it)
+      all_tiles.push_back(it->second);
+    return all_tiles;
+  }
+
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
   // The union of all geometry_rect calls for each element iterated over should

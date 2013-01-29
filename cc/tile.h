@@ -58,6 +58,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
    picture_pile_ = pile;
   }
 
+  ManagedTileState& ManagedStateForTesting() { return managed_state_; }
+
  private:
   // Methods called by by tile manager.
   friend class TileManager;

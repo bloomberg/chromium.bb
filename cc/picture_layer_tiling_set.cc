@@ -115,6 +115,12 @@ PictureLayerTilingSet::Iterator::Iterator(
       current_tiling_(-1) {
   missing_region_.Union(content_rect);
 
+  if (set_->tilings_.size() == 1) {
+    ideal_tiling_ = 0;
+    ++(*this);
+    return;
+  }
+
   for (ideal_tiling_ = 0;
        static_cast<size_t>(ideal_tiling_) < set_->tilings_.size();
        ++ideal_tiling_) {
