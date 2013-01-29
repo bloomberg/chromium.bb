@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 namespace app.window {
+  dictionary Bounds {
+    long? left;
+    long? top;
+    long? width;
+    long? height;
+  };
+
   dictionary CreateWindowOptions {
     // Id to identify the window. This will be used to remember the size
     // and position of the window and restore that geometry when a window
@@ -81,13 +88,6 @@ namespace app.window {
 
   callback CreateWindowCallback =
       void ([instanceOf=AppWindow] object created_window);
-
-  dictionary Bounds {
-    long? left;
-    long? top;
-    long? width;
-    long? height;
-  };
 
   dictionary AppWindow {
     // Focus the window.

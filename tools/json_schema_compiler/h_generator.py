@@ -40,6 +40,7 @@ class HGenerator(object):
       .Append('#include "base/memory/linked_ptr.h"')
       .Append('#include "base/memory/scoped_ptr.h"')
       .Append('#include "base/values.h"')
+      .Cblock(self._type_helper.GenerateIncludes())
       .Append()
     )
 
@@ -162,7 +163,7 @@ class HGenerator(object):
                         a typedef. This may not always be desired. If false,
                         primitive types are ignored.
     """
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(schema_util.StripNamespace(type_.name))
     c = Code()
 
     if type_.functions:

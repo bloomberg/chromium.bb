@@ -47,29 +47,20 @@ class CppTypeGeneratorTest(unittest.TestCase):
   def testGenerateIncludesAndForwardDeclarations(self):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
     manager.AddNamespace(self.tabs, self.tabs.unix_name)
-    self.assertEquals('#include "path/to/tabs.h"\n'
-                      '#include "base/string_number_conversions.h"\n'
-                      '#include "base/json/json_writer.h"',
-                      manager.GenerateIncludes().Render())
+    self.assertEquals('', manager.GenerateIncludes().Render())
+    self.assertEquals('#include "path/to/tabs.h"',
+                      manager.GenerateIncludes(include_soft=True).Render())
     self.assertEquals('namespace tabs {\n'
                       'struct Tab;\n'
-                      '}\n'
-                      'namespace windows {\n'
-                      'struct Window;\n'
-                      '}  // windows',
+                      '}',
                       manager.GenerateForwardDeclarations().Render())
     manager = CppTypeGenerator('', self.permissions, self.permissions.unix_name)
-    self.assertEquals('#include "base/string_number_conversions.h"\n'
-                      '#include "base/json/json_writer.h"',
-                      manager.GenerateIncludes().Render())
-    self.assertEquals('namespace permissions {\n'
-                      'struct Permissions;\n'
-                      '}  // permissions',
-                      manager.GenerateForwardDeclarations().Render())
+    self.assertEquals('', manager.GenerateIncludes().Render())
+    self.assertEquals('', manager.GenerateIncludes().Render())
+    self.assertEquals('', manager.GenerateForwardDeclarations().Render())
     manager = CppTypeGenerator('', self.content_settings,
                                self.content_settings.unix_name)
-    self.assertEquals('#include "base/string_number_conversions.h"',
-                      manager.GenerateIncludes().Render())
+    self.assertEquals('', manager.GenerateIncludes().Render())
 
   def testGenerateIncludesAndForwardDeclarationsDependencies(self):
     m = model.Model()
@@ -86,15 +77,12 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager.AddNamespace(browser_action_namespace,
                          self.browser_action.unix_name)
     self.assertEquals('#include "path/to/browser_action.h"\n'
-                      '#include "path/to/font_settings.h"\n'
-                      '#include "base/string_number_conversions.h"',
+                      '#include "path/to/font_settings.h"',
                       manager.GenerateIncludes().Render())
     self.assertEquals('namespace browserAction {\n'
                       '}\n'
                       'namespace fontSettings {\n'
-                      '}\n'
-                      'namespace dependency_tester {\n'
-                      '}  // dependency_tester',
+                      '}',
                       manager.GenerateForwardDeclarations().Render())
 
   def testGetCppTypeSimple(self):

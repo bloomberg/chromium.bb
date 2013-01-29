@@ -9,15 +9,19 @@ import json_parse
 def CapitalizeFirstLetter(value):
   return value[0].capitalize() + value[1:]
 
-def GetNamespace(ref_type):
-  if '.' in ref_type:
-    return ref_type[:ref_type.rindex('.')]
+def GetNamespace(ref):
+  return SplitNamespace(ref)[0]
 
-def StripSchemaNamespace(s):
-  last_dot = s.rfind('.')
-  if not last_dot == -1:
-    return s[last_dot + 1:]
-  return s
+def StripNamespace(ref):
+  return SplitNamespace(ref)[1]
+
+def SplitNamespace(ref):
+  """Returns (namespace, entity) from |ref|, e.g. app.window.AppWindow ->
+  (app.window, AppWindow). If |ref| isn't qualified then returns (None, ref).
+  """
+  if '.' in ref:
+    return tuple(ref.rsplit('.', 1))
+  return (None, ref)
 
 def JsFunctionNameToClassName(namespace_name, function_name):
   """Transform a fully qualified function name like foo.bar.baz into FooBarBaz

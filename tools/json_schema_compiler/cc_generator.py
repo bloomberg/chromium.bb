@@ -30,10 +30,12 @@ class CCGenerator(object):
       .Append(cpp_util.GENERATED_FILE_MESSAGE % self._namespace.source_file)
       .Append()
       .Append(self._util_cc_helper.GetIncludePath())
+      .Append('#include "base/json/json_writer.h"')
+      .Append('#include "base/logging.h"')
+      .Append('#include "base/string_number_conversions.h"')
       .Append('#include "%s/%s.h"' %
           (self._namespace.source_file_dir, self._namespace.unix_name))
-      .Append('#include "base/logging.h"')
-      .Cblock(self._type_helper.GenerateIncludes())
+      .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
       .Concat(self._type_helper.GetRootNamespaceStart())
       .Cblock(self._type_helper.GetNamespaceStart())
     )
@@ -81,7 +83,7 @@ class CCGenerator(object):
   def _GenerateType(self, cpp_namespace, type_):
     """Generates the function definitions for a type.
     """
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(schema_util.StripNamespace(type_.name))
     c = Code()
 
     if type_.functions:
@@ -164,7 +166,7 @@ class CCGenerator(object):
 
     E.g for type "Foo", generates Foo::Populate()
     """
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(schema_util.StripNamespace(type_.name))
     c = Code()
     (c.Append('// static')
       .Append('bool %(namespace)s::Populate(')
@@ -710,7 +712,7 @@ class CCGenerator(object):
     """Generates ToString() which gets the string representation of an enum.
     """
     c = Code()
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(schema_util.StripNamespace(type_.name))
 
     if cpp_namespace is not None:
       c.Append('// static')
@@ -736,7 +738,7 @@ class CCGenerator(object):
     representation.
     """
     c = Code()
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(schema_util.StripNamespace(type_.name))
 
     if cpp_namespace is not None:
       c.Append('// static')

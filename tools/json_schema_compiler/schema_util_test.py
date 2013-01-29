@@ -4,13 +4,13 @@
 # found in the LICENSE file.
 
 from schema_util import JsFunctionNameToClassName
-from schema_util import StripSchemaNamespace
+from schema_util import StripNamespace
 import unittest
 
 class SchemaUtilTest(unittest.TestCase):
-  def testStripSchemaNamespace(self):
-    self.assertEquals('Bar', StripSchemaNamespace('foo.Bar'))
-    self.assertEquals('Baz', StripSchemaNamespace('Baz'))
+  def testStripNamespace(self):
+    self.assertEquals('Bar', StripNamespace('foo.Bar'))
+    self.assertEquals('Baz', StripNamespace('Baz'))
 
   def testJsFunctionNameToClassName(self):
     self.assertEquals('FooBar', JsFunctionNameToClassName('foo', 'bar'))
