@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 12
+// Next tag: 14
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -146,6 +146,24 @@ message SystemProfileProto {
     optional Graphics gpu = 8;
   }
   optional Hardware hardware = 6;
+
+  // Information about the network connection.
+  message Network {
+    // Set to true if there was a network change during the lifetime of the log.
+    optional bool connection_type_is_ambiguous = 1;
+
+    // See net::NetworkChangeNotifier::ConnectionType.
+    enum ConnectionType {
+      CONNECTION_UNKNOWN = 0;
+      CONNECTION_ETHERNET = 1;
+      CONNECTION_WIFI = 2;
+      CONNECTION_2G = 3;
+      CONNECTION_3G = 4;
+      CONNECTION_4G = 5;
+    }
+    optional ConnectionType connection_type = 2;
+  }
+  optional Network network = 13;
 
   // Information on the Google Update install that is managing this client.
   message GoogleUpdate {
