@@ -46,7 +46,7 @@ void ActivateContents(Browser* browser, content::WebContents* contents) {
 }
 
 Browser* ActivateAndGetBrowserForUrl(GURL url) {
-  for (TabContentsIterator it; !it.done(); ++it) {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetURL() == url) {
       ActivateContents(it.browser(), *it);
       return it.browser();

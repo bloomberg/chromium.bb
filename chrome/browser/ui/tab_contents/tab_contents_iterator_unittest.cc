@@ -23,7 +23,7 @@ namespace {
 // Helper function to iterate and count all the tabs.
 size_t CountAllTabs() {
   size_t count = 0;
-  for (TabContentsIterator iterator; !iterator.done(); ++iterator)
+  for (TabContentsIterator iterator; !iterator.done(); iterator.Next())
     ++count;
   return count;
 }
@@ -98,7 +98,8 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   chrome::NewTab(browser3.get());
 
   size_t count = 0;
-  for (TabContentsIterator iterator; !iterator.done(); ++iterator, ++count) {
+  for (TabContentsIterator iterator; !iterator.done(); iterator.Next(),
+                                                       ++count) {
     if (count < 3)
       EXPECT_EQ(browser2.get(), iterator.browser());
     else if (count == 3)
@@ -111,7 +112,8 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   browser2->tab_strip_model()->CloseAllTabs();
 
   count = 0;
-  for (TabContentsIterator iterator; !iterator.done(); ++iterator, ++count) {
+  for (TabContentsIterator iterator; !iterator.done(); iterator.Next(),
+                                                       ++count) {
     if (count == 0)
       EXPECT_EQ(browser3.get(), iterator.browser());
     else
@@ -123,7 +125,8 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   chrome::NewTab(browser2.get());
 
   count = 0;
-  for (TabContentsIterator iterator; !iterator.done(); ++iterator, ++count) {
+  for (TabContentsIterator iterator; !iterator.done(); iterator.Next(),
+                                                       ++count) {
     if (count == 0)
       EXPECT_EQ(browser(), iterator.browser());
     else if (count == 1)

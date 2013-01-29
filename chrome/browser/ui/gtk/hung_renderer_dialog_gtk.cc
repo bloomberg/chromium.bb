@@ -183,7 +183,7 @@ void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
   gtk_list_store_clear(model_);
 
   GtkTreeIter tree_iter;
-  for (TabContentsIterator it; !it.done(); ++it) {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost()) {
       gtk_list_store_append(model_, &tree_iter);
       std::string title = UTF16ToUTF8(it->GetTitle());

@@ -443,7 +443,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   // pages, prerender pages, and background printed pages.
 
   // Add all the existing WebContentses.
-  for (TabContentsIterator iterator; !iterator.done(); ++iterator)
+  for (TabContentsIterator iterator; !iterator.done(); iterator.Next())
     Add(*iterator);
 
   // Add all the instant pages.

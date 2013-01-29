@@ -177,7 +177,7 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
 
 Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   DCHECK(web_contents);
-  for (TabContentsIterator it; !it.done(); ++it) {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
     if (*it == web_contents)
       return it.browser();
   }

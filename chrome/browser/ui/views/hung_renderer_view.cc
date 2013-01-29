@@ -89,7 +89,7 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
       tab_observers_.push_back(new WebContentsObserverImpl(this,
                                                            hung_contents));
     }
-    for (TabContentsIterator it; !it.done(); ++it) {
+    for (TabContentsIterator it; !it.done(); it.Next()) {
       if (*it != hung_contents &&
           it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
         tab_observers_.push_back(new WebContentsObserverImpl(this, *it));

@@ -176,7 +176,7 @@ bool HandleRequestCallback(
     return false;
 
   std::set<RenderViewHost*> tab_rvhs;
-  for (TabContentsIterator it; !it.done(); ++it)
+  for (TabContentsIterator it; !it.done(); it.Next())
     tab_rvhs.insert(it->GetRenderViewHost());
 
   scoped_ptr<ListValue> rvh_list(new ListValue());

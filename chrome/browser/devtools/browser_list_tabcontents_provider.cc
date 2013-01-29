@@ -97,7 +97,7 @@ RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
 
 content::DevToolsHttpHandlerDelegate::TargetType
 BrowserListTabContentsProvider::GetTargetType(content::RenderViewHost* rvh) {
-  for (TabContentsIterator it; !it.done(); ++it)
+  for (TabContentsIterator it; !it.done(); it.Next())
     if (rvh == it->GetRenderViewHost())
       return kTargetTypeTab;
 

@@ -18,7 +18,8 @@ TabContentsIterator::TabContentsIterator()
           chrome::HOST_DESKTOP_TYPE_ASH)),
       desktop_browser_iterator_(desktop_browser_list_->begin()),
       ash_browser_iterator_(ash_browser_list_->begin()) {
-  Advance();
+  // Load the first WebContents into |cur_|.
+  Next();
 }
 
 Browser* TabContentsIterator::browser() const {
@@ -32,7 +33,7 @@ Browser* TabContentsIterator::browser() const {
   return NULL;
 }
 
-void TabContentsIterator::Advance() {
+void TabContentsIterator::Next() {
   // The current WebContents should be valid unless we are at the beginning.
   DCHECK(cur_ || (web_view_index_ == -1 &&
             desktop_browser_iterator_ == desktop_browser_list_->begin() &&

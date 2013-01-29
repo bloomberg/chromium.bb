@@ -351,7 +351,7 @@ void OomPriorityManager::PurgeBrowserMemory() {
   // have been too slow to use in OOM situations (V8 garbage collection) or
   // do not lead to persistent decreased usage (image/bitmap caches). This
   // function therefore only targets large blocks of memory in the browser.
-  for (TabContentsIterator it; !it.done(); ++it) {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
     WebContents* web_contents = *it;
     // Screenshots can consume ~5 MB per web contents for platforms that do
     // touch back/forward.

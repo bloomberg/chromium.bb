@@ -171,7 +171,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   hungContentsObserver_.reset(new WebContentsObserverBridge(contents, self));
   scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
-  for (TabContentsIterator it; !it.done(); ++it) {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
       string16 title = it->GetTitle();
       if (title.empty())
