@@ -9,7 +9,8 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
-#include "base/system_monitor/system_monitor.h"
+
+class MediaGalleriesPrivateApiTest;
 
 namespace chrome {
 
@@ -44,10 +45,9 @@ class RemovableStorageNotifications {
   // Finds the device that contains |path| and populates |device_info|.
   // Should be able to handle any path on the local system, not just removable
   // storage. Returns false if unable to find the device.
-  // TODO(gbillock): Change this method signature to use StorageInfo.
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const = 0;
+      StorageInfo* device_info) const = 0;
 
   // Returns the storage size of the device present at |location|. If the
   // device information is unavailable, returns zero.
@@ -73,6 +73,15 @@ class RemovableStorageNotifications {
 
  protected:
   RemovableStorageNotifications();
+
+  friend class MediaFileSystemRegistryTest;
+  friend class ::MediaGalleriesPrivateApiTest;
+  friend class MediaStorageUtilTest;
+  // TODO(gbillock): remove these friends by making the classes owned by the
+  // platform-specific implementation.
+  friend class MediaTransferProtocolDeviceObserverLinux;
+  friend class PortableDeviceWatcherWin;
+  friend class VolumeMountWatcherWin;
 
   void ProcessAttach(const std::string& id,
                      const string16& name,

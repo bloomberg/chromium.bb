@@ -595,8 +595,9 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
   const string16& name = device_details->name;
   const string16& location = device_details->location;
   DCHECK(!ContainsKey(device_map_, location));
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  DCHECK(system_monitor);
+  RemovableStorageNotifications* notifications =
+      RemovableStorageNotifications::GetInstance();
+  DCHECK(notifications);
   for (StorageObjects::const_iterator storage_iter = storage_objects.begin();
        storage_iter != storage_objects.end(); ++storage_iter) {
     const std::string& storage_id = storage_iter->object_persistent_id;
@@ -612,10 +613,9 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     // partition identifier to the storage name. E.g.: "Nexus 7 (s10001)"
     string16 storage_name(name + L" (" + storage_iter->object_temporary_id +
         L')');
-    storage_map_[storage_id] =
-        base::SystemMonitor::RemovableStorageInfo(storage_id, storage_name,
-                                                  location);
-    system_monitor->ProcessRemovableStorageAttached(
+    storage_map_[storage_id] = RemovableStorageNotifications::StorageInfo(
+        storage_id, storage_name, location);
+    notifications->ProcessAttach(
         storage_id, storage_name, GetStoragePathFromStorageId(storage_id));
   }
   device_map_[location] = storage_objects;
@@ -628,8 +628,9 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
   if (device_iter == device_map_.end())
     return;
 
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  DCHECK(system_monitor);
+  RemovableStorageNotifications* notifications =
+      RemovableStorageNotifications::GetInstance();
+  DCHECK(notifications);
 
   const StorageObjects& storage_objects = device_iter->second;
   for (StorageObjects::const_iterator storage_object_iter =
@@ -638,8 +639,7 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
     std::string storage_id = storage_object_iter->object_persistent_id;
     MTPStorageMap::iterator storage_map_iter = storage_map_.find(storage_id);
     DCHECK(storage_map_iter != storage_map_.end());
-    system_monitor->ProcessRemovableStorageDetached(
-        storage_map_iter->second.device_id);
+    notifications->ProcessDetach(storage_map_iter->second.device_id);
     storage_map_.erase(storage_map_iter);
   }
   device_map_.erase(device_iter);

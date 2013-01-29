@@ -11,10 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/system_monitor/system_monitor.h"
-#include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread.h"
@@ -92,8 +91,8 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   static void PostQuitToUIThread();
   static void WaitForFileThread();
 
-  base::MockDevicesChangedObserver& observer() {
-    return *mock_devices_changed_observer_;
+  chrome::MockRemovableStorageObserver& observer() {
+    return *mock_storage_observer_;
   }
 
  private:
@@ -106,8 +105,7 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
 
   // Objects that talks with RemovableDeviceNotificationsCros.
-  base::SystemMonitor system_monitor_;
-  scoped_ptr<base::MockDevicesChangedObserver> mock_devices_changed_observer_;
+  scoped_ptr<chrome::MockRemovableStorageObserver> mock_storage_observer_;
   // Owned by DiskMountManager.
   disks::MockDiskMountManager* disk_mount_manager_mock_;
 
@@ -128,24 +126,23 @@ void RemovableDeviceNotificationsCrosTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   file_thread_.Start();
-  mock_devices_changed_observer_.reset(new base::MockDevicesChangedObserver);
-  system_monitor_.AddDevicesChangedObserver(
-      mock_devices_changed_observer_.get());
-
   disk_mount_manager_mock_ = new disks::MockDiskMountManager();
   DiskMountManager::InitializeForTesting(disk_mount_manager_mock_);
   disk_mount_manager_mock_->SetupDefaultReplies();
 
+  mock_storage_observer_.reset(new chrome::MockRemovableStorageObserver);
+
   // Initialize the test subject.
   notifications_ = new RemovableDeviceNotificationsCros();
+  notifications_->AddObserver(mock_storage_observer_.get());
 }
 
 void RemovableDeviceNotificationsCrosTest::TearDown() {
+  notifications_->RemoveObserver(mock_storage_observer_.get());
   notifications_ = NULL;
+
   disk_mount_manager_mock_ = NULL;
   DiskMountManager::Shutdown();
-  system_monitor_.RemoveDevicesChangedObserver(
-      mock_devices_changed_observer_.get());
   WaitForFileThread();
 }
 
@@ -212,25 +209,25 @@ void RemovableDeviceNotificationsCrosTest::WaitForFileThread() {
 
 // Simple test case where we attach and detach a media device.
 TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
-  testing::Sequence mock_sequence;
   FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kDevice1,
                                               mount_path1.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId1),
-                                         ASCIIToUTF16(kDevice1NameWithSizeInfo),
-                                         mount_path1.value()))
-      .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId1, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kDevice1NameWithSizeInfo),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
 
-  EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
-      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
 
   FilePath mount_path2 = CreateMountPoint(kMountPointB, true);
   ASSERT_FALSE(mount_path2.empty());
@@ -238,18 +235,19 @@ TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
                                                mount_path2.value(),
                                                MOUNT_TYPE_DEVICE,
                                                disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId2),
-                                         ASCIIToUTF16(kDevice2NameWithSizeInfo),
-                                         mount_path2.value()))
-      .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info2, kUniqueId2, kDevice2Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice2SizeInBytes);
+  EXPECT_EQ(2, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kDevice2NameWithSizeInfo),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path2.value(), observer().last_attached().location);
 
-  EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId2)))
-      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
+  EXPECT_EQ(2, observer().attach_calls());
+  EXPECT_EQ(2, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
 }
 
 // Removable mass storage devices with no dcim folder are also recognized.
@@ -265,12 +263,14 @@ TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
   const std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
       chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM,
       chrome::kFSUniqueIdPrefix + kUniqueId);
-  EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(device_id,
-                                         ASCIIToUTF16(kDevice1NameWithSizeInfo),
-                                         mount_path.value())).Times(1);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(device_id, observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kDevice1NameWithSizeInfo),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path.value(), observer().last_attached().location);
 }
 
 // Non device mounts and mount errors are ignored.
@@ -285,44 +285,47 @@ TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_UNKNOWN, mount_info, kUniqueId, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(0, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
 
   // Not a device
   mount_info.mount_type = MOUNT_TYPE_ARCHIVE;
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(0, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
 
   // Unsupported file system.
   mount_info.mount_type = MOUNT_TYPE_DEVICE;
   mount_info.mount_condition = disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM;
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(0, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
 }
 
 TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
-  testing::Sequence mock_sequence;
   FilePath mount_path1 = CreateMountPoint(kSDCardMountPoint1, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info1(kSDCardDeviceName1,
                                                mount_path1.value(),
                                                MOUNT_TYPE_DEVICE,
                                                disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId2),
-                                         ASCIIToUTF16(kSDCardDeviceName1),
-                                         mount_path1.value()))
-      .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info1, kUniqueId2, kSDCardDeviceName1,
               kVendorName, kProductName, DEVICE_TYPE_SD, kSDCardSizeInBytes);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kSDCardDeviceName1),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
 
-  EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId2)))
-      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info1);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
 
   FilePath mount_path2 = CreateMountPoint(kSDCardMountPoint2, true);
   ASSERT_FALSE(mount_path2.empty());
@@ -330,65 +333,66 @@ TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
                                                mount_path2.value(),
                                                MOUNT_TYPE_DEVICE,
                                                disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId2),
-                                         ASCIIToUTF16(kSDCardDeviceName2),
-                                         mount_path2.value()))
-      .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info2, kUniqueId2, kSDCardDeviceName2,
               kVendorName, kProductName, DEVICE_TYPE_SD, kSDCardSizeInBytes);
+  EXPECT_EQ(2, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kSDCardDeviceName2),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path2.value(), observer().last_attached().location);
 
-  EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId2)))
-      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
+  EXPECT_EQ(2, observer().attach_calls());
+  EXPECT_EQ(2, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
 }
 
 TEST_F(RemovableDeviceNotificationsCrosTest, AttachDeviceWithEmptyLabel) {
-  testing::Sequence mock_sequence;
   FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
                                               mount_path1.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(
-      GetDCIMDeviceId(kUniqueId1),
-      ASCIIToUTF16(kDeviceNameWithManufacturerDetails),
-      mount_path1.value()))
-      .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId1, kEmptyDeviceLabel,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kDeviceNameWithManufacturerDetails),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
 
-  EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
-      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
 }
 
 TEST_F(RemovableDeviceNotificationsCrosTest, GetStorageSize) {
-  testing::Sequence mock_sequence;
   FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
                                               mount_path1.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(
-      GetDCIMDeviceId(kUniqueId1),
-      ASCIIToUTF16(kDeviceNameWithManufacturerDetails),
-      mount_path1.value()))
-      .InSequence(mock_sequence);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId1, kEmptyDeviceLabel,
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(0, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_attached().device_id);
+  EXPECT_EQ(ASCIIToUTF16(kDeviceNameWithManufacturerDetails),
+            observer().last_attached().name);
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
 
   EXPECT_EQ(kDevice1SizeInBytes, GetDeviceStorageSize(mount_path1.value()));
-  EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
-      .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
+  EXPECT_EQ(1, observer().attach_calls());
+  EXPECT_EQ(1, observer().detach_calls());
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
 }
 
 }  // namespace
 
-}  // namespace chrome
+}  // namespace chromeos

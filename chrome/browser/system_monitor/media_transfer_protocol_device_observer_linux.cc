@@ -15,8 +15,6 @@
 
 namespace chrome {
 
-using base::SystemMonitor;
-
 namespace {
 
 static MediaTransferProtocolDeviceObserverLinux* g_mtp_device_observer = NULL;
@@ -165,7 +163,7 @@ MediaTransferProtocolDeviceObserverLinux::GetInstance() {
 
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
     const FilePath& path,
-    SystemMonitor::RemovableStorageInfo* storage_info) const {
+    RemovableStorageNotifications::StorageInfo* storage_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -193,8 +191,9 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     const std::string& storage_name) {
   DCHECK(!storage_name.empty());
 
-  SystemMonitor* system_monitor = SystemMonitor::Get();
-  DCHECK(system_monitor);
+  RemovableStorageNotifications* notifications =
+      RemovableStorageNotifications::GetInstance();
+  DCHECK(notifications);
 
   // New storage is attached.
   if (is_attached) {
@@ -211,18 +210,17 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
     DCHECK(!ContainsKey(storage_map_, location));
 
-    SystemMonitor::RemovableStorageInfo storage_info(device_id, device_name,
-                                                     location);
+    RemovableStorageNotifications::StorageInfo storage_info(
+        device_id, device_name, location);
     storage_map_[location] = storage_info;
-    system_monitor->ProcessRemovableStorageAttached(device_id, device_name,
-                                                    location);
+    notifications->ProcessAttach(device_id, device_name, location);
   } else {
     // Existing storage is detached.
     StorageLocationToInfoMap::iterator it =
         storage_map_.find(GetDeviceLocationFromStorageName(storage_name));
     if (it == storage_map_.end())
       return;
-    system_monitor->ProcessRemovableStorageDetached(it->second.device_id);
+    notifications->ProcessDetach(it->second.device_id);
     storage_map_.erase(it);
   }
 }

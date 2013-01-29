@@ -16,8 +16,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
+#include "chrome/browser/system_monitor/removable_storage_observer.h"
 
 class FilePath;
 class Profile;
@@ -29,7 +29,7 @@ class ListValue;
 namespace extensions {
 
 class MediaGalleriesPrivateEventRouter
-    : public base::SystemMonitor::DevicesChangedObserver,
+    : public chrome::RemovableStorageObserver,
       public base::SupportsWeakPtr<MediaGalleriesPrivateEventRouter> {
  public:
   explicit MediaGalleriesPrivateEventRouter(Profile* profile);
@@ -40,12 +40,11 @@ class MediaGalleriesPrivateEventRouter
                         const std::set<std::string>& extension_ids);
 
  private:
-  // base::SystemMonitor::DevicesChangedObserver implementation.
+  // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const std::string& id,
-      const string16& name,
-      const FilePath::StringType& location) OVERRIDE;
-  virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
+      const chrome::RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const chrome::RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
 
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);

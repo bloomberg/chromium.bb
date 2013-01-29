@@ -9,10 +9,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
-#include "base/system_monitor/system_monitor.h"
-#include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,14 +58,11 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    base::SystemMonitor::AllocateSystemIOPorts();
-    system_monitor_.reset(new base::SystemMonitor());
-
-    mock_devices_changed_observer_.reset(new base::MockDevicesChangedObserver);
-    system_monitor_->AddDevicesChangedObserver(
-        mock_devices_changed_observer_.get());
-
     notifications_ = new RemovableDeviceNotificationsMac;
+
+    mock_storage_observer_.reset(new MockRemovableStorageObserver);
+    notifications_->AddObserver(mock_storage_observer_.get());
+
 
     unique_id_ = "test_id";
     display_name_ = ASCIIToUTF16("977 KB Test Display Name");
@@ -83,9 +79,7 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
   MessageLoop message_loop_;
   content::TestBrowserThread file_thread_;
 
-  // SystemMonitor and DevicesChangedObserver to hook together to test.
-  scoped_ptr<base::SystemMonitor> system_monitor_;
-  scoped_ptr<base::MockDevicesChangedObserver> mock_devices_changed_observer_;
+  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   // Information about the disk.
   std::string unique_id_;
@@ -98,57 +92,58 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
 };
 
 TEST_F(RemovableDeviceNotificationsMacTest, AddRemove) {
-  {
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageAttached(device_id_,
-                                           display_name_,
-                                           mount_point_.value()));
-    notifications_->UpdateDisk(
-        disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunUntilIdle();
-  }
+  notifications_->UpdateDisk(
+      disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
+  EXPECT_EQ(0, mock_storage_observer_->detach_calls());
+  EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
+  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(mount_point_.value(),
+            mock_storage_observer_->last_attached().location);
 
-  {
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageDetached(device_id_));
-    notifications_->UpdateDisk(
-        disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_REMOVED);
-    message_loop_.RunUntilIdle();
-  }
+  notifications_->UpdateDisk(
+      disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_REMOVED);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
+  EXPECT_EQ(1, mock_storage_observer_->detach_calls());
+  EXPECT_EQ(device_id_, mock_storage_observer_->last_detached().device_id);
 }
 
 TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
-  {
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageAttached(device_id_,
-                                           display_name_,
-                                           mount_point_.value()));
-    notifications_->UpdateDisk(
-        disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunUntilIdle();
-  }
+  notifications_->UpdateDisk(
+      disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
+  message_loop_.RunUntilIdle();
 
-  {
-    string16 new_display_name(ASCIIToUTF16("977 KB Test Display Name"));
-    DiskInfoMac info2 = CreateDiskInfoMac(
-        unique_id_, "", ASCIIToUTF16("Test Display Name"), mount_point_,
-        kTestSize);
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageDetached(device_id_));
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageAttached(device_id_,
-                                           new_display_name,
-                                           mount_point_.value()));
-    notifications_->UpdateDisk(
-        info2, RemovableDeviceNotificationsMac::UPDATE_DEVICE_CHANGED);
-    message_loop_.RunUntilIdle();
-  }
+  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
+  EXPECT_EQ(0, mock_storage_observer_->detach_calls());
+  EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
+  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(mount_point_.value(),
+            mock_storage_observer_->last_attached().location);
+
+  string16 new_display_name(ASCIIToUTF16("977 KB Test Display Name"));
+  DiskInfoMac info2 = CreateDiskInfoMac(
+      unique_id_, "", ASCIIToUTF16("Test Display Name"), mount_point_,
+      kTestSize);
+  notifications_->UpdateDisk(
+      info2, RemovableDeviceNotificationsMac::UPDATE_DEVICE_CHANGED);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(1, mock_storage_observer_->detach_calls());
+  EXPECT_EQ(device_id_, mock_storage_observer_->last_detached().device_id);
+  EXPECT_EQ(2, mock_storage_observer_->attach_calls());
+  EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
+  EXPECT_EQ(new_display_name, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(mount_point_.value(),
+            mock_storage_observer_->last_attached().location);
 }
 
 TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  file_util::CreateDirectory(temp_dir.path().Append(kDCIMDirectoryName));
+  ASSERT_TRUE(file_util::CreateDirectory(
+      temp_dir.path().Append(kDCIMDirectoryName)));
 
   FilePath mount_point = temp_dir.path();
   DiskInfoMac info = CreateDiskInfoMac(
@@ -157,29 +152,31 @@ TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
 
-  {
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageAttached(device_id,
-                                           display_name_,
-                                           mount_point.value()));
-    notifications_->UpdateDisk(
-        info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunUntilIdle();
-  }
+  notifications_->UpdateDisk(
+      info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
+  EXPECT_EQ(0, mock_storage_observer_->detach_calls());
+  EXPECT_EQ(device_id, mock_storage_observer_->last_attached().device_id);
+  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(mount_point.value(),
+            mock_storage_observer_->last_attached().location);
 }
 
 TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
-  {
-    EXPECT_CALL(*mock_devices_changed_observer_,
-                OnRemovableStorageAttached(device_id_,
-                                           display_name_,
-                                           mount_point_.value()));
-    notifications_->UpdateDisk(
-        disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunUntilIdle();
-  }
+  notifications_->UpdateDisk(
+      disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
+  message_loop_.RunUntilIdle();
 
-  base::SystemMonitor::RemovableStorageInfo info;
+  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
+  EXPECT_EQ(0, mock_storage_observer_->detach_calls());
+  EXPECT_EQ(device_id_, mock_storage_observer_->last_attached().device_id);
+  EXPECT_EQ(display_name_, mock_storage_observer_->last_attached().name);
+  EXPECT_EQ(mount_point_.value(),
+            mock_storage_observer_->last_attached().location);
+
+  RemovableStorageNotifications::StorageInfo info;
   EXPECT_TRUE(notifications_->GetDeviceInfoForPath(
       mount_point_.AppendASCII("foo"), &info));
   EXPECT_EQ(info.device_id, device_id_);
@@ -191,13 +188,10 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
 }
 
 TEST_F(RemovableDeviceNotificationsMacTest, GetStorageSize) {
-  EXPECT_CALL(*mock_devices_changed_observer_,
-              OnRemovableStorageAttached(testing::_,
-                                         testing::_,
-                                         testing::_));
   notifications_->UpdateDisk(
       disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
   message_loop_.RunUntilIdle();
+  EXPECT_EQ(1, mock_storage_observer_->attach_calls());
 
   EXPECT_EQ(kTestSize,
             notifications_->GetStorageSize("/unused_test_directory"));
@@ -205,15 +199,12 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetStorageSize) {
 
 // Test that mounting a DMG doesn't send a notification.
 TEST_F(RemovableDeviceNotificationsMacTest, DMG) {
-  EXPECT_CALL(*mock_devices_changed_observer_,
-              OnRemovableStorageAttached(testing::_,
-                                         testing::_,
-                                         testing::_)).Times(0);
   DiskInfoMac info = CreateDiskInfoMac(
       unique_id_, "Disk Image", display_name_, mount_point_, kTestSize);
   notifications_->UpdateDisk(
       info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
   message_loop_.RunUntilIdle();
+  EXPECT_EQ(0, mock_storage_observer_->attach_calls());
 }
 
 }  // namespace chrome

@@ -20,9 +20,6 @@ namespace {
 
 const char16 kWindowClassName[] = L"Chrome_RemovableDeviceNotificationWindow";
 
-RemovableDeviceNotificationsWindowWin*
-    g_removable_device_notifications_window_win = NULL;
-
 }  // namespace
 
 
@@ -46,8 +43,6 @@ RemovableDeviceNotificationsWindowWin::
       portable_device_watcher_(portable_device_watcher) {
   DCHECK(volume_mount_watcher_);
   DCHECK(portable_device_watcher_);
-  DCHECK(!g_removable_device_notifications_window_win);
-  g_removable_device_notifications_window_win = this;
 }
 
 RemovableDeviceNotificationsWindowWin::
@@ -57,9 +52,6 @@ RemovableDeviceNotificationsWindowWin::
 
   if (window_class_)
     UnregisterClass(MAKEINTATOM(window_class_), instance_);
-
-  DCHECK_EQ(this, g_removable_device_notifications_window_win);
-  g_removable_device_notifications_window_win = NULL;
 }
 
 void RemovableDeviceNotificationsWindowWin::Init() {
@@ -83,7 +75,7 @@ void RemovableDeviceNotificationsWindowWin::Init() {
 
 bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
     const FilePath& path,
-    base::SystemMonitor::RemovableStorageInfo* device_info) const {
+    StorageInfo* device_info) const {
   string16 location;
   std::string unique_id;
   string16 name;
@@ -94,11 +86,10 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
   // To compute the device id, the device type is needed.  For removable
   // devices, that requires knowing if there's a DCIM directory, which would
   // require bouncing over to the file thread.  Instead, just iterate the
-  // devices in base::SystemMonitor.
+  // devices.
   std::string device_id;
   if (removable) {
-    std::vector<base::SystemMonitor::RemovableStorageInfo> attached_devices =
-        base::SystemMonitor::Get()->GetAttachedRemovableStorage();
+    std::vector<StorageInfo> attached_devices = GetAttachedStorage();
     bool found = false;
     for (size_t i = 0; i < attached_devices.size(); i++) {
       MediaStorageUtil::Type type;
@@ -181,12 +172,6 @@ void RemovableDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
                                                            LPARAM data) {
   volume_mount_watcher_->OnWindowMessage(event_type, data);
   portable_device_watcher_->OnWindowMessage(event_type, data);
-}
-
-// static
-RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
-  DCHECK(g_removable_device_notifications_window_win);
-  return g_removable_device_notifications_window_win;
 }
 
 }  // namespace chrome

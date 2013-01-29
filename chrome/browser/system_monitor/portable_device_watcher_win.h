@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -29,8 +29,8 @@ class TestPortableDeviceWatcherWin;
 }
 
 // This class watches the portable device mount points and sends notifications
-// to base::SystemMonitor about the attached/detached media transfer protocol
-// (MTP) devices. This is a singleton class instantiated by
+// about the attached/detached media transfer protocol (MTP) devices.
+// This is a singleton class instantiated by
 // RemovableDeviceNotificationsWindowWin. This class is created, destroyed and
 // operates on the UI thread, except for long running tasks it spins off to a
 // SequencedTaskRunner.
@@ -67,6 +67,8 @@ class PortableDeviceWatcherWin {
   };
   typedef std::vector<DeviceDetails> Devices;
 
+  // TODO(gbillock): Change to take the device notifications object as
+  // an argument.
   PortableDeviceWatcherWin();
   virtual ~PortableDeviceWatcherWin();
 
@@ -75,7 +77,7 @@ class PortableDeviceWatcherWin {
   void Init(HWND hwnd);
 
   // Processes DEV_BROADCAST_DEVICEINTERFACE messages and triggers a
-  // SystemMonitor notification if appropriate.
+  // notification if appropriate.
   void OnWindowMessage(UINT event_type, LPARAM data);
 
   // Gets the information of the MTP storage specified by |storage_device_id|.
@@ -96,7 +98,7 @@ class PortableDeviceWatcherWin {
 
   // Key: MTP device storage unique id.
   // Value: Metadata for the given storage.
-  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
+  typedef std::map<std::string, RemovableStorageNotifications::StorageInfo>
       MTPStorageMap;
 
   // Key: MTP device plug and play ID string.

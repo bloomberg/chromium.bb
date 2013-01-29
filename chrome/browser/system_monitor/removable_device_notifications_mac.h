@@ -10,13 +10,12 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/system_monitor/disk_info_mac.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 namespace chrome {
 
-// This class posts notifications to base::SystemMonitor when a new disk
+// This class posts notifications to listeners when a new disk
 // is attached, removed, or changed.
 class RemovableDeviceNotificationsMac
     : public RemovableStorageNotifications,
@@ -35,7 +34,7 @@ class RemovableDeviceNotificationsMac
 
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
+      StorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage size of the device present at |location|. If the
   // device information is unavailable, returns zero. |location| must be a

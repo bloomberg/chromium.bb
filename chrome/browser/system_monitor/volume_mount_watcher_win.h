@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/threading/sequenced_worker_pool.h"
 
 namespace chrome {
@@ -24,6 +24,7 @@ namespace chrome {
 // singleton class instantiated by RemovableDeviceNotificationsWindowWin.
 class VolumeMountWatcherWin {
  public:
+  // TODO(gbillock): Take the RemovableStorageNotifications as an argument.
   VolumeMountWatcherWin();
   virtual ~VolumeMountWatcherWin();
 
@@ -43,7 +44,7 @@ class VolumeMountWatcherWin {
                              string16* name,
                              bool* removable) const;
 
-  // Processes DEV_BROADCAST_VOLUME messages and triggers a SystemMonitor
+  // Processes DEV_BROADCAST_VOLUME messages and triggers a
   // notification if appropriate.
   void OnWindowMessage(UINT event_type, LPARAM data);
 

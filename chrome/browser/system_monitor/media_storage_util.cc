@@ -12,7 +12,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
 #endif
 
-using base::SystemMonitor;
 using content::BrowserThread;
 
 const char kRootPath[] = "/";
@@ -62,13 +60,14 @@ void ValidatePathOnFileThread(
                           base::Bind(callback, file_util::PathExists(path)));
 }
 
+typedef std::vector<RemovableStorageNotifications::StorageInfo>
+    StorageInfoList;
+
 bool IsRemovableStorageAttached(const std::string& id) {
-  std::vector<SystemMonitor::RemovableStorageInfo> media_devices =
-      SystemMonitor::Get()->GetAttachedRemovableStorage();
-  for (std::vector<SystemMonitor::RemovableStorageInfo>::const_iterator it =
-           media_devices.begin();
-       it != media_devices.end();
-       ++it) {
+  StorageInfoList devices =
+      RemovableStorageNotifications::GetInstance()->GetAttachedStorage();
+  for (StorageInfoList::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
     if (it->device_id == id)
       return true;
   }
@@ -77,12 +76,10 @@ bool IsRemovableStorageAttached(const std::string& id) {
 
 FilePath::StringType FindRemovableStorageLocationById(
     const std::string& device_id) {
-  std::vector<SystemMonitor::RemovableStorageInfo> media_devices =
-      SystemMonitor::Get()->GetAttachedRemovableStorage();
-  for (std::vector<SystemMonitor::RemovableStorageInfo>::const_iterator it =
-           media_devices.begin();
-       it != media_devices.end();
-       ++it) {
+  StorageInfoList devices =
+      RemovableStorageNotifications::GetInstance()->GetAttachedStorage();
+  for (StorageInfoList::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
     if (it->device_id == device_id)
       return it->location;
   }
@@ -242,7 +239,7 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
     DCHECK(type == MTP_OR_PTP ||
            type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
            type == REMOVABLE_MASS_STORAGE_NO_DCIM);
-    // We should be able to find removable storage in SystemMonitor.
+    // We should be able to find removable storage.
     callback.Run(IsRemovableStorageAttached(device_id));
   }
 }
@@ -277,7 +274,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
   }
 
   bool found_device = false;
-  base::SystemMonitor::RemovableStorageInfo device_info;
+  RemovableStorageNotifications::StorageInfo device_info;
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
   RemovableStorageNotifications* notifier =
       RemovableStorageNotifications::GetInstance();

@@ -14,9 +14,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "content/public/browser/browser_thread.h"
 
-using base::SystemMonitor;
 using content::BrowserThread;
 
 namespace {
@@ -319,11 +319,12 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
   if (!info.removable)
     return;
 
-  SystemMonitor* monitor = SystemMonitor::Get();
-  if (monitor) {
+  RemovableStorageNotifications* notifications =
+      RemovableStorageNotifications::GetInstance();
+  if (notifications) {
     string16 display_name = GetDisplayNameForDevice(0, info.name);
-    monitor->ProcessRemovableStorageAttached(info.device_id, display_name,
-                                             device_path.value());
+    notifications->ProcessAttach(info.device_id, display_name,
+                                 device_path.value());
   }
 }
 
@@ -337,9 +338,10 @@ void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
   if (device_info == device_metadata_.end())
     return;
 
-  SystemMonitor* monitor = SystemMonitor::Get();
-  if (monitor)
-    monitor->ProcessRemovableStorageDetached(device_info->second.device_id);
+  RemovableStorageNotifications* notifications =
+      RemovableStorageNotifications::GetInstance();
+  if (notifications)
+    notifications->ProcessDetach(device_info->second.device_id);
   device_metadata_.erase(device_info);
 }
 

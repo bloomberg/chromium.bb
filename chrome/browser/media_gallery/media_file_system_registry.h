@@ -17,9 +17,9 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/transient_device_ids.h"
+#include "chrome/browser/system_monitor/removable_storage_observer.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
@@ -69,8 +69,7 @@ struct MediaFileSystemInfo {
 typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
-class MediaFileSystemRegistry
-    : public base::SystemMonitor::DevicesChangedObserver {
+class MediaFileSystemRegistry : public RemovableStorageObserver {
  public:
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
@@ -89,12 +88,11 @@ class MediaFileSystemRegistry
   // Called on the UI thread.
   MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
-  // base::SystemMonitor::DevicesChangedObserver implementation.
+  // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const std::string& id,
-      const string16& name,
-      const FilePath::StringType& location) OVERRIDE;
-  virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
+      const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
 
   size_t GetExtensionHostCountForTests() const;
 

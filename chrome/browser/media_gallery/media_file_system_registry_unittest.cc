@@ -29,6 +29,8 @@
 #include "chrome/browser/media_gallery/media_galleries_test_util.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
+#include "chrome/browser/system_monitor/test_removable_storage_notifications.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -307,6 +309,8 @@ class ProfileState {
   DISALLOW_COPY_AND_ASSIGN(ProfileState);
 };
 
+}  // namespace
+
 class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
  public:
   MediaFileSystemRegistryTest();
@@ -355,9 +359,20 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   std::vector<MediaFileSystemInfo> GetAutoAddedGalleries(
       ProfileState* profile_state);
 
+  void ProcessAttach(const std::string& id,
+                     const string16& name,
+                     const FilePath::StringType& location) {
+    RemovableStorageNotifications::GetInstance()->ProcessAttach(
+        id, name, location);
+  }
+
+  void ProcessDetach(const std::string& id) {
+    RemovableStorageNotifications::GetInstance()->ProcessDetach(id);
+  }
+
  protected:
-  void SetUp();
-  void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  private:
   // This makes sure that at least one default gallery exists on the file
@@ -380,10 +395,9 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
 #if defined(OS_WIN)
   scoped_ptr<test::TestRemovableDeviceNotificationsWindowWin> window_;
+#else
+  chrome::test::TestRemovableStorageNotifications notifications_;
 #endif
-
-  // For AttachDevice() and DetachDevice().
-  scoped_ptr<base::SystemMonitor> system_monitor_;
 
   MockProfileSharedRenderProcessHostFactory rph_factory_;
 
@@ -391,6 +405,8 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistryTest);
 };
+
+namespace {
 
 bool MediaFileSystemInfoComparator(const MediaFileSystemInfo& a,
                                    const MediaFileSystemInfo& b) {
@@ -588,6 +604,8 @@ int ProfileState::GetAndClearComparisonCount() {
   return result;
 }
 
+}  // namespace
+
 /////////////////////////////////
 // MediaFileSystemRegistryTest //
 /////////////////////////////////
@@ -630,8 +648,7 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
   std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
   DCHECK(MediaStorageUtil::IsRemovableDevice(device_id));
   string16 name = location.LossyDisplayName();
-  base::SystemMonitor::Get()->ProcessRemovableStorageAttached(device_id, name,
-                                                              location.value());
+  ProcessAttach(device_id, name, location.value());
   bool user_added = (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
   for (size_t i = 0; i < profile_states_.size(); ++i) {
     profile_states_[i]->GetMediaGalleriesPrefs()->AddGallery(
@@ -643,7 +660,7 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
 
 void MediaFileSystemRegistryTest::DetachDevice(const std::string& device_id) {
   DCHECK(MediaStorageUtil::IsRemovableDevice(device_id));
-  base::SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id);
+  ProcessDetach(device_id);
   MessageLoop::current()->RunUntilIdle();
 }
 
@@ -752,12 +769,6 @@ void MediaFileSystemRegistryTest::SetUp() {
       new test::TestVolumeMountWatcherWin, portable_device_watcher));
   window_->Init();
 #endif
-
-#if defined(OS_MACOSX)
-  // This needs to happen before SystemMonitor's ctor.
-  base::SystemMonitor::AllocateSystemIOPorts();
-#endif
-  system_monitor_.reset(new base::SystemMonitor);
 
   ChromeRenderViewHostTestHarness::SetUp();
   DeleteContents();
@@ -913,7 +924,5 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameUserAddedPath) {
   CheckNewGalleryInfo(profile_state, galleries_info, empty_dir(),
                       false /*removable*/, false /* media device */);
 }
-
-}  // namespace
 
 }  // namespace chrome

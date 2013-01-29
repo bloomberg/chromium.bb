@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // RemovableDeviceNotificationsLinux listens for mount point changes, notifies
-// the SystemMonitor about the addition and deletion of media devices, and
+// listeners about the addition and deletion of media devices, and
 // answers queries about mounted devices.
 
 #ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
@@ -22,7 +22,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -53,7 +52,7 @@ class RemovableDeviceNotificationsLinux
   // Returns false if unable to find the device.
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
+      StorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage partition size of the device present at |location|.
   // If the requested information is unavailable, returns 0.
@@ -109,7 +108,7 @@ class RemovableDeviceNotificationsLinux
   void UpdateMtab();
 
   // Adds |mount_device| as mounted on |mount_point|.  If the device is a new
-  // device SystemMonitor is notified.
+  // device any listeners are notified.
   void AddNewMount(const FilePath& mount_device, const FilePath& mount_point);
 
   // Whether Init() has been called or not.

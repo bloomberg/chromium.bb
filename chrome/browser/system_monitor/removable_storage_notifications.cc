@@ -10,6 +10,9 @@
 
 namespace chrome {
 
+static RemovableStorageNotifications*
+    g_removable_storage_notifications = NULL;
+
 RemovableStorageNotifications::StorageInfo::StorageInfo() {
 }
 
@@ -25,9 +28,13 @@ RemovableStorageNotifications::StorageInfo::StorageInfo(
 RemovableStorageNotifications::RemovableStorageNotifications()
     : observer_list_(
           new ObserverListThreadSafe<RemovableStorageObserver>()) {
+  DCHECK(!g_removable_storage_notifications);
+  g_removable_storage_notifications = this;
 }
 
 RemovableStorageNotifications::~RemovableStorageNotifications() {
+  DCHECK_EQ(this, g_removable_storage_notifications);
+  g_removable_storage_notifications = NULL;
 }
 
 void RemovableStorageNotifications::ProcessAttach(
@@ -88,6 +95,10 @@ void RemovableStorageNotifications::AddObserver(RemovableStorageObserver* obs) {
 void RemovableStorageNotifications::RemoveObserver(
     RemovableStorageObserver* obs) {
   observer_list_->RemoveObserver(obs);
+}
+
+RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
+  return g_removable_storage_notifications;
 }
 
 }  // namespace chrome

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/stringprintf.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -11,6 +10,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -86,13 +86,14 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
-    base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+    chrome::RemovableStorageNotifications::GetInstance()->ProcessAttach(
         device_id_, ASCIIToUTF16(kDeviceName), kDevicePath);
     WaitForDeviceEvents();
   }
 
   void Detach() {
-    base::SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id_);
+    chrome::RemovableStorageNotifications::GetInstance()->ProcessDetach(
+        device_id_);
     WaitForDeviceEvents();
   }
 

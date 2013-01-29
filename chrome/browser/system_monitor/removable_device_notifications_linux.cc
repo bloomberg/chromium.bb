@@ -18,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -30,9 +29,6 @@ namespace chrome {
 using content::BrowserThread;
 
 namespace {
-
-static RemovableDeviceNotificationsLinux*
-    g_removable_device_notifications_linux = NULL;
 
 // List of file systems we care about.
 const char* const kKnownFileSystems[] = {
@@ -233,8 +229,6 @@ RemovableDeviceNotificationsLinux::RemovableDeviceNotificationsLinux(
     : initialized_(false),
       mtab_path_(path),
       get_device_info_func_(&GetDeviceInfo) {
-  DCHECK(!g_removable_device_notifications_linux);
-  g_removable_device_notifications_linux = this;
 }
 
 RemovableDeviceNotificationsLinux::RemovableDeviceNotificationsLinux(
@@ -243,14 +237,10 @@ RemovableDeviceNotificationsLinux::RemovableDeviceNotificationsLinux(
     : initialized_(false),
       mtab_path_(path),
       get_device_info_func_(get_device_info_func) {
-  DCHECK(!g_removable_device_notifications_linux);
-  g_removable_device_notifications_linux = this;
 }
 
 RemovableDeviceNotificationsLinux::~RemovableDeviceNotificationsLinux() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK_EQ(this, g_removable_device_notifications_linux);
-  g_removable_device_notifications_linux = NULL;
 }
 
 void RemovableDeviceNotificationsLinux::Init() {
@@ -267,7 +257,7 @@ void RemovableDeviceNotificationsLinux::Init() {
 
 bool RemovableDeviceNotificationsLinux::GetDeviceInfoForPath(
     const FilePath& path,
-    base::SystemMonitor::RemovableStorageInfo* device_info) const {
+    StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -361,8 +351,7 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
       if (MediaStorageUtil::IsRemovableDevice(old_iter->second.device_id)) {
         DCHECK(has_priority != priority->second.end());
         if (has_priority->second) {
-          base::SystemMonitor::Get()->ProcessRemovableStorageDetached(
-              old_iter->second.device_id);
+          ProcessDetach(old_iter->second.device_id);
         }
         if (priority->second.size() > 1)
           multiple_mounted_devices_needing_reattachment.push_back(mount_device);
@@ -398,7 +387,7 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
     const MountPointInfo& mount_info =
         mount_info_map_.find(mount_point)->second;
     DCHECK(MediaStorageUtil::IsRemovableDevice(mount_info.device_id));
-    base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+    ProcessAttach(
         mount_info.device_id, mount_info.device_name, mount_point.value());
   }
 
@@ -464,16 +453,10 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   mount_priority_map_[mount_device][mount_point] = removable;
 
   if (removable) {
-    base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+    ProcessAttach(
         device_id, GetDisplayNameForDevice(partition_size_in_bytes, name),
         mount_point.value());
   }
-}
-
-// static
-RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
-  DCHECK(g_removable_device_notifications_linux != NULL);
-  return g_removable_device_notifications_linux;
 }
 
 }  // namespace chrome

@@ -12,10 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/system_monitor/system_monitor.h"
-#include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/system_monitor/portable_device_watcher_win.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "chrome/browser/system_monitor/test_portable_device_watcher_win.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/system_monitor/test_volume_mount_watcher_win.h"
 #include "chrome/browser/system_monitor/volume_mount_watcher_win.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
@@ -45,7 +43,6 @@ class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  void AddMassStorageDeviceAttachExpectation(const FilePath& drive);
   void PreAttachDevices();
 
   // Runs all the pending tasks on UI thread, FILE thread and blocking thread.
@@ -70,13 +67,12 @@ class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
   // Weak pointer; owned by the device notifications class.
   TestVolumeMountWatcherWin* volume_mount_watcher_;
 
+  MockRemovableStorageObserver observer_;
+
  private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-
-  base::SystemMonitor system_monitor_;
-  base::MockDevicesChangedObserver observer_;
 };
 
 RemovableDeviceNotificationsWindowWinTest::
@@ -96,44 +92,37 @@ void RemovableDeviceNotificationsWindowWinTest::SetUp() {
       volume_mount_watcher_, new TestPortableDeviceWatcherWin));
   window_->Init();
   RunUntilIdle();
-  system_monitor_.AddDevicesChangedObserver(&observer_);
+  window_->AddObserver(&observer_);
 }
 
 void RemovableDeviceNotificationsWindowWinTest::TearDown() {
   RunUntilIdle();
-  system_monitor_.RemoveDevicesChangedObserver(&observer_);
+  window_->RemoveObserver(&observer_);
 }
 
-void RemovableDeviceNotificationsWindowWinTest::
-    AddMassStorageDeviceAttachExpectation(const FilePath& drive) {
-  std::string unique_id;
-  string16 device_name;
-  bool removable;
-  ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
-      drive, NULL, &unique_id, &device_name, &removable));
-  if (removable) {
-    MediaStorageUtil::Type type =
-        MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-    std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
-    EXPECT_CALL(observer_, OnRemovableStorageAttached(device_id, device_name,
-                                                      drive.value()))
-        .Times(1);
-  }
-}
 
 void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
   window_.reset();
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;
   volume_mount_watcher_->SetAttachedDevicesFake();
+
+  int expect_attach_calls = 0;
   std::vector<FilePath> initial_devices =
       volume_mount_watcher_->GetAttachedDevices();
   for (std::vector<FilePath>::const_iterator it = initial_devices.begin();
        it != initial_devices.end(); ++it) {
-    AddMassStorageDeviceAttachExpectation(*it);
+    std::string unique_id;
+    string16 device_name;
+    bool removable;
+    ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
+        *it, NULL, &unique_id, &device_name, &removable));
+    if (removable)
+      expect_attach_calls++;
   }
 
   window_.reset(new TestRemovableDeviceNotificationsWindowWin(
       volume_mount_watcher_, new TestPortableDeviceWatcherWin));
+  window_->AddObserver(&observer_);
   window_->Init();
 
   EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
@@ -148,6 +137,8 @@ void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
       volume_mount_watcher_->devices_checked();
   sort(checked_devices.begin(), checked_devices.end());
   EXPECT_EQ(initial_devices, checked_devices);
+  EXPECT_EQ(expect_attach_calls, observer_.attach_calls());
+  EXPECT_EQ(0, observer_.detach_calls());
 }
 
 void RemovableDeviceNotificationsWindowWinTest::RunUntilIdle() {
@@ -162,19 +153,27 @@ void RemovableDeviceNotificationsWindowWinTest::
   volume_broadcast.dbcv_devicetype = DBT_DEVTYP_VOLUME;
   volume_broadcast.dbcv_unitmask = 0x0;
   volume_broadcast.dbcv_flags = 0x0;
-  {
-    for (DeviceIndices::const_iterator it = device_indices.begin();
-         it != device_indices.end(); ++it) {
-      volume_broadcast.dbcv_unitmask |= 0x1 << *it;
-      AddMassStorageDeviceAttachExpectation(
-          VolumeMountWatcherWin::DriveNumberToFilePath(*it));
-    }
+
+  int expect_attach_calls = 0;
+  for (DeviceIndices::const_iterator it = device_indices.begin();
+       it != device_indices.end(); ++it) {
+    volume_broadcast.dbcv_unitmask |= 0x1 << *it;
+    bool removable;
+    ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
+        VolumeMountWatcherWin::DriveNumberToFilePath(*it),
+        NULL, NULL, NULL, &removable));
+    if (removable)
+      expect_attach_calls++;
   }
   window_->InjectDeviceChange(DBT_DEVICEARRIVAL,
                               reinterpret_cast<DWORD>(&volume_broadcast));
+
   RunUntilIdle();
   volume_mount_watcher_->FlushWorkerPoolForTesting();
   RunUntilIdle();
+
+  EXPECT_EQ(expect_attach_calls, observer_.attach_calls());
+  EXPECT_EQ(0, observer_.detach_calls());
 }
 
 void RemovableDeviceNotificationsWindowWinTest::
@@ -184,26 +183,24 @@ void RemovableDeviceNotificationsWindowWinTest::
   volume_broadcast.dbcv_devicetype = DBT_DEVTYP_VOLUME;
   volume_broadcast.dbcv_unitmask = 0x0;
   volume_broadcast.dbcv_flags = 0x0;
-  {
-    for (DeviceIndices::const_iterator it = device_indices.begin();
-         it != device_indices.end(); ++it) {
-      volume_broadcast.dbcv_unitmask |= 0x1 << *it;
-      std::string unique_id;
-      bool removable;
-      ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
-          VolumeMountWatcherWin::DriveNumberToFilePath(*it), NULL, &unique_id,
-          NULL, &removable));
-      if (removable) {
-        MediaStorageUtil::Type type =
-            MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-        std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
-        EXPECT_CALL(observer_, OnRemovableStorageDetached(device_id)).Times(1);
-      }
-    }
+
+  int pre_attach_calls = observer_.attach_calls();
+  int expect_detach_calls = 0;
+  for (DeviceIndices::const_iterator it = device_indices.begin();
+       it != device_indices.end(); ++it) {
+    volume_broadcast.dbcv_unitmask |= 0x1 << *it;
+    bool removable;
+    ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
+        VolumeMountWatcherWin::DriveNumberToFilePath(*it), NULL, NULL,
+        NULL, &removable));
+    if (removable)
+      expect_detach_calls++;
   }
   window_->InjectDeviceChange(DBT_DEVICEREMOVECOMPLETE,
                               reinterpret_cast<DWORD>(&volume_broadcast));
   RunUntilIdle();
+  EXPECT_EQ(pre_attach_calls, observer_.attach_calls());
+  EXPECT_EQ(expect_detach_calls, observer_.detach_calls());
 }
 
 void RemovableDeviceNotificationsWindowWinTest::DoMTPDeviceTest(
@@ -224,32 +221,32 @@ void RemovableDeviceNotificationsWindowWinTest::DoMTPDeviceTest(
   dev_interface_broadcast->dbcc_classguid = guidDevInterface;
   memcpy(dev_interface_broadcast->dbcc_name, pnp_device_id.data(),
          device_id_size);
-  {
-    testing::InSequence sequence;
-    PortableDeviceWatcherWin::StorageObjectIDs storage_object_ids =
-        TestPortableDeviceWatcherWin::GetMTPStorageObjectIds(pnp_device_id);
-    for (PortableDeviceWatcherWin::StorageObjectIDs::const_iterator it =
-         storage_object_ids.begin(); it != storage_object_ids.end(); ++it) {
-      std::string unique_id;
-      string16 name;
-      string16 location;
-      TestPortableDeviceWatcherWin::GetMTPStorageDetails(pnp_device_id, *it,
-                                                         &location, &unique_id,
-                                                         &name);
-      if (test_attach) {
-        EXPECT_CALL(observer_, OnRemovableStorageAttached(unique_id, name,
-                                                          location))
-            .Times((name.empty() || unique_id.empty()) ? 0 : 1);
-      } else {
-        EXPECT_CALL(observer_, OnRemovableStorageDetached(unique_id))
-            .Times((name.empty() || unique_id.empty()) ? 0 : 1);
-      }
-    }
+
+  int expect_attach_calls = observer_.attach_calls();
+  int expect_detach_calls = observer_.detach_calls();
+  PortableDeviceWatcherWin::StorageObjectIDs storage_object_ids =
+      TestPortableDeviceWatcherWin::GetMTPStorageObjectIds(pnp_device_id);
+  for (PortableDeviceWatcherWin::StorageObjectIDs::const_iterator it =
+       storage_object_ids.begin(); it != storage_object_ids.end(); ++it) {
+    std::string unique_id;
+    string16 name;
+    string16 location;
+    TestPortableDeviceWatcherWin::GetMTPStorageDetails(pnp_device_id, *it,
+                                                       &location, &unique_id,
+                                                       &name);
+    if (test_attach && !name.empty() && !unique_id.empty())
+      expect_attach_calls++;
+    else if (!name.empty() && !unique_id.empty())
+      expect_detach_calls++;
   }
+
   window_->InjectDeviceChange(
       test_attach ? DBT_DEVICEARRIVAL : DBT_DEVICEREMOVECOMPLETE,
       reinterpret_cast<DWORD>(dev_interface_broadcast.get()));
+
   RunUntilIdle();
+  EXPECT_EQ(expect_attach_calls, observer_.attach_calls());
+  EXPECT_EQ(expect_detach_calls, observer_.detach_calls());
 }
 
 bool RemovableDeviceNotificationsWindowWinTest::GetMTPStorageInfo(
@@ -285,15 +282,15 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttached) {
   EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
 
-  base::SystemMonitor::RemovableStorageInfo info;
+  RemovableStorageNotifications::StorageInfo info;
   EXPECT_FALSE(window_->GetDeviceInfoForPath(FilePath(ASCIIToUTF16("G:\\")),
                                              &info));
   EXPECT_TRUE(window_->GetDeviceInfoForPath(FilePath(ASCIIToUTF16("F:\\")),
                                             &info));
-  base::SystemMonitor::RemovableStorageInfo info1;
+  RemovableStorageNotifications::StorageInfo info1;
   EXPECT_TRUE(window_->GetDeviceInfoForPath(
       FilePath(ASCIIToUTF16("F:\\subdir")), &info1));
-  base::SystemMonitor::RemovableStorageInfo info2;
+  RemovableStorageNotifications::StorageInfo info2;
   EXPECT_TRUE(window_->GetDeviceInfoForPath(
       FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
@@ -375,7 +372,6 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest,
   volume_mount_watcher_->BlockDeviceCheckForTesting();
   FilePath kAttachedDevicePath =
       VolumeMountWatcherWin::DriveNumberToFilePath(8);  // I:
-  AddMassStorageDeviceAttachExpectation(kAttachedDevicePath);
 
   DEV_BROADCAST_VOLUME volume_broadcast;
   volume_broadcast.dbcv_size = sizeof(volume_broadcast);
@@ -432,7 +428,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
 
   // A connected removable device.
   FilePath removable_device(L"F:\\");
-  base::SystemMonitor::RemovableStorageInfo device_info;
+  RemovableStorageNotifications::StorageInfo device_info;
   EXPECT_TRUE(window_->GetDeviceInfoForPath(removable_device, &device_info));
 
   std::string unique_id;

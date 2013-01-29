@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 
 class FilePath;
@@ -37,7 +36,7 @@ class RemovableDeviceNotificationsWindowWin
   // RemovableStorageNotifications:
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
+      StorageInfo* device_info) const OVERRIDE;
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,

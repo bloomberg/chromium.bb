@@ -1152,6 +1152,8 @@
         'browser/system_monitor/test_portable_device_watcher_win.h',
         'browser/system_monitor/test_removable_device_notifications_window_win.cc',
         'browser/system_monitor/test_removable_device_notifications_window_win.h',
+        'browser/system_monitor/test_removable_storage_notifications.cc',
+        'browser/system_monitor/test_removable_storage_notifications.h',
         'browser/system_monitor/test_volume_mount_watcher_win.cc',
         'browser/system_monitor/test_volume_mount_watcher_win.h',
         'browser/tab_contents/render_view_context_menu_test_util.cc',

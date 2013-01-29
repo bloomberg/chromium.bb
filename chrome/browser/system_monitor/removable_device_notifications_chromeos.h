@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // chromeos::RemovableDeviceNotificationsCros listens for mount point changes
-// and notifies the SystemMonitor about the addition and deletion of media
+// and notifies listeners about the addition and deletion of media
 // devices.
 
 #ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_
@@ -19,7 +19,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
@@ -49,7 +48,7 @@ class RemovableDeviceNotificationsCros
   // Returns false if unable to find the device.
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
+      StorageInfo* device_info) const OVERRIDE;
 
   // Returns the storage size of the device present at |location|. If the
   // device information is unavailable, returns zero.
@@ -58,7 +57,7 @@ class RemovableDeviceNotificationsCros
  private:
   struct StorageObjectInfo {
     // Basic details {storage device name, location and identifier}.
-    base::SystemMonitor::RemovableStorageInfo storage_info;
+    StorageInfo storage_info;
 
     // Device storage size.
     uint64 storage_size_in_bytes;

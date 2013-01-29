@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 class FilePath;
@@ -24,7 +24,7 @@ typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
                                    std::string* location);
 
 // Helper class to send MTP storage attachment and detachment events to
-// SystemMonitor.
+// RemovableStorageNotifications.
 class MediaTransferProtocolDeviceObserverLinux
     : public device::MediaTransferProtocolManager::Observer {
  public:
@@ -38,7 +38,7 @@ class MediaTransferProtocolDeviceObserverLinux
   // Returns false if unable to find the storage.
   bool GetStorageInfoForPath(
       const FilePath& path,
-      base::SystemMonitor::RemovableStorageInfo* storage_info) const;
+      RemovableStorageNotifications::StorageInfo* storage_info) const;
 
  protected:
   // Only used in unit tests.
@@ -52,7 +52,7 @@ class MediaTransferProtocolDeviceObserverLinux
 
  private:
   // Mapping of storage location and mtp storage info object.
-  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
+  typedef std::map<std::string, RemovableStorageNotifications::StorageInfo>
       StorageLocationToInfoMap;
 
   // Enumerate existing mtp storage devices.
