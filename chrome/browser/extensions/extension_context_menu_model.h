@@ -19,8 +19,7 @@ namespace extensions {
 class Extension;
 }
 
-// The menu model for the context menu for extension action icons (browser and
-// page actions).
+// The context menu model for extension icons.
 class ExtensionContextMenuModel
     : public base::RefCounted<ExtensionContextMenuModel>,
       public ui::SimpleMenuModel,
@@ -47,7 +46,7 @@ class ExtensionContextMenuModel
     virtual ~PopupDelegate() {}
   };
 
-  // Creates a menu model for the given extension action. If
+  // Creates a menu model for the given extension. If
   // prefs::kExtensionsUIDeveloperMode is enabled then a menu item
   // will be shown for "Inspect Popup" which, when selected, will cause
   // ShowPopupForDevToolsWindow() to be called on |delegate|.
@@ -55,7 +54,7 @@ class ExtensionContextMenuModel
                             Browser* browser,
                             PopupDelegate* delegate);
 
-  // Create a menu model for the given extension action, without support
+  // Create a menu model for the given extension, without support
   // for the "Inspect Popup" command.
   ExtensionContextMenuModel(const extensions::Extension* extension,
                             Browser* browser);
@@ -85,7 +84,8 @@ class ExtensionContextMenuModel
   // A copy of the extension's id.
   std::string extension_id_;
 
-  // The extension action we are displaying the menu for (or NULL).
+  // The extension action of the extension we are displaying the menu for (if
+  // it has one, otherwise NULL).
   ExtensionAction* extension_action_;
 
   Browser* browser_;

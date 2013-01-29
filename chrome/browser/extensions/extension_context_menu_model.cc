@@ -165,7 +165,6 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   extension_action_ = extension_action_manager->GetBrowserAction(*extension);
   if (!extension_action_)
     extension_action_ = extension_action_manager->GetPageAction(*extension);
-  DCHECK(extension_action_);
 
   std::string extension_name = extension->name();
   // Ampersands need to be escaped to avoid being treated like
