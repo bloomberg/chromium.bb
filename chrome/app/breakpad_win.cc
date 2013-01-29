@@ -476,7 +476,11 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   g_dynamic_entries_count = crash_keys::RegisterChromeCrashKeys();
   g_dynamic_keys_offset = g_custom_entries->size();
   for (size_t i = 0; i < g_dynamic_entries_count; ++i) {
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry());
+    // The names will be mutated as they are set. Un-numbered since these are
+    // merely placeholders. The name cannot be empty because Breakpad's
+    // HTTPUpload will interpret that as an invalid parameter.
+    g_custom_entries->push_back(
+        google_breakpad::CustomInfoEntry(L"unspecified-crash-key", L""));
   }
   g_dynamic_entries = new DynamicEntriesMap;
 
@@ -704,7 +708,7 @@ void ClearCrashKeyValue(const base::StringPiece& key) {
   if (it == g_dynamic_entries->end())
     return;
 
-  it->second->set(NULL, NULL);
+  it->second->set_value(NULL);
 }
 
 }  // namespace
