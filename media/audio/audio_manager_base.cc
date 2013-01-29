@@ -162,7 +162,15 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
   }
 
   AudioInputStream* stream = NULL;
-  if (params.format() == AudioParameters::AUDIO_VIRTUAL) {
+  bool use_virtual_audio_input_stream = false;
+#if !defined(OS_IOS)
+  use_virtual_audio_input_stream =
+      params.format() == AudioParameters::AUDIO_VIRTUAL ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceAudioMirroring);
+#endif
+
+  if (use_virtual_audio_input_stream) {
 #if defined(OS_IOS)
     // We do not currently support iOS.
     NOTIMPLEMENTED();

@@ -63,4 +63,8 @@ const char kEnableOpusPlayback[] = "enable-opus-playback";
 // Enables VP9 playback in media elements.
 const char kEnableVp9Playback[] = "enable-vp9-playback";
 
+// Force audio input streams to be created as virtual streams. Can be used
+// with WebRTC apps for audio mirroring testing.
+const char kForceAudioMirroring[] = "force-audio-mirroring";
+
 }  // namespace switches
