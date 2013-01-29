@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AtMost;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -139,7 +140,7 @@ class DrivePrefetcherTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_CALL(*mock_file_system_, RemoveObserver(_));
+    EXPECT_CALL(*mock_file_system_, RemoveObserver(_)).Times(AtMost(1));
     prefetcher_.reset();
     mock_file_system_.reset();
   }
@@ -147,7 +148,7 @@ class DrivePrefetcherTest : public testing::Test {
  protected:
   // Sets a new prefetcher that fetches at most |prefetch_count| latest files.
   void InitPrefetcher(int prefetch_count, int64 size_limit) {
-    EXPECT_CALL(*mock_file_system_, AddObserver(_));
+    EXPECT_CALL(*mock_file_system_, AddObserver(_)).Times(AtMost(1));
 
     DrivePrefetcherOptions options;
     options.initial_prefetch_count = prefetch_count;

@@ -22,10 +22,10 @@ namespace {
 const int kInitialPrefetchCount = 100;
 const int64 kPrefetchFileSizeLimit = 10 << 20;  // 10MB
 
-// Returns true if prefetching is disabled by a command line option.
-bool IsPrefetchDisabled() {
+// Returns true if prefetching is enabled by a command line option.
+bool IsPrefetchEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDrivePrefetch);
+      switches::kEnableDrivePrefetch);
 }
 
 // Returns true if |left| has lower priority than |right|.
@@ -66,12 +66,18 @@ DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
       event_logger_(event_logger),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system_->AddObserver(this);
+
+  // The flag controls whether or not the prefetch observe the file system. When
+  // it is disabled, no event (except the direct call of OnInitialLoadFinished
+  // in the unit test code) will trigger the prefetcher.
+  if (IsPrefetchEnabled())
+    file_system_->AddObserver(this);
 }
 
 DrivePrefetcher::~DrivePrefetcher() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system_->RemoveObserver(this);
+  if (IsPrefetchEnabled())
+    file_system_->RemoveObserver(this);
 }
 
 void DrivePrefetcher::OnInitialLoadFinished(DriveFileError error) {
@@ -97,15 +103,12 @@ void DrivePrefetcher::OnSyncClientStopped() {
 }
 
 void DrivePrefetcher::OnSyncClientIdle() {
-  should_suspend_prefetch_ = IsPrefetchDisabled();
+  should_suspend_prefetch_ = false;
   DoPrefetch();
 }
 
 void DrivePrefetcher::DoFullScan() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (IsPrefetchDisabled())
-    return;
 
   FilePath root(util::ExtractDrivePath(util::GetDriveMountPointPath()));
   VisitDirectory(root);
