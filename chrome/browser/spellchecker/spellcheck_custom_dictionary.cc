@@ -11,7 +11,6 @@
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -217,14 +216,12 @@ bool SpellcheckCustomDictionary::Change::empty() const {
   return to_add_.empty() && to_remove_.empty();
 }
 
-SpellcheckCustomDictionary::SpellcheckCustomDictionary(Profile* profile)
-    : SpellcheckDictionary(profile),
-      custom_dictionary_path_(),
+SpellcheckCustomDictionary::SpellcheckCustomDictionary(const FilePath& path)
+    : custom_dictionary_path_(),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       is_loaded_(false) {
-  DCHECK(profile);
   custom_dictionary_path_ =
-      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+      path.Append(chrome::kCustomDictionaryFileName);
 }
 
 SpellcheckCustomDictionary::~SpellcheckCustomDictionary() {

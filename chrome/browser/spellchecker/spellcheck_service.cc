@@ -55,7 +55,7 @@ SpellcheckService::SpellcheckService(Profile* profile)
 
   OnSpellCheckDictionaryChanged();
 
-  custom_dictionary_.reset(new SpellcheckCustomDictionary(profile_));
+  custom_dictionary_.reset(new SpellcheckCustomDictionary(profile_->GetPath()));
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 
@@ -268,7 +268,6 @@ void SpellcheckService::OnSpellCheckDictionaryChanged() {
   if (hunspell_dictionary_.get())
     hunspell_dictionary_->RemoveObserver(this);
   hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
-      profile_,
       profile_->GetPrefs()->GetString(prefs::kSpellCheckDictionary),
       profile_->GetRequestContext(),
       this));

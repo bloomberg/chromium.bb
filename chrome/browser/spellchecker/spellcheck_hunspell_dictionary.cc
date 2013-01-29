@@ -33,12 +33,10 @@ void CloseDictionary(base::PlatformFile file) {
 }  // namespace
 
 SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
-    Profile* profile,
     const std::string& language,
     net::URLRequestContextGetter* request_context_getter,
     SpellcheckService* spellcheck_service)
-    : SpellcheckDictionary(profile),
-      dictionary_saved_(false),
+    : dictionary_saved_(false),
       language_(language),
       file_(base::kInvalidPlatformFileValue),
       tried_to_download_(false),

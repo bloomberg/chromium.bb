@@ -74,7 +74,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
     virtual void OnCustomDictionaryChanged(const Change& dictionary_change) = 0;
   };
 
-  explicit SpellcheckCustomDictionary(Profile* profile);
+  explicit SpellcheckCustomDictionary(const FilePath& path);
   virtual ~SpellcheckCustomDictionary();
 
   // Returns the in-memory cache of words in the custom dictionary.
@@ -160,7 +160,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // In-memory cache of the custom words file.
   chrome::spellcheck_common::WordList words_;
 
-  // A path for custom dictionary per profile.
+  // A path for custom dictionary.
   FilePath custom_dictionary_path_;
 
   // Used to create weak pointers for an instance of this class.

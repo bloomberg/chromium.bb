@@ -47,7 +47,6 @@ class SpellcheckHunspellDictionary
   // TODO(rlp): Passing in the host is very temporary. In the next CL this
   // will be removed.
   SpellcheckHunspellDictionary(
-      Profile* profile,
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter,
       SpellcheckService* spellcheck_service);
