@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -50,11 +50,11 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
   ASSERT_TRUE(script_badge);
   const extensions::LocationBarController* location_bar_controller =
       extensions::TabHelper::FromWebContents(
-          chrome::GetActiveWebContents(browser()))->
+          browser()->tab_strip_model()->GetActiveWebContents())->
               location_bar_controller();
 
   const int tab_id = SessionID::IdForTab(
-      chrome::GetActiveWebContents(browser()));
+      browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(GURL(extension->GetResourceURL("default_popup.html")),
             script_badge->GetPopupUrl(tab_id));
 

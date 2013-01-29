@@ -9,7 +9,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,9 +50,9 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(
-      chrome::GetActiveWebContents(browser()), this);
+      browser()->tab_strip_model()->GetActiveWebContents(), this);
   dialog_ = TabModalConfirmDialog::Create(
-      delegate_, chrome::GetActiveWebContents(browser()));
+      delegate_, browser()->tab_strip_model()->GetActiveWebContents());
   content::RunAllPendingInMessageLoop();
 }
 

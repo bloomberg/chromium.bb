@@ -7,7 +7,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -41,7 +41,7 @@ class ErrorPageTest : public InProcessBrowserTest {
                                     const std::string& expected_title,
                                     int num_navigations) {
     content::TitleWatcher title_watcher(
-        chrome::GetActiveWebContents(browser()),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         ASCIIToUTF16(expected_title));
 
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -87,12 +87,13 @@ class ErrorPageTest : public InProcessBrowserTest {
                                       int num_navigations,
                                       HistoryNavigationDirection direction) {
     content::TitleWatcher title_watcher(
-        chrome::GetActiveWebContents(browser()),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         ASCIIToUTF16(expected_title));
 
     content::TestNavigationObserver test_navigation_observer(
         content::Source<NavigationController>(
-              &chrome::GetActiveWebContents(browser())->GetController()),
+              &browser()->tab_strip_model()->GetActiveWebContents()->
+                  GetController()),
         NULL,
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {

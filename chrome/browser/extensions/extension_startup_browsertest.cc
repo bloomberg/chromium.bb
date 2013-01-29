@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -127,7 +127,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     bool result = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(browser()),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         "window.domAutomationController.send("
         "    document.defaultView.getComputedStyle(document.body, null)."
         "    getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
@@ -136,7 +136,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     result = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(browser()),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         "window.domAutomationController.send(document.title == 'Modified')",
         &result));
     EXPECT_EQ(expect_script, result);

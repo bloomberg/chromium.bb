@@ -5,7 +5,7 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -36,7 +36,8 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   GURL test_url = ui_test_utils::GetTestUrl(
       FilePath(), FilePath(FILE_PATH_LITERAL("mouseleave.html")));
 
-  content::WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   gfx::Rect tab_view_bounds;
   tab->GetView()->GetContainerBounds(&tab_view_bounds);
 

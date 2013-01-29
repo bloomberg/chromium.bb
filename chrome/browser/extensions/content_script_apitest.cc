@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(
   // And check that its styles were affected by the styles that just got loaded.
   bool styles_injected;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send("
       "    document.defaultView.getComputedStyle(document.body, null)."
       "        getPropertyValue('background-color') == 'rgb(255, 0, 0)')",

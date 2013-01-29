@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
@@ -34,7 +34,7 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
     bool result;
     CHECK(
         content::ExecuteScriptInFrameAndExtractBool(
-            chrome::GetActiveWebContents(browser()),
+            browser()->tab_strip_model()->GetActiveWebContents(),
             frame_xpath,
             kGetAppIsInstalled,
             &result));
@@ -49,7 +49,7 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
     std::string result;
     CHECK(
         content::ExecuteScriptInFrameAndExtractString(
-            chrome::GetActiveWebContents(browser()),
+            browser()->tab_strip_model()->GetActiveWebContents(),
             frame_xpath,
             kGetAppInstallState,
             &result));
@@ -64,7 +64,7 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
     std::string result;
     CHECK(
         content::ExecuteScriptInFrameAndExtractString(
-            chrome::GetActiveWebContents(browser()),
+            browser()->tab_strip_model()->GetActiveWebContents(),
             frame_xpath,
             kGetAppRunningState,
             &result));
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   std::string result;
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           kGetAppDetails,
           &result));
   EXPECT_EQ("null", result);
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   ui_test_utils::NavigateToURL(browser(), app_url);
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           kGetAppDetails,
           &result));
   scoped_ptr<DictionaryValue> app_details(
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   // that isInstalled should have the initial value.
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           "window.domAutomationController.send("
           "    function() {"
           "        var value = window.chrome.app.isInstalled;"
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
   bool result = false;
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractBool(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           kTestUnsuccessfulAccess,
           &result));
   EXPECT_TRUE(result);
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
   std::string json;
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           kGetDetailsForFrame,
           &json));
 

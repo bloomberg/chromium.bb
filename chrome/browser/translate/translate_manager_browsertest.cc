@@ -25,7 +25,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -1511,7 +1511,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
-  WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* current_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(current_web_contents);
   content::Source<WebContents> source(current_web_contents);
@@ -1537,7 +1538,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
 #define MAYBE_TranslateSessionRestore TranslateSessionRestore
 #endif
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, MAYBE_TranslateSessionRestore) {
-  WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* current_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   content::Source<WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>

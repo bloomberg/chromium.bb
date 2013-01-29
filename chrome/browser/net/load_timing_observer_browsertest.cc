@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -26,7 +26,8 @@ IN_PROC_BROWSER_TEST_F(LoadTimingObserverTest, DISABLED_CacheHitAfterRedirect) {
 
   int response_start = 0;
   int response_end = 0;
-  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
       contents,
       "window.domAutomationController.send("

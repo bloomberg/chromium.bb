@@ -16,11 +16,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -45,7 +45,8 @@ public:
     action_ = action_manager->GetPageAction(*extension_);
     EXPECT_TRUE(action_);
 
-    content::WebContents* contents = chrome::GetActiveWebContents(browser());
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     action_->SetAppearance(ExtensionTabUtil::GetTabId(contents),
                            ExtensionAction::ACTIVE);
 

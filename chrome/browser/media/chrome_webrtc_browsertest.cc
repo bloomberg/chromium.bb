@@ -6,8 +6,9 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -48,7 +49,7 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
 
     while (base::Time::Now() - start_time < timeout) {
       EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-          chrome::GetActiveWebContents(browser()),
+          browser()->tab_strip_model()->GetActiveWebContents(),
           "obtainGetUserMediaResult();",
           &result));
       if (result == evaluates_to)
@@ -76,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   // Request user media: this will launch the media stream info bar.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "getUserMedia('{video: true}');",
       &result));
   EXPECT_EQ("ok-requested", result);

@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -57,7 +57,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
   observer.Wait();
 
   GURL url = net::FilePathToFileURL(test_file_path);
-  content::WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(url, tab->GetController().GetActiveEntry()->GetVirtualURL());
 }
 

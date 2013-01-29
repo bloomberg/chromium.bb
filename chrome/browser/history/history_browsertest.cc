@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -103,7 +102,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   void LoadAndWaitForURL(const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
     content::TitleWatcher title_watcher(
-        chrome::GetActiveWebContents(browser()), expected_title);
+        browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -246,7 +245,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
   // Therefore, Page 11 should be in the history in addition to Page 12.
   LoadAndWaitForFile("history_length_test_page_11.html");
 
-  content::SimulateMouseClick(chrome::GetActiveWebContents(browser()), 0,
+  content::SimulateMouseClick(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
       WebKit::WebMouseEvent::ButtonLeft);
   LoadAndWaitForFile("history_length_test_page_11.html");
 }
@@ -277,11 +277,12 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MAYBE_HistorySearchXSS) {
   // so that we're not susceptible (less susceptible?) to a race condition.
   // Should a race condition ever trigger, it won't result in flakiness.
   int num = ui_test_utils::FindInPage(
-      chrome::GetActiveWebContents(browser()), ASCIIToUTF16("<img"), true,
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      ASCIIToUTF16("<img"), true,
       true, NULL, NULL);
   EXPECT_GT(num, 0);
   EXPECT_EQ(ASCIIToUTF16("History"),
-            chrome::GetActiveWebContents(browser())->GetTitle());
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
 // Verify that history persists after session restart.
@@ -375,7 +376,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, RedirectHistory) {
       FilePath().AppendASCII("landing.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), redirector, 2);
-  ASSERT_EQ(landing_url, chrome::GetActiveWebContents(browser())->GetURL());
+  ASSERT_EQ(landing_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
   std::vector<GURL> urls(GetHistoryContents());
   ASSERT_EQ(2u, urls.size());
   ASSERT_EQ(landing_url, urls[0]);
@@ -413,7 +415,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReloadBringPageToTop) {
   ASSERT_EQ(url2, urls[0]);
   ASSERT_EQ(url1, urls[1]);
 
-  content::WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   tab->GetController().Reload(false);
   content::WaitForLoadStop(tab);
 
@@ -432,7 +435,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   ui_test_utils::NavigateToURL(browser(), url1);
   ui_test_utils::NavigateToURL(browser(), url2);
 
-  content::WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   chrome::GoBack(browser(), CURRENT_TAB);
   content::WaitForLoadStop(tab);
 
@@ -459,10 +463,11 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SubmitFormAddsTargetPage) {
       FilePath().AppendASCII("target.html"));
   ui_test_utils::NavigateToURL(browser(), form);
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   string16 expected_title(ASCIIToUTF16("Target Page"));
   content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(browser()), expected_title);
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
   ASSERT_TRUE(content::ExecuteScript(
       web_contents, "document.getElementById('form').submit()"));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -480,7 +485,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
 
   // Even after navigate completes, the currently-active tab title is
   // 'Loading...' for a brief time while the history page loads.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   string16 expected_title(ASCIIToUTF16("History"));
   content::TitleWatcher title_watcher(web_contents, expected_title);
   chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY);

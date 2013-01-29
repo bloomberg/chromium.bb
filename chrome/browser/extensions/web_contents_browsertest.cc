@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 
@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "testTabsAPI()",
       &result));
   EXPECT_TRUE(result);
@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
   result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "testTabsAPI()",
       &result));
   EXPECT_TRUE(result);

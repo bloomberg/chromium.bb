@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -85,7 +84,7 @@ class WebstoreStandaloneInstallTest : public InProcessBrowserTest {
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        chrome::GetActiveWebContents(browser()),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         script,
         &result));
     EXPECT_TRUE(result);
@@ -150,7 +149,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallNotSupported) {
 
   // The inline install should fail, and a store-provided URL should be opened
   // in a new tab.
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(GURL("http://cws.com/show-me-the-money"), web_contents->GetURL());
 }
 

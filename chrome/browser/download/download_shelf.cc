@@ -12,7 +12,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -117,10 +117,11 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
   // Show the download started animation if:
   // - Download started animation is enabled for this download. It is disabled
   //   for "Save As" downloads and extension installs, for example.
-  // - The browser has an active visble WebContents. (browser isn't minimized,
+  // - The browser has an active visible WebContents. (browser isn't minimized,
   //   or running under a test etc.)
   // - Rich animations are enabled.
-  content::WebContents* shelf_tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* shelf_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   if (DownloadItemModel(download).ShouldShowDownloadStartedAnimation() &&
       shelf_tab &&
       platform_util::IsVisible(shelf_tab->GetNativeView()) &&

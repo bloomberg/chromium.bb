@@ -9,8 +9,9 @@
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -35,7 +36,7 @@ class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
     // Simulate page loaded.
     ++page_id_;
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser());
+        browser()->tab_strip_model()->GetActiveWebContents();
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::Source<content::WebContents>(web_contents),

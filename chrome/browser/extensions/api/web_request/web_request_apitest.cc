@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_newTab.html"))
       << message_;
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -190,7 +190,7 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
       test_server()->GetURL("files/extensions/test_file.html"));
 
   std::string body;
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         tab,
         "window.domAutomationController.send(document.body.textContent)",
@@ -211,7 +211,7 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
       test_server()->GetURL("files/extensions/test_file.html"));
 
   body.clear();
-  WebContents* otr_tab = chrome::GetActiveWebContents(otr_browser);
+  WebContents* otr_tab = otr_browser->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       otr_tab,
       "window.domAutomationController.send(document.body.textContent)",

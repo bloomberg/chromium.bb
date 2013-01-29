@@ -613,7 +613,8 @@ class DownloadTest : public InProcessBrowserTest {
     ASSERT_TRUE(url.is_valid()) << s.str();
 
     DownloadManager* download_manager = DownloadManagerForBrowser(browser());
-    WebContents* web_contents = chrome::GetActiveWebContents(browser());
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents) << s.str();
 
     scoped_ptr<content::DownloadTestObserver> observer(
@@ -792,7 +793,7 @@ class DownloadTest : public InProcessBrowserTest {
   void SetAllowMockInstallPrompt() {
     download_crx_util::SetMockInstallPromptForTesting(
         new MockAutoConfirmExtensionInstallPrompt(
-            chrome::GetActiveWebContents(browser())));
+            browser()->tab_strip_model()->GetActiveWebContents()));
   }
 
  private:
@@ -956,7 +957,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   EXPECT_EQ(0u, items.size());
 
   // Disable downloads for the tab.
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   DownloadRequestLimiter::TabDownloadState* tab_download_state =
       g_browser_process->download_request_limiter()->GetDownloadState(
           web_contents, web_contents, true);
@@ -973,7 +975,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
       1);
   bool download_assempted;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      chrome::GetActiveWebContents(browser()),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(startDownload());",
       &download_assempted));
   ASSERT_TRUE(download_assempted);
@@ -1397,7 +1399,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   ui_test_utils::NavigateToURL(browser(), flags_url);
   DownloadAndWait(browser(), download_url);
   ui_test_utils::NavigateToURL(browser(), extensions_url);
-  WebContents* contents = chrome::GetActiveWebContents(browser());
+  WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   bool webui_responded = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -1416,7 +1419,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
 
   ui_test_utils::NavigateToURL(browser(), downloads_url);
-  WebContents* contents = chrome::GetActiveWebContents(browser());
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -1658,7 +1661,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   // DownloadUrl always prompts; return acceptance of whatever it prompts.
   EnableFileChooser(true);
 
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   content::DownloadTestObserver* observer(
@@ -1684,7 +1688,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   base::ScopedTempDir other_directory;
@@ -1758,8 +1763,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = url;
   context_menu_params.page_url = url;
-  TestRenderViewContextMenu menu(chrome::GetActiveWebContents(browser()),
-                                 context_menu_params);
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
   waiter_context_menu->WaitForFinished();
@@ -1795,7 +1801,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   // which normally requires revalidation each time.
   GURL jpeg_url = test_server()->GetURL("files/post/downloads/image.jpg");
   ASSERT_TRUE(jpeg_url.is_valid());
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -2156,7 +2163,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
 
   // Click on the link with the alt key pressed. This will download the link
   // target.
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WebKit::WebMouseEvent mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
@@ -2197,7 +2204,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   // Download and set IsHiddenDownload to true.
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents, url));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));

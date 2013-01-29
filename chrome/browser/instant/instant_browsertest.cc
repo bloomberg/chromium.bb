@@ -13,8 +13,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -147,7 +147,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
   ui_test_utils::NavigateToURL(browser(), instant_url_);
-  content::WebContents* active_tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   int active_tab_onvisibilitycalls = -1;
   EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",

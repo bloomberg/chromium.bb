@@ -21,7 +21,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -102,14 +102,16 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, Client) {
   EXPECT_EQ(final_url.spec(), redirects[0].spec());
 
   // The address bar should display the final URL.
-  EXPECT_EQ(final_url, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(final_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   // Navigate one more time.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), first_url, 2);
 
   // The address bar should still display the final URL.
-  EXPECT_EQ(final_url, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(final_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=62772
@@ -156,7 +158,8 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
       FilePath(), FilePath().AppendASCII("cancelled_redirect_test.html"));
   ui_test_utils::NavigateToURL(browser(), first_url);
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver navigation_observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
@@ -212,7 +215,9 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ServerReference) {
 
   ui_test_utils::NavigateToURL(browser(), initial_url);
 
-  EXPECT_EQ(ref, chrome::GetActiveWebContents(browser())->GetURL().ref());
+  EXPECT_EQ(ref,
+            browser()->tab_strip_model()->GetActiveWebContents()->
+                GetURL().ref());
 }
 
 // Test that redirect from http:// to file:// :
@@ -232,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, NoHttpToFile) {
   // We make sure the title doesn't match the title from the file, because the
   // nav should not have taken place.
   EXPECT_NE(ASCIIToUTF16("File!"),
-            chrome::GetActiveWebContents(browser())->GetTitle());
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
 // Ensures that non-user initiated location changes (within page) are
@@ -270,7 +275,8 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
   GURL first_url = test_server()->GetURL(
       "client-redirect?" + slow.spec());
 
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()),
@@ -289,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
   // Check to make sure the navigation did in fact take place and we are
   // at the expected page.
   EXPECT_EQ(ASCIIToUTF16("Title Of Awesomeness"),
-            chrome::GetActiveWebContents(browser())->GetTitle());
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
   bool final_navigation_not_redirect = true;
   std::vector<GURL> redirects = GetRedirects(first_url);

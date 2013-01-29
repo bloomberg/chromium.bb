@@ -22,7 +22,7 @@
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
       "webnavigation", "test_serverRedirectSingleProcess.html"))
           << message_;
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
       << message_;
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -587,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
 
   Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(), url);
-  WebContents* tab = chrome::GetActiveWebContents(otr_browser);
+  WebContents* tab = otr_browser->tab_strip_model()->GetActiveWebContents();
 
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.

@@ -23,7 +23,6 @@
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -473,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // manager is still visible. Make sure we don't crash and the extension
   // gets reloaded and noticed in the task manager.
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      chrome::GetActiveWebContents(browser()));
+      browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_EQ(1U, infobar_service->GetInfoBarCount());
   ConfirmInfoBarDelegate* delegate = infobar_service->
       GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();

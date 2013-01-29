@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -135,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
   // Make sure it appears and is the right one.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
   int tab_id = SessionTabHelper::FromWebContents(
-      chrome::GetActiveWebContents(browser()))->session_id().id();
+      browser()->tab_strip_model()->GetActiveWebContents())->session_id().id();
   ExtensionAction* action =
       ExtensionActionManager::Get(browser()->profile())->
       GetPageAction(*extension);
@@ -147,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
       browser(), ui::VKEY_F, false, true, true, false));
 
   // Verify the command worked (the page action turns the page red).
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       tab,

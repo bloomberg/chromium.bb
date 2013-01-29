@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -130,7 +130,8 @@ class UnloadTest : public InProcessBrowserTest {
 
   void CheckTitle(const char* expected_title) {
     string16 expected = ASCIIToUTF16(expected_title);
-    EXPECT_EQ(expected, chrome::GetActiveWebContents(browser())->GetTitle());
+    EXPECT_EQ(expected,
+              browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   }
 
   void NavigateToDataURL(const std::string& html_content,
@@ -279,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   // the renderer.
   string16 expected_title = ASCIIToUTF16("cancelled");
   content::TitleWatcher title_watcher(
-      chrome::GetActiveWebContents(browser()), expected_title);
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
   ClickModalDialogButton(false);
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
@@ -395,7 +396,8 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   content::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  content::SimulateMouseClick(chrome::GetActiveWebContents(browser()), 0,
+  content::SimulateMouseClick(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
       WebKit::WebMouseEvent::ButtonLeft);
   observer.Wait();
   load_stop_observer.Wait();

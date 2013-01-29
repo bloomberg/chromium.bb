@@ -10,7 +10,6 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,6 +23,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #import "testing/gtest_mac.h"
@@ -128,7 +128,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
 
   void ShowInfoBar() {
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser());
+        browser()->tab_strip_model()->GetActiveWebContents();
     InfoBarService* service =
         InfoBarService::FromWebContents(web_contents);
     info_bar_delegate_.reset(new DummyInfoBar(service));

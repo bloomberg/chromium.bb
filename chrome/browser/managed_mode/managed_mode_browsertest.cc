@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -94,8 +94,9 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
   // Checks if the current number of shown infobars is equal to |expected|.
   void CheckNumberOfInfobars(unsigned int expected) {
     EXPECT_EQ(expected,
-        InfoBarService::FromWebContents(
-            chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
+              InfoBarService::FromWebContents(
+                  browser()->tab_strip_model()->GetActiveWebContents())->
+                      GetInfoBarCount());
   }
 
   // Acts on the interstitial and infobar according to the values set to
@@ -187,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, SimpleURLNotInAnyLists) {
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
@@ -205,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, RedirectedURLsNotInAnyLists) {
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
@@ -225,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, SimpleURLInWhitelist) {
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsNotInterstitial(tab);
 
@@ -249,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsNotInterstitial(tab);
 
@@ -274,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   EXPECT_EQ(tab->GetURL().spec(), "http://" + last_url);
   CheckShownPageIsInterstitial(tab);
@@ -302,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   EXPECT_EQ(tab->GetURL().host(), "www.a.com");
   CheckShownPageIsInterstitial(tab);
@@ -321,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_DONTPROCEED,
@@ -340,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
@@ -363,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
@@ -389,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url("https://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
@@ -408,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
 
@@ -473,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  WebContents* tab = chrome::GetActiveWebContents(browser());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   CheckShownPageIsInterstitial(tab);
 

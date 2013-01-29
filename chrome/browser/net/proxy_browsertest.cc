@@ -8,8 +8,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -96,7 +96,8 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
                             net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 
-  content::WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   content::NavigationController* controller = &tab->GetController();
   content::NotificationRegistrar registrar;
   // The proxy server will request basic authentication.

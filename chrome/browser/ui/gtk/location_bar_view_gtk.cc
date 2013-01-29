@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/gtk/action_box_button_gtk.h"
@@ -67,6 +66,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/badge_util.h"
@@ -702,7 +702,7 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
 }
 
 WebContents* LocationBarViewGtk::GetWebContents() const {
-  return chrome::GetActiveWebContents(browser_);
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
@@ -1006,7 +1006,7 @@ void LocationBarViewGtk::UpdatePageActions() {
   }
 
   if (!page_action_views_.empty() && contents) {
-    GURL url = chrome::GetActiveWebContents(browser())->GetURL();
+    GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(
