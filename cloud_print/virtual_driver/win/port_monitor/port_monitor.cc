@@ -42,18 +42,31 @@ const wchar_t kCloudPrintRegKey[] = L"Software\\Google\\CloudPrint";
 
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
-const size_t kMaxCommandLineLen = 0x7FFF;
-
 
 struct MonitorData {
-  base::AtExitManager* at_exit_manager;
+  scoped_ptr<base::AtExitManager> at_exit_manager;
 };
 
 struct PortData {
+  PortData() : job_id(0), printer_handle(NULL), file(0) {
+  }
+  ~PortData() {
+    Close();
+  }
+  void Close() {
+    if (printer_handle) {
+      ClosePrinter(printer_handle);
+      printer_handle = NULL;
+    }
+    if (file) {
+      file_util::CloseFile(file);
+      file = NULL;
+    }
+  }
   DWORD job_id;
   HANDLE printer_handle;
   FILE* file;
-  FilePath* file_path;
+  FilePath file_path;
 };
 
 typedef struct {
@@ -89,20 +102,6 @@ MONITOR2 g_monitor_2 = {
   Monitor2XcvClosePort,
   Monitor2Shutdown
 };
-
-// Frees any objects referenced by port_data and sets pointers to NULL.
-void CleanupPortData(PortData* port_data) {
-  delete port_data->file_path;
-  port_data->file_path = NULL;
-  if (port_data->printer_handle != NULL) {
-    ClosePrinter(port_data->printer_handle);
-    port_data->printer_handle = NULL;
-  }
-  if (port_data->file != NULL) {
-    file_util::CloseFile(port_data->file);
-    port_data->file = NULL;
-  }
-}
 
 // Attempts to retrieve the title of the specified print job.
 // On success returns TRUE and the first title_chars characters of the job title
@@ -170,7 +169,7 @@ bool GetUserToken(HANDLE* primary_token) {
 // Launches the Cloud Print dialog in Chrome.
 // xps_path references a file to print.
 // job_title is the title to be used for the resulting print job.
-bool LaunchPrintDialog(const string16& xps_path,
+bool LaunchPrintDialog(const FilePath& xps_path,
                        const string16& job_title) {
   HANDLE token = NULL;
   if (!GetUserToken(&token)) {
@@ -194,7 +193,7 @@ bool LaunchPrintDialog(const string16& xps_path,
   }
 
   command_line.AppendSwitchPath(switches::kCloudPrintFile,
-                                FilePath(xps_path));
+                                xps_path);
   command_line.AppendSwitchNative(switches::kCloudPrintFileType,
                                   kXpsMimeType);
   command_line.AppendSwitchNative(switches::kCloudPrintJobTitle,
@@ -360,9 +359,7 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
 }
 
 BOOL WINAPI Monitor2OpenPort(HANDLE, wchar_t*, HANDLE* handle) {
-  PortData* port_data =
-      reinterpret_cast<PortData*>(GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT,
-                                              sizeof(PortData)));
+  PortData* port_data = new PortData();
   if (port_data == NULL) {
     LOG(ERROR) << "Unable to allocate memory for internal structures.";
     SetLastError(E_OUTOFMEMORY);
@@ -416,21 +413,23 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
     // This is the normal flow during a unit test.
     port_data->printer_handle = NULL;
   }
-  FilePath app_data;
-  port_data->file_path = new FilePath();
-  if (port_data->file_path == NULL) {
-    LOG(ERROR) << "Unable to allocate memory for internal structures.";
-    SetLastError(E_OUTOFMEMORY);
+  FilePath& file_path = port_data->file_path;
+  if (!PathService::Get(base::DIR_LOCAL_APP_DATA_LOW, &file_path)) {
+    LOG(ERROR) << "Can't get DIR_LOCAL_APP_DATA_LOW";
     return FALSE;
   }
-  bool result = PathService::Get(base::DIR_LOCAL_APP_DATA_LOW, &app_data);
-  file_util::CreateTemporaryFileInDir(app_data, port_data->file_path);
-  port_data->file = file_util::OpenFile(*(port_data->file_path), "wb+");
+  file_path = file_path.Append(L"Google\\Cloud Print");
+  if (!file_util::CreateDirectory(file_path) ||
+      !file_util::CreateTemporaryFileInDir(file_path, &file_path)) {
+    LOG(ERROR) << "Can't get create temporary file in " << file_path.value();
+    return FALSE;
+  }
+  file_path = file_path.AddExtension(L"xps");
+  port_data->file = file_util::OpenFile(file_path, "wb+");
   if (port_data->file == NULL) {
-    LOG(ERROR) << "Error opening file " << port_data->file_path << ".";
+    LOG(ERROR) << "Error opening file " << file_path.value() << ".";
     return FALSE;
   }
-
   return TRUE;
 }
 
@@ -473,16 +472,24 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
   if (port_data->file != NULL) {
     file_util::CloseFile(port_data->file);
     port_data->file = NULL;
-    string16 job_title;
-    if (port_data->printer_handle != NULL) {
-      GetJobTitle(port_data->printer_handle,
-                  port_data->job_id,
-                  &job_title);
+    bool delete_file = true;
+    int64 file_size = 0;
+    file_util::GetFileSize(port_data->file_path, &file_size);
+    if (file_size > 0) {
+      string16 job_title;
+      if (port_data->printer_handle != NULL) {
+        GetJobTitle(port_data->printer_handle,
+                    port_data->job_id,
+                    &job_title);
+      }
+      if (!LaunchPrintDialog(port_data->file_path, job_title)) {
+        LaunchChromeDownloadPage();
+      } else {
+        delete_file = false;
+      }
     }
-    if (!LaunchPrintDialog(port_data->file_path->value().c_str(),
-                           job_title)) {
-      LaunchChromeDownloadPage();
-    }
+    if (delete_file)
+      file_util::Delete(port_data->file_path, false);
   }
   if (port_data->printer_handle != NULL) {
     // Tell the spooler that the job is complete.
@@ -492,7 +499,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
            NULL,
            JOB_CONTROL_SENT_TO_PRINTER);
   }
-  CleanupPortData(port_data);
+  port_data->Close();
   // Return success even if we can't display the dialog.
   // TODO(abodenha@chromium.org) Come up with a better way of handling
   // this situation.
@@ -506,8 +513,7 @@ BOOL WINAPI Monitor2ClosePort(HANDLE port_handle) {
     return FALSE;
   }
   PortData* port_data = reinterpret_cast<PortData*>(port_handle);
-  CleanupPortData(port_data);
-  GlobalFree(port_handle);
+  delete port_data;
   return TRUE;
 }
 
@@ -515,8 +521,7 @@ VOID WINAPI Monitor2Shutdown(HANDLE monitor_handle) {
   if (monitor_handle != NULL) {
     MonitorData* monitor_data =
       reinterpret_cast<MonitorData*>(monitor_handle);
-    delete monitor_data->at_exit_manager;
-    GlobalFree(monitor_handle);
+    delete monitor_handle;
   }
 }
 
@@ -529,9 +534,7 @@ BOOL WINAPI Monitor2XcvOpenPort(HANDLE,
     SetLastError(ERROR_INVALID_PARAMETER);
     return FALSE;
   }
-  XcvUiData* xcv_data;
-  xcv_data = reinterpret_cast<XcvUiData*>(GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT,
-                                                      sizeof(XcvUiData)));
+  XcvUiData* xcv_data = new XcvUiData();
   if (xcv_data == NULL) {
     LOG(ERROR) << "Unable to allocate memory for internal structures.";
     SetLastError(E_OUTOFMEMORY);
@@ -580,7 +583,8 @@ DWORD WINAPI Monitor2XcvDataPort(HANDLE xcv_handle,
 }
 
 BOOL WINAPI Monitor2XcvClosePort(HANDLE handle) {
-  GlobalFree(handle);
+  XcvUiData* xcv_data = reinterpret_cast<XcvUiData*>(handle);
+  delete xcv_data;
   return TRUE;
 }
 
@@ -603,9 +607,7 @@ BOOL WINAPI MonitorUiConfigureOrDeletePortUI(const wchar_t*,
 
 MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
                                          HANDLE* handle) {
-  cloud_print::MonitorData* monitor_data =
-      reinterpret_cast<cloud_print::MonitorData*>
-      (GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT, sizeof(cloud_print::MonitorData)));
+  cloud_print::MonitorData* monitor_data = new cloud_print::MonitorData;
   if (monitor_data == NULL) {
     return NULL;
   }
@@ -613,8 +615,8 @@ MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
     *handle = (HANDLE)monitor_data;
     if (!cloud_print::kIsUnittest) {
       // Unit tests set up their own AtExitManager
-      monitor_data->at_exit_manager = new base::AtExitManager();
-      // Single spooler.exe handles all users.
+      monitor_data->at_exit_manager.reset(new base::AtExitManager());
+      // Single spooler.exe handles verbose users.
       PathService::DisableCache();
     }
   } else {
