@@ -600,6 +600,7 @@ class BetterSessionRestoreCrashTest : public BetterSessionRestoreTest {
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreCrashTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreCrashTest, SessionCookies) {
+// http://crbug.com/172770
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreCrashTest, DISABLED_SessionCookies) {
   CrashTestWithPage("session_cookies.html");
 }
