@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/generic_handler.h"
+#include "content/browser/webui/generic_handler.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "content/public/browser//web_ui.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
 
-using content::OpenURLParams;
+namespace content {
 
 GenericHandler::GenericHandler() {
 }
@@ -51,8 +51,9 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
     disposition = NEW_FOREGROUND_TAB;
 
   web_ui()->GetWebContents()->OpenURL(OpenURLParams(
-      GURL(url_string), content::Referrer(), disposition,
-      content::PAGE_TRANSITION_LINK, false));
+      GURL(url_string), Referrer(), disposition, PAGE_TRANSITION_LINK, false));
 
   // This may delete us!
 }
+
+}  // namespace content

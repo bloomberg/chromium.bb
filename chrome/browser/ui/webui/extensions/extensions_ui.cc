@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/extensions/pack_extension_handler.h"
-#include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -56,7 +55,6 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   install_extension_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(install_extension_handler);
 
-  web_ui->AddMessageHandler(new GenericHandler());
   content::WebUIDataSource::Add(profile, source);
 }
 

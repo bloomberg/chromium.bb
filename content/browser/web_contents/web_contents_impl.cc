@@ -37,6 +37,7 @@
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
+#include "content/browser/webui/generic_handler.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin_messages.h"
@@ -860,6 +861,7 @@ WebUI* WebContentsImpl::CreateWebUI(const GURL& url) {
   WebUIController* controller = WebUIControllerFactoryRegistry::GetInstance()->
       CreateWebUIControllerForURL(web_ui, url);
   if (controller) {
+    web_ui->AddMessageHandler(new GenericHandler());
     web_ui->SetController(controller);
     return web_ui;
   }

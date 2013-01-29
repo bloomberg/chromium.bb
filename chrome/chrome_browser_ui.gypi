@@ -1891,8 +1891,6 @@
         'browser/ui/webui/flags_ui.h',
         'browser/ui/webui/flash_ui.cc',
         'browser/ui/webui/flash_ui.h',
-        'browser/ui/webui/generic_handler.cc',
-        'browser/ui/webui/generic_handler.h',
         'browser/ui/webui/gesture_config_ui.cc',
         'browser/ui/webui/gesture_config_ui.h',
         'browser/ui/webui/gpu_internals_ui.cc',

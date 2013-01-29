@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
-#include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
 #include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
@@ -447,10 +446,7 @@ WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
   if (!function)
     return NULL;
 
-  WebUIController* controller = (*function)(web_ui, url);
-  if (controller)
-    web_ui->AddMessageHandler(new GenericHandler());
-  return controller;
+  return (*function)(web_ui, url);
 }
 
 void ChromeWebUIControllerFactory::GetFaviconForURL(

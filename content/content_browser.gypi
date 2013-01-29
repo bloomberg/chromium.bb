@@ -885,6 +885,8 @@
     'browser/web_contents/web_drag_source_win.h',
     'browser/web_contents/web_drag_utils_win.cc',
     'browser/web_contents/web_drag_utils_win.h',
+    'browser/webui/generic_handler.cc',
+    'browser/webui/generic_handler.h',
     'browser/webui/shared_resources_data_source.cc',
     'browser/webui/shared_resources_data_source.h',
     'browser/webui/url_data_manager.cc',
