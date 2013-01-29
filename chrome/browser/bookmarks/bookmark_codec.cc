@@ -144,9 +144,7 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   if (d_value.Get(kChecksumKey, &checksum_value)) {
     if (checksum_value->GetType() != Value::TYPE_STRING)
       return false;
-    const StringValue* checksum_value_str =
-        static_cast<const StringValue*>(checksum_value);
-    if (!checksum_value_str->GetAsString(&stored_checksum_))
+    if (!checksum_value->GetAsString(&stored_checksum_))
       return false;
   }
 

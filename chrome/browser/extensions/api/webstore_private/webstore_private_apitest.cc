@@ -243,10 +243,10 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
         new GetWebGLStatusFunction();
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
             function.get(), kEmptyArgs, browser()));
+    ASSERT_TRUE(result);
     EXPECT_EQ(base::Value::TYPE_STRING, result->GetType());
-    StringValue* value = static_cast<StringValue*>(result.get());
     std::string webgl_status = "";
-    EXPECT_TRUE(value && value->GetAsString(&webgl_status));
+    EXPECT_TRUE(result->GetAsString(&webgl_status));
     EXPECT_STREQ(webgl_allowed ? kWebGLStatusAllowed : kWebGLStatusBlocked,
                  webgl_status.c_str());
   }

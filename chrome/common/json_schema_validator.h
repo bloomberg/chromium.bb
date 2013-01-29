@@ -185,7 +185,7 @@ class JSONSchemaValidator {
                      const std::string& path);
 
   // Validate a JSON string against a string schema node.
-  void ValidateString(const base::StringValue* instance,
+  void ValidateString(const base::Value* instance,
                       const base::DictionaryValue* schema,
                       const std::string& path);
 

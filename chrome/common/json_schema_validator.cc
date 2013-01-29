@@ -207,7 +207,9 @@ void JSONSchemaValidator::Validate(const Value* instance,
     } else if (type == schema::kArray) {
       ValidateArray(static_cast<const ListValue*>(instance), schema, path);
     } else if (type == schema::kString) {
-      ValidateString(static_cast<const StringValue*>(instance), schema, path);
+      // Intentionally NOT downcasting to StringValue*. TYPE_STRING only implies
+      // GetAsString() can safely be carried out, not that it's a StringValue.
+      ValidateString(instance, schema, path);
     } else if (type == schema::kNumber || type == schema::kInteger) {
       ValidateNumber(instance, schema, path);
     } else if (type != schema::kBoolean && type != schema::kNull) {
@@ -405,7 +407,7 @@ void JSONSchemaValidator::ValidateTuple(const ListValue* instance,
   }
 }
 
-void JSONSchemaValidator::ValidateString(const StringValue* instance,
+void JSONSchemaValidator::ValidateString(const Value* instance,
                                          const DictionaryValue* schema,
                                          const std::string& path) {
   std::string value;

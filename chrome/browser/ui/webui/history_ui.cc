@@ -293,9 +293,8 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
        v != args->end(); ++v) {
     if ((*v)->GetType() != Value::TYPE_STRING)
       continue;
-    const StringValue* string_value = static_cast<const StringValue*>(*v);
     string16 string16_value;
-    if (!string_value->GetAsString(&string16_value))
+    if (!(*v)->GetAsString(&string16_value))
       continue;
 
     urls_to_be_deleted_.insert(GURL(string16_value));

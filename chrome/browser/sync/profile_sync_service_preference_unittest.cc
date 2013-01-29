@@ -369,8 +369,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   scoped_ptr<const Value> value(GetSyncedValue(prefs::kHomePage));
   ASSERT_TRUE(value.get());
   std::string string_value;
-  EXPECT_TRUE(static_cast<const StringValue*>(value.get())->
-              GetAsString(&string_value));
+  EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_EQ(example_url1_, string_value);
   EXPECT_EQ(example_url1_, prefs_->GetString(prefs::kHomePage));
 
@@ -386,8 +385,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
 
   value.reset(GetSyncedValue(prefs::kDefaultCharset));
   ASSERT_TRUE(value.get());
-  EXPECT_TRUE(static_cast<const StringValue*>(value.get())->
-              GetAsString(&string_value));
+  EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_EQ(non_default_charset_value_, string_value);
   EXPECT_EQ(non_default_charset_value_,
             prefs_->GetString(prefs::kDefaultCharset));

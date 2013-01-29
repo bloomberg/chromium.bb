@@ -293,12 +293,10 @@ class WebUIHandler
                                  int index,
                                  FilePath* device_path) {
     const Value* list_member;
+    std::string image_dest;
     if (list_value.Get(index, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      std::string image_dest;
-      string_value->GetAsString(&image_dest);
+        list_member->GetType() == Value::TYPE_STRING &&
+        list_member->GetAsString(&image_dest)) {
       *device_path = FilePath(image_dest);
     } else {
       LOG(ERROR) << "Unable to get path string";

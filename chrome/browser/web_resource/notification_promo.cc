@@ -166,10 +166,8 @@ base::Value* DeepCopyAndResolveStrings(
     }
 
     case Value::TYPE_STRING: {
-      const base::StringValue* str =
-          static_cast<const base::StringValue*>(node);
       std::string value;
-      bool rv = str->GetAsString(&value);
+      bool rv = node->GetAsString(&value);
       DCHECK(rv);
       std::string actual_value;
       if (!strings || !strings->GetString(value, &actual_value))
