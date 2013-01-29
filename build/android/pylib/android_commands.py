@@ -530,25 +530,14 @@ class AndroidCommands(object):
         return 0
     return processes_killed
 
-  def StartActivity(self, package, activity, wait_for_completion=False,
-                    action='android.intent.action.VIEW',
-                    category=None, data=None,
-                    extras=None, trace_file_name=None,
-                    force_stop=False):
-    """Starts |package|'s activity on the device.
+  def _GetActivityCommand(self, package, activity, wait_for_completion, action,
+                          category, data, extras, trace_file_name, force_stop):
+    """Creates command to start |package|'s activity on the device.
 
-    Args:
-      package: Name of package to start (e.g. 'com.google.android.apps.chrome').
-      activity: Name of activity (e.g. '.Main' or
-        'com.google.android.apps.chrome.Main').
-      wait_for_completion: wait for the activity to finish launching (-W flag).
-      action: string (e.g. "android.intent.action.MAIN"). Default is VIEW.
-      category: string (e.g. "android.intent.category.HOME")
-      data: Data string to pass to activity (e.g. 'http://www.example.com/').
-      extras: Dict of extras to pass to activity. Values are significant.
-      trace_file_name: If used, turns on and saves the trace to this file name.
-      force_stop: force stop the target app before starting the activity (-S
-        flag).
+    Args - as for StartActivity
+
+    Returns:
+      the command to run on the target to start the activity
     """
     cmd = 'am start -a %s' % action
     if force_stop:
@@ -576,7 +565,55 @@ class AndroidCommands(object):
         cmd += ' %s %s' % (key, value)
     if trace_file_name:
       cmd += ' --start-profiler ' + trace_file_name
+    return cmd
+
+  def StartActivity(self, package, activity, wait_for_completion=False,
+                    action='android.intent.action.VIEW',
+                    category=None, data=None,
+                    extras=None, trace_file_name=None,
+                    force_stop=False):
+    """Starts |package|'s activity on the device.
+
+    Args:
+      package: Name of package to start (e.g. 'com.google.android.apps.chrome').
+      activity: Name of activity (e.g. '.Main' or
+        'com.google.android.apps.chrome.Main').
+      wait_for_completion: wait for the activity to finish launching (-W flag).
+      action: string (e.g. "android.intent.action.MAIN"). Default is VIEW.
+      category: string (e.g. "android.intent.category.HOME")
+      data: Data string to pass to activity (e.g. 'http://www.example.com/').
+      extras: Dict of extras to pass to activity. Values are significant.
+      trace_file_name: If used, turns on and saves the trace to this file name.
+      force_stop: force stop the target app before starting the activity (-S
+        flag).
+    """
+    cmd = self._GetActivityCommand(package, activity, wait_for_completion,
+                                   action, category, data, extras,
+                                   trace_file_name, force_stop)
     self.RunShellCommand(cmd)
+
+  def StartActivityTimed(self, package, activity, wait_for_completion=False,
+                         action='android.intent.action.VIEW',
+                         category=None, data=None,
+                         extras=None, trace_file_name=None,
+                         force_stop=False):
+    """Starts |package|'s activity on the device, returning the start time
+
+    Args - as for StartActivity
+
+    Returns:
+      a timestamp string for the time at which the activity started
+    """
+    cmd = self._GetActivityCommand(package, activity, wait_for_completion,
+                                   action, category, data, extras,
+                                   trace_file_name, force_stop)
+    self.StartMonitoringLogcat()
+    self.RunShellCommand('log starting activity; ' + cmd)
+    activity_started_re = re.compile('.*starting activity.*')
+    m = self.WaitForLogMatch(activity_started_re, None)
+    assert m
+    start_line = m.group(0)
+    return GetLogTimestamp(start_line, self.GetDeviceYear())
 
   def GoHome(self):
     """Tell the device to return to the home screen. Blocks until completion."""
@@ -858,7 +895,7 @@ class AndroidCommands(object):
         raise pexpect.TIMEOUT(
             'Timeout (%ds) exceeded waiting for pattern "%s" (tip: use -vv '
             'to debug)' %
-            (self._logcat.timeout, success_re.pattern))
+            (timeout, success_re.pattern))
       except pexpect.EOF:
         # It seems that sometimes logcat can end unexpectedly. This seems
         # to happen during Chrome startup after a reboot followed by a cache
