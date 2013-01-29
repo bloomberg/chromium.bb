@@ -852,7 +852,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
 
 #if defined(OS_WIN)
   FilePath location(
-      test::TestPortableDeviceWatcherWin::GetStoragePathFromStorageId(
+      PortableDeviceWatcherWin::GetStoragePathFromStorageId(
           test::TestPortableDeviceWatcherWin::kStorageUniqueIdA));
 #else
   FilePath location(FILE_PATH_LITERAL("/mtp_bogus"));

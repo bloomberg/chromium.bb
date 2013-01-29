@@ -114,14 +114,6 @@ TestPortableDeviceWatcherWin::GetDeviceStorageObjects(
   return storage_objects;
 }
 
-// static
-string16 TestPortableDeviceWatcherWin::GetStoragePathFromStorageId(
-    const std::string& storage_id) {
-  if (storage_id.empty())
-    return string16();
-  return ASCIIToUTF16("\\\\") + ASCIIToUTF16(storage_id);
-}
-
 void TestPortableDeviceWatcherWin::EnumerateAttachedDevices() {
 }
 

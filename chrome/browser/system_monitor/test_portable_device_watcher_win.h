@@ -53,10 +53,6 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
   static PortableDeviceWatcherWin::StorageObjects GetDeviceStorageObjects(
       const string16& pnp_device_id);
 
-  // Returns the path of the requested storage specified by the |storage_id|.
-  // Returns an empty string if |storage_id| is empty.
-  static string16 GetStoragePathFromStorageId(const std::string& storage_id);
-
   // Used by MediaFileSystemRegistry unit test.
   void set_use_dummy_mtp_storage_info(bool use_dummy_info) {
     use_dummy_mtp_storage_info_ = use_dummy_info;

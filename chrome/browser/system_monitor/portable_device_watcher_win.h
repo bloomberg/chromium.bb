@@ -87,6 +87,10 @@ class PortableDeviceWatcherWin {
       string16* device_location,
       string16* storage_object_id) const;
 
+  // Constructs and returns a storage path from storage unique identifier.
+  static string16 GetStoragePathFromStorageId(
+      const std::string& storage_unique_id);
+
  private:
   friend class test::TestPortableDeviceWatcherWin;
 
