@@ -31,9 +31,9 @@ void PicturePileBase::Resize(gfx::Size new_size) {
 
   // Find all tiles that contain any pixels outside the new size.
   std::vector<PictureListMapKey> to_erase;
-  int min_toss_x = tiling_.BorderTileXIndexFromSrcCoord(
+  int min_toss_x = tiling_.FirstBorderTileXIndexFromSrcCoord(
       std::min(old_size.width(), new_size.width()));
-  int min_toss_y = tiling_.BorderTileYIndexFromSrcCoord(
+  int min_toss_y = tiling_.FirstBorderTileYIndexFromSrcCoord(
       std::min(old_size.height(), new_size.height()));
   for (PictureListMap::iterator iter = picture_list_map_.begin();
        iter != picture_list_map_.end(); ++iter) {
