@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/gfx/font.h"
 
 class AutofillPopupController;
@@ -27,6 +28,7 @@ class Rect;
 }
 
 typedef struct _GdkEventButton GdkEventButton;
+typedef struct _GdkEventConfigure GdkEventConfigure;
 typedef struct _GdkEventCrossing GdkEventCrossing;
 typedef struct _GdkEventExpose GdkEventExpose;
 typedef struct _GdkEventKey GdkEventKey;
@@ -48,6 +50,8 @@ class AutofillPopupViewGtk : public AutofillPopupView {
   virtual void InvalidateRow(size_t row) OVERRIDE;
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
 
+  CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleConfigure,
+                       GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleButtonRelease,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleExpose,
@@ -79,6 +83,8 @@ class AutofillPopupViewGtk : public AutofillPopupView {
   void SetInitialBounds();
 
   AutofillPopupController* controller_;  // Weak reference.
+
+  ui::GtkSignalRegistrar signals_;
 
   GtkWidget* window_;  // Strong reference.
   PangoLayout* layout_;  // Strong reference.

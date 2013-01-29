@@ -46,6 +46,11 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
                                  GDK_BUTTON_RELEASE_MASK |
                                  GDK_EXPOSURE_MASK |
                                  GDK_POINTER_MOTION_MASK);
+
+  GtkWidget* toplevel_window = gtk_widget_get_toplevel(
+      controller->container_view());
+  signals_.Connect(toplevel_window, "configure-event",
+                   G_CALLBACK(HandleConfigureThunk), this);
   g_signal_connect(window_, "expose-event",
                    G_CALLBACK(HandleExposeThunk), this);
   g_signal_connect(window_, "leave-notify-event",
@@ -97,6 +102,12 @@ void AutofillPopupViewGtk::UpdateBoundsAndRedrawPopup() {
   GdkRectangle popup_rect = controller_->popup_bounds().ToGdkRectangle();
   if (gdk_window != NULL)
     gdk_window_invalidate_rect(gdk_window, &popup_rect, FALSE);
+}
+
+gboolean AutofillPopupViewGtk::HandleConfigure(GtkWidget* widget,
+                                               GdkEventConfigure* event) {
+  Hide();
+  return FALSE;
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
