@@ -104,6 +104,15 @@ pixman_renderer_read_pixels(struct weston_output *output,
 	return 0;
 }
 
+static void
+box_translate(pixman_box32_t *dst, const pixman_box32_t *src, int x, int y)
+{
+	dst->x1 = src->x1 + x;
+	dst->x2 = src->x2 + x;
+	dst->y1 = src->y1 + y;
+	dst->y2 = src->y2 + y;
+}
+
 #define D2F(v) pixman_double_to_fixed((double)v)
 
 static void
@@ -115,7 +124,7 @@ repaint_region_complex(struct weston_surface *es, struct weston_output *output,
 	struct pixman_surface_state *ps = get_surface_state(es);
 	struct pixman_output_state *po = get_output_state(output);
 	int nrects, i;
-	pixman_box32_t *rects;
+	pixman_box32_t *rects, rect;
 
 	/* Pixman supports only 2D transform matrix, but Weston uses 3D,
 	 * so we're omitting Z coordinate here
@@ -142,15 +151,16 @@ repaint_region_complex(struct weston_surface *es, struct weston_output *output,
 
 	rects = pixman_region32_rectangles(region, &nrects);
 	for (i = 0; i < nrects; i++) {
+		box_translate(&rect, &rects[i], -output->x, -output->y);
 		pixman_image_composite32(PIXMAN_OP_OVER,
 			ps->image, /* src */
 			NULL /* mask */,
 			po->shadow_image, /* dest */
 			rects[i].x1, rects[i].y1, /* src_x, src_y */
 			0, 0, /* mask_x, mask_y */
-			rects[i].x1, rects[i].y1, /* dst_x, dst_y */
-			rects[i].x2 - rects[i].x1, /* width */
-			rects[i].y2 - rects[i].y1 /* height */
+			rect.x1, rect.y1, /* dst_x, dst_y */
+			rect.x2 - rect.x1, /* width */
+			rect.y2 - rect.y1 /* height */
 			);
 
 		if (!pr->repaint_debug)
@@ -162,9 +172,9 @@ repaint_region_complex(struct weston_surface *es, struct weston_output *output,
 			po->shadow_image, /* dest */
 			0, 0, /* src_x, src_y */
 			0, 0, /* mask_x, mask_y */
-			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
-			rects[i].x2 - rects[i].x1, /* width */
-			rects[i].y2 - rects[i].y1 /* height */);
+			rect.x1, rect.y1, /* dest_x, dest_y */
+			rect.x2 - rect.x1, /* width */
+			rect.y2 - rect.y1 /* height */);
 	}
 }
 
@@ -178,7 +188,7 @@ repaint_region_simple(struct weston_surface *es, struct weston_output *output,
 	struct pixman_surface_state *ps = get_surface_state(es);
 	struct pixman_output_state *po = get_output_state(output);
 	pixman_region32_t final_region;
-	pixman_box32_t *rects;
+	pixman_box32_t *rects, rect;
 	int nrects, i, src_x, src_y;
 	float surface_x, surface_y;
 
@@ -206,15 +216,16 @@ repaint_region_simple(struct weston_surface *es, struct weston_output *output,
 
 	for (i = 0; i < nrects; i++) {
 		weston_surface_from_global(es, rects[i].x1, rects[i].y1, &src_x, &src_y);
+		box_translate(&rect, &rects[i], -output->x, -output->y);
 		pixman_image_composite32(pixman_op,
 			ps->image, /* src */
 			NULL /* mask */,
 			po->shadow_image, /* dest */
 			src_x, src_y, /* src_x, src_y */
 			0, 0, /* mask_x, mask_y */
-			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
-			rects[i].x2 - rects[i].x1, /* width */
-			rects[i].y2 - rects[i].y1 /* height */);
+			rect.x1, rect.y1, /* dest_x, dest_y */
+			rect.x2 - rect.x1, /* width */
+			rect.y2 - rect.y1 /* height */);
 
 		if (!pr->repaint_debug)
 			continue;
@@ -225,9 +236,9 @@ repaint_region_simple(struct weston_surface *es, struct weston_output *output,
 			po->shadow_image, /* dest */
 			src_x, src_y, /* src_x, src_y */
 			0, 0, /* mask_x, mask_y */
-			rects[i].x1, rects[i].y1, /* dest_x, dest_y */
-			rects[i].x2 - rects[i].x1, /* width */
-			rects[i].y2 - rects[i].y1 /* height */);
+			rect.x1, rect.y1, /* dest_x, dest_y */
+			rect.x2 - rect.x1, /* width */
+			rect.y2 - rect.y1 /* height */);
 	}
 	pixman_region32_fini(&final_region);
 }
@@ -300,15 +311,16 @@ copy_to_hw_buffer(struct weston_output *output, pixman_region32_t *region)
 	struct pixman_output_state *po = get_output_state(output);
 	int nrects, i, width, height;
 	pixman_box32_t *rects;
-	pixman_box32_t b;
+	pixman_box32_t b, rect;
 
 	width = pixman_image_get_width(po->shadow_image);
 	height = pixman_image_get_height(po->shadow_image);
 
 	rects = pixman_region32_rectangles(region, &nrects);
 	for (i = 0; i < nrects; i++) {
+		box_translate(&rect, &rects[i], -output->x, -output->y);
 		b = weston_transformed_rect(width, height,
-					    output->transform, rects[i]);
+					    output->transform, rect);
 
 		pixman_image_composite32(PIXMAN_OP_SRC,
 			po->shadow_image, /* src */
