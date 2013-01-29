@@ -126,6 +126,9 @@ TileManager::TileManager(
       manage_tiles_call_count_(0),
       bytes_pending_set_pixels_(0),
       ever_exceeded_memory_budget_(false) {
+  bool worker_pool_is_running = raster_worker_pool_->Start();
+  CHECK(worker_pool_is_running);
+
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
       for (int k = 0; k < NUM_BINS; ++k)

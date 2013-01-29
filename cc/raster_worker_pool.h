@@ -29,6 +29,17 @@ class RasterWorkerPool {
     return make_scoped_ptr(new RasterWorkerPool(num_raster_threads));
   }
 
+  // Starts the worker pool. Returns true if the worker pool was successfully
+  // started; otherwise, returns false.
+  bool Start();
+
+  // Tells the worker pool to stop and returns once all pending tasks have
+  // completed.
+  void Stop();
+
+  // Returns true if the worker pool has been started, and not yet stopped.
+  bool IsRunning() const;
+
   bool IsBusy();
 
   void PostRasterTaskAndReply(PicturePileImpl* picture_pile,
@@ -89,8 +100,13 @@ class RasterWorkerPool {
                              scoped_refptr<PicturePileImpl> picture_pile,
                              const base::Closure& reply);
 
+  void SortRasterThreadsIfNeeded();
+
+  bool is_running_;
+
   typedef std::vector<Thread*> ThreadVector;
   ThreadVector raster_threads_;
+  bool raster_threads_need_sorting_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterWorkerPool);
 };
