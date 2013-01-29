@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_node_data.h"
 #include "content/public/test/accessibility_test_utils_win.h"
@@ -100,10 +101,15 @@ string16 DumpAccessibilityTreeHelper::ToString(
   Add(false, L"description='" + description + L"'");
   Add(false, L"default_action='" + default_action + L"'");
   Add(false, L"keyboard_shortcut='" + keyboard_shortcut + L"'");
-  LONG x_left, y_top, width, height;
-  if (acc_obj->accLocation(&x_left, &y_top, &width, &height, variant_self) !=
-      S_FALSE) {
-    Add(false, StringPrintf(L"location=(%d, %d)", x_left, y_top));
+  BrowserAccessibility* root = node->manager()->GetRoot();
+  LONG left, top, width, height;
+  LONG root_left, root_top, root_width, root_height;
+  if (S_FALSE != acc_obj->accLocation(
+          &left, &top, &width, &height, variant_self) &&
+      S_FALSE != root->ToBrowserAccessibilityWin()->accLocation(
+          &root_left, &root_top, &root_width, &root_height, variant_self)) {
+    Add(false, StringPrintf(L"location=(%d, %d)",
+            left - root_left, top - root_top));
     Add(false, StringPrintf(L"size=(%d, %d)", width, height));
   }
   LONG index_in_parent;

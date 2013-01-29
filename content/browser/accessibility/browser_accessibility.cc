@@ -133,15 +133,30 @@ BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
 gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
   gfx::Rect bounds = location_;
 
-  // Adjust top left position by the root document's scroll offset.
-  BrowserAccessibility* root = manager_->GetRoot();
-  int scroll_x = 0;
-  int scroll_y = 0;
-  if (!root->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &scroll_x) ||
-      !root->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_Y, &scroll_y)) {
-    return bounds;
+  // Walk up the parent chain. Every time we encounter a Web Area, offset
+  // based on the scroll bars and then offset based on the origin of that
+  // nested web area.
+  BrowserAccessibility* parent = parent_;
+  bool need_to_offset_web_area =
+      (role_ == AccessibilityNodeData::ROLE_WEB_AREA);
+  while (parent) {
+    if (need_to_offset_web_area &&
+        parent->location().width() > 0 &&
+        parent->location().height() > 0) {
+      bounds.Offset(parent->location().x(), parent->location().y());
+      need_to_offset_web_area = false;
+    }
+    if (parent->role() == AccessibilityNodeData::ROLE_WEB_AREA) {
+      int sx = 0;
+      int sy = 0;
+      if (parent->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &sx) &&
+          parent->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_Y, &sy)) {
+        bounds.Offset(-sx, -sy);
+      }
+      need_to_offset_web_area = true;
+    }
+    parent = parent->parent();
   }
-  bounds.Offset(-scroll_x, -scroll_y);
 
   return bounds;
 }
