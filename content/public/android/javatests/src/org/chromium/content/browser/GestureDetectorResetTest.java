@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import junit.framework.Assert;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -83,9 +84,12 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
     /**
      * Tests that showing a select popup and having the page reload while the popup is showing does
      * not assert.
+     *
+     * @LargeTest
+     * @Feature({"Browser"})
+     * BUG 172967
      */
-    @LargeTest
-    @Feature({"Browser"})
+    @DisabledTest
     public void testSeparateClicksAreRegisteredOnReload()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.

@@ -1809,46 +1809,6 @@ TEST_F(LayerTreeHostTestContinuousInvalidate, runMultiThread)
     runTest(true);
 }
 
-class LayerTreeHostTestAdjustPointForZoom : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestAdjustPointForZoom()
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        gfx::Transform m;
-        m.Translate(250, 360);
-        m.Scale(2, 2);
-
-        gfx::Point point(400, 550);
-        gfx::Point transformedPoint;
-
-        // Unit transform, no change expected.
-        m_layerTreeHost->setImplTransform(gfx::Transform());
-        transformedPoint = gfx::ToRoundedPoint(m_layerTreeHost->adjustEventPointForPinchZoom(point));
-        EXPECT_EQ(point.x(), transformedPoint.x());
-        EXPECT_EQ(point.y(), transformedPoint.y());
-
-        m_layerTreeHost->setImplTransform(m);
-
-        // Apply m^(-1): 75 = (400 - 250) / 2; 95 = (550 - 360) / 2.
-        transformedPoint = gfx::ToRoundedPoint(m_layerTreeHost->adjustEventPointForPinchZoom(point));
-        EXPECT_EQ(75, transformedPoint.x());
-        EXPECT_EQ(95, transformedPoint.y());
-        endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-};
-
-TEST_F(LayerTreeHostTestAdjustPointForZoom, runMultiThread)
-{
-    runTest(true);
-}
-
 class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 public:
     LayerTreeHostTestDeferCommits()

@@ -290,7 +290,6 @@ private:
     void makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, gfx::Vector2d scrollOffset, float pageScale);
 
     void setPageScaleDelta(float);
-    gfx::Vector2dF scrollPinchZoomViewport(gfx::Vector2dF delta);
     gfx::Vector2dF scrollLayerWithViewportSpaceDelta(LayerImpl* layerImpl, float scaleFromViewportToScreenSpace, gfx::PointF viewportPoint, gfx::Vector2dF viewportDelta);
 
     void updateMaxScrollOffset();

@@ -50,60 +50,13 @@ bool PinchZoomViewport::SetPageScaleFactorAndLimits(
   return true;
 }
 
-gfx::RectF PinchZoomViewport::ZoomedViewport() const {
-  gfx::SizeF layout_space_device_viewport_size = gfx::ScaleSize(
-      device_viewport_size_,
-      1 / (device_scale_factor_ * total_page_scale_factor()));
-  return gfx::RectF(gfx::PointAtOffsetFromOrigin(zoomed_viewport_offset_),
-                    layout_space_device_viewport_size);
-}
-
-gfx::Vector2dF PinchZoomViewport::ApplyScroll(const gfx::Vector2dF delta) {
-  gfx::Vector2dF overflow;
-  gfx::RectF pinched_bounds = ZoomedViewport() + delta;
-
-  if (pinched_bounds.x() < 0) {
-    overflow.set_x(pinched_bounds.x());
-    pinched_bounds.set_x(0);
-  }
-
-  if (pinched_bounds.y() < 0) {
-    overflow.set_y(pinched_bounds.y());
-    pinched_bounds.set_y(0);
-  }
-
-  if (pinched_bounds.right() > layout_viewport_size_.width()) {
-    overflow.set_x(pinched_bounds.right() - layout_viewport_size_.width());
-    pinched_bounds += gfx::Vector2dF(
-      layout_viewport_size_.width() - pinched_bounds.right(), 0);
-  }
-
-  if (pinched_bounds.bottom() > layout_viewport_size_.height()) {
-    overflow.set_y(pinched_bounds.bottom() - layout_viewport_size_.height());
-    pinched_bounds += gfx::Vector2dF(
-      0, layout_viewport_size_.height() - pinched_bounds.bottom());
-  }
-  zoomed_viewport_offset_ = pinched_bounds.OffsetFromOrigin();
-
-  return overflow;
-}
-
 gfx::Transform PinchZoomViewport::ImplTransform(
     bool page_scale_pinch_zoom_enabled) const {
   gfx::Transform transform;
   transform.Scale(page_scale_delta_, page_scale_delta_);
 
-  // If the pinch state is applied in the impl, then push it to the
-  // impl transform, otherwise the scale is handled by WebCore.
-  if (page_scale_pinch_zoom_enabled) {
+  if (page_scale_pinch_zoom_enabled)
     transform.Scale(page_scale_factor_, page_scale_factor_);
-    // The offset needs to be scaled by deviceScaleFactor as this transform
-    // needs to work with physical pixels.
-    gfx::Vector2dF zoomed_device_viewport_offset
-      = gfx::ScaleVector2d(zoomed_viewport_offset_, device_scale_factor_);
-    transform.Translate(-zoomed_device_viewport_offset.x(),
-                        -zoomed_device_viewport_offset.y());
-  }
 
   return transform;
 }

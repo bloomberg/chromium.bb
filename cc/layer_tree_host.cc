@@ -752,33 +752,6 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
 }
 
-gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& zoomedViewportPoint)
-    const
-{
-    if (m_implTransform.IsIdentity())
-        return zoomedViewportPoint;
-
-    DCHECK(m_implTransform.IsInvertible());
-
-    // Scale to screen space before applying implTransform inverse.
-    gfx::PointF zoomedScreenspacePoint = gfx::ScalePoint(zoomedViewportPoint, deviceScaleFactor());
-
-    gfx::Transform inverseImplTransform(gfx::Transform::kSkipInitialization);
-    if (!m_implTransform.GetInverse(&inverseImplTransform)) {
-        // TODO(shawnsingh): Either we need to handle uninvertible transforms
-        // here, or DCHECK that the transform is invertible.
-    }
-
-    bool wasClipped = false;
-    gfx::PointF unzoomedScreenspacePoint = MathUtil::projectPoint(inverseImplTransform, zoomedScreenspacePoint, wasClipped);
-    DCHECK(!wasClipped);
-
-    // Convert back to logical pixels for hit testing.
-    gfx::PointF unzoomedViewportPoint = gfx::ScalePoint(unzoomedScreenspacePoint, 1 / deviceScaleFactor());
-
-    return unzoomedViewportPoint;
-}
-
 void LayerTreeHost::setImplTransform(const gfx::Transform& transform)
 {
     m_implTransform = transform;

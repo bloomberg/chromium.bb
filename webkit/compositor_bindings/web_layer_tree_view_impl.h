@@ -39,7 +39,7 @@ public:
     virtual void setViewportSize(const WebSize& layoutViewportSize, const WebSize& deviceViewportSize = WebSize()) OVERRIDE;
     virtual WebSize layoutViewportSize() const OVERRIDE;
     virtual WebSize deviceViewportSize() const OVERRIDE;
-    virtual WebFloatPoint adjustEventPointForPinchZoom(const WebFloatPoint& point) const OVERRIDE;
+    virtual WebFloatPoint adjustEventPointForPinchZoom(const WebFloatPoint& point) const; // FIXME: remove this after WebKit roll.
     virtual void setDeviceScaleFactor(float) OVERRIDE;
     virtual float deviceScaleFactor() const OVERRIDE;
     virtual void setBackgroundColor(WebColor) OVERRIDE;

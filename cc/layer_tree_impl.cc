@@ -94,25 +94,31 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   scrolling_layer_id_from_previous_tree_ = 0;
 }
 
+gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
+  gfx::SizeF view_bounds;
+  // The clip layer should be used for scrolling bounds if available since it
+  // adjusts for non-overlay scrollbars. Otherwise, fall back to our knowledge
+  // of the physical viewport size.
+  LayerImpl* clip_layer = NULL;
+  if (root_scroll_layer_)
+    clip_layer = root_scroll_layer_->parent();
+  if (clip_layer && clip_layer->masksToBounds()) {
+    view_bounds = clip_layer->bounds();
+  } else {
+    view_bounds = gfx::ScaleSize(device_viewport_size(),
+        1 / device_scale_factor());
+  }
+  view_bounds.Scale(1 / pinch_zoom_viewport().total_page_scale_factor());
+
+  return view_bounds;
+}
+
 void LayerTreeImpl::UpdateMaxScrollOffset() {
   if (!root_scroll_layer_ || !root_scroll_layer_->children().size())
     return;
 
-  gfx::SizeF view_bounds;
-  if (!settings().pageScalePinchZoomEnabled) {
-    view_bounds = device_viewport_size();
-    if (LayerImpl* clip_layer = root_scroll_layer_->parent()) {
-      // Compensate for non-overlay scrollbars.
-      if (clip_layer->masksToBounds())
-        view_bounds = gfx::ScaleSize(clip_layer->bounds(), device_scale_factor());
-    }
-    view_bounds.Scale(1 / pinch_zoom_viewport().page_scale_delta());
-  } else {
-    view_bounds = layout_viewport_size();
-  }
-
   gfx::Vector2dF max_scroll = gfx::Rect(ScrollableSize()).bottom_right() -
-      gfx::RectF(view_bounds).bottom_right();
+      gfx::RectF(ScrollableViewportSize()).bottom_right();
 
   // The viewport may be larger than the contents in some cases, such as
   // having a vertical scrollbar but no horizontal overflow.

@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.LargeTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -52,9 +53,11 @@ public class SelectPopupTest extends ContentShellTestBase {
     /**
      * Tests that showing a select popup and having the page reload while the popup is showing does
      * not assert.
+     * @LargeTest
+     * @Feature({"Browser"})
+     * BUG 172967
      */
-    @LargeTest
-    @Feature({"Browser"})
+    @DisabledTest
     public void testReloadWhilePopupShowing() throws InterruptedException, Exception, Throwable {
         // Load the test page.
         launchContentShellWithUrl(SELECT_URL);

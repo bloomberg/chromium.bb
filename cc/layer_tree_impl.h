@@ -134,7 +134,10 @@ class CC_EXPORT LayerTreeImpl {
 
   const LayerList& RenderSurfaceLayerList() const;
 
+  // These return the size of the root scrollable area and the size of
+  // the user-visible scrolling viewport, in CSS layout coordinates.
   gfx::Size ScrollableSize() const;
+  gfx::SizeF ScrollableViewportSize() const;
 
   LayerImpl* LayerById(int id);
 
