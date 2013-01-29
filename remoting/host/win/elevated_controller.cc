@@ -18,7 +18,7 @@
 #include "remoting/host/branding.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/verify_config_window_win.h"
-#include "remoting/host/win/elevated_controller_resource.h"
+#include "remoting/host/win/core_resource.h"
 #include "remoting/host/win/security_descriptor.h"
 
 namespace remoting {

@@ -450,12 +450,9 @@ NPError SetWindow(NPP instance, NPWindow* pNPWindow) {
 }  // namespace
 
 #if defined(OS_WIN)
-HMODULE g_hModule = NULL;
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved) {
   switch (dwReason) {
     case DLL_PROCESS_ATTACH:
-      g_hModule = hModule;
       DisableThreadLibraryCalls(hModule);
       break;
     case DLL_PROCESS_DETACH:
