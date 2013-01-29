@@ -39,7 +39,7 @@ namespace nacl_arm_test {
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -99,7 +99,7 @@ bool Binary4RegisterDualOpTesterCase0
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -161,7 +161,7 @@ bool Binary4RegisterDualOpTesterCase1
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -226,7 +226,7 @@ bool Binary3RegisterOpAltATesterCase2
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResult,
+//       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: Binary4RegisterDualResult,
 //       constraints: ,
 //       defs: {RdLo, RdHi},
@@ -292,7 +292,7 @@ bool Binary4RegisterDualResultTesterCase3
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -359,7 +359,7 @@ bool Binary3RegisterOpAltATesterCase4
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -383,7 +383,7 @@ class Binary4RegisterDualOpTester_Case0
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -406,7 +406,7 @@ class Binary4RegisterDualOpTester_Case1
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -430,7 +430,7 @@ class Binary3RegisterOpAltATester_Case2
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResult,
+//       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: Binary4RegisterDualResult,
 //       constraints: ,
 //       defs: {RdLo, RdHi},
@@ -455,7 +455,7 @@ class Binary4RegisterDualResultTester_Case3
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -488,7 +488,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -500,8 +500,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case0_TestCase0) {
-  Binary4RegisterDualOpTester_Case0 tester;
-  tester.Test("cccc00010000ddddaaaammmm1xx0nnnn");
+  Binary4RegisterDualOpTester_Case0 baseline_tester;
+  NamedActual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_SMLABB_SMLABT_SMLATB_SMLATT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010000ddddaaaammmm1xx0nnnn");
 }
 
 // op1(22:21)=01 & op(5)=0
@@ -510,7 +512,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -522,8 +524,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case1_TestCase1) {
-  Binary4RegisterDualOpTester_Case1 tester;
-  tester.Test("cccc00010010ddddaaaammmm1x00nnnn");
+  Binary4RegisterDualOpTester_Case1 baseline_tester;
+  NamedActual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_SMLAWB_SMLAWT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010ddddaaaammmm1x00nnnn");
 }
 
 // op1(22:21)=01 & op(5)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
@@ -531,7 +535,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -543,8 +547,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case2_TestCase2) {
-  Binary3RegisterOpAltATester_Case2 tester;
-  tester.Test("cccc00010010dddd0000mmmm1x10nnnn");
+  Binary3RegisterOpAltATester_Case2 baseline_tester;
+  NamedActual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_SMULWB_SMULWT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010dddd0000mmmm1x10nnnn");
 }
 
 // op1(22:21)=10
@@ -553,7 +559,7 @@ TEST_F(Arm32DecoderStateTests,
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResult,
+//       actual: Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1,
 //       baseline: Binary4RegisterDualResult,
 //       constraints: ,
 //       defs: {RdLo, RdHi},
@@ -567,8 +573,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {RdLo, RdHi, Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultTester_Case3_TestCase3) {
-  Binary4RegisterDualResultTester_Case3 tester;
-  tester.Test("cccc00010100hhhhllllmmmm1xx0nnnn");
+  Binary4RegisterDualResultTester_Case3 baseline_tester;
+  NamedActual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_SMLALBB_SMLALBT_SMLALTB_SMLALTT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010100hhhhllllmmmm1xx0nnnn");
 }
 
 // op1(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
@@ -576,7 +584,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -588,8 +596,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case4_TestCase4) {
-  Binary3RegisterOpAltATester_Case4 tester;
-  tester.Test("cccc00010110dddd0000mmmm1xx0nnnn");
+  Binary3RegisterOpAltATester_Case4 baseline_tester;
+  NamedActual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_SMULBB_SMULBT_SMULTB_SMULTT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010110dddd0000mmmm1xx0nnnn");
 }
 
 }  // namespace nacl_arm_test
