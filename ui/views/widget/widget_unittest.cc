@@ -826,29 +826,6 @@ TEST_F(WidgetOwnershipTest,
   EXPECT_TRUE(state.native_widget_deleted);
 }
 
-// Widget owns its NativeWidget and has a WidgetDelegateView as its contents.
-TEST_F(WidgetOwnershipTest,
-       Ownership_WidgetOwnsNativeWidgetWithWithWidgetDelegateView) {
-  OwnershipTestState state;
-
-  WidgetDelegateView* delegate_view = new WidgetDelegateView;
-
-  scoped_ptr<Widget> widget(new OwnershipTestWidget(&state));
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.native_widget =
-      new OwnershipTestNativeWidgetPlatform(widget.get(), &state);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = delegate_view;
-  widget->Init(params);
-  widget->SetContentsView(delegate_view);
-
-  // Now delete the Widget. There should be no crash or use-after-free.
-  widget.reset();
-
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Widget observer tests.
 //
@@ -925,6 +902,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   const Widget* widget_bounds_changed() const { return widget_bounds_changed_; }
 
  private:
+
   Widget* active_;
 
   Widget* widget_closed_;

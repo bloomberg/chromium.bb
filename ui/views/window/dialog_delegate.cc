@@ -151,10 +151,7 @@ ui::AccessibilityTypes::Role DialogDelegate::GetAccessibleWindowRole() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegateView:
 
-DialogDelegateView::DialogDelegateView() {
-  // A WidgetDelegate should be deleted on DeleteDelegate.
-  set_owned_by_client();
-}
+DialogDelegateView::DialogDelegateView() {}
 
 DialogDelegateView::~DialogDelegateView() {}
 
@@ -163,10 +160,6 @@ Widget* DialogDelegateView::CreateDialogWidget(DialogDelegateView* dialog,
                                                gfx::NativeWindow context,
                                                gfx::NativeWindow parent) {
   return CreateDialogWidgetImpl(dialog, context, parent);
-}
-
-void DialogDelegateView::DeleteDelegate() {
-  delete this;
 }
 
 Widget* DialogDelegateView::GetWidget() {

@@ -173,8 +173,6 @@ void ChildModalParent::DeleteDelegate() {
     child_->Close();
     child_ = NULL;
   }
-
-  delete this;
 }
 
 void ChildModalParent::Layout() {

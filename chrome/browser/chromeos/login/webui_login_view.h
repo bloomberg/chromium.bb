@@ -31,7 +31,7 @@ namespace chromeos {
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a WebView.
-class WebUILoginView : public views::View,
+class WebUILoginView : public views::WidgetDelegateView,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver {
  public:

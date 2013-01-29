@@ -112,8 +112,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()
 // to call View's GetWidget() for the common case where a DialogDelegate
-// implementation is-a View. Note that DialogDelegateView is not owned by
-// view's hierarchy and is expected to be deleted on DeleteDelegate call.
+// implementation is-a View.
 class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
                                         public View {
  public:
@@ -126,7 +125,6 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
                                     gfx::NativeWindow parent);
 
   // Overridden from DialogDelegate:
-  virtual void DeleteDelegate() OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;

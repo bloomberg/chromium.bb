@@ -96,8 +96,8 @@ class Launcher::DelegateView : public views::WidgetDelegate,
 // Class used to slightly dim shelf items when maximized and visible. It also
 // makes sure the widget changes size to always be of the same size as the
 // shelf.
-class Launcher::DimmerView : public views::View,
-                             public aura::WindowObserver {
+class Launcher::DimmerView : public views::WidgetDelegateView,
+                   public aura::WindowObserver {
  public:
   explicit DimmerView(Launcher* launcher)
       : launcher_(launcher) {
