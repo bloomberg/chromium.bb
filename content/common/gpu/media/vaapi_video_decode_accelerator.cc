@@ -138,6 +138,17 @@ void VaapiVideoDecodeAccelerator::NotifyPictureReady(int32 input_id,
   if (!client_)
     return;
 
+  // Don't return any pictures that we might want to return during resetting
+  // as a consequence of finishing up the decode that was running during
+  // Reset() call from the client. Reuse it instead.
+  {
+    base::AutoLock auto_lock(lock_);
+    if (state_ == kResetting) {
+      output_buffers_.push(output_id);
+      return;
+    }
+  }
+
   ++num_frames_at_client_;
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
 
@@ -394,6 +405,9 @@ void VaapiVideoDecodeAccelerator::Decode(
       break;
 
     case kDecoding:
+    // Allow accumulating bitstream buffers so that the client can queue
+    // after-seek-buffers while we are finishing with the before-seek one.
+    case kResetting:
       break;
 
     case kIdle:
@@ -522,6 +536,14 @@ void VaapiVideoDecodeAccelerator::Reset() {
   base::AutoLock auto_lock(lock_);
   state_ = kResetting;
 
+  // Drop all remaining input buffers, if present.
+  while (!input_buffers_.empty()) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &Client::NotifyEndOfBitstreamBuffer, client_,
+        input_buffers_.front()->id));
+    input_buffers_.pop();
+  }
+
   decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
       &VaapiVideoDecodeAccelerator::ResetTask, base::Unretained(this)));
 
@@ -538,19 +560,21 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
     return;  // We could've gotten destroyed already.
   }
 
-  // Drop all remaining input buffers, if present.
-  while (!input_buffers_.empty()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &Client::NotifyEndOfBitstreamBuffer, client_,
-        input_buffers_.front()->id));
-    input_buffers_.pop();
-  }
-
   state_ = kIdle;
   num_stream_bufs_at_decoder_ = 0;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyResetDone, client_));
+
+  // The client might have given us new buffers via Decode() while we were
+  // resetting and might be waiting for our move, and not call Decode() anymore
+  // until we return something. Post an InitialDecodeTask() so that we won't
+  // sleep forever waiting for Decode() in that case. Having two of them
+  // in the pipe is harmless, the additional one will return as soon as it sees
+  // that we are back in kDecoding state.
+  decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+    &VaapiVideoDecodeAccelerator::InitialDecodeTask,
+    base::Unretained(this)));
 
   DVLOG(1) << "Reset finished";
 }
