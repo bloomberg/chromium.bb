@@ -338,15 +338,22 @@ AudioParameters AudioManagerMac::GetPreferredLowLatencyOutputStreamParameters(
 
 void AudioManagerMac::CreateDeviceListener() {
   DCHECK(GetMessageLoop()->BelongsToCurrentThread());
-  output_device_listener_.reset(new AudioDeviceListenerMac(BindToLoop(
-      GetMessageLoop(), base::Bind(
-          &AudioManagerMac::NotifyAllOutputDeviceChangeListeners,
-          base::Unretained(this)))));
+  output_device_listener_.reset(new AudioDeviceListenerMac(base::Bind(
+      &AudioManagerMac::DelayedDeviceChange, base::Unretained(this))));
 }
 
 void AudioManagerMac::DestroyDeviceListener() {
   DCHECK(GetMessageLoop()->BelongsToCurrentThread());
   output_device_listener_.reset();
+}
+
+void AudioManagerMac::DelayedDeviceChange() {
+  // TODO(dalecurtis): This is ridiculous, but we need to delay device changes
+  // to workaround threading issues with OSX property listener callbacks.  See
+  // http://crbug.com/158170
+  GetMessageLoop()->PostDelayedTask(FROM_HERE, base::Bind(
+      &AudioManagerMac::NotifyAllOutputDeviceChangeListeners,
+      base::Unretained(this)), base::TimeDelta::FromSeconds(2));
 }
 
 AudioManager* CreateAudioManager() {

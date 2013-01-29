@@ -45,6 +45,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // Helper methods for constructing AudioDeviceListenerMac on the audio thread.
   void CreateDeviceListener();
   void DestroyDeviceListener();
+  void DelayedDeviceChange();
 
   scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
 
