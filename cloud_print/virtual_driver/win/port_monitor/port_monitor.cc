@@ -614,6 +614,8 @@ MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
     if (!cloud_print::kIsUnittest) {
       // Unit tests set up their own AtExitManager
       monitor_data->at_exit_manager = new base::AtExitManager();
+      // Single spooler.exe handles all users.
+      PathService::DisableCache();
     }
   } else {
     SetLastError(ERROR_INVALID_PARAMETER);

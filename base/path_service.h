@@ -67,6 +67,9 @@ class BASE_EXPORT PathService {
                                int key_start,
                                int key_end);
 
+  // Disable internal cache.
+  static void DisableCache();
+
  private:
   friend class base::ScopedPathOverride;
   FRIEND_TEST_ALL_PREFIXES(PathServiceTest, RemoveOverride);

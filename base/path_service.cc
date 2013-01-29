@@ -112,8 +112,9 @@ struct PathData {
   PathMap cache;        // Cache mappings from path key to path value.
   PathMap overrides;    // Track path overrides.
   Provider* providers;  // Linked list of path service providers.
+  bool cache_disabled;  // Don't use cache if true;
 
-  PathData() {
+  PathData() : cache_disabled(false) {
 #if defined(OS_WIN)
     providers = &base_provider_win;
 #elif defined(OS_MACOSX)
@@ -144,6 +145,8 @@ static PathData* GetPathData() {
 
 // Tries to find |key| in the cache. |path_data| should be locked by the caller!
 bool LockedGetFromCache(int key, const PathData* path_data, FilePath* result) {
+  if (path_data->cache_disabled)
+    return false;
   // check for a cached version
   PathMap::const_iterator it = path_data->cache.find(key);
   if (it != path_data->cache.end()) {
@@ -159,7 +162,8 @@ bool LockedGetFromOverrides(int key, PathData* path_data, FilePath* result) {
   // check for an overridden version.
   PathMap::const_iterator it = path_data->overrides.find(key);
   if (it != path_data->overrides.end()) {
-    path_data->cache[key] = it->second;
+    if (!path_data->cache_disabled)
+      path_data->cache[key] = it->second;
     *result = it->second;
     return true;
   }
@@ -218,7 +222,8 @@ bool PathService::Get(int key, FilePath* result) {
   *result = path;
 
   base::AutoLock scoped_lock(path_data->lock);
-  path_data->cache[key] = path;
+  if (!path_data->cache_disabled)
+    path_data->cache[key] = path;
 
   return true;
 }
@@ -316,4 +321,14 @@ void PathService::RegisterProvider(ProviderFunc func, int key_start,
 
   p->next = path_data->providers;
   path_data->providers = p;
+}
+
+// static
+void PathService::DisableCache() {
+  PathData* path_data = GetPathData();
+  DCHECK(path_data);
+
+  base::AutoLock scoped_lock(path_data->lock);
+  path_data->cache.clear();
+  path_data->cache_disabled = true;
 }
