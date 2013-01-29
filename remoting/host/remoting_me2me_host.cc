@@ -4,6 +4,8 @@
 //
 // This file implements a standalone host process for Me2Me.
 
+#include "remoting/host/remoting_me2me_host.h"
+
 #include <string>
 
 #include "base/at_exit.h"
@@ -12,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_native_library.h"
@@ -1036,9 +1039,7 @@ void HostProcess::OnCrash(const std::string& function_name,
   CHECK(false);
 }
 
-}  // namespace remoting
-
-int main(int argc, char** argv) {
+int HostProcessMain(int argc, char** argv) {
 #if defined(OS_MACOSX)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -1046,15 +1047,14 @@ int main(int argc, char** argv) {
 
   CommandLine::Init(argc, argv);
 
-  // Initialize Breakpad as early as possible. On Windows, this happens in
-  // WinMain(), so it shouldn't also be done here. The command-line needs to be
-  // initialized first, so that the preference for crash-reporting can be looked
-  // up in the config file.
-#if defined(MAC_BREAKPAD)
-  if (remoting::IsUsageStatsAllowed()) {
-    remoting::InitializeCrashReporting();
+  // Initialize Breakpad as early as possible. On Mac the command-line needs to
+  // be initialized first, so that the preference for crash-reporting can be
+  // looked up in the config file.
+#if defined(OFFICIAL_BUILD) && (defined(MAC_BREAKPAD) || defined(OS_WIN))
+  if (IsUsageStatsAllowed()) {
+    InitializeCrashReporting();
   }
-#endif  // MAC_BREAKPAD
+#endif  // defined(OFFICIAL_BUILD) && (defined(MAC_BREAKPAD) || defined(OS_WIN))
 
   // This object instance is required by Chrome code (for example,
   // LazyInstance, MessageLoop).
@@ -1065,56 +1065,9 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  remoting::InitHostLogging();
-
-#if defined(TOOLKIT_GTK)
-  // Required for any calls into GTK functions, such as the Disconnect and
-  // Continue windows, though these should not be used for the Me2Me case
-  // (crbug.com/104377).
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  gfx::GtkInitFromCommandLine(*cmd_line);
-#endif  // TOOLKIT_GTK
-
-  // Enable support for SSL server sockets, which must be done while still
-  // single-threaded.
-  net::EnableSSLServerSockets();
-
-  // Create the main message loop and start helper threads.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
-  scoped_ptr<remoting::ChromotingHostContext> context =
-      remoting::ChromotingHostContext::Create(
-          new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                                             MessageLoop::QuitClosure()));
-  if (!context)
-    return remoting::kInitializationFailed;
-
-  // Create & start the HostProcess using these threads.
-  // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
-  // Remove this hack as part of the multi-process refactoring.
-  int exit_code = remoting::kSuccessExitCode;
-  new remoting::HostProcess(context.Pass(), &exit_code);
-
-  // Run the main (also UI) message loop until the host no longer needs it.
-  message_loop.Run();
-
-  return exit_code;
-}
+  InitHostLogging();
 
 #if defined(OS_WIN)
-HMODULE g_hModule = NULL;
-
-int CALLBACK WinMain(HINSTANCE instance,
-                     HINSTANCE previous_instance,
-                     LPSTR command_line,
-                     int show_command) {
-#if defined(OFFICIAL_BUILD)
-  if (remoting::IsUsageStatsAllowed()) {
-    remoting::InitializeCrashReporting();
-  }
-#endif  // OFFICIAL_BUILD
-
-  g_hModule = instance;
-
   // Register and initialize common controls.
   INITCOMMONCONTROLSEX info;
   info.dwSize = sizeof(info);
@@ -1134,10 +1087,45 @@ int CALLBACK WinMain(HINSTANCE instance,
             user32.GetFunctionPointer("SetProcessDPIAware"));
     set_process_dpi_aware();
   }
+#endif  // defined(OS_WIN)
 
-  // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
-  // the command line from GetCommandLineW(), so we can safely pass NULL here.
-  return main(0, NULL);
+#if defined(TOOLKIT_GTK)
+  // Required for any calls into GTK functions, such as the Disconnect and
+  // Continue windows, though these should not be used for the Me2Me case
+  // (crbug.com/104377).
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  gfx::GtkInitFromCommandLine(*cmd_line);
+#endif  // TOOLKIT_GTK
+
+  // Enable support for SSL server sockets, which must be done while still
+  // single-threaded.
+  net::EnableSSLServerSockets();
+
+  // Create the main message loop and start helper threads.
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  scoped_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(
+          new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+                                   MessageLoop::QuitClosure()));
+  if (!context)
+    return kInitializationFailed;
+
+  // Create & start the HostProcess using these threads.
+  // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
+  // Remove this hack as part of the multi-process refactoring.
+  int exit_code = kSuccessExitCode;
+  new HostProcess(context.Pass(), &exit_code);
+
+  // Run the main (also UI) message loop until the host no longer needs it.
+  message_loop.Run();
+
+  return exit_code;
 }
 
-#endif  // defined(OS_WIN)
+}  // namespace remoting
+
+#if !defined(OS_WIN)
+int main(int argc, char** argv) {
+  return remoting::HostProcessMain(argc, argv);
+}
+#endif  // !defined(OS_WIN)

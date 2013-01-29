@@ -8,20 +8,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/host/host_ui_resource.h"
 #include "remoting/host/ui_strings.h"
+#include "remoting/host/win/core_resource.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
 // disconnect_window_win.cc. These global floating windows are temporary so
 // they should be deleted soon. If we need to expand this then we should
 // create a class with the shared code.
-
-// HMODULE from DllMain/WinMain. This is needed to find our dialog resource.
-// This is defined in:
-//   Plugin: host_plugin.cc
-//   SimpleHost: simple_host_process.cc
-extern HMODULE g_hModule;
 
 namespace remoting {
 
@@ -106,8 +101,10 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
 void ContinueWindowWin::Show(const ContinueSessionCallback& callback) {
   callback_ = callback;
 
+  HMODULE instance = base::GetModuleFromAddress(&DialogProc);
+
   CHECK(!hwnd_);
-  hwnd_ = CreateDialogParam(g_hModule, MAKEINTRESOURCE(IDD_CONTINUE), NULL,
+  hwnd_ = CreateDialogParam(instance, MAKEINTRESOURCE(IDD_CONTINUE), NULL,
       (DLGPROC)DialogProc, (LPARAM)this);
   if (!hwnd_) {
     LOG(ERROR) << "Unable to create Disconnect dialog for remoting.";
