@@ -1661,8 +1661,9 @@
             # TODO(bulach): Add equivalent tests when the underlying
             #               functionality is ported to OpenSSL.
             'sources!': [
-              'base/x509_util_nss_unittest.cc',
+              'base/client_cert_store_impl_unittest.cc',
               'base/nss_cert_database_unittest.cc',
+              'base/x509_util_nss_unittest.cc',
             ],
           }, {  # else !use_openssl: remove the unneeded files
             'sources!': [
