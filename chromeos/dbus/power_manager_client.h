@@ -69,6 +69,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
     // Called when the system is about to suspend. Suspend is deferred until
     // all observers' implementations of this method have finished running.
+    //
+    // If an observer wishes to asynchronously delay suspend,
+    // PowerManagerClient::GetSuspendReadinessCallback() may be called from
+    // within SuspendImminent().  The returned callback must be called once
+    // the observer is ready for suspend.
     virtual void SuspendImminent() {}
 
     // Called when the power button is pressed or released.
@@ -178,6 +183,10 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // adjust idleness thresholds and derived, on this side, from the number of
   // video outputs attached.
   virtual void SetIsProjecting(bool is_projecting) = 0;
+
+  // Returns a callback that can be called by an observer to report
+  // readiness for suspend.  See Observer::SuspendImminent().
+  virtual base::Closure GetSuspendReadinessCallback() = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(DBusClientImplementationType type,

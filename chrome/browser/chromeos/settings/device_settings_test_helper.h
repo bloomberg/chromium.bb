@@ -92,7 +92,6 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void NotifyLockScreenShown() OVERRIDE;
   virtual void RequestUnlockScreen() OVERRIDE;
   virtual void NotifyLockScreenDismissed() OVERRIDE;
-  virtual bool GetIsScreenLocked() OVERRIDE;
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void RetrieveUserPolicy(

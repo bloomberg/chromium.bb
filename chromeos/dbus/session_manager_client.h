@@ -30,12 +30,24 @@ class CHROMEOS_EXPORT SessionManagerClient {
     // Called when the property change is complete.
     virtual void PropertyChangeComplete(bool success) {}
 
-    // Called when the screen is locked.
+    // Called when the session manager requests that the lock screen be
+    // displayed.  NotifyLockScreenShown() is called after the lock screen
+    // is shown (the canonical "is the screen locked?" state lives in the
+    // session manager).
     virtual void LockScreen() {}
 
-    // Called when the screen is unlocked.
+    // Called when the session manager requests that the lock screen be
+    // dismissed.  NotifyLockScreenDismissed() is called afterward.
     virtual void UnlockScreen() {}
 
+    // Called when the session manager announces that the screen has been locked
+    // successfully (i.e. after NotifyLockScreenShown() has been called).
+    virtual void ScreenIsLocked() {}
+
+    // Called when the session manager announces that the screen has been
+    // unlocked successfully (i.e. after NotifyLockScreenDismissed() has
+    // been called).
+    virtual void ScreenIsUnlocked() {}
   };
 
   // Adds and removes the observer.
@@ -76,11 +88,6 @@ class CHROMEOS_EXPORT SessionManagerClient {
 
   // Notifies that the lock screen is dismissed.
   virtual void NotifyLockScreenDismissed() = 0;
-
-  // Returns whether or not the screen is locked. Implementation should cache
-  // this state so that it can return immediately. Useful for observers that
-  // need to know the current screen lock state when they are added.
-  virtual bool GetIsScreenLocked() = 0;
 
   // Used for RetrieveDevicePolicy, RetrieveUserPolicy and
   // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as

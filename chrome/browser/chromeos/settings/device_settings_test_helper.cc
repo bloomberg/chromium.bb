@@ -124,10 +124,6 @@ void DeviceSettingsTestHelper::RequestUnlockScreen() {}
 
 void DeviceSettingsTestHelper::NotifyLockScreenDismissed() {}
 
-bool DeviceSettingsTestHelper::GetIsScreenLocked() {
-  return false;
-}
-
 void DeviceSettingsTestHelper::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
   device_policy_.retrieve_callbacks_.push_back(callback);

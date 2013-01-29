@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
@@ -33,9 +34,13 @@ const int kSuspendDelayTimeoutMs = 5000;
 class PowerManagerClientImpl : public PowerManagerClient {
  public:
   explicit PowerManagerClientImpl(dbus::Bus* bus)
-      : power_manager_proxy_(NULL),
+      : origin_thread_id_(base::PlatformThread::CurrentId()),
+        power_manager_proxy_(NULL),
         suspend_delay_id_(-1),
         has_suspend_delay_id_(false),
+        pending_suspend_id_(-1),
+        suspend_is_pending_(false),
+        num_pending_suspend_readiness_callbacks_(0),
         weak_ptr_factory_(this) {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
@@ -340,7 +345,20 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  virtual base::Closure GetSuspendReadinessCallback() OVERRIDE {
+    DCHECK(OnOriginThread());
+    DCHECK(suspend_is_pending_);
+    num_pending_suspend_readiness_callbacks_++;
+    return base::Bind(&PowerManagerClientImpl::HandleObserverSuspendReadiness,
+                      weak_ptr_factory_.GetWeakPtr(), pending_suspend_id_);
+  }
+
  private:
+  // Returns true if the current thread is the origin thread.
+  bool OnOriginThread() {
+    return base::PlatformThread::CurrentId() == origin_thread_id_;
+  }
+
   // Called when a dbus signal is initially connected.
   void SignalConnected(const std::string& interface_name,
                        const std::string& signal_name,
@@ -554,28 +572,19 @@ class PowerManagerClientImpl : public PowerManagerClient {
                  << power_manager::kSuspendImminentSignal << " signal";
       return;
     }
-    int32 suspend_id = protobuf_imminent.suspend_id();
 
-    FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
-
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kHandleSuspendReadinessMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    power_manager::SuspendReadinessInfo protobuf_request;
-    protobuf_request.set_delay_id(suspend_delay_id_);
-    protobuf_request.set_suspend_id(suspend_id);
-
-    if (!writer.AppendProtoAsArrayOfBytes(protobuf_request)) {
-      LOG(ERROR) << "Error constructing message for "
-                 << power_manager::kHandleSuspendReadinessMethod;
-      return;
+    if (suspend_is_pending_) {
+      LOG(WARNING) << "Got " << power_manager::kSuspendImminentSignal
+                   << " signal about pending suspend attempt "
+                   << protobuf_imminent.suspend_id() << " while still waiting "
+                   << "on attempt " << pending_suspend_id_;
     }
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+
+    pending_suspend_id_ = protobuf_imminent.suspend_id();
+    suspend_is_pending_ = true;
+    num_pending_suspend_readiness_callbacks_ = 0;
+    FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
+    MaybeReportSuspendReadiness();
   }
 
   void InputEventReceived(dbus::Signal* signal) {
@@ -636,12 +645,67 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
   }
 
+  // Records the fact that an observer has finished doing asynchronous work
+  // that was blocking a pending suspend attempt and possibly reports
+  // suspend readiness to powerd.  Called by callbacks returned via
+  // GetSuspendReadinessCallback().
+  void HandleObserverSuspendReadiness(int32 suspend_id) {
+    DCHECK(OnOriginThread());
+    if (!suspend_is_pending_ || suspend_id != pending_suspend_id_)
+      return;
+
+    num_pending_suspend_readiness_callbacks_--;
+    MaybeReportSuspendReadiness();
+  }
+
+  // Reports suspend readiness to powerd if no observers are still holding
+  // suspend readiness callbacks.
+  void MaybeReportSuspendReadiness() {
+    if (!suspend_is_pending_ || num_pending_suspend_readiness_callbacks_ > 0)
+      return;
+
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kHandleSuspendReadinessMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    power_manager::SuspendReadinessInfo protobuf_request;
+    protobuf_request.set_delay_id(suspend_delay_id_);
+    protobuf_request.set_suspend_id(pending_suspend_id_);
+
+    pending_suspend_id_ = -1;
+    suspend_is_pending_ = false;
+
+    if (!writer.AppendProtoAsArrayOfBytes(protobuf_request)) {
+      LOG(ERROR) << "Error constructing message for "
+                 << power_manager::kHandleSuspendReadinessMethod;
+      return;
+    }
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  // Origin thread (i.e. the UI thread in production).
+  base::PlatformThreadId origin_thread_id_;
+
   dbus::ObjectProxy* power_manager_proxy_;
   ObserverList<Observer> observers_;
 
   // The delay_id_ obtained from the RegisterSuspendDelay request.
   int32 suspend_delay_id_;
   bool has_suspend_delay_id_;
+
+  // powerd-supplied ID corresponding to an imminent suspend attempt that is
+  // currently being delayed.
+  int32 pending_suspend_id_;
+  bool suspend_is_pending_;
+
+  // Number of callbacks that have been returned by
+  // GetSuspendReadinessCallback() during the currently-pending suspend
+  // attempt but have not yet been called.
+  int num_pending_suspend_readiness_callbacks_;
 
   // Wall time from the latest signal telling us that the system was about to
   // suspend to memory.
@@ -756,6 +820,9 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
   virtual void CancelPowerStateOverrides(uint32 request_id) OVERRIDE {}
   virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
+  virtual base::Closure GetSuspendReadinessCallback() OVERRIDE {
+    return base::Closure();
+  }
 
  private:
   void Update() {
