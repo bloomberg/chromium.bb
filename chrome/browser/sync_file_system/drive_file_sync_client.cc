@@ -199,6 +199,7 @@ void DriveFileSyncClient::DidCreateDirectory(
 
   // TODO(tzik): Confirm if there's no confliction. If another client tried
   // to create the directory, we might make duplicated directories.
+  // http://crbug.com/172820
   DCHECK(entry);
   callback.Run(error, entry->resource_id());
 }
@@ -450,8 +451,6 @@ void DriveFileSyncClient::DownloadFileInternal(
     return;
   }
 
-  // TODO(nhiroki): support ETag. Currently we assume there is no change between
-  // GetResourceEntry and DownloadFile call.
   drive_service_->DownloadFile(
       FilePath(kDummyDrivePath),
       local_file_path,
@@ -489,6 +488,12 @@ void DriveFileSyncClient::UploadNewFileInternal(
           local_file_path.Extension(), &mime_type))
     mime_type = kMimeTypeOctetStream;
 
+  // TODO(tzik): This may be creating duplicated files we there's conflicting
+  // upload. There's no ETag support for this operation so we need to check
+  // if we have duplicated files after the upload. (The API will always try
+  // to use newer files so it won't cause inconsistent behavior in the
+  // client side but it may leave stale files on the server)
+  // http://crbug.com/172820
   drive_uploader_->UploadNewFile(
       parent_directory_entry->GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA)->href(),
@@ -525,8 +530,6 @@ void DriveFileSyncClient::UploadExistingFileInternal(
           local_file_path.Extension(), &mime_type))
     mime_type = kMimeTypeOctetStream;
 
-  // TODO(nhiroki): support ETag. Currently we assume there is no change between
-  // GetResourceEntry and UploadExistingFile call.
   drive_uploader_->UploadExistingFile(
       entry->GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA)->href(),
@@ -597,6 +600,7 @@ void DriveFileSyncClient::DeleteFileInternal(
   // Move the file to trash (don't delete it completely).
   // TODO(nhiroki): support ETag. Currently we assume there is no change between
   // GetResourceEntry and DeleteFile call.
+  // http://crbug.com/156037
   drive_service_->DeleteResource(
       GURL(entry->GetLinkByType(google_apis::Link::LINK_SELF)->href()),
       base::Bind(&DriveFileSyncClient::DidDeleteFile,
