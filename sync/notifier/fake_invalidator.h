@@ -22,7 +22,6 @@ class FakeInvalidator : public Invalidator {
   bool IsHandlerRegistered(InvalidationHandler* handler) const;
   ObjectIdSet GetRegisteredIds(InvalidationHandler* handler) const;
   const std::string& GetUniqueId() const;
-  const std::string& GetStateDeprecated() const;
   const std::string& GetCredentialsEmail() const;
   const std::string& GetCredentialsToken() const;
   const ObjectIdInvalidationMap& GetLastSentInvalidationMap() const;
@@ -38,7 +37,6 @@ class FakeInvalidator : public Invalidator {
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
-  virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(

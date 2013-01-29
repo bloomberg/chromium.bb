@@ -75,10 +75,6 @@ class InvalidationNotifierTestDelegate {
     invalidator_->OnInvalidate(invalidation_map);
   }
 
-  static bool InvalidatorHandlesDeprecatedState() {
-    return true;
-  }
-
  private:
   MessageLoop message_loop_;
   scoped_ptr<InvalidationNotifier> invalidator_;

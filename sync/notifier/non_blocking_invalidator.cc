@@ -37,7 +37,6 @@ class NonBlockingInvalidator::Core
   void Teardown();
   void UpdateRegisteredIds(const ObjectIdSet& ids);
   void SetUniqueId(const std::string& unique_id);
-  void SetStateDeprecated(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
 
   // InvalidationHandler implementation (all called on I/O thread by
@@ -107,12 +106,6 @@ void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {
 void NonBlockingInvalidator::Core::SetUniqueId(const std::string& unique_id) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->SetUniqueId(unique_id);
-}
-
-void NonBlockingInvalidator::Core::SetStateDeprecated(
-    const std::string& state) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->SetStateDeprecated(state);
 }
 
 void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
@@ -211,17 +204,6 @@ void NonBlockingInvalidator::SetUniqueId(const std::string& unique_id) {
           FROM_HERE,
           base::Bind(&NonBlockingInvalidator::Core::SetUniqueId,
                      core_.get(), unique_id))) {
-    NOTREACHED();
-  }
-}
-
-void NonBlockingInvalidator::SetStateDeprecated(const std::string& state) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  if (!network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &NonBlockingInvalidator::Core::SetStateDeprecated,
-              core_.get(), state))) {
     NOTREACHED();
   }
 }

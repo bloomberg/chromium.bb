@@ -168,8 +168,6 @@ class SYNC_EXPORT Directory {
     std::string store_birthday;
     // The next local ID that has not been used with this cache-GUID.
     int64 next_id;
-    // The persisted notification state.
-    std::string notification_state;
     // The serialized bag of chips we were given by the server. Contents are
     // opaque to the client. This is the serialization of a message of type
     // ChipBag defined in sync.proto. It can contains NULL characters.
@@ -275,9 +273,6 @@ class SYNC_EXPORT Directory {
   // client.
   std::string bag_of_chips() const;
   void set_bag_of_chips(const std::string& bag_of_chips);
-
-  std::string GetNotificationState() const;
-  void SetNotificationState(const std::string& notification_state);
 
   // Unique to each account / client pair.
   std::string cache_guid() const;
@@ -487,11 +482,6 @@ class SYNC_EXPORT Directory {
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
   bool SafeToPurgeFromMemory(WriteTransaction* trans,
                              const EntryKernel* const entry) const;
-
-  // Internal setters that do not acquire a lock internally.  These are unsafe
-  // on their own; caller must guarantee exclusive access manually by holding
-  // a ScopedKernelLock.
-  void SetNotificationStateUnsafe(const std::string& notification_state);
 
   Directory& operator = (const Directory&);
 

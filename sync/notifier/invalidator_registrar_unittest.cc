@@ -51,10 +51,6 @@ class RegistrarInvalidator : public Invalidator {
     // Do nothing.
   }
 
-  virtual void SetStateDeprecated(const std::string& state) OVERRIDE {
-    // Do nothing.
-  }
-
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE {
     // Do nothing.
@@ -108,10 +104,6 @@ class RegistrarInvalidatorTestDelegate {
       IncomingInvalidationSource source) {
     invalidator_->GetRegistrar()->DispatchInvalidationsToHandlers(
         invalidation_map, source);
-  }
-
-  static bool InvalidatorHandlesDeprecatedState() {
-    return false;
   }
 
  private:

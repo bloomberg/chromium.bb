@@ -23,10 +23,6 @@ const std::string& FakeInvalidator::GetUniqueId() const {
   return unique_id_;
 }
 
-const std::string& FakeInvalidator::GetStateDeprecated() const {
-  return state_;
-}
-
 const std::string& FakeInvalidator::GetCredentialsEmail() const {
   return email_;
 }
@@ -69,10 +65,6 @@ InvalidatorState FakeInvalidator::GetInvalidatorState() const {
 
 void FakeInvalidator::SetUniqueId(const std::string& unique_id) {
   unique_id_ = unique_id;
-}
-
-void FakeInvalidator::SetStateDeprecated(const std::string& state) {
-  state_ = state;
 }
 
 void FakeInvalidator::UpdateCredentials(

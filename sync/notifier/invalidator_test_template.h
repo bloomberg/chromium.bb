@@ -36,9 +36,9 @@
 //       ...
 //     }
 //
-//     // Called after a call to SetStateDeprecated(), SetUniqueId(), or
-//     // UpdateCredentials() on the Invalidator implementation.  Should block
-//     // until the effects of the call are visible on the current thread.
+//     // Called after a call to SetUniqueId(), or UpdateCredentials() on the
+//     // Invalidator implementation.  Should block until the effects of the
+//     // call are visible on the current thread.
 //     void WaitForInvalidator() {
 //       ...
 //     }
@@ -60,12 +60,6 @@
 //         const ObjectIdInvalidationMap& invalidation_map,
 //         IncomingInvalidationSource source) {
 //       ...
-//     }
-//
-//     // Returns whether or not the notifier handles storing the old
-//     // (deprecated) notifier state.
-//     static bool InvalidatorHandlesDeprecatedState() {
-//       return false;
 //     }
 //   };
 //
@@ -112,13 +106,6 @@ class InvalidatorTest : public testing::Test {
                                       this->fake_tracker_.AsWeakPtr());
     Invalidator* const invalidator = this->delegate_.GetInvalidator();
 
-    // TODO(tim): This call should be a no-op. Remove once bug 124140 and
-    // associated issues are fixed.
-    invalidator->SetStateDeprecated("fake_state");
-    this->delegate_.WaitForInvalidator();
-    // We don't expect |fake_tracker_|'s bootstrap data to change, as we
-    // initialized with a non-empty value previously.
-    EXPECT_TRUE(this->fake_tracker_.GetBootstrapData().empty());
     invalidator->SetUniqueId("fake_id");
     this->delegate_.WaitForInvalidator();
     invalidator->UpdateCredentials("foo@bar.com", "fake_token");
@@ -385,45 +372,9 @@ TYPED_TEST_P(InvalidatorTest, GetInvalidatorStateAlwaysCurrent) {
   invalidator->UnregisterHandler(&handler);
 }
 
-// Initialize the invalidator with no bootstrap data.  Call the deprecated
-// state setter function a number of times, destroying and re-creating the
-// invalidator in between.  Only the first one should take effect (i.e.,
-// migration of bootstrap data should only happen once)
-TYPED_TEST_P(InvalidatorTest, MigrateState) {
-  if (!this->delegate_.InvalidatorHandlesDeprecatedState()) {
-    DLOG(INFO) << "This Invalidator doesn't handle deprecated state; "
-               << "skipping";
-    return;
-  }
-
-  this->delegate_.CreateInvalidator(std::string(),
-                                    this->fake_tracker_.AsWeakPtr());
-  Invalidator* invalidator = this->delegate_.GetInvalidator();
-
-  invalidator->SetStateDeprecated("fake_state");
-  this->delegate_.WaitForInvalidator();
-  EXPECT_EQ("fake_state", this->fake_tracker_.GetBootstrapData());
-
-  // Should do nothing.
-  invalidator->SetStateDeprecated("spurious_fake_state");
-  this->delegate_.WaitForInvalidator();
-  EXPECT_EQ("fake_state", this->fake_tracker_.GetBootstrapData());
-
-  // Pretend that Chrome has shut down.
-  this->delegate_.DestroyInvalidator();
-  this->delegate_.CreateInvalidator("fake_state",
-                                    this->fake_tracker_.AsWeakPtr());
-  invalidator = this->delegate_.GetInvalidator();
-
-  // Should do nothing.
-  invalidator->SetStateDeprecated("more_spurious_fake_state");
-  this->delegate_.WaitForInvalidator();
-  EXPECT_EQ("fake_state", this->fake_tracker_.GetBootstrapData());
-}
-
 REGISTER_TYPED_TEST_CASE_P(InvalidatorTest,
                            Basic, MultipleHandlers, EmptySetUnregisters,
-                           GetInvalidatorStateAlwaysCurrent, MigrateState);
+                           GetInvalidatorStateAlwaysCurrent);
 
 }  // namespace syncer
 

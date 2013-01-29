@@ -47,7 +47,6 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
                                        int64 max_version,
                                        const std::string& payload) OVERRIDE;
   virtual void Forget(const syncer::ObjectIdSet& ids) OVERRIDE;
-  // TODO(tim): These are not yet used. Bug 124140.
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;
   virtual void GenerateAckHandles(

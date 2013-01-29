@@ -50,10 +50,6 @@ class FakeInvalidatorTestDelegate {
     invalidator_->EmitOnIncomingInvalidation(invalidation_map, source);
   }
 
-  static bool InvalidatorHandlesDeprecatedState() {
-    return false;
-  }
-
  private:
   scoped_ptr<FakeInvalidator> invalidator_;
 };

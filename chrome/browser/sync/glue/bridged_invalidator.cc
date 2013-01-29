@@ -55,11 +55,6 @@ void BridgedInvalidator::SetUniqueId(const std::string& unique_id) {
     delegate_->SetUniqueId(unique_id);
 }
 
-void BridgedInvalidator::SetStateDeprecated(const std::string& state) {
-  if (delegate_.get())
-    delegate_->SetStateDeprecated(state);
-}
-
 void BridgedInvalidator::UpdateCredentials(
     const std::string& email, const std::string& token) {
   if (delegate_.get())

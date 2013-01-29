@@ -1749,7 +1749,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
 
 TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   dir_->set_store_birthday("Jan 31st");
-  dir_->SetNotificationState("notification_state");
   const char* const bag_of_chips_array = "\0bag of chips";
   const std::string bag_of_chips_string =
       std::string(bag_of_chips_array, sizeof(bag_of_chips_array));
@@ -1757,11 +1756,9 @@ TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
-    EXPECT_EQ("notification_state", dir_->GetNotificationState());
     EXPECT_EQ(bag_of_chips_string, dir_->bag_of_chips());
   }
   dir_->set_store_birthday("April 10th");
-  dir_->SetNotificationState("notification_state2");
   const char* const bag_of_chips2_array = "\0bag of chips2";
   const std::string bag_of_chips2_string =
       std::string(bag_of_chips2_array, sizeof(bag_of_chips2_array));
@@ -1770,17 +1767,18 @@ TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
     EXPECT_EQ("April 10th", dir_->store_birthday());
-    EXPECT_EQ("notification_state2", dir_->GetNotificationState());
     EXPECT_EQ(bag_of_chips2_string, dir_->bag_of_chips());
   }
-  dir_->SetNotificationState("notification_state2");
+  const char* const bag_of_chips3_array = "\0bag of chips3";
+  const std::string bag_of_chips3_string =
+      std::string(bag_of_chips3_array, sizeof(bag_of_chips3_array));
+  dir_->set_bag_of_chips(bag_of_chips3_string);
   // Restore the directory from disk.  Make sure that nothing's changed.
   SaveAndReloadDir();
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
     EXPECT_EQ("April 10th", dir_->store_birthday());
-    EXPECT_EQ("notification_state2", dir_->GetNotificationState());
-    EXPECT_EQ(bag_of_chips2_string, dir_->bag_of_chips());
+    EXPECT_EQ(bag_of_chips3_string, dir_->bag_of_chips());
   }
 }
 

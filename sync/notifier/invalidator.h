@@ -79,11 +79,6 @@ class SYNC_EXPORT Invalidator {
   // unique string.
   virtual void SetUniqueId(const std::string& unique_id) = 0;
 
-  // SetState must be called once, before any call to
-  // UpdateCredentials.  |state| may be empty.
-  // Deprecated in favour of InvalidationStateTracker persistence.
-  virtual void SetStateDeprecated(const std::string& state) = 0;
-
   // The observers won't be notified of any notifications until
   // UpdateCredentials is called at least once. It can be called more than
   // once.

@@ -736,14 +736,6 @@ template <class T> void Directory::TestAndSet(
   }
 }
 
-void Directory::SetNotificationStateUnsafe(
-    const std::string& notification_state) {
-  if (notification_state == kernel_->persisted_info.notification_state)
-    return;
-  kernel_->persisted_info.notification_state = notification_state;
-  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
-}
-
 string Directory::store_birthday() const {
   ScopedKernelLock lock(this);
   return kernel_->persisted_info.store_birthday;
@@ -770,16 +762,6 @@ void Directory::set_bag_of_chips(const string& bag_of_chips) {
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
-std::string Directory::GetNotificationState() const {
-  ScopedKernelLock lock(this);
-  std::string notification_state = kernel_->persisted_info.notification_state;
-  return notification_state;
-}
-
-void Directory::SetNotificationState(const std::string& notification_state) {
-  ScopedKernelLock lock(this);
-  SetNotificationStateUnsafe(notification_state);
-}
 
 string Directory::cache_guid() const {
   // No need to lock since nothing ever writes to it after load.

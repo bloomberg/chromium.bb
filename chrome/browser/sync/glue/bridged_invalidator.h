@@ -39,7 +39,6 @@ class BridgedInvalidator : public syncer::Invalidator {
   virtual void UnregisterHandler(syncer::InvalidationHandler* handler) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
-  virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(

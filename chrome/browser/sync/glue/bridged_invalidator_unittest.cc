@@ -89,10 +89,6 @@ class BridgedInvalidatorTestDelegate {
     fake_delegate_->EmitOnIncomingInvalidation(invalidation_map, source);
   }
 
-  static bool InvalidatorHandlesDeprecatedState() {
-    return false;
-  }
-
  private:
   MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
@@ -150,12 +146,6 @@ TEST_F(BridgedInvalidatorTest, SetUniqueId) {
   const std::string& unique_id = "unique id";
   delegate_.GetInvalidator()->SetUniqueId(unique_id);
   EXPECT_EQ(unique_id, delegate_.GetFakeDelegate()->GetUniqueId());
-}
-
-TEST_F(BridgedInvalidatorTest, SetStateDeprecated) {
-  const std::string& state = "state";
-  delegate_.GetInvalidator()->SetStateDeprecated(state);
-  EXPECT_EQ(state, delegate_.GetFakeDelegate()->GetStateDeprecated());
 }
 
 TEST_F(BridgedInvalidatorTest, UpdateCredentials) {

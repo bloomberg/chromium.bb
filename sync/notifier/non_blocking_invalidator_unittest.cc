@@ -84,10 +84,6 @@ class NonBlockingInvalidatorTestDelegate {
     invalidator_->OnIncomingInvalidation(invalidation_map, source);
   }
 
-  static bool InvalidatorHandlesDeprecatedState() {
-    return true;
-  }
-
  private:
   MessageLoop message_loop_;
   base::Thread io_thread_;

@@ -57,7 +57,6 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
-  virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(
@@ -96,9 +95,7 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   std::string client_id_;
 
   // The initial bootstrap data to pass to |invalidation_listener_|.
-  // TODO(tim): This should be made const once migration is completed for bug
-  // 124140.
-  std::string invalidation_bootstrap_data_;
+  const std::string invalidation_bootstrap_data_;
 
   // The invalidation listener.
   SyncInvalidationListener invalidation_listener_;

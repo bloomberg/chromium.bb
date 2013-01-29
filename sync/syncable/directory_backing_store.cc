@@ -247,13 +247,10 @@ bool DirectoryBackingStore::SaveChanges(
             "UPDATE share_info "
             "SET store_birthday = ?, "
             "next_id = ?, "
-            "notification_state = ?, "
             "bag_of_chips = ?"));
     s1.BindString(0, info.store_birthday);
     s1.BindInt64(1, info.next_id);
-    s1.BindBlob(2, info.notification_state.data(),
-                   info.notification_state.size());
-    s1.BindBlob(3, info.bag_of_chips.data(), info.bag_of_chips.size());
+    s1.BindBlob(2, info.bag_of_chips.data(), info.bag_of_chips.size());
 
     if (!s1.Run())
       return false;
@@ -470,6 +467,7 @@ bool DirectoryBackingStore::RefreshColumns() {
   if (!CreateShareInfoTable(true))
     return false;
 
+  // TODO(rlarocque, 124140): Remove notification_state.
   if (!db_->Execute(
           "INSERT INTO temp_share_info (id, name, store_birthday, "
           "db_create_version, db_create_time, next_id, cache_guid,"
@@ -501,8 +499,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     sql::Statement s(
         db_->GetUniqueStatement(
-            "SELECT store_birthday, next_id, cache_guid, notification_state, "
-            "bag_of_chips "
+            "SELECT store_birthday, next_id, cache_guid, bag_of_chips "
             "FROM share_info"));
     if (!s.Step())
       return false;
@@ -510,8 +507,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     info->kernel_info.store_birthday = s.ColumnString(0);
     info->kernel_info.next_id = s.ColumnInt64(1);
     info->cache_guid = s.ColumnString(2);
-    s.ColumnBlobAsString(3, &(info->kernel_info.notification_state));
-    s.ColumnBlobAsString(4, &(info->kernel_info.bag_of_chips));
+    s.ColumnBlobAsString(3, &(info->kernel_info.bag_of_chips));
 
     // Verify there was only one row returned.
     DCHECK(!s.Step());
@@ -1136,6 +1132,7 @@ bool DirectoryBackingStore::CreateTables() {
             "?, "   // db_create_time
             "-2, "  // next_id
             "?, "   // cache_guid
+            // TODO(rlarocque, 124140): Remove notification_state field.
             "?, "   // notification_state
             "?);"));  // bag_of_chips
     s.BindString(0, dir_name_);                   // id
@@ -1146,6 +1143,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindString(3, "Unknown");                   // db_create_version
     s.BindInt(4, static_cast<int32>(time(0)));    // db_create_time
     s.BindString(5, GenerateCacheGUID());         // cache_guid
+    // TODO(rlarocque, 124140): Remove this unused notification-state field.
     s.BindBlob(6, NULL, 0);                       // notification_state
     s.BindBlob(7, NULL, 0);                       // bag_of_chips
     if (!s.Run())
@@ -1247,6 +1245,7 @@ bool DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
       "db_create_time INT, "
       "next_id INT default -2, "
       "cache_guid TEXT, "
+      // TODO(rlarocque, 124140): Remove notification_state field.
       "notification_state BLOB, "
       "bag_of_chips BLOB"
       ")");

@@ -210,11 +210,6 @@ void P2PInvalidator::SetUniqueId(const std::string& unique_id) {
   unique_id_ = unique_id;
 }
 
-void P2PInvalidator::SetStateDeprecated(const std::string& state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Do nothing.
-}
-
 void P2PInvalidator::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(thread_checker_.CalledOnValidThread());

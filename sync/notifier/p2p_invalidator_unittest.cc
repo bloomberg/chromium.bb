@@ -75,10 +75,6 @@ class P2PInvalidatorTestDelegate {
     fake_push_client_->SimulateIncomingNotification(notification);
   }
 
-  static bool InvalidatorHandlesDeprecatedState() {
-    return false;
-  }
-
  private:
   // Owned by |invalidator_|.
   notifier::FakePushClient* fake_push_client_;

@@ -417,22 +417,11 @@ void SyncManagerImpl::Init(
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
-  // Retrieve and set the sync notifier state.
+  // Retrieve and set the sync notifier id.
   std::string unique_id = directory()->cache_guid();
   DVLOG(1) << "Read notification unique ID: " << unique_id;
   allstatus_.SetUniqueId(unique_id);
   invalidator_->SetUniqueId(unique_id);
-
-  std::string state = directory()->GetNotificationState();
-  if (VLOG_IS_ON(1)) {
-    std::string encoded_state;
-    base::Base64Encode(state, &encoded_state);
-    DVLOG(1) << "Read notification state: " << encoded_state;
-  }
-
-  // TODO(tim): Remove once invalidation state has been migrated to new
-  // InvalidationStateTracker store. Bug 124140.
-  invalidator_->SetStateDeprecated(state);
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";

@@ -64,26 +64,6 @@ void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
   CHECK(!client_id_.empty());
 }
 
-void InvalidationNotifier::SetStateDeprecated(const std::string& state) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_LT(state_, STARTED);
-  if (invalidation_bootstrap_data_.empty()) {
-    // Migrate state from sync to invalidation state tracker (bug
-    // 124140).  We've just been handed state from the syncable::Directory, and
-    // the initial invalidation state was empty, implying we've never written
-    // to the new store. Do this here to ensure we always migrate (even if
-    // we fail to establish an initial connection or receive an initial
-    // invalidation) so that we can make the old code obsolete as soon as
-    // possible.
-    invalidation_bootstrap_data_ = state;
-    invalidation_state_tracker_.Call(
-        FROM_HERE, &InvalidationStateTracker::SetBootstrapData, state);
-    UMA_HISTOGRAM_BOOLEAN("InvalidationNotifier.UsefulSetState", true);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("InvalidationNotifier.UsefulSetState", false);
-  }
-}
-
 void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   if (state_ == STOPPED) {
@@ -93,7 +73,6 @@ void InvalidationNotifier::UpdateCredentials(
         initial_invalidation_state_map_,
         invalidation_state_tracker_,
         this);
-    invalidation_bootstrap_data_.clear();
     state_ = STARTED;
   }
   invalidation_listener_.UpdateCredentials(email, token);
