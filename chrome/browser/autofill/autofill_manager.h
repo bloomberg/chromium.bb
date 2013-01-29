@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_download.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -116,6 +117,9 @@ class AutofillManager : public content::WebContentsObserver,
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
       const base::Callback<void(const FormStructure*)>& callback);
+
+  // Happens when the autocomplete dialog runs its callback when being closed.
+  void RequestAutocompleteDialogClosed();
 
  protected:
   // Only test code should subclass AutofillManager.

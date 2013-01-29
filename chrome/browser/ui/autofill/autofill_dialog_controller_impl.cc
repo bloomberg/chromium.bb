@@ -220,6 +220,11 @@ void AutofillDialogControllerImpl::Show() {
   view_->Show();
 }
 
+void AutofillDialogControllerImpl::Hide() {
+  if (view_)
+    view_->Hide();
+}
+
 string16 AutofillDialogControllerImpl::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }

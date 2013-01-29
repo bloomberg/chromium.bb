@@ -300,6 +300,11 @@ void AutofillDialogViews::Show() {
   focus_manager_->AddFocusChangeListener(this);
 }
 
+void AutofillDialogViews::Hide() {
+  if (window_)
+    window_->CloseWebContentsModalDialog();
+}
+
 void AutofillDialogViews::UpdateSection(DialogSection section) {
   const DetailInputs& updated_inputs =
       controller_->RequestedFieldsForSection(section);

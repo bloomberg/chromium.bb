@@ -792,6 +792,10 @@ void AutofillManager::ShowRequestAutocompleteDialog(
       form, source_url, ssl_status, callback);
 }
 
+void AutofillManager::RequestAutocompleteDialogClosed() {
+  manager_delegate_->RequestAutocompleteDialogClosed();
+}
+
 void AutofillManager::OnAddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data) {
@@ -841,6 +845,11 @@ void AutofillManager::OnRequestAutocomplete(
 
 void AutofillManager::ReturnAutocompleteResult(
     WebFormElement::AutocompleteResult result, const FormData& form_data) {
+  // web_contents() will be NULL when the interactive autocomplete is closed due
+  // to a tab or browser window closing.
+  if (!web_contents())
+    return;
+
   RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
@@ -851,11 +860,7 @@ void AutofillManager::ReturnAutocompleteResult(
 }
 
 void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
-  // web_contents() will be NULL when the interactive autocomplete is closed due
-  // to a tab or browser window closing.
-  if (!web_contents())
-    return;
-
+  RequestAutocompleteDialogClosed();
   if (!result) {
     ReturnAutocompleteResult(WebFormElement::AutocompleteResultErrorCancel,
                              FormData());

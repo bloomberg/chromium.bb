@@ -52,6 +52,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual ~AutofillDialogControllerImpl();
 
   void Show();
+  void Hide();
 
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;

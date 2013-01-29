@@ -25,7 +25,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabAutofillManagerDelegate);
 
 TabAutofillManagerDelegate::TabAutofillManagerDelegate(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      web_contents_(web_contents),
+      autofill_dialog_controller_(NULL) {
   DCHECK(web_contents);
 }
 
@@ -88,11 +90,31 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const GURL& source_url,
     const content::SSLStatus& ssl_status,
     const base::Callback<void(const FormStructure*)>& callback) {
-  autofill::AutofillDialogControllerImpl* controller =
+  HideRequestAutocompleteDialog();
+
+  autofill_dialog_controller_ =
       new autofill::AutofillDialogControllerImpl(web_contents_,
                                                  form,
                                                  source_url,
                                                  ssl_status,
                                                  callback);
-  controller->Show();
+  autofill_dialog_controller_->Show();
+}
+
+void TabAutofillManagerDelegate::RequestAutocompleteDialogClosed() {
+  autofill_dialog_controller_ = NULL;
+}
+
+void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
+  if (autofill_dialog_controller_)
+    autofill_dialog_controller_->Hide();
+  RequestAutocompleteDialogClosed();
+}
+
+void TabAutofillManagerDelegate::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // TODO(dbeam): selectively allow this dialog to remain open when going
+  // through the autocheckout flow (when the behavior is more fleshed out).
+  HideRequestAutocompleteDialog();
 }

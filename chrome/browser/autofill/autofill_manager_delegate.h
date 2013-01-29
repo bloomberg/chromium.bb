@@ -84,6 +84,9 @@ class AutofillManagerDelegate {
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
       const base::Callback<void(const FormStructure*)>& callback) = 0;
+
+  // Called when the dialog for request autocomplete closes.
+  virtual void RequestAutocompleteDialogClosed() = 0;
 };
 
 }  // namespace autofill

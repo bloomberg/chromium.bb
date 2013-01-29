@@ -74,4 +74,5 @@ void AutocheckoutManager::ShowAutocheckoutDialog(
 
 void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
   // TODO(ramankk): Parse the response FormStructure.
+  autofill_manager_->RequestAutocompleteDialogClosed();
 }

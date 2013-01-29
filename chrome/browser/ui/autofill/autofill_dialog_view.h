@@ -22,6 +22,9 @@ class AutofillDialogView {
   // Shows the dialog.
   virtual void Show() = 0;
 
+  // Hides the dialog as if a user pressed cancel.
+  virtual void Hide() = 0;
+
   // Called when a different notification is available.
   virtual void UpdateNotificationArea() = 0;
 
