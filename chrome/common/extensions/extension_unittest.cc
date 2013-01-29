@@ -1112,7 +1112,8 @@ TEST_F(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
-TEST_F(ExtensionTest, GetSyncTypeUserScriptValidUpdateUrl) {
+// http://crbug.com/172712
+TEST_F(ExtensionTest, DISABLED_GetSyncTypeUserScriptValidUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
                             Extension::INTERNAL, 0, FilePath(),
