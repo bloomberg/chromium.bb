@@ -698,32 +698,8 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 static int
 drm_surface_transform_supported(struct weston_surface *es)
 {
-	struct weston_matrix *matrix = &es->transform.matrix;
-	int i;
-
-	if (!es->transform.enabled)
-		return 1;
-
-	for (i = 0; i < 16; i++) {
-		switch (i) {
-		case 10:
-		case 15:
-			if (matrix->d[i] != 1.0)
-				return 0;
-			break;
-		case 0:
-		case 5:
-		case 12:
-		case 13:
-			break;
-		default:
-			if (matrix->d[i] != 0.0)
-				return 0;
-			break;
-		}
-	}
-
-	return 1;
+	return !es->transform.enabled ||
+		(es->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
 }
 
 static struct weston_plane *
