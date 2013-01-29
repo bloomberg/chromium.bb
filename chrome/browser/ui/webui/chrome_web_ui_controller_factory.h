@@ -40,8 +40,6 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
 
   static ChromeWebUIControllerFactory* GetInstance();
 
-  static void UseTestFactoryForTesting();
-
  protected:
   ChromeWebUIControllerFactory();
   virtual ~ChromeWebUIControllerFactory();

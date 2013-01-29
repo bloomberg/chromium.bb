@@ -487,10 +487,6 @@ namespace chrome {
 ChromeContentBrowserClient::ChromeContentBrowserClient() {
   for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
     allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
-
-  // Needs to be done this early, not in ChromeBrowserMain, for CrOS.
-  content::WebUIControllerFactory::RegisterFactory(
-        ChromeWebUIControllerFactory::GetInstance());
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {

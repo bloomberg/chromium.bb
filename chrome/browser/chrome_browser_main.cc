@@ -91,6 +91,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1170,6 +1171,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Initialize Managed Mode.
   ManagedMode::Init(profile_);
 #endif
+
+  // Needs to be done before PostProfileInit, since login manager on CrOS is
+  // called inside PostProfileInit.
+  content::WebUIControllerFactory::RegisterFactory(
+      ChromeWebUIControllerFactory::GetInstance());
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).

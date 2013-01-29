@@ -120,8 +120,6 @@ using ui::WebDialogUI;
 
 namespace {
 
-static bool g_use_test_factory = false;
-
 // A function for creating a new WebUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
 typedef WebUIController* (*WebUIFactoryFunction)(WebUI* web_ui,
@@ -417,7 +415,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 template<typename Type, typename TestType>
 struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
   static Type* New() {
-    if (g_use_test_factory)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
       return DefaultSingletonTraits<TestType>::New();
     else
       return DefaultSingletonTraits<Type>::New();
@@ -523,11 +521,6 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 ChromeWebUIControllerFactory* ChromeWebUIControllerFactory::GetInstance() {
   return Singleton< ChromeWebUIControllerFactory, PossibleTestSingletonTraits<
       ChromeWebUIControllerFactory, TestChromeWebUIControllerFactory> >::get();
-}
-
-// static
-void ChromeWebUIControllerFactory::UseTestFactoryForTesting() {
-  g_use_test_factory = true;
 }
 
 ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {
