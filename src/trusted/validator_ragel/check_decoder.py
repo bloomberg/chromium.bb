@@ -15,38 +15,7 @@ import os
 import subprocess
 import tempfile
 
-from lxml import etree
-
-
-# TODO(shcherbina): get rid of it once parsers are merged.
-ANY_ACTIONS = set(['any_byte'])
-
-
-def IncludesActionFrom(dfa_tree, action_table_id, action_list):
-  """Returns true if action_table_id includes action from action_list."""
-  if action_table_id == 'x':
-    return False
-  (action_table,) = dfa_tree.xpath('//action_table[@id="%s"]' % action_table_id)
-  actions = action_table.text.split(' ')
-  action_names = []
-  for action_id in actions:
-    (action,) = dfa_tree.xpath('//action[@id="%s"]' % action_id)
-    action_name = action.get('name')
-    assert action_name is not None, 'name of action "%s" not found' % action_id
-    action_names.append(action_name)
-
-  for action_name in action_names:
-    if action_name in action_list:
-      return True
-
-
-class DfaState(object):
-  __slots__ = [
-      'id',
-      'transitions',
-      'is_final',
-      'any_byte',
-  ]
+import dfa_parser
 
 
 def GetNumSuffixes(start_state):
@@ -71,99 +40,41 @@ def GetNumSuffixes(start_state):
     if state in num_suffixes:
       return
 
-    if state.is_final:
+    if state.is_accepting:
       num_suffixes[state] = 1
 
-      # Even though the state itself is final, there may be more reachable
+      # Even though the state itself is accepting, there may be more reachable
       # states behind it.
-      for next_state in state.transitions.values():
-        ComputeNumSuffixes(next_state)
+      for t in state.forward_transitions.values():
+        ComputeNumSuffixes(t.to_state)
 
       return
 
     if state.any_byte:
-      next_state = state.transitions[0]
+      next_state = state.forward_transitions[0].to_state
       ComputeNumSuffixes(next_state)
       num_suffixes[state] = num_suffixes[next_state]
       return
 
     count = 0
-    for next_state in state.transitions.values():
-      ComputeNumSuffixes(next_state)
-      count += num_suffixes[next_state]
+    for t in state.forward_transitions.values():
+      ComputeNumSuffixes(t.to_state)
+      count += num_suffixes[t.to_state]
     num_suffixes[state] = count
 
   ComputeNumSuffixes(start_state)
   return num_suffixes
 
 
-def ReadStates(dfa_tree):
-  states = []
-
-  xml_states = dfa_tree.xpath('//state')
-
-  for xml_state in xml_states:
-    # Ragel always dumps states in order, but we better check just in case.
-    state_id = int(xml_state.get('id'))
-    assert state_id == len(states)
-
-    state = DfaState()
-    state.id = state_id
-    state.transitions = {}
-    state.is_final = bool(xml_state.get('final'))
-    state.any_byte = False
-
-    (xml_transitions,) = xml_state.xpath('trans_list')
-    for t in xml_transitions.getchildren():
-      range_begin, range_end, next_state, action_table_id = t.text.split(' ')
-      range_begin = int(range_begin)
-      range_end = int(range_end) + 1
-
-      if next_state == 'x':
-        continue
-
-      next_state = int(next_state)
-
-      for byte in xrange(range_begin, range_end):
-        state.transitions[byte] = next_state
-
-      if range_begin == 0 and range_end == 256:
-        # We check if transition is marked with any of the anyactions.
-        # It only makes sense to do when all transitions are the same
-        # (that is, when they all are covered by a single range [0, 256)).
-        assert len(xml_transitions.getchildren()) == 1
-
-        if IncludesActionFrom(dfa_tree, action_table_id, ANY_ACTIONS):
-          state.any_byte = True
-
-        state_actions = xml_state.xpath('state_actions')
-        if state_actions:
-          (state_actions,) = state_actions
-          to_action, from_action, eof_action = state_actions.text.split()
-          assert to_action == from_action == 'x'
-          assert eof_action == '0'
-        break
-
-    states.append(state)
-
-  for state in states:
-    for byte, next_state in state.transitions.items():
-      state.transitions[byte] = states[next_state]
-
-  return states
-
-
 def TraverseTree(state, final_callback, prefix, anyfield=0x01):
-  transitions = state.transitions
-
-  if state.is_final:
+  if state.is_accepting:
     final_callback(prefix)
     return
 
   if state.any_byte:
     assert anyfield < 256
     TraverseTree(
-        transitions[0],
+        state.forward_transitions[0].to_state,
         final_callback,
         prefix + ',' + hex(anyfield),
         anyfield=anyfield + 0x11)
@@ -174,9 +85,9 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
     # (right now we want to keep immediates small to avoid problem with sign
     # extension).
   else:
-    for byte, next_state in transitions.iteritems():
+    for byte, t in state.forward_transitions.iteritems():
       TraverseTree(
-          next_state,
+          t.to_state,
           final_callback,
           prefix + ',' + hex(byte))
 
@@ -267,11 +178,11 @@ class WorkerState(object):
     self._CheckFile()
 
 
-def Worker((prefix, state)):
+def Worker((prefix, state_index)):
   worker_state = WorkerState(prefix)
 
   try:
-    TraverseTree(state,
+    TraverseTree(states[state_index],
                  final_callback=worker_state.ReceiveInstruction,
                  prefix=prefix)
   finally:
@@ -310,21 +221,14 @@ def ParseOptions():
 # We are doing it here, not inside main, because we need options in subprocesses
 # spawned by multiprocess.
 options, xml_file = ParseOptions()
+# And we don't want states graph to be passed again for each task - it's too
+# slow for some reason.
+states, initial_state = dfa_parser.ParseXml(xml_file)
 
 
 def main():
-  dfa_tree = etree.parse(xml_file)
-
-  entries = dfa_tree.xpath('//entry')
-  assert len(entries) == 1, 'multiple entry points'
-  entry = int(entries[0].text)
-
-  states = ReadStates(dfa_tree)
-
-  initial_state = states[entry]
-
-  # Decoder is supposed to have one initial state.
-  accepting_states = [state for state in states if state.is_final]
+  # Decoder is supposed to have one accepting state.
+  accepting_states = [state for state in states if state.is_accepting]
   assert accepting_states == [initial_state]
 
   assert not initial_state.any_byte
@@ -332,18 +236,20 @@ def main():
   num_suffixes = GetNumSuffixes(initial_state)
   # We can't just write 'num_suffixes[initial_state]' because
   # initial state is accepting.
-  total_instructions = sum(num_suffixes[state]
-                           for state in initial_state.transitions.values())
+  total_instructions = sum(num_suffixes[t.to_state]
+                           for t in initial_state.forward_transitions.values())
   print total_instructions, 'instructions total'
 
   # We parallelize by first two bytes.
   tasks = []
-  for byte1, state1 in sorted(initial_state.transitions.items()):
-    if state1.any_byte or state1.is_final or num_suffixes[state1] < 10**7:
-      tasks.append((hex(byte1), state1))
+  for byte1, t1 in sorted(initial_state.forward_transitions.items()):
+    state1 = t1.to_state
+    if state1.any_byte or state1.is_accepting or num_suffixes[state1] < 10**7:
+      tasks.append((hex(byte1), states.index(state1)))
       continue
-    for byte2, state2 in sorted(state1.transitions.items()):
-      tasks.append((hex(byte1) + ',' + hex(byte2), state2))
+    for byte2, t2 in sorted(state1.forward_transitions.items()):
+      state2 = t2.to_state
+      tasks.append((hex(byte1) + ',' + hex(byte2), states.index(state2)))
 
   print len(tasks), 'tasks'
 

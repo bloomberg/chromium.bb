@@ -18,7 +18,13 @@ class State(object):
       'back_transitions',
 
       # True if state is an accepting state
-      'is_accepting'
+      'is_accepting',
+
+      # True if all transitions lead to the same state and marked with special
+      # '@any_byte' action. It is used to distinguish immediates, displacements
+      # and relative jump targets - stuff that we do not need to enumerate in
+      # enumeration tests.
+      'any_byte',
   ]
 
 
@@ -129,6 +135,18 @@ def ParseXml(xml_file):
       assert len(state_actions) == 1
       (state_actions,) = state_actions
       assert state_actions.text == 'x x 0'
+
+    # We mark the state as 'any_byte' if all transitions are present, lead to
+    # the same state, are marked with the same actions, and 'any_byte' action
+    # is among them.
+    transitions = state.forward_transitions.values()
+    if (len(transitions) == 256 and
+        len(set(t.to_state for t in transitions)) == 1 and
+        len(set(tuple(t.actions) for t in transitions)) == 1 and
+        'any_byte' in transitions[0].actions):
+      state.any_byte = True
+    else:
+      state.any_byte = False
 
   # Populate backward transitions.
   for state in states:
