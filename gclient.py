@@ -197,9 +197,9 @@ class DependencySettings(GClientKeywords):
       raise gclient_utils.Error(
           ('dependency url must be either a string, None, '
            'File() or From() instead of %s') % self._url.__class__.__name__)
-    if '/' in self._deps_file or '\\' in self._deps_file:
-      raise gclient_utils.Error('deps_file name must not be a path, just a '
-                                'filename. %s' % self._deps_file)
+    # Make any deps_file path platform-appropriate.
+    for sep in ['/', '\\']:
+      self._deps_file = self._deps_file.replace(sep, os.sep)
 
   @property
   def deps_file(self):
