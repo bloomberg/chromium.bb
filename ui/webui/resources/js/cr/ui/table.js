@@ -354,7 +354,7 @@ cr.define('cr.ui', function() {
           container.appendChild(div);
         }
         list.appendChild(container);
-        var width = parseFloat(getComputedStyle(container).width);
+        var width = parseFloat(window.getComputedStyle(container).width);
         list.removeChild(container);
         cm.setWidth(index, width);
       });

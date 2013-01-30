@@ -122,7 +122,7 @@ cr.define('cr.ui', function() {
       // Check changings that may affect number of columns.
       var offsetWidth = this.offsetWidth;
       var offsetHeight = this.offsetHeight;
-      var overflowY = getComputedStyle(this).overflowY;
+      var overflowY = window.getComputedStyle(this).overflowY;
 
       if (this.lastOffsetWidth_ == offsetWidth &&
           this.lastOverflowY == overflowY) {
@@ -358,8 +358,9 @@ cr.define('cr.ui', function() {
      * @return {boolean} True if accessibility is enabled.
      */
     isAccessibilityEnabled: function() {
-      return window.cvox && cvox.Api &&
-             cvox.Api.isChromeVoxActive && cvox.Api.isChromeVoxActive();
+      return window.cvox && window.cvox.Api &&
+             window.cvox.Api.isChromeVoxActive &&
+             window.cvox.Api.isChromeVoxActive();
     },
 
     /**
