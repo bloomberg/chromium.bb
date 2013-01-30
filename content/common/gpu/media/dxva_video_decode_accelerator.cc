@@ -544,6 +544,10 @@ void DXVAVideoDecodeAccelerator::Decode(
 void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(CalledOnValidThread());
+
+  RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
+      "Invalid state: " << state_, ILLEGAL_STATE,);
+
   // Copy the picture buffers provided by the client to the available list,
   // and mark these buffers as available for use.
   for (size_t buffer_index = 0; buffer_index < buffers.size();
@@ -565,6 +569,9 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
 void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
+
+  RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
+      "Invalid state: " << state_, ILLEGAL_STATE,);
 
   OutputBuffers::iterator it = output_picture_buffers_.find(picture_buffer_id);
   RETURN_AND_NOTIFY_ON_FAILURE(it != output_picture_buffers_.end(),
@@ -1019,6 +1026,9 @@ void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped() {
 }
 
 void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {
+  RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
+      "Invalid state: " << state_, ILLEGAL_STATE,);
+
   if (pending_input_buffers_.empty() || !pending_output_samples_.empty())
     return;
 
@@ -1051,6 +1061,11 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
 
 void DXVAVideoDecodeAccelerator::DecodeInternal(
     const base::win::ScopedComPtr<IMFSample>& sample) {
+  DCHECK(CalledOnValidThread());
+  
+  if (state_ == kUninitialized)
+    return;
+
   if (!pending_output_samples_.empty() || !pending_input_buffers_.empty()) {
     pending_input_buffers_.push_back(sample);
     return;
