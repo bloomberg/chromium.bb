@@ -3,8 +3,13 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/libkms/ \
 	-I$(top_srcdir)
 
+if HAVE_INSTALL_TESTS
+bin_PROGRAMS = \
+	modetest
+else
 noinst_PROGRAMS = \
 	modetest
+endif
 
 modetest_SOURCES = \
 	buffers.c modetest.c buffers.h

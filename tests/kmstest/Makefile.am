@@ -3,8 +3,13 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/libkms/ \
 	-I$(top_srcdir)
 
+if HAVE_INSTALL_TESTS
+bin_PROGRAMS = \
+	kmstest
+else
 noinst_PROGRAMS = \
 	kmstest
+endif
 
 kmstest_SOURCES = \
 	main.c
