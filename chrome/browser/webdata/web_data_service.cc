@@ -80,6 +80,7 @@ WDKeywordsResult::~WDKeywordsResult() {}
 WebDataService::WebDataService()
     : is_running_(false),
       db_(NULL),
+      request_manager_(new WebDataRequestManager()),
       app_locale_(AutofillCountry::ApplicationLocale()),
       autocomplete_syncable_service_(NULL),
       autofill_profile_syncable_service_(NULL),
@@ -127,7 +128,7 @@ void WebDataService::UnloadDatabase() {
 }
 
 void WebDataService::CancelRequest(Handle h) {
-  request_manager_.CancelRequest(h);
+  request_manager_->CancelRequest(h);
 }
 
 content::NotificationSource WebDataService::GetNotificationSource() {
@@ -422,10 +423,6 @@ bool WebDataService::InitWithPath(const FilePath& path) {
   return true;
 }
 
-void WebDataService::RequestCompleted(Handle h) {
-  request_manager_.RequestCompleted(h);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // The following methods are executed in Chrome_WebDataThread.
@@ -526,11 +523,12 @@ void WebDataService::ScheduleTask(const tracked_objects::Location& from_here,
 void WebDataService::ScheduleDBTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task) {
-  WebDataRequest* request =
-      new WebDataRequest(this, NULL, &request_manager_);
+  scoped_ptr<WebDataRequest> request(
+      new WebDataRequest(NULL, request_manager_.get()));
   if (is_running_) {
     BrowserThread::PostTask(BrowserThread::DB, from_here,
-        base::Bind(&WebDataService::DBTaskWrapper, this, task, request));
+        base::Bind(&WebDataService::DBTaskWrapper, this, task,
+                   base::Passed(&request)));
   } else {
     NOTREACHED() << "Task scheduled after Shutdown()";
   }
@@ -541,33 +539,35 @@ WebDataService::Handle WebDataService::ScheduleDBTaskWithResult(
       const ResultTask& task,
       WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
-  WebDataRequest* request =
-      new WebDataRequest(this, consumer, &request_manager_);
+  scoped_ptr<WebDataRequest> request(
+      new WebDataRequest(consumer, request_manager_.get()));
+  WebDataService::Handle handle = request->GetHandle();
   if (is_running_) {
     BrowserThread::PostTask(BrowserThread::DB, from_here,
-        base::Bind(&WebDataService::DBResultTaskWrapper, this, task, request));
+        base::Bind(&WebDataService::DBResultTaskWrapper, this, task,
+                   base::Passed(&request)));
   } else {
     NOTREACHED() << "Task scheduled after Shutdown()";
   }
-  return request->GetHandle();
+  return handle;
 }
 
 void WebDataService::DBTaskWrapper(const base::Closure& task,
-                                   WebDataRequest* request) {
+                                   scoped_ptr<WebDataRequest> request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     task.Run();
   }
-  request->RequestComplete();
+  request_manager_->RequestCompleted(request.Pass());
 }
 
 void WebDataService::DBResultTaskWrapper(const ResultTask& task,
-                                         WebDataRequest* request) {
+                                         scoped_ptr<WebDataRequest> request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
-    request->SetResult(task.Run().Pass());
+    request->SetResult(task.Run());
   }
-  request->RequestComplete();
+  request_manager_->RequestCompleted(request.Pass());
 }
 
 void WebDataService::ScheduleCommit() {
@@ -922,11 +922,11 @@ scoped_ptr<WDTypedResult> WebDataService::GetAutofillProfilesImpl() {
   std::vector<AutofillProfile*> profiles;
   db_->GetAutofillTable()->GetAutofillProfiles(&profiles);
   return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<AutofillProfile*> >(
+      new WDDestroyableResult<std::vector<AutofillProfile*> >(
           AUTOFILL_PROFILES_RESULT,
+          profiles,
           base::Bind(&WebDataService::DestroyAutofillProfileResult,
-              base::Unretained(this)),
-          profiles));
+              base::Unretained(this))));
 }
 
 void WebDataService::EmptyMigrationTrashImpl(bool notify_sync) {
@@ -1035,11 +1035,11 @@ scoped_ptr<WDTypedResult> WebDataService::GetCreditCardsImpl() {
   std::vector<CreditCard*> credit_cards;
   db_->GetAutofillTable()->GetCreditCards(&credit_cards);
   return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<CreditCard*> >(
+      new WDDestroyableResult<std::vector<CreditCard*> >(
           AUTOFILL_CREDITCARDS_RESULT,
+          credit_cards,
           base::Bind(&WebDataService::DestroyAutofillCreditCardResult,
-              base::Unretained(this)),
-          credit_cards));
+              base::Unretained(this))));
 }
 
 void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
