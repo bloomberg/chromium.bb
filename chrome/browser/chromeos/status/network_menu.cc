@@ -658,15 +658,36 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
         std::string(), FLAG_ADD_WIFI));
   }
 
-  // No networks available message.
-  if (menu_items_.empty()) {
-    label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
-                l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
-    menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
+  bool show_no_networks = menu_items_.empty();
+
+  if (cros->cellular_initializing()) {
+    // Initializing cellular modem...
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_COMMAND,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR),
+        gfx::ImageSkia(), std::string(), FLAG_DISABLED));
+    show_no_networks = false;
+  }
+
+  if (wifi_available && cros->wifi_scanning()) {
+    // Searching for Wi-Fi networks...
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_COMMAND,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE),
+        gfx::ImageSkia(), std::string(), FLAG_DISABLED));
+    show_no_networks = false;
+  }
+
+  if (show_no_networks) {
+    // No networks available (and not initializing cellular or wifi scanning)
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_COMMAND,
+        l10n_util::GetStringFUTF16(
+            IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE)),
         gfx::ImageSkia(), std::string(), FLAG_DISABLED));
   }
 
-  bool show_wifi_scanning = wifi_available && cros->wifi_scanning();
   // Do not show disable wifi during oobe
   bool show_toggle_wifi = wifi_available &&
       (should_open_button_options || !wifi_enabled);
@@ -674,16 +695,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   bool show_toggle_mobile = cros->mobile_available() &&
       (should_open_button_options || !cros->mobile_enabled());
 
-  if (show_wifi_scanning || show_toggle_wifi || show_toggle_mobile) {
+  if (show_toggle_wifi || show_toggle_mobile) {
     menu_items_.push_back(MenuItem());  // Separator
-
-    if (show_wifi_scanning) {
-      // Add 'Scanning...'
-      label = l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE);
-      menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-          gfx::ImageSkia(), std::string(), FLAG_DISABLED));
-    }
 
     if (show_toggle_wifi) {
       int id = wifi_enabled ? IDS_STATUSBAR_NETWORK_DEVICE_DISABLE :

@@ -767,7 +767,7 @@ void NetworkMenuIcon::SetIconAndText() {
   }
 
   // If no connected network, check if we are initializing Cellular.
-  if (cros->cellular_initializing()) {
+  if (mode_ != DROPDOWN_MODE && cros->cellular_initializing()) {
     SetConnectingIconAndText();
     return;
   }
