@@ -84,22 +84,12 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
       xrandr_event_base_(0) {
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
-  base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(this);
 }
 
 DisplayChangeObserverX11::~DisplayChangeObserverX11() {
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(this);
 }
 
-bool DisplayChangeObserverX11::Dispatch(const base::NativeEvent& event) {
-  if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
-    NotifyDisplayChange();
-    XRRUpdateConfiguration(event);
-  }
-  return true;
-}
-
-void DisplayChangeObserverX11::NotifyDisplayChange() {
+void DisplayChangeObserverX11::OnDisplayModeChanged() {
   XRRScreenResources* screen_resources =
       XRRGetScreenResources(xdisplay_, x_root_window_);
   std::map<XID, XRRCrtcInfo*> crtc_info_map;

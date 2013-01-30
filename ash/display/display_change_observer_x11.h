@@ -11,24 +11,20 @@
 #undef RootWindow
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "chromeos/display/output_configurator.h"
 
 namespace ash {
 namespace internal {
 
 // An object that observes changes in display configuration and
 // update DisplayManagers.
-class DisplayChangeObserverX11 : public MessageLoop::Dispatcher {
+class DisplayChangeObserverX11 : public chromeos::OutputConfigurator::Observer {
  public:
   DisplayChangeObserverX11();
   virtual ~DisplayChangeObserverX11();
 
-  // Overridden from Dispatcher overrides:
-  virtual bool Dispatch(const base::NativeEvent& xev) OVERRIDE;
-
-  // Reads display configurations from the system and notifies
-  // |display_manager_| about the change.
-  void NotifyDisplayChange();
+  // Overriden from chromeos::OutputConfigurator::Observer:
+  virtual void OnDisplayModeChanged() OVERRIDE;
 
  private:
   Display* xdisplay_;

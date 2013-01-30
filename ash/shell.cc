@@ -196,8 +196,6 @@ Shell::Shell(ShellDelegate* delegate)
       activation_client_(NULL),
 #if defined(OS_CHROMEOS)
       output_configurator_(new chromeos::OutputConfigurator()),
-      output_configurator_animation_(
-          new internal::OutputConfiguratorAnimation()),
 #endif  // defined(OS_CHROMEOS)
       browser_context_(NULL),
       simulate_modal_window_open_for_testing_(false) {
@@ -219,7 +217,6 @@ Shell::Shell(ShellDelegate* delegate)
       !is_panel_fitting_disabled,
       delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
 
-  output_configurator_->AddObserver(output_configurator_animation_.get());
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
 #endif  // defined(OS_CHROMEOS)
@@ -302,7 +299,10 @@ Shell::~Shell() {
   instance_ = NULL;
 
 #if defined(OS_CHROMEOS)
-  output_configurator_->RemoveObserver(output_configurator_animation_.get());
+  if (display_change_observer_.get())
+    output_configurator_->RemoveObserver(display_change_observer_.get());
+  if (output_configurator_animation_.get())
+    output_configurator_->RemoveObserver(output_configurator_animation_.get());
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
 #endif  // defined(OS_CHROMEOS)
@@ -406,7 +406,13 @@ void Shell::Init() {
 #if defined(OS_CHROMEOS)
   if (base::chromeos::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new internal::DisplayChangeObserverX11);
-    display_change_observer_->NotifyDisplayChange();
+    // Register |display_change_observer_| first so that the rest of
+    // observer gets invoked after the root windows are configured.
+    output_configurator_->AddObserver(display_change_observer_.get());
+    output_configurator_animation_.reset(
+        new internal::OutputConfiguratorAnimation()),
+    output_configurator_->AddObserver(output_configurator_animation_.get());
+    display_change_observer_->OnDisplayModeChanged();
   }
 #endif
 

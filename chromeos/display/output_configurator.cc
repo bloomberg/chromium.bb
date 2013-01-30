@@ -760,6 +760,8 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 
 bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::Dispatch");
+  if (event->type - xrandr_event_base_ == RRScreenChangeNotify)
+    XRRUpdateConfiguration(event);
   // Ignore this event if the Xrandr extension isn't supported.
   if (!is_running_on_chrome_os_ ||
       (event->type - xrandr_event_base_ != RRNotify)) {
