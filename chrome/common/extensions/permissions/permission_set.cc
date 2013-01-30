@@ -69,6 +69,7 @@ const char* kNonPermissionFunctionNames[] = {
   "app.installState",
   "app.runningState",
   "management.getPermissionWarningsByManifest",
+  "management.uninstallSelf",
 };
 const size_t kNumNonPermissionFunctionNames =
     arraysize(kNonPermissionFunctionNames);

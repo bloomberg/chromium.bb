@@ -253,6 +253,30 @@
         ]
       },
       {
+        "name": "uninstallSelf",
+        "description": "Uninstalls the calling extension. Note: This function can be used without requesting the 'management' permission in the manifest.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "options",
+            "optional": "true",
+            "properties": {
+              "showConfirmDialog": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether or not a confirm-uninstall dialog should prompt the user. Defaults to false."
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "launchApp",
         "description": "Launches an application.",
         "parameters": [

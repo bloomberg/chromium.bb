@@ -507,23 +507,16 @@ void ManagementSetEnabledFunction::InstallUIAbort(bool user_initiated) {
   Release();
 }
 
-ManagementUninstallFunction::ManagementUninstallFunction() {
+ManagementUninstallFunctionBase::ManagementUninstallFunctionBase() {
 }
 
-ManagementUninstallFunction::~ManagementUninstallFunction() {
+ManagementUninstallFunctionBase::~ManagementUninstallFunctionBase() {
 }
 
-bool ManagementUninstallFunction::RunImpl() {
-  scoped_ptr<management::Uninstall::Params> params(
-      management::Uninstall::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  extension_id_ = params->id;
-
-  bool show_confirm_dialog = false;
-  if (params->options.get() && params->options->show_confirm_dialog.get())
-    show_confirm_dialog = *params->options->show_confirm_dialog;
-
+bool ManagementUninstallFunctionBase::Uninstall(
+    const std::string& extension_id,
+    bool show_confirm_dialog) {
+  extension_id_ = extension_id;
   const Extension* extension = service()->GetExtensionById(extension_id_, true);
   if (!extension) {
     error_ = ErrorUtils::FormatErrorMessage(
@@ -555,11 +548,12 @@ bool ManagementUninstallFunction::RunImpl() {
 }
 
 // static
-void ManagementUninstallFunction::SetAutoConfirmForTest(bool should_proceed) {
+void ManagementUninstallFunctionBase::SetAutoConfirmForTest(
+    bool should_proceed) {
   auto_confirm_for_test = should_proceed ? PROCEED : ABORT;
 }
 
-void ManagementUninstallFunction::Finish(bool should_uninstall) {
+void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
   if (should_uninstall) {
     bool success = service()->UninstallExtension(
         extension_id_,
@@ -576,14 +570,49 @@ void ManagementUninstallFunction::Finish(bool should_uninstall) {
 
 }
 
-void ManagementUninstallFunction::ExtensionUninstallAccepted() {
+void ManagementUninstallFunctionBase::ExtensionUninstallAccepted() {
   Finish(true);
   Release();
 }
 
-void ManagementUninstallFunction::ExtensionUninstallCanceled() {
+void ManagementUninstallFunctionBase::ExtensionUninstallCanceled() {
   Finish(false);
   Release();
+}
+
+ManagementUninstallFunction::ManagementUninstallFunction() {
+}
+
+ManagementUninstallFunction::~ManagementUninstallFunction() {
+}
+
+bool ManagementUninstallFunction::RunImpl() {
+  scoped_ptr<management::Uninstall::Params> params(
+      management::Uninstall::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  bool show_confirm_dialog = false;
+  if (params->options.get() && params->options->show_confirm_dialog.get())
+    show_confirm_dialog = *params->options->show_confirm_dialog;
+
+  return Uninstall(params->id, show_confirm_dialog);
+}
+
+ManagementUninstallSelfFunction::ManagementUninstallSelfFunction() {
+}
+
+ManagementUninstallSelfFunction::~ManagementUninstallSelfFunction() {
+}
+
+bool ManagementUninstallSelfFunction::RunImpl() {
+  scoped_ptr<management::UninstallSelf::Params> params(
+      management::UninstallSelf::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  bool show_confirm_dialog = false;
+  if (params->options.get() && params->options->show_confirm_dialog.get())
+    show_confirm_dialog = *params->options->show_confirm_dialog;
+  return Uninstall(extension_->id(), show_confirm_dialog);
 }
 
 ManagementEventRouter::ManagementEventRouter(Profile* profile)

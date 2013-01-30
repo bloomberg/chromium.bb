@@ -121,22 +121,22 @@ class ManagementSetEnabledFunction : public AsyncManagementFunction,
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
 };
 
-class ManagementUninstallFunction : public AsyncManagementFunction,
+class ManagementUninstallFunctionBase : public AsyncManagementFunction,
                           public ExtensionUninstallDialog::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION("management.uninstall", MANAGEMENT_UNINSTALL)
+  ManagementUninstallFunctionBase();
 
-  ManagementUninstallFunction();
   static void SetAutoConfirmForTest(bool should_proceed);
 
   // ExtensionUninstallDialog::Delegate implementation.
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
 
- private:
-  virtual ~ManagementUninstallFunction();
+ protected:
+  virtual ~ManagementUninstallFunctionBase();
 
-  virtual bool RunImpl() OVERRIDE;
+  bool Uninstall(const std::string& extension_id, bool show_confirm_dialog);
+ private:
 
   // If should_uninstall is true, this method does the actual uninstall.
   // If |show_uninstall_dialog|, then this function will be called by one of the
@@ -145,6 +145,31 @@ class ManagementUninstallFunction : public AsyncManagementFunction,
 
   std::string extension_id_;
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
+};
+
+class ManagementUninstallFunction : public ManagementUninstallFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.uninstall", MANAGEMENT_UNINSTALL)
+
+  ManagementUninstallFunction();
+
+ private:
+  virtual ~ManagementUninstallFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.uninstallSelf",
+      MANAGEMENT_UNINSTALLSELF);
+
+  ManagementUninstallSelfFunction();
+
+ private:
+  virtual ~ManagementUninstallSelfFunction();
+
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class ManagementEventRouter : public content::NotificationObserver {
