@@ -45,8 +45,9 @@ const char* kOpenGlLibraryName =
     "/System/Library/Frameworks/OpenGL.framework/OpenGL";
 typedef CGLError (*CGLSetFullScreenFunc)(CGLContextObj);
 
-// Standard DPI for Mac OS X displays with 1:1 backing scale.
-const int kStandardDPI = 72;
+// Standard Mac displays have 72dpi, but we report 96dpi for
+// consistency with Windows and Linux.
+const int kStandardDPI = 96;
 
 // skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
 SkIRect CGRectToSkIRect(const CGRect& rect) {
