@@ -16,7 +16,7 @@
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
-VALID_TOOLCHAINS:=newlib glibc pnacl win
+VALID_TOOLCHAINS:=newlib glibc pnacl
 
 
 #
@@ -35,12 +35,12 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_nacl_mounts
+TARGET=hello_world_instance3d
 
 #
 # List of sources to compile
 #
-SOURCES=handlers.c hello_nacl_mounts.c queue.c
+SOURCES=hello_world.cc matrix.cc
 
 
 #
@@ -53,10 +53,10 @@ SOURCES=handlers.c hello_nacl_mounts.c queue.c
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not.  This example does not havea any additional library
+# and the set we do not. This  example does not have any additional library
 # dependencies.
 #
-DEPS=nacl_mounts
+DEPS=ppapi_main nacl_mounts ppapi_cpp ppapi_gles2
 LIBS=$(DEPS) ppapi pthread
 
 

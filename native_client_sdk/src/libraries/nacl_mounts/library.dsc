@@ -1,7 +1,7 @@
 {
   # Disabled pnacl for now because it warns on using the language extension
   # typeof(...)
-  'TOOLS': ['newlib', 'glibc', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'SEARCH': [
     '.',
     'pepper',

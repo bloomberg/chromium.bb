@@ -607,6 +607,7 @@ EXAMPLE_LIST = [
   'hello_world_stdio',
   'hello_world',
   'hello_world_gles',
+  'hello_world_instance3d',
   'hello_world_interactive',
   'input_events',
   'load_progress',

@@ -10,8 +10,12 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/fullscreen.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/message_loop.h"
 
-typedef std::map<std::string, std::string> PropteryMap_t;
+#include "ppapi_main/ppapi_event.h"
+#include "ppapi_main/ppapi_queue.h"
+
+typedef std::map<std::string, std::string> PropertyMap_t;
 
 class PPAPIInstance : public pp::Instance {
  public:
@@ -33,7 +37,18 @@ class PPAPIInstance : public pp::Instance {
   // Called by the browser to handle incoming input events.
   virtual bool HandleInputEvent(const pp::InputEvent& event);
 
+  // Accessors for the PPAPIQueue object.  Use Acquire to fetch the top
+  // event if one is available, then release when done.  Events must be
+  // acquired and released one at a time.
+  virtual PPAPIEvent* AcquireInputEvent();
+  virtual void ReleaseInputEvent(PPAPIEvent* event);
+
+  static PPAPIInstance* GetInstance();
+
  protected:
+  // Called to launch ppapi_main
+  static void* StartMain(void *start_info);
+
   // Called by Init to processes default and embed tag arguments prior to
   // launching the 'ppapi_main' thread.
   virtual bool ProcessProperties();
@@ -42,7 +57,9 @@ class PPAPIInstance : public pp::Instance {
   const char* GetProperty(const char* key, const char* def = NULL);
 
  private:
-  PropteryMap_t properties_;
+  pp::MessageLoop main_loop_;
+  PropertyMap_t properties_;
+  PPAPIQueue event_queue_;
   bool has_focus_;
 };
 

@@ -7,6 +7,8 @@
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi_main/ppapi_event.h"
+
 #include "utils/macros.h"
 
 EXTERN_C_BEGIN
@@ -18,6 +20,7 @@ int ppapi_main(int argc, const char *argv[]);
 void* UserCreateInstance(PP_Instance inst);
 
 // Helpers to access PPAPI interfaces
+void* PPAPI_GetInstanceObject();
 PP_Instance PPAPI_GetInstanceId();
 const void* PPAPI_GetInterface(const char *name);
 
@@ -26,13 +29,23 @@ void* PPAPI_CreateInstance(PP_Instance inst, const char *args[]);
 void* PPAPI_CreateInstance2D(PP_Instance inst, const char *args[]);
 void* PPAPI_CreateInstance3D(PP_Instance inst, const char *args[]);
 
+// Event APIs
+PPAPIEvent* PPAPI_AcquireEvent();
+void PPAPI_ReleaseEvent(PPAPIEvent* event);
+
+
+// Functions for 3D instances
+int32_t *PPAPIGet3DAttribs(uint32_t width, uint32_t height);
+void PPAPIBuildContext(uint32_t width, uint32_t height);
+void PPAPIRender(uint32_t width, uint32_t height);
+
 EXTERN_C_END
 
 #define PPAPI_MAIN_DEFAULT_ARGS       \
   {                                   \
-    "PM_STDIN", "/dev/null",          \
-    "PM_STDIO", "/dev/console0",      \
-    "PM_STDERR", "/dev/console3",     \
+    "pm_stdin", "/dev/null",          \
+    "pm_stdout", "/dev/console0",     \
+    "pm_stderr", "/dev/console3",     \
     NULL, NULL                        \
   }
 
@@ -45,6 +58,9 @@ void* UserCreateInstance(PP_Instance inst) {                  \
 
 #define PPAPI_MAIN_WITH_DEFAULT_ARGS \
   PPAPI_MAIN_USE(PPAPI_CreateInstance, PPAPI_MAIN_DEFAULT_ARGS)
+
+#define PPAPI_MAIN_3D_WITH_DEFAULT_ARGS \
+  PPAPI_MAIN_USE(PPAPI_CreateInstance3D, PPAPI_MAIN_DEFAULT_ARGS)
 
 #define PPAPI_MAIN_WITH_ARGS(args) \
   PPAPI_MAIN_USE(PPAPI_CreateInstance, args)

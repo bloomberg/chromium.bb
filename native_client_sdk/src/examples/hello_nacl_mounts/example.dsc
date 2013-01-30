@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'hello_nacl_mounts',

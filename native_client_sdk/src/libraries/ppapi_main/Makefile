@@ -16,7 +16,7 @@
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
-VALID_TOOLCHAINS:=newlib glibc
+VALID_TOOLCHAINS:=newlib glibc pnacl
 
 
 #
@@ -40,7 +40,8 @@ TARGET=ppapi_main
 #
 # List of sources to compile
 #
-SOURCES:=ppapi_main.cc ppapi_instance.cc
+SOURCES:=ppapi_main.cc ppapi_instance.cc ppapi_instance3d.cc
+SOURCES+=ppapi_queue.cc
 #
 # Use the compile macro for each source.
 #

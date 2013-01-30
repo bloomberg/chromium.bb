@@ -82,7 +82,6 @@ StringMap_t ParseHeaders(const char* headers, int32_t headers_length) {
           // Found value.
           value.assign(start, &headers[i] - start);
           result[key] = value;
-
           start = &headers[i + 1];
           state = FINDING_KEY;
         }

@@ -10,6 +10,7 @@
 #include "ppapi/cpp/module.h"
 
 #include "ppapi_main/ppapi_instance.h"
+#include "ppapi_main/ppapi_instance3d.h"
 #include "ppapi_main/ppapi_main.h"
 
 
@@ -17,6 +18,10 @@ static pp::Instance* s_Instance = NULL;
 
 
 // Helpers to access PPAPI interfaces
+void* PPAPI_GetInstanceObject() {
+  return s_Instance;
+}
+
 PP_Instance PPAPI_GetInstanceId() {
   return s_Instance->pp_instance();
 }
@@ -25,10 +30,18 @@ const void* PPAPI_GetInterface(const char *name) {
   return pp::Module::Get()->GetBrowserInterface(name);
 }
 
-
 void* PPAPI_CreateInstance(PP_Instance inst, const char *args[]) {
   return static_cast<void*>(new PPAPIInstance(inst, args));
 }
+
+PPAPIEvent* PPAPI_AcquireEvent() {
+  return static_cast<PPAPIInstance*>(s_Instance)->AcquireInputEvent();
+}
+
+void PPAPI_ReleaseEvent(PPAPIEvent* event) {
+  static_cast<PPAPIInstance*>(s_Instance)->ReleaseInputEvent(event);
+}
+
 
 /// The Module class.  The browser calls the CreateInstance() method to create
 /// an instance of your NaCl module on the web page.  The browser creates a new

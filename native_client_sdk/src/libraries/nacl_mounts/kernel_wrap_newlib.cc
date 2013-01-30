@@ -123,8 +123,9 @@ int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
 }
 
 int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
-  *nread = ki_read(fd, buf, count);
-  return (*nread < 0) ? errno : 0;
+  ssize_t signed_nread = ki_read(fd, buf, count);
+  *nread = static_cast<size_t>(signed_nread);
+  return (signed_nread < 0) ? errno : 0;
 }
 
 int remove(const char* path) {
@@ -157,8 +158,9 @@ int unlink(const char* path) {
 }
 
 int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
-  *nwrote = ki_write(fd, buf, count);
-  return (*nwrote < 0) ? errno : 0;
+  ssize_t signed_nwrote = ki_write(fd, buf, count);
+  *nwrote = static_cast<size_t>(signed_nwrote);
+  return (signed_nwrote < 0) ? errno : 0;
 }
 
 
