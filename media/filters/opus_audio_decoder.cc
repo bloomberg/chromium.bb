@@ -53,7 +53,7 @@ static const int kBitsPerChannel = 16;
 static const int kBytesPerChannel = kBitsPerChannel / 8;
 
 // Maximum packet size used in Xiph's opusdec and FFmpeg's libopusdec.
-static const int kMaxOpusOutputPacketSizeSamples = 960 * 6;
+static const int kMaxOpusOutputPacketSizeSamples = 960 * 6 * kMaxVorbisChannels;
 static const int kMaxOpusOutputPacketSizeBytes =
     kMaxOpusOutputPacketSizeSamples * kBytesPerChannel;
 
@@ -308,16 +308,6 @@ void OpusAudioDecoder::DoDecodeBuffer(
 
   if (status == DemuxerStream::kConfigChanged) {
     DCHECK(!input);
-
-    scoped_refptr<DataBuffer> output_buffer;
-
-    // Send a "end of stream" buffer to the decode loop
-    // to output any remaining data still in the decoder.
-    if (!Decode(DecoderBuffer::CreateEOSBuffer(), true, &output_buffer)) {
-      base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
-      return;
-    }
-
     DVLOG(1) << "Config changed.";
 
     if (!ConfigureDecoder()) {
@@ -326,49 +316,45 @@ void OpusAudioDecoder::DoDecodeBuffer(
     }
 
     ResetTimestampState();
-
-    if (output_buffer) {
-      // Execute callback to return the decoded audio.
-      base::ResetAndReturn(&read_cb_).Run(kOk, output_buffer);
-    } else {
-      // We exhausted the input data, but it wasn't enough for a frame.  Ask for
-      // more data in order to fulfill this read.
-      ReadFromDemuxerStream();
-    }
-
+    ReadFromDemuxerStream();
     return;
   }
 
   DCHECK_EQ(status, DemuxerStream::kOk);
   DCHECK(input);
 
+  // Libopus does not buffer output. Decoding is complete when an end of stream
+  // input buffer is received.
+  if (input->IsEndOfStream()) {
+    base::ResetAndReturn(&read_cb_).Run(kOk, DataBuffer::CreateEOSBuffer());
+    return;
+  }
+
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (!input->IsEndOfStream() && input->GetTimestamp() == kNoTimestamp() &&
+  if (input->GetTimestamp() == kNoTimestamp() &&
       output_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
     DVLOG(1) << "Received a buffer without timestamps!";
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
   }
 
-  if (!input->IsEndOfStream()) {
-    if (last_input_timestamp_ != kNoTimestamp() &&
-        input->GetTimestamp() != kNoTimestamp() &&
-        input->GetTimestamp() < last_input_timestamp_) {
-      base::TimeDelta diff = input->GetTimestamp() - last_input_timestamp_;
-      DVLOG(1) << "Input timestamps are not monotonically increasing! "
-               << " ts " << input->GetTimestamp().InMicroseconds() << " us"
-               << " diff " << diff.InMicroseconds() << " us";
-      base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
-      return;
-    }
-
-    last_input_timestamp_ = input->GetTimestamp();
+  if (last_input_timestamp_ != kNoTimestamp() &&
+      input->GetTimestamp() != kNoTimestamp() &&
+      input->GetTimestamp() < last_input_timestamp_) {
+    base::TimeDelta diff = input->GetTimestamp() - last_input_timestamp_;
+    DVLOG(1) << "Input timestamps are not monotonically increasing! "
+              << " ts " << input->GetTimestamp().InMicroseconds() << " us"
+              << " diff " << diff.InMicroseconds() << " us";
+    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    return;
   }
+
+  last_input_timestamp_ = input->GetTimestamp();
 
   scoped_refptr<DataBuffer> output_buffer;
 
-  if (!Decode(input, false, &output_buffer)) {
+  if (!Decode(input, &output_buffer)) {
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
   }
@@ -393,14 +379,14 @@ bool OpusAudioDecoder::ConfigureDecoder() {
   const AudioDecoderConfig& config = demuxer_stream_->audio_decoder_config();
 
   if (config.codec() != kCodecOpus) {
-    DLOG(ERROR) << "ConfigureDecoder(): codec must be kCodecOpus.";
+    DLOG(ERROR) << "codec must be kCodecOpus.";
     return false;
   }
 
   const int channel_count =
       ChannelLayoutToChannelCount(config.channel_layout());
   if (!config.IsValidConfig() || channel_count > kMaxVorbisChannels) {
-    DLOG(ERROR) << "ConfigureDecoder(): Invalid or unsupported audio stream -"
+    DLOG(ERROR) << "Invalid or unsupported audio stream -"
                 << " codec: " << config.codec()
                 << " channel count: " << channel_count
                 << " channel layout: " << config.channel_layout()
@@ -410,12 +396,12 @@ bool OpusAudioDecoder::ConfigureDecoder() {
   }
 
   if (config.bits_per_channel() != kBitsPerChannel) {
-    DLOG(ERROR) << "ConfigureDecoder(): 16 bit samples required.";
+    DLOG(ERROR) << "16 bit samples required.";
     return false;
   }
 
   if (config.is_encrypted()) {
-    DLOG(ERROR) << "ConfigureDecoder(): Encrypted audio stream not supported.";
+    DLOG(ERROR) << "Encrypted audio stream not supported.";
     return false;
   }
 
@@ -471,8 +457,8 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                                                   channel_mapping,
                                                   &status);
   if (!opus_decoder_ || status != OPUS_OK) {
-    LOG(ERROR) << "ConfigureDecoder(): opus_multistream_decoder_create failed"
-               << " status=" << opus_strerror(status);
+    LOG(ERROR) << "opus_multistream_decoder_create failed status="
+               << opus_strerror(status);
     return false;
   }
 
@@ -501,19 +487,15 @@ void OpusAudioDecoder::ResetTimestampState() {
 }
 
 bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
-                              bool skip_eos_append,
                               scoped_refptr<DataBuffer>* output_buffer) {
-  int samples_decoded =
+  const int samples_decoded =
       opus_multistream_decode(opus_decoder_,
                               input->GetData(), input->GetDataSize(),
                               &output_buffer_[0],
                               kMaxOpusOutputPacketSizeSamples,
                               0);
   if (samples_decoded < 0) {
-    DCHECK(!input->IsEndOfStream())
-        << "Decode(): End of stream buffer produced an error!";
-
-    LOG(ERROR) << "ConfigureDecoder(): opus_multistream_decode failed for"
+    LOG(ERROR) << "opus_multistream_decode failed for"
                << " timestamp: " << input->GetTimestamp().InMicroseconds()
                << " us, duration: " << input->GetDuration().InMicroseconds()
                << " us, packet size: " << input->GetDataSize() << " bytes with"
@@ -548,10 +530,6 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
     (*output_buffer)->SetDuration(
         output_timestamp_helper_->GetDuration(decoded_audio_size));
     output_timestamp_helper_->AddBytes(decoded_audio_size);
-  } else if (IsEndOfStream(decoded_audio_size, input) && !skip_eos_append) {
-    DCHECK_EQ(input->GetDataSize(), 0);
-    // Create an end of stream output buffer.
-    *output_buffer = new DataBuffer(0);
   }
 
   // Decoding finished successfully, update statistics.

@@ -57,7 +57,6 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   void CloseDecoder();
   void ResetTimestampState();
   bool Decode(const scoped_refptr<DecoderBuffer>& input,
-              bool skip_eos_append,
               scoped_refptr<DataBuffer>* output_buffer);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;

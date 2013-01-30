@@ -846,4 +846,12 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
                                  0x1C896, 65536));
 }
 
+// Verify that Opus audio in WebM containers can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus.webm"),
+                    PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 }  // namespace media

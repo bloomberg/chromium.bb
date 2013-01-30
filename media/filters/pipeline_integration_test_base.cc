@@ -12,6 +12,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
+#include "media/filters/opus_audio_decoder.h"
 
 using ::testing::AnyNumber;
 using ::testing::AtMost;
@@ -197,9 +198,12 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   collection->SetDemuxer(demuxer);
   scoped_refptr<AudioDecoder> audio_decoder = new FFmpegAudioDecoder(
       message_loop_.message_loop_proxy());
+  scoped_refptr<OpusAudioDecoder> opus_decoder = new OpusAudioDecoder(
+      message_loop_.message_loop_proxy());
   scoped_refptr<VideoDecoder> video_decoder = new FFmpegVideoDecoder(
       message_loop_.message_loop_proxy());
   collection->GetAudioDecoders()->push_back(audio_decoder);
+  collection->GetAudioDecoders()->push_back(opus_decoder);
   collection->GetVideoDecoders()->push_back(video_decoder);
 
   // Disable frame dropping if hashing is enabled.
