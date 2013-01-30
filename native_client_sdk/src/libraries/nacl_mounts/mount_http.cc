@@ -116,14 +116,17 @@ bool ParseContentRange(const StringMap_t& headers, size_t* read_start,
   int result = sscanf(iter->second.c_str(), "bytes %"SCNuS"-%"SCNuS"/%"SCNuS,
                       &read_start_int, &read_end_int, &entity_length_int);
 
+  // The Content-Range header specifies an inclusive range: e.g. the first ten
+  // bytes is "bytes 0-9/*". Convert it to a half-open range by incrementing
+  // read_end.
   if (result == 2) {
     *read_start = read_start_int;
-    *read_end = read_end_int;
+    *read_end = read_end_int + 1;
     *entity_length = 0;
     return true;
   } else if (result == 3) {
     *read_start = read_start_int;
-    *read_end = read_end_int;
+    *read_end = read_end_int + 1;
     *entity_length = entity_length_int;
     return true;
   }
