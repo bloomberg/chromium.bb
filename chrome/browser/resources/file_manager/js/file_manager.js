@@ -45,6 +45,9 @@ function FileManager(dialogDom) {
   this.dialogType = this.params_.type || DialogType.FULL_PAGE;
   this.startupPrefName_ = 'file-manager-' + this.dialogType;
 
+  // Used to filter out focusing by mouse.
+  this.suppressFocus_ = false;
+
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList || [];
   metrics.recordEnum('Create', this.dialogType,
@@ -680,6 +683,12 @@ DialogType.isModal = function(type) {
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
+    // This capturing event is only used to distinguish focusing using
+    // keyboard from focusing using mouse.
+    this.document_.addEventListener('mousedown', function() {
+      this.suppressFocus_ = true;
+    }.bind(this), true);
+
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
 
@@ -803,9 +812,13 @@ DialogType.isModal = function(type) {
     this.initList_(this.table_.list);
 
     var fileListFocusBound = this.onFileListFocus_.bind(this);
+    var fileListBlurBound = this.onFileListBlur_.bind(this);
 
     this.table_.list.addEventListener('focus', fileListFocusBound);
     this.grid_.addEventListener('focus', fileListFocusBound);
+
+    this.table_.list.addEventListener('blur', fileListBlurBound);
+    this.grid_.addEventListener('blur', fileListBlurBound);
 
     this.initRootsList_();
 
@@ -891,14 +904,26 @@ DialogType.isModal = function(type) {
   };
 
   /*
-   * File list focus handler.
+   * File list focus handler. Used to select the top most element on the list
+   * if nothing was selected.
    */
   FileManager.prototype.onFileListFocus_ = function() {
+    // Do not select default item if focused using mouse.
+    if (this.suppressFocus_)
+      return;
+
     var selection = this.getSelection();
     if (!selection || selection.totalCount != 0)
       return;
 
     this.directoryModel_.selectIndex(0);
+  };
+
+  /*
+   * File list blur handler.
+   */
+  FileManager.prototype.onFileListBlur_ = function() {
+    this.suppressFocus_ = false;
   };
 
   /**
