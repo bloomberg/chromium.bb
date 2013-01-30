@@ -49,10 +49,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton,
   // Showing the drop down results in a MouseCaptureLost, we need to ignore it.
   virtual void OnMouseCaptureLost() OVERRIDE {}
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  // Display the right-click menu, as triggered by the keyboard, for instance.
-  // Using the member function ShowDropDownMenu for the actual display.
-  virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ContextMenuController

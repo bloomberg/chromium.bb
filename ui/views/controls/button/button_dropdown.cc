@@ -114,11 +114,14 @@ void ButtonDropDown::OnMouseExited(const ui::MouseEvent& event) {
     SetState(STATE_NORMAL);
 }
 
-void ButtonDropDown::ShowContextMenu(const gfx::Point& p,
-                                     bool is_mouse_gesture) {
-  show_menu_factory_.InvalidateWeakPtrs();
-  ShowDropDownMenu();
-  SetState(STATE_HOVERED);
+void ButtonDropDown::OnGestureEvent(ui::GestureEvent* event) {
+  if (menu_showing_) {
+    // While dropdown menu is showing the button should not handle gestures.
+    event->StopPropagation();
+    return;
+  }
+
+  ImageButton::OnGestureEvent(event);
 }
 
 void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
