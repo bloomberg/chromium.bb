@@ -54,11 +54,8 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
   void SetDownloadParams(const FilePath& drive_path,
                          content::DownloadItem* download);
 
-  // Gets the drive_path from external data in |download|.
-  // GetDrivePath may return an empty path in case SetDrivePath was not
-  // previously called or there was some other internal error
-  // (there is a DCHECK for this).
-  FilePath GetDrivePath(const content::DownloadItem* download);
+  // Gets the target drive path from external data in |download|.
+  FilePath GetTargetPath(const content::DownloadItem* download);
 
   // Checks if there is a Drive upload associated with |download|
   bool IsDriveDownload(const content::DownloadItem* download);

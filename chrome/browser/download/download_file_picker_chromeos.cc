@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/i18n/file_util_icu.h"
 #include "chrome/browser/chromeos/drive/drive_download_handler.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -24,18 +23,17 @@ DownloadFilePickerChromeOS::~DownloadFilePickerChromeOS() {
 
 void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item,
                                                    const FilePath& path) {
-  // For Drive downloads, |path| is the virtual gdata path instead of the
-  // temporary local one.
+  // For Drive downloads, we should pass the drive path instead of the temporary
+  // file path.
   Profile* profile =
       Profile::FromBrowserContext(download_manager_->GetBrowserContext());
   drive::DriveDownloadHandler* drive_download_handler =
       drive::DriveDownloadHandler::GetForProfile(profile);
-  if (drive_download_handler && drive_download_handler->IsDriveDownload(item)) {
-    set_suggested_path(drive::util::GetSpecialRemoteRootPath().Append(
-        drive_download_handler->GetDrivePath(item)));
-  } else {
-    DownloadFilePicker::InitSuggestedPath(item, path);
-  }
+  FilePath suggested_path = path;
+  if (drive_download_handler && drive_download_handler->IsDriveDownload(item))
+    suggested_path = drive_download_handler->GetTargetPath(item);
+
+  DownloadFilePicker::InitSuggestedPath(item, suggested_path);
 }
 
 void DownloadFilePickerChromeOS::FileSelected(const FilePath& selected_path,

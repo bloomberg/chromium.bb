@@ -143,12 +143,12 @@ void DriveDownloadHandler::SetDownloadParams(const FilePath& drive_path,
   }
 }
 
-FilePath DriveDownloadHandler::GetDrivePath(const DownloadItem* download) {
+FilePath DriveDownloadHandler::GetTargetPath(const DownloadItem* download) {
   const DriveUserData* data = GetDriveUserData(download);
   // If data is NULL, we've somehow lost the drive path selected by the file
   // picker.
   DCHECK(data);
-  return data ? util::ExtractDrivePath(data->file_path()) : FilePath();
+  return data ? data->file_path() : FilePath();
 }
 
 bool DriveDownloadHandler::IsDriveDownload(const DownloadItem* download) {
@@ -231,7 +231,7 @@ void DriveDownloadHandler::OnCreateDirectory(
 void DriveDownloadHandler::UploadDownloadItem(DownloadItem* download) {
   DCHECK(download->IsComplete());
   file_write_helper_->PrepareWritableFileAndRun(
-      GetDrivePath(download),
+      util::ExtractDrivePath(GetTargetPath(download)),
       base::Bind(&MoveDownloadedFile, download->GetTargetFilePath()));
 }
 
