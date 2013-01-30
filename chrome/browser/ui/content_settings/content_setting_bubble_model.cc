@@ -580,7 +580,8 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
     radio_block_label =
       l10n_util::GetStringUTF8(IDS_ALLOWED_MEDIASTREAM_BLOCK);
   }
-  radio_group.default_item = media_stream_blocked ? 1 : 0;
+  selected_item_ = media_stream_blocked ? 1 : 0;
+  radio_group.default_item = selected_item_;
   radio_group.radio_items.push_back(radio_allow_label);
   radio_group.radio_items.push_back(radio_block_label);
 

@@ -111,6 +111,97 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   EXPECT_FALSE(bubble_content.manage_link.empty());
 }
 
+TEST_F(ContentSettingBubbleModelTest, Mediastream) {
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+         NULL, web_contents(), profile(),
+         CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model->bubble_content();
+  EXPECT_FALSE(bubble_content.title.empty());
+  EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
+  EXPECT_EQ(0, bubble_content.radio_group.default_item);
+  EXPECT_TRUE(bubble_content.custom_link.empty());
+  EXPECT_FALSE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.manage_link.empty());
+}
+
+TEST_F(ContentSettingBubbleModelTest, BlockedMediastream) {
+  WebContentsTester::For(web_contents())->
+      NavigateAndCommit(GURL("https://www.example.com"));
+  GURL url = web_contents()->GetURL();
+
+  HostContentSettingsMap* host_content_settings_map =
+      profile()->GetHostContentSettingsMap();
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromURL(url);
+  ContentSetting setting = CONTENT_SETTING_BLOCK;
+  host_content_settings_map->SetContentSetting(
+        primary_pattern,
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        std::string(),
+        setting);
+  host_content_settings_map->SetContentSetting(
+        primary_pattern,
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        std::string(),
+        setting);
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+                                     std::string());
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    // Test if the correct radio item is selected for the blocked mediastream
+    // setting.
+    EXPECT_EQ(1, bubble_content.radio_group.default_item);
+  }
+
+  // Test that the media settings where not changed.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                url,
+                url,
+                CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                url,
+                url,
+                CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                std::string()));
+
+  {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           NULL, web_contents(), profile(),
+           CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+    // Change the radio setting.
+    content_setting_bubble_model->OnRadioClicked(0);
+  }
+  // Test that the media setting were change correctly.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                url,
+                url,
+                CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                url,
+                url,
+                CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                std::string()));
+}
+
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
