@@ -6,6 +6,7 @@ package org.chromium.base;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -144,6 +145,14 @@ public class ThreadUtils {
      */
     public static boolean runningOnUiThread() {
       return Looper.getMainLooper() == Looper.myLooper();
+    }
+
+    /**
+     * Set thread priority to audio.
+     */
+    @CalledByNative
+    public static void setThreadPriorityAudio(int tid) {
+      Process.setThreadPriority(tid, Process.THREAD_PRIORITY_AUDIO);
     }
 
     private static class LazyHolder {

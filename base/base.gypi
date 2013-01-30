@@ -56,6 +56,7 @@
           'android/path_service_android.h',
           'android/path_utils.cc',
           'android/path_utils.h',
+          'android/thread_utils.h',
           'at_exit.cc',
           'at_exit.h',
           'atomic_ref_count.h',

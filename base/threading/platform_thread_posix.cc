@@ -30,7 +30,8 @@
 
 #if defined(OS_ANDROID)
 #include <sys/resource.h>
-#include "base/android/jni_android.h"
+#include "base/android/thread_utils.h"
+#include "jni/ThreadUtils_jni.h"
 #endif
 
 // TODO(bbudge) Use time.h when NaCl toolchain supports _POSIX_TIMERS
@@ -270,13 +271,28 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   pthread_join(thread_handle, NULL);
 }
 
-#if !defined(OS_MACOSX)
-// Mac OS X uses lower-level mach APIs.
-
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// Mac OS X uses lower-level mach APIs and Android uses Java APIs.
 // static
 void PlatformThread::SetThreadPriority(PlatformThreadHandle, ThreadPriority) {
   // TODO(crogers): Implement, see http://crbug.com/116172
 }
 #endif
+
+#if defined(OS_ANDROID)
+bool RegisterThreadUtils(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+void PlatformThread::SetThreadPriority(PlatformThreadHandle,
+                                       ThreadPriority priority) {
+  if (priority == kThreadPriority_RealtimeAudio) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
+  } else {
+    NOTREACHED() << "Unknown thread priority.";
+  }
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace base

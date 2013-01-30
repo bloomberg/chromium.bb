@@ -12,6 +12,7 @@
 #include "base/android/locale_utils.h"
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
+#include "base/android/thread_utils.h"
 #include "base/message_pump_android.h"
 #include "base/system_monitor/system_monitor_android.h"
 
@@ -26,6 +27,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
   { "PathUtils", base::android::RegisterPathUtils },
   { "SystemMessageHandler", base::MessagePumpForUI::RegisterBindings },
   { "SystemMonitor", base::RegisterSystemMonitor },
+  { "ThreadUtils", base::RegisterThreadUtils },
 };
 
 bool RegisterJni(JNIEnv* env) {
