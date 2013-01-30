@@ -317,7 +317,7 @@ TEST_F(SyncFileSystemServiceTest, GetConflictFilesWithoutInitialize) {
   }
 }
 
-TEST_F(SyncFileSystemServiceTest, GetConflictFiles) {
+TEST_F(SyncFileSystemServiceTest, DISABLED_GetConflictFiles) {
   InitializeApp();
 
   // 1. Sets up (conflicting) files.

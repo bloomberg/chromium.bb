@@ -277,7 +277,7 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
   EXPECT_EQ(2, num_changes_);
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 // Flaky: http://crbug.com/171487
 #define MAYBE_LocalChangeObserverMultipleContexts\
     DISABLED_LocalChangeObserverMultipleContexts
