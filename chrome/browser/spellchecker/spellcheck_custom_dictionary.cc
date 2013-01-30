@@ -73,11 +73,12 @@ ChecksumStatus LoadFile(const FilePath& file_path, WordList& words) {
 
 // Returns true for invalid words and false for valid words.
 bool IsInvalidWord(const std::string& word) {
+  std::string tmp;
   return !IsStringUTF8(word) ||
       word.length() >
           chrome::spellcheck_common::MAX_CUSTOM_DICTIONARY_WORD_BYTES ||
       word.empty() ||
-      word.find_first_of(kWhitespaceASCII) != std::string::npos;
+      TRIM_NONE != TrimWhitespaceASCII(word, TRIM_ALL, &tmp);
 }
 
 // Loads the custom spellcheck dictionary from |path| into |custom_words|. If

@@ -277,17 +277,21 @@ TEST_F(SpellcheckCustomDictionaryTest,
   MessageLoop::current()->RunUntilIdle();
 }
 
-// Words with spaces are illegal and should be removed.
+// Illegal words should be removed. Leading and trailing whitespace should be
+// trimmed.
 TEST_F(SpellcheckCustomDictionaryTest,
        IllegalWordsShouldBeRemovedFromDictionary) {
   FilePath path = profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
 
-  std::string content = "foo\nfoo bar\nbar\nfoo bar";
+  std::string content = "foo\n foo bar \n\n \nbar\n"
+      "01234567890123456789012345678901234567890123456789"
+      "01234567890123456789012345678901234567890123456789";
   file_util::WriteFile(path, content.c_str(), content.length());
   WordList loaded_custom_words = LoadDictionaryFile(path);
   WordList expected;
   expected.push_back("bar");
   expected.push_back("foo");
+  expected.push_back("foo bar");
   EXPECT_EQ(expected, loaded_custom_words);
 
   // Flush the loop now to prevent service init tasks from being run during
@@ -420,8 +424,9 @@ TEST_F(SpellcheckCustomDictionaryTest, ProcessSyncChanges) {
         syncer::SyncData::CreateLocalData(word, word, specifics)));
   }
   {
-    // Add invalid word.
-    std::string word = "foo bar";
+    // Add invalid word. This word is too long.
+    std::string word = "01234567890123456789012345678901234567890123456789"
+        "01234567890123456789012345678901234567890123456789";
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_dictionary()->set_word(word);
     changes.push_back(syncer::SyncChange(

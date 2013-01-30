@@ -16,9 +16,9 @@
 #include "sync/api/syncable_service.h"
 
 // Defines a custom dictionary where users can add their own words. All words
-// must be UTF8, between 1 and 99 bytes long, and without ASCII whitespace. The
-// dictionary contains its own checksum when saved on disk. Example dictionary
-// file contents:
+// must be UTF8, between 1 and 99 bytes long, and without leading or trailing
+// ASCII whitespace. The dictionary contains its own checksum when saved on
+// disk. Example dictionary file contents:
 //
 //   bar
 //   foo
