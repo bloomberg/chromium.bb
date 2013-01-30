@@ -151,7 +151,7 @@ GetResourceEntryOperation::GetResourceEntryOperation(
 GetResourceEntryOperation::~GetResourceEntryOperation() {}
 
 GURL GetResourceEntryOperation::GetURL() const {
-  return url_generator_.GenerateResourceEntryUrl(resource_id_);
+  return url_generator_.GenerateEditUrl(resource_id_);
 }
 
 //========================= GetAccountMetadataOperation ========================
@@ -247,17 +247,19 @@ void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 DeleteResourceOperation::DeleteResourceOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
+    const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
-    const GURL& edit_url)
+    const std::string& resource_id)
     : EntryActionOperation(registry, url_request_context_getter, callback),
-      edit_url_(edit_url) {
+      url_generator_(url_generator),
+      resource_id_(resource_id) {
   DCHECK(!callback.is_null());
 }
 
 DeleteResourceOperation::~DeleteResourceOperation() {}
 
 GURL DeleteResourceOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
+  return url_generator_.GenerateEditUrl(resource_id_);
 }
 
 URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {

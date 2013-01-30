@@ -139,13 +139,13 @@ void DriveScheduler::GetResourceEntry(
 }
 
 void DriveScheduler::DeleteResource(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_DELETE_RESOURCE));
-  new_job->edit_url = edit_url;
+  new_job->resource_id = resource_id;
   new_job->entry_action_callback = callback;
 
   QueueJob(new_job.Pass());
@@ -343,7 +343,7 @@ void DriveScheduler::DoJobLoop() {
 
     case TYPE_DELETE_RESOURCE: {
       drive_service_->DeleteResource(
-          queue_entry->edit_url,
+          queue_entry->resource_id,
           base::Bind(&DriveScheduler::OnEntryActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));

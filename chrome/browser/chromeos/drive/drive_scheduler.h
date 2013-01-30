@@ -109,7 +109,7 @@ class DriveScheduler
 
 
   // Adds a DeleteResource operation to the queue.
-  void DeleteResource(const GURL& edit_url,
+  void DeleteResource(const std::string& resource_id,
                       const google_apis::EntryActionCallback& callback);
 
 
@@ -161,13 +161,13 @@ class DriveScheduler
     // Resource ID to use for the operation.
     // Used by:
     //   TYPE_GET_RESOURCE_ENTRY
+    //   TYPE_DELETE_RESOURCE
     std::string resource_id;
 
     // URL to use to modify the resource.
     // Used by:
-    //  TYPE_DELETE_RESOURCE
-    //  TYPE_RENAME_RESOURCE
-    //  TYPE_ADD_NEW_DIRECTORY
+    //   TYPE_RENAME_RESOURCE
+    //   TYPE_ADD_NEW_DIRECTORY
     GURL edit_url;
 
     // URL to access the contents of the operation's target.

@@ -78,8 +78,9 @@ class GDataWapiUrlGenerator {
       bool shared_with_me,
       const std::string& directory_resource_id) const;
 
-  // Generates a URL for getting the resource entry of the given resource ID.
-  GURL GenerateResourceEntryUrl(const std::string& resource_id) const;
+  // Generates a URL for getting or editing the resource entry of
+  // the given resource ID.
+  GURL GenerateEditUrl(const std::string& resource_id) const;
 
   // Generates a URL for editing the contents in the directory specified
   // by the given resource ID.

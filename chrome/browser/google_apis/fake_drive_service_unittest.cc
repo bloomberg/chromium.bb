@@ -498,7 +498,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource(
-      GURL("https://file1_link_self/file:2_file_resource_id"),
+      "file:2_file_resource_id",
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -513,7 +513,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource(
-      GURL("https://file1_link_self/file:nonexisting_resource_id"),
+      "file:nonexisting_resource_id",
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();
@@ -527,7 +527,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.DeleteResource(
-      GURL("https://file1_link_self/file:2_file_resource_id"),
+      "file:2_file_resource_id",
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
   message_loop_.RunUntilIdle();

@@ -808,17 +808,15 @@ TEST_F(DriveFileSyncClientTest, UploadExistingFileInConflict) {
 }
 
 TEST_F(DriveFileSyncClientTest, DeleteFile) {
-  const std::string kResourceId = "file:resource_id";
+  const std::string kResourceId = "file:2_file_resource_id";
 
   scoped_ptr<base::Value> file_entry_data(
       google_apis::test_util::LoadJSONFile("gdata/file_entry.json").Pass());
   scoped_ptr<ResourceEntry> file_entry(
       ResourceEntry::ExtractAndParse(*file_entry_data));
-  // We need another copy as |file_entry| will be passed to
+  // Keep the copy of MD5 hash, because file_entry will be passed to
   // InvokeGetResourceEntryCallback1.
-  scoped_ptr<ResourceEntry> file_entry_copy(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
-  const std::string kExpectedRemoteFileMD5 = file_entry_copy->file_md5();
+  const std::string kExpectedRemoteFileMD5 = file_entry->file_md5();
 
   testing::InSequence sequence;
 
@@ -831,9 +829,7 @@ TEST_F(DriveFileSyncClientTest, DeleteFile) {
 
   // Expected to call DriveUploaderInterface::DeleteResource from
   // DidGetResourceEntryForDeleteFile.
-  EXPECT_CALL(*mock_drive_service(),
-              DeleteResource(
-                  file_entry_copy->GetLinkByType(Link::LINK_SELF)->href(), _))
+  EXPECT_CALL(*mock_drive_service(), DeleteResource(kResourceId, _))
       .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS))
       .RetiresOnSaturation();
 

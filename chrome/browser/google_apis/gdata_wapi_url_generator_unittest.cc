@@ -160,10 +160,10 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
           ).spec());
 }
 
-TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceEntryUrl) {
+TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json",
-      url_generator_.GenerateResourceEntryUrl("XXX").spec());
+      url_generator_.GenerateEditUrl("XXX").spec());
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateContentUrl) {

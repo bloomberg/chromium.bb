@@ -358,7 +358,7 @@ GURL DriveFileSyncClient::DirectoryTitleToOrigin(const std::string& title) {
 
 GURL DriveFileSyncClient::ResourceIdToResourceLink(
     const std::string& resource_id) const {
-  return url_generator_.GenerateResourceEntryUrl(resource_id);
+  return url_generator_.GenerateEditUrl(resource_id);
 }
 
 void DriveFileSyncClient::OnReadyToPerformOperations() {
@@ -602,7 +602,7 @@ void DriveFileSyncClient::DeleteFileInternal(
   // GetResourceEntry and DeleteFile call.
   // http://crbug.com/156037
   drive_service_->DeleteResource(
-      GURL(entry->GetLinkByType(google_apis::Link::LINK_SELF)->href()),
+      entry->resource_id(),
       base::Bind(&DriveFileSyncClient::DidDeleteFile,
                  AsWeakPtr(), callback));
 }

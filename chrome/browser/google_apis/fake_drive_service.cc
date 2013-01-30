@@ -376,7 +376,7 @@ void FakeDriveService::GetAppList(const GetAppListCallback& callback) {
 }
 
 void FakeDriveService::DeleteResource(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -389,29 +389,19 @@ void FakeDriveService::DeleteResource(
 
   base::DictionaryValue* resource_list_dict = NULL;
   base::ListValue* entries = NULL;
-  // Go through entries and remove the one that matches |edit_url|.
+  // Go through entries and remove the one that matches |resource_id|.
   if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
       resource_list_dict->GetList("entry", &entries)) {
     for (size_t i = 0; i < entries->GetSize(); ++i) {
       base::DictionaryValue* entry = NULL;
-      base::ListValue* links = NULL;
+      std::string current_resource_id;
       if (entries->GetDictionary(i, &entry) &&
-          entry->GetList("link", &links)) {
-        for (size_t j = 0; j < links->GetSize(); ++j) {
-          base::DictionaryValue* link = NULL;
-          std::string rel;
-          std::string href;
-          if (links->GetDictionary(j, &link) &&
-              link->GetString("rel", &rel) &&
-              link->GetString("href", &href) &&
-              rel == "edit" &&
-              GURL(href) == edit_url) {
-            entries->Remove(i, NULL);
-            MessageLoop::current()->PostTask(
-                FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
-            return;
-          }
-        }
+          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
+          resource_id == current_resource_id) {
+        entries->Remove(i, NULL);
+        MessageLoop::current()->PostTask(
+            FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+        return;
       }
     }
   }
@@ -509,12 +499,10 @@ void FakeDriveService::CopyHostedDocument(
       resource_list_dict->GetList("entry", &entries)) {
     for (size_t i = 0; i < entries->GetSize(); ++i) {
       base::DictionaryValue* entry = NULL;
-      base::DictionaryValue* resource_id_dict = NULL;
       base::ListValue* categories = NULL;
       std::string current_resource_id;
       if (entries->GetDictionary(i, &entry) &&
-          entry->GetDictionary("gd$resourceId", &resource_id_dict) &&
-          resource_id_dict->GetString("$t", &current_resource_id) &&
+          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
           resource_id == current_resource_id &&
           entry->GetList("category", &categories)) {
         // Check that the resource is a hosted document. We consider it a
@@ -809,11 +797,9 @@ base::DictionaryValue* FakeDriveService::FindEntryByResourceId(
       resource_list_dict->GetList("entry", &entries)) {
     for (size_t i = 0; i < entries->GetSize(); ++i) {
       base::DictionaryValue* entry = NULL;
-      base::DictionaryValue* resource_id_dict = NULL;
       std::string current_resource_id;
       if (entries->GetDictionary(i, &entry) &&
-          entry->GetDictionary("gd$resourceId", &resource_id_dict) &&
-          resource_id_dict->GetString("$t", &current_resource_id) &&
+          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
           resource_id == current_resource_id) {
         return entry;
       }
@@ -867,11 +853,9 @@ base::DictionaryValue* FakeDriveService::FindEntryByContentUrl(
       resource_list_dict->GetList("entry", &entries)) {
     for (size_t i = 0; i < entries->GetSize(); ++i) {
       base::DictionaryValue* entry = NULL;
-      base::DictionaryValue* content = NULL;
       std::string current_content_url;
       if (entries->GetDictionary(i, &entry) &&
-          entry->GetDictionary("content", &content) &&
-          content->GetString("src", &current_content_url) &&
+          entry->GetString("content.src", &current_content_url) &&
           content_url == GURL(current_content_url)) {
         return entry;
       }

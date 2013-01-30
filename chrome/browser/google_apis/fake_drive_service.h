@@ -87,7 +87,7 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void GetAccountMetadata(
       const GetAccountMetadataCallback& callback) OVERRIDE;
   virtual void GetAppList(const GetAppListCallback& callback) OVERRIDE;
-  virtual void DeleteResource(const GURL& edit_url,
+  virtual void DeleteResource(const std::string& resource_id,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadHostedDocument(
       const FilePath& virtual_path,

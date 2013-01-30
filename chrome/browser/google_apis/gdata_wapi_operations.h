@@ -197,8 +197,9 @@ class DeleteResourceOperation : public EntryActionOperation {
   DeleteResourceOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
-      const GURL& edit_url);
+      const std::string& resource_id);
   virtual ~DeleteResourceOperation();
 
  protected:
@@ -208,7 +209,8 @@ class DeleteResourceOperation : public EntryActionOperation {
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
-  const GURL edit_url_;
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteResourceOperation);
 };

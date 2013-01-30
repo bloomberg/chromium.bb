@@ -361,7 +361,7 @@ void DriveAPIService::DownloadFile(
 }
 
 void DriveAPIService::DeleteResource(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

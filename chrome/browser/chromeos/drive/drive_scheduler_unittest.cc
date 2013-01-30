@@ -193,7 +193,7 @@ TEST_F(DriveSchedulerTest, DeleteResource) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->DeleteResource(
-      GURL("https://file1_link_self/file:2_file_resource_id"),
+      "file:2_file_resource_id",
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
           &error));
