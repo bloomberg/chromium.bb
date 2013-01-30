@@ -1509,16 +1509,6 @@ const char kWasRestarted[] = "was.restarted";
 const char kRestartSwitchMode[] = "restart.switch_mode";
 #endif
 
-// Number of bookmarks/folders on the bookmark bar/other bookmark folder.
-const char kNumBookmarksOnBookmarkBar[] =
-    "user_experience_metrics.num_bookmarks_on_bookmark_bar";
-const char kNumFoldersOnBookmarkBar[] =
-    "user_experience_metrics.num_folders_on_bookmark_bar";
-const char kNumBookmarksInOtherBookmarkFolder[] =
-    "user_experience_metrics.num_bookmarks_in_other_bookmark_folder";
-const char kNumFoldersInOtherBookmarkFolder[] =
-    "user_experience_metrics.num_folders_in_other_bookmark_folder";
-
 // Number of keywords.
 const char kNumKeywords[] = "user_experience_metrics.num_keywords";
 

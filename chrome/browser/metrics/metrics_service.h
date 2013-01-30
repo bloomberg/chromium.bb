@@ -30,8 +30,6 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #endif
 
-class BookmarkModel;
-class BookmarkNode;
 class MetricsReportingScheduler;
 class PrefService;
 class PrefServiceSimple;
@@ -360,16 +358,6 @@ class MetricsService
 
   // Records that the browser was shut down cleanly.
   void LogCleanShutdown();
-
-  // Set the value in preferences for the number of bookmarks and folders
-  // in node. The pref key for the number of bookmarks in num_bookmarks_key and
-  // the pref key for number of folders in num_folders_key.
-  void LogBookmarks(const BookmarkNode* node,
-                    const char* num_bookmarks_key,
-                    const char* num_folders_key);
-
-  // Sets preferences for the number of bookmarks in model.
-  void LogBookmarks(BookmarkModel* model);
 
   // Records a child process related notification.  These are recorded to an
   // in-object buffer because these notifications are sent on page load, and we

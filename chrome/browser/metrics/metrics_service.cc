@@ -167,8 +167,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -473,11 +471,6 @@ void MetricsService::RegisterPrefs(PrefServiceSimple* local_state) {
 #endif  // OS_CHROMEOS
 
   local_state->RegisterDictionaryPref(prefs::kProfileMetrics);
-  local_state->RegisterIntegerPref(prefs::kNumBookmarksOnBookmarkBar, 0);
-  local_state->RegisterIntegerPref(prefs::kNumFoldersOnBookmarkBar, 0);
-  local_state->RegisterIntegerPref(prefs::kNumBookmarksInOtherBookmarkFolder,
-                                   0);
-  local_state->RegisterIntegerPref(prefs::kNumFoldersInOtherBookmarkFolder, 0);
   local_state->RegisterIntegerPref(prefs::kNumKeywords, 0);
   local_state->RegisterListPref(prefs::kMetricsInitialLogsXml);
   local_state->RegisterListPref(prefs::kMetricsOngoingLogsXml);
@@ -692,8 +685,6 @@ void MetricsService::SetUpNotifications(
                  content::NotificationService::AllSources());
   registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                  content::NotificationService::AllSources());
-  registrar->Add(observer, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void MetricsService::Observe(int type,
@@ -777,12 +768,6 @@ void MetricsService::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED: {
-      Profile* p = content::Source<Profile>(source).ptr();
-      if (p)
-        LogBookmarks(BookmarkModelFactory::GetForProfile(p));
-      break;
-    }
     default:
       NOTREACHED();
       break;
@@ -1810,44 +1795,6 @@ void MetricsService::LogChildProcessChange(
       NOTREACHED() << "Unexpected notification type " << type;
       return;
   }
-}
-
-// Recursively counts the number of bookmarks and folders in node.
-static void CountBookmarks(const BookmarkNode* node,
-                           int* bookmarks,
-                           int* folders) {
-  if (node->is_url())
-    (*bookmarks)++;
-  else
-    (*folders)++;
-  for (int i = 0; i < node->child_count(); ++i)
-    CountBookmarks(node->GetChild(i), bookmarks, folders);
-}
-
-void MetricsService::LogBookmarks(const BookmarkNode* node,
-                                  const char* num_bookmarks_key,
-                                  const char* num_folders_key) {
-  DCHECK(node);
-  int num_bookmarks = 0;
-  int num_folders = 0;
-  CountBookmarks(node, &num_bookmarks, &num_folders);
-  num_folders--;  // Don't include the root folder in the count.
-
-  PrefService* pref = g_browser_process->local_state();
-  DCHECK(pref);
-  pref->SetInteger(num_bookmarks_key, num_bookmarks);
-  pref->SetInteger(num_folders_key, num_folders);
-}
-
-void MetricsService::LogBookmarks(BookmarkModel* model) {
-  DCHECK(model);
-  LogBookmarks(model->bookmark_bar_node(),
-               prefs::kNumBookmarksOnBookmarkBar,
-               prefs::kNumFoldersOnBookmarkBar);
-  LogBookmarks(model->other_node(),
-               prefs::kNumBookmarksInOtherBookmarkFolder,
-               prefs::kNumFoldersInOtherBookmarkFolder);
-  ScheduleNextStateSave();
 }
 
 void MetricsService::LogKeywordCount(size_t keyword_count) {

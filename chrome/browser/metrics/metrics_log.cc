@@ -822,28 +822,17 @@ void MetricsLog::RecordEnvironment(
 
   {
     OPEN_ELEMENT_FOR_SCOPE("bookmarks");
-    int num_bookmarks_on_bookmark_bar =
-        pref->GetInteger(prefs::kNumBookmarksOnBookmarkBar);
-    int num_folders_on_bookmark_bar =
-        pref->GetInteger(prefs::kNumFoldersOnBookmarkBar);
-    int num_bookmarks_in_other_bookmarks_folder =
-        pref->GetInteger(prefs::kNumBookmarksInOtherBookmarkFolder);
-    int num_folders_in_other_bookmarks_folder =
-        pref->GetInteger(prefs::kNumFoldersInOtherBookmarkFolder);
     {
       OPEN_ELEMENT_FOR_SCOPE("bookmarklocation");
       WriteAttribute("name", "full-tree");
-      WriteIntAttribute("foldercount",
-          num_folders_on_bookmark_bar + num_folders_in_other_bookmarks_folder);
-      WriteIntAttribute("itemcount",
-          num_bookmarks_on_bookmark_bar +
-          num_bookmarks_in_other_bookmarks_folder);
+      WriteIntAttribute("foldercount", 0);
+      WriteIntAttribute("itemcount", 0);
     }
     {
       OPEN_ELEMENT_FOR_SCOPE("bookmarklocation");
       WriteAttribute("name", "toolbar");
-      WriteIntAttribute("foldercount", num_folders_on_bookmark_bar);
-      WriteIntAttribute("itemcount", num_bookmarks_on_bookmark_bar);
+      WriteIntAttribute("foldercount", 0);
+      WriteIntAttribute("itemcount", 0);
     }
   }
 

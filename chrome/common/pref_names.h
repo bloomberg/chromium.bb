@@ -531,11 +531,6 @@ extern const char kWasRestarted[];
 extern const char kRestartSwitchMode[];
 #endif
 
-extern const char kNumBookmarksOnBookmarkBar[];
-extern const char kNumFoldersOnBookmarkBar[];
-extern const char kNumBookmarksInOtherBookmarkFolder[];
-extern const char kNumFoldersInOtherBookmarkFolder[];
-
 extern const char kNumKeywords[];
 
 extern const char kDisableVideoAndChat[];
