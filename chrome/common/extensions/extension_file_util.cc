@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -563,7 +564,8 @@ static bool ValidateLocaleInfo(const Extension& extension,
   const FilePath path = extension.path().Append(
       Extension::kLocaleFolder);
   bool path_exists = file_util::PathExists(path);
-  std::string default_locale = extension.default_locale();
+  std::string default_locale =
+      extensions::LocaleInfo::GetDefaultLocale(&extension);
 
   // If both default locale and _locales folder are empty, skip verification.
   if (default_locale.empty() && !path_exists)

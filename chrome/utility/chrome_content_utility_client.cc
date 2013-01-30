@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -52,6 +53,9 @@ void RegisterExtensionManifestHandlers() {
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kBrowserAction,
       new extensions::BrowserActionHandler);
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kDefaultLocale,
+      new extensions::DefaultLocaleHandler);
 }
 
 }  // namespace

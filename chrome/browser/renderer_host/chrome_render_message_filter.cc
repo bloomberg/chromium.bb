@@ -28,6 +28,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -375,7 +376,7 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundle(
   std::string default_locale;
   if (extension) {
     extension_path = extension->path();
-    default_locale = extension->default_locale();
+    default_locale = extensions::LocaleInfo::GetDefaultLocale(extension);
   }
 
   BrowserThread::PostTask(

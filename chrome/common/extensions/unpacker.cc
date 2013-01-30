@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -202,8 +203,8 @@ bool Unpacker::Run() {
 
   // Parse all message catalogs (if any).
   parsed_catalogs_.reset(new DictionaryValue);
-  if (!extension->default_locale().empty()) {
-    if (!ReadAllMessageCatalogs(extension->default_locale()))
+  if (!LocaleInfo::GetDefaultLocale(extension).empty()) {
+    if (!ReadAllMessageCatalogs(LocaleInfo::GetDefaultLocale(extension)))
       return false;  // Error was already reported.
   }
 

@@ -1927,7 +1927,6 @@ bool Extension::LoadSharedFeatures(
       !LoadNaClModules(error) ||
       !LoadSandboxedPages(error) ||
       !LoadRequirements(error) ||
-      !LoadDefaultLocale(error) ||
       !LoadOfflineEnabled(error) ||
       // LoadBackgroundScripts() must be called before LoadBackgroundPage().
       !LoadBackgroundScripts(error) ||
@@ -2208,17 +2207,6 @@ bool Extension::LoadRequirements(string16* error) {
       *error = ASCIIToUTF16(errors::kInvalidRequirements);
       return false;
     }
-  }
-  return true;
-}
-
-bool Extension::LoadDefaultLocale(string16* error) {
-  if (!manifest_->HasKey(keys::kDefaultLocale))
-    return true;
-  if (!manifest_->GetString(keys::kDefaultLocale, &default_locale_) ||
-      !l10n_util::IsValidLocaleSyntax(default_locale_)) {
-    *error = ASCIIToUTF16(errors::kInvalidDefaultLocale);
-    return false;
   }
   return true;
 }

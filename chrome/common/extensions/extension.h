@@ -643,7 +643,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const extensions::Manifest* manifest() const {
     return manifest_.get();
   }
-  const std::string default_locale() const { return default_locale_; }
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
   const OAuth2Info& oauth2_info() const { return oauth2_info_; }
@@ -785,7 +784,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSandboxedPages(string16* error);
   // Must be called after LoadPlugins().
   bool LoadRequirements(string16* error);
-  bool LoadDefaultLocale(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadBackgroundScripts(string16* error);
   bool LoadBackgroundScripts(const std::string& key, string16* error);
@@ -905,9 +903,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The absolute path to the directory the extension is stored in.
   FilePath path_;
-
-  // Default locale for fall back. Can be empty if extension is not localized.
-  std::string default_locale_;
 
   // If true, a separate process will be used for the extension in incognito
   // mode.

@@ -41,7 +41,7 @@ bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
     ManifestHandler* handler = iter->second.get();
     if (extension->manifest()->HasPath(iter->first) ||
         handler->AlwaysParseForType(extension->GetType()))
-    handler_set.insert(iter->second.get());
+      handler_set.insert(handler);
   }
 
   // TODO(yoz): Some handlers may depend on other handlers having already

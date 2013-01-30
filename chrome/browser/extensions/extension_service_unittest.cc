@@ -62,10 +62,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
@@ -534,7 +536,11 @@ void ExtensionServiceTestBase::SetUpTestCase() {
 }
 
 void ExtensionServiceTestBase::SetUp() {
+  testing::Test::SetUp();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
+  extensions::ManifestHandler::Register(
+      keys::kDefaultLocale,
+      new extensions::DefaultLocaleHandler);
 }
 
 class ExtensionServiceTest

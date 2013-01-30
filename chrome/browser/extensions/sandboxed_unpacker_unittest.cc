@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/unpacker.h"
@@ -18,9 +19,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
 
 using content::BrowserThread;
 using testing::_;
@@ -69,6 +67,9 @@ class SandboxedUnpackerTest : public testing::Test {
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
     client_->DelegateToFake();
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kDefaultLocale,
+        new extensions::DefaultLocaleHandler);
   }
 
   virtual void TearDown() {
