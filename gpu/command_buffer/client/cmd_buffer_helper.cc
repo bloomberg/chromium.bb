@@ -111,7 +111,7 @@ bool CommandBufferHelper::FlushSync() {
 }
 
 void CommandBufferHelper::Flush() {
-  if (usable()) {
+  if (usable() && last_put_sent_ != put_) {
     last_flush_time_ = clock();
     last_put_sent_ = put_;
     command_buffer_->Flush(put_);

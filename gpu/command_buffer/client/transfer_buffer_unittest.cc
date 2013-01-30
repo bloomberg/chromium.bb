@@ -14,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
+using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -80,6 +81,7 @@ void TransferBufferTest::TearDown() {
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*command_buffer(), OnFlush()).Times(AtMost(1));
   transfer_buffer_.reset();
 }
 
@@ -191,7 +193,7 @@ TEST_F(TransferBufferTest, Flush) {
           .Times(1)
           .RetiresOnSaturation();
     }
-    transfer_buffer_->FreePendingToken(ptr, 1);
+    transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
   }
   for (int i = 0; i < 8; ++i) {
     void* ptr = transfer_buffer_->Alloc(8u);
@@ -201,7 +203,7 @@ TEST_F(TransferBufferTest, Flush) {
           .Times(1)
           .RetiresOnSaturation();
     }
-    transfer_buffer_->FreePendingToken(ptr, 1);
+    transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
   }
 }
 
