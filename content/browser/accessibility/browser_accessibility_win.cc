@@ -20,14 +20,15 @@
 
 namespace content {
 
-// The GUID for the ISimpleDOM service is not defined in the IDL files.
-// This is taken directly from the Mozilla sources
-// (accessible/src/msaa/nsAccessNodeWrap.cpp) and it's also documented at:
+// These nonstandard GUIDs are taken directly from the Mozilla sources
+// (accessible/src/msaa/nsAccessNodeWrap.cpp); some documentation is here:
 // http://developer.mozilla.org/en/Accessibility/AT-APIs/ImplementationFeatures/MSAA
-
 const GUID GUID_ISimpleDOM = {
     0x0c539790, 0x12e4, 0x11cf,
     0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
+const GUID GUID_IAccessibleContentDocument = {
+    0xa5d8e1f3, 0x3571, 0x4d8f,
+    0x95, 0x21, 0x07, 0xed, 0x28, 0xfb, 0x07, 0x2e};
 
 const char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
 
@@ -2503,6 +2504,14 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
                                                    void** object) {
   if (!instance_active_)
     return E_FAIL;
+
+  if (guidService == GUID_IAccessibleContentDocument) {
+    // Special Mozilla extension: return the accessible for the root document.
+    // Screen readers use this to distinguish between a document loaded event
+    // on the root document vs on an iframe.
+    return manager_->GetRoot()->ToBrowserAccessibilityWin()->QueryInterface(
+        IID_IAccessible2, object);
+  }
 
   if (guidService == IID_IAccessible ||
       guidService == IID_IAccessible2 ||
