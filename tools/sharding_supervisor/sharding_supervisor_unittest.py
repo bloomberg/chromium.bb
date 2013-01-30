@@ -13,7 +13,7 @@ import unittest
 
 from xml.dom import minidom
 
-import sharding_supervisor
+import sharding_supervisor_old as sharding_supervisor
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 SHARDING_SUPERVISOR = os.path.join(ROOT_DIR, 'sharding_supervisor.py')
