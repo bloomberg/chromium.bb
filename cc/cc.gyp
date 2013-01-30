@@ -351,7 +351,9 @@
           # TODO(jamesr): Remove once https://webkit.org/b/105259 lands + rolls
           '<(webkit_src_dir)/Source/Platform/chromium'
         ]
-      }
+      },
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
 }
