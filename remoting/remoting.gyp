@@ -2296,6 +2296,7 @@
           'sources': [
             '../chrome/test/base/v8_unit_test.cc',
             '../chrome/test/base/v8_unit_test.h',
+            'webapp/browser_globals.gtestjs',
             'webapp/all_js_load.gtestjs',
             'webapp/format_iq.gtestjs',
             '<@(remoting_webapp_js_files)',
