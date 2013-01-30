@@ -7,13 +7,16 @@
 
 #include "ash/shell.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 
 namespace chromeos {
 
 // A class to observe suspend events.
-class SuspendObserver : public PowerManagerClient::Observer {
+class SuspendObserver : public PowerManagerClient::Observer,
+                        public SessionManagerClient::Observer {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
   SuspendObserver();
@@ -22,7 +25,21 @@ class SuspendObserver : public PowerManagerClient::Observer {
   // PowerManagerClient::Observer override.
   virtual void SuspendImminent() OVERRIDE;
 
+  // SessionManagerClient::Observer overrides.
+  virtual void ScreenIsLocked() OVERRIDE;
+  virtual void ScreenIsUnlocked() OVERRIDE;
+
  private:
+  PowerManagerClient* power_client_;  // not owned
+  SessionManagerClient* session_client_;  // not owned
+
+  // Is the screen currently locked?
+  bool screen_locked_;
+
+  // If set, called when the lock screen has been shown to confirm that the
+  // system is ready to be suspended.
+  base::Closure screen_lock_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(SuspendObserver);
 };
 
