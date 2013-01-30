@@ -729,4 +729,65 @@ TEST_F(RootWindowTest, GestureRecognizerResetsTargetWhenParentHides) {
   generator.GestureTapAt(gfx::Point(40, 40));
 }
 
+namespace {
+
+// A window delegate that processes nested gestures on tap.
+class NestedGestureDelegate : public test::TestWindowDelegate {
+ public:
+  NestedGestureDelegate(test::EventGenerator* generator,
+                        const gfx::Point tap_location)
+      : generator_(generator),
+        tap_location_(tap_location),
+        gesture_end_count_(0) {}
+  virtual ~NestedGestureDelegate() {}
+
+  int gesture_end_count() const { return gesture_end_count_; }
+
+ private:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    switch (event->type()) {
+      case ui::ET_GESTURE_TAP_DOWN:
+        event->SetHandled();
+        break;
+      case ui::ET_GESTURE_TAP:
+        if (generator_)
+          generator_->GestureTapAt(tap_location_);
+        event->SetHandled();
+        break;
+      case ui::ET_GESTURE_END:
+        ++gesture_end_count_;
+        break;
+      default:
+        break;
+    }
+  }
+
+  test::EventGenerator* generator_;
+  const gfx::Point tap_location_;
+  int gesture_end_count_;
+  DISALLOW_COPY_AND_ASSIGN(NestedGestureDelegate);
+};
+
+}  // namespace
+
+// Tests that gesture end is delivered after nested gesture processing.
+TEST_F(RootWindowTest, GestureEndDeliveredAfterNestedGestures) {
+  NestedGestureDelegate d1(NULL, gfx::Point());
+  scoped_ptr<Window> w1(CreateWindow(1, root_window(), &d1));
+  w1->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  test::EventGenerator nested_generator(root_window(), w1.get());
+  NestedGestureDelegate d2(&nested_generator, w1->bounds().CenterPoint());
+  scoped_ptr<Window> w2(CreateWindow(1, root_window(), &d2));
+  w2->SetBounds(gfx::Rect(100, 0, 100, 100));
+
+  // Tap on w2 which triggers nested gestures for w1.
+  test::EventGenerator generator(root_window(), w2.get());
+  generator.GestureTapAt(w2->bounds().CenterPoint());
+
+  // Both windows should get their gesture end events.
+  EXPECT_EQ(1, d1.gesture_end_count());
+  EXPECT_EQ(1, d2.gesture_end_count());
+}
+
 }  // namespace aura

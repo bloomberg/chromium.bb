@@ -63,7 +63,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
  public:
   struct AURA_EXPORT CreateParams {
     // CreateParams with initial_bounds and default host.
-    CreateParams(const gfx::Rect& initial_bounds);
+    explicit CreateParams(const gfx::Rect& initial_bounds);
     ~CreateParams() {}
 
     gfx::Rect initial_bounds;
@@ -131,6 +131,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Draw the whole screen.
   void ScheduleFullDraw();
+
+  // Returns a target window for the given gesture event.
+  Window* GetGestureTarget(ui::GestureEvent* event);
 
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture

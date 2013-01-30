@@ -336,14 +336,10 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
         SetTouchDragging(true);
       event->SetHandled();
       break;
+    case ui::ET_GESTURE_LONG_TAP:
     case ui::ET_GESTURE_END:
-      if (touch_dragging_) {
+      if (touch_dragging_)
         SetTouchDragging(false);
-
-        gfx::Point location(event->location());
-        ConvertPointToScreen(this, &location);
-        ShowContextMenu(location, true);
-      }
       break;
     default:
       break;

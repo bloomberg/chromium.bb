@@ -260,20 +260,23 @@ void RootWindow::ScheduleFullDraw() {
   compositor_->ScheduleFullDraw();
 }
 
-bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
-  DispatchHeldMouseMove();
-
+Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
         gesture_recognizer_->GetTargetForGestureEvent(event));
-    if (!target)
-      return false;
   }
 
+  return target;
+}
+
+bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
+  DispatchHeldMouseMove();
+
+  Window* target = GetGestureTarget(event);
   if (target) {
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    ProcessEvent(target ? target : this, event);
+    ProcessEvent(target, event);
     return event->handled();
   }
 
@@ -631,14 +634,25 @@ void RootWindow::ProcessEvent(Window* target, ui::Event* event) {
 }
 
 bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
-  if (!gestures)
+  if (!gestures || gestures->empty())
     return false;
+
+  Window* target = GetGestureTarget(gestures->get().at(0));
+  Window* old_target = event_dispatch_target_;
+  event_dispatch_target_ = target;
+
   bool handled = false;
-  for (unsigned int i = 0; i < gestures->size(); i++) {
-    ui::GestureEvent* gesture = gestures->get().at(i);
-    if (DispatchGestureEvent(gesture) != ui::ER_UNHANDLED)
+  for (size_t i = 0; i < gestures->size(); ++i) {
+    ui::GestureEvent* event = gestures->get().at(i);
+    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
+    if (!DispatchEvent(target, event))
+      return false;  // |this| has been destroyed.
+    if (event->handled())
       handled = true;
+    if (event_dispatch_target_ != target)  // |target| has been destroyed.
+      break;
   }
+  event_dispatch_target_ = old_target;
   return handled;
 }
 
