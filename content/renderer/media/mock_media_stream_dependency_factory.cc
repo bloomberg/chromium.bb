@@ -11,6 +11,7 @@
 
 using webrtc::AudioSourceInterface;
 using webrtc::AudioTrackInterface;
+using webrtc::AudioTrackVector;
 using webrtc::IceCandidateCollection;
 using webrtc::IceCandidateInterface;
 using webrtc::LocalMediaStreamInterface;
@@ -19,6 +20,7 @@ using webrtc::SessionDescriptionInterface;
 using webrtc::VideoRendererInterface;
 using webrtc::VideoSourceInterface;
 using webrtc::VideoTrackInterface;
+using webrtc::VideoTrackVector;
 
 namespace content {
 
@@ -72,7 +74,31 @@ class MockLocalMediaStream : public webrtc::LocalMediaStreamInterface {
     video_tracks_->AddTrack(track);
     return true;
   }
+  virtual bool RemoveTrack(AudioTrackInterface* track) OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  virtual bool RemoveTrack(VideoTrackInterface* track) OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
+  }
   virtual std::string label() const OVERRIDE { return label_; }
+  virtual AudioTrackVector GetAudioTracks() OVERRIDE {
+    return audio_track_vector_;
+  }
+  virtual VideoTrackVector GetVideoTracks() OVERRIDE {
+    return video_track_vector_;
+  }
+  virtual talk_base::scoped_refptr<AudioTrackInterface>
+      FindAudioTrack(const std::string& track_id) OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+  virtual talk_base::scoped_refptr<VideoTrackInterface>
+      FindVideoTrack(const std::string& track_id) OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
   virtual webrtc::AudioTracks* audio_tracks() OVERRIDE {
     return audio_tracks_;
   }
@@ -93,6 +119,8 @@ class MockLocalMediaStream : public webrtc::LocalMediaStreamInterface {
   std::string label_;
   scoped_refptr<MockAudioTracks> audio_tracks_;
   scoped_refptr<MockVideoTracks> video_tracks_;
+  AudioTrackVector audio_track_vector_;
+  VideoTrackVector video_track_vector_;
 };
 
 MockVideoSource::MockVideoSource()

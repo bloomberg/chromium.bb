@@ -10,6 +10,7 @@
 #include "base/logging.h"
 
 using webrtc::CreateSessionDescriptionObserver;
+using webrtc::DtmfSenderInterface;
 using webrtc::IceCandidateInterface;
 using webrtc::LocalMediaStreamInterface;
 using webrtc::MediaConstraintsInterface;
@@ -93,7 +94,7 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   virtual void UnregisterObserver() OVERRIDE {
   }
 
-  virtual const std::string& label() const OVERRIDE {
+  virtual std::string label() const OVERRIDE {
     return label_;
   }
 
@@ -171,9 +172,9 @@ void MockPeerConnectionImpl::RemoveStream(
 }
 
 
-webrtc::DtmfSender* MockPeerConnectionImpl::CreateDtmfSender(
-    webrtc::AudioTrackInterface* track,
-    webrtc::DtmfSenderObserverInterface* observer) {
+talk_base::scoped_refptr<DtmfSenderInterface>
+MockPeerConnectionImpl::CreateDtmfSender(
+    webrtc::AudioTrackInterface* track) {
   NOTIMPLEMENTED();
   return NULL;
 }

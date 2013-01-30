@@ -465,6 +465,10 @@
           ],
         }],
         ['OS=="android"', {
+          'sources': [
+            '<(libjingle_source)/talk/base/ifaddrs-android.cc',
+            '<(libjingle_source)/talk/base/ifaddrs-android.h',
+          ],
           'sources!': [
             # These depend on jsoncpp which we don't load because we probably
             # don't actually need this code at all.
@@ -608,6 +612,8 @@
             '<(libjingle_source)/talk/app/webrtc/jsepicecandidate.h',
             '<(libjingle_source)/talk/app/webrtc/jsepsessiondescription.cc',
             '<(libjingle_source)/talk/app/webrtc/jsepsessiondescription.h',
+            '<(libjingle_source)/talk/app/webrtc/localaudiosource.cc',
+            '<(libjingle_source)/talk/app/webrtc/localaudiosource.h',
             '<(libjingle_source)/talk/app/webrtc/localvideosource.cc',
             '<(libjingle_source)/talk/app/webrtc/localvideosource.h',
             '<(libjingle_source)/talk/app/webrtc/mediastream.cc',
