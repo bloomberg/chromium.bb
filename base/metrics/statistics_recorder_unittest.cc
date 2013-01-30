@@ -132,8 +132,6 @@ TEST_F(StatisticsRecorderTest, RegisterHistogram) {
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(1u, registered_histograms.size());
-
-  DeleteHistogram(histogram);
 }
 
 TEST_F(StatisticsRecorderTest, FindHistogram) {
