@@ -219,10 +219,35 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private SelectionHandleController mSelectionHandleController;
     private InsertionHandleController mInsertionHandleController;
-    // These offsets in document space with page scale normalized to 1.0.
-    private final PointF mStartHandleNormalizedPoint = new PointF();
-    private final PointF mEndHandleNormalizedPoint = new PointF();
-    private final PointF mInsertionHandleNormalizedPoint = new PointF();
+
+    /**
+     * Handles conversion of a point from window to document space and vice versa.
+     */
+    private class NormalizedPoint {
+        final PointF document = new PointF();
+        final PointF window = new PointF();
+        void updateDocumentFromWindow() {
+            float x = (window.x + mNativeScrollX) / mNativePageScaleFactor;
+            float y = (window.y + mNativeScrollY) / mNativePageScaleFactor;
+            document.set(x, y);
+        }
+        void updateWindowFromDocument() {
+            float x = document.x * mNativePageScaleFactor - mNativeScrollX;
+            float y = document.y * mNativePageScaleFactor - mNativeScrollY;
+            window.set(x, y);
+        }
+        void setWindow(float x, float y) {
+            window.set(x, y);
+            updateDocumentFromWindow();
+        }
+        void setDocument(float x, float y) {
+            document.set(x, y);
+            updateWindowFromDocument();
+        }
+    }
+    private final NormalizedPoint mStartHandlePoint = new NormalizedPoint();
+    private final NormalizedPoint mEndHandlePoint = new NormalizedPoint();
+    private final NormalizedPoint mInsertionHandlePoint = new NormalizedPoint();
 
     // Tracks whether a selection is currently active.  When applied to selected text, indicates
     // whether the last selected text is still highlighted.
@@ -1733,15 +1758,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 }
 
                 @Override
-                public void showHandlesAt(int x1, int y1, int dir1, int x2, int y2, int dir2) {
-                    super.showHandlesAt(x1, y1, dir1, x2, y2, dir2);
-                    mStartHandleNormalizedPoint.set(
-                            (x1 + mNativeScrollX) / mNativePageScaleFactor,
-                            (y1 + mNativeScrollY) / mNativePageScaleFactor);
-                    mEndHandleNormalizedPoint.set(
-                            (x2 + mNativeScrollX) / mNativePageScaleFactor,
-                            (y2 + mNativeScrollY) / mNativePageScaleFactor);
-
+                public void showHandles(int startDir, int endDir) {
+                    super.showHandles(startDir, endDir);
                     showSelectActionBar();
                 }
 
@@ -1777,11 +1795,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 }
 
                 @Override
-                public void showHandleAt(int x, int y) {
-                    super.showHandleAt(x, y);
-                    mInsertionHandleNormalizedPoint.set(
-                            (x + mNativeScrollX) / mNativePageScaleFactor,
-                            (y + mNativeScrollY) / mNativePageScaleFactor);
+                public void showHandle() {
+                    super.showHandle();
                 }
             };
 
@@ -1796,20 +1811,16 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     private void updateHandleScreenPositions() {
+        mStartHandlePoint.updateWindowFromDocument();
+        mEndHandlePoint.updateWindowFromDocument();
+        mInsertionHandlePoint.updateWindowFromDocument();
         if (mSelectionHandleController != null && mSelectionHandleController.isShowing()) {
-            float startX = mStartHandleNormalizedPoint.x * mNativePageScaleFactor - mNativeScrollX;
-            float startY = mStartHandleNormalizedPoint.y * mNativePageScaleFactor - mNativeScrollY;
-            mSelectionHandleController.setStartHandlePosition((int) startX, (int) startY);
-
-            float endX = mEndHandleNormalizedPoint.x * mNativePageScaleFactor - mNativeScrollX;
-            float endY = mEndHandleNormalizedPoint.y * mNativePageScaleFactor - mNativeScrollY;
-            mSelectionHandleController.setEndHandlePosition((int) endX, (int) endY);
+            mSelectionHandleController.setStartHandlePosition(mStartHandlePoint.window);
+            mSelectionHandleController.setEndHandlePosition(mEndHandlePoint.window);
         }
 
         if (mInsertionHandleController != null && mInsertionHandleController.isShowing()) {
-            float x = mInsertionHandleNormalizedPoint.x * mNativePageScaleFactor - mNativeScrollX;
-            float y = mInsertionHandleNormalizedPoint.y * mNativePageScaleFactor - mNativeScrollY;
-            mInsertionHandleController.setHandlePosition((int) x, (int) y);
+            mInsertionHandleController.setHandlePosition(mInsertionHandlePoint.window);
         }
     }
 
@@ -2037,11 +2048,16 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         int y1 = startRect.bottom;
         int x2 = endRect.left;
         int y2 = endRect.bottom;
+
         if (x1 != x2 || y1 != y2) {
             if (mInsertionHandleController != null) {
                 mInsertionHandleController.hide();
             }
-            getSelectionHandleController().onSelectionChanged(x1, y1, dir1, x2, y2, dir2);
+            mStartHandlePoint.setWindow(x1, y1);
+            mEndHandlePoint.setWindow(x2, y2);
+
+            getSelectionHandleController().onSelectionChanged(dir1, dir2);
+            updateHandleScreenPositions();
             mHasSelection = true;
         } else {
             hideSelectActionBar();
@@ -2053,12 +2069,16 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 if (mSelectionHandleController != null) {
                     mSelectionHandleController.hide();
                 }
-                getInsertionHandleController().onCursorPositionChanged(x1, y1);
+                mInsertionHandlePoint.setWindow(x1, y1);
+
+                getInsertionHandleController().onCursorPositionChanged();
+                updateHandleScreenPositions();
                 InputMethodManager manager = (InputMethodManager)
                         getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (manager.isWatchingCursor(mContainerView)) {
-                    manager.updateCursor(mContainerView, startRect.left, startRect.top,
-                            startRect.right, startRect.bottom);
+                    PointF point = mInsertionHandlePoint.window;
+                    manager.updateCursor(mContainerView, (int)point.x, (int)point.y, (int)point.x,
+                            (int)point.y);
                 }
             } else {
                 // Deselection
@@ -2084,8 +2104,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     @SuppressWarnings("unused")
     @CalledByNative
     private void showPastePopup(int x, int y) {
-        getInsertionHandleController()
-                .showHandleWithPastePopupAt(x - mNativeScrollX, y - mNativeScrollY);
+        mInsertionHandlePoint.setWindow(x, y);
+        getInsertionHandleController().showHandleWithPastePopup();
+        updateHandleScreenPositions();
     }
 
     @SuppressWarnings("unused")
