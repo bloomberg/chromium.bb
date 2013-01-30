@@ -1295,16 +1295,13 @@ bool ShellUtil::CreateOrUpdateShortcut(
 
   FilePath user_shortcut_path;
   FilePath system_shortcut_path;
-  if (!GetShortcutPath(location, dist, CURRENT_USER, &user_shortcut_path) ||
-      !GetShortcutPath(location, dist, SYSTEM_LEVEL, &system_shortcut_path) ||
-      user_shortcut_path.empty() ||
+  if (!GetShortcutPath(location, dist, SYSTEM_LEVEL, &system_shortcut_path) ||
       system_shortcut_path.empty()) {
     NOTREACHED();
     return false;
   }
 
   string16 shortcut_name(ExtractShortcutNameFromProperties(dist, properties));
-  user_shortcut_path = user_shortcut_path.Append(shortcut_name);
   system_shortcut_path = system_shortcut_path.Append(shortcut_name);
 
   FilePath* chosen_path;
@@ -1317,6 +1314,12 @@ bool ShellUtil::CreateOrUpdateShortcut(
     // Otherwise install the user-level shortcut, unless the system-level
     // variant of this shortcut is present on the machine and |operation| states
     // not to create a user-level shortcut in that case.
+    if (!GetShortcutPath(location, dist, CURRENT_USER, &user_shortcut_path) ||
+        user_shortcut_path.empty()) {
+      NOTREACHED();
+      return false;
+    }
+    user_shortcut_path = user_shortcut_path.Append(shortcut_name);
     chosen_path = &user_shortcut_path;
   } else {
     // Do not install any shortcut if we are told to install a user-level
