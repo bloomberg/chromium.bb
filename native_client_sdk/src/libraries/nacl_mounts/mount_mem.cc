@@ -63,10 +63,6 @@ MountNode* MountMem::AllocateData(int mode) {
   return ptr;
 }
 
-void MountMem::ReleaseNode(MountNode* node) {
-  node->Release();
-}
-
 int MountMem::AllocateINO() {
   const int INO_CNT = 8;
 
@@ -179,13 +175,6 @@ MountNode* MountMem::Open(const Path& path, int mode) {
   // We opened it, so ref count it before passing it back.
   node->Acquire();
   return node;
-}
-
-int MountMem::Close(MountNode* node) {
-  AutoLock lock(&lock_);
-  node->Close();
-  ReleaseNode(node);
-  return 0;
 }
 
 int MountMem::Mkdir(const Path& path, int mode) {

@@ -89,6 +89,7 @@ EXTERN_C_BEGIN
 DECLARE(chdir)
 DECLARE(close)
 DECLARE(dup)
+DECLARE(dup2)
 DECLARE(fstat)
 DECLARE(getcwd)
 DECLARE(getdents)
@@ -125,6 +126,10 @@ int WRAP(dup)(int fd, int* newfd) NOTHROW {
   return (*newfd < 0) ? errno : 0;
 }
 
+int WRAP(dup2)(int fd, int newfd) NOTHROW {
+  return (ki_dup2(fd, newfd) < 0) ? errno : 0;
+}
+
 int WRAP(fstat)(int fd, struct nacl_abi_stat *nacl_buf) {
   struct stat buf;
   memset(&buf, 0, sizeof(struct stat));
@@ -140,17 +145,6 @@ int fsync(int fd) {
 }
 
 char* getcwd(char* buf, size_t size) NOTHROW {
-  // gtest uses getcwd in a static initializer. If we haven't initialized the
-  // kernel-intercept yet, just return ".".
-  if (!ki_is_initialized()) {
-    if (size < 2) {
-      errno = ERANGE;
-      return NULL;
-    }
-    buf[0] = '.';
-    buf[1] = 0;
-    return buf;
-  }
   return ki_getcwd(buf, size);
 }
 
@@ -223,6 +217,9 @@ int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
 }
 
 int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
+  if (!ki_is_initialized())
+    return REAL(read)(fd, buf, count, nread);
+
   *nread = ki_read(fd, buf, count);
   return (*nread < 0) ? errno : 0;
 }
@@ -267,24 +264,33 @@ int unlink(const char* path) NOTHROW {
 }
 
 int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
+  if (!ki_is_initialized())
+    return REAL(write)(fd, buf, count, nwrote);
+
   *nwrote = ki_write(fd, buf, count);
   return (*nwrote < 0) ? errno : 0;
 }
 
 void kernel_wrap_init() {
-  DO_WRAP(chdir);
-  DO_WRAP(close);
-  DO_WRAP(dup);
-  DO_WRAP(fstat);
-  DO_WRAP(getcwd);
-  DO_WRAP(getdents);
-  DO_WRAP(mkdir);
-  DO_WRAP(open);
-  DO_WRAP(read);
-  DO_WRAP(rmdir);
-  DO_WRAP(seek);
-  DO_WRAP(stat);
-  DO_WRAP(write);
+  static bool wrapped = false;
+
+  if (!wrapped) {
+    wrapped = true;
+    DO_WRAP(chdir);
+    DO_WRAP(close);
+    DO_WRAP(dup);
+    DO_WRAP(dup2);
+    DO_WRAP(fstat);
+    DO_WRAP(getcwd);
+    DO_WRAP(getdents);
+    DO_WRAP(mkdir);
+    DO_WRAP(open);
+    DO_WRAP(read);
+    DO_WRAP(rmdir);
+    DO_WRAP(seek);
+    DO_WRAP(stat);
+    DO_WRAP(write);
+  }
 }
 
 EXTERN_C_END

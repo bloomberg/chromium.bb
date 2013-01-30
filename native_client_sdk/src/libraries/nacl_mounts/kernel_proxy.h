@@ -40,6 +40,7 @@ class KernelProxy : protected KernelObject {
   virtual int open(const char *path, int oflag);
   virtual int close(int fd);
   virtual int dup(int fd);
+  virtual int dup2(int fd, int newfd);
 
   // System calls handled by KernelProxy (not mount-specific)
   virtual int chdir(const char* path);

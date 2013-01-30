@@ -67,6 +67,10 @@ int _dup(int oldfd) {
   return ki_dup(oldfd);
 }
 
+int _dup2(int oldfd, int newfd) {
+  return ki_dup2(oldfd, newfd);
+}
+
 int _fstat32(int fd, struct _stat32* buf) {
   struct stat ki_buf;
   int res = ki_fstat(fd, &ki_buf);
@@ -100,17 +104,6 @@ int fsync(int fd) {
 }
 
 char* _getcwd(char* buf, int size) {
-  // gtest uses getcwd in a static initializer. If we haven't initialized the
-  // kernel-intercept yet, just return ".".
-  if (!ki_is_initialized()) {
-    if (size < 2) {
-      errno = ERANGE;
-      return NULL;
-    }
-    buf[0] = '.';
-    buf[1] = 0;
-    return buf;
-  }
   return ki_getcwd(buf, size);
 }
 
@@ -168,10 +161,16 @@ errno_t _sopen_s(int* pfh, const char* path, int oflag, int shflag, int pmode) {
 }
 
 int _read(int fd, void* buf, size_t nbyte) {
+  if (!ki_is_initialized())
+    return 0;
+
   return ki_read(fd, buf, nbyte);
 }
 
 int _read_nolock(int fd, void* buf, size_t nbyte) {
+  if (!ki_is_initialized())
+    return 0;
+
   return ki_read(fd, buf, nbyte);
 }
 
@@ -224,6 +223,9 @@ int _unlink(const char* path) {
 }
 
 int _write(int fd, const void* buf, size_t nbyte) {
+  if (!ki_is_initialized())
+    return 0;
+
   return ki_write(fd, buf, nbyte);
 }
 

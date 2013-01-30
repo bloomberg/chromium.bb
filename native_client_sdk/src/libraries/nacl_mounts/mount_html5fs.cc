@@ -16,12 +16,6 @@
 
 namespace {
 
-void ReleaseAndNullNode(MountNode** node) {
-  if (*node)
-    (*node)->Release();
-  *node = NULL;
-}
-
 #if defined(WIN32)
 int64_t strtoull(const char* nptr, char** endptr, int base) {
   return _strtoui64(nptr, endptr, base);
@@ -50,13 +44,6 @@ MountNode *MountHtml5Fs::Open(const Path& path, int mode) {
   }
 
   return node;
-}
-
-int MountHtml5Fs::Close(MountNode* node) {
-  AutoLock lock(&lock_);
-  node->Close();
-  node->Release();
-  return 0;
 }
 
 int MountHtml5Fs::Unlink(const Path& path) {

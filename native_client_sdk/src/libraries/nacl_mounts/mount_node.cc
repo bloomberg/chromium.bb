@@ -18,9 +18,15 @@ MountNode::MountNode(Mount* mount, int ino, int dev)
   memset(&stat_, 0, sizeof(stat_));
   stat_.st_ino = ino;
   stat_.st_dev = dev;
+
+  // Mount should normally never be NULL, but may be null in tests.
+  if (mount_)
+    mount_->OnNodeCreated();
 }
 
 MountNode::~MountNode() {
+  if (mount_)
+    mount_->OnNodeDestroyed();
 }
 
 bool MountNode::Init(int mode, short uid, short gid) {
@@ -28,6 +34,10 @@ bool MountNode::Init(int mode, short uid, short gid) {
   stat_.st_gid = gid;
   stat_.st_uid = uid;
   return true;
+}
+
+void MountNode::Destroy() {
+  Close();
 }
 
 int MountNode::Close() {
@@ -54,6 +64,7 @@ int MountNode::Ioctl(int request, char* arg) {
   errno = EINVAL;
   return -1;
 }
+
 int MountNode::Read(size_t offs, void* buf, size_t count) {
   errno = EINVAL;
   return -1;

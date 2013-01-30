@@ -470,13 +470,6 @@ MountNode *MountHttp::Open(const Path& path, int mode) {
   return node;
 }
 
-int MountHttp::Close(MountNode* node) {
-  AutoLock lock(&lock_);
-  node->Close();
-  node->Release();
-  return 0;
-}
-
 int MountHttp::Unlink(const Path& path) {
   errno = ENOSYS;
   return -1;

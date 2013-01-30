@@ -208,13 +208,6 @@ MountNode *MountDev::Open(const Path& path, int mode) {
   return node;
 }
 
-int MountDev::Close(MountNode* node) {
-  AutoLock lock(&lock_);
-  node->Close();
-  node->Release();
-  return 0;
-}
-
 int MountDev::Unlink(const Path& path) {
   errno = EINVAL;
   return -1;

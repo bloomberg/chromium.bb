@@ -20,30 +20,15 @@ namespace {
 
 class MountMemMock : public MountMem {
  public:
-  MountMemMock()
-      : MountMem(),
-        nodes_(0) {
+  MountMemMock() {
     StringMap_t map;
     Init(1, map, NULL);
   };
-
-  MountNode* AllocateData(int mode) {
-    nodes_++;
-    return MountMem::AllocateData(mode);
-  }
-
-  void ReleaseNode(MountNode* node) {
-    if (!node->Release()) {
-      nodes_--;
-    }
-  }
-
-  int nodes_;
 };
 
 class MountDevMock : public MountDev {
  public:
-  MountDevMock() : MountDev() {
+  MountDevMock() {
     StringMap_t map;
     Init(1, map, NULL);
   }
@@ -61,7 +46,8 @@ TEST(MountTest, Sanity) {
 
   char buf1[1024];
 
-  EXPECT_EQ(0, mnt->nodes_);
+  // A memory mount starts with one directory node: the root.
+  EXPECT_EQ(1, mnt->num_nodes());
 
   // Fail to open non existant file
   EXPECT_EQ(NULL_NODE, mnt->Open(Path("/foo"), O_RDWR));
@@ -72,7 +58,7 @@ TEST(MountTest, Sanity) {
   EXPECT_NE(NULL_NODE, file);
   if (file == NULL) return;
   EXPECT_EQ(2, file->RefCount());
-  EXPECT_EQ(1, mnt->nodes_);
+  EXPECT_EQ(2, mnt->num_nodes());
 
   // Open the root directory
   root = mnt->Open(Path("/"), O_RDWR);
@@ -86,7 +72,7 @@ TEST(MountTest, Sanity) {
   // Fail to re-create the same file
   EXPECT_EQ(NULL_NODE, mnt->Open(Path("/foo"), O_RDWR | O_CREAT | O_EXCL));
   EXPECT_EQ(errno, EEXIST);
-  EXPECT_EQ(1, mnt->nodes_);
+  EXPECT_EQ(2, mnt->num_nodes());
 
   // Fail to create a directory with the same name
   EXPECT_EQ(-1, mnt->Mkdir(Path("/foo"), O_RDWR));
@@ -102,18 +88,18 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(file, mnt->Open(Path("/foo"), O_RDWR | O_CREAT));
   EXPECT_EQ(sizeof(buf1), file->GetSize());
   EXPECT_EQ(3, file->RefCount());
-  EXPECT_EQ(1, mnt->nodes_);
+  EXPECT_EQ(2, mnt->num_nodes());
 
   // Attempt to close and delete the file
-  EXPECT_EQ(0, mnt->Close(file));
-  EXPECT_EQ(1, mnt->nodes_);
+  mnt->ReleaseNode(file);
+  EXPECT_EQ(2, mnt->num_nodes());
   EXPECT_EQ(0, mnt->Unlink(Path("/foo")));
-  EXPECT_EQ(1, mnt->nodes_);
+  EXPECT_EQ(2, mnt->num_nodes());
   EXPECT_EQ(-1, mnt->Unlink(Path("/foo")));
-  EXPECT_EQ(1, mnt->nodes_);
+  EXPECT_EQ(2, mnt->num_nodes());
   EXPECT_EQ(errno, ENOENT);
-  EXPECT_EQ(0, mnt->Close(file));
-  EXPECT_EQ(0, mnt->nodes_);
+  mnt->ReleaseNode(file);
+  EXPECT_EQ(1, mnt->num_nodes());
 
   // Recreate foo as a directory
   EXPECT_EQ(0, mnt->Mkdir(Path("/foo"), O_RDWR));
@@ -130,9 +116,9 @@ TEST(MountTest, Sanity) {
   // Unlink the file, then delete the directory
   EXPECT_EQ(0, mnt->Unlink(Path("/foo/bar")));
   EXPECT_EQ(0, mnt->Rmdir(Path("/foo")));
-  EXPECT_EQ(1, mnt->nodes_);
-  EXPECT_EQ(0, mnt->Close(file));
-  EXPECT_EQ(0, mnt->nodes_);
+  EXPECT_EQ(2, mnt->num_nodes());
+  mnt->ReleaseNode(file);
+  EXPECT_EQ(1, mnt->num_nodes());
 
   // Verify the directory is gone
   file =  mnt->Open(Path("/foo"), O_RDWR);
@@ -147,7 +133,7 @@ TEST(MountTest, MemMountRemove) {
   EXPECT_EQ(0, mnt->Mkdir(Path("/dir"), O_RDWR));
   file = mnt->Open(Path("/file"), O_RDWR | O_CREAT | O_EXCL);
   EXPECT_NE(NULL_NODE, file);
-  EXPECT_EQ(0, mnt->Close(file));
+  mnt->ReleaseNode(file);
 
   EXPECT_EQ(0, mnt->Remove(Path("/dir")));
   EXPECT_EQ(0, mnt->Remove(Path("/file")));
@@ -171,7 +157,7 @@ TEST(MountTest, DevNull) {
   const int kBufferLength = 100;
   char buffer[kBufferLength];
   EXPECT_EQ(0, dev_null->Read(0, &buffer[0], kBufferLength));
-  EXPECT_EQ(0, mnt->Close(dev_null));
+  mnt->ReleaseNode(dev_null);
 }
 
 TEST(MountTest, DevZero) {
@@ -193,7 +179,7 @@ TEST(MountTest, DevZero) {
   char zero_buffer[kBufferLength];
   memset(&zero_buffer[0], 0, kBufferLength);
   EXPECT_EQ(0, memcmp(&buffer[0], &zero_buffer[0], kBufferLength));
-  EXPECT_EQ(0, mnt->Close(dev_zero));
+  mnt->ReleaseNode(dev_zero);
 }
 
 TEST(MountTest, DevUrandom) {

@@ -11,10 +11,7 @@ class MountNode;
 
 class MountDev : public Mount {
  public:
-  // Open and Close will affect the RefCount on the node, so
-  // there must be a call to close for each call to open.
   virtual MountNode *Open(const Path& path, int mode);
-  virtual int Close(MountNode* node);
 
   virtual int Unlink(const Path& path);
   virtual int Mkdir(const Path& path, int permissions);

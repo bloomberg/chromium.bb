@@ -21,10 +21,25 @@
 #include "gtest/gtest.h"
 
 
-TEST(KernelProxy, WorkingDirectory) {
-  char text[1024];
+class KernelProxyTest : public ::testing::Test {
+ public:
+  KernelProxyTest()
+      : kp_(new KernelProxy) {
+    ki_init(kp_);
+  }
 
-  ki_init(new KernelProxy());
+  ~KernelProxyTest() {
+    ki_uninit();
+    delete kp_;
+  }
+
+ private:
+  KernelProxy* kp_;
+};
+
+
+TEST_F(KernelProxyTest, WorkingDirectory) {
+  char text[1024];
 
   text[0] = 0;
   ki_getcwd(text, sizeof(text));
@@ -39,7 +54,7 @@ TEST(KernelProxy, WorkingDirectory) {
   EXPECT_STREQ("/", alloc);
 
   EXPECT_EQ(-1, ki_chdir("/foo"));
-  EXPECT_EQ(EEXIST, errno);
+  EXPECT_EQ(ENOENT, errno);
 
   EXPECT_EQ(0, ki_chdir("/"));
 
@@ -54,19 +69,17 @@ TEST(KernelProxy, WorkingDirectory) {
 
   memset(text, 0, sizeof(text));
   EXPECT_EQ(-1, ki_chdir("foo"));
-  EXPECT_EQ(EEXIST, errno);
+  EXPECT_EQ(ENOENT, errno);
   EXPECT_EQ(0, ki_chdir(".."));
   EXPECT_EQ(0, ki_chdir("/foo"));
   EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
   EXPECT_STREQ("/foo", text);
 }
 
-TEST(KernelProxy, MemMountIO) {
+TEST_F(KernelProxyTest, MemMountIO) {
   char text[1024];
   int fd1, fd2, fd3;
   int len;
-
-  ki_init(new KernelProxy());
 
   // Create "/foo"
   EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
@@ -120,9 +133,7 @@ TEST(KernelProxy, MemMountIO) {
   EXPECT_STREQ("HELLOWORLD", text);
 }
 
-TEST(KernelProxy, MemMountLseek) {
-  ki_init(new KernelProxy());
-
+TEST_F(KernelProxyTest, MemMountLseek) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR);
   EXPECT_EQ(9, ki_write(fd, "Some text", 9));
 
@@ -138,6 +149,48 @@ TEST(KernelProxy, MemMountLseek) {
   EXPECT_EQ(9, ki_lseek(fd, -4, SEEK_END));
   EXPECT_EQ(4, ki_read(fd, &buffer[0], 4));
   EXPECT_EQ(0, memcmp("\0\0\0\0", buffer, 4));
+}
+
+TEST_F(KernelProxyTest, CloseTwice) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
+
+  int fd2 = ki_dup(fd);
+  EXPECT_NE(-1, fd2);
+
+  EXPECT_EQ(0, ki_close(fd));
+  EXPECT_EQ(0, ki_close(fd2));
+}
+
+TEST_F(KernelProxyTest, MemMountDup) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+
+  int dup_fd = ki_dup(fd);
+  EXPECT_NE(-1, dup_fd);
+
+  EXPECT_EQ(9, ki_write(fd, "Some text", 9));
+  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
+  EXPECT_EQ(9, ki_lseek(dup_fd, 0, SEEK_CUR));
+
+  int dup2_fd = 123;
+  EXPECT_EQ(dup2_fd, ki_dup2(fd, dup2_fd));
+  EXPECT_EQ(9, ki_lseek(dup2_fd, 0, SEEK_CUR));
+
+  int new_fd = ki_open("/bar", O_CREAT | O_RDWR);
+
+  EXPECT_EQ(fd, ki_dup2(new_fd, fd));
+  // fd, new_fd -> "/bar"
+  // dup_fd, dup2_fd -> "/foo"
+
+  // We should still be able to write to dup_fd (i.e. it should not be closed).
+  EXPECT_EQ(4, ki_write(dup_fd, "more", 4));
+
+  EXPECT_EQ(0, ki_close(dup2_fd));
+  // fd, new_fd -> "/bar"
+  // dup_fd -> "/foo"
+
+  EXPECT_EQ(dup_fd, ki_dup2(fd, dup_fd));
+  // fd, new_fd, dup_fd -> "/bar"
 }
 
 
@@ -160,8 +213,25 @@ class KernelProxyMountMock : public KernelProxy {
   }
 };
 
-TEST(KernelProxy, MountInit) {
-  ki_init(new KernelProxyMountMock());
+class KernelProxyMountTest : public ::testing::Test {
+ public:
+  KernelProxyMountTest()
+      : kp_(new KernelProxyMountMock) {
+    ki_init(kp_);
+  }
+
+  ~KernelProxyMountTest() {
+    ki_uninit();
+    delete kp_;
+  }
+
+ private:
+  KernelProxy* kp_;
+};
+
+
+
+TEST_F(KernelProxyMountTest, MountInit) {
   int res1 = ki_mount("/", "/mnt1", "initfs", 0, "false,foo=bar");
 
   EXPECT_EQ("bar", g_StringMap["foo"]);

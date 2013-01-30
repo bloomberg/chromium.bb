@@ -80,6 +80,7 @@ class MountHtml5FsMock : public MountHtml5Fs {
 class MountHtml5FsTest : public ::testing::Test {
  public:
   MountHtml5FsTest();
+  ~MountHtml5FsTest();
   void SetUpFilesystem(PP_FileSystemType, int);
 
  protected:
@@ -91,6 +92,10 @@ class MountHtml5FsTest : public ::testing::Test {
 
 MountHtml5FsTest::MountHtml5FsTest()
     : ppapi_(NULL) {
+}
+
+MountHtml5FsTest::~MountHtml5FsTest() {
+  delete ppapi_;
 }
 
 void MountHtml5FsTest::SetUpFilesystem(PP_FileSystemType fstype,
@@ -162,7 +167,7 @@ void MountHtml5FsNodeTest::SetUp() {
 }
 
 void MountHtml5FsNodeTest::TearDown() {
-  mnt_->Close(node_);
+  mnt_->ReleaseNode(node_);
   delete mnt_;
 }
 
@@ -222,6 +227,7 @@ TEST_F(MountHtml5FsTest, Remove) {
   int32_t result = mnt.Remove(Path(path));
   ASSERT_EQ(0, result);
 }
+
 TEST_F(MountHtml5FsNodeTest, OpenAndClose) {
 }
 

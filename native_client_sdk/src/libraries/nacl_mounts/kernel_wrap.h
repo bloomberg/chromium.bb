@@ -39,6 +39,7 @@ int NAME(chdir)(const char* path) NOTHROW;
 int NAME(chmod)(const char* path, chmod_mode_t mode) NOTHROW;
 int NAME(close)(int fd);
 int NAME(dup)(int oldfd) NOTHROW;
+int NAME(dup2)(int oldfd, int newfd) NOTHROW;
 #if defined(WIN32)
 int _fstat32(int fd, struct _stat32* buf);
 int _fstat64(int fd, struct _stat64* buf);

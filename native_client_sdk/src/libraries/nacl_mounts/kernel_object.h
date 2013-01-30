@@ -38,6 +38,7 @@ class KernelObject {
   // Allocate a new fd and assign the handle to it, while
   // ref counting the handle and associated mount.
   int AllocateFD(KernelHandle* handle);
+  void AssignFD(int fd, KernelHandle* handle);
   void FreeFD(int fd);
 
  protected:

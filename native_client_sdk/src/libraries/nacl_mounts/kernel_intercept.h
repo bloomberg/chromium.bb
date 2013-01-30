@@ -23,11 +23,13 @@ void ki_init_ppapi(void* kernel_proxy,
                    PP_Instance instance,
                    PPB_GetInterface get_browser_interface);
 int ki_is_initialized();
+void ki_uninit();
 
 int ki_chdir(const char* path);
 char* ki_getcwd(char* buf, size_t size);
 char* ki_getwd(char* buf);
 int ki_dup(int oldfd);
+int ki_dup2(int oldfd, int newfd);
 int ki_chmod(const char* path, mode_t mode);
 int ki_stat(const char* path, struct stat* buf);
 int ki_mkdir(const char* path, mode_t mode);

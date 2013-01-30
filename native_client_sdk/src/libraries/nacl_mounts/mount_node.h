@@ -18,12 +18,17 @@ class MountNode : public RefObject {
  protected:
   virtual ~MountNode();
 
+  // This method is called by Destroy when the last reference to this
+  // MountNode is released. Override this instead of Destroy, but do not call
+  // it directly.
+  virtual int Close();
+
  protected:
   MountNode(Mount* mount, int ino, int dev);
   virtual bool Init(int mode, short uid, short gid);
-  virtual int Close();
+  virtual void Destroy();
 
-public:
+ public:
   // Normal OS operations on a node (file), can be called by the kernel
   // directly so it must lock and unlock appropriately.  These functions
   // must not be called by the mount.
@@ -43,7 +48,7 @@ public:
   virtual bool IsaFile();
   virtual bool IsaTTY();
 
-protected:
+ protected:
   // Directory operations on the node are done by the Mount. The mount's lock
   // must be held while these calls are made.
 

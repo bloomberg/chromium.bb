@@ -30,9 +30,6 @@ class Mount : public RefObject {
   // This function must assign a root node, or replace FindNode.
   // |ppapi| can be NULL. If so, this mount cannot make any pepper calls.
   virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
-
-  // Destroy is called when the reference count reaches zero,
-  // just before the destructor is called.
   virtual void Destroy();
 
  public:
@@ -42,13 +39,12 @@ class Mount : public RefObject {
   PepperInterface* ppapi() { return ppapi_; }
 
   // All paths are expected to containing a leading "/"
-  virtual void AcquireNode(MountNode* node);
-  virtual void ReleaseNode(MountNode* node);
+  void AcquireNode(MountNode* node);
+  void ReleaseNode(MountNode* node);
 
-  // Open and Close will affect the RefCount on the node, so
-  // there must be a call to close for each call to open.
+  // Open a node at |path|. The resulting MountNode is created with a ref
+  // count of 1, and will be Closed when the last reference is released.
   virtual MountNode *Open(const Path& path, int mode) = 0;
-  virtual int Close(MountNode* node) = 0;
 
   // Unlink, Mkdir, Rmdir will affect the both the RefCount
   // and the nlink number in the stat object.
@@ -60,9 +56,17 @@ class Mount : public RefObject {
   // Convert from R,W,R/W open flags to STAT permission flags
   static int OpenModeToPermission(int mode);
 
+  unsigned int num_nodes() const { return num_nodes_; }
+
+  // Should only be called by MountNode when a new node is created with this
+  // Mount as its parent.
+  void OnNodeCreated();
+  void OnNodeDestroyed();
+
  protected:
   // Device number for the mount.
   int dev_;
+  unsigned int num_nodes_;
   PepperInterface* ppapi_;  // Weak reference.
 
  private:

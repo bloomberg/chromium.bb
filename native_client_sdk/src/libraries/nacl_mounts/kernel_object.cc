@@ -4,6 +4,7 @@
  */
 #include "nacl_mounts/kernel_object.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -103,8 +104,8 @@ int KernelObject::AllocateFD(KernelHandle* handle) {
   AutoLock lock(&lock_);
   int id;
 
-  // Acquire then handle and it's mount since we are about
-  // to track them with this FD.
+  // Acquire the handle and its mount since we are about to track it with
+  // this FD.
   handle->Acquire();
   handle->mount_->Acquire();
 
@@ -119,6 +120,21 @@ int KernelObject::AllocateFD(KernelHandle* handle) {
     handle_map_.push_back(handle);
   }
   return id;
+}
+
+void KernelObject::AssignFD(int fd, KernelHandle* handle) {
+  AutoLock lock(&lock_);
+
+  // Acquire the handle and its mount since we are about to track it with
+  // this FD.
+  handle->Acquire();
+  handle->mount_->Acquire();
+
+  if (fd >= handle_map_.size())
+    handle_map_.resize(fd + 1);
+
+  assert(handle_map_[fd] == NULL);
+  handle_map_[fd] = handle;
 }
 
 void KernelObject::FreeFD(int fd) {

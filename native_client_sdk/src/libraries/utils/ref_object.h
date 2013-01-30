@@ -21,8 +21,10 @@ class RefObject {
   void Acquire() {
     ref_count_++;
   }
+
   bool Release() {
     if (--ref_count_ == 0) {
+      Destroy();
       delete this;
       return false;
     }
@@ -33,6 +35,9 @@ class RefObject {
   virtual ~RefObject() {
     pthread_mutex_destroy(&lock_);
   }
+
+  // Override to clean up object when last reference is released.
+  virtual void Destroy() {}
 
   pthread_mutex_t lock_;
 

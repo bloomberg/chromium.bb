@@ -42,7 +42,9 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 # and the set we do not.
 #
 DEPS=nacl_mounts ppapi_cpp
-LIBS=gtest_ppapi gtest gmock $(DEPS) ppapi pthread
+# Order matters here: gtest has a "main" function that will be used if
+# referenced before ppapi.
+LIBS=gtest_ppapi $(DEPS) gmock ppapi gtest pthread
 
 #
 # Use the library dependency macro for each dependency
@@ -55,7 +57,7 @@ $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=nacl_mount_test
+TARGET=nacl_mounts_test
 
 #
 # List of sources to compile

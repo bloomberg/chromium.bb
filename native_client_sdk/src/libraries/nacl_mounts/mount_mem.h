@@ -19,10 +19,9 @@ class MountMem : public Mount {
 
   // The protected functions are only used internally and will not
   // acquire or release the mount's lock themselves.  The caller is
-  // returned to use correct locking as needed.
-  virtual MountNode *AllocateData(int mode);
-  virtual MountNode *AllocatePath(int mode);
-  virtual void ReleaseNode(MountNode *node);
+  // required to use correct locking as needed.
+  MountNode *AllocateData(int mode);
+  MountNode *AllocatePath(int mode);
 
   // Allocate or free an INODE number.
   int AllocateINO();
@@ -35,7 +34,6 @@ class MountMem : public Mount {
   typedef std::vector<ino_t> INOList_t;
 
   virtual MountNode *Open(const Path& path, int mode);
-  virtual int Close(MountNode* node);
   virtual int Unlink(const Path& path);
   virtual int Mkdir(const Path& path, int perm);
   virtual int Rmdir(const Path& path);

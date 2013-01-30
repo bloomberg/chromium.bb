@@ -14,7 +14,6 @@ class MountNode;
 class MountHtml5Fs: public Mount {
  public:
   virtual MountNode *Open(const Path& path, int mode);
-  virtual int Close(MountNode* node);
   virtual int Unlink(const Path& path);
   virtual int Mkdir(const Path& path, int permissions);
   virtual int Rmdir(const Path& path);

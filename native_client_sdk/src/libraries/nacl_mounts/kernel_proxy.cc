@@ -4,6 +4,7 @@
  */
 #include "nacl_mounts/kernel_proxy.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -83,10 +84,21 @@ int KernelProxy::close(int fd) {
   KernelHandle* handle = AcquireHandle(fd);
 
   if (NULL == handle) return -1;
-  handle->mount_->Close(handle->node_);
 
+  Mount* mount = handle->mount_;
+  // Acquire the mount to ensure FreeFD doesn't prematurely destroy it.
+  mount->Acquire();
+
+  // FreeFD will release the handle/mount held by this fd.
   FreeFD(fd);
+
+  // If this handle is the last reference to its node, releasing it will close
+  // the node.
   ReleaseHandle(handle);
+
+  // Finally, release the mount.
+  mount->Release();
+
   return 0;
 }
 
@@ -96,6 +108,24 @@ int KernelProxy::dup(int oldfd) {
 
   int newfd = AllocateFD(handle);
   ReleaseHandle(handle);
+
+  return newfd;
+}
+
+int KernelProxy::dup2(int oldfd, int newfd) {
+  KernelHandle* old_handle = AcquireHandle(oldfd);
+  if (NULL == old_handle) return -1;
+
+  if (oldfd == newfd) {
+    ReleaseHandle(old_handle);
+    return 0;
+  }
+
+  // Ignore the result, we don't care if newfd is valid or not.
+  close(newfd);
+
+  AssignFD(newfd, old_handle);
+  ReleaseHandle(old_handle);
 
   return newfd;
 }
@@ -165,30 +195,21 @@ int KernelProxy::rmdir(const char *path) {
 }
 
 int KernelProxy::stat(const char *path, struct stat *buf) {
-  int fd = KernelProxy::open(path, O_RDONLY);
+  int fd = open(path, O_RDONLY);
   if (-1 == fd) return -1;
-  
+
   int ret = fstat(fd, buf);
   close(fd);
   return ret;
 }
 
 int KernelProxy::chdir(const char* path) {
-  Path rel;
-  Mount* mnt = AcquireMountAndPath(path, &rel);
-
-  MountNode* node = mnt->Open(rel, O_RDONLY);
-  if (NULL == node) {
-    errno = EEXIST;
-    ReleaseMount(mnt);
+  struct stat statbuf;
+  if (stat(path, &statbuf) == -1)
     return -1;
-  }
 
-  bool isDir = node->IsaDir();
-  mnt->Close(node);
-  ReleaseMount(mnt);
-
-  if (isDir) {
+  bool is_dir = (statbuf.st_mode & S_IFDIR) != 0;
+  if (is_dir) {
     AutoLock lock(&lock_);
     cwd_ = GetAbsPathLocked(path).Join();
     return 0;
@@ -243,7 +264,7 @@ int KernelProxy::mount(const char *source, const char *target,
     mounts_[abs_targ] = mnt;
     return 0;
   }
-  errno = EINVAL; 
+  errno = EINVAL;
   return -1;
 }
 

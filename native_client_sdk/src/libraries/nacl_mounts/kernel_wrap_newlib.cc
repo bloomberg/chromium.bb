@@ -35,6 +35,7 @@ DECLARE_STRUCT(filename)
 
 DECLARE(fdio, close)
 DECLARE(fdio, dup)
+DECLARE(fdio, dup2)
 DECLARE(fdio, fstat)
 DECLARE(fdio, getdents)
 DECLARE(fdio, read)
@@ -65,6 +66,10 @@ int WRAP(dup)(int fd, int* newfd) {
   return (*newfd < 0) ? errno : 0;
 }
 
+int WRAP(dup2)(int fd, int newfd) {
+  return ki_dup2(fd, newfd);
+}
+
 int WRAP(fstat)(int fd, struct stat *buf) {
   return (ki_fstat(fd, buf) < 0) ? errno : 0;
 }
@@ -74,17 +79,6 @@ int fsync(int fd) {
 }
 
 char* getcwd(char* buf, size_t size) {
-  // gtest uses getcwd in a static initializer. If we haven't initialized the
-  // kernel-intercept yet, just return ".".
-  if (!ki_is_initialized()) {
-    if (size < 2) {
-      errno = ERANGE;
-      return NULL;
-    }
-    buf[0] = '.';
-    buf[1] = 0;
-    return buf;
-  }
   return ki_getcwd(buf, size);
 }
 
@@ -123,6 +117,9 @@ int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
 }
 
 int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
+  if (!ki_is_initialized())
+    return REAL(read)(fd, buf, count, nread);
+
   ssize_t signed_nread = ki_read(fd, buf, count);
   *nread = static_cast<size_t>(signed_nread);
   return (signed_nread < 0) ? errno : 0;
@@ -158,6 +155,9 @@ int unlink(const char* path) {
 }
 
 int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
+  if (!ki_is_initialized())
+    return REAL(write)(fd, buf, count, nwrote);
+
   ssize_t signed_nwrote = ki_write(fd, buf, count);
   *nwrote = static_cast<size_t>(signed_nwrote);
   return (signed_nwrote < 0) ? errno : 0;
@@ -165,15 +165,21 @@ int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
 
 
 void kernel_wrap_init() {
-  DO_WRAP(fdio, close);
-  DO_WRAP(fdio, dup);
-  DO_WRAP(fdio, fstat);
-  DO_WRAP(fdio, getdents);
-  DO_WRAP(fdio, read);
-  DO_WRAP(fdio, seek);
-  DO_WRAP(fdio, write);
-  DO_WRAP(filename, open);
-  DO_WRAP(filename, stat);
+  static bool wrapped = false;
+
+  if (!wrapped) {
+    wrapped = true;
+    DO_WRAP(fdio, close);
+    DO_WRAP(fdio, dup);
+    DO_WRAP(fdio, dup2);
+    DO_WRAP(fdio, fstat);
+    DO_WRAP(fdio, getdents);
+    DO_WRAP(fdio, read);
+    DO_WRAP(fdio, seek);
+    DO_WRAP(fdio, write);
+    DO_WRAP(filename, open);
+    DO_WRAP(filename, stat);
+  }
 }
 
 

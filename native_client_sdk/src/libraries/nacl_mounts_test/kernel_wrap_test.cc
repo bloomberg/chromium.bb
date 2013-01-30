@@ -72,46 +72,53 @@ void MakeDummyStatbuf(struct stat* statbuf) {
   statbuf->st_ctime = 11;
 }
 
+class KernelWrapTest : public ::testing::Test {
+ public:
+  KernelWrapTest() {
+    ki_init(&mock);
+  }
+
+  ~KernelWrapTest() {
+    ki_uninit();
+  }
+
+  KernelProxyMock mock;
+};
+
 }  // namespace
 
-TEST(KernelWrap, access) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+
+TEST_F(KernelWrapTest, access) {
   EXPECT_CALL(mock, access(StrEq("access"), 12)).Times(1);
   access("access", 12);
 }
 
-TEST(KernelWrap, chdir) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, chdir) {
   EXPECT_CALL(mock, chdir(StrEq("chdir"))).Times(1);
   chdir("chdir");
 }
 
-TEST(KernelWrap, chmod) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, chmod) {
   EXPECT_CALL(mock, chmod(StrEq("chmod"), 23)).Times(1);
   chmod("chmod", 23);
 }
 
-TEST(KernelWrap, close) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, close) {
   EXPECT_CALL(mock, close(34)).Times(1);
   close(34);
 }
 
-TEST(KernelWrap, dup) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, dup) {
   EXPECT_CALL(mock, dup(123)).Times(1);
   dup(123);
 }
 
-TEST(KernelWrap, fstat) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, dup2) {
+  EXPECT_CALL(mock, dup2(123, 234)).Times(1);
+  dup2(123, 234);
+}
+
+TEST_F(KernelWrapTest, fstat) {
   struct stat in_statbuf;
   MakeDummyStatbuf(&in_statbuf);
   EXPECT_CALL(mock, fstat(234, _))
@@ -122,24 +129,18 @@ TEST(KernelWrap, fstat) {
   EXPECT_THAT(&in_statbuf, IsEqualToStatbuf(&out_statbuf));
 }
 
-TEST(KernelWrap, fsync) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, fsync) {
   EXPECT_CALL(mock, fsync(345)).Times(1);
   fsync(345);
 }
 
-TEST(KernelWrap, getcwd) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, getcwd) {
   EXPECT_CALL(mock, getcwd(StrEq("getcwd"), 1)).Times(1);
   char buffer[] = "getcwd";
   getcwd(buffer, 1);
 }
 
-TEST(KernelWrap, getdents) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, getdents) {
   EXPECT_CALL(mock, getdents(456, NULL, 567)).Times(1);
   getdents(456, NULL, 567);
 }
@@ -148,9 +149,7 @@ TEST(KernelWrap, getdents) {
 #if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-TEST(KernelWrap, getwd) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, getwd) {
   EXPECT_CALL(mock, getwd(StrEq("getwd"))).Times(1);
   char buffer[] = "getwd";
   getwd(buffer);
@@ -159,23 +158,17 @@ TEST(KernelWrap, getwd) {
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"
 #endif
 
-TEST(KernelWrap, isatty) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, isatty) {
   EXPECT_CALL(mock, isatty(678)).Times(1);
   isatty(678);
 }
 
-TEST(KernelWrap, lseek) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, lseek) {
   EXPECT_CALL(mock, lseek(789, 891, 912)).Times(1);
   lseek(789, 891, 912);
 }
 
-TEST(KernelWrap, mkdir) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, mkdir) {
 #if defined(WIN32)
   EXPECT_CALL(mock, mkdir(StrEq("mkdir"), 0777)).Times(1);
   mkdir("mkdir");
@@ -185,46 +178,34 @@ TEST(KernelWrap, mkdir) {
 #endif
 }
 
-TEST(KernelWrap, mount) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, mount) {
   EXPECT_CALL(mock,
       mount(StrEq("mount1"), StrEq("mount2"), StrEq("mount3"), 2345, NULL))
       .Times(1);
   mount("mount1", "mount2", "mount3", 2345, NULL);
 }
 
-TEST(KernelWrap, open) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, open) {
   EXPECT_CALL(mock, open(StrEq("open"), 3456)).Times(1);
   open("open", 3456);
 }
 
-TEST(KernelWrap, read) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, read) {
   EXPECT_CALL(mock, read(4567, NULL, 5678)).Times(1);
   read(4567, NULL, 5678);
 }
 
-TEST(KernelWrap, remove) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, remove) {
   EXPECT_CALL(mock, remove(StrEq("remove"))).Times(1);
   remove("remove");
 }
 
-TEST(KernelWrap, rmdir) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, rmdir) {
   EXPECT_CALL(mock, rmdir(StrEq("rmdir"))).Times(1);
   rmdir("rmdir");
 }
 
-TEST(KernelWrap, stat) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, stat) {
   struct stat in_statbuf;
   MakeDummyStatbuf(&in_statbuf);
   EXPECT_CALL(mock, stat(StrEq("stat"), _))
@@ -235,23 +216,17 @@ TEST(KernelWrap, stat) {
   EXPECT_THAT(&in_statbuf, IsEqualToStatbuf(&out_statbuf));
 }
 
-TEST(KernelWrap, umount) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, umount) {
   EXPECT_CALL(mock, umount(StrEq("umount"))).Times(1);
   umount("umount");
 }
 
-TEST(KernelWrap, unlink) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, unlink) {
   EXPECT_CALL(mock, unlink(StrEq("unlink"))).Times(1);
   unlink("unlink");
 }
 
-TEST(KernelWrap, write) {
-  KernelProxyMock mock;
-  ki_init(&mock);
+TEST_F(KernelWrapTest, write) {
   EXPECT_CALL(mock, write(6789, NULL, 7891)).Times(1);
   write(6789, NULL, 7891);
 }

@@ -2,6 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include <errno.h>
 #include "nacl_mounts/kernel_intercept.h"
 #include "nacl_mounts/kernel_proxy.h"
 #include "nacl_mounts/kernel_wrap.h"
@@ -35,11 +36,26 @@ int ki_is_initialized() {
   return s_kp != NULL;
 }
 
+void ki_uninit() {
+  s_kp = NULL;
+}
+
 int ki_chdir(const char* path) {
   return s_kp->chdir(path);
 }
 
 char* ki_getcwd(char* buf, size_t size) {
+  // gtest uses getcwd in a static initializer. If we haven't initialized the
+  // kernel-intercept yet, just return ".".
+  if (!ki_is_initialized()) {
+    if (size < 2) {
+      errno = ERANGE;
+      return NULL;
+    }
+    buf[0] = '.';
+    buf[1] = 0;
+    return buf;
+  }
   return s_kp->getcwd(buf, size);
 }
 
@@ -49,6 +65,10 @@ char* ki_getwd(char* buf) {
 
 int ki_dup(int oldfd) {
   return s_kp->dup(oldfd);
+}
+
+int ki_dup2(int oldfd, int newfd) {
+  return s_kp->dup2(oldfd, newfd);
 }
 
 int ki_chmod(const char *path, mode_t mode) {
@@ -101,10 +121,14 @@ int ki_fsync(int fd) {
 }
 
 int ki_isatty(int fd) {
+  if (!ki_is_initialized())
+    return 0;
   return s_kp->isatty(fd);
 }
 
 int ki_close(int fd) {
+  if (!ki_is_initialized())
+    return 0;
   return s_kp->close(fd);
 }
 
