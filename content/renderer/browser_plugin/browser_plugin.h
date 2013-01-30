@@ -43,38 +43,34 @@ class CONTENT_EXPORT BrowserPlugin :
   void UpdateDOMAttribute(const std::string& attribute_name,
                           const std::string& attribute_value);
 
-  // Get Browser Plugin's DOM Node attribute |attribute_name|'s value.
-  std::string GetDOMAttributeValue(const std::string& attribute_name) const;
-
   // Get the name attribute value.
-  std::string GetNameAttribute() const;
-  // Parse the name attribute value.
-  void ParseNameAttribute();
+  std::string name_attribute() const { return name_; }
+  // Set the name attribute value.
+  void SetNameAttribute(const std::string& name);
   // Get the src attribute value of the BrowserPlugin instance.
-  std::string GetSrcAttribute() const;
-  // Parse the src attribute value of the BrowserPlugin instance.
-  bool ParseSrcAttribute(std::string* error_message);
+  std::string src_attribute() const { return src_; }
+  // Set the src attribute value of the BrowserPlugin instance.
+  bool SetSrcAttribute(const std::string& src, std::string* error_message);
   // Get the autosize attribute value.
-  bool GetAutoSizeAttribute() const;
-  // Parses the autosize attribute value.
-  void ParseAutoSizeAttribute();
+  bool auto_size_attribute() const { return auto_size_; }
+  // Sets the autosize attribute value.
+  void SetAutoSizeAttribute(bool auto_size);
   // Get the maxheight attribute value.
-  int GetMaxHeightAttribute() const;
+  int max_height_attribute() const { return max_height_; }
+  // Set the maxheight attribute value.
+  void SetMaxHeightAttribute(int maxheight);
   // Get the maxwidth attribute value.
-  int GetMaxWidthAttribute() const;
+  int max_width_attribute() const { return max_width_; }
+  // Set the maxwidth attribute value.
+  void SetMaxWidthAttribute(int max_width);
   // Get the minheight attribute value.
-  int GetMinHeightAttribute() const;
+  int min_height_attribute() const { return min_height_; }
+  // Set the minheight attribute value.
+  void SetMinHeightAttribute(int minheight);
   // Get the minwidth attribute value.
-  int GetMinWidthAttribute() const;
-  // Parse the minwidth, maxwidth, minheight, and maxheight attribute values.
-  void ParseSizeContraintsChanged();
-  // The partition identifier string is stored as UTF-8.
-  std::string GetPartitionAttribute() const;
-  // This method can be successfully called only before the first navigation for
-  // this instance of BrowserPlugin. If an error occurs, the |error_message| is
-  // set appropriately to indicate the failure reason.
-  bool ParsePartitionAttribute(std::string* error_message);
-
+  int min_width_attribute() const { return min_width_; }
+  // Set the minwidth attribute value.
+  void SetMinWidthAttribute(int minwidth);
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
   // Get the guest's DOMWindow proxy.
@@ -85,10 +81,17 @@ class CONTENT_EXPORT BrowserPlugin :
   // Returns Chrome's route ID for the current guest.
   int guest_route_id() const { return guest_route_id_; }
 
+  // The partition identifier string is stored as UTF-8.
+  std::string GetPartitionAttribute() const;
   // Query whether the guest can navigate back to the previous entry.
   bool CanGoBack() const;
   // Query whether the guest can navigation forward to the next entry.
   bool CanGoForward() const;
+  // This method can be successfully called only before the first navigation for
+  // this instance of BrowserPlugin. If an error occurs, the |error_message| is
+  // set appropriately to indicate the failure reason.
+  bool SetPartitionAttribute(const std::string& partition_id,
+                             std::string* error_message);
 
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
@@ -185,14 +188,6 @@ class CONTENT_EXPORT BrowserPlugin :
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }
   int instance_id() const { return instance_id_; }
-  // Gets the Max Height value used for auto size.
-  int GetAdjustedMaxHeight() const;
-  // Gets the Max Width value used for auto size.
-  int GetAdjustedMaxWidth() const;
-  // Gets the Min Height value used for auto size.
-  int GetAdjustedMinHeight() const;
-  // Gets the Min Width value used for auto size.
-  int GetAdjustedMinWidth() const;
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_;
   }
@@ -202,7 +197,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Parses the attributes of the browser plugin from the element's attributes
   // and sets them appropriately.
-  void ParseAttributes();
+  void ParseAttributes(const WebKit::WebPluginParams& params);
 
   // Triggers the event-listeners for |event_name|. Note that the function
   // frees all the values in |props|.
@@ -224,7 +219,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
   void PopulateAutoSizeParameters(
-      BrowserPluginHostMsg_AutoSize_Params* params, bool current_auto_size);
+      BrowserPluginHostMsg_AutoSize_Params* params);
 
   // Populates both AutoSize and ResizeGuest parameters based on the current
   // autosize state.
@@ -233,7 +228,7 @@ class CONTENT_EXPORT BrowserPlugin :
       BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params);
 
   // Informs the guest of an updated autosize state.
-  void UpdateGuestAutoSizeState(bool current_auto_size);
+  void UpdateGuestAutoSizeState();
 
   // Informs the BrowserPlugin that guest has changed its size in autosize mode.
   void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
@@ -303,7 +298,13 @@ class CONTENT_EXPORT BrowserPlugin :
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
   // True if we have ever sent a NavigateGuest message to the embedder.
   bool navigate_src_sent_;
+  std::string src_;
+  bool auto_size_;
   bool auto_size_ack_pending_;
+  int max_height_;
+  int max_width_;
+  int min_height_;
+  int min_width_;
   int guest_process_id_;
   int guest_route_id_;
   std::string storage_partition_id_;
@@ -314,6 +315,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
+  std::string name_;
 
   WebCursor cursor_;
 
