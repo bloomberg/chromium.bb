@@ -40,24 +40,27 @@ typedef base::Callback<void(const WDTypedResult*)> DestroyCallback;
 //
 class WDTypedResult {
  public:
-  virtual ~WDTypedResult() {
-  }
+  virtual ~WDTypedResult();
 
   // Return the result type.
   WDResultType GetType() const {
     return type_;
   }
 
-  virtual void Destroy() {
+  void Destroy() const {
+    if (!callback_.is_null()) {
+      callback_.Run(this);
+    }
   }
 
  protected:
-  explicit WDTypedResult(WDResultType type)
-    : type_(type) {
-  }
+  explicit WDTypedResult(WDResultType type);
+
+  WDTypedResult(WDResultType type, const DestroyCallback& callback);
 
  private:
   WDResultType type_;
+  DestroyCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(WDTypedResult);
 };
 
@@ -66,6 +69,10 @@ template <class T> class WDResult : public WDTypedResult {
  public:
   WDResult(WDResultType type, const T& v)
       : WDTypedResult(type), value_(v) {
+  }
+
+  WDResult(WDResultType type, const DestroyCallback& callback, const T& v)
+      : WDTypedResult(type, callback), value_(v) {
   }
 
   virtual ~WDResult() {
@@ -82,43 +89,14 @@ template <class T> class WDResult : public WDTypedResult {
   DISALLOW_COPY_AND_ASSIGN(WDResult);
 };
 
-template <class T> class WDDestroyableResult : public WDTypedResult {
- public:
-  WDDestroyableResult(
-      WDResultType type,
-      const T& v,
-      const DestroyCallback& callback)
-      : WDTypedResult(type),
-        value_(v),
-        callback_(callback) {
-  }
-
-  virtual ~WDDestroyableResult() {
-  }
-
-
-  virtual void Destroy()  OVERRIDE {
-    if (!callback_.is_null()) {
-      callback_.Run(this);
-    }
-  }
-
-  // Return a single value result.
-  T GetValue() const {
-    return value_;
-  }
-
- private:
-  T value_;
-  DestroyCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(WDDestroyableResult);
-};
-
 template <class T> class WDObjectResult : public WDTypedResult {
  public:
   explicit WDObjectResult(WDResultType type)
     : WDTypedResult(type) {
+  }
+
+  WDObjectResult(WDResultType type, const DestroyCallback& callback)
+    : WDTypedResult(type, callback) {
   }
 
   T* GetValue() const {

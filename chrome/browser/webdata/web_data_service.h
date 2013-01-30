@@ -327,6 +327,9 @@ class WebDataService
   // This is invoked by the unit test; path is the path of the Web Data file.
   bool InitWithPath(const FilePath& path);
 
+  // Invoked by request implementations when a request has been processed.
+  void RequestCompleted(Handle h);
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // The following methods are only invoked in the web data service thread.
@@ -371,10 +374,10 @@ class WebDataService
       WebDataServiceConsumer* consumer);
 
   void DBTaskWrapper(const base::Closure& task,
-                     scoped_ptr<WebDataRequest> request);
+                     WebDataRequest* request);
 
   void DBResultTaskWrapper(const ResultTask& task,
-                           scoped_ptr<WebDataRequest> request);
+                           WebDataRequest* request);
 
   // Schedule a commit if one is not already pending.
   void ScheduleCommit();
@@ -486,7 +489,7 @@ class WebDataService
   WebDatabase* db_;
 
   // Keeps track of all pending requests made to the db.
-  scoped_refptr<WebDataRequestManager> request_manager_;
+  WebDataRequestManager request_manager_;
 
   // The application locale.  The locale is needed for some database migrations,
   // and must be read on the UI thread.  It's cached here so that we can pass it
