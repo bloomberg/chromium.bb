@@ -17,6 +17,8 @@ PHONE_HOME_CITY_CODE | BDayPhone_tel1 | Daytime Phone |
 PHONE_HOME_NUMBER | BDayPhone_tel2 | Exchange | 
 PHONE_HOME_NUMBER | BDayPhone_tel3 | Last four digits | 
 UNKNOWN_TYPE | BDayPhone_ext1 | Ext | 
+UNKNOWN_TYPE | same | Is this your shipping address?* | 1
+UNKNOWN_TYPE | same | Yes No | 0
 NAME_FIRST | SFirstName | First Name* | 
 NAME_MIDDLE_INITIAL | SMI | MI | 
 NAME_LAST | SLastName | Last Name* | 
@@ -37,3 +39,5 @@ UNKNOWN_TYPE | education | Education | 0
 UNKNOWN_TYPE | hob | Where did you hear about Newegg.com? | 0
 UNKNOWN_TYPE | FirstPurchase | Is this your first Newegg.com purchase? | 0
 UNKNOWN_TYPE | GameHours | How many hours per week do you play PC games? | 0
+UNKNOWN_TYPE | Spam | Sign me up for exclusive newsletter deals, sweepstakes, and 24-hour sales only available to subscribers | 1
+UNKNOWN_TYPE | SMS | I would like to receive SMS messages via my wireless device. | 1

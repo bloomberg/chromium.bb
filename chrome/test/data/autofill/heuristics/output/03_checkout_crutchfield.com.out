@@ -8,6 +8,9 @@ ADDRESS_HOME_STATE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$s
 ADDRESS_HOME_ZIP | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$zip | Zip/Postal Code | 
 PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$billphone2 | Billing Phone | 
 EMAIL_ADDRESS | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$email2 | Email | 
+UNKNOWN_TYPE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$chbox2 | Send me exclusive offers, deals and expert reviews. | on
+UNKNOWN_TYPE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$same | Shipping Address | same
+UNKNOWN_TYPE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$giftOrder | Shipping Address | gift
 NAME_FIRST | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingFirstname | First Name | 
 NAME_MIDDLE_INITIAL | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingMi | M.I. | 
 NAME_LAST | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingLastname | Last Name | 

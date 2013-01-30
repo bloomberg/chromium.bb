@@ -9,8 +9,14 @@ UNKNOWN_TYPE | BirthMonth | Birth date | NOSELECTION
 UNKNOWN_TYPE | BirthDay |  | NOSELECTION
 UNKNOWN_TYPE | BirthYear |  | NOSELECTION
 UNKNOWN_TYPE | Gender | Gender | NOSELECTION
+UNKNOWN_TYPE | NewsLetter | We'll let you know about exclusive sales and events,both online and in-store. | NewsLetter
+UNKNOWN_TYPE | MobileMarketing | Yes, please text me about exclusive sales and events, both online and in-store. We'll send your first text message within 48 hours. | MobileMarketing
 PHONE_HOME_CITY_CODE | MobilePhoneAreaCode |  | 
 PHONE_HOME_NUMBER | MobilePhoneExchangeNbr | - | 
 PHONE_HOME_NUMBER | MobilePhoneSubscriberNbr | - | 
+UNKNOWN_TYPE | addacard | Yes, I'd like to add my Macy's Card to my profile. | on
 UNKNOWN_TYPE | MaskedAccountNumber | Macy's Account Number: | 
 UNKNOWN_TYPE | SSN4 | Last 4 digits of SSN: | 
+UNKNOWN_TYPE | addToWallet | Save this store card in your macys.com wallet for faster checkout. | addToWallet
+UNKNOWN_TYPE | emailAlert | Receive email notification when statements are ready for review andwhen payments are due. | emailAlert
+UNKNOWN_TYPE | paperStatementDelivery | I want to turn off paper statement delivery and receive my statements online. | paperStatementDelivery
