@@ -216,7 +216,9 @@ class Instruction(object):
       'operands',
       'opcodes',
       'attributes',
-      'rex']
+      'rex',
+      'required_prefixes',
+      'optional_prefixes']
 
   class RexStatus(object):
     __slots__ = [
@@ -233,6 +235,19 @@ class Instruction(object):
     self.rex.r_matters = False
     self.rex.w_matters = True
     self.rex.w_set = False
+
+    self.required_prefixes = []
+    self.optional_prefixes = []
+
+  def CollectPrefixes(self):
+    if Attribute('branch_hint') in self.attributes:
+      self.optional_prefixes.append('branch_hint')
+    if Attribute('condrep') in self.attributes:
+      self.optional_prefixes.append('condrep')
+    if Attribute('rep') in self.attributes:
+      self.optional_prefixes.append('rep')
+
+    # TODO(shcherbina): handle REXW and legacy prefixes in opcodes here as well.
 
   @staticmethod
   def Parse(line):
@@ -382,7 +397,7 @@ class InstructionPrinter(object):
     return self._out.getvalue()
 
   def _PrintRexPrefix(self, instruction):
-    """Print machine for REX prefix."""
+    """Print a machine for REX prefix."""
     if self._bitness != 64:
       return
     if instruction.IsVexOrXop():
@@ -396,7 +411,7 @@ class InstructionPrinter(object):
       self._out.write('REX_RXB?\n')
 
   def _PrintOpcode(self, instruction):
-    """Print machine for opcode."""
+    """Print a machine for opcode."""
     main_opcode_part = instruction.GetMainOpcodePart()
     if instruction.HasRegisterInOpcode():
       assert not instruction.HasModRM()
@@ -439,8 +454,10 @@ class InstructionPrinter(object):
       self._out.write('@operands_count_is_%d\n' % len(instruction.operands))
 
     # TODO(shcherbina): 'memory' format?
-    for i, operand in enumerate(instruction.operands):
-      self._out.write('@operand%d_%s\n' % (i, operand.GetFormat()))
+    for operand in instruction.operands:
+      if self._NeedOperandInfo(operand):
+        self._out.write('@operand%d_%s\n' %
+                        (operand.index, operand.GetFormat()))
 
     # TODO(shcherbina): print operand sources and extract implicit operands.
 
@@ -466,11 +483,21 @@ class InstructionPrinter(object):
       if not instruction.rex.w_matters:
         self._out.write('@set_spurious_rex_w\n')
 
+  def _NeedOperandInfo(self, operand):
+    """Whether we need to print actions describing operand format and source."""
+    if self._mode == VALIDATOR and self._bitness == 64:
+      # TODO(shcherbina): In this case we are only interested in writable
+      # regular registers.
+      raise NotImplementedError()
+
+    return self._mode == DECODER
+
   def _PrintOperandSource(self, operand, source):
     """Print action specifying operand source."""
     # TODO(shcherbina): add mechanism to check that all operand sources are
     # printed.
-    self._out.write('@operand%d_%s\n' % (operand.index, source))
+    if self._NeedOperandInfo(operand):
+      self._out.write('@operand%d_%s\n' % (operand.index, source))
 
   def _PrintImplicitOperandSources(self, instruction):
     """Print actions specifying sources of implicit operands.
@@ -481,17 +508,38 @@ class InstructionPrinter(object):
     Returns:
       None.
     """
-    operand = instruction.FindOperand('a')
-    if operand is not None:
-      self._PrintOperandSource(operand, 'rax')
+    for operand in instruction.operands:
+      if operand.arg_type == 'a':
+        self._PrintOperandSource(operand, 'rax')
+      elif operand.arg_type == 'X':
+        self._PrintOperandSource(operand, 'ds_rsi')
+      elif operand.arg_type == 'Y':
+        self._PrintOperandSource(operand, 'es_rdi')
+
     # TODO(shcherbina): handle other implicit operands.
 
-  def PrintInstructionWithoutModRM(self, instruction):
-    # TODO(shcherbina): print legacy prefixes.
+  def _PrintLegacyPrefixes(self, instruction):
+    """Print a machine for all combinations of legacy prefixes."""
+    legacy_prefix_combinations = GenerateLegacyPrefixes(
+        instruction.required_prefixes,
+        instruction.optional_prefixes)
+    assert len(legacy_prefix_combinations) > 0
+    if legacy_prefix_combinations == [()]:
+      return
+    self._out.write('(%s)' % ' | '.join(
+        ' '.join(combination)
+        for combination in legacy_prefix_combinations
+        if combination != ()))
+    # Use '(...)?' since Ragel does not allow '( | ...)'.
+    if () in legacy_prefix_combinations:
+      self._out.write('?')
+    self._out.write('\n')
 
+  def PrintInstructionWithoutModRM(self, instruction):
     assert not instruction.IsVexOrXop(), 'not supported yet'
     assert not instruction.HasModRM()
 
+    self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
 
     assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'

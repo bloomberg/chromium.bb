@@ -228,6 +228,22 @@ class TestInstructionPrinter(unittest.TestCase):
         @set_spurious_rex_r
         """.split())
 
+  def test_with_prefixes(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.VALIDATOR, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'movsb =Xb &Yb, 0xa4, rep')
+
+    instr.CollectPrefixes()
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        (rep)?
+        0xa4
+        """.split())
+
 
 class TestParser(unittest.TestCase):
 
