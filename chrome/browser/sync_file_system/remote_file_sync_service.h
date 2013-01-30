@@ -39,8 +39,8 @@ enum RemoteServiceState {
   // they may fail (with recoverable error code).
   REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
 
-  // Remote service is disabled due to unrecoverable errors, e.g.
-  // local database corruption.
+  // Remote service is disabled by configuration change or due to some
+  // unrecoverable errors, e.g. local database corruption.
   // Any new requests will immediately fail when the service is in
   // this state.
   REMOTE_SERVICE_DISABLED,
@@ -76,6 +76,7 @@ class RemoteFileSyncService {
   RemoteFileSyncService() {}
   virtual ~RemoteFileSyncService() {}
 
+  // Adds and removes observers.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
@@ -129,6 +130,14 @@ class RemoteFileSyncService {
 
   // Returns the service name that backs this remote_file_sync_service.
   virtual const char* GetServiceName() const = 0;
+
+  // Enables or disables the background sync.
+  // Setting this to false should disable the synchronization (and make
+  // the service state to REMOTE_SERVICE_DISABLED), while setting this to
+  // true does not necessarily mean the service is actually turned on
+  // (for example if Chrome is offline the service state will become
+  // REMOTE_SERVICE_TEMPORARY_UNAVAILABLE).
+  virtual void SetSyncEnabled(bool enabled) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);

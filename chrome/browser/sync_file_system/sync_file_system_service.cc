@@ -269,7 +269,7 @@ SyncFileSystemService::SyncFileSystemService(Profile* profile)
       local_sync_running_(false),
       remote_sync_running_(false),
       is_waiting_remote_sync_enabled_(false),
-      auto_sync_enabled_(true) {
+      sync_enabled_(true) {
 }
 
 void SyncFileSystemService::Initialize(
@@ -310,7 +310,8 @@ void SyncFileSystemService::DidInitializeFileSystem(
     const GURL& app_origin,
     const fileapi::SyncStatusCallback& callback,
     fileapi::SyncStatusCode status) {
-  DVLOG(1) << "DidInitializeFileSystem: " << app_origin.spec() << " " << status;
+  DVLOG(1) << "DidInitializeFileSystem: "
+           << app_origin.spec() << " " << status;
 
   if (status != fileapi::SYNC_STATUS_OK) {
     callback.Run(status);
@@ -337,8 +338,13 @@ void SyncFileSystemService::DidRegisterOrigin(
   callback.Run(status);
 }
 
+void SyncFileSystemService::SetSyncEnabled(bool enabled) {
+  sync_enabled_ = enabled;
+  remote_file_service_->SetSyncEnabled(sync_enabled_);
+}
+
 void SyncFileSystemService::MaybeStartSync() {
-  if (!profile_ || !auto_sync_enabled_)
+  if (!profile_ || !sync_enabled_)
     return;
 
   DCHECK(local_file_service_);
@@ -359,6 +365,7 @@ void SyncFileSystemService::MaybeStartRemoteSync() {
   // worth trying to start another remote sync.
   if (is_waiting_remote_sync_enabled_)
     return;
+  DCHECK(sync_enabled_);
   DVLOG(1) << "Calling ProcessRemoteChange";
   remote_sync_running_ = true;
   remote_file_service_->ProcessRemoteChange(
@@ -516,16 +523,17 @@ void SyncFileSystemService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Extension unloaded means extension disabled or uninstalled.
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
-
-  // Unregister origin for remote synchronization.
-  std::string extension_id =
-      content::Details<const extensions::UnloadedExtensionInfo>(
-          details)->extension->id();
-  remote_file_service_->UnregisterOriginForTrackingChanges(
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id),
-      base::Bind(&DidUnregisterOriginForTrackingChanges));
+  if (chrome::NOTIFICATION_EXTENSION_UNLOADED == type) {
+    // Unregister origin for remote synchronization.
+    std::string extension_id =
+        content::Details<const extensions::UnloadedExtensionInfo>(
+            details)->extension->id();
+    remote_file_service_->UnregisterOriginForTrackingChanges(
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id),
+        base::Bind(&DidUnregisterOriginForTrackingChanges));
+  } else {
+    NOTREACHED() << "Unknown notification.";
+  }
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------

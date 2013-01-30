@@ -130,9 +130,6 @@ class SyncFileSystemServiceTest : public testing::Test {
     remote_service_ = new StrictMock<MockRemoteFileSyncService>;
     sync_service_.reset(new SyncFileSystemService(&profile_));
 
-    // Disables auto sync by default.
-    sync_service_->set_auto_sync_enabled(false);
-
     EXPECT_CALL(*mock_remote_service(),
                 AddObserver(sync_service_.get())).Times(1);
 
@@ -162,7 +159,6 @@ class SyncFileSystemServiceTest : public testing::Test {
         file_system_->file_system_context(),
         kServiceName, GURL(kOrigin),
         AssignAndQuitCallback(&run_loop, &status));
-
     run_loop.Run();
 
     EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
@@ -189,7 +185,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     StrictMock<MockSyncEventObserver> event_observer;
     sync_service_->AddSyncEventObserver(&event_observer);
 
-    sync_service_->set_auto_sync_enabled(true);
+    EnableSync();
 
     EXPECT_CALL(*mock_remote_service(),
                 RegisterOriginForTrackingChanges(GURL(kOrigin), _))
@@ -208,7 +204,6 @@ class SyncFileSystemServiceTest : public testing::Test {
         .WillRepeatedly(RecordState(&actual_states));
 
     SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
-
     base::RunLoop run_loop;
     sync_service_->InitializeForApp(
         file_system_->file_system_context(),
@@ -230,8 +225,13 @@ class SyncFileSystemServiceTest : public testing::Test {
     return remote_service_;
   }
 
-  TestingProfile profile_;
+  void EnableSync() {
+    EXPECT_CALL(*mock_remote_service(), SetSyncEnabled(true)).Times(1);
+    sync_service_->SetSyncEnabled(true);
+  }
+
   MultiThreadTestHelper thread_helper_;
+  TestingProfile profile_;
   scoped_ptr<fileapi::CannedSyncableFileSystem> file_system_;
 
   // Their ownerships are transferred to SyncFileSystemService.
@@ -435,7 +435,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
   StrictMock<MockSyncStatusObserver> status_observer;
   StrictMock<MockLocalChangeProcessor> local_change_processor;
 
-  sync_service_->set_auto_sync_enabled(true);
+  EnableSync();
   file_system_->file_system_context()->sync_context()->
       set_mock_notify_changes_duration_in_sec(0);
   file_system_->AddSyncStatusObserver(&status_observer);
@@ -474,7 +474,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
 TEST_F(SyncFileSystemServiceTest, SimpleRemoteSyncFlow) {
   InitializeApp();
 
-  sync_service_->set_auto_sync_enabled(true);
+  EnableSync();
 
   base::RunLoop run_loop;
 
@@ -496,7 +496,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
 
   StrictMock<MockLocalChangeProcessor> local_change_processor;
 
-  sync_service_->set_auto_sync_enabled(true);
+  EnableSync();
   file_system_->file_system_context()->sync_context()->
       set_mock_notify_changes_duration_in_sec(0);
 

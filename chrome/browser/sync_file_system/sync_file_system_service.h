@@ -68,15 +68,6 @@ class SyncFileSystemService
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
 
-  // Enables or disables automatic synchronization process.
-  // If this is enabled the service automatically runs remote/local sync
-  // process when it detects changes in remote/local filesystem for
-  // registered origins.
-  // It is enabled by default but can be disabled for testing (or maybe
-  // via an explicit API call).
-  void set_auto_sync_enabled(bool flag) { auto_sync_enabled_ = flag; }
-  bool auto_sync_enabled() const { return auto_sync_enabled_; }
-
  private:
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
@@ -101,6 +92,9 @@ class SyncFileSystemService
   void DidRegisterOrigin(const GURL& app_origin,
                          const fileapi::SyncStatusCallback& callback,
                          fileapi::SyncStatusCode status);
+
+  // Overrides sync_enabled_ setting. This should be called only by tests.
+  void SetSyncEnabled(bool enabled);
 
   // Called when following observer methods are called:
   // - OnLocalChangeAvailable()
@@ -156,8 +150,11 @@ class SyncFileSystemService
   // another remote sync.
   bool is_waiting_remote_sync_enabled_;
 
-  bool auto_sync_enabled_;
+  // Indicates if sync is currently enabled or not.
+  bool sync_enabled_;
 
+  // Origins that have been successfully initialized via
+  // InitializeForApp.
   std::set<GURL> initialized_app_origins_;
 
   ObserverList<SyncEventObserver> observers_;

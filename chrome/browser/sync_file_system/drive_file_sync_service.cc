@@ -65,8 +65,8 @@ void DeleteTemporaryFile(const FilePath& file_path) {
 
 void EmptyStatusCallback(fileapi::SyncStatusCode code) {}
 
-void EnablePolling(bool* polling_enabled) {
-  *polling_enabled = true;
+void MarkFetchingChangesCompleted(bool* is_fetching_changes) {
+  *is_fetching_changes = false;
 }
 
 void DidRemoveOrigin(const GURL& origin, fileapi::SyncStatusCode status) {
@@ -232,9 +232,10 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
     : profile_(profile),
       last_operation_status_(fileapi::SYNC_STATUS_OK),
       state_(REMOTE_SERVICE_OK),
+      sync_enabled_(true),
       largest_fetched_changestamp_(0),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
-      polling_enabled_(true),
+      is_fetching_changes_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   temporary_file_dir_ =
       profile->GetPath().Append(kSyncFileSystemDir).Append(kTempDirName);
@@ -294,6 +295,8 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
     return;
   }
 
+  // We check state_ but not GetCurrentState() here as we want to accept the
+  // registration if the server is available but sync_enabled_==false case.
   if (state_ == REMOTE_SERVICE_DISABLED) {
     token->ResetTask(FROM_HERE);
     NotifyTaskDone(last_operation_status_, token.Pass());
@@ -360,7 +363,7 @@ void DriveFileSyncService::ProcessRemoteChange(
     return;
   }
 
-  if (state_ == REMOTE_SERVICE_DISABLED) {
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
     token->ResetTask(FROM_HERE);
     NotifyTaskDone(last_operation_status_, token.Pass());
     callback.Run(last_operation_status_, fileapi::FileSystemURL(),
@@ -434,11 +437,36 @@ void DriveFileSyncService::GetRemoteFileMetadata(
 }
 
 RemoteServiceState DriveFileSyncService::GetCurrentState() const {
+  if (!sync_enabled_)
+    return REMOTE_SERVICE_DISABLED;
   return state_;
 }
 
 const char* DriveFileSyncService::GetServiceName() const {
   return kServiceName;
+}
+
+void DriveFileSyncService::SetSyncEnabled(bool enabled) {
+  if (sync_enabled_ == enabled)
+    return;
+
+  RemoteServiceState old_state = GetCurrentState();
+  sync_enabled_ = enabled;
+  if (old_state == GetCurrentState())
+    return;
+
+  if (!enabled)
+    last_operation_status_ = fileapi::SYNC_STATUS_SYNC_DISABLED;
+
+  const char* status_message = enabled ? "Sync is enabled" : "Sync is disabled";
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
+
+  if (GetCurrentState() == REMOTE_SERVICE_OK) {
+    UpdatePollingDelay(kMinimumPollingDelaySeconds);
+    SchedulePolling();
+  }
 }
 
 void DriveFileSyncService::ApplyLocalChange(
@@ -458,7 +486,7 @@ void DriveFileSyncService::ApplyLocalChange(
     return;
   }
 
-  if (state_ == REMOTE_SERVICE_DISABLED) {
+  if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
     token->ResetTask(FROM_HERE);
     FinalizeLocalSync(token.Pass(), callback, last_operation_status_);
     return;
@@ -558,27 +586,31 @@ void DriveFileSyncService::ApplyLocalChange(
 }
 
 void DriveFileSyncService::OnAuthenticated() {
+  if (state_ == REMOTE_SERVICE_OK)
+    return;
   DVLOG(1) << "OnAuthenticated";
-  if (state_ != REMOTE_SERVICE_OK) {
-    state_ = REMOTE_SERVICE_OK;
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnRemoteServiceStateUpdated(state_, "Authenticated"));
-    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
-    SchedulePolling();
-  }
+  state_ = REMOTE_SERVICE_OK;
+  if (GetCurrentState() != REMOTE_SERVICE_OK)
+    return;
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnRemoteServiceStateUpdated(GetCurrentState(), "Authenticated"));
+  UpdatePollingDelay(kMinimumPollingDelaySeconds);
+  SchedulePolling();
 }
 
 void DriveFileSyncService::OnNetworkConnected() {
+  if (state_ == REMOTE_SERVICE_OK)
+    return;
   DVLOG(1) << "OnNetworkConnected";
-  if (state_ != REMOTE_SERVICE_OK) {
-    state_ = REMOTE_SERVICE_OK;
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnRemoteServiceStateUpdated(state_, "Network connected"));
-    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
-    SchedulePolling();
-  }
+  state_ = REMOTE_SERVICE_OK;
+  if (GetCurrentState() != REMOTE_SERVICE_OK)
+    return;
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnRemoteServiceStateUpdated(GetCurrentState(), "Network connected"));
+  UpdatePollingDelay(kMinimumPollingDelaySeconds);
+  SchedulePolling();
 }
 
 // Called by CreateForTesting.
@@ -590,8 +622,10 @@ DriveFileSyncService::DriveFileSyncService(
     : profile_(profile),
       last_operation_status_(fileapi::SYNC_STATUS_OK),
       state_(REMOTE_SERVICE_OK),
+      sync_enabled_(true),
       largest_fetched_changestamp_(0),
-      polling_enabled_(false),
+      polling_delay_seconds_(-1),
+      is_fetching_changes_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   temporary_file_dir_ = base_dir.Append(kTempDirName);
 
@@ -599,9 +633,13 @@ DriveFileSyncService::DriveFileSyncService(
   sync_client_ = sync_client.Pass();
   metadata_store_ = metadata_store.Pass();
 
-  DidInitializeMetadataStore(
-      GetToken(FROM_HERE, TASK_TYPE_NONE, "Drive initialization for testing"),
-      fileapi::SYNC_STATUS_OK, false);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
+                 AsWeakPtr(),
+                 base::Passed(GetToken(FROM_HERE, TASK_TYPE_NONE,
+                                       "Drive initialization for testing")),
+                 fileapi::SYNC_STATUS_OK, false));
 }
 
 scoped_ptr<DriveFileSyncService::TaskToken> DriveFileSyncService::GetToken(
@@ -626,14 +664,15 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
              << " (" << SyncStatusCodeToString(status) << ")"
              << " " << token_->location().ToString();
 
-    RemoteServiceState old_state = state_;
+    RemoteServiceState old_state = GetCurrentState();
     UpdateServiceState();
 
     // Notify remote sync service state if the state has been changed.
-    if (!token_->description().empty() || old_state != state_) {
+    if (!token_->description().empty() || old_state != GetCurrentState()) {
       FOR_EACH_OBSERVER(
           Observer, observers_,
-          OnRemoteServiceStateUpdated(state_, token_->done_description()));
+          OnRemoteServiceStateUpdated(GetCurrentState(),
+                                      token_->done_description()));
     }
   }
 
@@ -650,7 +689,7 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
 
   SchedulePolling();
 
-  if (state_ != REMOTE_SERVICE_OK)
+  if (GetCurrentState() != REMOTE_SERVICE_OK)
     return;
 
   // If the state has become OK and we have any pending batch sync origins
@@ -729,7 +768,18 @@ void DriveFileSyncService::DidInitializeMetadataStore(
 
   largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
 
+  // Mark all the batch sync origins as 'pending' so that we can start
+  // batch sync when we're ready.
+  DCHECK(pending_batch_sync_origins_.empty());
+  for (std::map<GURL, std::string>::const_iterator itr =
+          metadata_store_->batch_sync_origins().begin();
+        itr != metadata_store_->batch_sync_origins().end();
+        ++itr) {
+    pending_batch_sync_origins_.insert(itr->first);
+  }
+
   if (metadata_store_->sync_root_directory().empty()) {
+    // It's ok to fail, so we pass EmptyStatusCallback here.
     GetSyncRootDirectory(token.Pass(), base::Bind(&EmptyStatusCallback));
     return;
   }
@@ -754,13 +804,6 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   }
 
   NotifyTaskDone(status, token.Pass());
-
-  for (std::map<GURL, std::string>::const_iterator itr =
-           metadata_store_->batch_sync_origins().begin();
-       itr != metadata_store_->batch_sync_origins().end();
-       ++itr) {
-    StartBatchSyncForOrigin(itr->first, itr->second);
-  }
 }
 
 void DriveFileSyncService::UnregisterInactiveExtensionsIds(
@@ -832,9 +875,7 @@ void DriveFileSyncService::StartBatchSyncForOrigin(
   scoped_ptr<TaskToken> token(
       GetToken(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving largest changestamp"));
   if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::StartBatchSyncForOrigin,
-        AsWeakPtr(), origin, resource_id));
+    pending_batch_sync_origins_.insert(origin);
     return;
   }
 
@@ -859,11 +900,10 @@ void DriveFileSyncService::DidGetDirectoryForOrigin(
   }
 
   metadata_store_->AddBatchSyncOrigin(origin, resource_id);
+  pending_batch_sync_origins_.insert(origin);
 
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
   callback.Run(fileapi::SYNC_STATUS_OK);
-
-  StartBatchSyncForOrigin(origin, resource_id);
 }
 
 void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
@@ -1632,8 +1672,9 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
     return;
   }
 
-  polling_enabled_ = false;
-  token->set_completion_callback(base::Bind(&EnablePolling, &polling_enabled_));
+  is_fetching_changes_ = true;
+  token->set_completion_callback(
+      base::Bind(&MarkFetchingChangesCompleted, &is_fetching_changes_));
 
   if (metadata_store_->incremental_sync_origins().empty()) {
     NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
@@ -1687,13 +1728,13 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   largest_fetched_changestamp_ = changes->largest_changestamp();
 
   if (has_new_changes) {
-    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
+    UpdatePollingDelay(kMinimumPollingDelaySeconds);
   } else {
     // If the change_queue_ was not updated, update the polling delay to wait
     // longer.
-    polling_delay_seconds_ = std::min(
+    UpdatePollingDelay(std::min(
         static_cast<int64>(kDelayMultiplier * polling_delay_seconds_),
-        kMaximumPollingDelaySeconds);
+        kMaximumPollingDelaySeconds));
   }
 
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
@@ -1727,11 +1768,13 @@ bool DriveFileSyncService::GetOriginForEntry(
 }
 
 void DriveFileSyncService::SchedulePolling() {
-  if (!pending_batch_sync_origins_.empty() ||
+  if (!sync_enabled_ ||
+      !pending_batch_sync_origins_.empty() ||
       metadata_store_->incremental_sync_origins().empty() ||
       !pending_changes_.empty() ||
-      !polling_enabled_ ||
-      polling_timer_.IsRunning())
+      is_fetching_changes_ ||
+      polling_timer_.IsRunning() ||
+      polling_delay_seconds_ < 0)
     return;
 
   if (state_ != REMOTE_SERVICE_OK &&
@@ -1739,7 +1782,7 @@ void DriveFileSyncService::SchedulePolling() {
     return;
 
   if (state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
-    polling_delay_seconds_ = kMaximumPollingDelaySeconds;
+    UpdatePollingDelay(kMaximumPollingDelaySeconds);
 
   DVLOG(1) << "Polling scheduled"
            << " (delay:" << polling_delay_seconds_ << "s)";
@@ -1748,6 +1791,14 @@ void DriveFileSyncService::SchedulePolling() {
       FROM_HERE, base::TimeDelta::FromSeconds(polling_delay_seconds_),
       base::Bind(&DriveFileSyncService::FetchChangesForIncrementalSync,
                  AsWeakPtr()));
+}
+
+void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
+  if (polling_delay_seconds_ < 0)
+    return;
+  polling_delay_seconds_ = new_delay_sec;
+  // TODO(tzik): Reset the timer if new_delay_sec is less than
+  // polling_delay_seconds_.
 }
 
 fileapi::SyncStatusCode

@@ -79,6 +79,7 @@ class DriveFileSyncService
       const fileapi::SyncFileMetadataCallback& callback) OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual const char* GetServiceName() const OVERRIDE;
+  virtual void SetSyncEnabled(bool enabled) OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
@@ -343,14 +344,25 @@ class DriveFileSyncService
       scoped_ptr<google_apis::ResourceList> changes);
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
+  void UpdatePollingDelay(int64 new_delay_sec);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
 
   Profile* profile_;
   fileapi::SyncStatusCode last_operation_status_;
-  RemoteServiceState state_;
   std::deque<base::Closure> pending_tasks_;
+
+  // The current remote service state. This does NOT reflect the
+  // sync_enabled_ flag, while GetCurrentState() DOES reflect the flag
+  // value (i.e. it returns REMOTE_SERVICE_DISABLED when sync_enabled_
+  // is false even if state_ is REMOTE_SERVICE_OK).
+  RemoteServiceState state_;
+
+  // Indicates if sync is enabled or not. This flag can be turned on or
+  // off by SetSyncEnabled() method.  To start synchronization
+  // this needs to be true and state_ needs to be REMOTE_SERVICE_OK.
+  bool sync_enabled_;
 
   int64 largest_fetched_changestamp_;
 
@@ -366,9 +378,14 @@ class DriveFileSyncService
   // NotifyTaskDone when the task finished.
   scoped_ptr<TaskToken> token_;
 
+  // Timer to trigger fetching changes for incremental sync.
+  // If polling_delay_seconds_ is negative (<0) the timer won't start.
   base::OneShotTimer<DriveFileSyncService> polling_timer_;
   int64 polling_delay_seconds_;
-  bool polling_enabled_;
+
+  // Is set to true while the service is fetching changes for incremental
+  // sync. Polling will be disabled while this is true.
+  bool is_fetching_changes_;
 
   ObserverList<Observer> observers_;
 
