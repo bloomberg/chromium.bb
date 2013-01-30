@@ -123,30 +123,24 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Appends |new_buffers| into |range_for_new_buffers_itr|, handling start and
   // end overlaps if necessary.
-  // |deleted_next_buffer| is an output parameter that is true if the next
-  // buffer that would have been returned from GetNextBuffer() was deleted
-  // during this call.
   // |deleted_buffers| is an output parameter containing candidates for
   // |track_buffer_|.
   void InsertIntoExistingRange(
       const RangeList::iterator& range_for_new_buffers_itr,
       const BufferQueue& new_buffers,
-      bool* deleted_next_buffer, BufferQueue* deleted_buffers);
+      BufferQueue* deleted_buffers);
 
   // Resolve overlapping ranges such that no ranges overlap anymore.
   // |range_with_new_buffers_itr| points to the range that has newly appended
   // buffers.
-  // |deleted_next_buffer| is an output parameter that is true if the next
-  // buffer that would have been returned from GetNextBuffer() was deleted
-  // during this call.
   // |deleted_buffers| is an output parameter containing candidates for
   // |track_buffer_|.
   void ResolveCompleteOverlaps(
       const RangeList::iterator& range_with_new_buffers_itr,
-      bool* deleted_next_buffer, BufferQueue* deleted_buffers);
+      BufferQueue* deleted_buffers);
   void ResolveEndOverlap(
       const RangeList::iterator& range_with_new_buffers_itr,
-      bool* deleted_next_buffer, BufferQueue* deleted_buffers);
+      BufferQueue* deleted_buffers);
 
   // Removes buffers, from the |track_buffer_|, that come after |timestamp|.
   void PruneTrackBuffer(const base::TimeDelta timestamp);
@@ -161,10 +155,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // (start,end) if |is_range_exclusive| is false.
   // Buffers are deleted in GOPs, so this method may delete buffers past
   // |end_timestamp| if the keyframe a buffer depends on was deleted.
-  // Returns true if the |next_buffer_index_| is reset, and places the buffers
-  // removed from the range starting at |next_buffer_index_| in
-  // |deleted_buffers|.
-  bool DeleteBetween(SourceBufferRange* range,
+  void DeleteBetween(SourceBufferRange* range,
                      base::TimeDelta start_timestamp,
                      base::TimeDelta end_timestamp,
                      bool is_range_exclusive,
@@ -200,6 +191,11 @@ class MEDIA_EXPORT SourceBufferStream {
   // Sets the |selected_range_| to |range| and resets the next buffer position
   // for the previous |selected_range_|.
   void SetSelectedRange(SourceBufferRange* range);
+
+  // Seeks |range| to |seek_timestamp| and then calls SetSelectedRange() with
+  // |range|.
+  void SeekAndSetSelectedRange(SourceBufferRange* range,
+                               base::TimeDelta seek_timestamp);
 
   // Resets this stream back to an unseeked state.
   void ResetSeekState();
