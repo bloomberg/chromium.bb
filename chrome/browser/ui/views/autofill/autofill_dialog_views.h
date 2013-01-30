@@ -12,6 +12,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -71,6 +72,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController& ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
+  virtual void UpdateProgressBar(double value) OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -217,6 +219,17 @@ class AutofillDialogViews : public AutofillDialogView,
     views::ImageButton* suggested_button;
   };
 
+  class AutocheckoutProgressBar : public views::ProgressBar {
+   public:
+    AutocheckoutProgressBar();
+
+   private:
+    // Overidden from View:
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+    DISALLOW_COPY_AND_ASSIGN(AutocheckoutProgressBar);
+  };
+
   typedef std::map<DialogSection, DetailsGroup> DetailGroupMap;
 
   void InitChildViews();
@@ -320,6 +333,12 @@ class AutofillDialogViews : public AutofillDialogView,
   // This checkbox controls whether new details are saved to the Autofill
   // database. It lives in |extra_view_|.
   views::Checkbox* save_in_chrome_checkbox_;
+
+  // View to host |autocheckout_progress_bar_| and its label.
+  views::View* autocheckout_progress_bar_view_;
+
+  // Progress bar for displaying Autocheckout progress.
+  AutocheckoutProgressBar* autocheckout_progress_bar_;
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;

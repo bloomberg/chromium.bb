@@ -68,6 +68,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 SignInText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 CancelSignInText() const OVERRIDE;
+  virtual string16 ProgressBarText() const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
@@ -132,6 +133,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnWalletError() OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
+
+  // Updates the progress bar based on the Autocheckout progress. |value| should
+  // be in [0.0, 1.0].
+  void UpdateProgressBar(double value);
 
  private:
   // Determines whether |input| and |field| match.

@@ -10898,6 +10898,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON" desc="Button text for confirmation of user details.">
         Submit
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR" desc="Label for Autocheckout progres bar.">
+        Auto-Checkout...
+      </message>
 
 
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">

@@ -44,6 +44,9 @@ namespace {
 // Size of the triangular mark that indicates an invalid textfield.
 const int kDogEarSize = 10;
 
+const int kAutocheckoutProgressBarWidth = 300;
+const int kAutocheckoutProgressBarHeight = 11;
+
 const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
 
 // Returns a label that describes a details section.
@@ -248,6 +251,16 @@ void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
   icon_->SetImage(image.AsImageSkia());
 }
 
+
+// AutofilDialogViews::AutocheckoutProgressBar ---------------------------------
+AutofillDialogViews::AutocheckoutProgressBar::AutocheckoutProgressBar() {}
+
+gfx::Size AutofillDialogViews::AutocheckoutProgressBar::GetPreferredSize() {
+  return gfx::Size(kAutocheckoutProgressBarWidth,
+                   kAutocheckoutProgressBarHeight);
+}
+
+
 // AutofillDialogView ----------------------------------------------------------
 
 // static
@@ -272,6 +285,8 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       main_container_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
+      autocheckout_progress_bar_view_(NULL),
+      autocheckout_progress_bar_(NULL),
       focus_manager_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
@@ -358,6 +373,10 @@ const content::NavigationController& AutofillDialogViews::ShowSignIn() {
 void AutofillDialogViews::HideSignIn() {
   sign_in_container_->SetVisible(false);
   main_container_->SetVisible(true);
+}
+
+void AutofillDialogViews::UpdateProgressBar(double value) {
+  autocheckout_progress_bar_->SetValue(value);
 }
 
 string16 AutofillDialogViews::GetWindowTitle() const {
@@ -503,7 +522,21 @@ void AutofillDialogViews::InitChildViews() {
   save_in_chrome_checkbox_ =
       new views::Checkbox(controller_->SaveLocallyText());
   button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);
-  // TODO(estade): add other views, like the Autocheckout progress bar.
+
+  autocheckout_progress_bar_view_ = new views::View();
+  autocheckout_progress_bar_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  autocheckout_progress_bar_view_->SetVisible(false);
+
+  views::Label* progress_bar_label = new views::Label();
+  progress_bar_label->SetText(controller_->ProgressBarText());
+  progress_bar_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  autocheckout_progress_bar_view_->AddChildView(progress_bar_label);
+
+  autocheckout_progress_bar_ = new AutocheckoutProgressBar();
+  autocheckout_progress_bar_view_->AddChildView(autocheckout_progress_bar_);
+
+  button_strip_extra_view_->AddChildView(autocheckout_progress_bar_view_);
 
   contents_ = new views::View();
   contents_->SetLayoutManager(

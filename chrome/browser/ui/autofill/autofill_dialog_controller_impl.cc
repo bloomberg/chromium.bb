@@ -274,6 +274,11 @@ string16 AutofillDialogControllerImpl::SaveLocallyText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
 }
 
+string16 AutofillDialogControllerImpl::ProgressBarText() const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR);
+}
+
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
     DialogSection section) const {
   switch (section) {
@@ -510,6 +515,10 @@ void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
   }
 
   delete this;
+}
+
+void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
+  view_->UpdateProgressBar(value);
 }
 
 DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
