@@ -16,6 +16,8 @@ const int kResizeOutsideBoundsSize = 6;
 const int kResizeOutsideBoundsScaleForTouch = 5;
 const int kResizeInsideBoundsSize = 1;
 
+const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
+
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
 }  // namespace ash

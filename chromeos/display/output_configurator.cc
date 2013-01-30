@@ -539,11 +539,15 @@ OutputConfigurator::OutputConfigurator()
       last_enter_state_time_() {
 }
 
-void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
+OutputConfigurator::~OutputConfigurator() {
+  RecordPreviousStateUMA();
+}
+
+void OutputConfigurator::Init(bool is_panel_fitting_enabled,
+                              uint32 background_color_argb) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::Init");
   if (!is_running_on_chrome_os_)
     return;
-
   is_panel_fitting_enabled_ = is_panel_fitting_enabled;
 
   // Cache the initial output state.
@@ -557,6 +561,27 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   // Detect our initial state.
   std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
   connected_output_count_ = outputs.size();
+  if (outputs.size() > 1 && background_color_argb) {
+    // Configuring CRTCs/Framebuffer clears the boot screen image.
+    // Set the same background color while configuring the
+    // display to minimize the duration of black screen at boot
+    // time. The background is filled with black later in
+    // ash::DisplayManager.
+    // crbug.com/171050.
+    XSetWindowAttributes swa = {0};
+    XColor color;
+    Colormap colormap = DefaultColormap(display, 0);
+    // XColor uses 16 bits per color.
+    color.red = (background_color_argb & 0x00FF0000) >> 8;
+    color.green = (background_color_argb & 0x0000FF00);
+    color.blue = (background_color_argb & 0x000000FF) << 8;
+    color.flags = DoRed | DoGreen | DoBlue;
+    XAllocColor(display, colormap, &color);
+    swa.background_pixel = color.pixel;
+    XChangeWindowAttributes(display, window, CWBackPixel, &swa);
+    XFreeColors(display, colormap, &color.pixel, 1, 0);
+  }
+
   output_state_ = InferCurrentState(display, screen, outputs);
   // Ensure that we are in a supported state with all connected displays powered
   // on.
@@ -589,10 +614,6 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       SetIsProjecting(is_projecting);
-}
-
-OutputConfigurator::~OutputConfigurator() {
-  RecordPreviousStateUMA();
 }
 
 bool OutputConfigurator::CycleDisplayMode() {

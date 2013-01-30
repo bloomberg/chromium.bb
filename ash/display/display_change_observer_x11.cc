@@ -94,6 +94,7 @@ DisplayChangeObserverX11::~DisplayChangeObserverX11() {
 bool DisplayChangeObserverX11::Dispatch(const base::NativeEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     NotifyDisplayChange();
+    XRRUpdateConfiguration(event);
   }
   return true;
 }

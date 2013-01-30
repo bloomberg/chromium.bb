@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/display_controller.h"
@@ -55,11 +56,6 @@
 
 namespace ash {
 namespace {
-
-#if defined(OS_CHROMEOS)
-// Background color used for the Chrome OS boot splash screen.
-const SkColor kChromeOsBootColor = SkColorSetARGB(0xff, 0xfe, 0xfe, 0xfe);
-#endif
 
 // Duration for the animation that hides the boot splash screen, in
 // milliseconds.  This should be short enough in relation to

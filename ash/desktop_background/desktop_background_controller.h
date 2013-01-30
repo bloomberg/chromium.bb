@@ -64,6 +64,7 @@ class DesktopBackgroundControllerObserver;
 class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
  public:
   enum BackgroundMode {
+    BACKGROUND_NONE,
     BACKGROUND_IMAGE,
     BACKGROUND_SOLID_COLOR
   };

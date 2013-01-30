@@ -103,6 +103,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_x11.h"
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
@@ -213,7 +214,10 @@ Shell::Shell(ShellDelegate* delegate)
       (blacklisted_features & content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisablePanelFitting);
-  output_configurator_->Init(!is_panel_fitting_disabled);
+
+  output_configurator_->Init(
+      !is_panel_fitting_disabled,
+      delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
 
   output_configurator_->AddObserver(output_configurator_animation_.get());
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
