@@ -75,75 +75,51 @@ def GetIncompatibleDirectories():
   return result
 
 
-def _CheckLicenseHeaders(directory_list, whitelisted_files):
+def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   """Checks that all files which are not in a listed third-party directory,
   and which do not use the standard Chromium license, are whitelisted.
   Args:
-    directory_list: The list of directories.
+    excluded_dirs_list: The list of directories to exclude from scanning.
     whitelisted_files: The whitelist of files.
   Returns:
     True if all files with non-standard license headers are whitelisted and the
     whitelist contains no stale entries, otherwise false.
   """
 
-  # Matches one of ...
-  # - '[Cc]opyright', but not when followed by
-  #   ' 20[0-9][0-9] The Chromium Authors.', with optional (c) and date range
-  # - '([Cc]) (19|20)[0-9][0-9]', but not when preceeded by the word copyright,
-  #   as this is handled above
-  regex = '[Cc]opyright(?!( \(c\))? 20[0-9][0-9](-20[0-9][0-9])? ' \
-          'The Chromium Authors\. All rights reserved\.)' \
-          '|' \
-          '(?<!(pyright |opyright))\([Cc]\) (19|20)[0-9][0-9]'
-
-  args = ['grep',
-          '-rPlI',
-          '--exclude', '*.orig',
-          '--exclude', '*.rej',
-          '--exclude-dir', 'third_party',
-          '--exclude-dir', 'out',
-          '--exclude-dir', '.git',
-          '--exclude-dir', '.svn',
-          regex,
-          '.']
-  p = subprocess.Popen(args=args, cwd=REPOSITORY_ROOT, stdout=subprocess.PIPE)
-  files = p.communicate()[0].splitlines()
-
-  directory_list = directory_list[:]
-  # Ignore these tools.
-  directory_list.append('android_webview/tools/')
-  # This is a build intermediate directory.
-  directory_list.append('chrome/app/theme/google_chrome/')
-  # This is tests directory, doesn't exist in the snapshot
-  directory_list.append('content/test/data/')
-  # This is a test output directory.
-  directory_list.append('data/dom_perf/')
-  # This is a test output directory.
-  directory_list.append('data/page_cycler/')
-  # 'Copyright' appears in strings.
-  directory_list.append('chrome/app/resources/')
-  # This is a Chrome on Linux reference build, doesn't exist in the snapshot
-  directory_list.append('chrome/tools/test/reference_build/chrome_linux/')
-  # Remoting internal tools, doesn't exist in the snapshot
-  directory_list.append('remoting/appengine/')
-  # Histogram tools, doesn't exist in the snapshot
-  directory_list.append('tools/histograms/')
+  excluded_dirs_list = [d for d in excluded_dirs_list if not 'third_party' in d]
+  # Using a commond pattern for third-partyies makes the ignore regexp shorter
+  excluded_dirs_list.append('third_party')
+  # VCS dirs
+  excluded_dirs_list.append('.git')
+  excluded_dirs_list.append('.svn')
+  # Build output
+  excluded_dirs_list.append('out/Debug')
+  excluded_dirs_list.append('out/Release')
+  # 'Copyright' appears in license agreements
+  excluded_dirs_list.append('chrome/app/resources')
   # Arm sysroot tools, doesn't exist in the snapshot
-  directory_list.append('arm-sysroot/')
-  # Windows-only
-  directory_list.append('tools/win/toolchain/7z/')
+  excluded_dirs_list.append('arm-sysroot')
 
-  # Exclude files under listed directories and some known offenders.
+  args = ['android_webview/tools/find_copyrights.pl',
+          '.'
+          ] + excluded_dirs_list
+  p = subprocess.Popen(args=args, cwd=REPOSITORY_ROOT, stdout=subprocess.PIPE)
+  lines = p.communicate()[0].splitlines()
+
   offending_files = []
-  for x in files:
-    x = os.path.normpath(x)
-    is_in_listed_directory = False
-    for y in directory_list:
-      if x.startswith(y):
-        is_in_listed_directory = True
+  allowed_copyrights = '^(?:\*No copyright\*' \
+      '|20[0-9][0-9](?:-20[0-9][0-9])? The Chromium Authors\. ' \
+      'All rights reserved.*)$'
+  allowed_copyrights_re = re.compile(allowed_copyrights)
+  for l in lines:
+    entries = l.split('\t')
+    if entries[1] == "GENERATED FILE":
+      continue
+    copyrights = entries[1].split(' / ')
+    for c in copyrights:
+      if c and not allowed_copyrights_re.match(c):
+        offending_files.append(os.path.normpath(entries[0]))
         break
-    if not is_in_listed_directory:
-      offending_files.append(x)
 
   all_files_valid = True
   unknown = set(offending_files) - set(whitelisted_files)
