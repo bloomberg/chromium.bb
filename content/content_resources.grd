@@ -12,8 +12,8 @@
   <release seq="1">
     <includes>
       <include name="IDR_GPU_BLACKLIST" file="browser/gpu/software_rendering_list.json" type="BINDATA" />
-      <include name="IDR_WEBRTC_INTERNALS_HTML" file="browser/media/resources/webrtc_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_WEBRTC_INTERNALS_JS" file="browser/media/resources/webrtc_internals.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_WEBRTC_INTERNALS_HTML" file="browser/resources/media/webrtc_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_WEBRTC_INTERNALS_JS" file="browser/resources/media/webrtc_internals.js" flattenhtml="true" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_GPU_SANDBOX_PROFILE" file="browser/gpu.sb" type="BINDATA" />
         <include name="IDR_WORKER_SANDBOX_PROFILE" file="browser/worker.sb" type="BINDATA" />
