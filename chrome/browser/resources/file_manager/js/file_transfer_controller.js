@@ -267,6 +267,12 @@ FileTransferController.prototype = {
   },
 
   onDragStart_: function(list, event) {
+    // Nothing selected.
+    if (!this.selectedEntries_.length) {
+      event.preventDefault();
+      return;
+    }
+
     var dt = event.dataTransfer;
     var dragThumbnail = this.renderThumbnail_();
     dt.setDragImage(dragThumbnail, 1000, 1000);
