@@ -5,6 +5,7 @@
 #include "cc/layer_tree_impl.h"
 
 #include "base/debug/trace_event.h"
+#include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -19,6 +20,11 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
     , currently_scrolling_layer_(0)
     , background_color_(0)
     , has_transparent_background_(false)
+    , page_scale_factor_(1)
+    , page_scale_delta_(1)
+    , sent_page_scale_delta_(1)
+    , min_page_scale_factor_(0)
+    , max_page_scale_factor_(0)
     , scrolling_layer_id_from_previous_tree_(0)
     , contents_textures_purged_(false)
     , needs_update_draw_properties_(true) {
@@ -79,6 +85,32 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   return root_layer_.Pass();
 }
 
+void LayerTreeImpl::pushPropertiesTo(LayerTreeImpl* target_tree) {
+  target_tree->SetPageScaleFactorAndLimits(
+      page_scale_factor(), min_page_scale_factor(), max_page_scale_factor());
+  target_tree->SetPageScaleDelta(
+      target_tree->page_scale_delta() / target_tree->sent_page_scale_delta());
+  target_tree->set_sent_page_scale_delta(1);
+
+  // This should match the property synchronization in
+  // LayerTreeHost::finishCommitOnImplThread().
+  target_tree->set_source_frame_number(source_frame_number());
+  target_tree->set_background_color(background_color());
+  target_tree->set_has_transparent_background(has_transparent_background());
+
+  if (ContentsTexturesPurged())
+    target_tree->SetContentsTexturesPurged();
+  else
+    target_tree->ResetContentsTexturesPurged();
+
+  if (hud_layer())
+    target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
+        LayerTreeHostCommon::findLayerInSubtree(
+            target_tree->RootLayer(), hud_layer()->id())));
+  else
+    target_tree->set_hud_layer(NULL);
+}
+
 LayerImpl* LayerTreeImpl::RootScrollLayer() {
   DCHECK(IsActiveTree());
   return root_scroll_layer_;
@@ -92,6 +124,43 @@ LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() {
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   currently_scrolling_layer_ = NULL;
   scrolling_layer_id_from_previous_tree_ = 0;
+}
+
+void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
+    float min_page_scale_factor, float max_page_scale_factor)
+{
+  if (!page_scale_factor)
+    return;
+
+  min_page_scale_factor_ = min_page_scale_factor;
+  max_page_scale_factor_ = max_page_scale_factor;
+  page_scale_factor_ = page_scale_factor;
+}
+
+void LayerTreeImpl::SetPageScaleDelta(float delta)
+{
+  // Clamp to the current min/max limits.
+  float total = page_scale_factor_ * delta;
+  if (min_page_scale_factor_ && total < min_page_scale_factor_)
+    delta = min_page_scale_factor_ / page_scale_factor_;
+  else if (max_page_scale_factor_ && total > max_page_scale_factor_)
+    delta = max_page_scale_factor_ / page_scale_factor_;
+
+  if (delta == page_scale_delta_)
+    return;
+
+  page_scale_delta_ = delta;
+
+  if (IsActiveTree()) {
+    LayerTreeImpl* pending_tree = layer_tree_host_impl_->pendingTree();
+    if (pending_tree) {
+      DCHECK_EQ(1, pending_tree->sent_page_scale_delta());
+      pending_tree->SetPageScaleDelta(page_scale_delta_ / sent_page_scale_delta_);
+    }
+  }
+
+  UpdateMaxScrollOffset();
+  set_needs_update_draw_properties();
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
@@ -108,7 +177,7 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
     view_bounds = gfx::ScaleSize(device_viewport_size(),
         1 / device_scale_factor());
   }
-  view_bounds.Scale(1 / pinch_zoom_viewport().total_page_scale_factor());
+  view_bounds.Scale(1 / total_page_scale_factor());
 
   return view_bounds;
 }
@@ -125,6 +194,14 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   max_scroll.ClampToMin(gfx::Vector2dF());
 
   root_scroll_layer_->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
+}
+
+gfx::Transform LayerTreeImpl::ImplTransform() const {
+  gfx::Transform transform;
+  transform.Scale(page_scale_delta_, page_scale_delta_);
+  if (settings().pageScalePinchZoomEnabled)
+      transform.Scale(page_scale_factor_, page_scale_factor_);
+  return transform;
 }
 
 struct UpdateTilePrioritiesForLayer {
@@ -152,8 +229,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
     return;
 
   if (root_scroll_layer_) {
-    root_scroll_layer_->setImplTransform(
-        layer_tree_host_impl_->implTransform());
+    root_scroll_layer_->setImplTransform(ImplTransform());
     // Setting the impl transform re-sets this.
     needs_update_draw_properties_ = false;
   }
@@ -167,7 +243,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
         RootLayer(),
         device_viewport_size(),
         device_scale_factor(),
-        pinch_zoom_viewport().total_page_scale_factor(),
+        total_page_scale_factor(),
         MaxTextureSize(),
         settings().canUseLCDText,
         render_surface_layer_list_,
@@ -365,10 +441,6 @@ DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
 
 AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
   return layer_tree_host_impl_->animationRegistrar();
-}
-
-const PinchZoomViewport& LayerTreeImpl::pinch_zoom_viewport() const {
-  return layer_tree_host_impl_->pinchZoomViewport();
 }
 
 } // namespace cc

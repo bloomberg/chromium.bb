@@ -13,7 +13,6 @@
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/output_surface_client.h"
-#include "cc/pinch_zoom_viewport.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
@@ -191,11 +190,7 @@ public:
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
 
-    float pageScaleFactor() const;
-    void setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor);
-
     scoped_ptr<ScrollAndScaleSet> processScrollDeltas();
-    gfx::Transform implTransform() const;
 
     void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
 
@@ -252,10 +247,6 @@ public:
 
     template<typename RenderPassCuller>
     static void removeRenderPasses(RenderPassCuller, FrameData&);
-
-    float totalPageScaleFactorForTesting() const { return m_pinchZoomViewport.total_page_scale_factor(); }
-
-    const PinchZoomViewport& pinchZoomViewport() const { return m_pinchZoomViewport; }
 
     skia::RefPtr<SkPicture> capturePicture();
 
@@ -347,8 +338,6 @@ private:
 
     // This is used for ticking animations slowly when hidden.
     scoped_ptr<LayerTreeHostImplTimeSourceAdapter> m_timeSourceClientAdapter;
-
-    PinchZoomViewport m_pinchZoomViewport;
 
     scoped_ptr<FrameRateCounter> m_fpsCounter;
     scoped_ptr<PaintTimeCounter> m_paintTimeCounter;

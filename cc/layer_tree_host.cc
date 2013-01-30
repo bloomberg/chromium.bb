@@ -299,6 +299,23 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
 
     syncTree->FindRootScrollLayer();
 
+    float page_scale_delta, sent_page_scale_delta;
+    if (m_settings.implSidePainting) {
+        // Update the delta from the active tree, which may have
+        // adjusted its delta prior to the pending tree being created.
+        // This code is equivalent to that in LayerTreeImpl::SetPageScaleDelta.
+        DCHECK_EQ(1, syncTree->sent_page_scale_delta());
+        page_scale_delta = hostImpl->activeTree()->page_scale_delta();
+        sent_page_scale_delta = hostImpl->activeTree()->sent_page_scale_delta();
+    } else {
+        page_scale_delta = syncTree->page_scale_delta();
+        sent_page_scale_delta = syncTree->sent_page_scale_delta();
+        syncTree->set_sent_page_scale_delta(1);
+    }
+
+    syncTree->SetPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
+    syncTree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
+
     if (!m_settings.implSidePainting) {
         // If we're not in impl-side painting, the tree is immediately
         // considered active.
@@ -307,7 +324,6 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
 
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
-    hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
     hostImpl->setDebugState(m_debugState);
     hostImpl->savePaintTime(m_renderingStats.totalPaintTime);
 

@@ -30,7 +30,6 @@ class LayerTreeImpl;
 class LayerTreeSettings;
 class OutputSurface;
 class PaintTimeCounter;
-class PinchZoomViewport;
 class Proxy;
 class ResourceProvider;
 class TileManager;
@@ -74,13 +73,14 @@ class CC_EXPORT LayerTreeImpl {
   const gfx::Size& layout_viewport_size() const;
   std::string layer_tree_as_text() const;
   DebugRectHistory* debug_rect_history() const;
-  const PinchZoomViewport& pinch_zoom_viewport() const;
 
   // Other public methods
   // ---------------------------------------------------------------------------
   LayerImpl* RootLayer() const { return root_layer_.get(); }
   void SetRootLayer(scoped_ptr<LayerImpl>);
   scoped_ptr<LayerImpl> DetachLayerTree();
+
+  void pushPropertiesTo(LayerTreeImpl*);
 
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {
@@ -118,6 +118,23 @@ class CC_EXPORT LayerTreeImpl {
     UPDATE_ACTIVE_TREE,
     UPDATE_ACTIVE_TREE_FOR_DRAW
   };
+
+  gfx::Transform ImplTransform() const;
+
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
+      float min_page_scale_factor, float max_page_scale_factor);
+  void SetPageScaleDelta(float delta);
+  float total_page_scale_factor() const {
+    return page_scale_factor_ * page_scale_delta_;
+  }
+  float page_scale_factor() const { return page_scale_factor_; }
+  float min_page_scale_factor() const { return min_page_scale_factor_; }
+  float max_page_scale_factor() const { return max_page_scale_factor_; }
+  float page_scale_delta() const  { return page_scale_delta_; }
+  void set_sent_page_scale_delta(float delta) {
+    sent_page_scale_delta_ = delta;
+  }
+  float sent_page_scale_delta() const { return sent_page_scale_delta_; }
 
   // Updates draw properties and render surface layer list
   void UpdateDrawProperties(UpdateDrawPropertiesReason reason);
@@ -169,6 +186,12 @@ protected:
   LayerImpl* currently_scrolling_layer_;
   SkColor background_color_;
   bool has_transparent_background_;
+
+  float page_scale_factor_;
+  float page_scale_delta_;
+  float sent_page_scale_delta_;
+  float min_page_scale_factor_;
+  float max_page_scale_factor_;
 
   typedef base::hash_map<int, LayerImpl*> LayerIdMap;
   LayerIdMap layer_id_map_;

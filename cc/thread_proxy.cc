@@ -564,7 +564,7 @@ void ThreadProxy::scheduledActionBeginFrame()
     scoped_ptr<BeginFrameAndCommitState> beginFrameState(new BeginFrameAndCommitState);
     beginFrameState->monotonicFrameBeginTime = base::TimeTicks::Now();
     beginFrameState->scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
-    beginFrameState->implTransform = m_layerTreeHostImpl->implTransform();
+    beginFrameState->implTransform = m_layerTreeHostImpl->activeTree()->ImplTransform();
     DCHECK_GT(m_layerTreeHostImpl->memoryAllocationLimitBytes(), 0u);
     beginFrameState->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
     Proxy::mainThread()->postTask(base::Bind(&ThreadProxy::beginFrame, m_mainThreadWeakPtr, base::Passed(&beginFrameState)));

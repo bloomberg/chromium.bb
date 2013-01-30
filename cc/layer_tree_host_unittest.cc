@@ -648,7 +648,7 @@ public:
     {
         EXPECT_EQ(gfx::Size(20, 20), impl->layoutViewportSize());
         EXPECT_EQ(SK_ColorGRAY, impl->activeTree()->background_color());
-        EXPECT_EQ(5, impl->pageScaleFactor());
+        EXPECT_EQ(5, impl->activeTree()->page_scale_factor());
 
         endTest();
     }
@@ -688,7 +688,7 @@ public:
     {
         impl->rootLayer()->setScrollable(true);
         impl->rootLayer()->setScrollOffset(gfx::Vector2d());
-        impl->setPageScaleFactorAndLimits(impl->pageScaleFactor(), 0.5, 2);
+        impl->activeTree()->SetPageScaleFactorAndLimits(impl->activeTree()->page_scale_factor(), 0.5, 2);
 
         // We request animation only once.
         if (!m_animationRequested) {
@@ -709,7 +709,7 @@ public:
         impl->processScrollDeltas();
         // We get one commit before the first draw, and the animation doesn't happen until the second draw.
         if (impl->activeTree()->source_frame_number() == 1) {
-            EXPECT_EQ(1.25, impl->pageScaleFactor());
+            EXPECT_EQ(1.25, impl->activeTree()->page_scale_factor());
             endTest();
         } else
             postSetNeedsRedrawToMainThread();

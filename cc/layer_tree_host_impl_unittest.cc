@@ -572,10 +572,31 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
     const float minPageScale = 1, maxPageScale = 4;
     const gfx::Transform identityScaleTransform;
 
+    // The impl-based pinch zoom should adjust the max scroll position.
+    {
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
+        scrollLayer->setScrollDelta(gfx::Vector2d());
+
+        float pageScaleDelta = 2;
+        m_hostImpl->pinchGestureBegin();
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(50, 50));
+        m_hostImpl->pinchGestureEnd();
+        EXPECT_TRUE(m_didRequestRedraw);
+        EXPECT_TRUE(m_didRequestCommit);
+
+        scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
+
+        EXPECT_EQ(gfx::Vector2d(75, 75), m_hostImpl->rootLayer()->maxScrollOffset());
+    }
+
     // Scrolling after a pinch gesture should always be in local space.  The scroll deltas do not
     // have the page scale factor applied.
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleDelta(1);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(gfx::Vector2d());
 
@@ -596,6 +617,10 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
 
 TEST_P(LayerTreeHostImplTest, pinchGesture)
 {
+    // This test is specific to the page-scale based pinch zoom.
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
+        return;
+
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
     initializeRendererAndDrawFrame();
@@ -609,7 +634,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
     // Basic pinch zoom in gesture
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(gfx::Vector2d());
 
@@ -626,7 +651,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
     // Zoom-in clamping
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(gfx::Vector2d());
         float pageScaleDelta = 10;
@@ -641,7 +666,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
     // Zoom-out clamping
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(gfx::Vector2d());
         scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
@@ -664,7 +689,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
     // Two-finger panning should not happen based on pinch events only
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(gfx::Vector2d());
         scrollLayer->setScrollOffset(gfx::Vector2d(20, 20));
@@ -682,7 +707,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
     // Two-finger panning should work with interleaved scroll events
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(gfx::Vector2d());
         scrollLayer->setScrollOffset(gfx::Vector2d(20, 20));
@@ -721,7 +746,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
 
     // Non-anchor zoom-in
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
 
@@ -738,7 +763,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
 
     // Anchor zoom-out
     {
-        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
 
@@ -756,9 +781,13 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
 
 TEST_P(LayerTreeHostImplTest, compositorFrameMetadata)
 {
+    // This test is specific to the page-scale based pinch zoom.
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
+        return;
+
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
-    m_hostImpl->setPageScaleFactorAndLimits(1.0f, 0.5f, 4.0f);
+    m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1.0f, 0.5f, 4.0f);
     initializeRendererAndDrawFrame();
 
     {
@@ -802,7 +831,8 @@ TEST_P(LayerTreeHostImplTest, compositorFrameMetadata)
 
     // Likewise if set from the main thread.
     m_hostImpl->processScrollDeltas();
-    m_hostImpl->setPageScaleFactorAndLimits(4.0f, 0.5f, 4.0f);
+    m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(4.0f, 0.5f, 4.0f);
+    m_hostImpl->activeTree()->SetPageScaleDelta(1.0f);
     {
         CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
         EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
@@ -1160,6 +1190,10 @@ TEST_P(LayerTreeHostImplTest, scrollBlockedByContentLayer)
 
 TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
 {
+    // This test is specific to the page-scale based pinch zoom.
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
+        return;
+
     gfx::Size surfaceSize(10, 10);
     float pageScale = 2;
     scoped_ptr<LayerImpl> root = createScrollableLayer(1, surfaceSize);
@@ -1176,7 +1210,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     m_hostImpl->scrollEnd();
 
     // Set new page scale from main thread.
-    m_hostImpl->setPageScaleFactorAndLimits(pageScale, pageScale, pageScale);
+    m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(pageScale, pageScale, pageScale);
 
     if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
         // The scale should apply to the scroll delta.
@@ -1219,7 +1253,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     m_hostImpl->activeTree()->SetRootLayer(root.Pass());
     m_hostImpl->activeTree()->DidBecomeActive();
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
-    m_hostImpl->setPageScaleFactorAndLimits(1, 1, pageScale);
+    m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, 1, pageScale);
     initializeRendererAndDrawFrame();
 
     gfx::Vector2d scrollDelta(0, 10);
@@ -1295,6 +1329,10 @@ TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
 
 TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 {
+    // This test is specific to the page-scale based pinch zoom.
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
+        return;
+
     gfx::Size surfaceSize(10, 10);
     scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
     root->setBounds(surfaceSize);
@@ -1318,7 +1356,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     m_hostImpl->scrollEnd();
 
     float pageScale = 2;
-    m_hostImpl->setPageScaleFactorAndLimits(pageScale, 1, pageScale);
+    m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(pageScale, 1, pageScale);
 
     drawOneFrame();
 
