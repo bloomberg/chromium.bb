@@ -359,11 +359,6 @@ void MultiThreadedProxyResolver::Executor::OnJobCompleted(Job* job) {
 void MultiThreadedProxyResolver::Executor::Destroy() {
   DCHECK(coordinator_);
 
-  // Give the resolver an opportunity to shutdown from THIS THREAD before
-  // joining on the resolver thread. This allows certain implementations
-  // to avoid deadlocks.
-  resolver_->Shutdown();
-
   {
     // See http://crbug.com/69710.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -484,17 +479,7 @@ void MultiThreadedProxyResolver::CancelRequest(RequestHandle req) {
 LoadState MultiThreadedProxyResolver::GetLoadState(RequestHandle req) const {
   DCHECK(CalledOnValidThread());
   DCHECK(req);
-
-  Job* job = reinterpret_cast<Job*>(req);
-  if (job->executor())
-    return job->executor()->resolver()->GetLoadStateThreadSafe(NULL);
   return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
-}
-
-LoadState MultiThreadedProxyResolver::GetLoadStateThreadSafe(
-    RequestHandle req) const {
-  NOTIMPLEMENTED();
-  return LOAD_STATE_IDLE;
 }
 
 void MultiThreadedProxyResolver::CancelSetPacScript() {

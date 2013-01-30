@@ -196,11 +196,6 @@ LoadState ProxyResolverMac::GetLoadState(RequestHandle request) const {
   return LOAD_STATE_IDLE;
 }
 
-LoadState ProxyResolverMac::GetLoadStateThreadSafe(
-    RequestHandle request) const {
-  return LOAD_STATE_IDLE;
-}
-
 void ProxyResolverMac::CancelSetPacScript() {
   NOTREACHED();
 }

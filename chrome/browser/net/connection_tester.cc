@@ -206,7 +206,6 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     experiment_proxy_service->reset(
         net::CreateProxyServiceUsingV8ProxyResolver(
             proxy_config_service->release(),
-            0u,
             new net::ProxyScriptFetcherImpl(proxy_request_context_),
             dhcp_factory.Create(proxy_request_context_),
             host_resolver(),

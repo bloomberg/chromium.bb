@@ -18,13 +18,10 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
-#include "net/base/host_cache.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver_js_bindings.h"
-#include "net/proxy/proxy_resolver_request_context.h"
 #include "net/proxy/proxy_resolver_script.h"
 #include "v8/include/v8.h"
 
@@ -337,10 +334,8 @@ bool IsInNetEx(const std::string& ip_address, const std::string& ip_prefix) {
 
 class ProxyResolverV8::Context {
  public:
-  explicit Context(ProxyResolverJSBindings* js_bindings)
-      : is_resolving_host_(false),
-        js_bindings_(js_bindings) {
-    DCHECK(js_bindings != NULL);
+  explicit Context(ProxyResolverV8* parent)
+      : parent_(parent) {
   }
 
   ~Context() {
@@ -356,6 +351,10 @@ class ProxyResolverV8::Context {
     PurgeMemory();
   }
 
+  JSBindings* js_bindings() {
+    return parent_->js_bindings_;
+  }
+
   int ResolveProxy(const GURL& query_url, ProxyInfo* results) {
     v8::Locker locked;
     v8::HandleScope scope;
@@ -364,7 +363,7 @@ class ProxyResolverV8::Context {
 
     v8::Local<v8::Value> function;
     if (!GetFindProxyForURL(&function)) {
-      js_bindings_->OnError(
+      js_bindings()->OnError(
           -1, ASCIIToUTF16("FindProxyForURL() is undefined."));
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -384,7 +383,7 @@ class ProxyResolverV8::Context {
     }
 
     if (!ret->IsString()) {
-      js_bindings_->OnError(
+      js_bindings()->OnError(
           -1, ASCIIToUTF16("FindProxyForURL() did not return a string."));
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -399,7 +398,7 @@ class ProxyResolverV8::Context {
       string16 error_message =
           ASCIIToUTF16("FindProxyForURL() returned a non-ASCII string "
                        "(crbug.com/47234): ") + ret_str;
-      js_bindings_->OnError(-1, error_message);
+      js_bindings()->OnError(-1, error_message);
       return ERR_PAC_SCRIPT_FAILED;
     }
 
@@ -477,7 +476,7 @@ class ProxyResolverV8::Context {
     // to be a legitimiate PAC script.
     v8::Local<v8::Value> function;
     if (!GetFindProxyForURL(&function)) {
-      js_bindings_->OnError(
+      js_bindings()->OnError(
           -1, ASCIIToUTF16("FindProxyForURL() is undefined."));
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -485,49 +484,12 @@ class ProxyResolverV8::Context {
     return OK;
   }
 
-  void SetCurrentRequestContext(ProxyResolverRequestContext* context) {
-    js_bindings_->set_current_request_context(context);
-  }
-
   void PurgeMemory() {
     v8::Locker locked;
     v8::V8::LowMemoryNotification();
   }
 
-  bool is_resolving_host() const {
-    base::AutoLock auto_lock(lock_);
-    return is_resolving_host_;
-  }
-
  private:
-  class ScopedHostResolve {
-   public:
-    explicit ScopedHostResolve(Context* context)
-        : context_(context) {
-      context_->BeginHostResolve();
-    }
-
-    ~ScopedHostResolve() {
-      context_->EndHostResolve();
-    }
-
-   private:
-    Context* const context_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedHostResolve);
-  };
-
-  void BeginHostResolve() {
-    base::AutoLock auto_lock(lock_);
-    DCHECK(!is_resolving_host_);
-    is_resolving_host_ = true;
-  }
-
-  void EndHostResolve() {
-    base::AutoLock auto_lock(lock_);
-    DCHECK(is_resolving_host_);
-    is_resolving_host_ = false;
-  }
-
   bool GetFindProxyForURL(v8::Local<v8::Value>* function) {
     *function = v8_context_->Global()->Get(
         ASCIILiteralToV8String("FindProxyForURL"));
@@ -543,7 +505,7 @@ class ProxyResolverV8::Context {
     int line_number = message->GetLineNumber();
     string16 error_message;
     V8ObjectToUTF16String(message->Get(), &error_message);
-    js_bindings_->OnError(line_number, error_message);
+    js_bindings()->OnError(line_number, error_message);
   }
 
   // Compiles and runs |script| in the current V8 context.
@@ -584,7 +546,7 @@ class ProxyResolverV8::Context {
         return v8::Undefined();  // toString() threw an exception.
     }
 
-    context->js_bindings_->Alert(message);
+    context->js_bindings()->Alert(message);
     return v8::Undefined();
   }
 
@@ -598,11 +560,10 @@ class ProxyResolverV8::Context {
 
     {
       v8::Unlocker unlocker(args.GetIsolate());
-      ScopedHostResolve scoped_host_resolve(context);
-
       // We shouldn't be called with any arguments, but will not complain if
       // we are.
-      success = context->js_bindings_->MyIpAddress(&result);
+      success = context->js_bindings()->ResolveDns(
+          "", JSBindings::MY_IP_ADDRESS, &result);
     }
 
     if (!success)
@@ -621,11 +582,10 @@ class ProxyResolverV8::Context {
 
     {
       v8::Unlocker unlocker(args.GetIsolate());
-      ScopedHostResolve scoped_host_resolve(context);
-
       // We shouldn't be called with any arguments, but will not complain if
       // we are.
-      success = context->js_bindings_->MyIpAddressEx(&ip_address_list);
+      success = context->js_bindings()->ResolveDns(
+          "", JSBindings::MY_IP_ADDRESS_EX, &ip_address_list);
     }
 
     if (!success)
@@ -648,8 +608,8 @@ class ProxyResolverV8::Context {
 
     {
       v8::Unlocker unlocker(args.GetIsolate());
-      ScopedHostResolve scoped_host_resolve(context);
-      success = context->js_bindings_->DnsResolve(hostname, &ip_address);
+      success = context->js_bindings()->ResolveDns(
+          hostname, JSBindings::DNS_RESOLVE, &ip_address);
     }
 
     return success ? ASCIIStringToV8String(ip_address) : v8::Null();
@@ -670,8 +630,8 @@ class ProxyResolverV8::Context {
 
     {
       v8::Unlocker unlocker(args.GetIsolate());
-      ScopedHostResolve scoped_host_resolve(context);
-      success = context->js_bindings_->DnsResolveEx(hostname, &ip_address_list);
+      success = context->js_bindings()->ResolveDns(
+          hostname, JSBindings::DNS_RESOLVE_EX, &ip_address_list);
     }
 
     if (!success)
@@ -714,18 +674,16 @@ class ProxyResolverV8::Context {
   }
 
   mutable base::Lock lock_;
-  bool is_resolving_host_;
-  ProxyResolverJSBindings* js_bindings_;
+  ProxyResolverV8* parent_;
   v8::Persistent<v8::External> v8_this_;
   v8::Persistent<v8::Context> v8_context_;
 };
 
 // ProxyResolverV8 ------------------------------------------------------------
 
-ProxyResolverV8::ProxyResolverV8(
-    ProxyResolverJSBindings* custom_js_bindings)
+ProxyResolverV8::ProxyResolverV8()
     : ProxyResolver(true /*expects_pac_bytes*/),
-      js_bindings_(custom_js_bindings) {
+      js_bindings_(NULL) {
 }
 
 ProxyResolverV8::~ProxyResolverV8() {}
@@ -735,26 +693,15 @@ int ProxyResolverV8::GetProxyForURL(
     const CompletionCallback& /*callback*/,
     RequestHandle* /*request*/,
     const BoundNetLog& net_log) {
+  DCHECK(js_bindings_);
+
   // If the V8 instance has not been initialized (either because
   // SetPacScript() wasn't called yet, or because it failed.
-  if (!context_.get())
+  if (!context_)
     return ERR_FAILED;
 
-  // Associate some short-lived context with this request. This context will be
-  // available to any of the javascript "bindings" that are subsequently invoked
-  // from the javascript.
-  //
-  // In particular, we create a HostCache to aggressively cache failed DNS
-  // resolves.
-  const unsigned kMaxCacheEntries = 50;
-  HostCache host_cache(kMaxCacheEntries);
-
-  ProxyResolverRequestContext request_context(&net_log, &host_cache);
-
   // Otherwise call into V8.
-  context_->SetCurrentRequestContext(&request_context);
   int rv = context_->ResolveProxy(query_url, results);
-  context_->SetCurrentRequestContext(NULL);
 
   return rv;
 }
@@ -769,12 +716,6 @@ LoadState ProxyResolverV8::GetLoadState(RequestHandle request) const {
   return LOAD_STATE_IDLE;
 }
 
-LoadState ProxyResolverV8::GetLoadStateThreadSafe(RequestHandle request) const {
-  if (context_->is_resolving_host())
-    return LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT;
-  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
-}
-
 void ProxyResolverV8::CancelSetPacScript() {
   NOTREACHED();
 }
@@ -783,20 +724,18 @@ void ProxyResolverV8::PurgeMemory() {
   context_->PurgeMemory();
 }
 
-void ProxyResolverV8::Shutdown() {
-  js_bindings_->Shutdown();
-}
-
 int ProxyResolverV8::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
     const CompletionCallback& /*callback*/) {
-  DCHECK(script_data.get());
+  DCHECK(script_data);
+  DCHECK(js_bindings_);
+
   context_.reset();
   if (script_data->utf16().empty())
     return ERR_PAC_SCRIPT_FAILED;
 
   // Try parsing the PAC script.
-  scoped_ptr<Context> context(new Context(js_bindings_.get()));
+  scoped_ptr<Context> context(new Context(this));
   int rv = context->InitV8(script_data);
   if (rv == OK)
     context_.reset(context.release());

@@ -30,9 +30,6 @@ class NET_EXPORT_PRIVATE ProxyResolverWinHttp : public ProxyResolver {
 
   virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE;
 
-  virtual LoadState GetLoadStateThreadSafe(
-      RequestHandle request) const OVERRIDE;
-
   virtual void CancelSetPacScript() OVERRIDE;
 
   virtual int SetPacScript(

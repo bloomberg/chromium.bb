@@ -12,7 +12,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log_unittest.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver_js_bindings.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +21,7 @@ namespace {
 // Javascript bindings for ProxyResolverV8, which returns mock values.
 // Each time one of the bindings is called into, we push the input into a
 // list, for later verification.
-class MockJSBindings : public ProxyResolverJSBindings {
+class MockJSBindings : public ProxyResolverV8::JSBindings {
  public:
   MockJSBindings() : my_ip_address_count(0), my_ip_address_ex_count(0) {}
 
@@ -31,30 +30,35 @@ class MockJSBindings : public ProxyResolverJSBindings {
     alerts.push_back(UTF16ToUTF8(message));
   }
 
-  virtual bool MyIpAddress(std::string* ip_address) OVERRIDE {
-    my_ip_address_count++;
-    *ip_address = my_ip_address_result;
-    return !my_ip_address_result.empty();
-  }
+  virtual bool ResolveDns(const std::string& host,
+                          ResolveDnsOperation op,
+                          std::string* output) OVERRIDE {
+    if (op == MY_IP_ADDRESS) {
+      my_ip_address_count++;
+      *output = my_ip_address_result;
+      return !my_ip_address_result.empty();
+    }
 
-  virtual bool MyIpAddressEx(std::string* ip_address_list) OVERRIDE {
-    my_ip_address_ex_count++;
-    *ip_address_list = my_ip_address_ex_result;
-    return !my_ip_address_ex_result.empty();
-  }
+    if (op == MY_IP_ADDRESS_EX) {
+      my_ip_address_ex_count++;
+      *output = my_ip_address_ex_result;
+      return !my_ip_address_ex_result.empty();
+    }
 
-  virtual bool DnsResolve(const std::string& host, std::string* ip_address)
-      OVERRIDE {
-    dns_resolves.push_back(host);
-    *ip_address = dns_resolve_result;
-    return !dns_resolve_result.empty();
-  }
+    if (op == DNS_RESOLVE) {
+      dns_resolves.push_back(host);
+      *output = dns_resolve_result;
+      return !dns_resolve_result.empty();
+    }
 
-  virtual bool DnsResolveEx(const std::string& host,
-                            std::string* ip_address_list) OVERRIDE {
-    dns_resolves_ex.push_back(host);
-    *ip_address_list = dns_resolve_ex_result;
-    return !dns_resolve_ex_result.empty();
+    if (op == DNS_RESOLVE_EX) {
+      dns_resolves_ex.push_back(host);
+      *output = dns_resolve_ex_result;
+      return !dns_resolve_ex_result.empty();
+    }
+
+    CHECK(false);
+    return false;
   }
 
   virtual void OnError(int line_number, const string16& message) OVERRIDE {
@@ -64,8 +68,6 @@ class MockJSBindings : public ProxyResolverJSBindings {
     errors.push_back(UTF16ToUTF8(message));
     errors_line_number.push_back(line_number);
   }
-
-  virtual void Shutdown() OVERRIDE {}
 
   // Mock values to return.
   std::string my_ip_address_result;
@@ -88,10 +90,12 @@ class MockJSBindings : public ProxyResolverJSBindings {
 // disk.
 class ProxyResolverV8WithMockBindings : public ProxyResolverV8 {
  public:
-  ProxyResolverV8WithMockBindings() : ProxyResolverV8(new MockJSBindings()) {}
+  ProxyResolverV8WithMockBindings() {
+    set_js_bindings(&mock_js_bindings_);
+  }
 
-  MockJSBindings* mock_js_bindings() const {
-    return reinterpret_cast<MockJSBindings*>(js_bindings());
+  MockJSBindings* mock_js_bindings() {
+    return &mock_js_bindings_;
   }
 
   // Initialize with the PAC script data at |filename|.
@@ -117,12 +121,14 @@ class ProxyResolverV8WithMockBindings : public ProxyResolverV8 {
     return SetPacScript(ProxyResolverScriptData::FromUTF8(file_contents),
                         CompletionCallback());
   }
+
+ private:
+  MockJSBindings mock_js_bindings_;
 };
 
 // Doesn't really matter what these values are for many of the tests.
 const GURL kQueryUrl("http://www.google.com");
 const GURL kPacUrl;
-
 
 TEST(ProxyResolverV8Test, Direct) {
   ProxyResolverV8WithMockBindings resolver;

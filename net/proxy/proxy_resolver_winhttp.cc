@@ -128,11 +128,6 @@ LoadState ProxyResolverWinHttp::GetLoadState(RequestHandle request) const {
   return LOAD_STATE_IDLE;
 }
 
-LoadState ProxyResolverWinHttp::GetLoadStateThreadSafe(
-    RequestHandle request) const {
-  return LOAD_STATE_IDLE;
-}
-
 void ProxyResolverWinHttp::CancelSetPacScript() {
   NOTREACHED();
 }

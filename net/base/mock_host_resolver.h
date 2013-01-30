@@ -94,6 +94,16 @@ class MockHostResolverBase : public HostResolver,
   // ResolveAllPending().
   bool has_pending_requests() const { return !requests_.empty(); }
 
+  // The number of times that Resolve() has been called.
+  size_t num_resolve() const {
+    return num_resolve_;
+  }
+
+  // The number of times that ResolveFromCache() has been called.
+  size_t num_resolve_from_cache() const {
+    return num_resolve_from_cache_;
+  }
+
  protected:
   explicit MockHostResolverBase(bool use_caching);
 
@@ -116,6 +126,9 @@ class MockHostResolverBase : public HostResolver,
   scoped_ptr<HostCache> cache_;
   RequestMap requests_;
   size_t next_request_id_;
+
+  size_t num_resolve_;
+  size_t num_resolve_from_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(MockHostResolverBase);
 };
@@ -158,8 +171,10 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   // Same as AddRule(), but the replacement is expected to be an IPv4 or IPv6
   // literal. This can be used in place of AddRule() to bypass the system's
   // host resolver (the address list will be constructed manually).
-  // If |canonical-name| is non-empty, it is copied to the resulting AddressList
+  // If |canonical_name| is non-empty, it is copied to the resulting AddressList
   // but does not impact DNS resolution.
+  // |ip_literal| can be a single IP address like "192.168.1.1" or a comma
+  // separated list of IP addresses, like "::1,192:168.1.2".
   void AddIPLiteralRule(const std::string& host_pattern,
                         const std::string& ip_literal,
                         const std::string& canonical_name);
@@ -174,6 +189,9 @@ class RuleBasedHostResolverProc : public HostResolverProc {
 
   // Simulate a lookup failure for |host| (it also can be a pattern).
   void AddSimulatedFailure(const std::string& host);
+
+  // Deletes all the rules that have been added.
+  void ClearRules();
 
   // HostResolverProc methods:
   virtual int Resolve(const std::string& host,

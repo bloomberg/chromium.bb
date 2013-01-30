@@ -71,6 +71,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
                                   RequestHandle* handle,
                                   const BoundNetLog& net_log) {
   DCHECK(CalledOnValidThread());
+  num_resolve_++;
   size_t id = next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(info, addresses);
   if (rv != ERR_DNS_CACHE_MISS) {
@@ -97,6 +98,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
 int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
                                            AddressList* addresses,
                                            const BoundNetLog& net_log) {
+  num_resolve_from_cache_++;
   DCHECK(CalledOnValidThread());
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(info, addresses);
@@ -134,7 +136,9 @@ void MockHostResolverBase::ResolveAllPending() {
 MockHostResolverBase::MockHostResolverBase(bool use_caching)
     : synchronous_mode_(false),
       ondemand_mode_(false),
-      next_request_id_(1) {
+      next_request_id_(1),
+      num_resolve_(0),
+      num_resolve_from_cache_(0) {
   rules_ = CreateCatchAllHostResolverProc();
 
   if (use_caching) {
@@ -303,6 +307,10 @@ void RuleBasedHostResolverProc::AddSimulatedFailure(
   Rule rule(Rule::kResolverTypeFail, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
             flags, "", "", 0);
   rules_.push_back(rule);
+}
+
+void RuleBasedHostResolverProc::ClearRules() {
+  rules_.clear();
 }
 
 int RuleBasedHostResolverProc::Resolve(const std::string& host,

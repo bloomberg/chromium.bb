@@ -52,9 +52,6 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   // Gets the LoadState for |request|.
   virtual LoadState GetLoadState(RequestHandle request) const = 0;
 
-  // Gets the LoadState for |request|. May be called from another thread.
-  virtual LoadState GetLoadStateThreadSafe(RequestHandle request) const = 0;
-
   // The PAC script backend can be specified to the ProxyResolver either via
   // URL, or via the javascript text itself.  If |expects_pac_bytes| is true,
   // then the ProxyResolverScriptData passed to SetPacScript() should
@@ -74,10 +71,6 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
       const net::CompletionCallback& callback) = 0;
-
-  // Optional shutdown code to be run before destruction. This is only used
-  // by the multithreaded runner to signal cleanup from origin thread
-  virtual void Shutdown() {}
 
  private:
   const bool expects_pac_bytes_;

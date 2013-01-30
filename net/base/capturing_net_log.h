@@ -54,6 +54,10 @@ class CapturingNetLog : public NetLog {
     // log entry.
     bool GetNetErrorCode(int* value) const;
 
+    // Returns the parameters as a JSON string, or empty string if there are no
+    // parameters.
+    std::string GetParamsJson() const;
+
     EventType type;
     base::TimeTicks time;
     Source source;

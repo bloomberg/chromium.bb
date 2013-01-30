@@ -78,12 +78,6 @@ LoadState MockAsyncProxyResolverBase::GetLoadState(
   return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
 
-LoadState MockAsyncProxyResolverBase::GetLoadStateThreadSafe(
-    RequestHandle request_handle) const {
-  NOTREACHED();
-  return LOAD_STATE_IDLE;
-}
-
 int MockAsyncProxyResolverBase::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
     const CompletionCallback& callback) {

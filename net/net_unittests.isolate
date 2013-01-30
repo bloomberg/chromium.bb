@@ -228,6 +228,17 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
+          'data/proxy_resolver_v8_tracing_unittest/dns.js',
+          'data/proxy_resolver_v8_tracing_unittest/dns_during_init.js',
+          'data/proxy_resolver_v8_tracing_unittest/error.js',
+          'data/proxy_resolver_v8_tracing_unittest/global_sideffects1.js',
+          'data/proxy_resolver_v8_tracing_unittest/global_sideffects2.js',
+          'data/proxy_resolver_v8_tracing_unittest/global_sideffects3.js',
+          'data/proxy_resolver_v8_tracing_unittest/global_sideffects4.js',
+          'data/proxy_resolver_v8_tracing_unittest/simple.js',
+          'data/proxy_resolver_v8_tracing_unittest/simple_dns.js',
+          'data/proxy_resolver_v8_tracing_unittest/too_many_alerts.js',
+          'data/proxy_resolver_v8_tracing_unittest/too_many_empty_alerts.js',
           'data/proxy_resolver_v8_unittest/binding_from_global.js',
           'data/proxy_resolver_v8_unittest/bindings.js',
           'data/proxy_resolver_v8_unittest/direct.js',

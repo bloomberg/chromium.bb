@@ -117,7 +117,6 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 
     proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
         proxy_config_service,
-        num_pac_threads,
         new net::ProxyScriptFetcherImpl(context),
         dhcp_factory.Create(context),
         context->host_resolver(),

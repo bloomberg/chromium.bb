@@ -4,6 +4,7 @@
 
 #include "net/base/capturing_net_log.h"
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
 
@@ -34,14 +35,14 @@ CapturingNetLog::CapturedEntry::operator=(const CapturedEntry& entry) {
   time = entry.time;
   source = entry.source;
   phase = entry.phase;
-  params.reset(entry.params.get() ? entry.params->DeepCopy() : NULL);
+  params.reset(entry.params ? entry.params->DeepCopy() : NULL);
   return *this;
 }
 
 bool CapturingNetLog::CapturedEntry::GetStringValue(
     const std::string& name,
     std::string* value) const {
-  if (!params.get())
+  if (!params)
     return false;
   return params->GetString(name, value);
 }
@@ -49,13 +50,21 @@ bool CapturingNetLog::CapturedEntry::GetStringValue(
 bool CapturingNetLog::CapturedEntry::GetIntegerValue(
     const std::string& name,
     int* value) const {
-  if (!params.get())
+  if (!params)
     return false;
   return params->GetInteger(name, value);
 }
 
 bool CapturingNetLog::CapturedEntry::GetNetErrorCode(int* value) const {
   return GetIntegerValue("net_error", value);
+}
+
+std::string CapturingNetLog::CapturedEntry::GetParamsJson() const {
+  if (!params)
+    return std::string();
+  std::string json;
+  base::JSONWriter::Write(params.get(), &json);
+  return json;
 }
 
 CapturingNetLog::CapturingNetLog()

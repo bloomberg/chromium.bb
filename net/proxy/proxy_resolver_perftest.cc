@@ -11,9 +11,7 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver_js_bindings.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#include "net/proxy/sync_host_resolver.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,17 +20,6 @@
 #elif defined(OS_MACOSX)
 #include "net/proxy/proxy_resolver_mac.h"
 #endif
-
-class MockSyncHostResolver : public net::SyncHostResolver {
- public:
-  virtual int Resolve(const net::HostResolver::RequestInfo& info,
-                      net::AddressList* addresses,
-                      const net::BoundNetLog& net_log) OVERRIDE {
-    return net::ERR_NAME_NOT_RESOLVED;
-  }
-
-  virtual void Shutdown() OVERRIDE {}
-};
 
 // This class holds the URL to use for resolving, and the expected result.
 // We track the expected result in order to make sure the performance
@@ -207,12 +194,30 @@ TEST(ProxyResolverPerfTest, ProxyResolverMac) {
 }
 #endif
 
-TEST(ProxyResolverPerfTest, ProxyResolverV8) {
-  net::ProxyResolverJSBindings* js_bindings =
-      net::ProxyResolverJSBindings::CreateDefault(
-          new MockSyncHostResolver, NULL, NULL);
+class MockJSBindings : public net::ProxyResolverV8::JSBindings {
+ public:
+  MockJSBindings() {}
 
-  net::ProxyResolverV8 resolver(js_bindings);
+  virtual void Alert(const string16& message) OVERRIDE {
+    CHECK(false);
+  }
+
+  virtual bool ResolveDns(const std::string& host,
+                          ResolveDnsOperation op,
+                          std::string* output) OVERRIDE {
+    CHECK(false);
+    return false;
+  }
+
+  virtual void OnError(int line_number, const string16& message) OVERRIDE {
+    CHECK(false);
+  }
+};
+
+TEST(ProxyResolverPerfTest, ProxyResolverV8) {
+  MockJSBindings js_bindings;
+  net::ProxyResolverV8 resolver;
+  resolver.set_js_bindings(&js_bindings);
   PacPerfSuiteRunner runner(&resolver, "ProxyResolverV8");
   runner.RunAllTests();
 }

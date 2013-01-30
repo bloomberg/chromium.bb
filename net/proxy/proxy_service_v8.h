@@ -21,21 +21,6 @@ class ProxyService;
 // Creates a proxy service that polls |proxy_config_service| to notice when
 // the proxy settings change. We take ownership of |proxy_config_service|.
 //
-// |num_pac_threads| specifies the maximum number of threads to use for
-// executing PAC scripts. Threads are created lazily on demand.
-// If |0| is specified, then a default number of threads will be selected.
-//
-// Having more threads avoids stalling proxy resolve requests when the
-// PAC script takes a while to run. This is particularly a problem when PAC
-// scripts do synchronous DNS resolutions, since that can take on the order
-// of seconds.
-//
-// However, the disadvantages of using more than 1 thread are:
-//   (a) can cause compatibility issues for scripts that rely on side effects
-//       between runs (such scripts should not be common though).
-//   (b) increases the memory used by proxy resolving, as each thread will
-//       duplicate its own script context.
-
 // |proxy_script_fetcher| specifies the dependency to use for downloading
 // any PAC scripts. The resulting ProxyService will take ownership of it.
 //
@@ -54,7 +39,6 @@ class ProxyService;
 // ##########################################################################
 NET_EXPORT ProxyService* CreateProxyServiceUsingV8ProxyResolver(
     ProxyConfigService* proxy_config_service,
-    size_t num_pac_threads,
     ProxyScriptFetcher* proxy_script_fetcher,
     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,

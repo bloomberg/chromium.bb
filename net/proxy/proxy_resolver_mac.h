@@ -31,9 +31,6 @@ class NET_EXPORT ProxyResolverMac : public ProxyResolver {
 
   virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE;
 
-  virtual LoadState GetLoadStateThreadSafe(
-      RequestHandle request) const OVERRIDE;
-
   virtual void CancelSetPacScript() OVERRIDE;
 
   virtual int SetPacScript(
