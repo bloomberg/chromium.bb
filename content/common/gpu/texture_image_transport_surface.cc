@@ -139,10 +139,10 @@ unsigned int TextureImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+bool TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   DCHECK(!is_swap_buffers_pending_);
   if (backbuffer_suggested_allocation_ == allocation)
-     return;
+     return true;
   backbuffer_suggested_allocation_ = allocation;
 
   if (backbuffer_suggested_allocation_) {
@@ -151,6 +151,8 @@ void TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   } else {
     ReleaseBackTexture();
   }
+
+  return true;
 }
 
 void TextureImageTransportSurface::SetFrontbufferAllocation(bool allocation) {

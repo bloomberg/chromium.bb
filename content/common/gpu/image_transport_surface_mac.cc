@@ -50,7 +50,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
   virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
  protected:
@@ -190,11 +190,12 @@ unsigned int IOSurfaceImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void IOSurfaceImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+bool IOSurfaceImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   if (backbuffer_suggested_allocation_ == allocation)
-    return;
+    return true;
   backbuffer_suggested_allocation_ = allocation;
   AdjustBufferAllocation();
+  return true;
 }
 
 void IOSurfaceImageTransportSurface::SetFrontbufferAllocation(bool allocation) {

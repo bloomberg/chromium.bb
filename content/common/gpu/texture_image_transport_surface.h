@@ -41,7 +41,7 @@ class TextureImageTransportSurface
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
   virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
   virtual void* GetDisplay() OVERRIDE;

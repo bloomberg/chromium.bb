@@ -25,7 +25,7 @@ class GLSurfaceMock : public gfx::GLSurface {
   MOCK_METHOD0(GetHandle, void*());
   MOCK_METHOD0(GetBackingFrameBufferObject, unsigned int());
   MOCK_METHOD1(OnMakeCurrent, bool(gfx::GLContext* context));
-  MOCK_METHOD1(SetBackbufferAllocation, void(bool allocated));
+  MOCK_METHOD1(SetBackbufferAllocation, bool(bool allocated));
   MOCK_METHOD1(SetFrontbufferAllocation, void(bool allocated));
   MOCK_METHOD0(GetShareHandle, void*());
   MOCK_METHOD0(GetDisplay, void*());

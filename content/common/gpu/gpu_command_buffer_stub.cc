@@ -719,7 +719,8 @@ void GpuCommandBufferStub::OnDiscardBackbuffer() {
     DCHECK(!IsScheduled());
     channel_->RequeueMessage();
   } else {
-    surface_->SetBackbufferAllocation(false);
+    if (!surface_->SetBackbufferAllocation(false))
+      channel_->DestroySoon();
   }
 }
 
@@ -731,7 +732,8 @@ void GpuCommandBufferStub::OnEnsureBackbuffer() {
     DCHECK(!IsScheduled());
     channel_->RequeueMessage();
   } else {
-    surface_->SetBackbufferAllocation(true);
+    if (!surface_->SetBackbufferAllocation(true))
+      channel_->DestroySoon();
   }
 }
 

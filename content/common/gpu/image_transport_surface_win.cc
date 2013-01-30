@@ -40,7 +40,7 @@ class PbufferImageTransportSurface
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
-  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
   virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
  protected:
@@ -155,16 +155,17 @@ bool PbufferImageTransportSurface::PostSubBuffer(
   return false;
 }
 
-void PbufferImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+bool PbufferImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   if (backbuffer_suggested_allocation_ == allocation)
-    return;
+    return true;
   backbuffer_suggested_allocation_ = allocation;
 
-  if (backbuffer_suggested_allocation_)
-    Resize(visible_size_);
-  else
-    Resize(gfx::Size(1, 1));
   DestroySurface();
+
+  if (backbuffer_suggested_allocation_)
+    return Resize(visible_size_);
+  else
+    return Resize(gfx::Size(1, 1));
 }
 
 void PbufferImageTransportSurface::SetFrontbufferAllocation(bool allocation) {

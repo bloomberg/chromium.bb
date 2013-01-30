@@ -81,7 +81,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual bool OnMakeCurrent(GLContext* context);
 
   // Used for explicit buffer management.
-  virtual void SetBackbufferAllocation(bool allocated);
+  virtual bool SetBackbufferAllocation(bool allocated);
   virtual void SetFrontbufferAllocation(bool allocated);
 
   // Get a handle used to share the surface with another process. Returns null
@@ -146,7 +146,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetHandle() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
-  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
   virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
   virtual void* GetDisplay() OVERRIDE;
