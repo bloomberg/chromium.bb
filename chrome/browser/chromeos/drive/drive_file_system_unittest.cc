@@ -272,7 +272,7 @@ class DriveFileSystemTest : public testing::Test {
 
   bool LoadFeed(const std::string& filename, bool is_delta_feed) {
     if (!test_util::LoadChangeFeed(filename,
-                                   file_system_,
+                                   file_system_->feed_loader(),
                                    is_delta_feed,
                                    root_feed_changestamp_)) {
       return false;

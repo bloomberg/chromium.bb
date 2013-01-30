@@ -6,12 +6,12 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
 namespace drive {
@@ -186,7 +186,7 @@ void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
 }
 
 bool LoadChangeFeed(const std::string& relative_path,
-                    DriveFileSystem* file_system,
+                    DriveFeedLoader* feed_loader,
                     bool is_delta_feed,
                     int64 root_feed_changestamp) {
   scoped_ptr<Value> document =
@@ -204,7 +204,7 @@ bool LoadChangeFeed(const std::string& relative_path,
   ScopedVector<google_apis::ResourceList> feed_list;
   feed_list.push_back(document_feed.release());
 
-  file_system->feed_loader()->UpdateFromFeed(
+  feed_loader->UpdateFromFeed(
       feed_list,
       is_delta_feed,
       root_feed_changestamp,

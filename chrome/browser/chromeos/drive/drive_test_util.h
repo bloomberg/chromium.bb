@@ -20,7 +20,7 @@ namespace drive {
 
 class DriveCacheEntry;
 class DriveEntryProto;
-class DriveFileSystem;
+class DriveFeedLoader;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
@@ -156,7 +156,7 @@ void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.
 bool LoadChangeFeed(const std::string& relative_path,
-                    DriveFileSystem* file_system,
+                    DriveFeedLoader* feed_loader,
                     bool is_delta_feed,
                     int64 root_feed_changestamp);
 
