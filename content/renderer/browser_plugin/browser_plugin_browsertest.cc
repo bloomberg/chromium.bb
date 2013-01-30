@@ -890,10 +890,12 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
                                               &auto_size_params,
                                               &resize_params);
     EXPECT_FALSE(auto_size_params.enable);
-    EXPECT_EQ(42, auto_size_params.min_size.width());
-    EXPECT_EQ(43, auto_size_params.min_size.height());
-    EXPECT_EQ(1337, auto_size_params.max_size.width());
-    EXPECT_EQ(1338, auto_size_params.max_size.height());
+    // These value are not populated (as an optimization) if autosize is
+    // disabled.
+    EXPECT_EQ(0, auto_size_params.min_size.width());
+    EXPECT_EQ(0, auto_size_params.min_size.height());
+    EXPECT_EQ(0, auto_size_params.max_size.width());
+    EXPECT_EQ(0, auto_size_params.max_size.height());
   }
 }
 

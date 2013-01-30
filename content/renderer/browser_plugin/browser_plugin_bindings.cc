@@ -390,8 +390,7 @@ class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
 
 class BrowserPluginPropertyBinding {
  public:
-  explicit BrowserPluginPropertyBinding(const char name[]) : name_(name) {
-  }
+  explicit BrowserPluginPropertyBinding(const char name[]) : name_(name) {}
   virtual ~BrowserPluginPropertyBinding() {}
   const std::string& name() const { return name_; }
   bool MatchesName(NPIdentifier name) const {
@@ -402,11 +401,10 @@ class BrowserPluginPropertyBinding {
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) = 0;
-  virtual std::string GetDOMAttributeValue(BrowserPlugin* browser_plugin) = 0;
   // Updates the DOM Attribute value with the current property value.
-  void UpdateDOMAttribute(BrowserPluginBindings* bindings) {
-    bindings->instance()->UpdateDOMAttribute(name(),
-        GetDOMAttributeValue(bindings->instance()));
+  void UpdateDOMAttribute(BrowserPluginBindings* bindings,
+                          std::string new_value) {
+    bindings->instance()->UpdateDOMAttribute(name(), new_value);
   }
  private:
   std::string name_;
@@ -422,20 +420,25 @@ class BrowserPluginPropertyBindingAutoSize
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    bool auto_size = bindings->instance()->auto_size_attribute();
+    bool auto_size = bindings->instance()->GetAutoSizeAttribute();
     BOOLEAN_TO_NPVARIANT(auto_size, *result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    bool auto_size = NPVARIANT_TO_BOOLEAN(*variant);
-    bindings->instance()->SetAutoSizeAttribute(auto_size);
+    bool new_value;
+    if (variant->type == NPVariantType_Bool) {
+      new_value = NPVARIANT_TO_BOOLEAN(*variant);
+    } else {
+      new_value = LowerCaseEqualsASCII(std::string(
+          NPVARIANT_TO_STRING(*variant).UTF8Characters), "true");
+    }
+    if (bindings->instance()->GetAutoSizeAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, new_value ? "true" : "false");
+      bindings->instance()->ParseAutoSizeAttribute();
+    }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return browser_plugin->auto_size_attribute() ? "true" : "false";
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAutoSize);
@@ -461,9 +464,6 @@ class BrowserPluginPropertyBindingContentWindow
                            const NPVariant* variant) OVERRIDE {
     return false;
   }
-  virtual std::string GetDOMAttributeValue(BrowserPlugin* browser_plugin) {
-    return std::string();
-  }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingContentWindow);
 };
@@ -476,20 +476,19 @@ class BrowserPluginPropertyBindingMaxHeight
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    int max_height = bindings->instance()->max_height_attribute();
+    int max_height = bindings->instance()->GetMaxHeightAttribute();
     INT32_TO_NPVARIANT(max_height, *result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int max_height = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMaxHeightAttribute(max_height);
+    int new_value = Int32FromNPVariant(*variant);
+    if (bindings->instance()->GetMaxHeightAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, base::IntToString(new_value));
+      bindings->instance()->ParseSizeContraintsChanged();
+    }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return base::IntToString(browser_plugin->max_height_attribute());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxHeight);
@@ -503,20 +502,19 @@ class BrowserPluginPropertyBindingMaxWidth
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    int max_width = bindings->instance()->max_width_attribute();
+    int max_width = bindings->instance()->GetMaxWidthAttribute();
     INT32_TO_NPVARIANT(max_width, *result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int max_width = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMaxWidthAttribute(max_width);
+    int new_value = Int32FromNPVariant(*variant);
+    if (bindings->instance()->GetMaxWidthAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, base::IntToString(new_value));
+      bindings->instance()->ParseSizeContraintsChanged();
+    }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return base::IntToString(browser_plugin->max_width_attribute());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxWidth);
@@ -530,20 +528,19 @@ class BrowserPluginPropertyBindingMinHeight
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    int min_height = bindings->instance()->min_height_attribute();
+    int min_height = bindings->instance()->GetMinHeightAttribute();
     INT32_TO_NPVARIANT(min_height, *result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int min_height = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMinHeightAttribute(min_height);
+    int new_value = Int32FromNPVariant(*variant);
+    if (bindings->instance()->GetMinHeightAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, base::IntToString(new_value));
+      bindings->instance()->ParseSizeContraintsChanged();
+    }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return base::IntToString(browser_plugin->min_height_attribute());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinHeight);
@@ -557,20 +554,19 @@ class BrowserPluginPropertyBindingMinWidth
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    int min_width = bindings->instance()->min_width_attribute();
+    int min_width = bindings->instance()->GetMinWidthAttribute();
     INT32_TO_NPVARIANT(min_width, *result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    int min_width = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMinWidthAttribute(min_width);
+    int new_value = Int32FromNPVariant(*variant);
+    if (bindings->instance()->GetMinWidthAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, base::IntToString(new_value));
+      bindings->instance()->ParseSizeContraintsChanged();
+    }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return base::IntToString(browser_plugin->min_width_attribute());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinWidth);
@@ -584,20 +580,19 @@ class BrowserPluginPropertyBindingName
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    std::string name = bindings->instance()->name_attribute();
+    std::string name = bindings->instance()->GetNameAttribute();
     return StringToNPVariant(name, result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    std::string name = StringFromNPVariant(*variant);
-    bindings->instance()->SetNameAttribute(name);
+    std::string new_value = StringFromNPVariant(*variant);
+    if (bindings->instance()->GetNameAttribute() != new_value) {
+      UpdateDOMAttribute(bindings, new_value);
+      bindings->instance()->ParseNameAttribute();
+    }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return browser_plugin->name_attribute();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingName);
@@ -617,19 +612,20 @@ class BrowserPluginPropertyBindingPartition
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    std::string partition_id = StringFromNPVariant(*variant);
-    std::string error_message;
-    if (!bindings->instance()->SetPartitionAttribute(partition_id,
-                                                     &error_message)) {
-      WebBindings::setException(
-          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
-      return false;
+    std::string new_value = StringFromNPVariant(*variant);
+    std::string old_value = bindings->instance()->GetPartitionAttribute();
+    if (old_value != new_value) {
+      UpdateDOMAttribute(bindings, new_value);
+      std::string error_message;
+      if (!bindings->instance()->ParsePartitionAttribute(&error_message)) {
+        WebBindings::setException(
+            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+        // Reset to old value on error.
+        UpdateDOMAttribute(bindings, old_value);
+        return false;
+      }
     }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return browser_plugin->GetPartitionAttribute();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingPartition);
@@ -642,24 +638,26 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    std::string src = bindings->instance()->src_attribute();
+    std::string src = bindings->instance()->GetSrcAttribute();
     return StringToNPVariant(src, result);
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    std::string src = StringFromNPVariant(*variant);
-    std::string error_message;
-    if (!bindings->instance()->SetSrcAttribute(src, &error_message)) {
-      WebBindings::setException(
-          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
-      return false;
+    std::string new_value = StringFromNPVariant(*variant);
+    std::string old_value = bindings->instance()->GetSrcAttribute();
+    if (old_value != new_value && !new_value.empty()) {
+      UpdateDOMAttribute(bindings, new_value);
+      std::string error_message;
+      if (!bindings->instance()->ParseSrcAttribute(&error_message)) {
+        WebBindings::setException(
+            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+        // Reset to old value on error.
+        UpdateDOMAttribute(bindings, old_value);
+        return false;
+      }
     }
     return true;
-  }
-  virtual std::string GetDOMAttributeValue(
-      BrowserPlugin* browser_plugin) OVERRIDE {
-    return browser_plugin->src_attribute();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingSrc);
@@ -750,7 +748,6 @@ bool BrowserPluginBindings::SetProperty(NPObject* np_obj,
        ++iter) {
     if ((*iter)->MatchesName(name)) {
       if ((*iter)->SetProperty(this, np_obj, variant)) {
-        (*iter)->UpdateDOMAttribute(this);
         return true;
       }
       break;
