@@ -12,9 +12,17 @@
 // This class manages the Autocomplete field trials.
 class AutocompleteFieldTrial {
  public:
-  // Creates the field trial groups.
+  // Creates the static field trial groups.
   // *** MUST NOT BE CALLED MORE THAN ONCE. ***
-  static void Activate();
+  static void ActivateStaticTrials();
+
+  // Activates all dynamic field trials.  The main difference between
+  // the autocomplete dynamic and static field trials is that the former
+  // don't require any code changes on the Chrome side as they are controlled
+  // on the server side.  Chrome binary simply propagates all necessary
+  // information through the X-Chrome-Variations header.
+  // This method, unlike ActivateStaticTrials(), may be called multiple times.
+  static void ActivateDynamicTrials();
 
   // ---------------------------------------------------------
   // For the inline History Quick Provider field trial.

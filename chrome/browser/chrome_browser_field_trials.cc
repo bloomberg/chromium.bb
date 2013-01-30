@@ -141,7 +141,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
   SetupUniformityFieldTrials(install_time);
-  AutocompleteFieldTrial::Activate();
+  AutocompleteFieldTrial::ActivateStaticTrials();
   DisableNewTabFieldTrialIfNecesssary();
   SetUpInfiniteCacheFieldTrial();
   SetUpCacheSensitivityAnalysisFieldTrial();
@@ -347,4 +347,6 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   base::FieldTrialList::FindValue("InstantDummy");
   base::FieldTrialList::FindValue("InstantChannel");
   base::FieldTrialList::FindValue("Test0PercentDefault");
+  // Activate the autocomplete dynamic field trials.
+  AutocompleteFieldTrial::ActivateDynamicTrials();
 }

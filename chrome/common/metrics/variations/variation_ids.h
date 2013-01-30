@@ -160,10 +160,18 @@ enum VariationID {
   EXTENDED_INSTANT_ID_BETA_GROUP_3   = 3310084,
   EXTENDED_INSTANT_ID_BETA_CONTROL_3 = 3310085,
 
+  // Reserve 100 IDs to be used by autocomplete dynamic field trials.
+  // The dynamic field trials are activated by a call to
+  // AutocompleteFieldTrial::ActivateDynamicFieldTrials.
+  // For more details, see
+  // chrome/browser/autocomplete/autocomplete_field_trial.{h,cc}.
+  AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_ID_MIN = 3310086,
+  AUTOCOMPLETE_DYANMIC_FIELD_TRIAL_ID_MAX = 3310185,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310086,
+  NEXT_ID = 3310186,
 
   // USABLE IDs END HERE.
   //

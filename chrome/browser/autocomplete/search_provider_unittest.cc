@@ -132,7 +132,7 @@ class SearchProviderTest : public testing::Test,
   // If true, OnProviderUpdate exits out of the current message loop.
   bool quit_when_done_;
 
-  // Needed for AutucompleteFieldTrial::Activate();
+  // Needed for AutucompleteFieldTrial::ActivateStaticTrials();
   static base::FieldTrialList* field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
@@ -146,7 +146,7 @@ void SearchProviderTest::SetUpTestCase() {
   // Set up Suggest experiments.
   field_trial_list_ = new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("foo"));
-  AutocompleteFieldTrial::Activate();
+  AutocompleteFieldTrial::ActivateStaticTrials();
 }
 
 // static
