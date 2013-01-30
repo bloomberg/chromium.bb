@@ -506,6 +506,7 @@
         'posix/file_descriptor_shuffle_unittest.cc',
         'posix/unix_domain_socket_linux_unittest.cc',
         'pr_time_unittest.cc',
+        'prefs/json_pref_store_unittest.cc',
         'prefs/overlay_user_pref_store_unittest.cc',
         'prefs/pref_value_map_unittest.cc',
         'process_util_unittest.cc',
@@ -635,6 +636,8 @@
             ['exclude', '^metrics/stats_table_unittest\\.cc$'],
             # iOS does not use message_pump_libevent.
             ['exclude', '^message_pump_libevent_unittest\\.cc$'],
+            ['exclude', '^prefs/json_pref_store_unittest.\\cc$'],
+
           ],
           'conditions': [
             ['coverage != 0', {

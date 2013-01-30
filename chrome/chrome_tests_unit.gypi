@@ -1601,7 +1601,6 @@
 
         # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
         # Prefs move is complete and dependencies have been broken.
-        '../base/prefs/json_pref_store_unittest.cc',
         '../base/prefs/public/pref_change_registrar_unittest.cc',
         '../base/prefs/public/pref_member_unittest.cc',
 
