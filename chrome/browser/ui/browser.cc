@@ -767,6 +767,12 @@ void Browser::ToggleFullscreenModeWithExtension(const GURL& extension_url) {
   fullscreen_controller_->ToggleFullscreenModeWithExtension(extension_url);
 }
 
+#if defined(OS_MACOSX)
+void Browser::TogglePresentationMode() {
+  fullscreen_controller_->TogglePresentationMode();
+}
+#endif
+
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
   return SupportsWindowFeatureImpl(feature, true);
 }

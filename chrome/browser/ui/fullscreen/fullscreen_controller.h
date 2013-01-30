@@ -74,7 +74,7 @@ class FullscreenController : public content::NotificationObserver {
 #endif
 
 #if defined(OS_MACOSX)
-  void ToggleFullscreenWithChrome();
+  void TogglePresentationMode();
 #endif
 
   // Mouse Lock ////////////////////////////////////////////////////////////////
@@ -130,14 +130,6 @@ class FullscreenController : public content::NotificationObserver {
     MOUSELOCK_ACCEPTED_SILENTLY
   };
 
-  enum FullscreenInternalOption {
-    BROWSER,
-#if defined(OS_MACOSX)
-    BROWSER_WITH_CHROME,
-#endif
-    TAB
-  };
-
   void UpdateNotificationRegistrations();
 
   // Posts a task to call NotifyFullscreenChange.
@@ -149,9 +141,11 @@ class FullscreenController : public content::NotificationObserver {
   void NotifyTabOfExitIfNecessary();
   void NotifyMouseLockChange();
 
-  void ToggleFullscreenModeInternal(FullscreenInternalOption option);
-  void EnterFullscreenModeInternal(FullscreenInternalOption option);
-  void ExitFullscreenModeInternal();
+  // TODO(koz): Change |for_tab| to an enum.
+  void ToggleFullscreenModeInternal(bool for_tab);
+#if defined(OS_MACOSX)
+  void TogglePresentationModeInternal(bool for_tab);
+#endif
   void SetFullscreenedTab(content::WebContents* tab);
   void SetMouseLockTab(content::WebContents* tab);
 
