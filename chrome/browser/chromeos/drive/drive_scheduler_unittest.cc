@@ -284,7 +284,7 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
           &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
 }
 

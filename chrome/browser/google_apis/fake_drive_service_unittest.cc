@@ -55,7 +55,7 @@ class FakeDriveServiceTest : public testing::Test {
                    &error,
                    &resource_entry));
     message_loop_.RunUntilIdle();
-    return error == HTTP_SUCCESS;
+    return error == HTTP_CREATED;
   }
 
   MessageLoopForUI message_loop_;
@@ -932,7 +932,33 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
                  &resource_entry));
   message_loop_.RunUntilIdle();
 
-  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ("resource_id_1", resource_entry->resource_id());
+  EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
+  // The parent link should not exist as the new directory was added in the
+  // root.
+  const google_apis::Link* parent_link =
+      resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_FALSE(parent_link);
+  // Should be incremented as a new directory was created.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
+}
+
+TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/empty_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewDirectory(
+      fake_service_.GetRootResourceId(),
+      "new directory",
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
@@ -960,7 +986,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
                  &resource_entry));
   message_loop_.RunUntilIdle();
 
-  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));

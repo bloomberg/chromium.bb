@@ -23,7 +23,6 @@ using content::BrowserThread;
 
 namespace google_apis {
 namespace {
-
 // Returns true if a resource entry matches with the search query.
 // Supports queries consist of following format.
 // - Phrases quoted by double/single quotes
@@ -736,18 +735,23 @@ void FakeDriveService::AddNewDirectory(
   // Add the new entry to the resource list.
   base::DictionaryValue* resource_list_dict = NULL;
   base::ListValue* entries = NULL;
-  if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
-      resource_list_dict->GetList("entry", &entries)) {
-    // Parse the entry before releasing it.
-    scoped_ptr<ResourceEntry> parsed_entry(
-        ResourceEntry::CreateFrom(*new_entry));
+  if (resource_list_value_->GetAsDictionary(&resource_list_dict)) {
+    // If there are no entries, prepare an empty entry to add.
+    if (!resource_list_dict->HasKey("entry"))
+      resource_list_dict->Set("entry", new ListValue);
 
-    entries->Append(new_entry.release());
+    if (resource_list_dict->GetList("entry", &entries)) {
+      // Parse the entry before releasing it.
+      scoped_ptr<ResourceEntry> parsed_entry(
+          ResourceEntry::CreateFrom(*new_entry));
 
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, base::Passed(&parsed_entry)));
-    return;
+      entries->Append(new_entry.release());
+
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, HTTP_CREATED, base::Passed(&parsed_entry)));
+      return;
+    }
   }
 
   scoped_ptr<ResourceEntry> null;
