@@ -35,6 +35,9 @@
     'appcache': {
       'filepath': 'appcache/',
     },
+    'apps': {
+      'filepath': '^apps/',
+    },
     'aura': {
       'filepath': 'ui/aura/|'\
                   'ash/',
@@ -532,6 +535,7 @@
     'android_webview': ['android-webview-reviews@chromium.org'],
     'app_list': ['tfarina@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
+    'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
     'autofill': ['dhollowa+watch@chromium.org', 'isherman@chromium.org',
                  'dyu@chromium.org', 'abodenha@chromium.org',
