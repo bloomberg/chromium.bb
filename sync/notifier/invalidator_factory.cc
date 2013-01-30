@@ -62,7 +62,8 @@ InvalidatorFactory::~InvalidatorFactory() {
 
 Invalidator* InvalidatorFactory::CreateInvalidator() {
 #if defined(OS_ANDROID)
-  // Android uses ChromeSyncNotificationBridge exclusively.
+  // Android uses AndroidInvalidatorBridge instead.  See SyncManager
+  // initialization code in SyncBackendHost for more information.
   return NULL;
 #else
   return CreateDefaultInvalidator(notifier_options_,

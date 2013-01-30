@@ -15,7 +15,9 @@
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "googleurl/src/gurl.h"
@@ -227,6 +229,19 @@ class SyncBackendHostTest : public testing::Test {
     ui_loop_.PostDelayedTask(FROM_HERE,
         ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
     ui_loop_.Run();
+  }
+
+  void IssueRefreshRequest(syncer::ModelTypeSet types) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    syncer::ModelTypeInvalidationMap invalidation_map(
+        ModelTypeSetToInvalidationMap(types, std::string()));
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+        content::Source<Profile>(profile_.get()),
+        content::Details<syncer::ModelTypeInvalidationMap>(
+            &invalidation_map));
   }
 
  protected:
@@ -688,6 +703,47 @@ TEST_F(SyncBackendHostTest, DownloadControlTypes) {
 TEST_F(SyncBackendHostTest, SilentlyFailToDownloadControlTypes) {
   fake_manager_factory_.set_configure_fail_types(syncer::ModelTypeSet::All());
   InitializeBackend(false);
+}
+
+// Test that local refresh requests are delivered to sync.
+TEST_F(SyncBackendHostTest, ForwardLocalRefreshRequest) {
+  InitializeBackend(true);
+
+  syncer::ModelTypeSet set1 = syncer::ModelTypeSet::All();
+  IssueRefreshRequest(set1);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_TRUE(set1.Equals(fake_manager_->GetLastRefreshRequestTypes()));
+
+  syncer::ModelTypeSet set2 = syncer::ModelTypeSet(syncer::SESSIONS);
+  IssueRefreshRequest(set2);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_TRUE(set2.Equals(fake_manager_->GetLastRefreshRequestTypes()));
+}
+
+// Test that local invalidations issued before sync is initialized are ignored.
+TEST_F(SyncBackendHostTest, AttemptForwardLocalRefreshRequestEarly) {
+  syncer::ModelTypeSet set1 = syncer::ModelTypeSet::All();
+  IssueRefreshRequest(set1);
+
+  InitializeBackend(true);
+
+  fake_manager_->WaitForSyncThread();
+  EXPECT_FALSE(set1.Equals(fake_manager_->GetLastRefreshRequestTypes()));
+}
+
+// Test that local invalidations issued while sync is shutting down are ignored.
+TEST_F(SyncBackendHostTest, AttemptForwardLocalRefreshRequestLate) {
+  InitializeBackend(true);
+
+  backend_->StopSyncingForShutdown();
+
+  syncer::ModelTypeSet types = syncer::ModelTypeSet::All();
+  IssueRefreshRequest(types);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_FALSE(types.Equals(fake_manager_->GetLastRefreshRequestTypes()));
+
+  backend_->Shutdown(false);
+  backend_.reset();
 }
 
 }  // namespace

@@ -271,6 +271,10 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
   return fake_encryption_handler_.get();
 }
 
+void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
+  last_refresh_request_types_ = types;
+}
+
 void FakeSyncManager::InvalidateOnSyncThread(
     const ObjectIdInvalidationMap& invalidation_map,
     IncomingInvalidationSource source) {
@@ -282,6 +286,10 @@ void FakeSyncManager::UpdateInvalidatorStateOnSyncThread(
     InvalidatorState state) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   registrar_.UpdateInvalidatorState(state);
+}
+
+ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {
+  return last_refresh_request_types_;
 }
 
 }  // namespace syncer

@@ -1240,13 +1240,9 @@ void SyncManagerImpl::OnIncomingInvalidation(
   DCHECK(thread_checker_.CalledOnValidThread());
   const ModelTypeInvalidationMap& type_invalidation_map =
       ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
-  if (source == LOCAL_INVALIDATION) {
-    allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL_REFRESH);
-    scheduler_->ScheduleNudgeWithStatesAsync(
-        TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
-        NUDGE_SOURCE_LOCAL_REFRESH,
-        type_invalidation_map, FROM_HERE);
-  } else if (!type_invalidation_map.empty()) {
+  if (type_invalidation_map.empty()) {
+    LOG(WARNING) << "Sync received invalidation without any type information.";
+  } else {
     allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_NOTIFICATION);
     scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
@@ -1255,8 +1251,6 @@ void SyncManagerImpl::OnIncomingInvalidation(
     allstatus_.IncrementNotificationsReceived();
     UpdateNotificationInfo(type_invalidation_map);
     debug_info_event_listener_.OnIncomingNotification(type_invalidation_map);
-  } else {
-    LOG(WARNING) << "Sync received invalidation without any type information.";
   }
 
   if (js_event_handler_.IsInitialized()) {
@@ -1270,8 +1264,40 @@ void SyncManagerImpl::OnIncomingInvalidation(
           ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
-    details.SetString("source", (source == LOCAL_INVALIDATION) ?
-        "LOCAL_INVALIDATION" : "REMOTE_INVALIDATION");
+    details.SetString("source", "REMOTE_INVALIDATION");
+    js_event_handler_.Call(FROM_HERE,
+                           &JsEventHandler::HandleJsEvent,
+                           "onIncomingNotification",
+                           JsEventDetails(&details));
+  }
+}
+
+void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const ModelTypeInvalidationMap& type_invalidation_map =
+      ModelTypeSetToInvalidationMap(types, "");
+  if (type_invalidation_map.empty()) {
+    LOG(WARNING) << "Sync received refresh request with no types specified.";
+  } else {
+    allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL_REFRESH);
+    scheduler_->ScheduleNudgeWithStatesAsync(
+        TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
+        NUDGE_SOURCE_LOCAL_REFRESH,
+        type_invalidation_map, FROM_HERE);
+  }
+
+  if (js_event_handler_.IsInitialized()) {
+    DictionaryValue details;
+    ListValue* changed_types = new ListValue();
+    details.Set("changedTypes", changed_types);
+    for (ModelTypeInvalidationMap::const_iterator it =
+             type_invalidation_map.begin(); it != type_invalidation_map.end();
+         ++it) {
+      const std::string& model_type_str =
+          ModelTypeToString(it->first);
+      changed_types->Append(Value::CreateStringValue(model_type_str));
+    }
+    details.SetString("source", "LOCAL_INVALIDATION");
     js_event_handler_.Call(FROM_HERE,
                            &JsEventHandler::HandleJsEvent,
                            "onIncomingNotification",

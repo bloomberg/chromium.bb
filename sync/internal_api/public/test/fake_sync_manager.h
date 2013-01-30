@@ -54,6 +54,9 @@ class FakeSyncManager : public SyncManager {
   // called.
   ModelTypeSet GetAndResetEnabledTypes();
 
+  // Returns the types that have most recently received a refresh request.
+  ModelTypeSet GetLastRefreshRequestTypes();
+
   // Posts a method to invalidate the given IDs on the sync thread.
   void Invalidate(const ObjectIdInvalidationMap& invalidation_map,
                   IncomingInvalidationSource source);
@@ -120,6 +123,7 @@ class FakeSyncManager : public SyncManager {
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
+  virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
 
  private:
   void InvalidateOnSyncThread(
@@ -148,6 +152,9 @@ class FakeSyncManager : public SyncManager {
 
   // Faked invalidator state.
   InvalidatorRegistrar registrar_;
+
+  // The types for which a refresh was most recently requested.
+  ModelTypeSet last_refresh_request_types_;
 
   scoped_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
 

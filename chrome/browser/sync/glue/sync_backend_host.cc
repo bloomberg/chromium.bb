@@ -24,20 +24,23 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/sync/glue/bridged_invalidator.h"
+#include "chrome/browser/sync/glue/android_invalidator_bridge.h"
+#include "chrome/browser/sync/glue/android_invalidator_bridge_proxy.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
-#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/content_client.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "jingle/notifier/base/notification_method.h"
@@ -171,6 +174,9 @@ class SyncBackendHost::Core
   // if an error occurred.
   void DoDownloadControlTypes();
 
+  // Ask the syncer to check for updates for the specified types.
+  void DoRefreshTypes(syncer::ModelTypeSet types);
+
   // Invoked if we failed to download the necessary control types at startup.
   // Invokes SyncBackendHost::HandleControlTypesDownloadRetry.
   void OnControlTypesDownloadRetry();
@@ -264,10 +270,6 @@ class SyncBackendHost::Core
   // Our parent's registrar (not owned).  Non-NULL only between
   // calls to DoInitialize() and DoShutdown().
   SyncBackendRegistrar* registrar_;
-
-  // Our parent's notification bridge (not owned).  Non-NULL only
-  // between calls to DoInitialize() and DoShutdown().
-  ChromeSyncNotificationBridge* chrome_sync_notification_bridge_;
 
   // The timer used to periodically call SaveChanges.
   scoped_ptr<base::RepeatingTimer<Core> > save_changes_timer_;
@@ -378,7 +380,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
 
 SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
-  DCHECK(!chrome_sync_notification_bridge_.get());
+  DCHECK(!android_invalidator_bridge_.get());
   DCHECK(!registrar_.get());
 }
 
@@ -407,8 +409,8 @@ void SyncBackendHost::Initialize(
   if (!sync_thread_.Start())
     return;
 
-  chrome_sync_notification_bridge_.reset(
-      new ChromeSyncNotificationBridge(
+  android_invalidator_bridge_.reset(
+      new AndroidInvalidatorBridge(
           profile_, sync_thread_.message_loop_proxy()));
 
   frontend_ = frontend;
@@ -449,7 +451,7 @@ void SyncBackendHost::Initialize(
       base::Bind(&MakeHttpBridgeFactory,
                  make_scoped_refptr(profile_->GetRequestContext())),
       credentials,
-      chrome_sync_notification_bridge_.get(),
+      android_invalidator_bridge_.get(),
       &invalidator_factory_,
       sync_manager_factory,
       delete_sync_data_folder,
@@ -578,6 +580,9 @@ void SyncBackendHost::StopSyncingForShutdown() {
   // Immediately stop sending messages to the frontend.
   frontend_ = NULL;
 
+  // Stop listening for and forwarding locally-triggered sync refresh requests.
+  notification_registrar_.RemoveAll();
+
   // Thread shutdown should occur in the following order:
   // - Sync Thread
   // - UI Thread (stops some time after we return from this call).
@@ -622,8 +627,8 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
         base::Bind(&SyncBackendHost::Core::DoShutdown, core_.get(),
                    sync_disabled));
 
-    if (chrome_sync_notification_bridge_.get())
-      chrome_sync_notification_bridge_->StopForShutdown();
+    if (android_invalidator_bridge_.get())
+      android_invalidator_bridge_->StopForShutdown();
   }
 
   // Stop will return once the thread exits, which will be after DoShutdown
@@ -649,7 +654,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
   registrar_.reset();
   js_backend_.Reset();
-  chrome_sync_notification_bridge_.reset();
+  android_invalidator_bridge_.reset();
   core_ = NULL;  // Releases reference to core_.
 }
 
@@ -844,12 +849,33 @@ void SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
   // applied.
   registrar_->SetInitialTypes(restored_types);
 
+  // Start forwarding refresh requests to the SyncManager
+  notification_registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+                              content::Source<Profile>(profile_));
+
   // Kick off the next step in SyncBackendHost initialization by downloading
   // any necessary control types.
   sync_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoDownloadControlTypes,
                  core_.get()));
+}
+
+void SyncBackendHost::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL);
+
+  content::Details<const syncer::ModelTypeInvalidationMap>
+      state_details(details);
+  const syncer::ModelTypeInvalidationMap& invalidation_map =
+      *(state_details.ptr());
+  const syncer::ModelTypeSet types =
+      ModelTypeInvalidationMapToSet(invalidation_map);
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoRefreshTypes, core_.get(), types));
 }
 
 SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
@@ -862,7 +888,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     const GURL& service_url,
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
     const syncer::SyncCredentials& credentials,
-    ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
+    AndroidInvalidatorBridge* android_invalidator_bridge,
     syncer::InvalidatorFactory* invalidator_factory,
     syncer::SyncManagerFactory* sync_manager_factory,
     bool delete_sync_data_folder,
@@ -881,7 +907,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       service_url(service_url),
       make_http_bridge_factory_fn(make_http_bridge_factory_fn),
       credentials(credentials),
-      chrome_sync_notification_bridge(chrome_sync_notification_bridge),
+      android_invalidator_bridge(android_invalidator_bridge),
       invalidator_factory(invalidator_factory),
       sync_manager_factory(sync_manager_factory),
       delete_sync_data_folder(delete_sync_data_folder),
@@ -904,7 +930,6 @@ SyncBackendHost::Core::Core(const std::string& name,
       host_(backend),
       sync_loop_(NULL),
       registrar_(NULL),
-      chrome_sync_notification_bridge_(NULL),
       registered_as_invalidation_handler_(false) {
   DCHECK(backend.get());
 }
@@ -944,6 +969,11 @@ void SyncBackendHost::Core::DoDownloadControlTypes() {
                  this),
       base::Bind(&SyncBackendHost::Core::OnControlTypesDownloadRetry,
                  this));
+}
+
+void SyncBackendHost::Core::DoRefreshTypes(syncer::ModelTypeSet types) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  sync_manager_->RefreshTypes(types);
 }
 
 void SyncBackendHost::Core::OnControlTypesDownloadRetry() {
@@ -1134,19 +1164,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   registrar_ = options.registrar;
   DCHECK(registrar_);
 
-  DCHECK(!chrome_sync_notification_bridge_);
-  chrome_sync_notification_bridge_ = options.chrome_sync_notification_bridge;
-  DCHECK(chrome_sync_notification_bridge_);
-
-#if defined(OS_ANDROID)
-  // Android uses ChromeSyncNotificationBridge exclusively.
-  const syncer::InvalidatorState kDefaultInvalidatorState =
-      syncer::INVALIDATIONS_ENABLED;
-#else
-  const syncer::InvalidatorState kDefaultInvalidatorState =
-      syncer::DEFAULT_INVALIDATION_ERROR;
-#endif
-
   sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
   sync_manager_->Init(
@@ -1160,10 +1177,14 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.extensions_activity_monitor,
       options.registrar /* as SyncManager::ChangeDelegate */,
       options.credentials,
-      scoped_ptr<syncer::Invalidator>(new BridgedInvalidator(
-          options.chrome_sync_notification_bridge,
-          options.invalidator_factory->CreateInvalidator(),
-          kDefaultInvalidatorState)),
+#if defined(OS_ANDROID)
+      scoped_ptr<syncer::Invalidator>(
+          new AndroidInvalidatorBridgeProxy(
+              options.android_invalidator_bridge)),
+#else
+      scoped_ptr<syncer::Invalidator>(
+          options.invalidator_factory->CreateInvalidator()),
+#endif
       options.restored_key_for_bootstrapping,
       options.restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory>(
@@ -1313,7 +1334,6 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 
   DoDestroySyncManager();
 
-  chrome_sync_notification_bridge_ = NULL;
   registrar_ = NULL;
 
   if (sync_disabled)

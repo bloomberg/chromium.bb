@@ -16,6 +16,8 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -41,8 +43,8 @@ class SyncManagerFactory;
 
 namespace browser_sync {
 
+class AndroidInvalidatorBridge;
 class ChangeProcessor;
-class ChromeSyncNotificationBridge;
 class InvalidatorStorage;
 class SyncBackendRegistrar;
 class SyncPrefs;
@@ -143,7 +145,9 @@ class SyncFrontend : public syncer::InvalidationHandler {
 // syncapi element, the SyncManager, on its own thread. This class handles
 // dispatch of potentially blocking calls to appropriate threads and ensures
 // that the SyncFrontend is only accessed on the UI loop.
-class SyncBackendHost : public BackendDataTypeConfigurer {
+class SyncBackendHost
+    : public BackendDataTypeConfigurer,
+      public content::NotificationObserver {
  public:
   typedef syncer::SyncStatus Status;
 
@@ -308,7 +312,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
         const syncer::SyncCredentials& credentials,
-        ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
+        AndroidInvalidatorBridge* android_invalidator_bridge,
         syncer::InvalidatorFactory* invalidator_factory,
         syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
@@ -330,7 +334,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     // Overridden by tests.
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
     syncer::SyncCredentials credentials;
-    ChromeSyncNotificationBridge* const chrome_sync_notification_bridge;
+    AndroidInvalidatorBridge* const android_invalidator_bridge;
     syncer::InvalidatorFactory* const invalidator_factory;
     syncer::SyncManagerFactory* const sync_manager_factory;
     std::string lsid;
@@ -483,11 +487,19 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       const syncer::ObjectIdInvalidationMap& invalidation_map,
       syncer::IncomingInvalidationSource source);
 
+  // NotificationObserver implementation.
+  virtual void Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) OVERRIDE;
+
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
   void StopSyncManagerForShutdown(const base::Closure& closure);
 
   base::WeakPtrFactory<SyncBackendHost> weak_ptr_factory_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   // A thread where all the sync operations happen.
   base::Thread sync_thread_;
@@ -508,9 +520,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   const base::WeakPtr<SyncPrefs> sync_prefs_;
 
-  // A bridge that converts Chrome notifications (on the UI thread)
-  // into invalidations (on the sync thread).
-  scoped_ptr<ChromeSyncNotificationBridge> chrome_sync_notification_bridge_;
+  scoped_ptr<AndroidInvalidatorBridge> android_invalidator_bridge_;
 
   syncer::InvalidatorFactory invalidator_factory_;
 

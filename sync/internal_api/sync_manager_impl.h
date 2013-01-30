@@ -180,6 +180,9 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) OVERRIDE;
 
+  // Handle explicit requests to fetch updates for the given types.
+  virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
+
   // These OnYYYChanged() methods are only called by our NetworkChangeNotifier.
   // Called when IP address of primary interface changes.
   virtual void OnIPAddressChanged() OVERRIDE;

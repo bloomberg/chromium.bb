@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
+#include "chrome/browser/sync/glue/android_invalidator_bridge.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -19,7 +19,7 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
-class ChromeSyncNotificationBridge::Core
+class AndroidInvalidatorBridge::Core
     : public base::RefCountedThreadSafe<Core> {
  public:
   // Created on UI thread.
@@ -56,47 +56,47 @@ class ChromeSyncNotificationBridge::Core
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
 };
 
-ChromeSyncNotificationBridge::Core::Core(
+AndroidInvalidatorBridge::Core::Core(
     const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner)
     : sync_task_runner_(sync_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(sync_task_runner_.get());
 }
 
-ChromeSyncNotificationBridge::Core::~Core() {
+AndroidInvalidatorBridge::Core::~Core() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          sync_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!invalidator_registrar_.get());
 }
 
-void ChromeSyncNotificationBridge::Core::InitializeOnSyncThread() {
+void AndroidInvalidatorBridge::Core::InitializeOnSyncThread() {
   invalidator_registrar_.reset(new syncer::InvalidatorRegistrar());
 }
 
-void ChromeSyncNotificationBridge::Core::CleanupOnSyncThread() {
+void AndroidInvalidatorBridge::Core::CleanupOnSyncThread() {
   invalidator_registrar_.reset();
 }
 
-void ChromeSyncNotificationBridge::Core::RegisterHandler(
+void AndroidInvalidatorBridge::Core::RegisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   invalidator_registrar_->RegisterHandler(handler);
 }
 
-void ChromeSyncNotificationBridge::Core::UpdateRegisteredIds(
+void AndroidInvalidatorBridge::Core::UpdateRegisteredIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   invalidator_registrar_->UpdateRegisteredIds(handler, ids);
 }
 
-void ChromeSyncNotificationBridge::Core::UnregisterHandler(
+void AndroidInvalidatorBridge::Core::UnregisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   invalidator_registrar_->UnregisterHandler(handler);
 }
 
-void ChromeSyncNotificationBridge::Core::EmitInvalidation(
+void AndroidInvalidatorBridge::Core::EmitInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource invalidation_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
@@ -110,28 +110,26 @@ void ChromeSyncNotificationBridge::Core::EmitInvalidation(
       effective_invalidation_map, invalidation_source);
 }
 
-bool ChromeSyncNotificationBridge::Core::IsHandlerRegisteredForTest(
+bool AndroidInvalidatorBridge::Core::IsHandlerRegisteredForTest(
     syncer::InvalidationHandler* handler) const {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   return invalidator_registrar_->IsHandlerRegisteredForTest(handler);
 }
 
 syncer::ObjectIdSet
-ChromeSyncNotificationBridge::Core::GetRegisteredIdsForTest(
+AndroidInvalidatorBridge::Core::GetRegisteredIdsForTest(
     syncer::InvalidationHandler* handler) const {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   return invalidator_registrar_->GetRegisteredIds(handler);
 }
 
-ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
+AndroidInvalidatorBridge::AndroidInvalidatorBridge(
     const Profile* profile,
     const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner)
     : sync_task_runner_(sync_task_runner),
       core_(new Core(sync_task_runner_)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                  content::Source<Profile>(profile));
 
@@ -141,61 +139,67 @@ ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
   }
 }
 
-ChromeSyncNotificationBridge::~ChromeSyncNotificationBridge() {}
+AndroidInvalidatorBridge::~AndroidInvalidatorBridge() {}
 
-void ChromeSyncNotificationBridge::StopForShutdown() {
+void AndroidInvalidatorBridge::StopForShutdown() {
   if (!sync_task_runner_->PostTask(
           FROM_HERE, base::Bind(&Core::CleanupOnSyncThread, core_))) {
     NOTREACHED();
   }
 }
 
-void ChromeSyncNotificationBridge::RegisterHandler(
+void AndroidInvalidatorBridge::RegisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->RegisterHandler(handler);
 }
 
-void ChromeSyncNotificationBridge::UpdateRegisteredIds(
+void AndroidInvalidatorBridge::UpdateRegisteredIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->UpdateRegisteredIds(handler, ids);
 }
 
-void ChromeSyncNotificationBridge::UnregisterHandler(
+void AndroidInvalidatorBridge::UnregisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->UnregisterHandler(handler);
 }
 
-bool ChromeSyncNotificationBridge::IsHandlerRegisteredForTest(
+syncer::InvalidatorState AndroidInvalidatorBridge::GetInvalidatorState() const {
+  return syncer::INVALIDATIONS_ENABLED;
+}
+
+void AndroidInvalidatorBridge::SetUniqueId(const std::string& unique_id) { }
+
+void AndroidInvalidatorBridge::UpdateCredentials(
+    const std::string& email, const std::string& token) { }
+
+void AndroidInvalidatorBridge::SendInvalidation(
+    const syncer::ObjectIdInvalidationMap& invalidation_map) { }
+
+bool AndroidInvalidatorBridge::IsHandlerRegisteredForTest(
     syncer::InvalidationHandler* handler) const {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   return core_->IsHandlerRegisteredForTest(handler);
 }
 
-syncer::ObjectIdSet ChromeSyncNotificationBridge::GetRegisteredIdsForTest(
+syncer::ObjectIdSet AndroidInvalidatorBridge::GetRegisteredIdsForTest(
     syncer::InvalidationHandler* handler) const {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   return core_->GetRegisteredIdsForTest(handler);
 }
 
-void ChromeSyncNotificationBridge::Observe(
+void AndroidInvalidatorBridge::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_REMOTE);
 
-  syncer::IncomingInvalidationSource invalidation_source;
-  if (type == chrome::NOTIFICATION_SYNC_REFRESH_LOCAL) {
-    invalidation_source = syncer::LOCAL_INVALIDATION;
-  } else if (type == chrome::NOTIFICATION_SYNC_REFRESH_REMOTE) {
-    invalidation_source = syncer::REMOTE_INVALIDATION;
-  } else {
-    NOTREACHED() << "Unexpected invalidation type: " << type;
-    return;
-  }
+  syncer::IncomingInvalidationSource invalidation_source =
+      syncer::REMOTE_INVALIDATION;
 
   // TODO(akalin): Use ObjectIdInvalidationMap here instead.  We'll have to
   // make sure all emitters of the relevant notifications also use
