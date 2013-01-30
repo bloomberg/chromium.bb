@@ -7,7 +7,6 @@
 // Used by DelegateExecute.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_DELEGATEEXECUTE             101
 #define IDR_COMMANDEXECUTEIMPL          106
 
 // Next default values for new objects

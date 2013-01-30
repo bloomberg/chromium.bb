@@ -30,9 +30,6 @@ class DelegateExecuteModule
  public :
   typedef ATL::CAtlExeModuleT<DelegateExecuteModule> ParentClass;
 
-  DECLARE_REGISTRY_APPID_RESOURCEID(IDR_DELEGATEEXECUTE,
-                                    "{B1935DA1-112F-479A-975B-AB8588ABA636}")
-
   HRESULT RegisterServer(BOOL reg_type_lib) {
     return ParentClass::RegisterServer(FALSE);
   }

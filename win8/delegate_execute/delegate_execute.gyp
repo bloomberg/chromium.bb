@@ -57,7 +57,6 @@
         'crash_server_init.h',
         'delegate_execute.cc',
         'delegate_execute.rc',
-        'delegate_execute.rgs',
         'delegate_execute_operation.cc',
         'delegate_execute_operation.h',
         'delegate_execute_util.cc',
