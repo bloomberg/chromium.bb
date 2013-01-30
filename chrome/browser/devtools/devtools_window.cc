@@ -34,7 +34,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/load_notification_details.h"
@@ -198,6 +200,12 @@ DevToolsWindow* DevToolsWindow::Create(
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
+
+  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  int process_id = render_view_host->GetProcess()->GetID();
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      process_id, chrome::kFileScheme);
+  content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
   return new DevToolsWindow(web_contents, profile, inspected_rvh, dock_side);
 }
 

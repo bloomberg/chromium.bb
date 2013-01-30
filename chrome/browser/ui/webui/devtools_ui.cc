@@ -13,9 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -112,9 +110,4 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->SetBindings(0);
   content::URLDataSource::Add(Profile::FromWebUI(web_ui),
                               new DevToolsDataSource);
-}
-
-void DevToolsUI::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
 }
