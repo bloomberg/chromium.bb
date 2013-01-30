@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/gtest_support.h"
-#import "third_party/ocmock/ocmock/OCMock.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 // Main test class.
 class BrowserWindowCocoaTest : public CocoaProfileTest {
