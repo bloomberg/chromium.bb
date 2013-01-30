@@ -1549,7 +1549,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
 
   fileapi::FileSystemURL url(
       fileapi::CreateSyncableFileSystemURL(origin, kServiceName, path));
-  if (!remote_file_md5.empty()) {
+  if (!is_deleted && !remote_file_md5.empty()) {
     DriveMetadata metadata;
     fileapi::SyncStatusCode status = metadata_store_->ReadEntry(url, &metadata);
     if (status == fileapi::SYNC_STATUS_OK &&
