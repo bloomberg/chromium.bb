@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(
 
   {
     FullscreenNotificationObserver fullscreen_observer;
-    browser()->TogglePresentationMode();
+    chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(browser()->window()->IsFullscreenWithChrome());

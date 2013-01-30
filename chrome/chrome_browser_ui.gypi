@@ -245,6 +245,8 @@
         'browser/ui/browser.h',
         'browser/ui/browser_commands.cc',
         'browser/ui/browser_commands.h',
+        'browser/ui/browser_commands_mac.cc',
+        'browser/ui/browser_commands_mac.h',
         'browser/ui/browser_command_controller.cc',
         'browser/ui/browser_command_controller.h',
         'browser/ui/browser_content_setting_bubble_model_delegate.cc',

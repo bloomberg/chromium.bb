@@ -57,7 +57,7 @@ bool FullscreenController::IsFullscreenForBrowser() const {
 
 void FullscreenController::ToggleFullscreenMode() {
   extension_caused_fullscreen_ = GURL();
-  ToggleFullscreenModeInternal(false);
+  ToggleFullscreenModeInternal(BROWSER);
 }
 
 bool FullscreenController::IsFullscreenForTabOrPending() const {
@@ -92,11 +92,7 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
     SetFullscreenedTab(web_contents);
     if (!in_browser_or_tab_fullscreen_mode) {
       tab_caused_fullscreen_ = true;
-#if defined(OS_MACOSX)
-      TogglePresentationModeInternal(true);
-#else
-      ToggleFullscreenModeInternal(true);
-#endif
+      ToggleFullscreenModeInternal(TAB);
     } else {
       // We need to update the fullscreen exit bubble, e.g., going from browser
       // fullscreen to tab fullscreen will need to show different content.
@@ -114,11 +110,7 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
   } else {
     if (in_browser_or_tab_fullscreen_mode) {
       if (tab_caused_fullscreen_) {
-#if defined(OS_MACOSX)
-        TogglePresentationModeInternal(true);
-#else
-        ToggleFullscreenModeInternal(true);
-#endif
+        ToggleFullscreenModeInternal(TAB);
       } else {
         // If currently there is a tab in "tab fullscreen" mode and fullscreen
         // was not caused by it (i.e., previously it was in "browser fullscreen"
@@ -140,7 +132,7 @@ void FullscreenController::ToggleFullscreenModeWithExtension(
   // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
   // exit.
   extension_caused_fullscreen_ = extension_url;
-  ToggleFullscreenModeInternal(false);
+  ToggleFullscreenModeInternal(BROWSER);
 }
 
 bool FullscreenController::IsInMetroSnapMode() {
@@ -166,8 +158,8 @@ void FullscreenController::SetMetroSnapMode(bool enable) {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
-void FullscreenController::TogglePresentationMode() {
-  TogglePresentationModeInternal(false);
+void FullscreenController::ToggleFullscreenWithChrome() {
+  ToggleFullscreenModeInternal(BROWSER_WITH_CHROME);
 }
 #endif
 
@@ -274,15 +266,10 @@ bool FullscreenController::HandleUserPressedEscape() {
 }
 
 void FullscreenController::ExitTabOrBrowserFullscreenToPreviousState() {
-  if (IsFullscreenForTabOrPending()) {
+  if (IsFullscreenForTabOrPending())
     ExitTabFullscreenOrMouseLockIfNecessary();
-  } else if (IsFullscreenForBrowser()) {
-#if defined(OS_MACOSX)
-    TogglePresentationMode();
-#else
-    ToggleFullscreenMode();
-#endif
-  }
+  else if (IsFullscreenForBrowser())
+    ExitFullscreenModeInternal();
 }
 
 void FullscreenController::OnAcceptFullscreenPermission() {
@@ -497,55 +484,63 @@ void FullscreenController::NotifyMouseLockChange() {
 }
 
 // TODO(koz): Change |for_tab| to an enum.
-void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
+void FullscreenController::ToggleFullscreenModeInternal(
+    FullscreenInternalOption option) {
 #if defined(OS_WIN)
   // When in Metro snap mode, toggling in and out of fullscreen is prevented.
   if (IsInMetroSnapMode())
     return;
 #endif
 
-  toggled_into_fullscreen_ = !window_->IsFullscreen();
+  bool enter_fullscreen = !window_->IsFullscreen();
 #if defined(OS_MACOSX)
-  // When a Mac user requests a toggle they may be transitioning from
-  // FullscreenWithoutChrome to FullscreenWithChrome.
-  if (!IsFullscreenForTabOrPending())
-    toggled_into_fullscreen_ |= window_->IsFullscreenWithoutChrome();
+  // When a Mac user requests a toggle they may be toggling between
+  // FullscreenWithoutChrome and FullscreenWithChrome.
+  if (!IsFullscreenForTabOrPending()) {
+    if (option == BROWSER_WITH_CHROME)
+      enter_fullscreen |= window_->IsFullscreenWithoutChrome();
+    else
+      enter_fullscreen |= window_->IsFullscreenWithChrome();
+  }
 #endif
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) &&
-      !toggled_into_fullscreen_)
+      window_->IsFullscreen())
     return;
 
+  if (enter_fullscreen)
+    EnterFullscreenModeInternal(option);
+  else
+    ExitFullscreenModeInternal();
+}
+
+void FullscreenController::EnterFullscreenModeInternal(
+    FullscreenInternalOption option) {
+  toggled_into_fullscreen_ = true;
   GURL url;
-  if (for_tab) {
+  if (option == TAB) {
     url = browser_->tab_strip_model()->GetActiveWebContents()->GetURL();
-    tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
+    tab_fullscreen_accepted_ =
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   } else {
     if (!extension_caused_fullscreen_.is_empty())
       url = extension_caused_fullscreen_;
     content::RecordAction(UserMetricsAction("ToggleFullscreen"));
   }
-  if (toggled_into_fullscreen_) {
+
 #if defined(OS_MACOSX)
-    CHECK(!for_tab);  // EnterFullscreenWithChrome invalid for tab fullscreen.
+  if (option == BROWSER_WITH_CHROME) {
     CHECK(base::mac::IsOSLionOrLater());
     window_->EnterFullscreenWithChrome();
-#else
-    window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
-#endif
   } else {
-#if defined(OS_MACOSX)
-    // Mac windows report a state change instantly, and so we must also clear
-    // tab_caused_fullscreen_ to match them else other logic using
-    // tab_caused_fullscreen_ will be incorrect.
-    NotifyTabOfExitIfNecessary();
+#else
+  {
 #endif
-    window_->ExitFullscreen();
-    extension_caused_fullscreen_ = GURL();
+    window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
   }
+
   UpdateFullscreenExitBubbleContent();
 
   // Once the window has become fullscreen it'll call back to
@@ -554,31 +549,19 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
   // the BrowserWindow invoke WindowFullscreenStateChanged when appropriate.
 }
 
+void FullscreenController::ExitFullscreenModeInternal() {
+  toggled_into_fullscreen_ = false;
 #if defined(OS_MACOSX)
-void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
-  toggled_into_fullscreen_ = !window_->IsFullscreenWithoutChrome();
-  GURL url;
-  if (for_tab) {
-    url = browser_->tab_strip_model()->GetActiveWebContents()->GetURL();
-    tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
-        GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
-  }
-  if (!window_->IsFullscreenWithoutChrome()) {
-    window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
-  } else {
-    window_->ExitFullscreen();
-
-    // Mac windows report a state change instantly, and so we must also clear
-    // tab_caused_fullscreen_ to match them else other logic using
-    // tab_caused_fullscreen_ will be incorrect.
-    NotifyTabOfExitIfNecessary();
-  }
-  UpdateFullscreenExitBubbleContent();
-
-  // WindowFullscreenStateChanged will be called by BrowserWindowController
-  // when the transition completes.
-}
+  // Mac windows report a state change instantly, and so we must also clear
+  // tab_caused_fullscreen_ to match them else other logic using
+  // tab_caused_fullscreen_ will be incorrect.
+  NotifyTabOfExitIfNecessary();
 #endif
+  window_->ExitFullscreen();
+  extension_caused_fullscreen_ = GURL();
+
+  UpdateFullscreenExitBubbleContent();
+}
 
 void FullscreenController::SetFullscreenedTab(WebContents* tab) {
   fullscreened_tab_ = tab;
@@ -592,7 +575,7 @@ void FullscreenController::SetMouseLockTab(WebContents* tab) {
 
 void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
   if (tab_caused_fullscreen_)
-    ToggleFullscreenModeInternal(true);
+    ToggleFullscreenModeInternal(TAB);
   else
     NotifyTabOfExitIfNecessary();
 }

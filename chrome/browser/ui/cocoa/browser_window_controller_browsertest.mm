@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
@@ -271,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
 // Verify that in non-instant presentation mode that the info bar is below the
 // content are and everything else is above it.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderPresentationMode) {
-  browser()->TogglePresentationMode();
+  chrome::ToggleFullscreenMode(browser());
   browser()->GetFindBarController();  // add find bar
 
   std::vector<ViewID> view_list;
@@ -305,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormalInstant) {
 // non-instant presentation mode.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        ZOrderInstantPresentationMode) {
-  browser()->TogglePresentationMode();
+  chrome::ToggleFullscreenMode(browser());
   ShowInstantResults();
   browser()->GetFindBarController();  // add find bar
 
@@ -353,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
 // the info bar.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        ContentOffsetPresentationMode) {
-  browser()->TogglePresentationMode();
+  chrome::ToggleFullscreenMode(browser());
   PreviewableContentsController* preview =
       [controller() previewableContentsController];
 
