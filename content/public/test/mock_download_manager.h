@@ -68,7 +68,6 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(SavePageDownloadFinished, void(DownloadItem* download));
   MOCK_METHOD1(GetActiveDownloadItem, DownloadItem*(int id));
   MOCK_METHOD1(GetActiveDownload, DownloadItem*(int32 download_id));
-  MOCK_METHOD0(MockDownloadOpenForTesting, void());
 
  protected:
   virtual ~MockDownloadManager();

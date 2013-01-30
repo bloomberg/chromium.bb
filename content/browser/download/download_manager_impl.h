@@ -81,7 +81,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
   virtual DownloadItem* GetDownload(int id) OVERRIDE;
-  virtual void MockDownloadOpenForTesting() OVERRIDE;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -166,9 +165,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   DownloadManagerDelegate* delegate_;
 
   net::NetLog* net_log_;
-
-  // Do we actually open downloads when requested? For testing purposes only.
-  bool open_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);
 };

@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_file_chooser_observer.h"
+#include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -242,8 +242,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
     EXPECT_TRUE(second_profile_);
     if (!second_profile_) return false;
 
-    DownloadTestFileChooserObserver(first_profile_) .EnableFileChooser(false);
-    DownloadTestFileChooserObserver(second_profile_).EnableFileChooser(false);
+    DownloadTestFileActivityObserver(first_profile_) .EnableFileChooser(false);
+    DownloadTestFileActivityObserver(second_profile_).EnableFileChooser(false);
     return true;
   }
 
@@ -281,9 +281,9 @@ class BrowserCloseTest : public InProcessBrowserTest {
     Profile* first_profile_incognito = first_profile_->GetOffTheRecordProfile();
     Profile* second_profile_incognito =
         second_profile_->GetOffTheRecordProfile();
-    DownloadTestFileChooserObserver(first_profile_incognito)
+    DownloadTestFileActivityObserver(first_profile_incognito)
         .EnableFileChooser(false);
-    DownloadTestFileChooserObserver(second_profile_incognito)
+    DownloadTestFileActivityObserver(second_profile_incognito)
         .EnableFileChooser(false);
 
     // For simplicty of coding, we create a window on each profile so that

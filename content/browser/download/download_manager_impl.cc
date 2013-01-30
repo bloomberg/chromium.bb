@@ -222,8 +222,7 @@ DownloadManagerImpl::DownloadManagerImpl(
       shutdown_needed_(false),
       browser_context_(NULL),
       delegate_(NULL),
-      net_log_(net_log),
-      open_enabled_(true) {
+      net_log_(net_log) {
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -656,10 +655,6 @@ void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
   }
 }
 
-void DownloadManagerImpl::MockDownloadOpenForTesting() {
-  open_enabled_ = false;
-}
-
 void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   int num_unopened = 0;
   for (DownloadMap::iterator it = downloads_.begin();
@@ -671,7 +666,7 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   }
   RecordOpensOutstanding(num_unopened);
 
-  if (delegate_ && open_enabled_)  // Some tests disable OpenDownload().
+  if (delegate_)
     delegate_->OpenDownload(download);
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_test_file_chooser_observer.h"
+#include "chrome/browser/download/download_test_file_activity_observer.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -15,14 +15,13 @@ namespace content {
 class DownloadItem;
 }
 
-namespace internal {
-
 // Test ChromeDownloadManagerDelegate that controls whether how file chooser
-// dialogs are handled. By default, file chooser dialogs are disabled.
-class MockFileChooserDownloadManagerDelegate
+// dialogs are handled, and how files are opend.
+// By default, file chooser dialogs are disabled.
+class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
     : public ChromeDownloadManagerDelegate {
  public:
-  explicit MockFileChooserDownloadManagerDelegate(Profile* profile)
+  explicit MockDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile),
         file_chooser_enabled_(false),
         file_chooser_displayed_(false) {}
@@ -50,31 +49,29 @@ class MockFileChooserDownloadManagerDelegate
                    (file_chooser_enabled_ ? suggested_path : FilePath())));
   }
 
+  virtual void OpenDownload(content::DownloadItem* item) OVERRIDE {}
+
  private:
-  virtual ~MockFileChooserDownloadManagerDelegate() {}
+  virtual ~MockDownloadManagerDelegate() {}
 
   bool file_chooser_enabled_;
   bool file_chooser_displayed_;
 };
 
-}  // namespace internal
-
-DownloadTestFileChooserObserver::DownloadTestFileChooserObserver(
+DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
     Profile* profile) {
-  test_delegate_ =
-      new internal::MockFileChooserDownloadManagerDelegate(profile);
+  test_delegate_ = new MockDownloadManagerDelegate(profile);
   DownloadServiceFactory::GetForProfile(profile)->
       SetDownloadManagerDelegateForTesting(test_delegate_.get());
 }
 
-DownloadTestFileChooserObserver::~DownloadTestFileChooserObserver() {
+DownloadTestFileActivityObserver::~DownloadTestFileActivityObserver() {
 }
 
-void DownloadTestFileChooserObserver::EnableFileChooser(bool enable) {
+void DownloadTestFileActivityObserver::EnableFileChooser(bool enable) {
   test_delegate_->EnableFileChooser(enable);
 }
 
-bool DownloadTestFileChooserObserver::TestAndResetDidShowFileChooser() {
+bool DownloadTestFileActivityObserver::TestAndResetDidShowFileChooser() {
   return test_delegate_->TestAndResetDidShowFileChooser();
 }
-

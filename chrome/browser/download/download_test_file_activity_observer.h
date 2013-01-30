@@ -2,27 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_CHOOSER_OBSERVER_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_CHOOSER_OBSERVER_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_ACTIVITY_OBSERVER_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_ACTIVITY_OBSERVER_H_
 
 #include "base/memory/ref_counted.h"
 
 class Profile;
 
-namespace internal {
-class MockFileChooserDownloadManagerDelegate;
-}
-
-// Observes and overrides file chooser activity for a profile. By default, once
-// attached to a profile, this class overrides the default file chooser by
-// replacing the ChromeDownloadManagerDelegate associated with |profile|.
+// Observes and overrides file chooser dialog and open activity for a profile.
+// By default, once attached to a profile, this class overrides the default file
+// related activity by replacing the ChromeDownloadManagerDelegate associated
+// with |profile|.
 // NOTE: Again, this overrides the ChromeDownloadManagerDelegate for |profile|.
-class DownloadTestFileChooserObserver {
+class DownloadTestFileActivityObserver {
  public:
   // Attaches to |profile|. By default file chooser dialogs will be disabled
   // once attached. Call EnableFileChooser() to re-enable.
-  explicit DownloadTestFileChooserObserver(Profile* profile);
-  ~DownloadTestFileChooserObserver();
+  explicit DownloadTestFileActivityObserver(Profile* profile);
+  ~DownloadTestFileActivityObserver();
 
   // Sets whether the file chooser dialog is enabled. If |enable| is false, any
   // attempt to display a file chooser dialog will cause the download to be
@@ -35,8 +32,9 @@ class DownloadTestFileChooserObserver {
   bool TestAndResetDidShowFileChooser();
 
  private:
-  scoped_refptr<internal::MockFileChooserDownloadManagerDelegate>
-      test_delegate_;
+  class MockDownloadManagerDelegate;
+
+  scoped_refptr<MockDownloadManagerDelegate> test_delegate_;
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_CHOOSER_OBSERVER_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_FILE_ACTIVITY_OBSERVER_H_

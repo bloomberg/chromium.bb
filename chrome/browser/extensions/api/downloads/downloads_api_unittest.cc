@@ -13,7 +13,7 @@
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_file_chooser_observer.h"
+#include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -272,7 +272,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     GetOnRecordManager()->RemoveAllDownloads();
     events_listener_.reset(new DownloadsEventsListener());
     // Disable file chooser for current profile.
-    DownloadTestFileChooserObserver observer(current_browser()->profile());
+    DownloadTestFileActivityObserver observer(current_browser()->profile());
     observer.EnableFileChooser(false);
   }
 
@@ -283,7 +283,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       incognito_browser_ = CreateIncognitoBrowser();
       GetOffRecordManager()->RemoveAllDownloads();
       // Disable file chooser for incognito profile.
-      DownloadTestFileChooserObserver observer(incognito_browser_->profile());
+      DownloadTestFileActivityObserver observer(incognito_browser_->profile());
       observer.EnableFileChooser(false);
     }
     current_browser_ = incognito_browser_;
@@ -821,7 +821,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                    new DownloadsOpenFunction(),
                    "[-42]").c_str());
 
-  GetCurrentManager()->MockDownloadOpenForTesting();
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
   EXPECT_FALSE(download_item->GetOpened());

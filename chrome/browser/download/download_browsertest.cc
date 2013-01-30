@@ -27,7 +27,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/download/download_test_file_chooser_observer.h"
+#include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -245,10 +245,10 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
-    // Needs to be torn down on the main thread. file_chooser_observer_ holds a
+    // Needs to be torn down on the main thread. file_activity_observer_ holds a
     // reference to the ChromeDownloadManagerDelegate which should be destroyed
     // on the UI thread.
-    file_chooser_observer_.reset();
+    file_activity_observer_.reset();
   }
 
   // Returning false indicates a failure of the setup, and should be asserted
@@ -277,8 +277,8 @@ class DownloadTest : public InProcessBrowserTest {
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
     manager->RemoveAllDownloads();
 
-    file_chooser_observer_.reset(
-        new DownloadTestFileChooserObserver(browser()->profile()));
+    file_activity_observer_.reset(
+        new DownloadTestFileActivityObserver(browser()->profile()));
 
     return true;
   }
@@ -543,11 +543,11 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   void EnableFileChooser(bool enable) {
-    file_chooser_observer_->EnableFileChooser(enable);
+    file_activity_observer_->EnableFileChooser(enable);
   }
 
   bool DidShowFileChooser() {
-    return file_chooser_observer_->TestAndResetDidShowFileChooser();
+    return file_activity_observer_->TestAndResetDidShowFileChooser();
   }
 
   // Checks that |path| is has |file_size| bytes, and matches the |value|
@@ -810,7 +810,7 @@ class DownloadTest : public InProcessBrowserTest {
   // Location of the downloads directory for these tests
   base::ScopedTempDir downloads_directory_;
 
-  scoped_ptr<DownloadTestFileChooserObserver> file_chooser_observer_;
+  scoped_ptr<DownloadTestFileActivityObserver> file_activity_observer_;
 };
 
 // NOTES:
@@ -1465,8 +1465,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 
   ASSERT_TRUE(
       GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
-
-  DownloadManagerForBrowser(browser())->MockDownloadOpenForTesting();
 
   DownloadAndWait(browser(), url);
 

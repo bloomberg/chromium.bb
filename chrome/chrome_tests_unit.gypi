@@ -104,8 +104,8 @@
         'browser/chromeos/system/mock_statistics_provider.cc',
         'browser/chromeos/system/mock_statistics_provider.h',
         # The only thing used from browser is Browser::Type.
-        'browser/download/download_test_file_chooser_observer.cc',
-        'browser/download/download_test_file_chooser_observer.h',
+        'browser/download/download_test_file_activity_observer.cc',
+        'browser/download/download_test_file_activity_observer.h',
         'browser/download/test_download_shelf.cc',
         'browser/download/test_download_shelf.h',
         'browser/extensions/mock_extension_special_storage_policy.cc',
