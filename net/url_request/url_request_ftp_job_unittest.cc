@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/socket/socket_test_util.h"
@@ -95,12 +96,12 @@ class URLRequestFtpJobTest : public testing::Test {
   }
 
  private:
+  ScopedVector<DeterministicSocketData> socket_data_;
   DeterministicMockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
 
   // Owned by |request_context_|:
   ProxyService* proxy_service_;
-  std::vector<DeterministicSocketData*> socket_data_;
 
   FtpTestURLRequestContext request_context_;
 };
