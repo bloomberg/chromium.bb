@@ -50,7 +50,7 @@ bool UserPolicySigninServiceFactory::ServiceIsCreatedWithProfile() const {
 
 void UserPolicySigninServiceFactory::RegisterUserPrefs(
     PrefServiceSyncable* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kLoadCloudPolicyOnSignin,
+  user_prefs->RegisterBooleanPref(prefs::kDisableCloudPolicyOnSignin,
                                   false, PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 

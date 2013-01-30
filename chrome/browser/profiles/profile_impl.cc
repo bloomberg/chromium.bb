@@ -388,7 +388,7 @@ ProfileImpl::ProfileImpl(
   // before PrefServiceSyncable because PrefServiceSyncable depends on policy
   // loading to get overridden pref values).
 #if !defined(OS_CHROMEOS)
-  if (command_line->HasSwitch(switches::kLoadCloudPolicyOnSignin)) {
+  if (!command_line->HasSwitch(switches::kDisableCloudPolicyOnSignin)) {
     cloud_policy_manager_ =
         policy::UserCloudPolicyManagerFactory::CreateForProfile(
             this, force_immediate_policy_load);

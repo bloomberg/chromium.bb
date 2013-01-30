@@ -221,7 +221,10 @@ DeviceMode BrowserPolicyConnector::GetDeviceMode() {
 
 void BrowserPolicyConnector::ScheduleServiceInitialization(
     int64 delay_milliseconds) {
-  device_management_service_->ScheduleInitialization(delay_milliseconds);
+  // Skip device initialization if the BrowserPolicyConnector was never
+  // initialized (unit tests).
+  if (device_management_service_.get())
+    device_management_service_->ScheduleInitialization(delay_milliseconds);
 }
 
 #if defined(OS_CHROMEOS)
@@ -369,9 +372,11 @@ bool MatchDomain(const string16& domain, const string16& pattern) {
 
 // static
 bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
-  if (username.empty()) {
-    // This means incognito user in case of ChromiumOS and
-    // no logged-in user in case of Chromium (SigninService).
+  if (username.empty() || username.find('@') == std::string::npos) {
+    // An empty username means incognito user in case of ChromiumOS and
+    // no logged-in user in case of Chromium (SigninService). Many tests use
+    // nonsense email addresses (e.g. 'test') so treat those as non-enterprise
+    // users.
     return true;
   }
 

@@ -15528,11 +15528,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       When enabled, a guest user will be available in desktop Chrome.
     </message>
 
-    <message name="IDS_FLAGS_DESKTOP_CLOUD_POLICY_NAME" desc="Name of about:flags option to turn on loading desktop cloud policy for signed in profiles">
-      Enable desktop cloud policy
+    <message name="IDS_FLAGS_DISABLE_DESKTOP_CLOUD_POLICY_NAME" desc="Name of about:flags option to turn off loading desktop cloud policy for signed in profiles">
+      Disable desktop cloud policy
     </message>
-    <message name="IDS_FLAGS_DESKTOP_CLOUD_POLICY_DESCRIPTION" desc="Description of about:flags option to turn on desktop cloud policy for signed in profiles">
-      When enabled, cloud policy will be loaded for signed-in profiles.
+    <message name="IDS_FLAGS_DISABLE_DESKTOP_CLOUD_POLICY_DESCRIPTION" desc="Description of about:flags option to turn off desktop cloud policy for signed in profiles">
+      When set, loading of cloud policy for signed-in profiles will be disabled.
     </message>
 
     <!-- Toast experiment. -->

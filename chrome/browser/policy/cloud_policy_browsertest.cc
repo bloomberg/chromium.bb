@@ -134,7 +134,6 @@ class CloudPolicyTest : public InProcessBrowserTest {
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
-    command_line->AppendSwitch(switches::kLoadCloudPolicyOnSignin);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

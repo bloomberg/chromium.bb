@@ -48,7 +48,7 @@ UserPolicySigninService::UserPolicySigninService(
       profile_(profile),
       pending_fetch_(false) {
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kLoadCloudPolicyOnSignin))
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
     return;
 
   // Initialize/shutdown the UserCloudPolicyManager when the user signs out.
@@ -78,6 +78,8 @@ UserPolicySigninService::UserPolicySigninService(
   // Make sure we've initialized the DeviceManagementService. It's OK to
   // call this multiple times so we do it every time we create an instance of
   // this class (every time a new profile is loaded).
+  // TODO(atwilson): Move this to BrowserPolicyConnector::Init()
+  // (http://crbug.com/165468).
   g_browser_process->browser_policy_connector()->
       ScheduleServiceInitialization(
           kPolicyServiceInitializationDelayMilliseconds);
@@ -138,6 +140,13 @@ void UserPolicySigninService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
+  // skip initialization.
+  if (!GetManager() || !SigninManagerFactory::GetForProfile(profile_)) {
+    DVLOG(1) << "Skipping initialization for tests due to missing components.";
+    return;
+  }
+
   switch (type) {
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
       ShutdownUserCloudPolicyManager();
@@ -177,7 +186,7 @@ void UserPolicySigninService::Observe(
 }
 
 bool UserPolicySigninService::ShouldLoadPolicyForSignedInUser() {
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kLoadCloudPolicyOnSignin))
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
     return false; // Cloud policy is disabled.
 
   const std::string& username = SigninManagerFactory::GetForProfile(profile_)->

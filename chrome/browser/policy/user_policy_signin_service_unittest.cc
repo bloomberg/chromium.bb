@@ -87,8 +87,6 @@ class UserPolicySigninServiceTest : public testing::Test {
         new TestingPrefServiceSyncable());
     Profile::RegisterUserPrefs(prefs.get());
     chrome::RegisterUserPrefs(prefs.get());
-    prefs->SetUserPref(prefs::kLoadCloudPolicyOnSignin,
-                       Value::CreateBooleanValue(true));
     TestingProfile::Builder builder;
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
     profile_ = builder.Build().Pass();
