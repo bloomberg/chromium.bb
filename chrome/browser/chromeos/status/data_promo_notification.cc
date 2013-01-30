@@ -163,30 +163,12 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
       return;
     }
 
-    gfx::Rect button_bounds = host->GetBoundsInScreen();
-    // StatusArea button Y position is usually -1, fix it so that
-    // Contains() method for screen bounds works correctly.
-    button_bounds.set_y(button_bounds.y() + 1);
-    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-
-    // Chrome window is initialized in visible state off screen and then is
-    // moved into visible screen area. Make sure that we're on screen
-    // so that bubble is shown correctly.
-    if (!screen_bounds.Contains(button_bounds)) {
-      // If we're not on screen yet, delay notification display.
-      // It may be shown earlier, on next NetworkLibrary callback processing.
-      if (!weak_ptr_factory_.HasWeakPtrs()) {
-        MessageLoop::current()->PostDelayedTask(FROM_HERE,
-            base::Bind(
-                &DataPromoNotification::ShowOptionalMobileDataPromoNotification,
-                weak_ptr_factory_.GetWeakPtr(),
-                cros,
-                host,
-                listener),
-            base::TimeDelta::FromMilliseconds(kPromoShowDelayMs));
-      }
+    const chromeos::CellularNetwork* cellular = cros->cellular_network();
+    DCHECK(cellular);
+    // If we do not know the technology type, do not show the notification yet.
+    // The next NetworkLibrary Manager update should trigger it.
+    if (cellular->network_technology() == NETWORK_TECHNOLOGY_UNKNOWN)
       return;
-    }
 
     string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
     if (!deal_text.empty())
@@ -200,12 +182,10 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
       link_message_id = IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT;
 
     ash::NetworkObserver::NetworkType type =
-        ash::NetworkObserver::NETWORK_CELLULAR;
-    const chromeos::CellularNetwork* net = cros->cellular_network();
-    if (net && (net->network_technology() == NETWORK_TECHNOLOGY_LTE ||
-            net->network_technology() == NETWORK_TECHNOLOGY_LTE_ADVANCED)) {
-      type = ash::NetworkObserver::NETWORK_CELLULAR_LTE;
-    }
+        (cellular->network_technology() == NETWORK_TECHNOLOGY_LTE ||
+         cellular->network_technology() == NETWORK_TECHNOLOGY_LTE_ADVANCED)
+        ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
+        : ash::NetworkObserver::NETWORK_CELLULAR;
 
     std::vector<string16> links;
     links.push_back(l10n_util::GetStringUTF16(link_message_id));
