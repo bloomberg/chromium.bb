@@ -1557,6 +1557,8 @@
         'browser/ui/views/fullscreen_exit_bubble_views.h',
         'browser/ui/views/global_error_bubble_view.cc',
         'browser/ui/views/global_error_bubble_view.h',
+        'browser/ui/views/home_button.cc',
+        'browser/ui/views/home_button.h',
         'browser/ui/views/hung_renderer_view.cc',
         'browser/ui/views/hung_renderer_view.h',
         'browser/ui/views/hung_renderer_view_win.cc',

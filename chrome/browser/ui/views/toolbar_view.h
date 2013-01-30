@@ -24,6 +24,7 @@
 
 class BrowserActionsContainer;
 class Browser;
+class HomeImageButton;
 class WrenchMenu;
 class WrenchMenuModel;
 
@@ -201,7 +202,7 @@ class ToolbarView : public views::AccessiblePaneView,
   views::ImageButton* back_;
   views::ImageButton* forward_;
   ReloadButton* reload_;
-  views::ImageButton* home_;
+  HomeImageButton* home_;
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
   views::MenuButton* app_menu_;
