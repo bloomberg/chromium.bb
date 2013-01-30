@@ -184,16 +184,5 @@ aura::Window* BaseFocusRules::GetNextActivatableWindow(
   return NULL;
 }
 
-aura::Window* BaseFocusRules::GetNextFocusableWindow(
-    aura::Window* ignore) const {
-  DCHECK(ignore);
-
-  // Focus cycling is currently very primitive: we just climb the tree.
-  // If need be, we could add the ability to look at siblings, descend etc.
-  // For test coverage, see FocusControllerImplicitTestBase subclasses in
-  // focus_controller_unittest.cc.
-  return GetFocusableWindow(ignore->parent());
-}
-
 }  // namespace corewm
 }  // namespace views
