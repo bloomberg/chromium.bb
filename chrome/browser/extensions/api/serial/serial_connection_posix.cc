@@ -48,8 +48,8 @@ bool SerialConnection::GetControlSignals(ControlSignals &control_signals) {
   return false;
 }
 
-bool SerialConnection::
-SetControlSignals(const ControlSignals &control_signals) {
+bool SerialConnection::SetControlSignals(
+    const ControlSignals &control_signals) {
   int status;
 
   if (ioctl(file_, TIOCMGET, &status) != 0)

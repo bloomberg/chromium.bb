@@ -4,8 +4,9 @@
 
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 
-#include <string>
 #include <windows.h>
+
+#include <string>
 
 namespace extensions {
 
@@ -63,8 +64,8 @@ bool SerialConnection::GetControlSignals(ControlSignals &control_signals) {
   return true;
 }
 
-bool SerialConnection::
-SetControlSignals(const ControlSignals &control_signals) {
+bool SerialConnection::SetControlSignals(
+    const ControlSignals &control_signals) {
   if (control_signals.should_set_dtr) {
     if (!EscapeCommFunction(file_, control_signals.dtr ? SETDTR : CLRDTR))
       return false;

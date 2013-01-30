@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 
+#include <windows.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-
-#include <windows.h>
 
 namespace extensions {
 

@@ -15,4 +15,4 @@ ApiResource::ApiResource(const std::string& owner_extension_id)
 ApiResource::~ApiResource() {
 }
 
-}
+}  // namespace extensions

@@ -310,8 +310,7 @@ SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {
 bool SerialGetControlSignalsFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::serial::GetControlSignals::Params::Create(
-      *args_);
+  params_ = api::serial::GetControlSignals::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   return true;
@@ -351,8 +350,7 @@ SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {
 bool SerialSetControlSignalsFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::serial::SetControlSignals::Params::Create(
-      *args_);
+  params_ = api::serial::SetControlSignals::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   return true;

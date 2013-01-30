@@ -94,7 +94,7 @@ class FakeEchoSerialConnection : public SerialConnection {
 
   virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
     DCHECK(io_buffer.get());
-    DCHECK(byte_count >= 0);
+    DCHECK_GE(byte_count, 0);
 
     char *data = io_buffer->data();
     int count = byte_count;
