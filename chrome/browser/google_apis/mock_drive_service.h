@@ -50,12 +50,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD2(DeleteResource,
       void(const std::string& resource_id,
           const EntryActionCallback& callback));
-  MOCK_METHOD5(DownloadHostedDocument,
-      void(const FilePath& virtual_path,
-          const FilePath& local_cache_path,
-          const GURL& content_url,
-          DocumentExportFormat format,
-          const DownloadActionCallback& callback));
   MOCK_METHOD3(CopyHostedDocument,
       void(const std::string& resource_id,
           const std::string& new_name,
@@ -124,15 +118,6 @@ class MockDriveService : public DriveServiceInterface {
   void DeleteResourceStub(const std::string& resource_id,
                           const EntryActionCallback& callback);
 
-  // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
-  // portion of the URL as the temporary file path.
-  void DownloadHostedDocumentStub(
-      const FilePath& virtual_path,
-      const FilePath& local_tmp_path,
-      const GURL& content_url,
-      DocumentExportFormat format,
-      const DownloadActionCallback& callback);
-
   // Will call |callback| with HTTP_SUCCESS and the current value of
   // |document_data_|.
   void CopyHostedDocumentStub(const std::string& resource_id,
@@ -189,7 +174,7 @@ class MockDriveService : public DriveServiceInterface {
   scoped_ptr<base::Value> search_result_;
 
   // File data to be written to the local temporary file when
-  // DownloadHostedDocumentStub is called.
+  // DownloadFileStub is called.
   scoped_ptr<std::string> file_data_;
 };
 

@@ -73,12 +73,6 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void DeleteResource(
       const std::string& resource_id,
       const EntryActionCallback& callback) OVERRIDE;
-  virtual void DownloadHostedDocument(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      DocumentExportFormat format,
-      const DownloadActionCallback& callback) OVERRIDE;
   virtual void DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,

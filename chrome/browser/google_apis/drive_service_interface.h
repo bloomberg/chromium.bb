@@ -22,28 +22,6 @@ class AccountMetadataFeed;
 class ResourceList;
 class OperationRegistry;
 
-// Document export format.
-enum DocumentExportFormat {
-  PDF,     // Portable Document Format. (all documents)
-  PNG,     // Portable Networks Graphic Image Format (all documents)
-  HTML,    // HTML Format (text documents and spreadsheets).
-  TXT,     // Text file (text documents and presentations).
-  DOC,     // Word (text documents only).
-  ODT,     // Open Document Format (text documents only).
-  RTF,     // Rich Text Format (text documents only).
-  ZIP,     // ZIP archive (text documents only). Contains the images (if any)
-           // used in the document as well as a .html file containing the
-           // document's text.
-  JPEG,    // JPEG (drawings only).
-  SVG,     // Scalable Vector Graphics Image Format (drawings only).
-  PPT,     // Powerpoint (presentations only).
-  XLS,     // Excel (spreadsheets only).
-  CSV,     // Excel (spreadsheets only).
-  ODS,     // Open Document Spreadsheet (spreadsheets only).
-  TSV,     // Tab Separated Value (spreadsheets only). Only the first worksheet
-           // is returned in TSV by default.
-};
-
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
  public:
@@ -180,16 +158,6 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void DeleteResource(const std::string& resource_id,
                               const EntryActionCallback& callback) = 0;
-
-  // Downloads a document identified by its |content_url| in a given |format|.
-  // Upon completion, invokes |callback| with results on the calling thread.
-  // |callback| must not be null.
-  virtual void DownloadHostedDocument(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      DocumentExportFormat format,
-      const DownloadActionCallback& callback) = 0;
 
   // Makes a copy of a hosted document identified by its |resource_id|.
   // The copy is named as the UTF-8 encoded |new_name| and is not added to any

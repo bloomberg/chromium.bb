@@ -31,9 +31,6 @@ MockDriveService::MockDriveService() {
       .WillByDefault(Invoke(this, &MockDriveService::GetAccountMetadataStub));
   ON_CALL(*this, DeleteResource(_, _))
       .WillByDefault(Invoke(this, &MockDriveService::DeleteResourceStub));
-  ON_CALL(*this, DownloadHostedDocument(_, _, _, _, _))
-      .WillByDefault(
-          Invoke(this, &MockDriveService::DownloadHostedDocumentStub));
   ON_CALL(*this, CopyHostedDocument(_, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::CopyHostedDocumentStub));
   ON_CALL(*this, RenameResource(_, _, _))
@@ -104,17 +101,6 @@ void MockDriveService::DeleteResourceStub(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS));
-}
-
-void MockDriveService::DownloadHostedDocumentStub(
-    const FilePath& virtual_path,
-    const FilePath& local_tmp_path,
-    const GURL& content_url,
-    DocumentExportFormat format,
-    const DownloadActionCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, local_tmp_path));
 }
 
 void MockDriveService::CopyHostedDocumentStub(

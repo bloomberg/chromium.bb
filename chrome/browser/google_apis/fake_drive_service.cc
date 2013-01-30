@@ -412,16 +412,6 @@ void FakeDriveService::DeleteResource(
       FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
 }
 
-void FakeDriveService::DownloadHostedDocument(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
-    const GURL& content_url,
-    DocumentExportFormat format,
-    const DownloadActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-}
-
 void FakeDriveService::DownloadFile(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,

@@ -56,13 +56,6 @@ void DummyDriveService::GetAppList(const GetAppListCallback& callback) {}
 void DummyDriveService::DeleteResource(const std::string& resource_id,
                                        const EntryActionCallback& callback) {}
 
-void DummyDriveService::DownloadHostedDocument(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
-    const GURL& content_url,
-    DocumentExportFormat format,
-    const DownloadActionCallback& callback) {}
-
 void DummyDriveService::DownloadFile(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,

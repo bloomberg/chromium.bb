@@ -27,41 +27,6 @@ namespace google_apis {
 
 namespace {
 
-const char* GetExportFormatParam(DocumentExportFormat format) {
-  switch (format) {
-    case PNG:
-      return "png";
-    case HTML:
-      return "html";
-    case TXT:
-      return "txt";
-    case DOC:
-      return "doc";
-    case ODT:
-      return "odt";
-    case RTF:
-      return "rtf";
-    case ZIP:
-      return "zip";
-    case JPEG:
-      return "jpeg";
-    case SVG:
-      return "svg";
-    case PPT:
-      return "ppt";
-    case XLS:
-      return "xls";
-    case CSV:
-      return "csv";
-    case ODS:
-      return "ods";
-    case TSV:
-      return "tsv";
-    default:
-      return "pdf";
-  }
-}
-
 // Parses the JSON value to ResourceList.
 scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
     scoped_ptr<base::Value> value) {
@@ -323,25 +288,6 @@ void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
   // For WAPI, AccountMetadata includes Drive application information, and
   // this function is not used.
   NOTREACHED();
-}
-
-void GDataWapiService::DownloadHostedDocument(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
-    const GURL& edit_url,
-    DocumentExportFormat format,
-    const DownloadActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DownloadFile(
-      virtual_path,
-      local_cache_path,
-      chrome_common_net::AppendQueryParameter(edit_url,
-                                              "exportFormat",
-                                              GetExportFormatParam(format)),
-      callback,
-      GetContentCallback());
 }
 
 void GDataWapiService::DownloadFile(
