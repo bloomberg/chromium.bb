@@ -236,6 +236,14 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
         HistoryURLProvider::kScoreForBestInlineableResult :
         HistoryURLProvider::kBaseScoreForNonInlineableResult;
 
+    // Also, if the user types the hostname of a host with a typed
+    // visit, then everything from that host get given inlineable scores
+    // (because the URL-that-you-typed will go first and everything
+    // else will be assigned one minus the previous score, as coded
+    // at the end of HistoryURLProvider::DoAutocomplete().
+    if (UTF8ToUTF16(gurl.host()) == terms[0])
+      hup_like_score = HistoryURLProvider::kScoreForBestInlineableResult;
+
     // HistoryURLProvider has the function PromoteOrCreateShorterSuggestion()
     // that's meant to promote prefixes of the best match (if they've
     // been visited enough related to the best match) or
