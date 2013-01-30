@@ -31,7 +31,7 @@ namespace {
 // driver will use the same value.
 // This value also has to be kept in sync with the value in
 // chromeos/display/output_configurator.cc. See crbug.com/130188
-const unsigned int kHighDensityDIPThreshold = 160;
+const unsigned int kHighDensityDPIThreshold = 160;
 
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
@@ -144,7 +144,7 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
     float device_scale_factor = 1.0f;
     if (!ShouldIgnoreSize(output_info) &&
         (kInchInMm * mode->width / output_info->mm_width) >
-        kHighDensityDIPThreshold) {
+        kHighDensityDPIThreshold) {
       device_scale_factor = 2.0f;
     }
     displays.back().SetScaleAndBounds(
