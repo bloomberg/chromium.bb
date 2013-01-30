@@ -660,8 +660,9 @@ void CdmWrapper::AddKey(const std::string& session_id,
   int key_size = key.ByteLength();
   const uint8_t* init_data_ptr = static_cast<const uint8_t*>(init_data.Map());
   int init_data_size = init_data.ByteLength();
+  PP_DCHECK(!init_data_ptr == !init_data_size);
 
-  if (!key_ptr || key_size <= 0 || !init_data_ptr || init_data_size <= 0) {
+  if (!key_ptr || key_size <= 0) {
     SendUnknownKeyError(key_system_, session_id);
     return;
   }
