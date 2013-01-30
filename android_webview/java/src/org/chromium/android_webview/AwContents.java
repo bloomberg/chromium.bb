@@ -34,6 +34,7 @@ import org.chromium.content.common.CleanupReference;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.net.GURLUtils;
 import org.chromium.net.X509Util;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.io.File;
@@ -99,6 +100,8 @@ public class AwContents {
     private boolean mIsPaused;
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
+    // TODO(boliu): This should be in a global context, not per webview.
+    private final double mDIPScale;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData;
@@ -269,6 +272,8 @@ public class AwContents {
         mPossiblyStaleHitTestData = new HitTestData();
         nativeDidInitializeContentViewCore(mNativeAwContents,
                 mContentViewCore.getNativeContentViewCore());
+
+        mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
     }
 
     public ContentViewCore getContentViewCore() {
@@ -664,8 +669,8 @@ public class AwContents {
 
             // Note this will trigger IPC back to browser even if nothing is hit.
             nativeRequestNewHitTestDataAt(mNativeAwContents,
-                                          Math.round(event.getX(actionIndex)),
-                                          Math.round(event.getY(actionIndex)));
+                                          (int)Math.round(event.getX(actionIndex) / mDIPScale),
+                                          (int)Math.round(event.getY(actionIndex) / mDIPScale));
         }
 
         return rv;
@@ -1000,8 +1005,11 @@ public class AwContents {
     private native void nativeClearMatches(int nativeAwContents);
     private native void nativeClearCache(int nativeAwContents, boolean includeDiskFiles);
     private native byte[] nativeGetCertificate(int nativeAwContents);
+
+    // Coordinates in desity independent pixels.
     private native void nativeRequestNewHitTestDataAt(int nativeAwContents, int x, int y);
     private native void nativeUpdateLastHitTestData(int nativeAwContents);
+
     private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeSetWindowViewVisibility(int nativeAwContents, boolean windowVisible,
             boolean viewVisible);
