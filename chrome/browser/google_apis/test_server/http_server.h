@@ -62,7 +62,7 @@ class HttpListenSocket: public net::TCPListenSocket {
 //   return http_response.Pass();
 // }
 //
-class HttpServer : private net::StreamListenSocket::Delegate {
+class HttpServer : public net::StreamListenSocket::Delegate {
  public:
   typedef base::Callback<scoped_ptr<HttpResponse>(const HttpRequest& request)>
       HandleRequestCallback;
