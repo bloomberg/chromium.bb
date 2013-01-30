@@ -38,6 +38,11 @@ QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        QuicRandom* random_generator,
                                        const std::string& server_hostname);
 
+// Constructs a ServerHello crypto handshake message
+QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
+                                       const QuicClock* clock,
+                                       QuicRandom* random_generator);
+
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
   MockFramerVisitor();

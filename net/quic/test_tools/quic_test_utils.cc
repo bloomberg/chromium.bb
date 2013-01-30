@@ -201,9 +201,9 @@ void CompareQuicDataWithHexError(
       expected->data(), expected->length());
 }
 
-QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
-  CryptoHandshakeMessage message;
-  message.tag = tag;
+static QuicPacket* ConstructPacketFromHandshakeMessage(
+    QuicGuid guid,
+    const CryptoHandshakeMessage& message) {
   CryptoFramer crypto_framer;
   scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
   QuicFramer quic_framer(QuicDecrypter::Create(kNULL),
@@ -225,37 +225,38 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
   return quic_framer.ConstructFrameDataPacket(header, frames);
 }
 
+QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
+  CryptoHandshakeMessage message;
+  message.tag = tag;
+  return ConstructPacketFromHandshakeMessage(guid, message);
+}
+
 QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator,
                                        const string& server_hostname) {
-  QuicClientCryptoConfig config;
-  config.SetDefaults();
+  QuicCryptoConfig config;
+  config.SetClientDefaults();
   string nonce;
   CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
 
   CryptoHandshakeMessage message;
   CryptoUtils::FillClientHelloMessage(config, nonce, server_hostname,
                                       &message);
-  CryptoFramer crypto_framer;
-  scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
-  QuicFramer quic_framer(QuicDecrypter::Create(kNULL),
-                         QuicEncrypter::Create(kNULL));
+  return ConstructPacketFromHandshakeMessage(guid, message);
+}
 
-  QuicPacketHeader header;
-  header.public_header.guid = guid;
-  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
-  header.packet_sequence_number = 1;
-  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
-  header.fec_group = 0;
+QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
+                                       const QuicClock* clock,
+                                       QuicRandom* random_generator) {
+  QuicCryptoNegotiatedParams negotiated_params;
+  negotiated_params.SetDefaults();
+  string nonce;
+  CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
 
-  QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
-                               data->AsStringPiece());
-
-  QuicFrame frame(&stream_frame);
-  QuicFrames frames;
-  frames.push_back(frame);
-  return quic_framer.ConstructFrameDataPacket(header, frames);
+  CryptoHandshakeMessage message;
+  CryptoUtils::FillServerHelloMessage(negotiated_params, nonce, &message);
+  return ConstructPacketFromHandshakeMessage(guid, message);
 }
 
 }  // namespace test

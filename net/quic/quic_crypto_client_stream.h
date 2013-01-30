@@ -28,7 +28,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool CryptoConnect();
 
  private:
-  QuicClientCryptoConfig client_crypto_config_;
+  QuicCryptoConfig crypto_config_;
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;
   // Server's hostname

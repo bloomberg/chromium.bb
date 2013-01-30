@@ -28,44 +28,35 @@ void CryptoUtils::GenerateNonce(const QuicClock* clock,
   random_generator->RandBytes(&(*nonce)[time_size], kNonceSize - time_size);
 }
 
-void CryptoUtils::FillClientHelloMessage(const QuicClientCryptoConfig& config,
-                                         const string& nonce,
-                                         const string& server_hostname,
-                                         CryptoHandshakeMessage* message) {
+void CryptoUtils::FillClientHelloMessage(
+    const QuicCryptoConfig& client_config,
+    const string& nonce,
+    const string& server_hostname,
+    CryptoHandshakeMessage* message) {
   message->tag = kCHLO;
 
-  StringPiece value;
-
   // Version.
-  value.set(&config.version, sizeof(config.version));
-  message->tag_value_map[kVERS] = value.as_string();
+  message->tag_value_map[kVERS] = EncodeSingleValue(client_config.version);
 
   // Key exchange methods.
-  value.set(&config.key_exchange[0],
-            config.key_exchange.size() * sizeof(config.key_exchange[0]));
-  message->tag_value_map[kKEXS] = value.as_string();
+  message->tag_value_map[kKEXS] = EncodeVectorValue(client_config.key_exchange);
 
   // Authenticated encryption algorithms.
-  value.set(&config.aead[0], config.aead.size() * sizeof(config.aead[0]));
-  message->tag_value_map[kAEAD] = value.as_string();
+  message->tag_value_map[kAEAD] = EncodeVectorValue(client_config.aead);
 
   // Congestion control feedback types.
-  value.set(&config.congestion_control[0],
-            config.congestion_control.size() *
-            sizeof(config.congestion_control[0]));
-  message->tag_value_map[kCGST] = value.as_string();
+  message->tag_value_map[kCGST] =
+      EncodeVectorValue(client_config.congestion_control);
 
   // Idle connection state lifetime.
   uint32 idle_connection_state_lifetime_secs =
-      config.idle_connection_state_lifetime.ToSeconds();
-  value.set(&idle_connection_state_lifetime_secs,
-            sizeof(idle_connection_state_lifetime_secs));
-  message->tag_value_map[kICSL] = value.as_string();
+      client_config.idle_connection_state_lifetime.ToSeconds();
+  message->tag_value_map[kICSL] =
+      EncodeSingleValue(idle_connection_state_lifetime_secs);
 
   // Keepalive timeout.
-  uint32 keepalive_timeout_secs = config.keepalive_timeout.ToSeconds();
-  value.set(&keepalive_timeout_secs, sizeof(keepalive_timeout_secs));
-  message->tag_value_map[kKATO] = value.as_string();
+  uint32 keepalive_timeout_secs = client_config.keepalive_timeout.ToSeconds();
+  message->tag_value_map[kKATO] = EncodeSingleValue(keepalive_timeout_secs);
 
   // Connection nonce.
   message->tag_value_map[kNONC] = nonce;
@@ -77,6 +68,38 @@ void CryptoUtils::FillClientHelloMessage(const QuicClientCryptoConfig& config,
       !ParseIPLiteralToNumber(server_hostname, &ip_number)) {
     message->tag_value_map[kSNI] = server_hostname;
   }
+}
+
+void CryptoUtils::FillServerHelloMessage(
+    const QuicCryptoNegotiatedParams& negotiated_params,
+    const string& nonce,
+    CryptoHandshakeMessage* message) {
+  message->tag = kSHLO;
+
+  // Version.
+  message->tag_value_map[kVERS] = EncodeSingleValue(negotiated_params.version);
+
+  // Key exchange method.
+  message->tag_value_map[kKEXS] =
+      EncodeSingleValue(negotiated_params.key_exchange);
+
+  // Authenticated encryption algorithm.
+  message->tag_value_map[kAEAD] = EncodeSingleValue(negotiated_params.aead);
+
+  // Congestion control feedback type.
+  message->tag_value_map[kCGST] =
+      EncodeSingleValue(negotiated_params.congestion_control);
+
+  // Idle connection state lifetime.
+  uint32 idle_connection_state_lifetime_secs =
+      negotiated_params.idle_connection_state_lifetime.ToSeconds();
+  message->tag_value_map[kICSL] =
+      EncodeSingleValue(idle_connection_state_lifetime_secs);
+
+  // Keepalive timeout?
+
+  // Connection nonce.
+  message->tag_value_map[kNONC] = nonce;
 }
 
 }  // namespace net

@@ -37,6 +37,11 @@ void QuicCryptoStream::CloseConnection(QuicErrorCode error) {
   session()->connection()->SendConnectionClose(error);
 }
 
+void QuicCryptoStream::CloseConnectionWithDetails(QuicErrorCode error,
+                                                  const string& details) {
+  session()->connection()->SendConnectionCloseWithDetails(error, details);
+}
+
 void QuicCryptoStream::SetHandshakeComplete(QuicErrorCode error) {
   handshake_complete_ = true;
   session()->OnCryptoHandshakeComplete(error);

@@ -9,15 +9,15 @@ namespace net {
 CryptoHandshakeMessage::CryptoHandshakeMessage() {}
 CryptoHandshakeMessage::~CryptoHandshakeMessage() {}
 
-QuicClientCryptoConfig::QuicClientCryptoConfig()
+QuicCryptoConfig::QuicCryptoConfig()
     : version(0),
       idle_connection_state_lifetime(QuicTime::Delta::Zero()),
       keepalive_timeout(QuicTime::Delta::Zero()) {
 }
 
-QuicClientCryptoConfig::~QuicClientCryptoConfig() {}
+QuicCryptoConfig::~QuicCryptoConfig() {}
 
-void QuicClientCryptoConfig::SetDefaults() {
+void QuicCryptoConfig::SetClientDefaults() {
   // Version must be 0.
   version = 0;
 
@@ -32,14 +32,71 @@ void QuicClientCryptoConfig::SetDefaults() {
   aead[1] = kAESH;
 
   // Congestion control feedback types.
+  // TODO(wtc): add kINAR when inter-arrival is supported.
   congestion_control.resize(1);
   congestion_control[0] = kQBIC;
 
   // Idle connection state lifetime.
-  idle_connection_state_lifetime = QuicTime::Delta::FromMilliseconds(300000);
+  idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(300);
 
   // Keepalive timeout.
   keepalive_timeout = QuicTime::Delta::Zero();  // Don't send keepalive probes.
+}
+
+void QuicCryptoConfig::SetServerDefaults() {
+  // Version must be 0.
+  version = 0;
+
+  // Key exchange methods.
+  // Add only NIST curve P-256 for now to ensure it is selected.
+  key_exchange.resize(1);
+  key_exchange[0] = kP256;
+
+  // Authenticated encryption algorithms.
+  // Add only AES-GCM for now to ensure it is selected.
+  aead.resize(1);
+  aead[0] = kAESG;
+
+  // Congestion control feedback types.
+  // TODO(wtc): add kINAR when inter-arrival is supported.
+  congestion_control.resize(1);
+  congestion_control[0] = kQBIC;
+
+  // Idle connection state lifetime.
+  idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(300);
+
+  // Keepalive timeout.
+  keepalive_timeout = QuicTime::Delta::Zero();  // Don't send keepalive probes.
+}
+
+QuicCryptoNegotiatedParams::QuicCryptoNegotiatedParams()
+    : version(0),
+      key_exchange(0),
+      aead(0),
+      congestion_control(0),
+      idle_connection_state_lifetime(QuicTime::Delta::Zero()) {
+}
+
+QuicCryptoNegotiatedParams::~QuicCryptoNegotiatedParams() {}
+
+void QuicCryptoNegotiatedParams::SetDefaults() {
+  // TODO(wtc): actually negotiate the parameters using client defaults
+  // and server defaults.
+
+  // Version must be 0.
+  version = 0;
+
+  // Key exchange method.
+  key_exchange = kP256;
+
+  // Authenticated encryption algorithm.
+  aead = kAESG;
+
+  // Congestion control feedback type.
+  congestion_control = kQBIC;
+
+  // Idle connection state lifetime.
+  idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(300);
 }
 
 }  // namespace net

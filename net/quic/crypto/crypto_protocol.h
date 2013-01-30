@@ -19,6 +19,8 @@ namespace net {
 typedef uint32 CryptoTag;
 typedef std::map<CryptoTag, std::string> CryptoTagValueMap;
 typedef std::vector<CryptoTag> CryptoTagVector;
+// An intermediate format of a handshake message that's convenient for a
+// CryptoFramer to serialize from or parse into.
 struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   CryptoHandshakeMessage();
   ~CryptoHandshakeMessage();
@@ -70,14 +72,15 @@ const size_t kMaxEntries = 16;  // Max number of entries in a message.
 
 const size_t kNonceSize = 32;  // Size in bytes of the connection nonce.
 
-// Client-side crypto configuration settings.
-struct NET_EXPORT_PRIVATE QuicClientCryptoConfig {
+// Crypto configuration settings.
+struct NET_EXPORT_PRIVATE QuicCryptoConfig {
   // Initializes the members to 0 or empty values.
-  QuicClientCryptoConfig();
-  ~QuicClientCryptoConfig();
+  QuicCryptoConfig();
+  ~QuicCryptoConfig();
 
-  // Sets the members to default values.
-  void SetDefaults();
+  // Sets the members to client-side or server-side default values.
+  void SetClientDefaults();
+  void SetServerDefaults();
 
   // Protocol version
   uint16 version;
@@ -91,8 +94,23 @@ struct NET_EXPORT_PRIVATE QuicClientCryptoConfig {
   QuicTime::Delta idle_connection_state_lifetime;
   // Keepalive timeout, or 0 to turn off keepalive probes
   QuicTime::Delta keepalive_timeout;
-  // Server's hostname
-  std::string server_hostname;
+};
+
+// Parameters negotiated by the crypto handshake.
+struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParams {
+  // Initializes the members to 0 or empty values.
+  QuicCryptoNegotiatedParams();
+  ~QuicCryptoNegotiatedParams();
+
+  // Sets the members to the values that would be negotiated from the default
+  // client-side and server-side configuration settings.
+  void SetDefaults();
+
+  uint16 version;
+  CryptoTag key_exchange;
+  CryptoTag aead;
+  CryptoTag congestion_control;
+  QuicTime::Delta idle_connection_state_lifetime;
 };
 
 }  // namespace net

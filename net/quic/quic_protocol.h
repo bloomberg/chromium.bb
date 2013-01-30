@@ -191,9 +191,15 @@ enum QuicErrorCode {
   QUIC_CRYPTO_INVALID_VALUE_LENGTH,
   // A crypto message was received after the handshake was complete.
   QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
-  // A crypto message was receieved with an illegal message tag.
+  // A crypto message was received with an illegal message tag.
   QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-
+  // A crypto message was received with an illegal parameter.
+  QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
+  // A crypto message was received with a mandatory parameter missing.
+  QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
+  // A crypto message was received with a parameter that has no overlap
+  // with the local parameter.
+  QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
@@ -359,8 +365,8 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
 
 struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicErrorCode error_code;
-  QuicAckFrame ack_frame;
   std::string error_details;
+  QuicAckFrame ack_frame;
 };
 
 struct NET_EXPORT_PRIVATE QuicFrame {

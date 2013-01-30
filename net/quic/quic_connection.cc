@@ -21,6 +21,7 @@ using std::make_pair;
 using std::min;
 using std::vector;
 using std::set;
+using std::string;
 
 namespace net {
 
@@ -882,10 +883,16 @@ QuicFecGroup* QuicConnection::GetFecGroup() {
 }
 
 void QuicConnection::SendConnectionClose(QuicErrorCode error) {
+  SendConnectionCloseWithDetails(error, string());
+}
+
+void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
+                                                    const string& details) {
   DLOG(INFO) << "Force closing with error " << QuicUtils::ErrorToString(error)
              << " (" << error << ")";
   QuicConnectionCloseFrame frame;
   frame.error_code = error;
+  frame.error_details = details;
   frame.ack_frame = outgoing_ack_;
 
   PacketPair packetpair = packet_creator_.CloseConnection(&frame);

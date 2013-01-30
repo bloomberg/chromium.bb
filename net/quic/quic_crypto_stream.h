@@ -47,6 +47,7 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
  protected:
   // Closes the connection
   void CloseConnection(QuicErrorCode error);
+  void CloseConnectionWithDetails(QuicErrorCode error, const string& details);
 
   void SetHandshakeComplete(QuicErrorCode error);
 
