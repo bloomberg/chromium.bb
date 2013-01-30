@@ -364,8 +364,14 @@ void DriveAPIService::AddNewDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(kochi): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new drive::CreateDirectoryOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          parent_resource_id,
+          directory_name,
+          base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 void DriveAPIService::CopyHostedDocument(

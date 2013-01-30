@@ -138,6 +138,43 @@ class GetFileOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetFileOperation);
 };
 
+// This namespace is introduced to avoid class name confliction between
+// the operations for Drive API v2 and GData WAPI for transition.
+// And, when the migration is done and GData WAPI's code is cleaned up,
+// classes inside this namespace should be moved to the google_apis namespace.
+// TODO(hidehiko): Get rid of this namespace after the migration.
+namespace drive {
+
+//========================== CreateDirectoryOperation ==========================
+
+// This class performs the operation for creating a directory.
+class CreateDirectoryOperation : public GetDataOperation {
+ public:
+  CreateDirectoryOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& parent_resource_id,
+      const std::string& directory_name,
+      const GetDataCallback& callback);
+  virtual ~CreateDirectoryOperation();
+
+ protected:
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string parent_resource_id_;
+  const std::string directory_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
+};
+
+}  // namespace drive
 }  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_OPERATIONS_H_

@@ -143,4 +143,39 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
   EXPECT_FALSE(feed_data.get());
 }
 
+TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
+  // Set an expected data file containing the directory's entry data.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/directory_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> feed_data;
+
+  // Create "new directory" in the root directory.
+  drive::CreateDirectoryOperation* operation =
+      new drive::CreateDirectoryOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          "root",
+          "new directory",
+          base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
+                     &error, &feed_data));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files", http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+
+  EXPECT_EQ("{\"mimeType\":\"application/vnd.google-apps.folder\","
+            "\"parents\":[{\"id\":\"root\"}],"
+            "\"title\":\"new directory\"}",
+            http_request_.content);
+}
+
 }  // namespace google_apis
