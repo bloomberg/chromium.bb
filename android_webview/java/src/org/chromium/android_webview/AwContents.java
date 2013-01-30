@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Picture;
 import android.graphics.Rect;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
@@ -330,7 +331,9 @@ public class AwContents {
 
     public void onDraw(Canvas canvas) {
         if (mNativeAwContents == 0) return;
-        if (!nativeDrawSW(mNativeAwContents, canvas)) {
+        Rect clip = canvas.getClipBounds();
+        if (!nativeDrawSW(mNativeAwContents, canvas, clip.left, clip.top,
+                clip.right - clip.left, clip.bottom - clip.top)) {
             Log.w(TAG, "Native DrawSW failed; clearing to background color.");
             int c = mContentViewCore.getBackgroundColor();
             canvas.drawRGB(Color.red(c), Color.green(c), Color.blue(c));
@@ -339,6 +342,19 @@ public class AwContents {
 
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mLayoutSizer.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    public Picture capturePicture() {
+        return nativeCapturePicture(mNativeAwContents);
+    }
+
+    /**
+     * Enable the OnNewPicture callback.
+     * @param enabled Flag to enable the callback.
+     * @param invalidationOnly Flag to call back only on invalidation without providing a picture.
+     */
+    public void enableOnNewPicture(boolean enabled, boolean invalidationOnly) {
+        nativeEnableOnNewPicture(mNativeAwContents, enabled, invalidationOnly);
     }
 
     public int findAllSync(String searchString) {
@@ -880,6 +896,11 @@ public class AwContents {
         mContentsClient.onFindResultReceived(activeMatchOrdinal, numberOfMatches, isDoneCounting);
     }
 
+    @CalledByNative
+    public void onNewPicture(Picture picture) {
+        mContentsClient.onNewPicture(picture);
+    }
+
     // Called as a result of nativeUpdateLastHitTestData.
     @CalledByNative
     private void updateHitTestData(
@@ -952,6 +973,38 @@ public class AwContents {
         return null;
     }
 
+    /**
+     * Provides a Bitmap object with a given width and height used for auxiliary rasterization.
+     */
+    @CalledByNative
+    private static Bitmap createBitmap(int width, int height) {
+        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    }
+
+    /**
+     * Draws a provided bitmap into a canvas.
+     * Used for convenience from the native side and other static helper methods.
+     */
+    @CalledByNative
+    private static void drawBitmapIntoCanvas(Bitmap bitmap, Canvas canvas) {
+        canvas.drawBitmap(bitmap, 0, 0, null);
+    }
+
+    /**
+     * Creates a new Picture that records drawing a provided bitmap.
+     * Will return an empty Picture if the Bitmap is null.
+     */
+    @CalledByNative
+    private static Picture recordBitmapIntoPicture(Bitmap bitmap) {
+        Picture picture = new Picture();
+        if (bitmap != null) {
+            Canvas recordingCanvas = picture.beginRecording(bitmap.getWidth(), bitmap.getHeight());
+            drawBitmapIntoCanvas(bitmap, recordingCanvas);
+            picture.endRecording();
+        }
+        return picture;
+    }
+
     @CalledByNative
     private void handleJsAlert(String url, String message, JsResultReceiver receiver) {
         mContentsClient.handleJsAlert(url, message, receiver);
@@ -997,7 +1050,8 @@ public class AwContents {
 
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
 
-    private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas);
+    private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas, int clipX, int clipY,
+            int clipW, int clipH);
     private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);
     private native int nativeFindAllSync(int nativeAwContents, String searchString);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
@@ -1025,4 +1079,8 @@ public class AwContents {
     private native int nativeReleasePopupWebContents(int nativeAwContents);
     private native void nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
     private native void nativeFocusFirstNode(int nativeAwContents);
+
+    private native Picture nativeCapturePicture(int nativeAwContents);
+    private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled,
+            boolean invalidationOnly);
 }

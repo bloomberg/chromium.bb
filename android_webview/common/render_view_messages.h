@@ -55,6 +55,10 @@ IPC_MESSAGE_ROUTED2(AwViewMsg_DoHitTest,
 IPC_MESSAGE_ROUTED1(AwViewMsg_EnableCapturePictureCallback,
                     bool /* enable */)
 
+// Requests a new picture with the latest renderer contents synchronously.
+// This message blocks the browser process on the renderer until complete.
+IPC_SYNC_MESSAGE_ROUTED0_0(AwViewMsg_CapturePictureSync)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

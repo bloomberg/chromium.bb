@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.graphics.Bitmap;
+import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
@@ -268,6 +269,12 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
             boolean isDoneCounting);
+
+    /**
+     * Called whenever there is a new content picture available.
+     * @param picture New picture.
+     */
+    public abstract void onNewPicture(Picture picture);
 
     public abstract void onPageStarted(String url);
 

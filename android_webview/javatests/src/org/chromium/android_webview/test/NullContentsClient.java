@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.graphics.Picture;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
@@ -95,6 +96,10 @@ class NullContentsClient extends AwContentsClient {
     @Override
     public void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
             boolean isDoneCounting) {
+    }
+
+    @Override
+    public void onNewPicture(Picture picture) {
     }
 
     @Override

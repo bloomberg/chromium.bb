@@ -17,6 +17,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/javascript_dialogs.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 typedef void* EGLContext;
 class SkBitmap;
@@ -45,6 +47,12 @@ class AwContents : public FindHelper::Listener,
                    public content::Compositor::Client,
                    public AwRenderViewHostExt::Client {
  public:
+  enum OnNewPictureMode {
+    kOnNewPictureDisabled = 0,
+    kOnNewPictureEnabled,
+    kOnNewPictureInvalidationOnly,
+  };
+
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
 
@@ -54,7 +62,13 @@ class AwContents : public FindHelper::Listener,
   virtual ~AwContents();
 
   void DrawGL(AwDrawGLInfo* draw_info);
-  bool DrawSW(JNIEnv* env, jobject obj, jobject canvas);
+  bool DrawSW(JNIEnv* env,
+              jobject obj,
+              jobject canvas,
+              jint clip_x,
+              jint clip_y,
+              jint clip_w,
+              jint clip_h);
 
   void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,
@@ -105,6 +119,12 @@ class AwContents : public FindHelper::Listener,
   void SetScrollForHWFrame(JNIEnv* env, jobject obj,
                            int scroll_x, int scroll_y);
   void FocusFirstNode(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jobject> CapturePicture(JNIEnv* env,
+                                                            jobject obj);
+  void EnableOnNewPicture(JNIEnv* env,
+                          jobject obj,
+                          jboolean enabled,
+                          jboolean invalidation_only);
 
   // Geolocation API support
   void OnGeolocationShowPrompt(int render_process_id,
@@ -141,12 +161,19 @@ class AwContents : public FindHelper::Listener,
   // AwRenderViewHostExt::Client implementation.
   virtual void OnPictureUpdated(int process_id, int render_view_id) OVERRIDE;
 
+  // Returns the latest locally available picture if any.
+  // If none is available will synchronously request the latest one
+  // and block until the result is received.
+  skia::RefPtr<SkPicture> GetLastCapturedPicture();
+
  private:
   void Invalidate();
   void SetWebContents(content::WebContents* web_contents);
   void SetCompositorVisibility(bool visible);
   void ResetCompositor();
   void AttachLayerTree();
+  bool RenderSW(SkCanvas* canvas);
+  bool RenderPicture(SkCanvas* canvas);
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -166,6 +193,7 @@ class AwContents : public FindHelper::Listener,
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
+  OnNewPictureMode on_new_picture_mode_;
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.

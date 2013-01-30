@@ -30,6 +30,9 @@ class AwRenderViewExt : public content::RenderViewObserver,
  public:
   static void RenderViewCreated(content::RenderView* render_view);
 
+  // Required to be public by IPC_MESSAGE_HANDLER for sync messages.
+  using content::RenderViewObserver::Send;
+
  private:
   AwRenderViewExt(content::RenderView* render_view);
   virtual ~AwRenderViewExt();
@@ -47,6 +50,8 @@ class AwRenderViewExt : public content::RenderViewObserver,
   void OnEnableCapturePictureCallback(bool enable);
 
   void OnPictureUpdate(skia::RefPtr<SkPicture> picture);
+
+  void OnCapturePictureSync();
 
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,

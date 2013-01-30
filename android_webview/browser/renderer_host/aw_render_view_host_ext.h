@@ -58,6 +58,14 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // the corresponding public WebView API is as well.
   const AwHitTestData& GetLastHitTestData() const;
 
+  // Enables updating picture piles on every new frame.
+  // OnPictureUpdated is called when a new picture is available,
+  // stored by renderer id in RendererPictureMap.
+  void EnableCapturePictureCallback(bool enabled);
+
+  // Captures the latest available picture pile synchronously.
+  void CapturePictureSync();
+
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
@@ -69,6 +77,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
   void OnUpdateHitTestData(const AwHitTestData& hit_test_data);
   void OnPictureUpdated();
+
+  bool IsRenderViewReady() const;
 
   std::map<int, DocumentHasImagesResult> pending_document_has_images_requests_;
 

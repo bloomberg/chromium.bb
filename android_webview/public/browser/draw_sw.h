@@ -12,6 +12,8 @@
 #error "Can't mix C and C++ when using jni.h"
 #endif
 
+class SkPicture;
+
 // Holds the information required to implement the SW draw to system canvas.
 struct AwPixelInfo {
   int config;         // In SkBitmap::Config format.
@@ -34,11 +36,22 @@ typedef AwPixelInfo* (AwAccessPixelsFunction)(JNIEnv* env, jobject canvas);
 // (i.e. that returned true).
 typedef void (AwReleasePixelsFunction)(AwPixelInfo* pixels);
 
+// Called to create an Android Picture object encapsulating a native SkPicture.
+typedef jobject (AwCreatePictureFunction)(JNIEnv* env, SkPicture* picture);
+
+// Method that returns the current Skia function.
+typedef void (SkiaVersionFunction)(int* major, int* minor, int* patch);
+
+// Called to verify if the Skia versions are compatible.
+typedef bool (AwIsSkiaVersionCompatibleFunction)(SkiaVersionFunction function);
+
 // "vtable" for the functions declared in this file. An instance must be set via
 // AwContents.setAwDrawSWFunctionTable
 struct AwDrawSWFunctionTable {
   AwAccessPixelsFunction* access_pixels;
   AwReleasePixelsFunction* release_pixels;
+  AwCreatePictureFunction* create_picture;
+  AwIsSkiaVersionCompatibleFunction* is_skia_version_compatible;
 };
 
 #endif  // ANDROID_WEBVIEW_PUBLIC_BROWSER_DRAW_SW_H_

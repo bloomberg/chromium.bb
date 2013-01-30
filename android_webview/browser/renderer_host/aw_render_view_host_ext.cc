@@ -5,11 +5,13 @@
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/render_view_messages.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -61,6 +63,11 @@ void AwRenderViewHostExt::RequestNewHitTestDataAt(int view_x, int view_y) {
 const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
   DCHECK(CalledOnValidThread());
   return last_hit_test_data_;
+}
+
+void AwRenderViewHostExt::EnableCapturePictureCallback(bool enabled) {
+  Send(new AwViewMsg_EnableCapturePictureCallback(
+      web_contents()->GetRoutingID(), enabled));
 }
 
 void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
@@ -121,6 +128,20 @@ void AwRenderViewHostExt::OnPictureUpdated() {
   if (client_)
     client_->OnPictureUpdated(web_contents()->GetRenderProcessHost()->GetID(),
                               routing_id());
+}
+
+bool AwRenderViewHostExt::IsRenderViewReady() const {
+  return web_contents()->GetRenderProcessHost()->HasConnection() &&
+      web_contents()->GetRenderViewHost() &&
+      web_contents()->GetRenderViewHost()->IsRenderViewLive();
+}
+
+void AwRenderViewHostExt::CapturePictureSync() {
+  if (!IsRenderViewReady())
+    return;
+
+  ScopedAllowWaitForLegacyWebViewApi wait;
+  Send(new AwViewMsg_CapturePictureSync(web_contents()->GetRoutingID()));
 }
 
 }  // namespace android_webview
