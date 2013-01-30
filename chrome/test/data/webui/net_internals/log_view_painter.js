@@ -1762,7 +1762,8 @@ function painterTestInProgressURLRequest() {
 '                          --> load_flags = 68223104 ' +
     '(ENABLE_LOAD_TIMING | MAIN_FRAME | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
-'                          --> load_state = 12 (READING_RESPONSE)\n' +
+'                          --> load_state = ' + LoadState.READING_RESPONSE +
+    ' (READING_RESPONSE)\n' +
 '                          --> method = "GET"\n' +
 '                          --> url = "http://www.MagicPonyShopper.com"\n' +
 't=1338864774145 [st=151]   -HTTP_STREAM_REQUEST\n' +

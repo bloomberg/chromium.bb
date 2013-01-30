@@ -198,11 +198,14 @@ TEST_F(ProxyServiceTest, PAC) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
+  ProxyService::PacRequest* request;
   CapturingBoundNetLog log;
 
   int rv = service.ResolveProxy(
-      url, &info, callback.callback(), NULL, log.bound());
+      url, &info, callback.callback(), &request, log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request));
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
             resolver->pending_set_pac_script_request()->script_data()->url());
@@ -1448,8 +1451,9 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
+  ProxyService::PacRequest* request1;
   int rv = service.ResolveProxy(GURL("http://request1"), &info1,
-                                callback1.callback(), NULL, BoundNetLog());
+                                callback1.callback(), &request1, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered download of PAC script.
@@ -1458,18 +1462,27 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
+  ProxyService::PacRequest* request2;
   rv = service.ResolveProxy(GURL("http://request2"), &info2,
-                            callback2.callback(), NULL, BoundNetLog());
+                            callback2.callback(), &request2, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
+  ProxyService::PacRequest* request3;
   rv = service.ResolveProxy(GURL("http://request3"), &info3,
-                            callback3.callback(), NULL, BoundNetLog());
+                            callback3.callback(), &request3, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Nothing has been sent to the resolver yet.
   EXPECT_TRUE(resolver->pending_requests().empty());
+
+  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PROXY_SCRIPT,
+            service.GetLoadState(request1));
+  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PROXY_SCRIPT,
+            service.GetLoadState(request2));
+  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PROXY_SCRIPT,
+            service.GetLoadState(request3));
 
   // At this point the ProxyService should be waiting for the
   // ProxyScriptFetcher to invoke its completion callback, notifying it of
@@ -1486,6 +1499,10 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   EXPECT_EQ(GURL("http://request1"), resolver->pending_requests()[0]->url());
   EXPECT_EQ(GURL("http://request2"), resolver->pending_requests()[1]->url());
   EXPECT_EQ(GURL("http://request3"), resolver->pending_requests()[2]->url());
+
+  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request1));
+  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request2));
+  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request3));
 
   // Complete all the requests (in some order).
   // Note that as we complete requests, they shift up in |pending_requests()|.

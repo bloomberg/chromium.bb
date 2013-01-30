@@ -8958,6 +8958,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT">
         Resolving host in proxy script...
       </message>
+      <message name="IDS_LOAD_STATE_DOWNLOADING_PROXY_SCRIPT">
+        Downloading proxy script...
+      </message>
       <message name="IDS_LOAD_STATE_RESOLVING_HOST">
         Resolving host...
       </message>

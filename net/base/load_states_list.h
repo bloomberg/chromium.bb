@@ -35,6 +35,10 @@ LOAD_STATE(WAITING_FOR_CACHE)
 // bad. TODO(rvargas): Reconsider what to do if we need to add more.
 LOAD_STATE(WAITING_FOR_APPCACHE)
 
+// This state corresponds to a resource being blocked waiting for the
+// PAC script to be downloaded.
+LOAD_STATE(DOWNLOADING_PROXY_SCRIPT)
+
 // This state corresponds to a resource load that is blocked waiting for a
 // proxy autoconfig script to return a proxy server to use.
 LOAD_STATE(RESOLVING_PROXY_FOR_URL)

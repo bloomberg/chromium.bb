@@ -75,8 +75,7 @@ void MockAsyncProxyResolverBase::CancelRequest(RequestHandle request_handle) {
 
 LoadState MockAsyncProxyResolverBase::GetLoadState(
     RequestHandle request_handle) const {
-  NOTREACHED();
-  return LOAD_STATE_IDLE;
+  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
 
 LoadState MockAsyncProxyResolverBase::GetLoadStateThreadSafe(

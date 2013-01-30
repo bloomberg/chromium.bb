@@ -420,6 +420,15 @@ class ProxyService::InitProxyResolver {
     return script_data_.get();
   }
 
+  LoadState GetLoadState() const {
+    if (next_state_ == STATE_DECIDE_PROXY_SCRIPT_COMPLETE) {
+      // In addition to downloading, this state may also include the stall time
+      // after network change events (kDelayAfterNetworkChangesMs).
+      return LOAD_STATE_DOWNLOADING_PROXY_SCRIPT;
+    }
+    return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
+  }
+
  private:
   enum State {
     STATE_NONE,
@@ -1220,6 +1229,8 @@ void ProxyService::CancelPacRequest(PacRequest* req) {
 
 LoadState ProxyService::GetLoadState(const PacRequest* req) const {
   CHECK(req);
+  if (current_state_ == STATE_WAITING_FOR_INIT_PROXY_RESOLVER)
+    return init_proxy_resolver_->GetLoadState();
   return req->GetLoadState();
 }
 
