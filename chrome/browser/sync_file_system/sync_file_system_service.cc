@@ -11,6 +11,8 @@
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
@@ -140,6 +142,11 @@ void SyncFileSystemService::Shutdown() {
   local_file_service_.reset();
 
   remote_file_service_.reset();
+
+  ProfileSyncServiceBase* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (profile_sync_service)
+    profile_sync_service->RemoveObserver(this);
 
   profile_ = NULL;
 }
@@ -286,6 +293,13 @@ void SyncFileSystemService::Initialize(
   local_file_service_->AddChangeObserver(this);
   remote_file_service_->AddObserver(this);
 
+  ProfileSyncServiceBase* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (profile_sync_service) {
+    UpdateSyncEnabledStatus(profile_sync_service);
+    profile_sync_service->AddObserver(this);
+  }
+
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
@@ -338,7 +352,7 @@ void SyncFileSystemService::DidRegisterOrigin(
   callback.Run(status);
 }
 
-void SyncFileSystemService::SetSyncEnabled(bool enabled) {
+void SyncFileSystemService::SetSyncEnabledForTesting(bool enabled) {
   sync_enabled_ = enabled;
   remote_file_service_->SetSyncEnabled(sync_enabled_);
 }
@@ -533,6 +547,27 @@ void SyncFileSystemService::Observe(
         base::Bind(&DidUnregisterOriginForTrackingChanges));
   } else {
     NOTREACHED() << "Unknown notification.";
+  }
+}
+
+void SyncFileSystemService::OnStateChanged() {
+  ProfileSyncServiceBase* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (profile_sync_service)
+    UpdateSyncEnabledStatus(profile_sync_service);
+}
+
+void SyncFileSystemService::UpdateSyncEnabledStatus(
+    ProfileSyncServiceBase* profile_sync_service) {
+  if (!profile_sync_service->HasSyncSetupCompleted())
+    return;
+  sync_enabled_ = profile_sync_service->GetPreferredDataTypes().Has(
+      syncer::APPS);
+  remote_file_service_->SetSyncEnabled(sync_enabled_);
+  if (sync_enabled_) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
+                              AsWeakPtr()));
   }
 }
 

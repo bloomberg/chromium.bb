@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
@@ -22,6 +23,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
+
+class ProfileSyncServiceBase;
 
 namespace fileapi {
 class FileSystemContext;
@@ -33,6 +36,7 @@ class SyncEventObserver;
 
 class SyncFileSystemService
     : public ProfileKeyedService,
+      public ProfileSyncServiceObserver,
       public LocalFileSyncService::Observer,
       public RemoteFileSyncService::Observer,
       public content::NotificationObserver,
@@ -94,7 +98,7 @@ class SyncFileSystemService
                          fileapi::SyncStatusCode status);
 
   // Overrides sync_enabled_ setting. This should be called only by tests.
-  void SetSyncEnabled(bool enabled);
+  void SetSyncEnabledForTesting(bool enabled);
 
   // Called when following observer methods are called:
   // - OnLocalChangeAvailable()
@@ -131,6 +135,14 @@ class SyncFileSystemService
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ProfileSyncServiceObserver:
+  virtual void OnStateChanged() OVERRIDE;
+
+  // Check the profile's sync preference settings and call
+  // remote_file_service_->SetSyncEnabled() to update the status.
+  // |profile_sync_service| must be non-null.
+  void UpdateSyncEnabledStatus(ProfileSyncServiceBase* profile_sync_service);
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;

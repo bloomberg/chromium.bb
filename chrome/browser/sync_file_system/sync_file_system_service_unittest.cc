@@ -227,7 +227,7 @@ class SyncFileSystemServiceTest : public testing::Test {
 
   void EnableSync() {
     EXPECT_CALL(*mock_remote_service(), SetSyncEnabled(true)).Times(1);
-    sync_service_->SetSyncEnabled(true);
+    sync_service_->SetSyncEnabledForTesting(true);
   }
 
   MultiThreadTestHelper thread_helper_;
