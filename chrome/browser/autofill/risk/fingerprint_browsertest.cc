@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/port.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
 #include "chrome/common/pref_names.h"
@@ -17,7 +18,7 @@
 namespace autofill {
 namespace risk {
 
-const int64 kGaiaId = 99194853094755497;
+const int64 kGaiaId = GG_INT64_C(99194853094755497);
 const char kCharset[] = "UTF-8";
 const char kAcceptLanguages[] = "en-US,en";
 
