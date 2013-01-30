@@ -9,6 +9,7 @@ import errno
 import logging
 import os
 import shutil
+import cStringIO
 import tempfile
 from chromite.lib import cros_build_lib
 
@@ -355,3 +356,28 @@ def SetEnvironment(env):
   """Restore the environment variables to that of passed in dictionary."""
   os.environ.clear()
   os.environ.update(env)
+
+
+def SourceEnvironment(env_file, whitelist):
+  """Returns the environment exported by a shell script.
+
+  Arguments:
+    env_file: The shell script to 'source'.
+    whitelist: A list of environment variables to retrieve values for.
+
+  Returns:
+    A dictionary containing the values of the whitelisted environment
+    variables that are set.
+  """
+  dump_script = []
+  for var in whitelist:
+    dump_script.append(
+        '[ -n "${%(var)s}" ] && echo %(var)s="${%(var)s}"\n' % {'var': var})
+
+  with TempDirContextManager() as tempdir:
+    dump_env = os.path.join(tempdir, 'dump_env')
+    WriteFile(dump_env, dump_script)
+    output = cros_build_lib.RunCommand(
+        'source %s; source %s; true' % (env_file, dump_env),
+        env={}, shell=True, redirect_stdout=True).output
+    return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output))

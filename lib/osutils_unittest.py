@@ -152,5 +152,34 @@ class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(found, None)
 
 
+class SourceEnvironmentTest(cros_test_lib.TempDirTestCase):
+
+  ENV_WHITELIST = {
+      'ENV1': 'monkeys like bananas',
+      'ENV3': 'merci',
+  }
+
+  ENV_OTHER = {
+    'ENV2': 'bananas are yellow',
+    'ENV4': 'de rien',
+  }
+
+  ENV = """\
+declare -x ENV1="monkeys like bananas"
+declare -x ENV2="bananas are yellow"
+declare -x ENV3="merci"
+declare -x ENV4="de rien"
+"""
+
+  def setUp(self):
+    self.env_file = os.path.join(self.tempdir, 'environment')
+    osutils.WriteFile(self.env_file, self.ENV)
+
+  def testWhiteList(self):
+    env_dict = osutils.SourceEnvironment(
+        self.env_file, ('ENV1', 'ENV3', 'ENV5'))
+    self.assertEquals(env_dict, self.ENV_WHITELIST)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()
