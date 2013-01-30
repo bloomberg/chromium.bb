@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/process_util.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
@@ -125,6 +126,9 @@ class IBusControllerImpl : public IBusControllerBase,
 
   // The pointer to global input method. We can inject this value for testing.
   ui::InputMethodIBus* input_method_;
+
+  // IBusControllerImpl should be used only on UI thread.
+  base::ThreadChecker thread_checker_;
 
   // Used for making callbacks for PostTask.
   base::WeakPtrFactory<IBusControllerImpl> weak_ptr_factory_;
