@@ -477,6 +477,7 @@ class RequestHandler(object):
     policy_data.machine_name = token_info['machine_name']
     policy_data.valid_serial_number_missing = (
         token_info['machine_id'] in BAD_MACHINE_IDS)
+    policy_data.settings_entity_id = msg.settings_entity_id
 
     if signing_key:
       policy_data.public_key_version = key_version
