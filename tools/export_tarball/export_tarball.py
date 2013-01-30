@@ -94,9 +94,13 @@ class MyTarFile(tarfile.TarFile):
       if 'ChangeLog' in name:
         return
 
+      # Remove contents of non-essential directories, but preserve gyp files,
+      # so that build/gyp_chromium can work.
       for nonessential_dir in NONESSENTIAL_DIRS:
         dir_path = os.path.join(GetSourceDirectory(), nonessential_dir)
-        if name.startswith(dir_path):
+        if (name.startswith(dir_path) and
+            os.path.isfile(name) and
+            'gyp' not in name):
           return
 
     tarfile.TarFile.add(self, name, arcname=arcname, recursive=recursive)
