@@ -667,10 +667,16 @@
    fun:IPC::ChannelProxy::Context::OnAddFilter
 }
 {
-   bug_67524
+   bug_67378
    Heapcheck:Leak
    ...
    fun:net::::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
+}
+{
+   bug_67378_b
+   Heapcheck:Leak
+   ...
+   fun:net::::LoadScriptData
 }
 {
    bug_68304
