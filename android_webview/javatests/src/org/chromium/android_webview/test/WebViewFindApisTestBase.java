@@ -32,12 +32,6 @@ public class WebViewFindApisTestBase extends AndroidWebViewTestBase {
         }
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        destroyAwContentsOnMainSync(mContents);
-        super.tearDown();
-    }
-
     protected AwContents contents() {
         return mContents;
     }
