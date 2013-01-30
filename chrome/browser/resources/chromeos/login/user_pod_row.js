@@ -466,6 +466,12 @@ cr.define('login', function() {
       this.addEventListener('webkitTransitionEnd', function f(e) {
         self.removeEventListener('webkitTransitionEnd', f);
         self.classList.remove('animating');
+
+        // Accessibility focus indicator does not move with the focused
+        // element. Sends a 'focus' event on the currently focused element
+        // so that accessibility focus indicator updates its location.
+        if (document.activeElement)
+          document.activeElement.dispatchEvent(new Event('focus'));
       });
     },
 

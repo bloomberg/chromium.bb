@@ -3506,4 +3506,7 @@ Battery full
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER" desc="Label text for the sign-in button in the public account user pod.">
     Enter
   </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME" desc="Text to be spoken when focus is set to the sign-in button in the public account user pod.">
+    Enter public account
+  </message>
 </grit-part>

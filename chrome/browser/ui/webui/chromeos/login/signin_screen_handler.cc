@@ -288,6 +288,9 @@ void SigninScreenHandler::GetLocalizedStrings(
        l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER));
   localized_strings->SetString("publicAccountEnter",
        l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_ENTER));
+  localized_strings->SetString("publicAccountEnterAccessibleName",
+       l10n_util::GetStringUTF16(
+           IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME));
 
   localized_strings->SetString("createManagedUserNameTitle",
        l10n_util::GetStringUTF16(
