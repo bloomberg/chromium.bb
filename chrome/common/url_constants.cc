@@ -285,6 +285,7 @@ const char kSyncSetupForceLoginSubPage[] = "syncSetup#forceLogin";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
 const char kBluetoothAddDeviceSubPage[] = "bluetooth";
+const char kChangeProfilePictureSubPage[] = "changePicture";
 #endif
 
 // Extension sub pages.

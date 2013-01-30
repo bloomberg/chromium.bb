@@ -371,6 +371,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return ash::user::LOGGED_IN_USER;
   }
 
+  virtual void ChangeProfilePicture() OVERRIDE {
+    content::RecordAction(
+        content::UserMetricsAction("OpenChangeProfilePictureDialog"));
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
+                                chrome::kChangeProfilePictureSubPage);
+  }
+
   virtual const std::string GetEnterpriseDomain() const OVERRIDE {
     return enterprise_domain_;
   }

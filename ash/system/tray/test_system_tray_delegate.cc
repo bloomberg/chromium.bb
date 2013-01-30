@@ -94,6 +94,9 @@ user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   return user::LOGGED_IN_USER;
 }
 
+void TestSystemTrayDelegate::ChangeProfilePicture() {
+}
+
 const std::string TestSystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }

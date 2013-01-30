@@ -278,6 +278,7 @@ extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];
 extern const char kBluetoothAddDeviceSubPage[];
+extern const char kChangeProfilePictureSubPage[];
 #endif
 
 // Extensions sub pages.

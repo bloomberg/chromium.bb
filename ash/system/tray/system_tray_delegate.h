@@ -123,6 +123,9 @@ class SystemTrayDelegate {
   virtual const gfx::ImageSkia& GetUserImage() const = 0;
   virtual user::LoginStatus GetUserLoginStatus() const = 0;
 
+  // Shows UI for changing user's profile picture.
+  virtual void ChangeProfilePicture() = 0;
+
   // Returns the domain that manages the device, if it is enterprise-enrolled.
   virtual const std::string GetEnterpriseDomain() const = 0;
 
