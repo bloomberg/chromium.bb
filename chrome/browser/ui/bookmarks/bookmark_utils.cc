@@ -220,6 +220,18 @@ bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection) {
   return iterator.has_next();
 }
 
+bool HasBookmarkURLsAllowedInIncognitoMode(
+    const std::vector<const BookmarkNode*>& selection,
+    content::BrowserContext* browser_context) {
+  OpenURLIterator iterator(selection);
+  while (iterator.has_next()) {
+    const GURL* url = iterator.NextURL();
+    if (IsURLAllowedInIncognito(*url, browser_context))
+      return true;
+  }
+  return false;
+}
+
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
                               string16* title) {

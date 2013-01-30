@@ -55,9 +55,15 @@ bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
 // Shows the bookmark all tabs dialog.
 void ShowBookmarkAllTabsDialog(Browser* browser);
 
-// Returns true if HasBookmarkURLs() can open at least one bookmark of type url
+// Returns true if OpenAll() can open at least one bookmark of type url
 // in |selection|.
 bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection);
+
+// Returns true if OpenAll() can open at least one bookmark of type url
+// in |selection| with incognito mode.
+bool HasBookmarkURLsAllowedInIncognitoMode(
+    const std::vector<const BookmarkNode*>& selection,
+    content::BrowserContext* browser_context);
 
 // Fills in the URL and title for a bookmark of |web_contents|.
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
