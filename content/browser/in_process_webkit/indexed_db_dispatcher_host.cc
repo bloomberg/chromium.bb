@@ -27,6 +27,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseException.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
@@ -40,6 +42,7 @@ using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBCursor;
 using WebKit::WebIDBDatabase;
+using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBMetadata;
@@ -652,14 +655,13 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
-  // TODO(dgrogan): Tell the page the transaction aborted because of quota.
-  // http://crbug.com/113118
   // TODO(alecflett) move the map to the parent DispatcherHost (parent_)
   if (parent_->Context()->WouldBeOverQuota(
           transaction_url_map_[host_transaction_id],
           transaction_size_map_[host_transaction_id])) {
-      database->abort(host_transaction_id);
-      return;
+    database->abort(host_transaction_id, WebIDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionQuotaError));
+    return;
   }
 
   database->commit(host_transaction_id);

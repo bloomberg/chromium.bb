@@ -88,6 +88,7 @@ function usageCallback(usage, quota) {
 }
 
 function onAbort() {
+  shouldBeEqualToString("event.target.error.name", "QuotaExceededError");
   done("Transaction aborted. Data added: " + displaySize(dataAdded));
   debug("There were " + successfulWrites + " successful writes");
 }
