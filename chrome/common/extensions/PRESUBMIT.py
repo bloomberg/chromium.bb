@@ -126,7 +126,8 @@ def _CheckLinks(input_api, output_api, results):
                    absolute_path])
       output = input_api.subprocess.check_output(
           args,
-          cwd=input_api.PresubmitLocalPath())
+          cwd=input_api.PresubmitLocalPath(),
+          universal_newlines=True)
       if output != contents:
         changes = ''
         for i, (line1, line2) in enumerate(
