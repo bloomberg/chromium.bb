@@ -4,9 +4,8 @@
 
 #include "ash/rotator/screen_rotation.h"
 
-#include "base/debug/trace_event.h"
 #include "base/time.h"
-#include "ui/compositor/layer_animation_delegate.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
@@ -31,18 +30,17 @@ base::TimeDelta GetTransitionDuration(int degrees) {
 
 }  // namespace
 
-ScreenRotation::ScreenRotation(int degrees,
-                               ui::LayerAnimationDelegate* delegate)
+ScreenRotation::ScreenRotation(int degrees, ui::Layer* layer)
     : ui::LayerAnimationElement(GetProperties(),
                                 GetTransitionDuration(degrees)),
       degrees_(degrees) {
-  InitTransform(delegate);
+  InitTransform(layer);
 }
 
 ScreenRotation::~ScreenRotation() {
 }
 
-void ScreenRotation::InitTransform(ui::LayerAnimationDelegate* delegate) {
+void ScreenRotation::InitTransform(ui::Layer* layer) {
   // No rotation required, use the identity transform.
   if (degrees_ == 0) {
     interpolated_transform_.reset(
@@ -50,9 +48,9 @@ void ScreenRotation::InitTransform(ui::LayerAnimationDelegate* delegate) {
     return;
   }
 
-  const gfx::Transform& current_transform =
-      delegate->GetTransformForAnimation();
-  const gfx::Rect& bounds = delegate->GetBoundsForAnimation();
+  // Use the target transform/bounds in case the layer is already animating.
+  const gfx::Transform& current_transform = layer->GetTargetTransform();
+  const gfx::Rect& bounds = layer->GetTargetBounds();
 
   gfx::Point old_pivot;
   gfx::Point new_pivot;
