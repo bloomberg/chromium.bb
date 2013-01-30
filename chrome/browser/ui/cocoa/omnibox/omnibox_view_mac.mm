@@ -25,7 +25,6 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/rect.h"
 
 using content::WebContents;

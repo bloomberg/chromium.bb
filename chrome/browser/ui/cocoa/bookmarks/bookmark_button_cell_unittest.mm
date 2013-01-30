@@ -15,7 +15,6 @@
 #include "testing/platform_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 
 // Simple class to remember how many mouseEntered: and mouseExited:
 // calls it gets.  Only used by BookmarkMouseForwarding but placed

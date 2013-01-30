@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 
 namespace {
 

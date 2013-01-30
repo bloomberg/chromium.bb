@@ -22,7 +22,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace chrome {

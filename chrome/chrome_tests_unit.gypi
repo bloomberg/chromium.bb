@@ -1298,7 +1298,6 @@
         'browser/ui/cocoa/menu_button_unittest.mm',
         'browser/ui/cocoa/menu_controller_unittest.mm',
         'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',
-        'browser/ui/cocoa/nsimage_cache_unittest.mm',
         'browser/ui/cocoa/nsmenuitem_additions_unittest.mm',
         'browser/ui/cocoa/nsview_additions_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',

@@ -405,8 +405,6 @@
         'gfx/insets_f.h',
         'gfx/interpolated_transform.cc',
         'gfx/interpolated_transform.h',
-        'gfx/mac/nsimage_cache.h',
-        'gfx/mac/nsimage_cache.mm',
         'gfx/mac/scoped_ns_disable_screen_updates.h',
         'gfx/native_widget_types.h',
         'gfx/pango_util.cc',

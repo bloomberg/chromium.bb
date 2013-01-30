@@ -33,7 +33,6 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 
 using extensions::Extension;
 using extensions::ExtensionList;

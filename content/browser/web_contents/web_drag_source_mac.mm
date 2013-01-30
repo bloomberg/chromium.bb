@@ -31,7 +31,6 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 #include "webkit/glue/webdropdata.h"
 
 using base::SysNSStringToUTF8;

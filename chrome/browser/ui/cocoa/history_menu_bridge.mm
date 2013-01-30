@@ -33,7 +33,6 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 
 namespace {
 

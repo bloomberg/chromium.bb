@@ -20,7 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile, NSMenu* menu)
     : menuIsValid_(false),

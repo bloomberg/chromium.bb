@@ -27,7 +27,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @interface AvatarButtonController (Private)

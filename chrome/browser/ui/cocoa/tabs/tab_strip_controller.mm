@@ -70,7 +70,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 
 using content::OpenURLParams;
 using content::Referrer;
