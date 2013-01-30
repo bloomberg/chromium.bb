@@ -378,6 +378,7 @@ extern const char kTabletUI[];
 
 #if defined(USE_ASH)
 extern const char kAshEnableTabScrubbing[];
+extern const char kOpenAsh[];
 #endif
 
 #if defined(OS_CHROMEOS)

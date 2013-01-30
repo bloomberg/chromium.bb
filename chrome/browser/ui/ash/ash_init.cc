@@ -42,7 +42,7 @@ bool ShouldOpenAshOnStartup() {
   return true;
 #endif
   // TODO(scottmg): http://crbug.com/133312, will need this for Win8 too.
-  return false;
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kOpenAsh);
 }
 
 #if defined(OS_CHROMEOS)

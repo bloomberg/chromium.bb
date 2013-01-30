@@ -20,6 +20,7 @@
 #if defined(USE_ASH)
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -179,8 +180,12 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
 #if !defined(OS_CHROMEOS)
-  if (chrome::GetHostDesktopTypeForBrowser(browser_view->browser()) ==
-      chrome::HOST_DESKTOP_TYPE_NATIVE)
+  if (
+#if defined(USE_ASH)
+      !chrome::ShouldOpenAshOnStartup() &&
+#endif
+      chrome::GetHostDesktopTypeForBrowser(browser_view->browser()) ==
+          chrome::HOST_DESKTOP_TYPE_NATIVE)
     return new DesktopBrowserFrameAura(browser_frame, browser_view);
 #endif
   return new BrowserFrameAura(browser_frame, browser_view);

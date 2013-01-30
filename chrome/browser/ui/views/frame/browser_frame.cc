@@ -31,6 +31,10 @@
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #endif
 
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_init.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
 
@@ -70,7 +74,7 @@ void BrowserFrame::InitBrowserFrame() {
   }
 #if defined(USE_ASH)
   if (browser_view_->browser()->host_desktop_type() ==
-      chrome::HOST_DESKTOP_TYPE_ASH) {
+      chrome::HOST_DESKTOP_TYPE_ASH || chrome::ShouldOpenAshOnStartup()) {
     params.context = ash::Shell::GetAllRootWindows()[0];
   }
 #endif

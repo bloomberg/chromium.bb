@@ -1386,6 +1386,7 @@ const char kTabletUI[]                      = "tablet-ui";
 
 #if defined(USE_ASH)
 const char kAshEnableTabScrubbing[]            = "ash-enable-tab-scrubbing";
+const char kOpenAsh[]                          = "open-ash";
 #endif
 
 #if defined(OS_CHROMEOS)
