@@ -15,24 +15,21 @@ namespace chrome {
 bool ShouldShowProjectingIndicator(content::WebContents* contents) {
   int render_process_id = contents->GetRenderProcessHost()->GetID();
   int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
-  scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
-  return capture_indicator->IsProcessCapturingTab(render_process_id,
-                                                  render_view_id);
+  return indicator->IsBeingMirrored(render_process_id, render_view_id);
 }
 
 bool ShouldShowRecordingIndicator(content::WebContents* contents) {
   int render_process_id = contents->GetRenderProcessHost()->GetID();
   int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
-  scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
   // The projecting indicator takes precedence over the recording indicator, but
   // if we are projecting and we don't handle the projecting case we want to
   // still show the recording indicator.
-  return capture_indicator->IsProcessCapturing(render_process_id,
-                                               render_view_id) ||
-         capture_indicator->IsProcessCapturingTab(render_process_id,
-                                                  render_view_id);
+  return indicator->IsCapturingUserMedia(render_process_id, render_view_id) ||
+         indicator->IsBeingMirrored(render_process_id, render_view_id);
 }
 
 }  // namespace chrome
