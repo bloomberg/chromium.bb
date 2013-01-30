@@ -669,6 +669,13 @@
               },
             },
           },
+          # TODO(wolenetz): crbug.com/171009 fix size_t to int truncations
+          # in win64.
+          'conditions': [
+            ['target_arch == "x64"', {
+              'msvs_disabled_warnings': [ 4267, ],
+            }],
+          ],
         }],
         ['proprietary_codecs==1 or branding=="Chrome"', {
           'sources': [
