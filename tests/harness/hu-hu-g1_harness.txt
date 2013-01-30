@@ -2143,6 +2143,10 @@
           "output": "pénzeszacskó"
         }, 
         {
+          "input": "⠏⠡⠝⠣⠑⠱⠅⠟⠣⠟⠅", 
+          "output": "pénzeszközök"
+        }, 
+        {
           "input": "⠏⠡⠝⠣⠑⠎⠜⠈⠅", 
           "output": "pénzeszsák"
         }, 
@@ -5381,6 +5385,10 @@
         {
           "input": "pénzeszacskó", 
           "output": "⠏⠡⠝⠣⠑⠎⠣⠁⠩⠅⠪"
+        }, 
+        {
+          "input": "pénzeszközök", 
+          "output": "⠏⠡⠝⠣⠑⠱⠅⠟⠣⠟⠅"
         }, 
         {
           "input": "pénzeszsák", 

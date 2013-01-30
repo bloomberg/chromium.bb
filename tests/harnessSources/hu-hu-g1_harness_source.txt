@@ -2670,6 +2670,11 @@ pénzeszacskó
 testmode: backtranslate
 pénzeszacskó
 
+pénzeszközök
+
+testmode: backtranslate
+pénzeszközök
+
 pénzeszsák
 
 testmode: backtranslate

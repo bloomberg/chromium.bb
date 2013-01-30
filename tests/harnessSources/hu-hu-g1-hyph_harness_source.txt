@@ -1612,6 +1612,9 @@ testmode: hyphenate
 pénzeszacskó
 
 testmode: hyphenate
+pénzeszközök
+
+testmode: hyphenate
 pénzeszsák
 
 testmode: hyphenate

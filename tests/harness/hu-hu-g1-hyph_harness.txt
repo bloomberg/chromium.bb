@@ -2156,6 +2156,10 @@
           "output": "pén-zeszacs-kó"
         }, 
         {
+          "input": "pénzeszközök", 
+          "output": "pénz-esz-kö-zök"
+        }, 
+        {
           "input": "pénzeszsák", 
           "output": "pén-zes-zsák"
         }, 
