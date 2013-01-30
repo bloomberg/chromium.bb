@@ -221,7 +221,8 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       request_popup_view_(false),
       tray_icon_visible_(false),
       login_(GetCurrentLoginStatus()),
-      previous_accessibility_state_(GetAccessibilityState()) {
+      previous_accessibility_state_(GetAccessibilityState()),
+      show_a11y_menu_on_lock_screen_(true) {
   DCHECK(Shell::GetInstance()->delegate());
   DCHECK(system_tray);
   Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
@@ -261,6 +262,8 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (login_ != user::LOGGED_IN_NONE &&
       !delegate->ShouldAlwaysShowAccessibilityMenu() &&
+      // On login screen, keeps the initial visivility of the menu.
+      (status != user::LOGGED_IN_LOCKED || !show_a11y_menu_on_lock_screen_) &&
       GetAccessibilityState() == A11Y_NONE)
     return NULL;
 
@@ -296,6 +299,10 @@ void TrayAccessibility::DestroyDetailedView() {
 }
 
 void TrayAccessibility::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+  // Stores the a11y feature status on just entering the lock screen.
+  if (login_ != user::LOGGED_IN_LOCKED && status == user::LOGGED_IN_LOCKED)
+    show_a11y_menu_on_lock_screen_ = (GetAccessibilityState() != A11Y_NONE);
+
   login_ = status;
   SetTrayIconVisible(GetInitialVisibility());
 }

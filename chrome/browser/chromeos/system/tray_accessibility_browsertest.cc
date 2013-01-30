@@ -336,6 +336,22 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
 }
 
+IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
+  // Enables high contrast mode.
+  accessibility::EnableHighContrast(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // Locks the screen.
+  SetLoginStatus(ash::user::LOGGED_IN_LOCKED);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // Disables high contrast mode.
+  accessibility::EnableHighContrast(false);
+
+  // Confirms that the menu is still visible.
+  EXPECT_TRUE(CanCreateMenuItem());
+}
+
 IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ClickDetailMenu) {
   // Confirms that the check item toggles the spoken feedback.
   EXPECT_FALSE(accessibility::IsSpokenFeedbackEnabled());

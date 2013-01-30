@@ -114,6 +114,9 @@ class TrayAccessibility : public TrayImageItem,
   // Bitmap of values from AccessibilityState enum.
   uint32 previous_accessibility_state_;
 
+  // A11y feature status on just entering the lock screen.
+  bool show_a11y_menu_on_lock_screen_;
+
   friend class chromeos::TrayAccessibilityTest;
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
 };
