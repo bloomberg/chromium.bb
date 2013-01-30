@@ -841,7 +841,7 @@ HistoryView.prototype.displayResults_ = function() {
     }
     this.resultDiv_.appendChild(searchResults);
   } else {
-    if (results.length == 0) {
+    if (results.length == 0 && this.model_.isQueryFinished_) {
       var noResults = document.createElement('div');
       noResults.textContent = loadTimeData.getString('noresults');
       this.resultDiv_.appendChild(noResults);
