@@ -25,6 +25,7 @@ const char kCryptohomeCheckKey[] = "CheckKey";
 const char kCryptohomeMigrateKey[] = "MigrateKey";
 const char kCryptohomeRemove[] = "Remove";
 const char kCryptohomeGetSystemSalt[] = "GetSystemSalt";
+const char kCryptohomeGetSanitizedUsername[] = "GetSanitizedUsername";
 const char kCryptohomeIsMounted[] = "IsMounted";
 const char kCryptohomeMount[] = "Mount";
 const char kCryptohomeMountGuest[] = "MountGuest";
