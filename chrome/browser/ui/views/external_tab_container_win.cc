@@ -268,7 +268,22 @@ void ExternalTabContainerWin::Uninitialize() {
 
     // Explicitly tell the RPH to shutdown, as doing so is the only thing that
     // cleans up certain resources like infobars (crbug.com/148398).
-    web_contents_->GetRenderProcessHost()->FastShutdownIfPossible();
+    // Tell the RPH to shutdown iff it has a page count of 1, meaning that
+    // there is only a single remaining render widget host (the one owned by
+    // web_contents_) using this RPH.
+    //
+    // Note that it is not possible to simply call FastShutdownIfPossible on the
+    // RPH here as that unfortunately ignores RPH's internal ref count, which
+    // leaves any other render widget hosts using the same RPH dangling.
+    //
+    // Note that in an ideal world, this would not be needed. The WebContents
+    // could just destroy itself, resulting in RPH::Release() eventually getting
+    // called and all would be neat and tidy. Sadly, the RPH only fires
+    // NOTIFICATION_RENDERER_PROCESS_CLOSED if one of the FastShutdownXXX
+    // methods is called and other components rely on that notification to avoid
+    // crashing on shutdown. Sad panda. Or maybe clinically depressed panda is
+    // more fitting.
+    web_contents_->GetRenderProcessHost()->FastShutdownForPageCount(1);
 
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
