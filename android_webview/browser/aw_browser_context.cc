@@ -38,11 +38,6 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   visitedlink_master_->Init();
 }
 
-void AwBrowserContext::AddVisitedURL(const GURL& url) {
-  DCHECK(visitedlink_master_);
-  visitedlink_master_->AddURL(url);
-}
-
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
   DCHECK(visitedlink_master_);
   visitedlink_master_->AddURLs(urls);

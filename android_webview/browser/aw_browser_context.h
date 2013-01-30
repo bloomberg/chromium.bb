@@ -51,7 +51,6 @@ class AwBrowserContext : public content::BrowserContext,
   void PreMainMessageLoopRun();
 
   // These methods map to Add methods in components::VisitedLinkMaster.
-  void AddVisitedURL(const GURL& url);
   void AddVisitedURLs(const std::vector<GURL>& urls);
 
   // content::BrowserContext implementation.

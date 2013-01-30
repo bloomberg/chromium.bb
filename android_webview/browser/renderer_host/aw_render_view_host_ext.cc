@@ -79,7 +79,7 @@ void AwRenderViewHostExt::DidNavigateAnyFrame(
   DCHECK(CalledOnValidThread());
 
   AwBrowserContext::FromWebContents(web_contents())
-      ->AddVisitedURL(params.base_url);
+      ->AddVisitedURLs(params.redirects);
 }
 
 bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
