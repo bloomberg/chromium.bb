@@ -255,3 +255,7 @@ BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
 IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
 METADATA_JSON = 'metadata.json'
+
+# Global configuration constants.
+CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')
+CHROME_SDK_BASHRC = os.path.join(CHROMITE_CONFIG_DIR, 'chrome_sdk.bashrc')

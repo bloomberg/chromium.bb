@@ -50,6 +50,14 @@ def ProcessGypDefines(defines):
   return _NameValueListToDict(shlex.split(defines))
 
 
+def DictToGypDefines(def_dict):
+  """Convert a dict to GYP_DEFINES format."""
+  def_list = []
+  for k, v in def_dict.iteritems():
+    def_list.append("%s='%s'" % (k, v))
+  return ' '.join(def_list)
+
+
 class Conditions(object):
   """Functions that return conditions used to construct Path objects.
 
