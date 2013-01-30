@@ -1559,16 +1559,17 @@ void PrintWebViewHelper::IncrementScriptedPrintCount() {
 
 void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   const bool is_modifiable = print_preview_context_.IsModifiable();
+  const bool has_selection = print_preview_context_.HasSelection();
   old_print_pages_params_.reset();
   switch (type) {
     case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {
       Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable,
-                                                false));
+                                                false, has_selection));
       break;
     }
     case PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE: {
       Send(new PrintHostMsg_RequestPrintPreview(routing_id(), is_modifiable,
-                                                true));
+                                                true, has_selection));
       break;
     }
     case PRINT_PREVIEW_SCRIPTED: {
@@ -1789,6 +1790,10 @@ bool PrintWebViewHelper::PrintPreviewContext::IsRendering() const {
 bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
   // The only kind of node we can print right now is a PDF node.
   return !PrintingNodeOrPdfFrame(source_frame_, source_node_);
+}
+
+bool PrintWebViewHelper::PrintPreviewContext::HasSelection() const {
+  return IsModifiable() && source_frame_->hasSelection();
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()

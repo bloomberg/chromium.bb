@@ -155,6 +155,8 @@ const char kNumberFormat[] = "numberFormat";
 // Name of a dictionary field specifying whether to print automatically in
 // kiosk mode. See http://crbug.com/31395.
 const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
+// Name of a dictionary field holding the state of selection for document.
+const char kDocumentHasSelection[] = "documentHasSelection";
 
 
 // Get the print job settings dictionary from |args|. The caller takes
@@ -768,8 +770,11 @@ void PrintPreviewHandler::SendInitialSettings(
                              print_preview_ui->initiator_tab_title());
   initial_settings.SetBoolean(printing::kSettingPreviewModifiable,
                               print_preview_ui->source_is_modifiable());
-  initial_settings.SetString(printing::kSettingPrinterName,
-                             default_printer);
+  initial_settings.SetString(printing::kSettingPrinterName, default_printer);
+  initial_settings.SetBoolean(kDocumentHasSelection,
+                              print_preview_ui->source_has_selection());
+  initial_settings.SetBoolean(printing::kSettingShouldPrintSelectionOnly,
+                              false);
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());

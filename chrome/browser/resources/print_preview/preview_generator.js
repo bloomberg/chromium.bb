@@ -162,6 +162,8 @@ cr.define('print_preview', function() {
       this.marginsType_ = this.printTicketStore_.getMarginsType();
       this.isCssBackgroundEnabled_ =
           this.printTicketStore_.isCssBackgroundEnabled();
+      this.isSelectionOnlyEnabled_ =
+          this.printTicketStore_.isSelectionOnlyEnabled();
       this.selectedDestination_ = this.destinationStore_.selectedDestination;
 
       this.inFlightRequestId_++;
@@ -267,6 +269,8 @@ cr.define('print_preview', function() {
                   ticketStore.getDocumentMargins())) ||
           (ticketStore.isCssBackgroundEnabled() !=
               this.isCssBackgroundEnabled_) ||
+          (ticketStore.isSelectionOnlyEnabled() !=
+              this.isSelectionOnlyEnabled_) ||
           (this.selectedDestination_ !=
               this.destinationStore_.selectedDestination);
     },

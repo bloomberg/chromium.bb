@@ -256,6 +256,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString(
       "optionBackgroundColorsAndImages",
       IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES);
+  source->AddLocalizedString("optionSelectionOnly",
+                             IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY);
   source->AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
   source->AddLocalizedString("defaultMargins",
                              IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
@@ -344,6 +346,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       id_(g_print_preview_ui_id_map.Get().Add(this)),
       handler_(NULL),
       source_is_modifiable_(true),
+      source_has_selection_(false),
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -398,6 +401,16 @@ void PrintPreviewUI::SetSourceIsModifiable(WebContents* print_preview_dialog,
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       print_preview_dialog->GetWebUI()->GetController());
   print_preview_ui->source_is_modifiable_ = source_is_modifiable;
+}
+
+// static
+void PrintPreviewUI::SetSourceHasSelection(WebContents* print_preview_dialog,
+                                           bool source_has_selection) {
+    if (!print_preview_dialog || !print_preview_dialog->GetWebUI())
+      return;
+    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+        print_preview_dialog->GetWebUI()->GetController());
+    print_preview_ui->source_has_selection_ = source_has_selection;
 }
 
 // static

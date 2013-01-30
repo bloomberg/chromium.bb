@@ -345,6 +345,8 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
   PrintPreviewUI::SetSourceIsModifiable(
       dialog_controller->GetPrintPreviewForContents(web_contents()),
       source_is_modifiable);
+  PrintPreviewUI::SetSourceHasSelection(
+      dialog_controller->GetPrintPreviewForTab(web_contents()), false);
 }
 
 void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {

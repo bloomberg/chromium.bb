@@ -58,9 +58,15 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   bool source_is_modifiable() { return source_is_modifiable_; }
 
+  bool source_has_selection() { return source_has_selection_; }
+
   // Set |source_is_modifiable_| for |print_preview_dialog|'s PrintPreviewUI.
   static void SetSourceIsModifiable(content::WebContents* print_preview_dialog,
                                     bool source_is_modifiable);
+
+  // Set |source_has_selection_| for |print_preview_dialog|'s PrintPreviewUI.
+  static void SetSourceHasSelection(content::WebContents* print_preview_dialog,
+                                    bool source_has_selection);
 
   // Determines whether to cancel a print preview request based on
   // |preview_ui_id| and |request_id|.
@@ -168,6 +174,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Indicates whether the source document can be modified.
   bool source_is_modifiable_;
+
+  // Indicates whether the source document has selection.
+  bool source_has_selection_;
 
   // Store the initiator tab title, used for populating the print preview dialog
   // title.

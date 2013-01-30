@@ -77,6 +77,20 @@ cr.define('print_preview', function() {
      * @private
      */
     this.cssBackgroundCheckbox_ = null;
+
+    /**
+     * Print selection only container element.
+     * @type {HTMLElement}
+     * @private
+     */
+    this.selectionOnlyContainer_ = null;
+
+    /**
+     * Print selection only checkbox.
+     * @type {HTMLInputElement}
+     * @private
+     */
+    this.selectionOnlyCheckbox_ = null;
   };
 
   OtherOptionsSettings.prototype = {
@@ -110,6 +124,10 @@ cr.define('print_preview', function() {
           'click',
           this.onCssBackgroundCheckboxClick_.bind(this));
       this.tracker.add(
+          this.selectionOnlyCheckbox_,
+          'click',
+          this.onSelectionOnlyCheckboxClick_.bind(this));
+      this.tracker.add(
           this.printTicketStore_,
           print_preview.PrintTicketStore.EventType.INITIALIZE,
           this.onPrintTicketStoreChange_.bind(this));
@@ -138,6 +156,8 @@ cr.define('print_preview', function() {
       this.duplexCheckbox_ = null;
       this.cssBackgroundContainer_ = null;
       this.cssBackgroundCheckbox_ = null;
+      this.selectionOnlyContainer_ = null;
+      this.selectionOnlyCheckbox_ = null;
     },
 
     /** @override */
@@ -158,6 +178,10 @@ cr.define('print_preview', function() {
           '.css-background-container');
       this.cssBackgroundCheckbox_ = this.cssBackgroundContainer_.querySelector(
           '.css-background-checkbox');
+      this.selectionOnlyContainer_ = this.getElement().querySelector(
+          '.selection-only-container');
+      this.selectionOnlyCheckbox_ = this.selectionOnlyContainer_.querySelector(
+          '.selection-only-checkbox');
     },
 
     /**
@@ -198,6 +222,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when the print selection only is clicked. Updates the
+     * print ticket store.
+     * @private
+     */
+    onSelectionOnlyCheckboxClick_: function() {
+      this.printTicketStore_.updateSelectionOnly(
+          this.selectionOnlyCheckbox_.checked);
+    },
+
+    /**
      * Called when the print ticket store has changed. Hides or shows the
      * settings.
      * @private
@@ -222,10 +256,16 @@ cr.define('print_preview', function() {
       this.cssBackgroundCheckbox_.checked =
           this.printTicketStore_.isCssBackgroundEnabled();
 
+      setIsVisible(this.selectionOnlyContainer_,
+                   this.printTicketStore_.hasSelectionOnlyCapability());
+      this.selectionOnlyCheckbox_.checked =
+          this.printTicketStore_.isSelectionOnlyEnabled();
+
       if (this.printTicketStore_.hasHeaderFooterCapability() ||
           this.printTicketStore_.hasFitToPageCapability() ||
           this.printTicketStore_.hasDuplexCapability() ||
-          this.printTicketStore_.hasCssBackgroundCapability()) {
+          this.printTicketStore_.hasCssBackgroundCapability() ||
+          this.printTicketStore_.hasSelectionOnlyCapability()) {
         fadeInOption(this.getElement());
       } else {
         fadeOutOption(this.getElement());

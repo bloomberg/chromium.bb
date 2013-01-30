@@ -107,8 +107,11 @@ PrintPreviewWebUITest.prototype = {
       1 /*unitType*/,
       true /*isDocumentModifiable*/,
       'title' /*documentTitle*/,
+      true /*documentHasSelection*/,
+      false /*selectionOnly*/,
       'FooDevice' /*systemDefaultDestinationId*/,
-      null /*serializedAppStateStr*/);
+      null /*serializedAppStateStr*/,
+      false /*documentHasSelection*/);
     this.localDestinationInfos_ = [
       { printerName: 'FooName', deviceName: 'FooDevice' },
       { printerName: 'BarName', deviceName: 'BarDevice' }

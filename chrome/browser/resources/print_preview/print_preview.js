@@ -481,7 +481,9 @@ cr.define('print_preview', function() {
           settings.documentTitle,
           settings.thousandsDelimeter,
           settings.decimalDelimeter,
-          settings.unitType);
+          settings.unitType,
+          settings.documentHasSelection,
+          settings.selectionOnly);
       this.destinationStore_.init(settings.systemDefaultDestinationId);
     },
 
@@ -898,6 +900,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/page_range.js"/>
 <include src="data/ticket_items/fit_to_page.js"/>
 <include src="data/ticket_items/css_background.js"/>
+<include src="data/ticket_items/selection_only.js"/>
 
 <include src="native_layer.js"/>
 <include src="print_preview_animations.js"/>

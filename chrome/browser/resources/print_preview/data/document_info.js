@@ -42,6 +42,12 @@ cr.define('print_preview', function() {
     this.hasCssMediaStyles = false;
 
     /**
+     * Whether the document has selected content.
+     * @type {boolean}
+     */
+    this.documentHasSelection = false;
+
+    /**
      * Margins of the document in points.
      * @type {print_preview.Margins}
      */

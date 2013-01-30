@@ -366,9 +366,10 @@ IPC_MESSAGE_CONTROL2(PrintHostMsg_TempFileForPrintingWritten,
 // for a PDF.
 // |webnode_only| is set to true if the document being printed is a specific
 // WebNode, and false if the document is a full WebFrame.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_RequestPrintPreview,
+IPC_MESSAGE_ROUTED3(PrintHostMsg_RequestPrintPreview,
                     bool /* is_modifiable */,
-                    bool /* webnode_only */)
+                    bool /* webnode_only */,
+                    bool /* has_selection */)
 
 // Notify the browser the number of pages in the print preview document.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,

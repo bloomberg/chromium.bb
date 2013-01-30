@@ -47,7 +47,9 @@ class PrintPreviewMessageHandler
   PrintPreviewUI* GetPrintPreviewUI();
 
   // Message handlers.
-  void OnRequestPrintPreview(bool source_is_modifiable, bool webnode_only);
+  void OnRequestPrintPreview(bool source_is_modifiable,
+                             bool webnode_only,
+                             bool source_has_selection);
   void OnDidGetDefaultPageLayout(
       const printing::PageSizeMargins& page_layout_in_points,
       const gfx::Rect& printable_area_in_points,

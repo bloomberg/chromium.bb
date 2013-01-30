@@ -384,6 +384,7 @@ class PrintWebViewHelper
     int GetNextPageNumber();
     bool IsRendering() const;
     bool IsModifiable() const;
+    bool HasSelection() const;
     bool IsLastPageOfPrintReadyMetafile() const;
     bool IsFinalPageRendered() const;
 
