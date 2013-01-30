@@ -22,6 +22,10 @@ public enum ModelType {
      */
     BOOKMARK("BOOKMARK"),
     /**
+     * A password entry.
+     */
+    PASSWORD("PASSWORD"),
+    /**
      * A typed_url folder or a typed_url object.
      */
     TYPED_URL("TYPED_URL"),
