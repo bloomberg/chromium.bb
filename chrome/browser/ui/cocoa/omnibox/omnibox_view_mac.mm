@@ -75,9 +75,6 @@ NSColor* HostTextColor() {
 NSColor* BaseTextColor() {
   return [NSColor darkGrayColor];
 }
-NSColor* SuggestTextColor() {
-  return [NSColor grayColor];
-}
 NSColor* SecureSchemeColor() {
   return ColorWithRGBBytes(0x07, 0x95, 0x00);
 }
@@ -126,6 +123,11 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(resource_id).ToNSImage();
+}
+
+// static
+NSColor* OmniboxViewMac::SuggestTextColor() {
+  return [NSColor colorWithCalibratedWhite:0.0 alpha:0.5];
 }
 
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,

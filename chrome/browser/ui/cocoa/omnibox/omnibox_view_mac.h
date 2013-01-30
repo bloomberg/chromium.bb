@@ -99,6 +99,9 @@ class OmniboxViewMac : public OmniboxView,
   // Otherwise return the PNG image from the resource bundle.
   static NSImage* ImageForResource(int resource_id);
 
+  // Color used to draw suggest text.
+  static NSColor* SuggestTextColor();
+
   AutocompleteTextField* field() const { return field_; }
 
  private:
