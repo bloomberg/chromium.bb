@@ -155,8 +155,8 @@ Chrome supports. -->
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Google Chrome Frame
         </message>
-        <message name="IDS_PRODUCT_APP_HOST_NAME" desc="The Chrome App Host application name">
-          Google Chrome App Host
+        <message name="IDS_PRODUCT_APP_LAUNCHER_NAME" desc="The Chrome App Launcher application name">
+          Google Chrome App Launcher
         </message>
         <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
           Google Chrome Binaries
@@ -403,7 +403,7 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
         This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.
       </message>
-      <message name="IDS_INSTALL_HIGHER_VERSION_APP_HOST" desc="Error displayed when higher version of the Chrome App Host already exists.">
+      <message name="IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER" desc="Error displayed when higher version of the Chrome App Launcher already exists.">
         This computer already has a more recent version of the Google Chrome components. Please use a more recent installer.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION_CF" desc="Error displayed when higher version of Chrome Frame already exists">
@@ -594,10 +594,10 @@ Google Chrome is unable to recover your settings.
         </message>
       </if>
       <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME" desc="Name for the flag to show the Chrome app list shortcut in the taskbar.">
-        Show Chrome Apps Launcher.
+        Show Chrome App Launcher.
       </message>
       <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION" desc="Description for the flag to show the Chrome app list shortcut in the taskbar.">
-        Show a shortcut to the Chrome Apps Launcher in the Windows TaskBar.
+        Show a shortcut to the Chrome App Launcher in the Windows TaskBar.
       </message>
 
       <!-- Obsolete System info bar -->
@@ -870,10 +870,10 @@ For Google Chrome, processes used to display diagnostics information (such as th
 
       <!-- App list -->
       <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it.">
-        Chrome Apps Launcher
+        Chrome App Launcher
       </message>
       <message name="IDS_APP_LIST_OPT_IN_TEXT" desc="Text to appear in the prompt to use the Chrome app list.">
-        Use the Chrome Apps Launcher to launch your apps.
+        Use the Chrome App Launcher to launch your apps.
       </message>
     </messages>
   </release>

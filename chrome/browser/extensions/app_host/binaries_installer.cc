@@ -54,7 +54,7 @@ HRESULT GetAppHostApValue(IGoogleUpdate3* update3,
 
   hr = app->get_ap(ap_value);
   if (FAILED(hr))
-    LOG(ERROR) << "Failed to get the App Host AP value.";
+    LOG(ERROR) << "Failed to get the App Launcher AP value.";
   return hr;
 }
 

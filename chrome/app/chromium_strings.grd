@@ -232,8 +232,8 @@ be available for now. -->
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Chromium Frame
         </message>
-        <message name="IDS_PRODUCT_APP_HOST_NAME" desc="The Chrome App Host application name">
-          Chromium App Host
+        <message name="IDS_PRODUCT_APP_LAUNCHER_NAME" desc="The Chrome App Launcher application name">
+          Chromium App Launcher
         </message>
         <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
           Chromium Binaries
@@ -480,7 +480,7 @@ Chromium is unable to recover your settings.
       <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
         This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
       </message>
-      <message name="IDS_INSTALL_HIGHER_VERSION_APP_HOST" desc="Error displayed when higher version of the Chromium App Host already exists.">
+      <message name="IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER" desc="Error displayed when higher version of the Chromium App Launcher already exists.">
         This computer already has a more recent version of the Chromium components. Please use a more recent installer.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION_CF" desc="Error displayed when higher version already exists.">
@@ -670,10 +670,10 @@ Chromium is unable to recover your settings.
         </message>
       </if>
       <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME" desc="Name for the flag to show the Chromium app list shortcut in the taskbar.">
-        Show Chromium Apps Launcher.
+        Show Chromium App Launcher.
       </message>
       <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION" desc="Description for the flag to show the Chromium app list shortcut in the taskbar.">
-        Show a shortcut to the Chromium Apps Launcher in the Windows TaskBar.
+        Show a shortcut to the Chromium App Launcher in the Windows TaskBar.
       </message>
 
       <!-- Obsolete System info bar -->
@@ -946,10 +946,10 @@ For Chromium, processes used to display diagnostics information (such as this "a
 
       <!-- App list -->
       <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chromium App List to appear in the taskbar and in any shortcuts to it.">
-        Chromium Apps Launcher
+        Chromium App Launcher
       </message>
       <message name="IDS_APP_LIST_OPT_IN_TEXT" desc="Text to appear in the prompt to use the Chrome app list.">
-        Use the Chromium Apps Launcher to launch your apps.
+        Use the Chromium App Launcher to launch your apps.
       </message>
     </messages>
   </release>

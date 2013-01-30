@@ -483,7 +483,7 @@ void InstallationValidator::ValidateBinaries(
   if (app_host_state != NULL) {
     if (!app_host_state->is_multi_install()) {
       *is_valid = false;
-      LOG(ERROR) << "Chrome App Host is installed in non-multi mode.";
+      LOG(ERROR) << "Chrome App Launcher is installed in non-multi mode.";
     }
     if (!channel.IsAppHost() && !channel.IsAppLauncher()) {
       *is_valid = false;
@@ -520,7 +520,7 @@ void InstallationValidator::ValidateBinaries(
   if (cf_state != NULL && app_host_state == NULL && chrome_state == NULL &&
       !cf_state->is_multi_install()) {
     *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries are present without Chrome nor App Host "
+    LOG(ERROR) << "Chrome Binaries are present without Chrome nor App Launcher "
                << "yet Chrome Frame is not multi-install.";
   }
 
@@ -823,11 +823,12 @@ bool InstallationValidator::ValidateInstallationTypeForState(
                     chrome_app_host_rules, &rock_on);
     *type = static_cast<InstallationType>(*type | ProductBits::CHROME_APP_HOST);
     if (system_level) {
-      LOG(ERROR) << "Chrome App Host must not be installed at system level.";
+      LOG(ERROR) <<
+          "Chrome App Launcher must not be installed at system level.";
       rock_on = false;
     }
     if (!product_state->is_multi_install()) {
-      LOG(ERROR) << "Chrome App Host must always be multi-install.";
+      LOG(ERROR) << "Chrome App Launcher must always be multi-install.";
       rock_on = false;
     }
   }

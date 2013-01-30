@@ -76,7 +76,7 @@ void QuickEnableDelegate::OnObjectSignaled(HANDLE object) {
   if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION) {
     callback_.Run(true);
   } else {
-    LOG(ERROR) << "App Host install failed, status = " << status
+    LOG(ERROR) << "App Launcher install failed, status = " << status
                << ", exit code = " << exit_code;
     callback_.Run(false);
   }

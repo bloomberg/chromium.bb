@@ -385,7 +385,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
             original_state.GetProductState(
                 true,  // system
                 BrowserDistribution::CHROME_BINARIES)) {
-          VLOG(1) << "Installing/updating Application Host without binaries.";
+          VLOG(1) << "Installing/updating App Launcher without binaries.";
         } else {
           // Somehow the binaries were present when the quick-enable app host
           // command was run, but now they appear to be missing.
@@ -395,7 +395,8 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
                   BrowserDistribution::CHROME_BINARIES)));
           binaries_to_add->SetOption(installer::kOptionMultiInstall, true);
           binaries = installer_state->AddProduct(&binaries_to_add);
-          VLOG(1) << "Adding binaries for pre-existing App Host installation.";
+          VLOG(1) <<
+              "Adding binaries for pre-existing App Launcher installation.";
         }
       }
 
@@ -489,7 +490,7 @@ bool CheckAppHostPreconditions(const InstallationState& original_state,
   if (installer_state->FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
 
     if (!installer_state->is_multi_install()) {
-      LOG(DFATAL) << "Application Host requires multi install";
+      LOG(DFATAL) << "App Launcher requires multi install";
       *status = installer::APP_HOST_REQUIRES_MULTI_INSTALL;
       // No message string since there is nothing a user can do.
       installer_state->WriteInstallerResult(*status, 0, NULL);
@@ -497,7 +498,7 @@ bool CheckAppHostPreconditions(const InstallationState& original_state,
     }
 
     if (installer_state->system_install()) {
-      LOG(DFATAL) << "Application Host may only be installed at user-level.";
+      LOG(DFATAL) << "App Launcher may only be installed at user-level.";
       *status = installer::APP_HOST_REQUIRES_USER_LEVEL;
       // No message string since there is nothing a user can do.
       installer_state->WriteInstallerResult(*status, 0, NULL);
@@ -782,7 +783,7 @@ installer::InstallStatus InstallProductsHelper(
             message_id = IDS_INSTALL_HIGHER_VERSION_CB_CF_BASE;
             break;
           default:
-            message_id = IDS_INSTALL_HIGHER_VERSION_APP_HOST_BASE;
+            message_id = IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER_BASE;
             break;
         }
 
@@ -1572,6 +1573,24 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
   return breakpad;
 }
 
+// We renamed "Google Chrome App Host" to "Google Chrome App Launcher",
+// and need to do the same in the Windows\CurrentVersion\Uninstall registry key.
+// The addition / removal of the new key is handled elsewhere.
+// It remains to remove the old key where appropriate.
+// TODO(huangs): Remove this in early March.
+void RemoveDeprecatedAppHostUninstallEntry(
+    const InstallerState& installer_state) {
+  const Product* app_host =
+      installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST);
+  if (app_host) {
+    const string16 kDeprecatedUninstallRegPath(L"Software\\Microsoft\\Windows\\"
+        L"CurrentVersion\\Uninstall\\Google Chrome App Host");
+    InstallUtil::DeleteRegistryKey(installer_state.root_key(),
+                                   kDeprecatedUninstallRegPath);
+  }
+}
+
+
 }  // namespace
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
@@ -1674,6 +1693,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     install_status =
         InstallProducts(original_state, cmd_line, prefs, &installer_state);
   }
+
+  // TODO(huangs): Remove this in early March.
+  if (!InstallUtil::GetInstallReturnCode(install_status))
+    RemoveDeprecatedAppHostUninstallEntry(installer_state);
+
 
   // Validate that the machine is now in a good state following the operation.
   // TODO(grt): change this to log at DFATAL once we're convinced that the
