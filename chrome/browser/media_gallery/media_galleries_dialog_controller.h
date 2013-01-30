@@ -114,7 +114,7 @@ class MediaGalleriesDialogController
   void SavePermissions();
 
   // Update the model and view when a device is attached or detached.
-  void UpdateGalleryOnDeviceEvent(const std::string& device_id, bool attached);
+  void UpdateGalleriesOnDeviceEvent(const std::string& device_id);
 
   // The web contents from which the request originated.
   content::WebContents* web_contents_;

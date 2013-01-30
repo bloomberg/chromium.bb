@@ -208,12 +208,12 @@ void MediaGalleriesDialogController::FileSelected(const FilePath& path,
 
 void MediaGalleriesDialogController::OnRemovableStorageAttached(
     const RemovableStorageNotifications::StorageInfo& info) {
-  UpdateGalleryOnDeviceEvent(info.device_id, true /* attached */);
+  UpdateGalleriesOnDeviceEvent(info.device_id);
 }
 
 void MediaGalleriesDialogController::OnRemovableStorageDetached(
     const RemovableStorageNotifications::StorageInfo& info) {
-  UpdateGalleryOnDeviceEvent(info.device_id, false /* detached */);
+  UpdateGalleriesOnDeviceEvent(info.device_id);
 }
 
 void MediaGalleriesDialogController::InitializePermissions() {
@@ -258,29 +258,19 @@ void MediaGalleriesDialogController::SavePermissions() {
   }
 }
 
-void MediaGalleriesDialogController::UpdateGalleryOnDeviceEvent(
-    const std::string& device_id, bool attached) {
-  GalleryPermission* gallery = NULL;
+void MediaGalleriesDialogController::UpdateGalleriesOnDeviceEvent(
+    const std::string& device_id) {
   for (KnownGalleryPermissions::iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
-    if (iter->second.pref_info.device_id == device_id) {
-      gallery = &iter->second;
-      break;
-    }
+    if (iter->second.pref_info.device_id == device_id)
+      dialog_->UpdateGallery(&iter->second.pref_info, iter->second.allowed);
   }
 
-  if (!gallery) {
-    for (NewGalleryPermissions::iterator iter = new_galleries_.begin();
-         iter != new_galleries_.end(); ++iter) {
-      if (iter->pref_info.device_id == device_id) {
-        gallery = &(*iter);
-        break;
-      }
-    }
+  for (NewGalleryPermissions::iterator iter = new_galleries_.begin();
+       iter != new_galleries_.end(); ++iter) {
+    if (iter->pref_info.device_id == device_id)
+      dialog_->UpdateGallery(&iter->pref_info, iter->allowed);
   }
-
-  if (gallery)
-    dialog_->UpdateGallery(&gallery->pref_info, gallery->allowed);
 }
 
 // MediaGalleries dialog -------------------------------------------------------
