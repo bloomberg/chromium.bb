@@ -719,21 +719,6 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
       current_wallpaper_path_ = wallpaper_path;
     loaded_wallpapers_++;
     StartLoad(email, info, update_wallpaper, wallpaper_path);
-  } else {
-    // For custom wallpapers, we have increment |loaded_wallpapers_| in
-    // SetUserWallpaper(). We should not increment it again here.
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    wallpaper_path = user_data_dir.Append(info.file);
-    base::WorkerPool::PostTask(
-        FROM_HERE,
-        base::Bind(&WallpaperManager::ValidateAndLoadWallpaper,
-                   base::Unretained(this),
-                   email,
-                   info,
-                   update_wallpaper,
-                   wallpaper_path),
-        false);
   }
 }
 
@@ -799,17 +784,13 @@ void WallpaperManager::GetCustomWallpaperInternal(
     }
   }
 
-  WallpaperInfo new_info = {
-      file_name,
-      info.layout,
-      info.type,
-      info.date
-  };
-
+  FilePath valid_path = wallpaper_path.DirName().Append(file_name);
+  if (!file_util::PathExists(valid_path))
+    valid_path = valid_path.AddExtension(".png");
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WallpaperManager::LoadWallpaper,
-                 base::Unretained(this), email, new_info, update_wallpaper));
+      base::Bind(&WallpaperManager::StartLoad, base::Unretained(this), email,
+                 info, update_wallpaper, valid_path));
 }
 
 void WallpaperManager::OnWallpaperDecoded(const std::string& email,
@@ -916,24 +897,6 @@ void WallpaperManager::SystemResumed(const base::TimeDelta& sleep_duration) {
 
 void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {
   RestartTimer();
-}
-
-void WallpaperManager::ValidateAndLoadWallpaper(
-    const std::string& email,
-    const WallpaperInfo& info,
-    bool update_wallpaper,
-    const FilePath& wallpaper_path) {
-  FilePath valid_path(wallpaper_path);
-  if (!file_util::PathExists(wallpaper_path))
-    valid_path = wallpaper_path.AddExtension(".png");
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&WallpaperManager::StartLoad,
-                                     base::Unretained(this),
-                                     email,
-                                     info,
-                                     update_wallpaper,
-                                     valid_path));
 }
 
 }  // chromeos

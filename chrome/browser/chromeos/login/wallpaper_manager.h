@@ -206,7 +206,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
   // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
-  // loaded wallpaper. Must run on FILE thread.
+  // loaded wallpaper. Must run on wallpaper sequenced worker thread.
   void GetCustomWallpaperInternal(const std::string& email,
                                   const WallpaperInfo& info,
                                   const FilePath& wallpaper_path,
@@ -223,8 +223,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                           bool update_wallpaper,
                           const UserImage& wallpaper);
 
-  // Generates thumbnail of custom wallpaper on FILE thread. If |persistent| is
-  // true, saves original custom image and resized images to disk.
+  // Generates thumbnail of custom wallpaper on wallpaper sequenced worker
+  // thread. If |persistent| is true, saves original custom image and resized
+  // images to disk.
   void ProcessCustomWallpaper(const std::string& email,
                               bool persistent,
                               const WallpaperInfo& info,
@@ -256,18 +257,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
-
-  // Validates |wallpaper path| and loads corresponding wallpaper. If
-  // |wallpaper_path| is not valid, appends png extension to it before loading.
-  // Old wallpaper names have a png extension name. However all new wallpapers
-  // are saved in jpeg format. We have removed file extension to avoid
-  // confusion in this CL (https://codereview.chromium.org/10950014).
-  // For wallpapers saved before it, we still need to append png extension to
-  // file name.
-  void ValidateAndLoadWallpaper(const std::string& email,
-                                const WallpaperInfo& info,
-                                bool update_wallpaper,
-                                const FilePath& wallpaper_path);
 
   // True if wallpaper manager is not observering other objects.
   bool no_observers_;
