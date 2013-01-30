@@ -107,7 +107,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       const std::string& new_name,
       const GetResourceEntryCallback& callback) OVERRIDE;
-  virtual void RenameResource(const GURL& edit_url,
+  virtual void RenameResource(const std::string& resource_id,
                               const std::string& new_name,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void AddResourceToDirectory(

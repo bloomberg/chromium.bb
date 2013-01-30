@@ -130,7 +130,7 @@ void MockDriveService::CopyHostedDocumentStub(
 }
 
 void MockDriveService::RenameResourceStub(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& new_name,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

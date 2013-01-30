@@ -289,8 +289,9 @@ class RenameResourceOperation : public EntryActionOperation {
   RenameResourceOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
-      const GURL& edit_url,
+      const std::string& resource_id,
       const std::string& new_name);
   virtual ~RenameResourceOperation();
 
@@ -303,7 +304,8 @@ class RenameResourceOperation : public EntryActionOperation {
                               std::string* upload_content) OVERRIDE;
 
  private:
-  const GURL edit_url_;
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string resource_id_;
   const std::string new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);

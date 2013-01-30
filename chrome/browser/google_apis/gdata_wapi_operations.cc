@@ -376,11 +376,13 @@ bool CopyHostedDocumentOperation::GetContentData(
 RenameResourceOperation::RenameResourceOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
+    const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& new_name)
     : EntryActionOperation(registry, url_request_context_getter, callback),
-      edit_url_(edit_url),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
       new_name_(new_name) {
   DCHECK(!callback.is_null());
 }
@@ -399,7 +401,7 @@ RenameResourceOperation::GetExtraRequestHeaders() const {
 }
 
 GURL RenameResourceOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
+  return url_generator_.GenerateEditUrl(resource_id_);
 }
 
 bool RenameResourceOperation::GetContentData(std::string* upload_content_type,

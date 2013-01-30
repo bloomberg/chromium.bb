@@ -413,7 +413,7 @@ void GDataWapiService::CopyHostedDocument(
 }
 
 void GDataWapiService::RenameResource(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& new_name,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -422,8 +422,9 @@ void GDataWapiService::RenameResource(
   runner_->StartOperationWithRetry(
       new RenameResourceOperation(operation_registry(),
                                   url_request_context_getter_,
+                                  url_generator_,
                                   callback,
-                                  edit_url,
+                                  resource_id,
                                   new_name));
 }
 

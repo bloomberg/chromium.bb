@@ -172,14 +172,14 @@ void DriveScheduler::CopyHostedDocument(
 }
 
 void DriveScheduler::RenameResource(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& new_name,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_RENAME_RESOURCE));
-  new_job->edit_url = edit_url;
+  new_job->resource_id = resource_id;
   new_job->new_name = new_name;
   new_job->entry_action_callback = callback;
 
@@ -363,7 +363,7 @@ void DriveScheduler::DoJobLoop() {
 
     case TYPE_RENAME_RESOURCE: {
       drive_service_->RenameResource(
-          queue_entry->edit_url,
+          queue_entry->resource_id,
           queue_entry->new_name,
           base::Bind(&DriveScheduler::OnEntryActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),

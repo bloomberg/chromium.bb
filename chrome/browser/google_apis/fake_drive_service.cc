@@ -549,7 +549,7 @@ void FakeDriveService::CopyHostedDocument(
 }
 
 void FakeDriveService::RenameResource(
-    const GURL& edit_url,
+    const std::string& resource_id,
     const std::string& new_name,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -561,7 +561,7 @@ void FakeDriveService::RenameResource(
     return;
   }
 
-  base::DictionaryValue* entry = FindEntryByEditUrl(edit_url);
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (entry) {
     entry->SetString("title.$t", new_name);
     AddNewChangestamp(entry);

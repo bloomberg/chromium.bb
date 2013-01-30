@@ -61,7 +61,7 @@ class MockDriveService : public DriveServiceInterface {
           const std::string& new_name,
           const GetResourceEntryCallback& callback));
   MOCK_METHOD3(RenameResource,
-      void(const GURL& edit_url,
+      void(const std::string& resource_id,
           const std::string& new_name,
           const EntryActionCallback& callback));
   MOCK_METHOD3(AddResourceToDirectory,
@@ -140,7 +140,7 @@ class MockDriveService : public DriveServiceInterface {
                               const GetResourceEntryCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
-  void RenameResourceStub(const GURL& edit_url,
+  void RenameResourceStub(const std::string& resource_id,
                           const std::string& new_name,
                           const EntryActionCallback& callback);
 

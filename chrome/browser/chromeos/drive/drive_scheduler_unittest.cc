@@ -227,7 +227,7 @@ TEST_F(DriveSchedulerTest, RenameResource) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->RenameResource(
-      GURL("https://file1_link_self/file:2_file_resource_id"),
+      "file:2_file_resource_id",
       "New Name",
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,

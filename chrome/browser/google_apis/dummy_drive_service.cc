@@ -75,7 +75,7 @@ void DummyDriveService::CopyHostedDocument(
     const std::string& new_name,
     const GetResourceEntryCallback& callback) {}
 
-void DummyDriveService::RenameResource(const GURL& edit_url,
+void DummyDriveService::RenameResource(const std::string& resource_id,
                                        const std::string& new_name,
                                        const EntryActionCallback& callback) {}
 

@@ -120,7 +120,7 @@ class DriveScheduler
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a RenameResource operation to the queue.
-  void RenameResource(const GURL& edit_url,
+  void RenameResource(const std::string& resource_id,
                       const std::string& new_name,
                       const google_apis::EntryActionCallback& callback);
 
@@ -162,12 +162,12 @@ class DriveScheduler
     // Used by:
     //   TYPE_GET_RESOURCE_ENTRY
     //   TYPE_DELETE_RESOURCE
+    //   TYPE_RENAME_RESOURCE
     std::string resource_id;
 
     // URL to use to modify the resource.
     // Used by:
-    //   TYPE_RENAME_RESOURCE
-    //   TYPE_ADD_NEW_DIRECTORY
+    //   TYPE_ADD_RESOURCE_TO_DIRECTORY
     GURL edit_url;
 
     // URL to access the contents of the operation's target.

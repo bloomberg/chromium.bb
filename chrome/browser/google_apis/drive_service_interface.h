@@ -202,11 +202,11 @@ class DriveServiceInterface {
       const std::string& new_name,
       const GetResourceEntryCallback& callback) = 0;
 
-  // Renames a document or collection identified by its |edit_url|
+  // Renames a document or collection identified by its |resource_id|
   // to the UTF-8 encoded |new_name|. Upon completion,
   // invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void RenameResource(const GURL& edit_url,
+  virtual void RenameResource(const std::string& resource_id,
                               const std::string& new_name,
                               const EntryActionCallback& callback) = 0;
 
