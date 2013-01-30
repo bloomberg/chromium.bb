@@ -42,6 +42,11 @@
                 '../testing/android/native_test.gyp:native_test_native_code',
               ]
             }],
+            ['OS=="win" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         }
       ],
