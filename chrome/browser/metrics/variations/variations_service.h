@@ -20,6 +20,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/metrics/variations/variations_registry_syncer_win.h"
+#endif
+
 class PrefService;
 class PrefServiceSimple;
 
@@ -42,6 +46,11 @@ class VariationsService
   // implementation for details on the period. Must be called after
   // |CreateTrialsFromSeed|.
   void StartRepeatedVariationsSeedFetch();
+
+#if defined(OS_WIN)
+  // Starts syncing Google Update Variation IDs with the registry.
+  void StartGoogleUpdateRegistrySync();
+#endif
 
   // Exposed for testing.
   void SetCreateTrialsFromSeedCalledForTesting(bool called);
@@ -173,6 +182,11 @@ class VariationsService
   // The start time of the last seed request. This is used to measure the
   // latency of seed requests. Initially zero.
   base::TimeTicks last_request_started_time_;
+
+#if defined(OS_WIN)
+  // Helper that handles synchronizing Variations with the Registry.
+  VariationsRegistrySyncer registry_syncer_;
+#endif
 };
 
 }  // namespace chrome_variations

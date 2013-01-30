@@ -1101,6 +1101,8 @@
         'browser/metrics/variations/resource_request_allowed_notifier.h',
         'browser/metrics/variations/variations_http_header_provider.cc',
         'browser/metrics/variations/variations_http_header_provider.h',
+        'browser/metrics/variations/variations_registry_syncer_win.cc',
+        'browser/metrics/variations/variations_registry_syncer_win.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
         'browser/native_window_notification_source.h',

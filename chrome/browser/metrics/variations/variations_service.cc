@@ -187,6 +187,12 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
                this, &VariationsService::FetchVariationsSeed);
 }
 
+#if defined(OS_WIN)
+void VariationsService::StartGoogleUpdateRegistrySync() {
+  registry_syncer_.RequestRegistrySync();
+}
+#endif
+
 void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
   create_trials_from_seed_called_ = called;
 }

@@ -65,6 +65,10 @@ void SetupSingleUniformityFieldTrial(
   chrome_variations::AssociateGoogleVariationID(
       chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, kDefaultGroupName,
       trial_base_id);
+  chrome_variations::AssociateGoogleVariationID(
+      chrome_variations::GOOGLE_UPDATE_SERVICE, trial_name, kDefaultGroupName,
+      trial_base_id);
+
   // Loop starts with group 1 because the field trial automatically creates a
   // default group, which would be group 0.
   for (int group_number = 1; group_number < num_trial_groups; ++group_number) {
@@ -73,6 +77,10 @@ void SetupSingleUniformityFieldTrial(
     trial->AppendGroup(group_name, kProbabilityPerGroup);
     chrome_variations::AssociateGoogleVariationID(
         chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name,
+        static_cast<chrome_variations::VariationID>(trial_base_id +
+                                                    group_number));
+    chrome_variations::AssociateGoogleVariationID(
+        chrome_variations::GOOGLE_UPDATE_SERVICE, trial_name, group_name,
         static_cast<chrome_variations::VariationID>(trial_base_id +
                                                     group_number));
   }

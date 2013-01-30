@@ -87,6 +87,8 @@ enum VariationID {
   // Some values reserved for unit and integration tests.
   TEST_VALUE_A = 3300200,
   TEST_VALUE_B = 3300201,
+  TEST_VALUE_C = 3300202,
+  TEST_VALUE_D = 3300203,
 
   // USABLE IDs BEGIN HERE.
   //
