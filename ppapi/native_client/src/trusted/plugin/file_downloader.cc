@@ -46,13 +46,14 @@ bool FileDownloader::OpenStream(
     const pp::CompletionCallback& callback,
     StreamCallbackSource* stream_callback_source) {
   data_stream_callback_source_ = stream_callback_source;
-  return Open(url, DOWNLOAD_STREAM, callback, NULL);
+  return Open(url, DOWNLOAD_STREAM, callback, true, NULL);
 }
 
 bool FileDownloader::Open(
     const nacl::string& url,
     DownloadMode mode,
     const pp::CompletionCallback& callback,
+    bool record_progress,
     PP_URLLoaderTrusted_StatusCallback progress_callback) {
   PLUGIN_PRINTF(("FileDownloader::Open (url=%s)\n", url.c_str()));
   if (callback.pp_completion_callback().func == NULL ||
@@ -98,6 +99,8 @@ bool FileDownloader::Open(
       }
     }
 
+    url_request.SetRecordDownloadProgress(record_progress);
+
     if (url_loader_trusted_interface_ != NULL) {
       if (grant_universal_access) {
         // TODO(sehr,jvoung): See if we can remove this -- currently
@@ -106,7 +109,6 @@ bool FileDownloader::Open(
             url_loader_.pp_resource());
       }
       if (progress_callback != NULL) {
-        url_request.SetRecordDownloadProgress(true);
         url_loader_trusted_interface_->RegisterStatusCallback(
             url_loader_.pp_resource(), progress_callback);
       }
@@ -347,6 +349,13 @@ void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
       onread_callback.Run(pp_error);
     }
   }
+}
+
+bool FileDownloader::GetDownloadProgress(
+    int64_t* bytes_received,
+    int64_t* total_bytes_to_be_received) const {
+  return url_loader_.GetDownloadProgress(bytes_received,
+                                         total_bytes_to_be_received);
 }
 
 void FileDownloader::FileOpenNotify(int32_t pp_error) {

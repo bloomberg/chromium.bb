@@ -134,6 +134,13 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // (BitcodeStreamGotData) passes it to llc over SRPC.
   StreamCallback GetCallback();
 
+  // Return a callback that should be notified when |bytes_compiled| bytes
+  // have been compiled.
+  pp::CompletionCallback GetCompileProgressCallback(int64_t bytes_compiled);
+
+  // Get the last known load progress.
+  void GetCurrentProgress(int64_t* bytes_loaded, int64_t* bytes_total);
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
 
@@ -158,6 +165,8 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   void CachedFileDidOpen(int32_t pp_error);
   // Invoked when a pexe data chunk arrives (when using streaming translation)
   void BitcodeStreamGotData(int32_t pp_error, FileStreamData data);
+  // Invoked when a pexe data chunk is compiled.
+  void BitcodeGotCompiled(int32_t pp_error, int64_t bytes_compiled);
   // Invoked when the pexe download finishes (using streaming translation)
   void BitcodeStreamDidFinish(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
@@ -243,7 +252,9 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // State for timing and size information for UMA stats.
   int64_t pnacl_init_time_;
-  size_t pexe_size_;  // Count as we stream -- will converge to pexe size.
+  int64_t pexe_size_;  // Count as we stream -- will converge to pexe size.
+  int64_t pexe_bytes_compiled_;  // Count as we compile.
+  int64_t expected_pexe_size_;   // Expected download total (-1 if unknown).
 
   // The helper thread used to do translations via SRPC.
   // Keep this last in declaration order to ensure the other variables

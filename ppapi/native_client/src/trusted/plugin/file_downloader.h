@@ -62,11 +62,15 @@ class FileDownloader {
   // Returns true when callback is scheduled to be called on success or failure.
   // Returns false if callback is NULL, Initialize() has not been called or if
   // the PPB_FileIO_Trusted interface is not available.
-  // If |progress_callback| is not NULL, it will be invoked for every progress
-  // update received by the loader.
+  // If |record_progress| is true, then download progress will be recorded,
+  // and can be polled through GetDownloadProgress().
+  // If |progress_callback| is not NULL and |record_progress| is true,
+  // then the callback will be invoked for every progress update received
+  // by the loader.
   bool Open(const nacl::string& url,
             DownloadMode mode,
             const pp::CompletionCallback& callback,
+            bool record_progress,
             PP_URLLoaderTrusted_StatusCallback progress_callback);
 
   // Same as Open, but used for streaming the file data directly to the
@@ -98,6 +102,19 @@ class FileDownloader {
 
   // Returns the PP_Resource of the active URL loader, or kInvalidResource.
   PP_Resource url_loader() const { return url_loader_.pp_resource(); }
+
+  // GetDownloadProgress() returns the current download progress, which is
+  // meaningful after Open() has been called. Progress only refers to the
+  // response body and does not include the headers.
+  //
+  // This data is only available if the |record_progress| true in the
+  // Open() call.  If progress is being recorded, then |bytes_received|
+  // will be set to the number of bytes received thus far,
+  // and |total_bytes_to_be_received| will be set to the total number
+  // of bytes to be received.  The total bytes to be received may be unknown,
+  // in which case |total_bytes_to_be_received| will be set to -1.
+  bool GetDownloadProgress(int64_t* bytes_received,
+                           int64_t* total_bytes_to_be_received) const;
 
   // Returns the buffer used for DOWNLOAD_TO_BUFFER mode.
   const std::deque<char>& buffer() const { return buffer_; }

@@ -28,6 +28,7 @@ namespace plugin {
 class Manifest;
 class NaClSubprocess;
 class Plugin;
+class PnaclCoordinator;
 class PnaclResources;
 class TempFile;
 
@@ -52,6 +53,7 @@ class PnaclTranslateThread {
                     TempFile* nexe_file,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
+                    PnaclCoordinator* coordinator,
                     Plugin* plugin);
 
   // Kill the llc and/or ld subprocesses. This happens by closing the command
@@ -122,6 +124,7 @@ class PnaclTranslateThread {
   TempFile* nexe_file_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
+  PnaclCoordinator* coordinator_;
   Plugin* plugin_;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);

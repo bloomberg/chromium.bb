@@ -47,6 +47,26 @@ function EventStateMachine() {
     this_.currentState = event_type;
     this_.stateHistogram[this_.currentState]++;
   }
+
+  // True if an event with lengthComputable is ever triggered.
+  this.stateSawLengthComputable = false;
+  // The last event.total seen from an event with lengthComputable being true.
+  this.stateProgressTotal = -1;
+  // The last event.loaded seen from an event with lengthComputable being true.
+  this.stateProgressPrev = -1;
+  // Function to record progress stats.
+  this.recordProgress = function(event) {
+    // Can either record progress from a progress event with lengthComputable,
+    // or from a loadend event.
+    if (event.type == 'progress' && event.lengthComputable) {
+      this.stateSawLengthComputable = true;
+      this.stateProgressTotal = event.total;
+      this.stateProgressPrev = event.loaded;
+    } else if (event.type == 'loadend' && event.lengthComputable) {
+      this.stateProgressTotal = event.total;
+      this.stateProgressPrev = event.loaded;
+    }
+  }
 }
 
 // event_machines is a collection of EventStateMachines, one for each element
@@ -78,6 +98,8 @@ var setListeners = function(body_element) {
     var event_machine = lookupEventMachine(element_id);
     // Update the state of the machine.
     event_machine.transitionTo(e.type);
+    // Record progress information if possible.
+    event_machine.recordProgress(e);
   }
   // Add the listener for all of the ProgressEvent event types.
   body_element.addEventListener('loadstart', eventListener, true);
@@ -111,6 +133,24 @@ function testProgressEventStateMachine(tester,
     // There should be at least one progress event when the manifest file is
     // loaded and another when the .nexe is loaded.
     assert(eventMachine.stateHistogram['progress'] >= progressMinCount);
+  });
+  tester.addTest('progress_samples_' + embedId, function() {
+    console.log('stateSawLengthComputable ' +
+        eventMachine.stateSawLengthComputable);
+    console.log('stateProgressPrev ' +
+        eventMachine.stateProgressPrev);
+    console.log('stateProgressTotal ' +
+        eventMachine.stateProgressTotal);
+
+    assert(eventMachine.stateSawLengthComputable);
+    // Progress events are not necessarily monotonic.  For glibc, each DSO
+    // will trigger a different series of progress events with different totals.
+    // For glibc, the final loadend progress event may even correspond to
+    // the very first load event, instead of corresponding to the last...
+    // So, all we check is that the latest values make some sense.
+    assert(eventMachine.stateProgressPrev > 0);
+    assert(eventMachine.stateProgressTotal > 0);
+    assert(eventMachine.stateProgressPrev <= eventMachine.stateProgressTotal);
   });
   tester.addTest('error_count_' + embedId, function() {
     // Check that the right number of 'error' events were dispatched.

@@ -975,12 +975,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
     return;
   }
 
-  // TODO(dschuff,jvoung): We could have a UMA stat for total time taken
-  // to translate.  We may also want a breakdown (how long does it take
-  // to start up the LLC nexe process, LD nexe process, etc.).
-
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
-  EnqueueProgressEvent(kProgressEventProgress);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(pnacl_coordinator_.get()->ReleaseTranslatedFD());
   ErrorInfo error_info;
@@ -1001,9 +996,10 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
   NaClLog(4, "Entered BitcodeDidTranslateContinuation\n");
   UNREFERENCED_PARAMETER(pp_error);
   if (was_successful) {
-    ReportLoadSuccess(LENGTH_IS_NOT_COMPUTABLE,
-                      kUnknownBytes,
-                      kUnknownBytes);
+    int64_t loaded;
+    int64_t total;
+    pnacl_coordinator_->GetCurrentProgress(&loaded, &total);
+    ReportLoadSuccess(LENGTH_IS_COMPUTABLE, loaded, total);
   } else {
     ReportLoadError(error_info);
   }
@@ -1216,6 +1212,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
           nexe_downloader_.Open(program_url,
                                 DOWNLOAD_TO_FILE,
                                 open_callback,
+                                true,
                                 &UpdateDownloadProgress));
       return;
     }
@@ -1259,6 +1256,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_BUFFER,
                                 open_callback,
+                                false,
                                 NULL));
   } else {
     pp::CompletionCallback open_callback =
@@ -1267,6 +1265,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_FILE,
                                 open_callback,
+                                false,
                                 NULL));
   }
 }
@@ -1347,6 +1346,7 @@ bool Plugin::StreamAsFile(const nacl::string& url,
   return downloader->Open(url,
                           DOWNLOAD_TO_FILE,
                           open_callback,
+                          true,
                           &UpdateDownloadProgress);
 }
 

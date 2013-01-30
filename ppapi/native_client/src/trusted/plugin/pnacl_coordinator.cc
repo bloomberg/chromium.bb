@@ -345,7 +345,9 @@ PnaclCoordinator::PnaclCoordinator(
     error_already_reported_(false),
     off_the_record_(false),
     pnacl_init_time_(0),
-    pexe_size_(0) {
+    pexe_size_(0),
+    pexe_bytes_compiled_(0),
+    expected_pexe_size_(-1) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
@@ -691,7 +693,6 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
   } else {
     translated_fd_.reset(temp_nexe_file_->release_read_wrapper());
   }
-  plugin_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
   translate_notify_callback_.Run(pp_error);
 }
 
@@ -885,6 +886,37 @@ StreamCallback PnaclCoordinator::GetCallback() {
       &PnaclCoordinator::BitcodeStreamGotData);
 }
 
+void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
+                                          int64_t bytes_compiled) {
+  // If we don't know the expected total yet, ask.
+  pexe_bytes_compiled_ += bytes_compiled;
+  if (expected_pexe_size_ == -1) {
+    int64_t amount_downloaded; // dummy variable.
+    streaming_downloader_->GetDownloadProgress(&amount_downloaded,
+                                               &expected_pexe_size_);
+  }
+  bool length_computable = (expected_pexe_size_ != -1);
+  plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+                                pexe_url_,
+                                (length_computable ?
+                                 plugin::Plugin::LENGTH_IS_COMPUTABLE :
+                                 plugin::Plugin::LENGTH_IS_NOT_COMPUTABLE),
+                                pexe_bytes_compiled_,
+                                expected_pexe_size_);
+}
+
+pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
+    int64_t bytes_compiled) {
+  return callback_factory_.NewCallback(&PnaclCoordinator::BitcodeGotCompiled,
+                                       bytes_compiled);
+}
+
+void PnaclCoordinator::GetCurrentProgress(int64_t* bytes_loaded,
+                                          int64_t* bytes_total) {
+  *bytes_loaded = pexe_bytes_compiled_;
+  *bytes_total = expected_pexe_size_;
+}
+
 void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ObjectFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
@@ -918,6 +950,7 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
                                   temp_nexe_file_.get(),
                                   &error_info_,
                                   resources_.get(),
+                                  this,
                                   plugin_);
 }
 
