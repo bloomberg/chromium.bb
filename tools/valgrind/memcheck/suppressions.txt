@@ -4075,8 +4075,8 @@
    Memcheck:Uninitialized
    ...
    fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
-   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+   fun:_ZN4skia15ImageOperations11ResizeBasicE*
+   fun:_ZN4skia15ImageOperations6ResizeE*
 }
 {
    bug_106183a
