@@ -160,6 +160,8 @@ class NonModalTransient : public views::WidgetDelegateView {
   virtual void DeleteDelegate() OVERRIDE {
     if (GetWidget() == non_modal_transient_)
       non_modal_transient_ = NULL;
+
+    delete this;
   }
 
  private:
