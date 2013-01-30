@@ -93,6 +93,10 @@ fun_hist:*unibrow*
 
 # Histogram has tiny functions that can be called frequently
 fun_hist:*Histogram*
+# Recursively ignore Histrogram::Add and friends, see http://crbug.com/62694.
+fun_r:*4base*9Histogram*3Add*
+fun_r:*4base*16HistogramSamples*3Add*
+fun_r:*4base*13HistogramBase*7AddTime*
 
 # TODO(timurrrr): SKIA - needs separate testing?
 # SKIA unittest is single-threaded...
