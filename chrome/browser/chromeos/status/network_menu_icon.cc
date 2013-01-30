@@ -768,6 +768,16 @@ void NetworkMenuIcon::SetIconAndText() {
 
   // If no connected network, check if we are initializing Cellular.
   if (mode_ != DROPDOWN_MODE && cros->cellular_initializing()) {
+    initialize_state_time_ = base::Time::Now();
+    SetConnectingIconAndText();
+    return;
+  }
+  // There can be a delay between leaving the Initializing state and when a
+  // Cellular device shows up, so keep showing the initializing animation
+  // for a few extra seconds to avoid flashing the disconnect icon.
+  const int kInitializingDelaySeconds = 1;
+  base::TimeDelta dtime = base::Time::Now() - initialize_state_time_;
+  if (dtime.InSeconds() < kInitializingDelaySeconds) {
     SetConnectingIconAndText();
     return;
   }

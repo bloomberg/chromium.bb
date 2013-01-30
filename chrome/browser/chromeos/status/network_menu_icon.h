@@ -34,6 +34,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/throb_animation.h"
@@ -173,6 +174,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   const Network* connecting_network_;
   // The tooltip or display text associated with the menu icon.
   string16 text_;
+  // Timer to eliminate noise while initializing cellular.
+  base::Time initialize_state_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuIcon);
 };
