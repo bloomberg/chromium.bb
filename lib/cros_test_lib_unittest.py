@@ -4,12 +4,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import functools
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
+
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import partial_mock
@@ -55,43 +55,6 @@ class VerifyTarballTest(cros_test_lib.MockTempDirTestCase):
     self._MockTarList(tar_contents)
     self.assertRaises(AssertionError, cros_test_lib.VerifyTarball, self.TARBALL,
                       dir_struct)
-
-
-class SafeRunTest(cros_test_lib.TestCase):
-  """Tests SafeRunTest functionality."""
-
-  def _raise_exception(self, e):
-    raise e
-
-  def testRunsSafely(self):
-    """Verify that we are robust to exceptions."""
-    def append_val(value):
-      call_list.append(value)
-
-    call_list = []
-    f_list = [functools.partial(append_val, 1),
-              functools.partial(self._raise_exception,
-                                Exception('testRunsSafely exception.')),
-              functools.partial(append_val, 2)]
-    self.assertRaises(Exception, cros_test_lib.SafeRun, f_list)
-    self.assertEquals(call_list, [1, 2])
-
-  def testRaisesFirstException(self):
-    """Verify we raise the first exception when multiple are encountered."""
-    class E1(Exception):
-      pass
-
-    class E2(Exception):
-      pass
-
-    f_list = [functools.partial(self._raise_exception, e) for e in [E1, E2]]
-    self.assertRaises(E1, cros_test_lib.SafeRun, f_list)
-
-  def testCombinedRaise(self):
-    """Raises a RuntimeError with exceptions combined."""
-    f_list = [functools.partial(self._raise_exception, Exception())] * 3
-    self.assertRaises(RuntimeError, cros_test_lib.SafeRun, f_list,
-                      combine_exceptions=True)
 
 
 class MockTestCaseTest(cros_test_lib.TestCase):
