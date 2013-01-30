@@ -155,7 +155,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   size_t packet_size_bytes_;
 
   // Length of the audio endpoint buffer.
-  size_t endpoint_buffer_size_frames_;
+  uint32 endpoint_buffer_size_frames_;
 
   // Contains the unique name of the selected endpoint device.
   // Note that AudioManagerBase::kDefaultDeviceId represents the default

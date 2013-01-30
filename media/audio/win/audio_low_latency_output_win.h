@@ -246,7 +246,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   float packet_size_ms_;
 
   // Length of the audio endpoint buffer.
-  size_t endpoint_buffer_size_frames_;
+  uint32 endpoint_buffer_size_frames_;
 
   // Defines the role that the system has assigned to an audio endpoint device.
   ERole device_role_;
