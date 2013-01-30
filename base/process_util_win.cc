@@ -160,10 +160,19 @@ void RouteStdioToConsole() {
   // log-lines in output.
   enum { kOutputBufferSize = 64 * 1024 };
 
-  if (freopen("CONOUT$", "w", stdout))
+  if (freopen("CONOUT$", "w", stdout)) {
     setvbuf(stdout, NULL, _IOLBF, kOutputBufferSize);
-  if (freopen("CONOUT$", "w", stderr))
+    // Overwrite FD 1 for the benefit of any code that uses this FD
+    // directly.  This is safe because the CRT allocates FDs 0, 1 and
+    // 2 at startup even if they don't have valid underlying Windows
+    // handles.  This means we won't be overwriting an FD created by
+    // _open() after startup.
+    _dup2(_fileno(stdout), 1);
+  }
+  if (freopen("CONOUT$", "w", stderr)) {
     setvbuf(stderr, NULL, _IOLBF, kOutputBufferSize);
+    _dup2(_fileno(stderr), 2);
+  }
 
   // Fix all cout, wcout, cin, wcin, cerr, wcerr, clog and wclog.
   std::ios::sync_with_stdio();
