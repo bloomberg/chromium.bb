@@ -76,10 +76,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private static final int IS_LONG_PRESS = 1;
     private static final int IS_LONG_TAP = 2;
 
-    // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
-    // should be allowed to upload per 100ms.
-    private final int mMaxNumUploadTiles;
-
     // Personality of the ContentView.
     private final int mPersonality;
 
@@ -325,30 +321,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         WeakContext.initializeWeakContext(context);
         mPersonality = personality;
         HeapStatsLogger.init(mContext.getApplicationContext());
-
-        // We should set this constant based on the GPU performance. As it doesn't exist in the
-        // framework yet, we use the memory class as an indicator. Here are some good values that
-        // we determined via manual experimentation:
-        //
-        // Device            Screen size        Memory class   Tiles per 100ms
-        // ================= ================== ============== =====================
-        // Nexus S            480 x  800         128            9 (3 rows portrait)
-        // Galaxy Nexus       720 x 1280         256           12 (3 rows portrait)
-        // Nexus 7           1280 x  800         384           18 (3 rows landscape)
-        // Nexus 10          2560 x 1600         512           44 (4 rows landscape)
-        //
-        // Here is a spreadsheet with the data, plus a curve fit:
-        // https://docs.google.com/a/chromium.org/spreadsheet/pub?key=0AlNYk7HM2CgQdG1vUWRVWkU3ODRTc1B2SVF3ZTJBUkE&output=html
-        // That gives us tiles-per-100ms of 8, 13, 22, 37 for the devices listed above.
-        // Not too bad, and it should behave reasonably sensibly for unknown devices.
-        // If you want to tweak these constants, please update the spreadsheet appropriately.
-        //
-        // The curve is y = b * m^x, with coefficients as follows:
-        double b = 4.70009671080384;
-        double m = 1.00404437546897;
-        int memoryClass = ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
-                .getLargeMemoryClass();
-        mMaxNumUploadTiles = (int) Math.round(b * Math.pow(m, memoryClass));
     }
 
     /**
@@ -1117,8 +1089,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 return true;
             case ContentViewGestureHandler.GESTURE_FLING_START:
                 nativeFlingStart(mNativeContentViewCore, timeMs, x, y,
-                        clampFlingVelocityX(b.getInt(ContentViewGestureHandler.VELOCITY_X, 0)),
-                        clampFlingVelocityY(b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0)));
+                        b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
+                        b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0));
                 return true;
             case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
                 nativeFlingCancel(mNativeContentViewCore, timeMs);
@@ -1668,32 +1640,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     void selectPopupMenuItems(int[] indices) {
         if (mNativeContentViewCore != 0) {
             nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
-        }
-    }
-
-    /*
-     * To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
-     * allowed to be uploaded per 100ms. Calculation is limited to one direction. We assume the
-     * tile size is 256x256. The precise distance / velocity should be calculated based on the
-     * logic in Scroller.java. As it is almost linear for the first 100ms, we use a simple math.
-     */
-    private int clampFlingVelocityX(int velocity) {
-        int cols = mMaxNumUploadTiles / (int) (Math.ceil((float) getHeight() / 256) + 1);
-        int maxVelocity = cols > 0 ? cols * 2560 : 1000;
-        if (Math.abs(velocity) > maxVelocity) {
-            return velocity > 0 ? maxVelocity : -maxVelocity;
-        } else {
-            return velocity;
-        }
-    }
-
-    private int clampFlingVelocityY(int velocity) {
-        int rows = mMaxNumUploadTiles / (int) (Math.ceil((float) getWidth() / 256) + 1);
-        int maxVelocity = rows > 0 ? rows * 2560 : 1000;
-        if (Math.abs(velocity) > maxVelocity) {
-            return velocity > 0 ? maxVelocity : -maxVelocity;
-        } else {
-            return velocity;
         }
     }
 
