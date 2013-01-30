@@ -96,7 +96,7 @@ else:
 
 # Add custom CFLAGS
 # This must be done here, since PNaClGetNNaClEnv and
-# PNaclChangeFrontend wipe CFLAGS.
+# PNaClChangeFrontend wipe CFLAGS.
 for e in envlist:
   e.Append(CFLAGS = extra_cflags)
 

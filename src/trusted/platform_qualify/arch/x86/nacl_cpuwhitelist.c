@@ -23,7 +23,7 @@ static int idcmp(const void *s1, const void *s2) {
 }
 
 /* NOTE: The blacklist must be in alphabetical order. */
-static const char* const kNaclCpuBlacklist[] = {
+static const char* const kNaClCpuBlacklist[] = {
 /*          1         2        */
 /* 12345678901234567890 + '\0' */
   " FakeEntry0000000000",
@@ -33,7 +33,7 @@ static const char* const kNaclCpuBlacklist[] = {
 };
 
 /* NOTE: The whitelist must be in alphabetical order. */
-static const char* const kNaclCpuWhitelist[] = {
+static const char* const kNaClCpuWhitelist[] = {
 /*          1         2        */
 /* 12345678901234567890 + '\0' */
   " FakeEntry0000000000",
@@ -69,12 +69,12 @@ static int VerifyCpuList(const char* const cpulist[], int n) {
 
 
 int NaCl_VerifyBlacklist(void) {
-  return VerifyCpuList(kNaclCpuBlacklist, NACL_ARRAY_SIZE(kNaclCpuBlacklist));
+  return VerifyCpuList(kNaClCpuBlacklist, NACL_ARRAY_SIZE(kNaClCpuBlacklist));
 }
 
 
 int NaCl_VerifyWhitelist(void) {
-  return VerifyCpuList(kNaclCpuWhitelist, NACL_ARRAY_SIZE(kNaclCpuWhitelist));
+  return VerifyCpuList(kNaClCpuWhitelist, NACL_ARRAY_SIZE(kNaClCpuWhitelist));
 }
 
 
@@ -86,15 +86,15 @@ static int IsCpuInList(const char *myid, const char* const cpulist[], int n) {
 /* for testing */
 int NaCl_CPUIsWhitelisted(const char *myid) {
   return IsCpuInList(myid,
-                     kNaclCpuWhitelist,
-                     NACL_ARRAY_SIZE(kNaclCpuWhitelist));
+                     kNaClCpuWhitelist,
+                     NACL_ARRAY_SIZE(kNaClCpuWhitelist));
 }
 
 /* for testing */
 int NaCl_CPUIsBlacklisted(const char *myid) {
   return IsCpuInList(myid,
-                     kNaclCpuBlacklist,
-                     NACL_ARRAY_SIZE(kNaclCpuBlacklist));
+                     kNaClCpuBlacklist,
+                     NACL_ARRAY_SIZE(kNaClCpuBlacklist));
 }
 
 
@@ -104,8 +104,8 @@ int NaCl_ThisCPUIsWhitelisted(void) {
   NaClCPUDataGet(&data);
   myid = GetCPUIDString(&data);
   return IsCpuInList(myid,
-                     kNaclCpuWhitelist,
-                     NACL_ARRAY_SIZE(kNaclCpuWhitelist));
+                     kNaClCpuWhitelist,
+                     NACL_ARRAY_SIZE(kNaClCpuWhitelist));
 }
 
 int NaCl_ThisCPUIsBlacklisted(void) {
@@ -114,6 +114,6 @@ int NaCl_ThisCPUIsBlacklisted(void) {
   NaClCPUDataGet(&data);
   myid = GetCPUIDString(&data);
   return IsCpuInList(myid,
-                     kNaclCpuBlacklist,
-                     NACL_ARRAY_SIZE(kNaclCpuBlacklist));
+                     kNaClCpuBlacklist,
+                     NACL_ARRAY_SIZE(kNaClCpuBlacklist));
 }

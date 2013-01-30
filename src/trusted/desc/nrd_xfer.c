@@ -232,7 +232,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
   hdr_buf = NULL;
 
   /*
-   * NOTE: type punning w/ NaclImcMsgIoVec and NaClIOVec.
+   * NOTE: type punning w/ NaClImcMsgIoVec and NaClIOVec.
    * This breaks ansi type aliasing rules and hence we may use
    * soemthing like '-fno-strict-aliasing'
    */

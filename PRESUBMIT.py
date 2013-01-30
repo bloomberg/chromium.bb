@@ -27,7 +27,7 @@ EXCLUDE_PROJECT_CHECKS_DIRS = [
     'src/trusted/validator_ragel/gen',
     ]
 
-def NaclTopDir():
+def NaClTopDir():
   # git-cl and gcl run PRESUBMIT.py with the current directory set to
   # the native_client directory (which may have a different basename
   # in a standalone checkout).
@@ -62,15 +62,15 @@ def CheckChangeOnUpload(input_api, output_api):
   # it can be used by the commit queue.
   old_sys_path = list(sys.path)
   try:
-    sys.path.append(os.path.join(NaclTopDir(), 'tools'))
-    sys.path.append(os.path.join(NaclTopDir(), 'build'))
+    sys.path.append(os.path.join(NaClTopDir(), 'tools'))
+    sys.path.append(os.path.join(NaClTopDir(), 'build'))
     import code_hygiene
   finally:
     sys.path = old_sys_path
     del old_sys_path
 
   affected_files = input_api.AffectedFiles(include_deletes=False)
-  exclude_dirs = [ NaclTopDir() + '/' + x + '/'
+  exclude_dirs = [ NaClTopDir() + '/' + x + '/'
                    for x in EXCLUDE_PROJECT_CHECKS_DIRS ]
   for filename in affected_files:
     filename = filename.AbsoluteLocalPath()

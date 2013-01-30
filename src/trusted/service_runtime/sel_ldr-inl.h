@@ -108,7 +108,7 @@ static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
   if (sysaddr < nap->mem_start ||
       nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) <= sysaddr) {
     NaClLog(LOG_FATAL,
-            ("NaclSysToUser: sysaddr 0x%08"NACL_PRIxPTR","
+            ("NaClSysToUser: sysaddr 0x%08"NACL_PRIxPTR","
              " mem_start 0x%08"NACL_PRIxPTR","
              " addr space %"NACL_PRId8" bits\n"),
             sysaddr, nap->mem_start, nap->addr_bits);

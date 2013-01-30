@@ -88,7 +88,7 @@ BAD_CRXS = {
   'cfd62adf6790eed0520da2deb2246fc02e70c57e': MODULE_DIDNT_START,
   'd1f33ad38f9f6e78150d30c2103b5c77a9f0adcd': MODULE_DIDNT_START,
   'd51802b12a503f7fdfbec60d96e27a5ffa09d002': MODULE_DIDNT_START,
-  # Nacl module crash
+  # NaCl module crash
   'ab0692192976dc6693212582364c6f23b6551d1a': MODULE_CRASHED,
   'b458cd57c8b4e6c313b18f370fad59779f573afc': MODULE_CRASHED,
   # Could not load extension.

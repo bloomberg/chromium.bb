@@ -21,8 +21,10 @@ void NaClTimeInit(void);
 
 void NaClTimeFini(void);
 
-/* Allow use of low resolution timer to update time of day. This
-must be called before NaCLTimeInit. */
+/*
+ * Allow use of low resolution timer to update time of day. This
+ * must be called before NaClTimeInit().
+ */
 void NaClAllowLowResolutionTimeOfDay(void);
 
 uint64_t NaClTimerResolutionNanoseconds(void);

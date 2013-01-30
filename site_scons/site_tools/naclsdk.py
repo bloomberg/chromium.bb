@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Nacl SDK tool SCons."""
+"""NaCl SDK tool SCons."""
 
 import __builtin__
 import re
@@ -82,7 +82,7 @@ def _PlatformSubdirs(env):
   return name
 
 
-def _GetNaclSdkRoot(env, sdk_mode, psdk_mode):
+def _GetNaClSdkRoot(env, sdk_mode, psdk_mode):
   """Return the path to the sdk.
 
   Args:
@@ -771,7 +771,7 @@ def generate(env):
       env[com] = "${TEMPFILE('%s')}" % env[com]
 
   # Get root of the SDK.
-  root = _GetNaclSdkRoot(env, sdk_mode, psdk_mode)
+  root = _GetNaClSdkRoot(env, sdk_mode, psdk_mode)
 
   # Determine where to get the SDK from.
   if sdk_mode == 'manual':
@@ -789,7 +789,7 @@ def generate(env):
       if env.Bit('target_x86'):
         temp_env = env.Clone()
         temp_env.ClearBits('bitcode')
-        temp_root = _GetNaclSdkRoot(temp_env, sdk_mode, psdk_mode)
+        temp_root = _GetNaClSdkRoot(temp_env, sdk_mode, psdk_mode)
         _SetEnvForNativeSdk(temp_env, temp_root)
         env.Replace(GDB=temp_env['GDB'])
     else:

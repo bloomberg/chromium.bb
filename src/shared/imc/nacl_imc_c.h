@@ -6,7 +6,7 @@
 
 
 /*
- * Nacl inter-module communication primitives.
+ * NaCl inter-module communication primitives.
  * Primitive NaCl socket and shared memory functions which provide a portable
  * inter-module communication mechanism between processes on Windows, Mac OS X,
  * and Unix variants. On Unix variants, these functions are simple wrapper

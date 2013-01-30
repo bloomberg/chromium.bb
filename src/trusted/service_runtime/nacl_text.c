@@ -569,7 +569,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
  * Caller must hold nap->dynamic_load_mutex.
  * Returns boolean, true on success
  */
-static INLINE int NaclTextMapWrapper(struct NaClApp *nap,
+static INLINE int NaClTextMapWrapper(struct NaClApp *nap,
                                     uint32_t dest,
                                     uint32_t size,
                                     uint8_t  **mapped_addr) {
@@ -603,7 +603,7 @@ static INLINE int NaclTextMapWrapper(struct NaClApp *nap,
  * Clear the mmap cache if multiple pages were mapped.
  * Caller must hold nap->dynamic_load_mutex.
  */
-static INLINE void NaclTextMapClearCacheIfNeeded(struct NaClApp *nap,
+static INLINE void NaClTextMapClearCacheIfNeeded(struct NaClApp *nap,
                                                  uint32_t dest,
                                                  uint32_t size) {
   uint32_t                    shm_offset;
@@ -702,7 +702,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
     goto cleanup_unlock;
   }
 
-  if (!NaclTextMapWrapper(nap, dest, size, &mapped_addr)) {
+  if (!NaClTextMapWrapper(nap, dest, size, &mapped_addr)) {
     retval = -NACL_ABI_ENOMEM;
     goto cleanup_unlock;
   }
@@ -719,7 +719,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
 
   retval = 0;
 
-  NaclTextMapClearCacheIfNeeded(nap, dest, size);
+  NaClTextMapClearCacheIfNeeded(nap, dest, size);
 
  cleanup_unlock:
   NaClXMutexUnlock(&nap->dynamic_load_mutex);
@@ -855,7 +855,7 @@ int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
     goto cleanup_unlock;
   }
 
-  if (!NaclTextMapWrapper(nap, dest, size, &mapped_addr)) {
+  if (!NaClTextMapWrapper(nap, dest, size, &mapped_addr)) {
     retval = -NACL_ABI_ENOMEM;
     goto cleanup_unlock;
   }
@@ -868,7 +868,7 @@ int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
   }
   retval = 0;
 
-  NaclTextMapClearCacheIfNeeded(nap, dest, size);
+  NaClTextMapClearCacheIfNeeded(nap, dest, size);
 
  cleanup_unlock:
   NaClXMutexUnlock(&nap->dynamic_load_mutex);
@@ -936,7 +936,7 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
       goto cleanup_unlock;
     }
 
-    if (!NaclTextMapWrapper(nap, dest, size, &mapped_addr)) {
+    if (!NaClTextMapWrapper(nap, dest, size, &mapped_addr)) {
       retval = -NACL_ABI_ENOMEM;
       goto cleanup_unlock;
     }
@@ -952,7 +952,7 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
      */
     NaClFlushCacheForDoublyMappedCode(mapped_addr, (uint8_t *) dest_addr, size);
 
-    NaclTextMapClearCacheIfNeeded(nap, dest, size);
+    NaClTextMapClearCacheIfNeeded(nap, dest, size);
 
     /* increment and record the generation deletion was requested */
     region->delete_generation = ++nap->dynamic_delete_generation;

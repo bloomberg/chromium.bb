@@ -369,7 +369,7 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
                                 int32_t               *stack_flag) {
   uint32_t  zero = 0;
 
-  NaClLog(4, "NaclCommonSysThreadExit(0x%08"NACL_PRIxPTR", "
+  NaClLog(4, "NaClCommonSysThreadExit(0x%08"NACL_PRIxPTR", "
           "0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) natp,
           (uintptr_t) stack_flag);

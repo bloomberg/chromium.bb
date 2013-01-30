@@ -253,7 +253,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   if (NULL == hMap) {
     DWORD err = GetLastError();
     NaClLog(LOG_INFO,
-            "NaclHostDescMap: CreateFileMapping failed: %d\n",
+            "NaClHostDescMap: CreateFileMapping failed: %d\n",
             err);
     return -NaClXlateSystemError(err);
   }

@@ -8,7 +8,7 @@
   Intentionally do nothing.  If even this program won't run, here are
   some debugging tips:
 
-  The last spot in the loader hit before jumping into the NaCL
+  The last spot in the loader hit before jumping into the NaCl
   executable is NaClSwitch().
 
   After we're done with our main(), the exit system call will be

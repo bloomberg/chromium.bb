@@ -66,7 +66,7 @@ struct NaClResource {
 };
 
 /*
- * NaCLResourceOpen handles NACL_RESOURCE_DEBUG_WARNING_PREFIX checks
+ * NaClResourceOpen handles NACL_RESOURCE_DEBUG_WARNING_PREFIX checks
  * (and stripping), NACL_RESOURCE_{FILE,DEV}_PREFIX dispatch.
  *
  * This function does not take a descriptor number to directly modify
