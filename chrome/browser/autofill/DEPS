@@ -1,7 +1,7 @@
 include_rules = [
-  # Autofill is being made into a Browser Component, so we have these
-  # three basic rules followed by temporary exceptions.  Please don't
-  # add to the list of exceptions!
+  # Autofill is being made into a Browser Component, so we have these basic
+  # rules followed by temporary exceptions.  Please don't add to the list of
+  # exceptions!
   "-chrome/browser",
   "+chrome/browser/api",
   "+chrome/browser/autofill",
@@ -43,6 +43,11 @@ specific_include_rules = {
     "!chrome/browser/ui/browser_tabstrip.h",
     "!chrome/browser/ui/browser_window.h",
     "!chrome/browser/ui/tabs/tab_strip_model.h",
+  ],
+
+  # TODO(joi): Remove these dependencies once the Prefs refactoring is complete.
+  'fingerprint\.cc': [
+    "!chrome/browser/browser_process.h",
   ],
 
   # TODO(joi): May be able to get rid of the need for this by moving

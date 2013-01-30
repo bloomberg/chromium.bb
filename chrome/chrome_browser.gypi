@@ -210,6 +210,8 @@
         'browser/autofill/autofill_regex_constants.h',
         'browser/autofill/autofill_regexes.cc',
         'browser/autofill/autofill_regexes.h',
+        'browser/autofill/risk/fingerprint.cc',
+        'browser/autofill/risk/fingerprint.h',
         'browser/autofill/autofill_scanner.cc',
         'browser/autofill/autofill_scanner.h',
         'browser/autofill/autofill_server_field_info.h',
@@ -2244,6 +2246,7 @@
           'dependencies': [
             'apps',
             'autofill_regexes',
+            'autofill_risk_proto',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'browser_extensions',
             'common/extensions/api/api.gyp:api',
@@ -2998,6 +3001,19 @@
                    '-o', '<(SHARED_INTERMEDIATE_DIR)',
                    'browser/autofill/autofill_regex_constants.cc.utf8'],
       }],
+    },
+    {
+      # Protobuf compiler / generate rule for Autofill's risk integration.
+      'target_name': 'autofill_risk_proto',
+      'type': 'static_library',
+      'sources': [
+        'browser/autofill/risk/proto/fingerprint.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'browser/autofill/risk/proto',
+        'proto_out_dir': 'chrome/browser/autofill/risk/proto',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # Protobuf compiler / generator for the fraudulent certificate reporting
