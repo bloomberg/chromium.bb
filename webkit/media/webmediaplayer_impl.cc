@@ -131,6 +131,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
+      user_specified_duration_(-1),
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
       client_(client),
@@ -487,14 +488,16 @@ float WebMediaPlayerImpl::duration() const {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<float>::quiet_NaN();
 
-  base::TimeDelta duration = pipeline_->GetMediaDuration();
+  double duration = user_specified_duration_;
+  if (duration < 0)
+    duration = GetPipelineDuration();
 
-  // Return positive infinity if the resource is unbounded.
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
-  if (duration == media::kInfiniteDuration())
-    return std::numeric_limits<float>::infinity();
+  // Make sure super small durations don't get truncated to 0 by
+  // the double -> float conversion.
+  if (duration > 0.0 && duration < std::numeric_limits<float>::min())
+    return std::numeric_limits<float>::min();
 
-  return static_cast<float>(duration.InSecondsF());
+  return static_cast<float>(duration);
 }
 
 float WebMediaPlayerImpl::currentTime() const {
@@ -535,7 +538,7 @@ float WebMediaPlayerImpl::maxTimeSeekable() const {
   // We don't support seeking in streaming media.
   if (proxy_ && proxy_->data_source() && proxy_->data_source()->IsStreaming())
     return 0.0f;
-  return static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
+  return duration();
 }
 
 bool WebMediaPlayerImpl::didLoadingProgress() const {
@@ -688,13 +691,17 @@ bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,
                                       unsigned length) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  float old_duration = duration();
+  double old_duration = GetPipelineDuration();
   if (!chunk_demuxer_->AppendData(id.utf8().data(), data, length))
     return false;
 
-  if (old_duration != duration())
-    GetClient()->durationChanged();
-
+  double new_duration = GetPipelineDuration();
+  if (old_duration != new_duration) {
+    // Clear user specified duration since the AppendData() call caused
+    // the presentation duration to change.
+    user_specified_duration_ = -1;
+    OnDurationChange();
+  }
   return true;
 }
 
@@ -704,13 +711,40 @@ bool WebMediaPlayerImpl::sourceAbort(const WebKit::WebString& id) {
 }
 
 void WebMediaPlayerImpl::sourceSetDuration(double new_duration) {
-  if (static_cast<double>(duration()) == new_duration)
+  DCHECK_GE(new_duration, 0);
+
+  if (user_specified_duration_ == new_duration)
     return;
 
-  chunk_demuxer_->SetDuration(
-      base::TimeDelta::FromMicroseconds(
-          new_duration * base::Time::kMicrosecondsPerSecond));
-  GetClient()->durationChanged();
+  // Update |user_specified_duration_| so it reports exactly what the
+  // application specified.
+  user_specified_duration_ = new_duration;
+
+  // Compute & bounds check the duration actually sent to the ChunkDemuxer.
+  // This can be different than the value of |user_specified_duration_| if the
+  // value of |new_duration| doesn't fit the range or precision of
+  // base::TimeDelta.
+  base::TimeDelta min_duration = base::TimeDelta::FromInternalValue(1);
+  base::TimeDelta max_duration =
+      base::TimeDelta::FromInternalValue(kint64max - 1);
+  double min_duration_in_seconds = min_duration.InSecondsF();
+  double max_duration_in_seconds = max_duration.InSecondsF();
+
+  base::TimeDelta duration;
+  if (new_duration == std::numeric_limits<double>::infinity()) {
+    duration = media::kInfiniteDuration();
+  } else if (new_duration < min_duration_in_seconds) {
+    duration = min_duration;
+  } else if (new_duration > max_duration_in_seconds) {
+    duration = max_duration;
+  } else {
+    duration = base::TimeDelta::FromMicroseconds(
+        new_duration * base::Time::kMicrosecondsPerSecond);
+  }
+
+  DCHECK(duration > base::TimeDelta());
+  chunk_demuxer_->SetDuration(duration);
+  OnDurationChange();
 }
 
 void WebMediaPlayerImpl::sourceEndOfStream(
@@ -731,12 +765,17 @@ void WebMediaPlayerImpl::sourceEndOfStream(
       NOTIMPLEMENTED();
   }
 
-  float old_duration = duration();
+  double old_duration = GetPipelineDuration();
   if (!chunk_demuxer_->EndOfStream(pipeline_status))
     DVLOG(1) << "EndOfStream call failed.";
 
-  if (old_duration != duration())
-    GetClient()->durationChanged();
+  double new_duration = GetPipelineDuration();
+  if (old_duration != new_duration) {
+    // Clear user specified duration since the EndOfStream() call caused
+    // the presentation duration to change.
+    user_specified_duration_ = -1;
+    OnDurationChange();
+  }
 }
 
 bool WebMediaPlayerImpl::sourceSetTimestampOffset(const WebKit::WebString& id,
@@ -1210,6 +1249,24 @@ void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   incremented_externally_allocated_memory_ = true;
   v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
+}
+
+double WebMediaPlayerImpl::GetPipelineDuration() const {
+  base::TimeDelta duration = pipeline_->GetMediaDuration();
+
+  // Return positive infinity if the resource is unbounded.
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
+  if (duration == media::kInfiniteDuration())
+    return std::numeric_limits<double>::infinity();
+
+  return duration.InSecondsF();
+}
+
+void WebMediaPlayerImpl::OnDurationChange() {
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+    return;
+
+  GetClient()->durationChanged();
 }
 
 }  // namespace webkit_media
