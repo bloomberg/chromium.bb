@@ -41,6 +41,21 @@ SolidColorDrawQuad* addQuad(TestRenderPass* pass,
   return quadPtr;
 }
 
+SolidColorDrawQuad* addClippedQuad(TestRenderPass* pass,
+                                   const gfx::Rect& rect,
+                                   SkColor color) {
+  MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
+  AppendQuadsData data(pass->id);
+  SharedQuadState* sharedState =
+      quadSink.useSharedQuadState(SharedQuadState::Create());
+  sharedState->SetAll(gfx::Transform(), rect, rect, true, 1);
+  scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+  quad->SetNew(sharedState, rect, color);
+  SolidColorDrawQuad* quadPtr = quad.get();
+  quadSink.append(quad.PassAs<DrawQuad>(), data);
+  return quadPtr;
+}
+
 void addRenderPassQuad(TestRenderPass* toPass,
                        TestRenderPass* contributingPass) {
   MockQuadCuller quadSink(toPass->quad_list, toPass->shared_quad_state_list);

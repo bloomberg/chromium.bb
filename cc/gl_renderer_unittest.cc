@@ -636,5 +636,63 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     Mock::VerifyAndClearExpectations(&mockContext);
 }
 
+class ScissorTestOnClearCheckingContext : public FakeWebGraphicsContext3D {
+public:
+    ScissorTestOnClearCheckingContext() : m_scissorEnabled(false) { }
+
+    virtual void clear(WGC3Dbitfield)
+    {
+        EXPECT_FALSE(m_scissorEnabled);
+    }
+
+    virtual void enable(WGC3Denum cap)
+    {
+        if (cap == GL_SCISSOR_TEST)
+            m_scissorEnabled = true;
+    }
+
+    virtual void disable(WGC3Denum cap)
+    {
+        if (cap == GL_SCISSOR_TEST)
+            m_scissorEnabled = false;
+    }
+
+private:
+    bool m_scissorEnabled;
+};
+
+TEST(GLRendererTest2, scissorTestWhenClearing) {
+    FakeRendererClient mockClient;
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ScissorTestOnClearCheckingContext)));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
+    EXPECT_TRUE(renderer.initialize());
+    EXPECT_FALSE(renderer.capabilities().usingPartialSwap);
+
+    gfx::Rect viewportRect(mockClient.deviceViewportSize());
+    ScopedPtrVector<RenderPass>& renderPasses = mockClient.renderPassesInDrawOrder();
+    renderPasses.clear();
+
+    gfx::Rect grandChildRect(25, 25);
+    RenderPass::Id grandChildPassId(3, 0);
+    TestRenderPass* grandChildPass = addRenderPass(renderPasses, grandChildPassId, grandChildRect, gfx::Transform());
+    addClippedQuad(grandChildPass, grandChildRect, SK_ColorYELLOW);
+
+    gfx::Rect childRect(50, 50);
+    RenderPass::Id childPassId(2, 0);
+    TestRenderPass* childPass = addRenderPass(renderPasses, childPassId, childRect, gfx::Transform());
+    addQuad(childPass, childRect, SK_ColorBLUE);
+
+    RenderPass::Id rootPassId(1, 0);
+    TestRenderPass* rootPass = addRenderPass(renderPasses, rootPassId, viewportRect, gfx::Transform());
+    addQuad(rootPass, viewportRect, SK_ColorGREEN);
+
+    addRenderPassQuad(rootPass, childPass);
+    addRenderPassQuad(childPass, grandChildPass);
+
+    renderer.decideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
+}
+
 }  // namespace
 }  // namespace cc
