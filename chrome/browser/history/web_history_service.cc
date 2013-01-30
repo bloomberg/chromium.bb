@@ -158,8 +158,10 @@ void QueryHistoryCompletionCallback(
   if (success && request_impl->response_code() == net::HTTP_OK) {
     scoped_ptr<base::Value> value(
         base::JSONReader::Read(request_impl->response_body()));
-    if (value.get() && value->IsType(base::Value::TYPE_DICTIONARY))
+    if (value.get() && value->IsType(base::Value::TYPE_DICTIONARY)) {
       callback.Run(request, static_cast<DictionaryValue*>(value.get()));
+      return;
+    }
   }
   callback.Run(request, NULL);
 }
