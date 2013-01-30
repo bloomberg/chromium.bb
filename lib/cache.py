@@ -33,6 +33,14 @@ def EntryLock(f):
   return new_f
 
 
+def WriteLock(f):
+  """Decorator that takes a write lock."""
+  def new_f(self, *args, **kwargs):
+    with self._lock.write_lock():
+      return f(self, *args, **kwargs)
+  return new_f
+
+
 class CacheReference(object):
   """Encapsulates operations on a cache key reference.
 
@@ -102,13 +110,17 @@ class CacheReference(object):
     self._lock.read_lock()
     self.read_locked = True
 
+  @WriteLock
   def _Assign(self, path):
-    with self._lock.write_lock():
-      self._cache._Insert(self.key, path)
+    self._cache._Insert(self.key, path)
 
+  @WriteLock
+  def _AssignText(self, text):
+    self._cache._InsertText(self.key, text)
+
+  @WriteLock
   def _Remove(self, key):
-    with self._lock.write_lock():
-      self._cache._Remove(key)
+    self._cache._Remove(key)
 
   def _Exists(self):
     return self._cache._KeyExists(self.key)
@@ -117,6 +129,15 @@ class CacheReference(object):
   def Assign(self, path):
     """Insert a file or a directory into the cache at the referenced key."""
     self._Assign(path)
+
+  @EntryLock
+  def AssignText(self, text):
+    """Create a file containing |text| and assign it to the key.
+
+    Arguments:
+      text: Can be a string or an iterable.
+    """
+    self._AssignText(text)
 
   @EntryLock
   def Remove(self, key):
@@ -183,6 +204,9 @@ class DiskCache(object):
                              os.path.basename(key_path) + suffix)
     return locking.FileLock(lock_path)
 
+  def _TempDirContext(self):
+    return osutils.TempDirContextManager(base_dir=self.staging_dir)
+
   def _Insert(self, key, path):
     """Insert a file or a directory into the cache at a given key."""
     self._Remove(key)
@@ -190,10 +214,17 @@ class DiskCache(object):
     osutils.SafeMakedirs(os.path.dirname(key_path))
     shutil.move(path, key_path)
 
+  def _InsertText(self, key, text):
+    """Inserts a file containing |text| into the cache."""
+    with self._TempDirContext() as tempdir:
+      file_path = os.path.join(tempdir, 'tempfile')
+      osutils.WriteFile(file_path, text)
+      self._Insert(key, file_path)
+
   def _Remove(self, key):
     """Remove a key from the cache."""
     if self._KeyExists(key):
-      with osutils.TempDirContextManager(base_dir=self.staging_dir) as tempdir:
+      with self._TempDirContext() as tempdir:
         shutil.move(self._GetKeyPath(key), tempdir)
 
   def Lookup(self, key):
