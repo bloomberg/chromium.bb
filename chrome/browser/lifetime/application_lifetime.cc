@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -104,61 +105,6 @@ void AttemptExitInternal() {
 #endif
 }
 
-void NotifyAppTerminating() {
-  static bool notified = false;
-  if (notified)
-    return;
-  notified = true;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_TERMINATING,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-}
-
-void NotifyAndTerminate(bool fast_path) {
-#if defined(OS_CHROMEOS)
-  static bool notified = false;
-  // Don't ask SessionManager to shutdown if
-  // a) a shutdown request has already been sent.
-  // b) shutdown request comes from session manager.
-  if (notified || g_session_manager_requested_shutdown)
-    return;
-  notified = true;
-#endif
-
-  if (fast_path)
-    NotifyAppTerminating();
-
-#if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS()) {
-    // If we're on a ChromeOS device, reboot if an update has been applied,
-    // or else signal the session manager to log out.
-    chromeos::UpdateEngineClient* update_engine_client
-        = chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
-    if (update_engine_client->GetLastStatus().status ==
-        chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-      update_engine_client->RebootAfterUpdate();
-    } else {
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
-          ->StopSession();
-    }
-  } else {
-    // If running the Chrome OS build, but we're not on the device, act
-    // as if we received signal from SessionManager.
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&browser::ExitCleanly));
-  }
-#endif
-}
-
-void OnAppExiting() {
-  static bool notified = false;
-  if (notified)
-    return;
-  notified = true;
-  HandleAppExitingForPlatform();
-}
-
 void CloseAllBrowsers() {
   bool session_ending =
       browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;
@@ -175,8 +121,8 @@ void CloseAllBrowsers() {
   // it will be sent by RemoveBrowser() when the last browser has closed.
   if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
       BrowserList::empty()) {
-    NotifyAndTerminate(true);
-    OnAppExiting();
+    chrome::NotifyAndTerminate(true);
+    chrome::OnAppExiting();
     return;
   }
 
@@ -233,7 +179,7 @@ void AttemptUserExit() {
   g_session_manager_requested_shutdown = false;
   // On ChromeOS, always terminate the browser, regardless of the result of
   // AreAllBrowsersCloseable(). See crbug.com/123107.
-  NotifyAndTerminate(true);
+  chrome::NotifyAndTerminate(true);
 #else
   // Reset the restart bit that might have been set in cancelled restart
   // request.
@@ -348,17 +294,21 @@ void SessionEnding() {
   content::ImmediateShutdownAndExitProcess();
 }
 
+}  // namespace browser
+
+namespace chrome {
+
 void StartKeepAlive() {
   // Increment the browser process refcount as long as we're keeping the
   // application alive.
   if (!WillKeepAlive())
     g_browser_process->AddRefModule();
-  ++g_keep_alive_count;
+  ++browser::g_keep_alive_count;
 }
 
 void EndKeepAlive() {
-  DCHECK_GT(g_keep_alive_count, 0);
-  --g_keep_alive_count;
+  DCHECK_GT(browser::g_keep_alive_count, 0);
+  --browser::g_keep_alive_count;
 
   DCHECK(g_browser_process);
   // Although we should have a browser process, if there is none,
@@ -373,12 +323,67 @@ void EndKeepAlive() {
     // (MessageLoop::current() == null).
     if (BrowserList::empty() && !browser_shutdown::IsTryingToQuit() &&
         MessageLoop::current())
-      CloseAllBrowsers();
+      browser::CloseAllBrowsers();
   }
 }
 
 bool WillKeepAlive() {
-  return g_keep_alive_count > 0;
+  return browser::g_keep_alive_count > 0;
 }
 
-}  // namespace browser
+void NotifyAppTerminating() {
+  static bool notified = false;
+  if (notified)
+    return;
+  notified = true;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+}
+
+void NotifyAndTerminate(bool fast_path) {
+#if defined(OS_CHROMEOS)
+  static bool notified = false;
+  // Don't ask SessionManager to shutdown if
+  // a) a shutdown request has already been sent.
+  // b) shutdown request comes from session manager.
+  if (notified || browser::g_session_manager_requested_shutdown)
+    return;
+  notified = true;
+#endif
+
+  if (fast_path)
+    NotifyAppTerminating();
+
+#if defined(OS_CHROMEOS)
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    // If we're on a ChromeOS device, reboot if an update has been applied,
+    // or else signal the session manager to log out.
+    chromeos::UpdateEngineClient* update_engine_client
+        = chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
+    if (update_engine_client->GetLastStatus().status ==
+        chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+      update_engine_client->RebootAfterUpdate();
+    } else {
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
+          ->StopSession();
+    }
+  } else {
+    // If running the Chrome OS build, but we're not on the device, act
+    // as if we received signal from SessionManager.
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&browser::ExitCleanly));
+  }
+#endif
+}
+
+void OnAppExiting() {
+  static bool notified = false;
+  if (notified)
+    return;
+  notified = true;
+  HandleAppExitingForPlatform();
+}
+
+}  // namespace chrome

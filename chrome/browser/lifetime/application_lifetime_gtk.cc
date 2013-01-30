@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-namespace browser {
+namespace chrome {
 
 void HandleAppExitingForPlatform() {
   // Close non-browser windows.
@@ -27,4 +27,4 @@ void HandleAppExitingForPlatform() {
   g_list_free(window_list);
 }
 
-}  // namespace browser
+}  // namespace chrome

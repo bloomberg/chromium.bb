@@ -157,7 +157,7 @@ Panel::Panel(const std::string& app_name,
 Panel::~Panel() {
   DCHECK(!collection_);
   // Invoked by native panel destructor. Do not access native_panel_ here.
-  browser::EndKeepAlive();  // Remove shutdown prevention.
+  chrome::EndKeepAlive();  // Remove shutdown prevention.
 }
 
 void Panel::Initialize(Profile* profile, const GURL& url,
@@ -191,7 +191,7 @@ void Panel::Initialize(Profile* profile, const GURL& url,
                     ThemeServiceFactory::GetForProfile(profile)));
 
   // Prevent the browser process from shutting down while this window is open.
-  browser::StartKeepAlive();
+  chrome::StartKeepAlive();
 
   UpdateAppIcon();
 }

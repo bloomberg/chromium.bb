@@ -107,7 +107,7 @@ void OpenAsh() {
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {
-    browser::StartKeepAlive();
+    chrome::StartKeepAlive();
   }
 #endif
   ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();

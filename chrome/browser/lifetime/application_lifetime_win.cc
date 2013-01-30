@@ -6,10 +6,10 @@
 
 #include "ui/views/widget/widget.h"
 
-namespace browser {
+namespace chrome {
 
 void HandleAppExitingForPlatform() {
   views::Widget::CloseAllSecondaryWidgets();
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/lifetime/application_lifetime.h"
 
-namespace browser {
+namespace chrome {
 
 void HandleAppExitingForPlatform() {
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -563,7 +563,7 @@ void CloudPrintWebDialogDelegate::Init(content::BrowserContext* browser_context,
   // If we're not modal we can show the dialog with no browser.
   // We need this to keep Chrome alive while our dialog is up.
   if (!modal_parent_ && keep_alive_when_non_modal_)
-    browser::StartKeepAlive();
+    chrome::StartKeepAlive();
 }
 
 CloudPrintWebDialogDelegate::~CloudPrintWebDialogDelegate() {
@@ -620,7 +620,7 @@ void CloudPrintWebDialogDelegate::OnDialogClosed(
   // If we're modal we can show the dialog with no browser.
   // End the keep-alive so that Chrome can exit.
   if (!modal_parent_ && keep_alive_when_non_modal_)
-    browser::EndKeepAlive();
+    chrome::EndKeepAlive();
   delete this;
 }
 

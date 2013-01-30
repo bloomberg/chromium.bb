@@ -91,8 +91,8 @@ void BrowserListImpl::RemoveBrowser(Browser* browser) {
     // to call ProfileManager::ShutdownSessionServices() as part of the
     // shutdown, because Browser::WindowClosing() already makes sure that the
     // SessionService is created and notified.
-    browser::NotifyAppTerminating();
-    browser::OnAppExiting();
+    chrome::NotifyAppTerminating();
+    chrome::OnAppExiting();
   }
 }
 

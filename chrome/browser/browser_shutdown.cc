@@ -252,14 +252,13 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
   }
 
 #if defined(OS_CHROMEOS)
-  browser::NotifyAndTerminate(false);
+  chrome::NotifyAndTerminate(false);
 #endif
 }
 
-void ReadLastShutdownFile(
-    ShutdownType type,
-    int num_procs,
-    int num_procs_slow) {
+void ReadLastShutdownFile(ShutdownType type,
+                          int num_procs,
+                          int num_procs_slow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath shutdown_ms_file = GetShutdownMsPath();
@@ -272,8 +271,8 @@ void ReadLastShutdownFile(
   if (type == NOT_VALID || shutdown_ms == 0 || num_procs == 0)
     return;
 
-  const char *time_fmt = "Shutdown.%s.time";
-  const char *time_per_fmt = "Shutdown.%s.time_per_process";
+  const char* time_fmt = "Shutdown.%s.time";
+  const char* time_per_fmt = "Shutdown.%s.time_per_process";
   std::string time;
   std::string time_per;
   if (type == WINDOW_CLOSE) {

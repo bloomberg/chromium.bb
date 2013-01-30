@@ -954,7 +954,7 @@ void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
 bool BrowserProcessImpl::CanAutorestartForUpdate() const {
   // Check if browser is in the background and if it needs to be restarted to
   // apply a pending update.
-  return BrowserList::size() == 0 && browser::WillKeepAlive() &&
+  return BrowserList::empty() && chrome::WillKeepAlive() &&
          upgrade_util::IsUpdatePendingRestart();
 }
 

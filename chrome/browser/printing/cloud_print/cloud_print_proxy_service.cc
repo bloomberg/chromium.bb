@@ -154,7 +154,7 @@ bool CloudPrintProxyService::ShowTokenExpiredNotification() {
       GURL(), title, message, GURL(), string16(),
       token_expired_delegate_.get(), profile_);
   // Keep the browser alive while we are showing the notification.
-  browser::StartKeepAlive();
+  chrome::StartKeepAlive();
   return true;
 }
 
@@ -182,7 +182,7 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
         token_expired_delegate_->id());
     token_expired_delegate_ = NULL;
     if (!keep_alive)
-      browser::EndKeepAlive();
+      chrome::EndKeepAlive();
   }
 }
 
@@ -208,8 +208,8 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
 }
 
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&browser::EndKeepAlive));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(&chrome::EndKeepAlive));
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {

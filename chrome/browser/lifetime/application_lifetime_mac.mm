@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 
-namespace browser {
+namespace chrome {
 
 // At this point, the user is trying to quit (or the system is forcing the
 // application to quit) and all browsers have been successfully closed. The
@@ -28,4 +28,4 @@ void HandleAppExitingForPlatform() {
                     object:NSApp];
 }
 
-}  // namespace browser
+}  // namespace chrome

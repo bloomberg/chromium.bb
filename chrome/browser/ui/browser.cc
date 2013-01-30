@@ -635,7 +635,7 @@ void Browser::OnWindowClosing() {
   // AppController on the Mac, or BackgroundContentsService for background
   // pages).
   bool should_quit_if_last_browser =
-      browser_shutdown::IsTryingToQuit() || !browser::WillKeepAlive();
+      browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
 
   if (should_quit_if_last_browser && BrowserList::size() == 1)
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);

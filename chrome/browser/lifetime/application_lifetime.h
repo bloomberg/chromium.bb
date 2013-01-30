@@ -54,6 +54,10 @@ void CloseAllBrowsers();
 // Begins shutdown of the application when the desktop session is ending.
 void SessionEnding();
 
+}  // namespace browser
+
+namespace chrome {
+
 // Tells the BrowserList to keep the application alive after the last Browser
 // closes. This is implemented as a count, so callers should pair their calls
 // to StartKeepAlive() with matching calls to EndKeepAlive() when they no
@@ -83,6 +87,6 @@ void OnAppExiting();
 // processing required.
 void HandleAppExitingForPlatform();
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_

@@ -330,7 +330,7 @@ void SwizzleInit() {
 // must be redirected.
 //
 // When the last browser has been destroyed, the BrowserList calls
-// browser::OnAppExiting(), which is the point of no return. That will cause
+// chrome::OnAppExiting(), which is the point of no return. That will cause
 // the NSApplicationWillTerminateNotification to be posted, which ends the
 // NSApplication event loop, so final post- MessageLoop::Run() work is done
 // before exiting.

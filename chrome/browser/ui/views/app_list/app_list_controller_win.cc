@@ -335,7 +335,7 @@ void AppListController::ShowAppList() {
   if (app_list_is_showing_)
     return;
   app_list_is_showing_ = true;
-  browser::StartKeepAlive();
+  chrome::StartKeepAlive();
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   UpdateArrowPositionAndAnchorPoint(cursor);
   current_view_->Show();
@@ -347,7 +347,7 @@ void AppListController::DismissAppList() {
   if (current_view_ && app_list_is_showing_ && can_close_app_list_) {
     current_view_->GetWidget()->Hide();
     timer_.Stop();
-    browser::EndKeepAlive();
+    chrome::EndKeepAlive();
     app_list_is_showing_ = false;
   }
 }

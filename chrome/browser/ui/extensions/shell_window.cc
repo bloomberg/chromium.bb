@@ -233,7 +233,7 @@ void ShellWindow::Init(const GURL& url,
                  content::NotificationService::AllSources());
 
   // Prevent the browser process from shutting down while this window is open.
-  browser::StartKeepAlive();
+  chrome::StartKeepAlive();
 
   UpdateExtensionAppIcon();
 }
@@ -244,7 +244,7 @@ ShellWindow::~ShellWindow() {
   registrar_.RemoveAll();
 
   // Remove shutdown prevention.
-  browser::EndKeepAlive();
+  chrome::EndKeepAlive();
 }
 
 void ShellWindow::RequestMediaAccessPermission(

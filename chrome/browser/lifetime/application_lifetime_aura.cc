@@ -15,7 +15,7 @@
 #include "ui/aura/client/capture_client.h"
 #endif
 
-namespace browser {
+namespace chrome {
 
 void HandleAppExitingForPlatform() {
   // Close all non browser windows now. Those includes notifications
@@ -51,4 +51,4 @@ void HandleAppExitingForPlatform() {
 #endif // OS_CHROMEOS
 }
 
-}  // namespace browser
+}  // namespace chrome
