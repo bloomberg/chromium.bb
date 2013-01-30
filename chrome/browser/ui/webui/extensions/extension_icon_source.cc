@@ -120,7 +120,11 @@ void ExtensionIconSource::StartDataRequest(
   // the request data available for later.
   static int next_id = 0;
   if (!ParseData(path, ++next_id, callback)) {
-    SendDefaultResponse(next_id);
+    // If the request data cannot be parsed, request parameters will not be
+    // added to |request_map_|.
+    // Send back the default application icon (not resized or desaturated) as
+    // the default response.
+    callback.Run(BitmapToMemory(GetDefaultAppImage()));
     return;
   }
 
@@ -304,14 +308,6 @@ bool ExtensionIconSource::ParseData(
   SetData(request_id, callback, extension, grayscale, size, match_type);
 
   return true;
-}
-
-void ExtensionIconSource::SendDefaultResponse(int request_id) {
-  // We send back the default application icon (not resized or desaturated)
-  // as the default response, like when there is no data.
-  ExtensionIconRequest* request = GetData(request_id);
-  request->callback.Run(BitmapToMemory(GetDefaultAppImage()));
-  ClearData(request_id);
 }
 
 void ExtensionIconSource::SetData(

@@ -128,9 +128,6 @@ class ExtensionIconSource : public content::URLDataSource,
                  int request_id,
                  const content::URLDataSource::GotDataCallback& callback);
 
-  // Sends the default response to |request_id|, used for invalid requests.
-  void SendDefaultResponse(int request_id);
-
   // Stores the parameters associated with the |request_id|, making them
   // as an ExtensionIconRequest via GetData.
   void SetData(int request_id,

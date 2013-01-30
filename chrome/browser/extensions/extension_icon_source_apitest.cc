@@ -52,6 +52,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
   EXPECT_EQ(result, "Not Loaded");
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, InvalidURL) {
+  std::string result;
+
+  // Test that navigation to an invalid url works.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome://extension-icon/invalid"));
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(document.title)",
+      &result));
+  EXPECT_EQ(result, "invalid (96\xC3\x97""96)");
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   FilePath basedir = test_data_dir_.AppendASCII("icons");
   ASSERT_TRUE(LoadExtensionIncognito(
