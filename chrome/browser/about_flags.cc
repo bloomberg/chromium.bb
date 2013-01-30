@@ -1241,13 +1241,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kHistoryEnableFullHistorySync)
   },
   {
-    "enable-data-channels",
-    IDS_FLAGS_RTC_DATACHANNELS,
-    IDS_FLAGS_RTC_DATACHANNELS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableDataChannels)
-  },
-  {
     "enable-sync-dictionary",
     IDS_FLAGS_ENABLE_SYNC_DICTIONARY_NAME,
     IDS_FLAGS_ENABLE_SYNC_DICTIONARY_DESCRIPTION,

@@ -8,11 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
@@ -559,11 +557,6 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
 
 WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
     const WebKit::WebString& label, bool reliable) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDataChannels)) {
-    return NULL;
-  }
-
   DVLOG(1) << "createDataChannel label " << UTF16ToUTF8(label);
 
   webrtc::DataChannelInit config;
@@ -685,11 +678,6 @@ void RTCPeerConnectionHandler::OnIceComplete() {
 
 void RTCPeerConnectionHandler::OnDataChannel(
     webrtc::DataChannelInterface* data_channel) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDataChannels)) {
-    return;
-  }
-
   DVLOG(1) << "RTCPeerConnectionHandler::OnDataChannel "
            << data_channel->label();
   client_->didAddRemoteDataChannel(new RtcDataChannelHandler(data_channel));

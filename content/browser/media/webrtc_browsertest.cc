@@ -95,8 +95,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableDataChannels);
-
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -107,8 +105,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndMedia) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableDataChannels);
-
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -119,8 +115,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndMedia) {
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndLaterAddMedia) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableDataChannels);
-
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
