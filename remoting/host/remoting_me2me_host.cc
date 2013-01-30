@@ -51,6 +51,7 @@
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/host_change_notification_listener.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
@@ -149,6 +150,7 @@ namespace remoting {
 class HostProcess
     : public ConfigFileWatcher::Delegate,
       public HeartbeatSender::Listener,
+      public HostChangeNotificationListener::Listener,
       public IPC::Listener,
       public base::RefCountedThreadSafe<HostProcess> {
  public:
@@ -165,6 +167,9 @@ class HostProcess
 
   // HeartbeatSender::Listener overrides.
   virtual void OnUnknownHostIdError() OVERRIDE;
+
+  // HostChangeNotificationListener::Listener overrides.
+  virtual void OnHostDeleted() OVERRIDE;
 
  private:
   enum HostState {
@@ -270,6 +275,8 @@ class HostProcess
 
   // Accessed on the UI thread.
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+
+  // Created on the UI thread but used from the network thread.
   FilePath host_config_path_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
@@ -286,7 +293,6 @@ class HostProcess
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
-
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
   std::string talkgadget_prefix_;
@@ -300,6 +306,7 @@ class HostProcess
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
+  scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
@@ -652,6 +659,11 @@ void HostProcess::OnUnknownHostIdError() {
   ShutdownHost(kInvalidHostIdExitCode);
 }
 
+void HostProcess::OnHostDeleted() {
+  LOG(ERROR) << "Host was deleted from the directory.";
+  ShutdownHost(kInvalidHostIdExitCode);
+}
+
 // Applies the host config, returning true if successful.
 bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
@@ -908,6 +920,9 @@ void HostProcess::StartHost() {
   heartbeat_sender_.reset(new HeartbeatSender(
       this, host_id_, signal_strategy_.get(), &key_pair_));
 
+  host_change_notification_listener_.reset(new HostChangeNotificationListener(
+      this, host_id_, signal_strategy_.get()));
+
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
   host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
@@ -1004,6 +1019,7 @@ void HostProcess::ShutdownOnNetworkThread() {
   host_event_logger_.reset();
   log_to_server_.reset();
   heartbeat_sender_.reset();
+  host_change_notification_listener_.reset();
   signaling_connector_.reset();
   signal_strategy_.reset();
   resizing_host_observer_.reset();
