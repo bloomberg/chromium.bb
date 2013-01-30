@@ -317,6 +317,9 @@ void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
   system_nameserver_count_ = config->nameservers.size();
   system_is_localhost_ = (system_nameserver_count_ == 1)
                          && IsLocalhost(config->nameservers[0].address());
+
+  // Disable port randomization.
+  config->randomize_ports = false;
 }
 
 void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
@@ -327,6 +330,9 @@ void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
 
   if (dns_attempts_ != kAttemptsUseDefault)
     config->attempts = dns_attempts_;
+
+  // Disable port randomization.
+  config->randomize_ports = false;
 }
 
 bool DnsProbeService::ResultsExpired() {

@@ -29,8 +29,11 @@ class DnsClientImpl : public DnsClient {
     session_ = NULL;
     if (config.IsValid()) {
       ClientSocketFactory* factory = ClientSocketFactory::GetDefaultFactory();
+      scoped_ptr<DnsSocketPool> socket_pool(
+          config.randomize_ports ? DnsSocketPool::CreateDefault(factory)
+                                 : DnsSocketPool::CreateNull(factory));
       session_ = new DnsSession(config,
-                                DnsSocketPool::CreateDefault(factory),
+                                socket_pool.Pass(),
                                 base::Bind(&base::RandInt),
                                 net_log_);
       factory_ = DnsTransactionFactory::CreateFactory(session_);
