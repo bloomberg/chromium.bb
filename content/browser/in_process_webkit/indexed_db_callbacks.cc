@@ -36,11 +36,6 @@ void IndexedDBCallbacksBase::onBlocked(long long old_version) {
       ipc_thread_id_, ipc_response_id_, old_version));
 }
 
-void IndexedDBCallbacksBase::onBlocked() {
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(ipc_thread_id_,
-                                                           ipc_response_id_));
-}
-
 IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
     IndexedDBDispatcherHost* dispatcher_host,
     int32 ipc_thread_id,

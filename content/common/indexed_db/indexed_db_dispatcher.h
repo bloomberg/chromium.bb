@@ -234,7 +234,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
                int32 ipc_response_id,
                int code,
                const string16& message);
-  void OnBlocked(int32 ipc_thread_id, int32 ipc_response_id);
   void OnIntBlocked(int32 ipc_thread_id, int32 ipc_response_id,
                     int64 existing_version);
   void OnUpgradeNeeded(int32 ipc_thread_id,

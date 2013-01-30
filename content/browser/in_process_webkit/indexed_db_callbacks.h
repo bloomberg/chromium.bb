@@ -23,7 +23,6 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
   virtual ~IndexedDBCallbacksBase();
 
   virtual void onError(const WebKit::WebIDBDatabaseError& error);
-  virtual void onBlocked();
   virtual void onBlocked(long long old_version);
 
  protected:

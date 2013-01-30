@@ -109,7 +109,6 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessUndefined,
                         OnSuccessUndefined)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksError, OnError)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksBlocked, OnBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksIntBlocked, OnIntBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksUpgradeNeeded, OnUpgradeNeeded)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbort, OnAbortOld)
@@ -619,14 +618,6 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
   DCHECK(callbacks);
   cursor->CachedContinue(callbacks);
   pending_callbacks_.Remove(ipc_response_id);
-}
-
-void IndexedDBDispatcher::OnBlocked(int32 ipc_thread_id,
-                                    int32 ipc_response_id) {
-  DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_response_id);
-  DCHECK(callbacks);
-  callbacks->onBlocked();
 }
 
 void IndexedDBDispatcher::OnIntBlocked(int32 ipc_thread_id,
