@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/external_protocol_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/protocol_dialog_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -10,16 +10,14 @@
 
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -33,19 +31,21 @@ const int kMessageWidth = 400;
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
-  new ExternalProtocolDialogGtk(url);
+  new ProtocolDialogGtk(scoped_ptr<const ProtocolDialogDelegate>(
+        new ExternalProtocolDialogDelegate(url)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialogGtk
+// ProtocolDialogGtk
 
-ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
-    : url_(url),
+ProtocolDialogGtk::ProtocolDialogGtk(
+    scoped_ptr<const ProtocolDialogDelegate> delegate)
+    : delegate_(delegate.Pass()),
       creation_time_(base::TimeTicks::Now()) {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_TITLE).c_str(),
+      UTF16ToUTF8(delegate_->GetTitleText()).c_str(),
       NULL,
       GTK_DIALOG_NO_SEPARATOR,
       NULL);
@@ -59,39 +59,20 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
       l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT).c_str(),
       GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
-  // Construct the message text.
-  const int kMaxUrlWithoutSchemeSize = 256;
-  const int kMaxCommandSize = 256;
-  string16 elided_url_without_scheme;
-  string16 elided_command;
-  ui::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
-      kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ui::ElideString(ASCIIToUTF16(std::string("xdg-open ") + url.spec()),
-      kMaxCommandSize, &elided_command);
-
-  std::string message_text = l10n_util::GetStringFUTF8(
-      IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      ASCIIToUTF16(url.scheme() + ":"),
-      elided_url_without_scheme) + "\n\n";
-
-  message_text += l10n_util::GetStringFUTF8(
-      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH, elided_command) + "\n\n";
-
-  message_text += l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_WARNING);
-
   // Create the content-holding vbox.
   GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(vbox),
                                  ui::kContentAreaBorder);
 
   // Add the message text.
-  GtkWidget* label = gtk_label_new(message_text.c_str());
+  GtkWidget* label = gtk_label_new(
+      UTF16ToUTF8(delegate_->GetMessageText()).c_str());
   gtk_util::SetLabelWidth(label, kMessageWidth);
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
   // Add the checkbox.
   checkbox_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT).c_str());
+      UTF16ToUTF8(delegate_->GetCheckboxText()).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), checkbox_,
                      FALSE, FALSE, 0);
 
@@ -105,28 +86,20 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   gtk_widget_show_all(dialog_);
 }
 
-ExternalProtocolDialogGtk::~ExternalProtocolDialogGtk() {
+ProtocolDialogGtk::~ProtocolDialogGtk() {
 }
 
-void ExternalProtocolDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox_))) {
-    if (response_id == GTK_RESPONSE_ACCEPT) {
-      ExternalProtocolHandler::SetBlockState(
-          url_.scheme(), ExternalProtocolHandler::DONT_BLOCK);
-    } else if (response_id == GTK_RESPONSE_REJECT) {
-      ExternalProtocolHandler::SetBlockState(
-          url_.scheme(), ExternalProtocolHandler::BLOCK);
-    }
-    // If the response is GTK_RESPONSE_DELETE, triggered by the user closing
-    // the dialog, do nothing.
-  }
-
+void ProtocolDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+  bool checkbox = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox_));
   if (response_id == GTK_RESPONSE_ACCEPT) {
+    delegate_->DoAccept(delegate_->url(), checkbox);
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                              base::TimeTicks::Now() - creation_time_);
-
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_);
+  } else if (response_id == GTK_RESPONSE_REJECT) {
+    delegate_->DoCancel(delegate_->url(), checkbox);
   }
+  // If the response is GTK_RESPONSE_DELETE, triggered by the user closing
+  // the dialog, do nothing.
 
   gtk_widget_destroy(dialog_);
   delete this;

@@ -400,6 +400,11 @@ ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
 }
 
 // static
+std::string ShellIntegration::GetApplicationForProtocol(const GURL& url) {
+  return std::string("xdg-open");
+}
+
+// static
 ShellIntegration::DefaultWebClientState
 ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
   return GetIsDefaultWebClient(protocol);

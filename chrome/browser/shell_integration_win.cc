@@ -273,6 +273,13 @@ ShellIntegration::DefaultWebClientState
       ShellUtil::GetChromeDefaultProtocolClientState(UTF8ToUTF16(protocol)));
 }
 
+std::string ShellIntegration::GetApplicationForProtocol(const GURL& url) {
+  // TODO(calamity): this will be implemented when external_protocol_dialog is
+  // refactored on windows.
+  NOTREACHED();
+  return std::string();
+}
+
 // There is no reliable way to say which browser is default on a machine (each
 // browser can have some of the protocols/shortcuts). So we look for only HTTP
 // protocol handler. Even this handler is located at different places in
