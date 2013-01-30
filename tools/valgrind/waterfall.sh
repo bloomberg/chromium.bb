@@ -82,7 +82,9 @@ fetch_logs() {
                             }
                           }
                           END {if (buf) print buf}' | \
-                     grep "Failed" | \
+                     grep "success\|failure" | \
+                     head -n 3 | \
+                     grep "failure" | \
                      grep -v "failed compile" | \
                      sed "s/.*\/builds\///" | sed "s/\".*//")
 
