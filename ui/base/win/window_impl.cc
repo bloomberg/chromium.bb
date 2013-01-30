@@ -177,6 +177,16 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
                              reinterpret_cast<wchar_t*>(atom), NULL,
                              window_style_, x, y, width, height,
                              parent, NULL, NULL, this);
+
+  // First nccalcszie (during CreateWindow) for captioned windows is
+  // deliberately ignored so force a second one here to get the right
+  // non-client set up.
+  if (hwnd && (window_style_ & WS_CAPTION)) {
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0,
+                 SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE |
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+  }
+
   if (!hwnd_ && GetLastError() == 0) {
     base::debug::Alias(&destroyed);
     base::debug::Alias(&hwnd);

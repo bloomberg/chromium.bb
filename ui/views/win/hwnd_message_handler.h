@@ -461,6 +461,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   // store if necessary.
   bool can_update_layered_window_;
 
+  // True the first time nccalc is called on a sizable widget
+  bool is_first_nccalc_;
+
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
 
