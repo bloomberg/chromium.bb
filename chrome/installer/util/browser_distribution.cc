@@ -33,6 +33,9 @@ using installer::MasterPreferences;
 
 namespace {
 
+const wchar_t kChromiumActiveSetupGuid[] =
+    L"{7D2B3E1D-D096-4594-9D8F-A6667F12E0AC}";
+
 const wchar_t kCommandExecuteImplUuid[] =
     L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}";
 
@@ -137,6 +140,10 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
 void BrowserDistribution::DoPostUninstallOperations(
     const Version& version, const FilePath& local_data_path,
     const string16& distribution_data) {
+}
+
+string16 BrowserDistribution::GetActiveSetupGuid() {
+  return kChromiumActiveSetupGuid;
 }
 
 string16 BrowserDistribution::GetAppGuid() {

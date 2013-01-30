@@ -124,7 +124,7 @@ HWND CreateUACForegroundWindow() {
 string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
   static const wchar_t kInstalledComponentsPath[] =
       L"Software\\Microsoft\\Active Setup\\Installed Components\\";
-  return kInstalledComponentsPath + dist->GetAppGuid();
+  return kInstalledComponentsPath + dist->GetActiveSetupGuid();
 }
 
 void InstallUtil::TriggerActiveSetupCommand() {

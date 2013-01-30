@@ -67,6 +67,9 @@ class BrowserDistribution {
                                          const FilePath& local_data_path,
                                          const string16& distribution_data);
 
+  // Returns the GUID to be used when registering for Active Setup.
+  virtual string16 GetActiveSetupGuid();
+
   virtual string16 GetAppGuid();
 
   // Returns the unsuffixed application name of this program.

@@ -407,6 +407,10 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   installer::WMIProcess::Launch(command, &pid);
 }
 
+string16 GoogleChromeDistribution::GetActiveSetupGuid() {
+  return product_guid();
+}
+
 string16 GoogleChromeDistribution::GetAppGuid() {
   return product_guid();
 }

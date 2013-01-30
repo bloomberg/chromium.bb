@@ -35,6 +35,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
       const FilePath& local_data_path,
       const string16& distribution_data) OVERRIDE;
 
+  virtual string16 GetActiveSetupGuid() OVERRIDE;
+
   virtual string16 GetAppGuid() OVERRIDE;
 
   virtual string16 GetBaseAppName() OVERRIDE;

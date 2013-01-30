@@ -26,6 +26,11 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
     const string16& distribution_data) {
 }
 
+string16 GoogleChromeDistribution::GetActiveSetupGuid() {
+  NOTREACHED();
+  return string16();
+}
+
 string16 GoogleChromeDistribution::GetAppGuid() {
   NOTREACHED();
   return string16();
