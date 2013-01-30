@@ -4,6 +4,10 @@
 
 #include "content/browser/gpu/gpu_surface_tracker.h"
 
+#if defined(OS_ANDROID)
+#include <android/native_window_jni.h>
+#endif  // defined(OS_ANDROID)
+
 #include "base/logging.h"
 
 namespace content {
@@ -99,11 +103,17 @@ gfx::PluginWindowHandle GpuSurfaceTracker::GetSurfaceWindowHandle(
   return it->second.handle.handle;
 }
 
-gfx::AcceleratedWidget GpuSurfaceTracker::GetNativeWidget(int surface_id) {
+gfx::AcceleratedWidget GpuSurfaceTracker::AcquireNativeWidget(int surface_id) {
   base::AutoLock lock(lock_);
   SurfaceMap::iterator it = surface_map_.find(surface_id);
   if (it == surface_map_.end())
     return gfx::kNullAcceleratedWidget;
+
+#if defined(OS_ANDROID)
+  if (it->second.native_widget != gfx::kNullAcceleratedWidget)
+    ANativeWindow_acquire(it->second.native_widget);
+#endif  // defined(OS_ANDROID)
+
   return it->second.native_widget;
 }
 

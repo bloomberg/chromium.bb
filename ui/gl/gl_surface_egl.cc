@@ -224,6 +224,11 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
 bool NativeViewGLSurfaceEGL::Initialize() {
   DCHECK(!surface_);
 
+  if (window_ == kNullAcceleratedWidget) {
+    LOG(ERROR) << "Trying to create surface without window.";
+    return false;
+  }
+
   if (!GetDisplay()) {
     LOG(ERROR) << "Trying to create surface with invalid display.";
     return false;

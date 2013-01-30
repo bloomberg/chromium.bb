@@ -44,6 +44,7 @@ class SurfaceTextureTransportClient : public cc::VideoFrameProvider {
   ANativeWindow* window_;
   scoped_refptr<media::VideoFrame> video_frame_;
   uint32 texture_id_;
+  int surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureTransportClient);
 };

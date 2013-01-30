@@ -29,7 +29,7 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
  public:
   // GpuSurfaceLookup implementation:
   // Returns the native widget associated with a given surface_id.
-  virtual gfx::AcceleratedWidget GetNativeWidget(int surface_id) OVERRIDE;
+  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) OVERRIDE;
 
   // Gets the global instance of the surface tracker.
   static GpuSurfaceTracker* Get() { return GetInstance(); }

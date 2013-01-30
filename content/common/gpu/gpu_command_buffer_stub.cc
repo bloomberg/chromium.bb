@@ -411,7 +411,13 @@ void GpuCommandBufferStub::OnInitialize(
       // Need to adjust at least GLX to be able to create the initial context
       // with a config that is compatible with onscreen and offscreen surfaces.
       context = NULL;
-      LOG(FATAL) << "Failed to initialize virtual GL context.";
+
+      // Ensure the decoder is not destroyed if it is not initialized.
+      decoder_.reset();
+
+      DLOG(ERROR) << "Failed to initialize virtual GL context.";
+      OnInitializeFailed(reply_message);
+      return;
     } else {
       LOG(INFO) << "Created virtual GL context.";
     }

@@ -21,11 +21,14 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else if (handle.handle == gfx::kDummyPluginWindow && !handle.transport) {
     DCHECK(GpuSurfaceLookup::GetInstance());
-    ANativeWindow* window = GpuSurfaceLookup::GetInstance()->GetNativeWidget(
-        stub->surface_id());
-    DCHECK(window);
+    ANativeWindow* window =
+        GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
+            stub->surface_id());
     surface = new gfx::NativeViewGLSurfaceEGL(false, window);
-    if (!surface.get() || !surface->Initialize())
+    bool initialize_success = surface->Initialize();
+    if (window)
+      ANativeWindow_release(window);
+    if (!initialize_success)
       return NULL;
 
     surface = new PassThroughImageTransportSurface(
@@ -35,9 +38,9 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     return NULL;
   }
 
-  if (surface->Initialize())
+  if (surface->Initialize()) {
     return surface;
-  else {
+  } else {
     LOG(ERROR) << "Failed to initialize ImageTransportSurface";
     return NULL;
   }

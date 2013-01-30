@@ -19,7 +19,7 @@ class GpuSurfaceLookup {
   static GpuSurfaceLookup* GetInstance();
   static void InitInstance(GpuSurfaceLookup* lookup);
 
-  virtual gfx::AcceleratedWidget GetNativeWidget(int surface_id) = 0;
+  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceLookup);

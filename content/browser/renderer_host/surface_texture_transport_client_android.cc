@@ -27,10 +27,15 @@ namespace content {
 
 SurfaceTextureTransportClient::SurfaceTextureTransportClient()
     : window_(NULL),
-      texture_id_(0) {
+      texture_id_(0),
+      surface_id_(0) {
 }
 
 SurfaceTextureTransportClient::~SurfaceTextureTransportClient() {
+  if (surface_id_) {
+    GpuSurfaceTracker::Get()->SetNativeWidget(
+        surface_id_, gfx::kNullAcceleratedWidget);
+  }
   if (window_)
     ANativeWindow_release(window_);
 }
@@ -51,6 +56,8 @@ scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
 gfx::GLSurfaceHandle
 SurfaceTextureTransportClient::GetCompositingSurface(int surface_id) {
   DCHECK(surface_id);
+  surface_id_ = surface_id;
+
   if (!window_)
     window_ = surface_texture_->CreateSurface();
 
