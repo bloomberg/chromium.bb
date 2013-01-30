@@ -1142,6 +1142,7 @@ _release.add_config('stout-release',
 
 _release.add_config('butterfly-release',
   boards=['butterfly'],
+  hw_tests=['bvt'],
   useflags=official['useflags'] + ['oem_wallpaper'],
 )
 
