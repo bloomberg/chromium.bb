@@ -82,7 +82,9 @@ class CONTENT_EXPORT WebContentsViewAura
   // by overscroll. This function sets this up.
   void PrepareOverscrollNavigationOverlay();
 
-  void SetOverscrollWindowBrightness(float brightness, bool animate);
+  // Changes the brightness of the layer depending on the amount of horizontal
+  // overscroll (|delta_x|, in pixels).
+  void UpdateOverscrollWindowBrightness(float delta_x);
 
   // Overridden from WebContentsView:
   virtual void CreateView(
