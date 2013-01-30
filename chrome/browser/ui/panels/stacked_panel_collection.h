@@ -64,6 +64,12 @@ class StackedPanelCollection : public PanelCollection {
 
   void MoveAllDraggingPanelsInstantly(const gfx::Vector2d& delta_origin);
 
+  // Returns the maximum available space from the bottom of the stack. The
+  // maximum available space is defined as the distance between the bottom
+  // of the stack and the bottom of the working area, assuming that all inactive
+  // panels are collapsed.
+  int GetMaximiumAvailableBottomSpace() const;
+
   NativePanelStack* native_stack() const { return native_stack_; }
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
@@ -86,6 +92,11 @@ class StackedPanelCollection : public PanelCollection {
     PanelPlacement() : panel(NULL), top_panel(NULL) { }
   };
 
+  // Returns the current available space from the bottom of the stack. The
+  // current available space is defined as the distance between the bottom
+  // of the stack and the bottom of the working area.
+  int GetCurrentAvailableBottomSpace() const;
+
   // Minimizes or restores all panels in the collection.
   void MinimizeAll();
   void RestoreAll();
@@ -97,6 +108,10 @@ class StackedPanelCollection : public PanelCollection {
   NativePanelStack* native_stack_;  // Weak, owns us.
 
   Panels panels_;  // The top panel is in the front of the list.
+
+  // Keeps track of the panels in their active order. The most recently active
+  // panel is in the front of the list.
+  Panels most_recently_active_panels_;
 
   // Used to save the placement information for a panel.
   PanelPlacement saved_panel_placement_;

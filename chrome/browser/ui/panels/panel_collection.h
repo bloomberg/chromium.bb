@@ -39,7 +39,10 @@ class PanelCollection {
     // its layout immediately.
     DELAY_LAYOUT_REFRESH = 0x8,
     // Do not refresh layout. Used by stacking.
-    NO_LAYOUT_REFRESH = 0x10
+    NO_LAYOUT_REFRESH = 0x10,
+    // Collapse other inactive stacked panels such the tha new panel can fit
+    // within the working area. Used by stacking.
+    COLLAPSE_TO_FIT = 0x20
   };
 
   Type type() const { return type_; }

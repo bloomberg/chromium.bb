@@ -74,7 +74,7 @@ void DetachedPanelCollection::AddPanel(Panel* panel,
   // positioning_mask is ignored since the detached panel is free-floating.
   DCHECK_NE(this, panel->collection());
   panel->set_collection(this);
-  panels_.insert(panel);
+  panels_.push_back(panel);
 
   // Offset the default position of the next detached panel if the current
   // default position is used.
@@ -85,7 +85,7 @@ void DetachedPanelCollection::AddPanel(Panel* panel,
 void DetachedPanelCollection::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->collection());
   panel->set_collection(NULL);
-  panels_.erase(panel);
+  panels_.remove(panel);
 }
 
 void DetachedPanelCollection::CloseAll() {
@@ -213,7 +213,11 @@ void DetachedPanelCollection::OnPanelResizedByMouse(Panel* panel,
 }
 
 bool DetachedPanelCollection::HasPanel(Panel* panel) const {
-  return panels_.find(panel) != panels_.end();
+  return std::find(panels_.begin(), panels_.end(), panel) != panels_.end();
+}
+
+void DetachedPanelCollection::SortPanels(PanelsComparer comparer) {
+  panels_.sort(comparer);
 }
 
 void DetachedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {

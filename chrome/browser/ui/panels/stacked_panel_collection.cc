@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel_stack.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
 StackedPanelCollection::StackedPanelCollection(PanelManager* panel_manager)
@@ -22,6 +23,7 @@ StackedPanelCollection::StackedPanelCollection(PanelManager* panel_manager)
 
 StackedPanelCollection::~StackedPanelCollection() {
   DCHECK(panels_.empty());
+  DCHECK(most_recently_active_panels_.empty());
 }
 
 void StackedPanelCollection::OnDisplayAreaChanged(
@@ -80,9 +82,34 @@ void StackedPanelCollection::AddPanel(Panel* panel,
     adjacent_panel = top_panel();
     panels_.push_front(panel);
   } else {
+    // To fit the new panel within the working area, collapse unfocused panels
+    // in the least recent active order until there is enough space.
+    if (positioning_mask & PanelCollection::COLLAPSE_TO_FIT) {
+      int needed_space = panel->GetBounds().height();
+      int available_space = GetCurrentAvailableBottomSpace();
+      for (Panels::const_reverse_iterator iter =
+               most_recently_active_panels_.rbegin();
+           iter != most_recently_active_panels_.rend() &&
+               available_space < needed_space;
+           ++iter) {
+        Panel* current_panel = *iter;
+        if (!current_panel->IsActive() && !IsPanelMinimized(current_panel)) {
+          available_space +=
+              current_panel->GetBounds().height() - panel::kTitlebarHeight;
+          MinimizePanel(current_panel);
+        }
+      }
+      DCHECK(available_space >= needed_space);
+    }
+
     adjacent_panel = bottom_panel();
     panels_.push_back(panel);
   }
+
+  if (panel->IsActive())
+    most_recently_active_panels_.push_front(panel);
+  else
+    most_recently_active_panels_.push_back(panel);
 
   if (adjacent_panel)
     UpdatePanelCornerStyle(adjacent_panel);
@@ -99,6 +126,7 @@ void StackedPanelCollection::RemovePanel(Panel* panel) {
 
   panel->set_collection(NULL);
   panels_.remove(panel);
+  most_recently_active_panels_.remove(panel);
 
   if (is_top) {
     Panel* new_top_panel = top_panel();
@@ -307,6 +335,20 @@ void StackedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
 }
 
 void StackedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {
+  if (!panel->IsActive())
+    return;
+
+  Panels::iterator iter = std::find(most_recently_active_panels_.begin(),
+      most_recently_active_panels_.end(), panel);
+  DCHECK(iter != most_recently_active_panels_.end());
+
+  // If the panel is already in the front, nothing to do.
+  if (iter == most_recently_active_panels_.begin())
+    return;
+
+  // Move the panel to the front.
+  most_recently_active_panels_.erase(iter);
+  most_recently_active_panels_.push_front(panel);
 }
 
 Panel* StackedPanelCollection::GetPanelAbove(Panel* panel) const {
@@ -347,4 +389,28 @@ void StackedPanelCollection::UpdatePanelCornerStyle(Panel* panel) {
   else
     corner_style = panel::NOT_ROUNDED;
   panel->SetWindowCornerStyle(corner_style);
+}
+
+int StackedPanelCollection::GetCurrentAvailableBottomSpace() const {
+  if (panels_.empty())
+    return panel_manager_->display_area().height();
+
+  return panel_manager_->display_area().bottom() -
+         bottom_panel()->GetBounds().bottom();
+}
+
+int StackedPanelCollection::GetMaximiumAvailableBottomSpace() const {
+  if (panels_.empty())
+    return panel_manager_->display_area().height();
+
+  int bottom = top_panel()->GetBounds().y();
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); iter++) {
+    Panel* panel = *iter;
+    if (panel->IsActive())
+      bottom += panel->GetBounds().height();
+    else
+      bottom += panel::kTitlebarHeight;
+  }
+  return panel_manager_->display_area().bottom() - bottom;
 }

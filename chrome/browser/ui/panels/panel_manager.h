@@ -190,6 +190,16 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Overridden from DisplaySettingsProvider::FullScreenObserver:
   virtual void OnFullScreenModeChanged(bool is_full_screen) OVERRIDE;
 
+  // Returns the collection to which a new panel should add. The new panel
+  // is expected to be created with |bounds| and |mode|. The size of |bounds|
+  // could be used to determine which collection is more appropriate to have
+  // the new panel. Upon return, |positioning_mask| contains the required mask
+  // to be applied when the new panel is being added to the collection.
+  PanelCollection* GetCollectionForNewPanel(
+      const gfx::Rect& bounds,
+      CreateMode mode,
+      PanelCollection::PositioningMask* positioning_mask);
+
   // Tests may want to use a mock panel mouse watcher.
   void SetMouseWatcher(PanelMouseWatcher* watcher);
 

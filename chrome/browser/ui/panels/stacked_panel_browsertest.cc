@@ -466,4 +466,296 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, UngroupMinimizedPanels) {
   panel_manager->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToStackWithMostPanels) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 2 panels.
+  StackedPanelCollection* stack1 = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(200, 50, 200, 150), stack1);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack1->num_panels());
+
+  // Create another stack with 3 panels.
+  StackedPanelCollection* stack2 = panel_manager->CreateStack();
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(100, 50, 200, 150), stack2);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
+  Panel* panel5 = CreateStackedPanel("5", gfx::Rect(0, 0, 250, 120), stack2);
+  ASSERT_EQ(5, panel_manager->num_panels());
+  ASSERT_EQ(2, panel_manager->num_stacks());
+  ASSERT_EQ(3, stack2->num_panels());
+
+  // Create new panel. Expect that it will append to stack2 since it has most
+  // panels.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(6, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_EQ(2, stack1->num_panels());
+  EXPECT_EQ(4, stack2->num_panels());
+  EXPECT_TRUE(stack2->HasPanel(new_panel));
+  EXPECT_TRUE(new_panel == stack2->bottom_panel());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToRightMostStack) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 2 panels.
+  StackedPanelCollection* stack1 = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 50, 200, 150), stack1);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack1->num_panels());
+
+  // Create another stack with 2 panels.
+  StackedPanelCollection* stack2 = panel_manager->CreateStack();
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(200, 50, 200, 150), stack2);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
+  ASSERT_EQ(4, panel_manager->num_panels());
+  ASSERT_EQ(2, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack2->num_panels());
+
+  // Create new panel. Both stack1 and stack2 have same number of panels. Since
+  // stack2 is right-most, new panel will be added to it.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(5, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_EQ(2, stack1->num_panels());
+  EXPECT_EQ(3, stack2->num_panels());
+  EXPECT_TRUE(stack2->HasPanel(new_panel));
+  EXPECT_TRUE(new_panel == stack2->bottom_panel());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToTopMostStack) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 2 panels.
+  StackedPanelCollection* stack1 = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 90, 200, 150), stack1);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack1->num_panels());
+
+  // Create another stack with 2 panels.
+  StackedPanelCollection* stack2 = panel_manager->CreateStack();
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(100, 50, 200, 150), stack2);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
+  ASSERT_EQ(4, panel_manager->num_panels());
+  ASSERT_EQ(2, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack2->num_panels());
+
+  // Create new panel. Both stack1 and stack2 have same number of panels and
+  // same right position. Since stack2 is top-most, new panel will be added to
+  // it.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(5, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_EQ(2, stack1->num_panels());
+  EXPECT_EQ(3, stack2->num_panels());
+  EXPECT_TRUE(stack2->HasPanel(new_panel));
+  EXPECT_TRUE(new_panel == stack2->bottom_panel());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToGroupWithRightMostDetachedPanel) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 2 detached panels.
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(200, 50, 250, 150));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(250, 100, 150, 100));
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(0, panel_manager->num_stacks());
+  ASSERT_EQ(2, panel_manager->detached_collection()->num_panels());
+
+  // Create new panel. Expect that new panel will stack to the bottom of panel2
+  // since it is right-most.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(3, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->detached_collection()->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  StackedPanelCollection* stack = panel_manager->stacks().front();
+  EXPECT_EQ(2, stack->num_panels());
+  EXPECT_TRUE(panel2 == stack->top_panel());
+  EXPECT_TRUE(new_panel == stack->bottom_panel());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToGroupWitTopMostDetachedPanel) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 2 detached panels.
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(200, 100, 100, 150));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 50, 100, 100));
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(0, panel_manager->num_stacks());
+  ASSERT_EQ(2, panel_manager->detached_collection()->num_panels());
+
+  // Create new panel. Expect that new panel will stack to the bottom of panel2
+  // since it is top-most.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 150, 100), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(3, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->detached_collection()->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  StackedPanelCollection* stack = panel_manager->stacks().front();
+  EXPECT_EQ(2, stack->num_panels());
+  EXPECT_TRUE(panel2 == stack->top_panel());
+  EXPECT_TRUE(new_panel == stack->bottom_panel());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToStackWithCollapseToFit) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 3 panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 50, 200, 120), stack);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 150), stack);
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 180, 120), stack);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 170, 130), stack);
+  ASSERT_EQ(4, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(4, stack->num_panels());
+
+  // Activate panel1. The panels from most recent active to least recent active
+  // are: P1 P4 P3 P2
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+  EXPECT_FALSE(panel4->IsMinimized());
+
+  // Create a panel. Expect the least recent active panel P2 gets minimized such
+  // that there is enough space for new panel to append to the stack.
+  CreatePanelParams params1("M", gfx::Rect(50, 50, 300, 110), SHOW_AS_INACTIVE);
+  params1.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel1 = CreatePanelWithParams(params1);
+  EXPECT_EQ(5, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  EXPECT_EQ(5, stack->num_panels());
+  EXPECT_TRUE(new_panel1 == stack->bottom_panel());
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+  EXPECT_FALSE(panel4->IsMinimized());
+  EXPECT_FALSE(new_panel1->IsMinimized());
+
+  // Activate new_panel1. The panels from most recent active to least recent
+  // active are: PM P1 P4 P3 P2*
+  new_panel1->Activate();
+  WaitForPanelActiveState(new_panel1, SHOW_AS_ACTIVE);
+
+  // Create another panel. Expect P3 and P4 are minimized such that there is
+  // enoush space for new panel to append to the stack.
+  CreatePanelParams params2("N", gfx::Rect(50, 50, 300, 180), SHOW_AS_INACTIVE);
+  params2.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel2 = CreatePanelWithParams(params2);
+  EXPECT_EQ(6, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  EXPECT_EQ(6, stack->num_panels());
+  EXPECT_TRUE(new_panel2 == stack->bottom_panel());
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_TRUE(panel3->IsMinimized());
+  EXPECT_TRUE(panel4->IsMinimized());
+  EXPECT_FALSE(new_panel1->IsMinimized());
+  EXPECT_FALSE(new_panel2->IsMinimized());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelToGroupWithDetachedPanelWithCollapseToFit) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 2 detached panels.
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(300, 300, 200, 150));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(250, 310, 150, 150));
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(0, panel_manager->num_stacks());
+  ASSERT_EQ(2, panel_manager->detached_collection()->num_panels());
+
+  // Activate panel1 suhc that it will not get collapsed when the new panel
+  // needs the space.
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+
+  // Create new panel. Expect panel2 is minimized such that there is enough
+  // space for new panel to append to panel2.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 300, 220), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(3, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->detached_collection()->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  StackedPanelCollection* stack = panel_manager->stacks().front();
+  EXPECT_EQ(2, stack->num_panels());
+  EXPECT_TRUE(panel2 == stack->top_panel());
+  EXPECT_TRUE(new_panel == stack->bottom_panel());
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_FALSE(new_panel->IsMinimized());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelAsDetachedDueToNoPanelToGroupWith) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 2 panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 350, 200, 100), stack);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack->num_panels());
+
+  // Create 2 detached panels.
+  Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 450, 200, 100));
+  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(250, 150, 150, 200));
+  ASSERT_EQ(4, panel_manager->num_panels());
+  ASSERT_EQ(2, panel_manager->detached_collection()->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+
+  // Create new panel. Expect that new panel has to be created as detached due
+  // to that there is not enough space from any stack or detached panel.
+  CreatePanelParams params("N", gfx::Rect(50, 50, 300, 300), SHOW_AS_INACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* new_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(5, panel_manager->num_panels());
+  EXPECT_EQ(3, panel_manager->detached_collection()->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  EXPECT_EQ(2, stack->num_panels());
+  EXPECT_TRUE(panel_manager->detached_collection()->HasPanel(new_panel));
+
+  panel_manager->CloseAll();
+}
+
 #endif

@@ -45,6 +45,42 @@ const double kPanelMaxHeightFactor = 0.5;
 // Width to height ratio is used to compute the default width or height
 // when only one value is provided.
 const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
+
+// The following comparers are used by std::list<>::sort to determine which
+// stack or panel we want to seacrh first for adding new panel.
+bool ComparePanelsByPosition(Panel* panel1, Panel* panel2) {
+  gfx::Rect bounds1 = panel1->GetBounds();
+  gfx::Rect bounds2 = panel2->GetBounds();
+
+  // When there're ties, the right-most stack will appear first.
+  if (bounds1.x() > bounds2.x())
+    return true;
+  if (bounds1.x() < bounds2.x())
+    return false;
+
+  // In the event of another draw, the top-most stack will appear first.
+  return bounds1.y() < bounds2.y();
+}
+
+bool ComparerNumberOfPanelsInStack(StackedPanelCollection* stack1,
+                                   StackedPanelCollection* stack2) {
+  // The stack with more panels will appear first.
+  int num_panels_in_stack1 = stack1->num_panels();
+  int num_panels_in_stack2 = stack2->num_panels();
+  if (num_panels_in_stack1 > num_panels_in_stack2)
+    return true;
+  if (num_panels_in_stack1 < num_panels_in_stack2)
+    return false;
+
+  DCHECK(num_panels_in_stack1);
+
+  return ComparePanelsByPosition(stack1->top_panel(), stack2->top_panel());
+}
+
+bool CompareDetachedPanels(Panel* panel1, Panel* panel2) {
+  return ComparePanelsByPosition(panel1, panel2);
+}
+
 }  // namespace
 
 // static
@@ -212,23 +248,90 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
   }
 
   // Add the panel to the appropriate panel collection.
-  // Delay layout refreshes in case multiple panels are created within
-  // a short time of one another or the focus changes shortly after panel
-  // is created to avoid excessive screen redraws.
-  PanelCollection* collection;
   PanelCollection::PositioningMask positioning_mask;
-  if (CREATE_AS_DOCKED == mode) {
-    collection = docked_collection_.get();
-    positioning_mask = PanelCollection::DELAY_LAYOUT_REFRESH;
-  } else {
-    collection = detached_collection_.get();
-    positioning_mask = PanelCollection::KNOWN_POSITION;
-  }
-
+  PanelCollection* collection = GetCollectionForNewPanel(
+      bounds, mode, &positioning_mask);
   collection->AddPanel(panel, positioning_mask);
   collection->UpdatePanelOnCollectionChange(panel);
 
   return panel;
+}
+
+PanelCollection* PanelManager::GetCollectionForNewPanel(
+    const gfx::Rect& bounds,
+    CreateMode mode,
+    PanelCollection::PositioningMask* positioning_mask) {
+  if (mode == CREATE_AS_DOCKED) {
+    // Delay layout refreshes in case multiple panels are created within
+    // a short time of one another or the focus changes shortly after panel
+    // is created to avoid excessive screen redraws.
+    *positioning_mask = PanelCollection::DELAY_LAYOUT_REFRESH;
+    return docked_collection_.get();
+  }
+
+  DCHECK_EQ(CREATE_AS_DETACHED, mode);
+  *positioning_mask = PanelCollection::DEFAULT_POSITION;
+
+  // If the stacking support is not enabled, new panel will still be created as
+  // detached.
+  if (!IsPanelStackingEnabled())
+    return detached_collection_.get();
+
+  // If there're stacks, try to find a stack that can fit new panel.
+  if (!stacks_.empty()) {
+    // Perform the search as:
+    // 1) Search from the stack with more panels to the stack with least panels.
+    // 2) Amongs the stacks with same number of panels, search from the right-
+    //    most stack to the left-most stack.
+    // 3) Among the stack with same number of panels and same x position,
+    //    search from the top-most stack to the bottom-most stack.
+    // 4) If there is not enough space to fit new panel even with all inactive
+    //    panels being collapsed, move to next stack.
+    stacks_.sort(ComparerNumberOfPanelsInStack);
+    for (Stacks::const_iterator iter = stacks_.begin();
+         iter != stacks_.end(); iter++) {
+      StackedPanelCollection* stack = *iter;
+      if (bounds.height() <= stack->GetMaximiumAvailableBottomSpace()) {
+        *positioning_mask = static_cast<PanelCollection::PositioningMask>(
+            *positioning_mask | PanelCollection::COLLAPSE_TO_FIT);
+        return stack;
+      }
+    }
+  }
+
+  // Then try to find a detached panel to which new panel can stack.
+  if (detached_collection_->num_panels()) {
+    // Perform the search as:
+    // 1) Search from the right-most detached panel to the left-most detached
+    //    panel.
+    // 2) Among the detached panels with same x position, search from the
+    //    top-most detached panel to the bottom-most deatched panel.
+    // 3) If there is not enough space beneath the detached panel, even by
+    //    collapsing it if it is inactive, to fit new panel, move to next
+    //    detached panel.
+    detached_collection_->SortPanels(CompareDetachedPanels);
+
+    for (DetachedPanelCollection::Panels::const_iterator iter =
+             detached_collection_->panels().begin();
+         iter != detached_collection_->panels().end(); ++iter) {
+      Panel* panel = *iter;
+      int max_available_space =
+          display_area_.bottom() - panel->GetBounds().y() -
+          (panel->IsActive() ? panel->GetBounds().height()
+                             : panel::kTitlebarHeight);
+      if (bounds.height() <= max_available_space) {
+        StackedPanelCollection* new_stack = CreateStack();
+        MovePanelToCollection(panel,
+                              new_stack,
+                              PanelCollection::DEFAULT_POSITION);
+        *positioning_mask = static_cast<PanelCollection::PositioningMask>(
+            *positioning_mask | PanelCollection::COLLAPSE_TO_FIT);
+        return new_stack;
+      }
+    }
+  }
+
+  return detached_collection_.get();
 }
 
 void PanelManager::OnPanelClosed(Panel* panel) {
