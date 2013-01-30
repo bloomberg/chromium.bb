@@ -328,19 +328,15 @@ int MountNodeHttp::Truncate(size_t size) {
 }
 
 int MountNodeHttp::Write(size_t offs, const void* buf, size_t count) {
-  // TODO(binji): supprt POST?
+  // TODO(binji): support POST?
   errno = ENOSYS;
   return -1;
 }
 
 size_t MountNodeHttp::GetSize() {
-  struct stat stat;
-  if (GetStat(&stat) == -1) {
-    // errno is already set by GetStat.
-    return -1;
-  }
-
-  return stat.st_size;
+  // TODO(binji): This value should be cached properly; i.e. obey the caching
+  // headers returned by the server.
+  return stat_.st_size;
 }
 
 MountNodeHttp::MountNodeHttp(Mount* mount, int ino, int dev,

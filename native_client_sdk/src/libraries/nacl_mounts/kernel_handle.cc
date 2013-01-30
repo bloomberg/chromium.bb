@@ -27,12 +27,13 @@ KernelHandle::KernelHandle(Mount* mnt, MountNode* node, int mode)
 
 off_t KernelHandle::Seek(off_t offset, int whence) {
   size_t base;
+  size_t node_size = node_->GetSize();
 
   switch (whence) {
     default: return -1;
     case SEEK_SET: base = 0; break;
     case SEEK_CUR: base = offs_; break;
-    case SEEK_END: base = node_->GetSize(); break;
+    case SEEK_END: base = node_size; break;
   }
 
   if (base + offset < 0) {
@@ -44,7 +45,7 @@ off_t KernelHandle::Seek(off_t offset, int whence) {
 
   // Seeking past the end of the file will zero out the space between the old
   // end and the new end.
-  if (offs_ > node_->GetSize()) {
+  if (offs_ > node_size) {
     if (node_->Truncate(offs_) < 0) {
       errno = EINVAL;
       return -1;
