@@ -1,0 +1,20 @@
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file specifies dependencies required to bootstrap perf_tools. It is in a
+# minimal version of the format used by other DEPS files that gclient can read,
+# but it should only be used to bootstrap perf_tools *outside* of a normal
+# Chrome checkout.
+
+deps = {
+  "src/tools/perf/perf_tools":
+    "https://src.chromium.org/chrome/trunk/src/tools/perf/perf_tools",
+  "src/tools/perf/page_sets":
+    "https://src.chromium.org/chrome/trunk/src/tools/perf/page_sets",
+  }
+
+# perf_tools depends on Telemetry, so pull in the Telemetry deps, too.
+deps_includes = [
+    "https://src.chromium.org/chrome/trunk/src/tools/telemetry/tools/bootstrap_deps"
+  ]

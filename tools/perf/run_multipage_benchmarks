@@ -2,12 +2,43 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import imp
 import os
 import sys
+import urllib
 
-import perf_tools
-from telemetry import multi_page_benchmark_runner
+# Directory path in which to save bootstrap files.
+BOOTSTRAPPED_FILES_DIR = 'support/bootstrap_files'
+
+
+def bootstrapIfNeeded(module_name, module_path, module_deps_url):
+  """Ensures that the given module_name is available, grab from URL if not."""
+  try:
+    imp.find_module(module_name)
+    return
+  except ImportError:
+    sys.path.append(os.path.join(os.path.dirname(__file__),
+                                 BOOTSTRAPPED_FILES_DIR,
+                                 module_path)) 
+    try:
+      imp.find_module(module_name)
+      return
+    except ImportError:
+      bootstrap_txt = urllib.urlopen('http://src.chromium.org/viewvc/chrome/' +
+                                     'trunk/src/tools/telemetry/tools/' +
+                                     'telemetry_bootstrap.py').read()
+      bootstrap = imp.new_module('bootstrap')
+      exec bootstrap_txt in bootstrap.__dict__
+      bootstrap.DownloadDepsURL(os.path.join(os.path.dirname(__file__),
+                                             BOOTSTRAPPED_FILES_DIR),
+                                module_deps_url)
+
 
 if __name__ == '__main__':
+  bootstrapIfNeeded('perf_tools', 'src/tools/perf',
+                    'http://src.chromium.org/viewvc/chrome/trunk/src/tools/' +
+                    'perf/perf_lib/bootstrap_deps')
+  import perf_tools
+  from telemetry import multi_page_benchmark_runner
   benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
   sys.exit(multi_page_benchmark_runner.Main(benchmark_dir))
