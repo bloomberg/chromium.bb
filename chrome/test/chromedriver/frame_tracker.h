@@ -25,7 +25,7 @@ class FrameTracker : public DevToolsEventListener {
   FrameTracker();
   virtual ~FrameTracker();
 
-  Status GetFrameForContextId(const int context_id, std::string* frame_id);
+  Status GetFrameForContextId(int context_id, std::string* frame_id);
   Status GetContextIdForFrame(const std::string& frame_id, int* context_id);
 
   // Overridden from DevToolsEventListener:

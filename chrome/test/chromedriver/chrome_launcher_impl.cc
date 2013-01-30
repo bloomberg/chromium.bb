@@ -46,9 +46,7 @@ Status ChromeLauncherImpl::Launch(
   if (!user_data_dir.CreateUniqueTempDir())
     return Status(kUnknownError, "cannot create temp dir for user data dir");
   command.AppendSwitchPath("user-data-dir", user_data_dir.path());
-  command.AppendArg(
-      base::StringPrintf("data:text/html;charset=utf-8,ChromeDriver v%s",
-                         kChromeDriverVersion));
+  command.AppendArg("data:text/html;charset=utf-8,");
 
   base::LaunchOptions options;
   base::ProcessHandle process;

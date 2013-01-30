@@ -156,7 +156,7 @@ class ChromeDriverTest(unittest.TestCase):
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testGetCurrentUrl(self):
-    self.assertEqual('about:blank', self._driver.GetCurrentUrl())
+    self.assertTrue('data:' in self._driver.GetCurrentUrl())
 
   def testGoBackAndGoForward(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
