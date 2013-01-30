@@ -1980,6 +1980,7 @@ void RenderViewImpl::didAddMessageToConsole(
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
   switch (message.level) {
     case WebConsoleMessage::LevelTip:
+    case WebConsoleMessage::LevelDebug:
       log_severity = logging::LOG_VERBOSE;
       break;
     case WebConsoleMessage::LevelLog:
