@@ -22,6 +22,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 
 import java.io.ByteArrayInputStream;
+import java.security.MessageDigest;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -107,13 +108,13 @@ class CertificateViewer implements OnItemSelectedListener {
             }
             Certificate cert = mCertificateFactory.generateCertificate(
                     new ByteArrayInputStream(derData));
-            addCertificateDetails(cert);
+            addCertificateDetails(cert, getDigest(derData, "SHA-256"), getDigest(derData, "SHA-1"));
         } catch (CertificateException e) {
             Log.e("CertViewer", "Error parsing certificate" + e.toString());
         }
     }
 
-    private void addCertificateDetails(Certificate cert) {
+    private void addCertificateDetails(Certificate cert, byte[] sha256Digest, byte[] sha1Digest) {
         LinearLayout certificateView = new LinearLayout(mContext);
         mViews.add(certificateView);
         certificateView.setOrientation(LinearLayout.VERTICAL);
@@ -123,7 +124,7 @@ class CertificateViewer implements OnItemSelectedListener {
 
         mTitles.add(sslCert.getIssuedTo().getCName());
 
-        addSectionTitle(certificateView, nativeGetIssuedToText());
+        addSectionTitle(certificateView, nativeGetCertIssuedToText());
         addItem(certificateView, nativeGetCertInfoCommonNameText(),
                 sslCert.getIssuedTo().getCName());
         addItem(certificateView, nativeGetCertInfoOrganizationText(),
@@ -131,7 +132,7 @@ class CertificateViewer implements OnItemSelectedListener {
         addItem(certificateView, nativeGetCertInfoOrganizationUnitText(),
                 sslCert.getIssuedTo().getUName());
         addItem(certificateView, nativeGetCertInfoSerialNumberText(),
-                formatSerial(x509.getSerialNumber().toByteArray()));
+                formatBytes(x509.getSerialNumber().toByteArray(), ':'));
 
         addSectionTitle(certificateView, nativeGetCertIssuedByText());
         addItem(certificateView, nativeGetCertInfoCommonNameText(),
@@ -141,12 +142,18 @@ class CertificateViewer implements OnItemSelectedListener {
         addItem(certificateView, nativeGetCertInfoOrganizationUnitText(),
                 sslCert.getIssuedBy().getUName());
 
-        addSectionTitle(certificateView, nativeGetCertValidity());
+        addSectionTitle(certificateView, nativeGetCertValidityText());
         java.text.DateFormat dateFormat = DateFormat.getDateFormat(mContext);
         addItem(certificateView, nativeGetCertIssuedOnText(),
                 dateFormat.format(sslCert.getValidNotBeforeDate()));
         addItem(certificateView, nativeGetCertExpiresOnText(),
                 dateFormat.format(sslCert.getValidNotAfterDate()));
+
+        addSectionTitle(certificateView, nativeGetCertFingerprintsText());
+        addItem(certificateView, nativeGetCertSHA256FingerprintText(),
+                formatBytes(sha256Digest, ' '));
+        addItem(certificateView, nativeGetCertSHA1FingerprintText(),
+                formatBytes(sha1Digest, ' '));
     }
 
     private void addSectionTitle(LinearLayout certificateView, String label) {
@@ -177,15 +184,25 @@ class CertificateViewer implements OnItemSelectedListener {
         certificateView.addView(t);
     }
 
-    private static String formatSerial(byte[] bytes) {
+    private static String formatBytes(byte[] bytes, char separator) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
             sb.append(String.format("%02X", bytes[i]));
             if (i != bytes.length - 1) {
-                sb.append(':');
+                sb.append(separator);
             }
         }
         return sb.toString();
+    }
+
+    private static byte[] getDigest(byte[] bytes, String algorithm) {
+      try {
+        MessageDigest md = MessageDigest.getInstance(algorithm);
+        md.update(bytes);
+        return md.digest();
+      } catch (java.security.NoSuchAlgorithmException e) {
+        return null;
+      }
     }
 
     @Override
@@ -200,13 +217,16 @@ class CertificateViewer implements OnItemSelectedListener {
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    private static native String nativeGetIssuedToText();
+    private static native String nativeGetCertIssuedToText();
     private static native String nativeGetCertInfoCommonNameText();
     private static native String nativeGetCertInfoOrganizationText();
     private static native String nativeGetCertInfoSerialNumberText();
     private static native String nativeGetCertInfoOrganizationUnitText();
     private static native String nativeGetCertIssuedByText();
-    private static native String nativeGetCertValidity();
+    private static native String nativeGetCertValidityText();
     private static native String nativeGetCertIssuedOnText();
     private static native String nativeGetCertExpiresOnText();
+    private static native String nativeGetCertFingerprintsText();
+    private static native String nativeGetCertSHA256FingerprintText();
+    private static native String nativeGetCertSHA1FingerprintText();
 }

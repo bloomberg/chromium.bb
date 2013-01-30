@@ -21,7 +21,7 @@ void ShowCertificateViewer(content::WebContents* web_contents,
   NOTIMPLEMENTED();
 }
 
-static jstring GetIssuedToText(JNIEnv* env, jclass) {
+static jstring GetCertIssuedToText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
       env, l10n_util::GetStringUTF8(IDS_CERT_INFO_SUBJECT_GROUP)).Release();
 }
@@ -33,40 +33,58 @@ static jstring GetCertInfoCommonNameText(JNIEnv* env, jclass) {
 
 static jstring GetCertInfoOrganizationText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(
-           IDS_CERT_INFO_ORGANIZATION_LABEL)).Release();
+      env, l10n_util::GetStringUTF8(
+          IDS_CERT_INFO_ORGANIZATION_LABEL)).Release();
 }
 
 static jstring GetCertInfoSerialNumberText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(
-           IDS_CERT_INFO_SERIAL_NUMBER_LABEL)).Release();
+      env, l10n_util::GetStringUTF8(
+          IDS_CERT_INFO_SERIAL_NUMBER_LABEL)).Release();
 }
 
 static jstring GetCertInfoOrganizationUnitText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(
-           IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL)).Release();
+      env, l10n_util::GetStringUTF8(
+          IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL)).Release();
 }
 
 static jstring GetCertIssuedByText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(IDS_CERT_INFO_ISSUER_GROUP)).Release();
+      env, l10n_util::GetStringUTF8(IDS_CERT_INFO_ISSUER_GROUP)).Release();
 }
 
-static jstring GetCertValidity(JNIEnv* env, jclass) {
+static jstring GetCertValidityText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(IDS_CERT_INFO_VALIDITY_GROUP)).Release();
+      env, l10n_util::GetStringUTF8(IDS_CERT_INFO_VALIDITY_GROUP)).Release();
 }
 
 static jstring GetCertIssuedOnText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(IDS_CERT_INFO_ISSUED_ON_LABEL)).Release();
+      env, l10n_util::GetStringUTF8(IDS_CERT_INFO_ISSUED_ON_LABEL)).Release();
 }
 
 static jstring GetCertExpiresOnText(JNIEnv* env, jclass) {
   return ConvertUTF8ToJavaString(
-       env, l10n_util::GetStringUTF8(IDS_CERT_INFO_EXPIRES_ON_LABEL)).Release();
+      env, l10n_util::GetStringUTF8(IDS_CERT_INFO_EXPIRES_ON_LABEL)).Release();
+}
+
+static jstring GetCertFingerprintsText(JNIEnv* env, jclass) {
+  return ConvertUTF8ToJavaString(
+      env, l10n_util::GetStringUTF8(
+          IDS_CERT_INFO_FINGERPRINTS_GROUP)).Release();
+}
+
+static jstring GetCertSHA256FingerprintText(JNIEnv* env, jclass) {
+  return ConvertUTF8ToJavaString(
+      env, l10n_util::GetStringUTF8(
+          IDS_CERT_INFO_SHA256_FINGERPRINT_LABEL)).Release();
+}
+
+static jstring GetCertSHA1FingerprintText(JNIEnv* env, jclass) {
+  return ConvertUTF8ToJavaString(
+      env, l10n_util::GetStringUTF8(
+          IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL)).Release();
 }
 
 bool RegisterCertificateViewer(JNIEnv* env) {
