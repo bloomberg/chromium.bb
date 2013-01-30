@@ -156,10 +156,14 @@ GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
 
 GURL GDataWapiUrlGenerator::GenerateEditUrl(
     const std::string& resource_id) const {
-  GURL result = base_url_.Resolve(
+  return AddStandardUrlParams(GenerateEditUrlWithoutParams(resource_id));
+}
+
+GURL GDataWapiUrlGenerator::GenerateEditUrlWithoutParams(
+    const std::string& resource_id) const {
+  return base_url_.Resolve(
       base::StringPrintf(kGetEditURLFormat,
                          net::EscapePath(resource_id).c_str()));
-  return AddStandardUrlParams(result);
 }
 
 GURL GDataWapiUrlGenerator::GenerateContentUrl(

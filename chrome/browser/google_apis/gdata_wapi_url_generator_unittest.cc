@@ -166,6 +166,12 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrl) {
       url_generator_.GenerateEditUrl("XXX").spec());
 }
 
+TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithoutParams) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/XXX",
+      url_generator_.GenerateEditUrlWithoutParams("XXX").spec());
+}
+
 TEST_F(GDataWapiUrlGeneratorTest, GenerateContentUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/"
