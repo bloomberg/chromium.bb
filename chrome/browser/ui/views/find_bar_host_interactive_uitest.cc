@@ -171,8 +171,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
                                            location_bar_focus_view_id_));
 }
 
-#if defined(OS_WIN)
-// crbug.com/128724
+// Fails often on Win, CrOS. http://crbug.com/145476, http://crbug.com/128724
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_FocusRestoreOnTabSwitch DISABLED_FocusRestoreOnTabSwitch
 #else
 #define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
