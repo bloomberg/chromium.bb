@@ -15,6 +15,7 @@ import itertools
 import logging
 import mox
 import signal
+import StringIO
 import time
 import urllib
 import __builtin__
@@ -958,10 +959,8 @@ class Test_iflatten_instance(cros_test_lib.TestCase):
 
 class TestKeyValueFiles(cros_test_lib.TempDirTestCase):
 
-  def testLoadFile(self):
-    """Verify reading a simple file works"""
-    conf_file = os.path.join(self.tempdir, 'file.conf')
-    osutils.WriteFile(conf_file, """# A comment !@
+  def setUp(self):
+    self.contents = """# A comment !@
 A = 1
 AA= 2
 AAA =3
@@ -981,8 +980,8 @@ EEE ="Fk  \t  kkkk"\t
 Q = "'q"
 \tQQ ="q'"\x20
  QQQ='"q"'\t
-""")
-    expected = {
+"""
+    self.expected = {
         'A': '1',
         'AA': '2',
         'AAA': '3',
@@ -999,8 +998,26 @@ Q = "'q"
         'QQ': "q'",
         'QQQ': '"q"',
     }
-    result = cros_build_lib.LoadKeyValueFile(conf_file)
-    self.assertEqual(expected, result)
+
+    self.conf_file = os.path.join(self.tempdir, 'file.conf')
+    osutils.WriteFile(self.conf_file, self.contents)
+
+  def _RunAndCompare(self, test_input):
+    result = cros_build_lib.LoadKeyValueFile(test_input)
+    self.assertEqual(self.expected, result)
+
+  def testLoadFilePath(self):
+    """Verify reading a simple file works"""
+    self._RunAndCompare(self.conf_file)
+
+  def testLoadStringIO(self):
+    """Verify passing in StringIO object works."""
+    self._RunAndCompare(StringIO.StringIO(self.contents))
+
+  def testLoadFileObject(self):
+    """Verify passing in open file object works."""
+    with open(self.conf_file) as f:
+      self._RunAndCompare(f)
 
 
 if __name__ == '__main__':

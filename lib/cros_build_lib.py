@@ -1155,8 +1155,8 @@ class ContextManagerStack(object):
       try:
         if handler.__exit__(exc_type, exc, traceback):
           exc_type = exc = traceback = None
-      # pylint: disable=W0702
       except:
+        # pylint: disable=W0702
         exc_type, exc, traceback = sys.exc_info()
     if all(x is None for x in (exc_type, exc, traceback)):
       return True
@@ -1398,6 +1398,16 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600):
     time.sleep(sleep_timeout)
 
 
+@contextlib.contextmanager
+def _Open(input):
+  """Convenience ctx that accepts a file path or an already open file object."""
+  if isinstance(input, basestring):
+    with open(input) as f:
+      yield f
+  else:
+    yield input
+
+
 def LoadKeyValueFile(input, ignore_missing=False):
   """Turn a key=value file into a dict
 
@@ -1406,14 +1416,15 @@ def LoadKeyValueFile(input, ignore_missing=False):
   where json isn't an option.
 
   Args:
-    input: The file to read.
+    input: The file to read.  Can be a path or an open file object.
     ignore_missing: If the file does not exist, return an empty dict.
   Returns:
     a dict of all the key=value pairs found in the file.
   """
   d = {}
+
   try:
-    with open(input) as f:
+    with _Open(input) as f:
       for raw_line in f:
         line = raw_line.split('#')[0].strip()
         if not line:
@@ -1429,4 +1440,5 @@ def LoadKeyValueFile(input, ignore_missing=False):
   except EnvironmentError, e:
     if not (ignore_missing and e.errno == errno.ENOENT):
       raise
+
   return d
