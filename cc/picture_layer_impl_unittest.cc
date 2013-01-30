@@ -15,27 +15,6 @@
 namespace cc {
 namespace {
 
-class FakePicture : public Picture {
- public:
-  static scoped_refptr<Picture> Create(gfx::Rect layer_rect) {
-    scoped_refptr<FakePicture> picture(new FakePicture(layer_rect));
-
-    FakeContentLayerClient client;
-    RenderingStats stats;
-    picture->Record(&client, stats);
-
-    return picture;
-  }
-
- protected:
-  FakePicture(gfx::Rect layer_rect)
-      : Picture(layer_rect) {
-  }
-
-  ~FakePicture() {
-  }
-};
-
 class TestablePictureLayerImpl : public PictureLayerImpl {
  public:
   static scoped_ptr<TestablePictureLayerImpl> create(
@@ -100,7 +79,10 @@ class TestablePicturePileImpl : public PicturePileImpl {
     if (HasRecordingAt(x, y))
       return;
     gfx::Rect bounds(tiling().TileBounds(x, y));
-    scoped_refptr<Picture> picture(FakePicture::Create(bounds));
+    scoped_refptr<Picture> picture(Picture::Create(bounds));
+    FakeContentLayerClient client;
+    RenderingStats stats;
+    picture->Record(&client, stats);
     picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
     EXPECT_TRUE(HasRecordingAt(x, y));
   }

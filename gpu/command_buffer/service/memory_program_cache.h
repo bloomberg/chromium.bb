@@ -62,12 +62,11 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
     const ShaderTranslator::VariableMap attrib_map_1;
     const ShaderTranslator::VariableMap uniform_map_1;
 
-   protected:
+   private:
     friend class base::RefCounted<ProgramCacheValue>;
 
     ~ProgramCacheValue();
 
-   private:
     DISALLOW_COPY_AND_ASSIGN(ProgramCacheValue);
   };
 

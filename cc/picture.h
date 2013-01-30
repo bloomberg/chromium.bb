@@ -46,7 +46,7 @@ class CC_EXPORT Picture
       const gfx::Rect& layer_rect,
       std::list<skia::LazyPixelRef*>& pixel_ref_list);
 
- protected:
+ private:
   Picture(gfx::Rect layer_rect);
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.

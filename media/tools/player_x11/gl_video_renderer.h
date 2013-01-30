@@ -23,11 +23,10 @@ class GlVideoRenderer : public base::RefCountedThreadSafe<GlVideoRenderer> {
 
   void Paint(media::VideoFrame* video_frame);
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<GlVideoRenderer>;
   ~GlVideoRenderer();
 
- private:
   // Initializes GL rendering for the given dimensions.
   void Initialize(gfx::Size coded_size, gfx::Rect visible_rect);
 

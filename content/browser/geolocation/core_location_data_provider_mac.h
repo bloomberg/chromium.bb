@@ -33,11 +33,10 @@ class CoreLocationDataProviderMac
 
   void UpdatePosition(Geoposition* position);
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<CoreLocationDataProviderMac>;
   ~CoreLocationDataProviderMac();
 
- private:
   // These must execute in BrowserThread::UI
   void StartUpdatingTask();
   void StopUpdatingTask();
