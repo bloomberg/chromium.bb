@@ -8,12 +8,12 @@
 #include <map>
 
 #include "content/public/renderer/render_process_observer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
 
 namespace WebKit {
 class WebFrame;
-class WebMediaStreamDescriptor;
 class WebRTCICECandidate;
 class WebString;
 }  // namespace WebKit

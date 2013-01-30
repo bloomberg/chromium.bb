@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenter.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 
 namespace WebKit {
 class WebMediaStreamCenterClient;

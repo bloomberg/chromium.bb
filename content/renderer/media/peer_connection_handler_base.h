@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
