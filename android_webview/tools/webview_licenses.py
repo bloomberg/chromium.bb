@@ -97,6 +97,14 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('out/Release')
   # 'Copyright' appears in license agreements
   excluded_dirs_list.append('chrome/app/resources')
+  # This is a test output directory
+  excluded_dirs_list.append('chrome/tools/test/reference_build')
+  # This is tests directory, doesn't exist in the snapshot
+  excluded_dirs_list.append('content/test/data')
+  # This is a test output directory
+  excluded_dirs_list.append('data/dom_perf')
+  # Histogram tools, doesn't exist in the snapshot
+  excluded_dirs_list.append('tools/histograms')
   # Arm sysroot tools, doesn't exist in the snapshot
   excluded_dirs_list.append('arm-sysroot')
 
