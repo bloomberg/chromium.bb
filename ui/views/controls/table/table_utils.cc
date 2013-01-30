@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/table/table_view.h"
 
 namespace views {
 
@@ -98,6 +99,16 @@ int TableColumnAlignmentToCanvasAlignment(
   }
   NOTREACHED();
   return gfx::Canvas::TEXT_ALIGN_LEFT;
+}
+
+int GetClosestVisibleColumnIndex(const TableView* table, int x) {
+  const std::vector<TableView::VisibleColumn>& columns(
+      table->visible_columns());
+  for (size_t i = 0; i < columns.size(); ++i) {
+    if (x <= columns[i].x + columns[i].width)
+      return static_cast<int>(i);
+  }
+  return static_cast<int>(columns.size()) - 1;
 }
 
 }  // namespace views

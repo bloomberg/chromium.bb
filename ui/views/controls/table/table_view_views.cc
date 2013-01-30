@@ -381,6 +381,16 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
+bool TableView::GetTooltipText(const gfx::Point& p,
+                               string16* tooltip) const {
+  return GetTooltipImpl(p, tooltip, NULL);
+}
+
+bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
+                                     gfx::Point* loc) const {
+  return GetTooltipImpl(p, NULL, loc);
+}
+
 void TableView::OnModelChanged() {
   selection_model_.Clear();
   NumRowsChanged();
@@ -604,15 +614,29 @@ int TableView::CompareRows(int model_row1, int model_row2) {
   return SwapCompareResult(sort_result, sort_descriptors_[0].ascending);
 }
 
-gfx::Rect TableView::GetRowBounds(int row) {
+gfx::Rect TableView::GetRowBounds(int row) const {
   return gfx::Rect(0, row * row_height_, width(), row_height_);
 }
 
-gfx::Rect TableView::GetCellBounds(int row, int visible_column_index) {
+gfx::Rect TableView::GetCellBounds(int row, int visible_column_index) const {
   if (!header_)
     return GetRowBounds(row);
   const VisibleColumn& vis_col(visible_columns_[visible_column_index]);
   return gfx::Rect(vis_col.x, row * row_height_, vis_col.width, row_height_);
+}
+
+void TableView::AdjustCellBoundsForText(int visible_column_index,
+                                        gfx::Rect* bounds) const {
+  int text_x = kTextHorizontalPadding + bounds->x();
+  if (visible_column_index == 0) {
+    if (grouper_)
+      text_x += kGroupingIndicatorSize + kTextHorizontalPadding;
+    if (table_type_ == ICON_AND_TEXT)
+      text_x += kImageSize + kTextHorizontalPadding;
+  }
+  bounds->set_x(text_x);
+  bounds->set_width(
+      std::max(0, bounds->right() - kTextHorizontalPadding - text_x));
 }
 
 void TableView::CreateHeaderIfNecessary() {
@@ -825,6 +849,40 @@ GroupRange TableView::GetGroupRange(int model_index) const {
     range.length = 1;
   }
   return range;
+}
+
+bool TableView::GetTooltipImpl(const gfx::Point& location,
+                               string16* tooltip,
+                               gfx::Point* tooltip_origin) const {
+  const int row = location.y() / row_height_;
+  if (row < 0 || row >= RowCount() || visible_columns_.empty())
+    return false;
+
+  const int x = GetMirroredXInView(location.x());
+  const int column = GetClosestVisibleColumnIndex(this, x);
+  if (x < visible_columns_[column].x ||
+      x > (visible_columns_[column].x + visible_columns_[column].width))
+    return false;
+
+  const string16 text(model_->GetText(ViewToModel(row),
+                                      visible_columns_[column].column.id));
+  if (text.empty())
+    return false;
+
+  gfx::Rect cell_bounds(GetCellBounds(row, column));
+  AdjustCellBoundsForText(column, &cell_bounds);
+  const int right = std::min(GetVisibleBounds().right(), cell_bounds.right());
+  if (right > cell_bounds.x() &&
+      font_.GetStringWidth(text) <= (right - cell_bounds.x()))
+    return false;
+
+  if (tooltip)
+    *tooltip = text;
+  if (tooltip_origin) {
+    tooltip_origin->SetPoint(cell_bounds.x(),
+                             cell_bounds.y() + kTextVerticalPadding);
+  }
+  return true;
 }
 
 }  // namespace views

@@ -212,7 +212,7 @@ void TableHeader::OnMouseReleased(const ui::MouseEvent& event) {
   if (!was_resizing && event.IsOnlyLeftMouseButton() &&
       !table_->visible_columns().empty()) {
     const int x = GetMirroredXInView(event.x());
-    const int index = GetClosestColumn(x);
+    const int index = GetClosestVisibleColumnIndex(table_, x);
     const TableView::VisibleColumn& column(table_->visible_columns()[index]);
     if (x >= column.x && x < column.x + column.width && event.y() >= 0 &&
         event.y() < height())
@@ -228,21 +228,12 @@ void TableHeader::OnMouseCaptureLost() {
   resize_details_.reset();
 }
 
-int TableHeader::GetClosestColumn(int x) const {
-  const Columns& columns(table_->visible_columns());
-  for (size_t i = 0; i < columns.size(); ++i) {
-    if (x <= columns[i].x + columns[i].width)
-      return static_cast<int>(i);
-  }
-  return static_cast<int>(columns.size()) - 1;
-}
-
 int TableHeader::GetResizeColumn(int x) const {
   const Columns& columns(table_->visible_columns());
   if (columns.empty())
     return -1;
 
-  const int index = GetClosestColumn(x);
+  const int index = GetClosestVisibleColumnIndex(table_, x);
   DCHECK_NE(-1, index);
   const TableView::VisibleColumn& column(table_->visible_columns()[index]);
   if (index > 0 && x >= column.x - kResizePadding &&

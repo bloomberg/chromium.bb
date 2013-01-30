@@ -182,6 +182,10 @@ class VIEWS_EXPORT TableView
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
+  virtual bool GetTooltipTextOrigin(const gfx::Point& p,
+                                    gfx::Point* loc) const OVERRIDE;
 
   // ui::TableModelObserver overrides:
   virtual void OnModelChanged() OVERRIDE;
@@ -238,11 +242,17 @@ class VIEWS_EXPORT TableView
   int CompareRows(int model_row1, int model_row2);
 
   // Returns the bounds of the specified row.
-  gfx::Rect GetRowBounds(int row);
+  gfx::Rect GetRowBounds(int row) const;
 
   // Returns the bounds of the specified cell. |visible_column_index| indexes
   // into |visible_columns_|.
-  gfx::Rect GetCellBounds(int row, int visible_column_index);
+  gfx::Rect GetCellBounds(int row, int visible_column_index) const;
+
+  // Adjusts |bounds| based on where the text should be painted. |bounds| comes
+  // from GetCellBounds() and |visible_column_index| is the corresponding column
+  // (in terms of |visible_columns_|).
+  void AdjustCellBoundsForText(int visible_column_index,
+                               gfx::Rect* bounds) const;
 
   // Creates |header_| if necessary.
   void CreateHeaderIfNecessary();
@@ -288,6 +298,13 @@ class VIEWS_EXPORT TableView
   // been set this returns a group with a start of |model_index| and length of
   // 1.
   GroupRange GetGroupRange(int model_index) const;
+
+  // Used by both GetTooltipText methods. Returns true if there is a tooltip and
+  // sets |tooltip| and/or |tooltip_origin| as appropriate, each of which may be
+  // NULL.
+  bool GetTooltipImpl(const gfx::Point& location,
+                      string16* tooltip,
+                      gfx::Point* tooltip_origin) const;
 
   ui::TableModel* model_;
 

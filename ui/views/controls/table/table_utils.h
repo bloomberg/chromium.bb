@@ -16,6 +16,8 @@ class Font;
 
 namespace views {
 
+class TableView;
+
 VIEWS_EXPORT extern const int kUnspecifiedColumnWidth;
 
 // Returns the width needed to display the contents of the specified column.
@@ -45,6 +47,10 @@ VIEWS_EXPORT std::vector<int> CalculateTableColumnSizes(
 
 // Converts a TableColumn::Alignment to the alignment for drawing the string.
 int TableColumnAlignmentToCanvasAlignment(ui::TableColumn::Alignment alignment);
+
+// Returns the index of the closest visible column index to |x|. Return value is
+// in terms of table->visible_columns().
+int GetClosestVisibleColumnIndex(const TableView* table, int x);
 
 }  // namespace views
 

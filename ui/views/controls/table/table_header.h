@@ -52,9 +52,6 @@ class VIEWS_EXPORT TableHeader : public views::View {
     int initial_width;
   };
 
-  // Returns the column closest to the specified x-coordinate.
-  int GetClosestColumn(int x) const;
-
   // Returns the column to resize given the specified x-coordinate, or -1 if |x|
   // is not in the resize range of any columns.
   int GetResizeColumn(int x) const;
