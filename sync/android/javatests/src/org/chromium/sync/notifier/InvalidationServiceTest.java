@@ -311,16 +311,29 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
     @SmallTest
     @Feature({"Sync"})
-    public void testInvalidate() {
+    public void testInvalidateWithPayload() {
+        doTestInvalidate(true);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testInvalidateWithoutPayload() {
+        doTestInvalidate(false);
+    }
+
+    private void doTestInvalidate(boolean hasPayload) {
         /*
-         * Test plan: call invalidate(). Verify the produced bundle has the correct fields.
+         * Test plan: call invalidate() with an invalidation that may or may not have a payload.
+         * Verify the produced bundle has the correct fields.
          */
         // Call invalidate.
-        String payload = "payload";
         int version = 4747;
         ObjectId objectId = ModelType.BOOKMARK.toObjectId();
-        Invalidation invalidation = Invalidation.newInstance(objectId, version, payload.getBytes());
-        byte[] ackHandle = "testInvalidate".getBytes();
+        final String payload = "testInvalidate-" + hasPayload;
+        Invalidation invalidation = hasPayload ?
+                Invalidation.newInstance(objectId, version, payload.getBytes()) :
+                Invalidation.newInstance(objectId, version);
+        byte[] ackHandle = ("testInvalidate-" + hasPayload).getBytes();
         getService().invalidate(invalidation, ackHandle);
 
         // Validate bundle.
@@ -328,7 +341,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         Bundle syncBundle = getService().mRequestedSyncs.get(0);
         assertEquals("BOOKMARK", syncBundle.getString("objectId"));
         assertEquals(version, syncBundle.getLong("version"));
-        assertEquals(payload, syncBundle.getString("payload"));
+        assertEquals(hasPayload ? payload : "", syncBundle.getString("payload"));
 
         // Ensure acknowledged.
         assertSingleAcknowledgement(ackHandle);

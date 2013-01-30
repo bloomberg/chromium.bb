@@ -104,8 +104,9 @@ public class InvalidationService extends AndroidListener {
 
     @Override
     public void invalidate(Invalidation invalidation, byte[] ackHandle) {
-        requestSync(invalidation.getObjectId(), invalidation.getVersion(),
-                new String(invalidation.getPayload()));
+        byte[] payload = invalidation.getPayload();
+        String payloadStr = (payload == null) ? null : new String(payload);
+        requestSync(invalidation.getObjectId(), invalidation.getVersion(), payloadStr);
         acknowledge(ackHandle);
     }
 
