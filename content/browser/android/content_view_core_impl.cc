@@ -385,8 +385,9 @@ void ContentViewCoreImpl::UpdateScrollOffsetAndPageScaleFactor(int x, int y,
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_updateScrollOffsetAndPageScaleFactor(env, obj.obj(), x,
-                                                            y, scale);
+  Java_ContentViewCore_updateScrollOffsetAndPageScaleFactor(
+      env, obj.obj(), static_cast<int>(x * DpiScale()),
+      static_cast<int>(y * DpiScale()), scale);
 }
 
 void ContentViewCoreImpl::UpdatePageScaleLimits(float minimum_scale,
@@ -521,17 +522,17 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
   ScopedJavaLocalRef<jobject> start_rect_object(env,
       env->NewObject(java_object_->rect_clazz.obj(),
                      java_object_->rect_constructor,
-                     start_rect.x(),
-                     start_rect.y(),
-                     start_rect.right(),
-                     start_rect.bottom()));
+                     static_cast<int>(start_rect.x() * DpiScale()),
+                     static_cast<int>(start_rect.y() * DpiScale()),
+                     static_cast<int>(start_rect.right() * DpiScale()),
+                     static_cast<int>(start_rect.bottom() * DpiScale())));
   ScopedJavaLocalRef<jobject> end_rect_object(env,
       env->NewObject(java_object_->rect_clazz.obj(),
                      java_object_->rect_constructor,
-                     end_rect.x(),
-                     end_rect.y(),
-                     end_rect.right(),
-                     end_rect.bottom()));
+                     static_cast<int>(end_rect.x() * DpiScale()),
+                     static_cast<int>(end_rect.y() * DpiScale()),
+                     static_cast<int>(end_rect.right() * DpiScale()),
+                     static_cast<int>(end_rect.bottom() * DpiScale())));
   Java_ContentViewCore_onSelectionBoundsChanged(env, obj.obj(),
                                                 start_rect_object.obj(),
                                                 start_dir,
@@ -1002,15 +1003,17 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
                                                    jint x1, jint y1,
                                                    jint x2, jint y2) {
   if (GetRenderWidgetHostViewAndroid()) {
-    GetRenderWidgetHostViewAndroid()->SelectRange(gfx::Point(x1, y1),
-                                                  gfx::Point(x2, y2));
+    GetRenderWidgetHostViewAndroid()->SelectRange(
+        gfx::Point(x1 / DpiScale(), y1 / DpiScale()),
+        gfx::Point(x2 / DpiScale(), y2 / DpiScale()));
   }
 }
 
 void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,
                                     jint x, jint y) {
   if (GetRenderWidgetHostViewAndroid()) {
-    GetRenderWidgetHostViewAndroid()->MoveCaret(gfx::Point(x, y));
+    GetRenderWidgetHostViewAndroid()->MoveCaret(
+        gfx::Point(x / DpiScale(), y / DpiScale()));
   }
 }
 
