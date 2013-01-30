@@ -282,6 +282,7 @@ begword vas =	vas beginning words need handling single part the vas word part fo
 begword vaszil 1236-1-156-24-123
 begword vonós =	For example vonószenekar, vonósszerenád words need handlin vonós word part with single part
 begword pénzes 1234-16-1345-126-15-234	For example pénzeszacskó, pénzeszsák words need this exception
+partword pénzeszk 1234-16-1345-126-15-156-13	For example pénzeszközök word need this exception
 partword viselkedés =	For example viselkedészavar, viselkedésszerű words need this exception to handling this words with two word for braille translation
 always üléssz 12356-123-16-234-156	For example ülésszak word
 partword ugasszer 136-1245-1-234-156-15-1235	For example lugasszerű word
