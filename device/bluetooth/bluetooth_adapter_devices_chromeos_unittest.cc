@@ -24,7 +24,7 @@ using ::testing::SaveArg;
 
 namespace chromeos {
 
-class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
+class BluetoothAdapterDevicesChromeOSTest : public testing::Test {
  public:
   virtual void SetUp() {
     MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
@@ -53,7 +53,7 @@ class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
         .Times(1);
 
     BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothAdapterDevicesChromeOsTest::SetAdapter,
+        base::Bind(&BluetoothAdapterDevicesChromeOSTest::SetAdapter,
                    base::Unretained(this)));
     ASSERT_TRUE(adapter_ != NULL);
 
@@ -85,8 +85,8 @@ class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    BluetoothAdapterChromeOs* adapter_chromeos =
-        static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+    BluetoothAdapterChromeOS* adapter_chromeos =
+        static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
     EXPECT_CALL(*mock_device_client_, RemoveObserver(adapter_chromeos))
         .Times(1);
     EXPECT_CALL(*mock_adapter_client_, RemoveObserver(adapter_chromeos))
@@ -114,12 +114,12 @@ class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
   MockBluetoothAdapter::Observer adapter_observer_;
 };
 
-const dbus::ObjectPath BluetoothAdapterDevicesChromeOsTest::adapter_path_(
+const dbus::ObjectPath BluetoothAdapterDevicesChromeOSTest::adapter_path_(
     "/fake/hci0");
-const std::string BluetoothAdapterDevicesChromeOsTest::adapter_address_ =
+const std::string BluetoothAdapterDevicesChromeOSTest::adapter_address_ =
     "CA:FE:4A:C0:FE:FE";
 
-TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
+TEST_F(BluetoothAdapterDevicesChromeOSTest, DeviceRemovedAfterFound) {
   const dbus::ObjectPath device_path("/fake/hci0/dev_ba_c0_11_00_00_01");
   const std::string device_address = "BA:C0:11:00:00:01";
 
@@ -136,8 +136,8 @@ TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
       .Times(1)
       .WillOnce(SaveArg<1>(&device));
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceFound(adapter_path_, device_address, device_properties);
 

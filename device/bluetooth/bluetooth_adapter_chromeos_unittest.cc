@@ -22,7 +22,7 @@ using ::testing::SaveArg;
 
 namespace chromeos {
 
-class BluetoothAdapterChromeOsTest : public testing::Test {
+class BluetoothAdapterChromeOSTest : public testing::Test {
  public:
   virtual void SetUp() {
     MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
@@ -67,7 +67,7 @@ class BluetoothAdapterChromeOsTest : public testing::Test {
   scoped_refptr<BluetoothAdapter> adapter_;
 };
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotPresent) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterNotPresent) {
   // Create the default adapter instance;
   // BluetoothManagerClient::DefaultAdapter will be called once, passing
   // a callback to obtain the adapter path.
@@ -76,7 +76,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotPresent) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
   ASSERT_TRUE(adapter_ != NULL);
 
@@ -94,7 +94,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotPresent) {
   EXPECT_FALSE(adapter_->IsPresent());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterWithAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -106,7 +106,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -133,7 +133,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
   EXPECT_EQ(adapter_address, adapter_->address());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterWithoutAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -145,7 +145,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -176,8 +176,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -188,7 +188,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
   EXPECT_EQ(adapter_address, adapter_->address());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterBecomesPresentWithAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -200,7 +200,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback; make out it failed.
@@ -222,8 +222,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(adapter_path);
@@ -233,7 +233,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
   EXPECT_EQ(adapter_address, adapter_->address());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterReplacedWithAddress) {
   const dbus::ObjectPath initial_adapter_path("/fake/hci0");
   const dbus::ObjectPath new_adapter_path("/fake/hci1");
   const std::string initial_adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -247,7 +247,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -281,8 +281,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
@@ -292,7 +292,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
   EXPECT_EQ(new_adapter_address, adapter_->address());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterBecomesPresentWithoutAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -305,7 +305,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback; make out it failed.
@@ -326,8 +326,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), _))
       .Times(0);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(adapter_path);
@@ -351,7 +351,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_EQ(adapter_address, adapter_->address());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterReplacedWithoutAddress) {
   const dbus::ObjectPath initial_adapter_path("/fake/hci0");
   const dbus::ObjectPath new_adapter_path("/fake/hci1");
   const std::string initial_adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -365,7 +365,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -395,8 +395,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
@@ -420,7 +420,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
   EXPECT_EQ(new_adapter_address, adapter_->address());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterRemoved) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -432,7 +432,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -455,8 +455,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
@@ -465,7 +465,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
   EXPECT_FALSE(adapter_->IsPresent());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterWithoutAddressRemoved) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
 
   // Create the default adapter instance;
@@ -476,7 +476,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -498,8 +498,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
   EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), _))
       .Times(0);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
@@ -508,7 +508,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
   EXPECT_FALSE(adapter_->IsPresent());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyInitiallyFalse) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -521,7 +521,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -540,7 +540,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyInitiallyTrue) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -553,7 +553,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -582,7 +582,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyInitiallyTrueWithoutAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -595,7 +595,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -630,8 +630,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), true))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -641,7 +641,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterPoweredPropertyChanged) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -653,7 +653,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -681,8 +681,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
 
   adapter_properties.powered.ReplaceValue(true);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -692,7 +692,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
   EXPECT_TRUE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterPoweredPropertyUnchanged) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -704,7 +704,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -730,8 +730,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
   EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), _))
       .Times(0);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -741,7 +741,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
   EXPECT_TRUE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyChangedWithoutAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -754,7 +754,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -782,8 +782,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), _))
       .Times(0);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -811,7 +811,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyResetOnReplace) {
   const dbus::ObjectPath initial_adapter_path("/fake/hci0");
   const dbus::ObjectPath new_adapter_path("/fake/hci1");
@@ -826,7 +826,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -866,8 +866,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), false))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
@@ -876,7 +876,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyResetOnReplaceWhenTrue) {
   const dbus::ObjectPath initial_adapter_path("/fake/hci0");
   const dbus::ObjectPath new_adapter_path("/fake/hci1");
@@ -891,7 +891,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -940,8 +940,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
         .Times(1);
   }
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
@@ -950,7 +950,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterPoweredPropertyResetOnRemove) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -963,7 +963,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -988,8 +988,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), false))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
@@ -998,7 +998,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsPowered());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterSetPowered) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1010,7 +1010,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1031,9 +1031,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
       .WillOnce(SaveArg<1>(&set_callback));
 
   adapter_->SetPowered(true,
-                      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+                      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                                  base::Unretained(this)),
-                      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+                      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                                  base::Unretained(this)));
 
   // Reply to the callback to indicate success, the set callback we provided
@@ -1047,7 +1047,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
   EXPECT_FALSE(error_callback_called_);
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterSetPoweredError) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1059,7 +1059,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1080,9 +1080,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
       .WillOnce(SaveArg<1>(&set_callback));
 
   adapter_->SetPowered(true,
-                       base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+                       base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                                   base::Unretained(this)),
-                       base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+                       base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                                   base::Unretained(this)));
 
   // Reply to the callback to indicate failure, the error callback we provided
@@ -1096,7 +1096,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
   EXPECT_TRUE(error_callback_called_);
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyInitiallyFalse) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1109,7 +1109,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1128,7 +1128,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyInitiallyTrue) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1141,7 +1141,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1170,7 +1170,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyInitiallyTrueWithoutAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1183,7 +1183,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1218,8 +1218,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterScanningChanged(adapter_.get(), true))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -1229,7 +1229,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterDiscoveringPropertyChanged) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1241,7 +1241,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1269,8 +1269,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
 
   adapter_properties.discovering.ReplaceValue(true);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -1280,7 +1280,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
   EXPECT_TRUE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyUnchanged) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1293,7 +1293,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1320,8 +1320,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterScanningChanged(adapter_.get(), _))
       .Times(0);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -1331,7 +1331,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyChangedWithoutAddress) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1344,7 +1344,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1372,8 +1372,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterScanningChanged(adapter_.get(), _))
       .Times(0);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
@@ -1401,7 +1401,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyResetOnReplace) {
   const dbus::ObjectPath initial_adapter_path("/fake/hci0");
   const dbus::ObjectPath new_adapter_path("/fake/hci1");
@@ -1416,7 +1416,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1456,8 +1456,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterScanningChanged(adapter_.get(), false))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
@@ -1466,7 +1466,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyResetOnReplaceWhenTrue) {
   const dbus::ObjectPath initial_adapter_path("/fake/hci0");
   const dbus::ObjectPath new_adapter_path("/fake/hci1");
@@ -1481,7 +1481,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1532,8 +1532,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
         .Times(1);
   }
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
@@ -1542,7 +1542,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterDiscoveringPropertyResetOnRemove) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1555,7 +1555,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1580,8 +1580,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(adapter_observer, AdapterScanningChanged(adapter_.get(), false))
       .Times(1);
 
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  BluetoothAdapterChromeOS* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
@@ -1590,7 +1590,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsScanning());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotInitiallyDiscovering) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterNotInitiallyDiscovering) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1602,7 +1602,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotInitiallyDiscovering) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1620,7 +1620,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotInitiallyDiscovering) {
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscovering) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterStartDiscovering) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1632,7 +1632,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscovering) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1653,9 +1653,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscovering) {
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -1676,7 +1676,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscovering) {
   EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscoveringError) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterStartDiscoveringError) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1688,7 +1688,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscoveringError) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1709,9 +1709,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscoveringError) {
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate failure,
@@ -1732,7 +1732,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStartDiscoveringError) {
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSecondStartDiscovering) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterSecondStartDiscovering) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1744,7 +1744,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSecondStartDiscovering) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1765,9 +1765,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSecondStartDiscovering) {
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -1790,9 +1790,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSecondStartDiscovering) {
   error_callback_called_ = false;
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success, we do not expect
@@ -1811,7 +1811,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSecondStartDiscovering) {
   EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterSecondStartDiscoveringError) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -1824,7 +1824,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1845,9 +1845,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -1870,9 +1870,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate failure, we do not expect
@@ -1891,7 +1891,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscovering) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterStopDiscovering) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1903,7 +1903,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscovering) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -1924,9 +1924,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscovering) {
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -1950,9 +1950,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscovering) {
   error_callback_called_ = false;
 
   adapter_->StopDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -1970,7 +1970,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscovering) {
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscoveringError) {
+TEST_F(BluetoothAdapterChromeOSTest, DefaultAdapterStopDiscoveringError) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
 
@@ -1982,7 +1982,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscoveringError) {
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -2003,9 +2003,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscoveringError) {
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -2029,9 +2029,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscoveringError) {
   error_callback_called_ = false;
 
   adapter_->StopDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate failure,
@@ -2049,7 +2049,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterStopDiscoveringError) {
   EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterStopDiscoveringAfterSecondStart) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -2062,7 +2062,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -2083,9 +2083,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -2108,9 +2108,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success, we do not expect
@@ -2132,9 +2132,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StopDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success, we do not expect
@@ -2153,7 +2153,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterStopDiscoveringAfterSecondStartError) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -2166,7 +2166,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -2187,9 +2187,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -2212,9 +2212,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate failure, we do not expect
@@ -2236,9 +2236,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StopDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -2256,7 +2256,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
-TEST_F(BluetoothAdapterChromeOsTest,
+TEST_F(BluetoothAdapterChromeOSTest,
        DefaultAdapterSecondStopDiscoveringAfterSecondStart) {
   const dbus::ObjectPath adapter_path("/fake/hci0");
   const std::string adapter_address = "CA:FE:4A:C0:FE:FE";
@@ -2269,7 +2269,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<0>(&adapter_callback));
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+      base::Bind(&BluetoothAdapterChromeOSTest::SetAdapter,
                  base::Unretained(this)));
 
   // Call the adapter callback;
@@ -2290,9 +2290,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
       .WillOnce(SaveArg<1>(&start_discovery_callback));
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,
@@ -2315,9 +2315,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StartDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success, we do not expect
@@ -2339,9 +2339,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StopDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success, we do not expect
@@ -2362,9 +2362,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   error_callback_called_ = false;
 
   adapter_->StopDiscovering(
-      base::Bind(&BluetoothAdapterChromeOsTest::Callback,
+      base::Bind(&BluetoothAdapterChromeOSTest::Callback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+      base::Bind(&BluetoothAdapterChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
 
   // After returning to indicate success,

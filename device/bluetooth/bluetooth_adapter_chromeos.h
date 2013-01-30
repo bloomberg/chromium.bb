@@ -27,11 +27,11 @@ struct BluetoothOutOfBandPairingData;
 
 namespace chromeos {
 
-class BluetoothDeviceChromeOs;
+class BluetoothDeviceChromeOS;
 
-// The BluetoothAdapterChromeOs class is an implementation of BluetoothAdapter
+// The BluetoothAdapterChromeOS class is an implementation of BluetoothAdapter
 // for Chrome OS platform.
-class BluetoothAdapterChromeOs
+class BluetoothAdapterChromeOS
     : public device::BluetoothAdapter,
       public BluetoothManagerClient::Observer,
       public BluetoothAdapterClient::Observer,
@@ -63,12 +63,12 @@ class BluetoothAdapterChromeOs
       const ErrorCallback& error_callback) OVERRIDE;
 
  private:
-  friend class BluetoothDeviceChromeOs;
+  friend class BluetoothDeviceChromeOS;
   friend class device::BluetoothAdapterFactory;
   friend class device::MockBluetoothAdapter;
 
-  BluetoothAdapterChromeOs();
-  virtual ~BluetoothAdapterChromeOs();
+  BluetoothAdapterChromeOS();
+  virtual ~BluetoothAdapterChromeOS();
 
   // Obtains the default adapter object path from the Bluetooth Daemon
   // and tracks future changes to it.
@@ -234,9 +234,9 @@ class BluetoothAdapterChromeOs
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapterChromeOs> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapterChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterChromeOs);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterChromeOS);
 };
 
 }  // namespace chromeos

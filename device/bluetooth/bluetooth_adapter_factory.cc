@@ -69,8 +69,8 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   if (!default_adapter.Get().get()) {
 #if defined(OS_CHROMEOS)
-    chromeos::BluetoothAdapterChromeOs* new_adapter =
-        new chromeos::BluetoothAdapterChromeOs;
+    chromeos::BluetoothAdapterChromeOS* new_adapter =
+        new chromeos::BluetoothAdapterChromeOS;
     new_adapter->TrackDefaultAdapter();
     default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
 #elif defined(OS_WIN)
@@ -97,8 +97,8 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::MaybeGetAdapter() {
 BluetoothAdapter* BluetoothAdapterFactory::Create(const std::string& address) {
   BluetoothAdapter* adapter = NULL;
 #if defined(OS_CHROMEOS)
-  chromeos::BluetoothAdapterChromeOs* adapter_chromeos =
-      new chromeos::BluetoothAdapterChromeOs;
+  chromeos::BluetoothAdapterChromeOS* adapter_chromeos =
+      new chromeos::BluetoothAdapterChromeOS;
   adapter_chromeos->FindAdapter(address);
   adapter = adapter_chromeos;
 #elif defined(OS_WIN)

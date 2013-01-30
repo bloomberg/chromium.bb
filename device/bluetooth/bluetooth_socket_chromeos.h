@@ -27,7 +27,7 @@ namespace chromeos {
 
 // This class is an implementation of BluetoothSocket class for Chrome OS
 // platform.
-class BluetoothSocketChromeOs : public device::BluetoothSocket {
+class BluetoothSocketChromeOS : public device::BluetoothSocket {
  public:
   static scoped_refptr<device::BluetoothSocket> CreateBluetoothSocket(
       const device::BluetoothServiceRecord& service_record);
@@ -39,16 +39,16 @@ class BluetoothSocketChromeOs : public device::BluetoothSocket {
   virtual std::string GetLastErrorMessage() const OVERRIDE;
 
  protected:
-  virtual ~BluetoothSocketChromeOs();
+  virtual ~BluetoothSocketChromeOS();
 
  private:
-  BluetoothSocketChromeOs(const std::string& address, int fd);
+  BluetoothSocketChromeOS(const std::string& address, int fd);
 
   const std::string address_;
   const int fd_;
   std::string error_message_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketChromeOs);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketChromeOS);
 };
 
 }  // namespace chromeos

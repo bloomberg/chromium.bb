@@ -28,16 +28,16 @@ struct BluetoothOutOfBandPairingData;
 
 namespace chromeos {
 
-class BluetoothAdapterChromeOs;
+class BluetoothAdapterChromeOS;
 
-// The BluetoothDeviceChromeOs class is an implementation of BluetoothDevice
+// The BluetoothDeviceChromeOS class is an implementation of BluetoothDevice
 // for Chrome OS platform.
-class BluetoothDeviceChromeOs
+class BluetoothDeviceChromeOS
     : public device::BluetoothDevice,
       public BluetoothDeviceClient::Observer,
       public BluetoothAgentServiceProvider::Delegate {
  public:
-  virtual ~BluetoothDeviceChromeOs();
+  virtual ~BluetoothDeviceChromeOS();
 
   // BluetoothDevice override
   virtual bool IsPaired() const OVERRIDE;
@@ -77,10 +77,10 @@ class BluetoothDeviceChromeOs
       const ErrorCallback& error_callback) OVERRIDE;
 
  private:
-  friend class BluetoothAdapterChromeOs;
+  friend class BluetoothAdapterChromeOS;
   friend class device::MockBluetoothDevice;
 
-  explicit BluetoothDeviceChromeOs(BluetoothAdapterChromeOs* adapter);
+  explicit BluetoothDeviceChromeOS(BluetoothAdapterChromeOS* adapter);
 
   // Sets the dbus object path for the device to |object_path|, indicating
   // that the device has gone from being discovered to paired or bonded.
@@ -335,12 +335,12 @@ class BluetoothDeviceChromeOs
   // the request failed before a reply was returned from the device.
   virtual void Cancel() OVERRIDE;
 
-  // Creates a new BluetoothDeviceChromeOs object bound to the adapter
+  // Creates a new BluetoothDeviceChromeOS object bound to the adapter
   // |adapter|.
-  static BluetoothDeviceChromeOs* Create(BluetoothAdapterChromeOs* adapter);
+  static BluetoothDeviceChromeOS* Create(BluetoothAdapterChromeOS* adapter);
 
   // The adapter that owns this device instance.
-  BluetoothAdapterChromeOs* adapter_;
+  BluetoothAdapterChromeOS* adapter_;
 
   // The dbus object path of the device, will be empty if the device has only
   // been discovered and not yet paired with.
@@ -370,9 +370,9 @@ class BluetoothDeviceChromeOs
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothDeviceChromeOs> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothDeviceChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceChromeOs);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceChromeOS);
 };
 
 }  // namespace chromeos

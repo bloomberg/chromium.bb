@@ -26,20 +26,20 @@ using device::BluetoothSocket;
 
 namespace chromeos {
 
-BluetoothSocketChromeOs::BluetoothSocketChromeOs(
+BluetoothSocketChromeOS::BluetoothSocketChromeOS(
     const std::string& address, int fd)
   : address_(address),
     fd_(fd) {
 }
 
-BluetoothSocketChromeOs::~BluetoothSocketChromeOs() {
+BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
   close(fd_);
 }
 
 // static
-scoped_refptr<BluetoothSocket> BluetoothSocketChromeOs::CreateBluetoothSocket(
+scoped_refptr<BluetoothSocket> BluetoothSocketChromeOS::CreateBluetoothSocket(
     const BluetoothServiceRecord& service_record) {
-  BluetoothSocketChromeOs* bluetooth_socket = NULL;
+  BluetoothSocketChromeOS* bluetooth_socket = NULL;
   if (service_record.SupportsRfcomm()) {
     int socket_fd = socket(
         AF_BLUETOOTH, SOCK_STREAM | SOCK_NONBLOCK, BTPROTO_RFCOMM);
@@ -53,7 +53,7 @@ scoped_refptr<BluetoothSocket> BluetoothSocketChromeOs::CreateBluetoothSocket(
         sizeof(socket_address));
     int errsv = errno;
     if (status == 0 || errno == EINPROGRESS) {
-      bluetooth_socket = new BluetoothSocketChromeOs(service_record.address(),
+      bluetooth_socket = new BluetoothSocketChromeOS(service_record.address(),
           socket_fd);
     } else {
       LOG(ERROR) << "Failed to connect bluetooth socket "
@@ -64,14 +64,14 @@ scoped_refptr<BluetoothSocket> BluetoothSocketChromeOs::CreateBluetoothSocket(
   }
   // TODO(bryeung): add support for L2CAP sockets as well.
 
-  return scoped_refptr<BluetoothSocketChromeOs>(bluetooth_socket);
+  return scoped_refptr<BluetoothSocketChromeOS>(bluetooth_socket);
 }
 
-int BluetoothSocketChromeOs::fd() const {
+int BluetoothSocketChromeOS::fd() const {
   return fd_;
 }
 
-bool BluetoothSocketChromeOs::Receive(net::GrowableIOBuffer* buffer) {
+bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer* buffer) {
   buffer->SetCapacity(1024);
   ssize_t bytes_read;
   do {
@@ -89,7 +89,7 @@ bool BluetoothSocketChromeOs::Receive(net::GrowableIOBuffer* buffer) {
   return true;
 }
 
-bool BluetoothSocketChromeOs::Send(net::DrainableIOBuffer* buffer) {
+bool BluetoothSocketChromeOS::Send(net::DrainableIOBuffer* buffer) {
   ssize_t bytes_written;
   do {
     bytes_written = write(fd_, buffer, buffer->BytesRemaining());
@@ -104,7 +104,7 @@ bool BluetoothSocketChromeOs::Send(net::DrainableIOBuffer* buffer) {
   return true;
 }
 
-std::string BluetoothSocketChromeOs::GetLastErrorMessage() const {
+std::string BluetoothSocketChromeOS::GetLastErrorMessage() const {
   return error_message_;
 }
 
