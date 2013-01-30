@@ -415,6 +415,12 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   }
 #endif
 
+#if defined(ENABLE_GOOGLE_NOW)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGoogleNowIntegration)) {
+    Add(IDR_GOOGLE_NOW_MANIFEST, FilePath(FILE_PATH_LITERAL("google_now")));
+  }
+#endif
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {

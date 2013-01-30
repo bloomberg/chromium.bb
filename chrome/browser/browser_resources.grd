@@ -204,6 +204,9 @@
       <if expr="pp_ifdef('enable_settings_app')">
         <include name="IDR_SETTINGS_APP_MANIFEST" file="resources\settings_app\manifest.json" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('enable_google_now')">
+        <include name="IDR_GOOGLE_NOW_MANIFEST" file="resources\google_now\manifest.json" type="BINDATA" />
+      </if>
       <if expr="not pp_ifdef('android')">
         <include name="IDR_SUGGESTIONS_INTERNALS_HTML" file="resources\suggestions_internals\suggestions_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_SUGGESTIONS_INTERNALS_CSS" file="resources\suggestions_internals\suggestions_internals.css" type="BINDATA" />

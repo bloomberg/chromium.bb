@@ -1,0 +1,20 @@
+{
+  //chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm
+  "name": "Google Now",
+  "version": "1.0",
+  "description": "Integrates Google Now into Chrome.",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDh/njCc/GTuP7uYix39uinhkX+7RyEoMaOQyoc065gsQ5b9cLpZToK78xgpsc9ThrpLVDOwqz6cGeLgIk+kPeRMQe07T+/mh3U5klegDx9pfr9T3aiRNQnJYJv8niVs9aJ/sBSqxtHt2LlhEt9ajFXue7Q3LkzyTlXpxoEFH1keQIDAQAB",
+  "permissions": [
+    "geolocation",
+    // TODO(vadimt): Replace <all_urls> with real URL patterns once we know
+    // them.
+    "<all_urls>",
+    "experimental",
+    "alarms"
+  ],
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  }
+}
