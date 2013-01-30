@@ -15,9 +15,6 @@ using nacl_mips_dec::ClassDecoder;
 using nacl_mips_dec::Register;
 using nacl_mips_dec::RegisterList;
 
-using nacl_mips_dec::kRegisterJumpMask;
-using nacl_mips_dec::kRegisterLoadStoreMask;
-
 using nacl_mips_dec::kInstrSize;
 using nacl_mips_dec::kInstrAlign;
 
@@ -146,7 +143,7 @@ static PatternMatch CheckJmpReg(const SfiValidator &sfi,
                                 ProblemSink *out) {
   UNREFERENCED_PARAMETER(sfi);
   if (second.IsJmpReg()) {
-    if (first.IsMask(second.TargetReg(), kRegisterJumpMask)) {
+    if (first.IsMask(second.TargetReg(), Register::JumpMask())) {
       return PATTERN_SAFE;
     }
     out->ReportProblem(second.addr(), second.safety(),
@@ -165,8 +162,8 @@ static PatternMatch CheckDataRegisterUpdate(const SfiValidator &sfi,
                                             const DecodedInstruction &second,
                                             ProblemSink *out) {
   if (first.IsDestGprReg(sfi.data_address_registers())
-      && !first.IsMask(first.DestGprReg(), kRegisterLoadStoreMask)) {
-    if (second.IsMask(first.DestGprReg(), kRegisterLoadStoreMask)) {
+      && !first.IsMask(first.DestGprReg(), Register::LoadStoreMask())) {
+    if (second.IsMask(first.DestGprReg(), Register::LoadStoreMask())) {
       return PATTERN_SAFE;
     }
     out->ReportProblem(first.addr(), first.safety(), kProblemUnsafeDataWrite);
@@ -183,7 +180,7 @@ static PatternMatch CheckDataRegisterDslot(const SfiValidator &sfi,
                                            const DecodedInstruction &second,
                                            ProblemSink *out) {
   if (second.IsDestGprReg(sfi.data_address_registers())
-      && !second.IsMask(second.DestGprReg(), kRegisterLoadStoreMask)) {
+      && !second.IsMask(second.DestGprReg(), Register::LoadStoreMask())) {
     if (first.HasDelaySlot()) {
       out->ReportProblem(second.addr(), second.safety(),
                          kProblemDataRegInDelaySlot);
@@ -204,7 +201,7 @@ static PatternMatch CheckLoadStore(const SfiValidator &sfi,
     Register base_addr_reg = second.BaseAddressRegister();
     if (!sfi.data_address_registers().
            ContainsAll(RegisterList(base_addr_reg))) {
-      if (first.IsMask(base_addr_reg, kRegisterLoadStoreMask)) {
+      if (first.IsMask(base_addr_reg, Register::LoadStoreMask())) {
         return PATTERN_SAFE;
       }
       out->ReportProblem(second.addr(), second.safety(),

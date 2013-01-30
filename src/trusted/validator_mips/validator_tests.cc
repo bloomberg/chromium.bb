@@ -45,8 +45,6 @@ using nacl_mips_val::ProblemSink;
 using nacl_mips_val::CodeSegment;
 using nacl_mips_dec::kInstrSize;
 using nacl_mips_dec::kNop;
-using nacl_mips_dec::kRegisterStack;
-using nacl_mips_dec::kRegListReserved;
 
 namespace {
 
@@ -144,20 +142,21 @@ class ValidatorTests : public ::testing::Test {
 
 TEST_F(ValidatorTests, RecognizesDataAddressRegisters) {
   /*
-   * Note that the logic below needs to be kept in sync with the definition
-   * of kAbiDataAddrRegisters at the top of this file.
+   * Note that the logic below needs to be kept in sync with the implementation
+   * of RegisterList::DataAddrRegs().
    *
    * This test is pretty trivial -- we can exercise the data_address_register
    * functionality more deeply with pattern tests below.
    */
   for (int i = 0; i < 31; i++) {
     Register reg(i);
-    if (reg.Equals(nacl_mips_dec::kRegisterStack)) {
+    if (reg.Equals(Register::Sp()) || reg.Equals(Register::Tls())) {
       EXPECT_TRUE(_validator.IsDataAddressRegister(reg))
-          << "Stack pointer must be a data address register.";
+          << "Stack pointer and TLS register must be data address registers.";
     } else {
       EXPECT_FALSE(_validator.IsDataAddressRegister(reg))
-          << "Only the stack pointer must be a data address register.";
+          << "Only the stack pointer and TLS register are data "
+             "address registers.";
     }
   }
 }
@@ -404,8 +403,8 @@ ValidatorTests::ValidatorTests()
   : _validator(kBytesPerBundle,
                kCodeRegionSize,
                kDataRegionSize,
-               kRegListReserved,
-               RegisterList(kRegisterStack)) {}
+               RegisterList::ReservedRegs(),
+               RegisterList::DataAddrRegs()) {}
 
 bool ValidatorTests::Validate(const mips_inst *pattern,
                               size_t inst_count,

@@ -20,7 +20,6 @@
 using nacl_mips_val::SfiValidator;
 using nacl_mips_val::CodeSegment;
 using nacl_mips_dec::RegisterList;
-using nacl_mips_dec::kRegisterStack;
 
 using std::string;
 using std::vector;
@@ -56,11 +55,11 @@ const uint32_t kQuarterGig = 256U * 1024 * 1024;
 
 int Validate(const ncfile *ncf, bool use_zero_masks) {
   SfiValidator validator(
-      16,                                // Bytes per bundle.
-      kQuarterGig,                       // Code region size.
-      kOneGig,                           // Data region size.
-      nacl_mips_dec::kRegListReserved,   // Read only registers.
-      RegisterList(kRegisterStack));     // Data addressing register ($sp).
+      16,                             // Bytes per bundle.
+      kQuarterGig,                    // Code region size.
+      kOneGig,                        // Data region size.
+      RegisterList::ReservedRegs(),   // Read only registers.
+      RegisterList::DataAddrRegs());  // Data addressing registers.
 
   if (use_zero_masks) {
     validator.ChangeMasks(0, 0);

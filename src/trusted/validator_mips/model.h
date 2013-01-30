@@ -30,6 +30,7 @@ namespace nacl_mips_dec {
  */
 class Register {
  public:
+  typedef uint8_t Number;
   explicit inline Register(uint32_t);
 
   /*
@@ -39,19 +40,29 @@ class Register {
 
   inline bool Equals(const Register &) const;
 
+  static const Number kJumpMask       = 14;  // $t6 = holds mask for jr.
+  static const Number kLoadStoreMask  = 15;  // $t7 = holds mask for load/store.
+  static const Number kTls            = 24;  // $t8 = holds tls index.
+  static const Number kSp             = 29;  // Stack pointer.
+
+  static const Number kNone           = 32;
+
+  /*
+   * A special value used to indicate that a register field is not used.
+   * This is specially chosen to ensure that bitmask() == 0, so it can be added
+   * to any RegisterList with no effect.
+   */
+  static Register None() { return Register(kNone); }
+
+  /* Registers with special meaning in our model: */
+  static Register JumpMask() { return Register(kJumpMask); }
+  static Register LoadStoreMask() { return Register(kLoadStoreMask); }
+  static Register Tls() { return Register(kTls); }
+  static Register Sp() { return Register(kSp); }
+
  private:
   uint32_t _number;
 };
-
-const Register kRegisterNone(0);
-
-// Registers with special meaning in our model:
-const Register kRegisterStack(29);
-const Register kRegisterJumpMask(14);       // $t6 = holds mask for jr.
-const Register kRegisterLoadStoreMask(15);  // $t7 = holds mask for load/store.
-const Register kRegisterTls(24);            // $t8 = holds tls index.
-
-const Register kRegisterZero(0);
 
 /*
  * A collection of Registers.  Used to describe the side effects of operations.
@@ -92,20 +103,28 @@ class RegisterList {
 
   inline const RegisterList operator&(const RegisterList) const;
 
+  /*
+   * A list containing every possible register, even some we do not define.
+   * Used exclusively as a bogus scary return value for forbidden instructions.
+   */
+  static RegisterList Everything() { return RegisterList(-1); }
+
+  /* A list of registers that can not be modified by untrusted code. */
+  static RegisterList ReservedRegs() {
+    return RegisterList(((1 << Register::kJumpMask) |
+                         (1 << Register::kLoadStoreMask) |
+                         (1 << Register::kTls)));
+  }
+
+  /* A list of registers that can be used for addressing memory locations. */
+  static RegisterList DataAddrRegs() {
+    return RegisterList(((1 << Register::kSp) |
+                         (1 << Register::kTls)));
+  }
+
  private:
   uint32_t _bits;
 };
-
-/*
- * A list containing every possible register, even some we don't define.
- * Used exclusively as a bogus scary return value for forbidden instructions.
- */
-static const RegisterList kRegisterListEverything = RegisterList(-1);
-
-static uint32_t const kReservedRegsBitmask = kRegisterTls.Bitmask()
-                                             + kRegisterJumpMask.Bitmask()
-                                             + kRegisterLoadStoreMask.Bitmask();
-static RegisterList const kRegListReserved = RegisterList(kReservedRegsBitmask);
 
 /*
  * A 32-bit Mips instruction of unspecified type.

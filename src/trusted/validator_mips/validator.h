@@ -273,7 +273,7 @@ class DecodedInstruction {
   }
 
   bool IsDataRegMask() const {
-    return IsMask(DestGprReg(), nacl_mips_dec::kRegisterLoadStoreMask);
+    return IsMask(DestGprReg(), nacl_mips_dec::Register::LoadStoreMask());
   }
 
  private:

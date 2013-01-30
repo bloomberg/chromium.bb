@@ -1,8 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2012, Google Inc.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_INST_CLASSES_H
@@ -90,7 +89,7 @@ class ClassDecoder {
    */
   virtual Register DestGprReg(const Instruction instr) const {
     UNREFERENCED_PARAMETER(instr);
-    return kRegisterNone;
+    return Register::None();
   }
 
   /*
@@ -151,7 +150,7 @@ class ClassDecoder {
    */
   virtual Register TargetReg(const Instruction instr) const {
     UNREFERENCED_PARAMETER(instr);
-    return kRegisterNone;
+    return Register::None();
   }
 
   /*
@@ -159,7 +158,7 @@ class ClassDecoder {
    */
   virtual Register BaseAddressRegister(const Instruction instr) const {
     UNREFERENCED_PARAMETER(instr);
-    return kRegisterNone;
+    return Register::None();
   }
 
 
