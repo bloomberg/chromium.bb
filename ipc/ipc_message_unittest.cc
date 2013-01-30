@@ -15,9 +15,9 @@ namespace {
 
 TEST(IPCMessageTest, ListValue) {
   ListValue input;
-  input.Set(0, Value::CreateDoubleValue(42.42));
-  input.Set(1, Value::CreateStringValue("forty"));
-  input.Set(2, Value::CreateNullValue());
+  input.Set(0, new base::FundamentalValue(42.42));
+  input.Set(1, new base::StringValue("forty"));
+  input.Set(2, base::Value::CreateNullValue());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
@@ -38,18 +38,18 @@ TEST(IPCMessageTest, ListValue) {
 TEST(IPCMessageTest, DictionaryValue) {
   DictionaryValue input;
   input.Set("null", Value::CreateNullValue());
-  input.Set("bool", Value::CreateBooleanValue(true));
-  input.Set("int", Value::CreateIntegerValue(42));
-  input.SetWithoutPathExpansion("int.with.dot", Value::CreateIntegerValue(43));
+  input.Set("bool", new base::FundamentalValue(true));
+  input.Set("int", new base::FundamentalValue(42));
+  input.SetWithoutPathExpansion("int.with.dot", new base::FundamentalValue(43));
 
   scoped_ptr<DictionaryValue> subdict(new DictionaryValue());
-  subdict->Set("str", Value::CreateStringValue("forty two"));
-  subdict->Set("bool", Value::CreateBooleanValue(false));
+  subdict->Set("str", new base::StringValue("forty two"));
+  subdict->Set("bool", new base::FundamentalValue(false));
 
   scoped_ptr<ListValue> sublist(new ListValue());
-  sublist->Set(0, Value::CreateDoubleValue(42.42));
-  sublist->Set(1, Value::CreateStringValue("forty"));
-  sublist->Set(2, Value::CreateStringValue("two"));
+  sublist->Set(0, new base::FundamentalValue(42.42));
+  sublist->Set(1, new base::StringValue("forty"));
+  sublist->Set(2, new base::StringValue("two"));
   subdict->Set("list", sublist.release());
 
   input.Set("dict", subdict.release());

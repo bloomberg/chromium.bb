@@ -178,28 +178,28 @@ bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
       bool val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = Value::CreateBooleanValue(val);
+      *value = new base::FundamentalValue(val);
       break;
     }
     case Value::TYPE_INTEGER: {
       int val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = Value::CreateIntegerValue(val);
+      *value = new base::FundamentalValue(val);
       break;
     }
     case Value::TYPE_DOUBLE: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = Value::CreateDoubleValue(val);
+      *value = new base::FundamentalValue(val);
       break;
     }
     case Value::TYPE_STRING: {
       std::string val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = Value::CreateStringValue(val);
+      *value = new base::StringValue(val);
       break;
     }
     case Value::TYPE_BINARY: {
