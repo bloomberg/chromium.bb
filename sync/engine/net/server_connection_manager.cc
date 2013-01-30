@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "sync/engine/net/url_translator.h"
 #include "sync/engine/syncer.h"
@@ -56,6 +57,23 @@ const char* HttpResponse::GetServerConnectionCodeString(
 }
 
 #undef ENUM_CASE
+
+// TODO(clamy): check if all errors are in the right category.
+HttpResponse::ServerConnectionCode
+HttpResponse::ServerConnectionCodeFromNetError(int error_code) {
+  switch (error_code) {
+    case net::ERR_ABORTED:
+    case net::ERR_SOCKET_NOT_CONNECTED:
+    case net::ERR_NETWORK_CHANGED:
+    case net::ERR_CONNECTION_FAILED:
+    case net::ERR_NAME_NOT_RESOLVED:
+    case net::ERR_INTERNET_DISCONNECTED:
+    case net::ERR_NETWORK_ACCESS_DENIED:
+    case net::ERR_NETWORK_IO_SUSPENDED:
+      return CONNECTION_UNAVAILABLE;
+  }
+  return IO_ERROR;
+}
 
 ServerConnectionManager::Connection::Connection(
     ServerConnectionManager* scm) : scm_(scm) {

@@ -51,10 +51,9 @@ bool SyncAPIBridgedConnection::Init(const char* path,
   int error_code = 0;
   int response_code = 0;
   if (!http->MakeSynchronousPost(&error_code, &response_code)) {
-    response->server_status = error_code == net::ERR_ABORTED ?
-        HttpResponse::CONNECTION_UNAVAILABLE : HttpResponse::IO_ERROR;
-    LOG_IF(WARNING, error_code != net::ERR_ABORTED)
-        << "Net error during post: " << error_code;
+    DVLOG(1) << "Http POST failed, error returns: " << error_code;
+    response->server_status = HttpResponse::ServerConnectionCodeFromNetError(
+        error_code);
     return false;
   }
 
