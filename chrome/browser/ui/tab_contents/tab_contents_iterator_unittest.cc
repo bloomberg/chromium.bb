@@ -8,7 +8,8 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -32,20 +33,33 @@ size_t CountAllTabs() {
 
 TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   // Make sure we have 1 window to start with.
-  EXPECT_EQ(1U, BrowserList::size());
+  EXPECT_EQ(1U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
 
   EXPECT_EQ(0U, CountAllTabs());
 
   // Create more browsers/windows.
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForProfile(profile()));
+  // Create browser 3 and 4 on the Ash desktop (the TabContentsIterator
+  // shouldn't see the difference).
+  Browser::CreateParams ash_params(profile(), chrome::HOST_DESKTOP_TYPE_ASH);
   scoped_ptr<Browser> browser3(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&ash_params));
   scoped_ptr<Browser> browser4(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&ash_params));
 
   // Sanity checks.
-  EXPECT_EQ(4U, BrowserList::size());
+#if defined(OS_CHROMEOS)
+  // The ash desktop is the native desktop on Chrome OS.
+  EXPECT_EQ(4U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+#else
+  EXPECT_EQ(2U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+  EXPECT_EQ(2U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_ASH)->size());
+#endif
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser2->tab_strip_model()->count());
   EXPECT_EQ(0, browser3->tab_strip_model()->count());
@@ -76,16 +90,29 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
 
 TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   // Make sure we have 1 window to start with.
-  EXPECT_EQ(1U, BrowserList::size());
+  EXPECT_EQ(1U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
 
   // Create more browsers/windows.
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForProfile(profile()));
+  // Create browser 3 on the Ash desktop (the TabContentsIterator shouldn't see
+  // the difference).
+  Browser::CreateParams ash_params(profile(), chrome::HOST_DESKTOP_TYPE_ASH);
   scoped_ptr<Browser> browser3(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&ash_params));
 
   // Sanity checks.
-  EXPECT_EQ(3U, BrowserList::size());
+#if defined(OS_CHROMEOS)
+  // The ash desktop is the native desktop on Chrome OS.
+  EXPECT_EQ(3U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+#else
+  EXPECT_EQ(2U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
+  EXPECT_EQ(1U, chrome::BrowserListImpl::GetInstance(
+                    chrome::HOST_DESKTOP_TYPE_ASH)->size());
+#endif
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser2->tab_strip_model()->count());
   EXPECT_EQ(0, browser3->tab_strip_model()->count());
@@ -95,21 +122,23 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   // Add some tabs.
   for (size_t i = 0; i < 3; ++i)
     chrome::NewTab(browser2.get());
-  chrome::NewTab(browser3.get());
+  for (size_t i = 0; i < 2; ++i)
+    chrome::NewTab(browser3.get());
 
   size_t count = 0;
   for (TabContentsIterator iterator; !iterator.done(); iterator.Next(),
                                                        ++count) {
     if (count < 3)
       EXPECT_EQ(browser2.get(), iterator.browser());
-    else if (count == 3)
+    else if (count < 5)
       EXPECT_EQ(browser3.get(), iterator.browser());
     else
-      EXPECT_TRUE(false);
+      ADD_FAILURE();
   }
 
   // Close some tabs.
   browser2->tab_strip_model()->CloseAllTabs();
+  browser3->tab_strip_model()->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
 
   count = 0;
   for (TabContentsIterator iterator; !iterator.done(); iterator.Next(),
@@ -117,7 +146,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
     if (count == 0)
       EXPECT_EQ(browser3.get(), iterator.browser());
     else
-      EXPECT_TRUE(false);
+      ADD_FAILURE();
   }
 
   // Now make it one tab per browser.
@@ -134,7 +163,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
     else if (count == 2)
       EXPECT_EQ(browser3.get(), iterator.browser());
     else
-      EXPECT_TRUE(false);
+      ADD_FAILURE();
   }
 
   // Close all remaining tabs to keep all the destructors happy.

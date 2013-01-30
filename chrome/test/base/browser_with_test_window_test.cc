@@ -32,7 +32,19 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
       db_thread_(BrowserThread::DB),
       file_thread_(BrowserThread::FILE, message_loop()),
       file_user_blocking_thread_(
-          BrowserThread::FILE_USER_BLOCKING, message_loop()) {
+          BrowserThread::FILE_USER_BLOCKING, message_loop()),
+      host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE) {
+  db_thread_.Start();
+}
+
+BrowserWithTestWindowTest::BrowserWithTestWindowTest(
+    chrome::HostDesktopType host_desktop_type)
+    : ui_thread_(BrowserThread::UI, message_loop()),
+      db_thread_(BrowserThread::DB),
+      file_thread_(BrowserThread::FILE, message_loop()),
+      file_user_blocking_thread_(
+          BrowserThread::FILE_USER_BLOCKING, message_loop()),
+      host_desktop_type_(host_desktop_type) {
   db_thread_.Start();
 }
 
@@ -45,7 +57,7 @@ void BrowserWithTestWindowTest::SetUp() {
   if (!window_.get())
     window_.reset(new TestBrowserWindow);
 
-  Browser::CreateParams params(profile());
+  Browser::CreateParams params(profile(), host_desktop_type_);
   params.window = window_.get();
   browser_.reset(new Browser(params));
 #if defined(USE_AURA)

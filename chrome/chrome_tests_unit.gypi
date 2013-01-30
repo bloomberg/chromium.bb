@@ -1180,6 +1180,7 @@
         'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',
         'browser/ui/browser_command_controller_unittest.cc',
+        'browser/ui/browser_iterator_unittest.cc',
         'browser/ui/chrome_select_file_policy_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
@@ -2126,6 +2127,7 @@
             'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
             'browser/ui/browser_command_controller_unittest.cc',
+            'browser/ui/browser_iterator_unittest.cc',
             'browser/ui/fullscreen/fullscreen_controller_state_unittest.cc',
             'browser/ui/fullscreen/fullscreen_controller_unittest.cc',
             'browser/ui/search/search_delegate_unittest.cc',
