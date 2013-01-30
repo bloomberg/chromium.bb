@@ -1,0 +1,2 @@
+# Hangs that should go away with a new sharding framework, according to maruel@.
+LauncherViewTest.*
