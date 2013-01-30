@@ -13,6 +13,10 @@ TextureDrawQuad::TextureDrawQuad()
     : resource_id(0),
       premultiplied_alpha(false),
       flipped(false) {
+  this->vertex_opacity[0] = 0.f;
+  this->vertex_opacity[1] = 0.f;
+  this->vertex_opacity[2] = 0.f;
+  this->vertex_opacity[3] = 0.f;
 }
 
 scoped_ptr<TextureDrawQuad> TextureDrawQuad::Create() {
