@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.FlakyTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_shell.ContentShellTestBase;
 
 /*
@@ -14,11 +15,11 @@ import org.chromium.content_shell.ContentShellTestBase;
  */
 public class ContentViewScrollingTest extends ContentShellTestBase {
 
-    private static final String LARGE_PAGE = "data:text/html;utf-8,"
-        + "<html>"
-        + "<head><style>body { width: 5000px; height: 5000px; }</style></head>"
-        + "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>"
-        + "</html>";
+    private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri(
+            "<html>" +
+            "<head><style>body { width: 5000px; height: 5000px; }</style></head>" +
+            "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>" +
+            "</html>");
 
     /*
      * @SmallTest

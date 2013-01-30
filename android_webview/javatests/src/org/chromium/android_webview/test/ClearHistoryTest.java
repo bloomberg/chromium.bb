@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -20,7 +21,8 @@ public class ClearHistoryTest extends AndroidWebViewTestBase {
     private static final String[] URLS = new String[3];
     {
         for (int i = 0; i < URLS.length; i++) {
-            URLS[i] = "data:text/html;utf-8,<html><head></head><body>" + i + "</body></html>";
+            URLS[i] = UrlUtils.encodeHtmlDataUri(
+                    "<html><head></head><body>" + i + "</body></html>");
         }
     }
 

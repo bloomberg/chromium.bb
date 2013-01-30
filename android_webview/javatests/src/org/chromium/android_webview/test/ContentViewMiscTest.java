@@ -18,6 +18,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
@@ -53,13 +54,12 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
      */
     @FlakyTest
     public void testFlingScroll() throws Throwable {
-        StringBuffer testPage = new StringBuffer().append("data:text/html;utf-8,")
-                .append("<html><head><style>body { width: 5000px; height: 5000px; }</head><body>")
-                .append("</body></html>");
+        final String testPage = UrlUtils.encodeHtmlDataUri(
+                "<html><head><style>body { width: 5000px; height: 5000px; }</head>" +
+                "<body></body></html>");
 
         // Test flinging in the y axis
-        loadUrlSync(mAwContents , mContentsClient.getOnPageFinishedHelper(),
-                testPage.toString());
+        loadUrlSync(mAwContents , mContentsClient.getOnPageFinishedHelper(), testPage);
         assertEquals(0, mContentViewCore.getNativeScrollYForTest());
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override

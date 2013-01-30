@@ -9,6 +9,7 @@ import android.view.View;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -61,7 +62,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
 
     private String generateTestUrl(int totalUrls, int targetIdAt, String targetId) {
         StringBuilder testUrl = new StringBuilder();
-        testUrl.append("data:text/html;utf-8,<html><body>");
+        testUrl.append("<html><body>");
         for (int i = 0; i < totalUrls; i++) {
             boolean isTargeted = i == targetIdAt;
             testUrl.append("<a href=\"data:text/html;utf-8,<html><head><script>" +
@@ -71,8 +72,8 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
                     (isTargeted ? "<b>" : "") + i + (isTargeted ? "</b>" : "") +
                     "</sup></small></a>");
         }
-        testUrl.append("</small></div></body></head>");
-        return testUrl.toString();
+        testUrl.append("</small></div></body></html>");
+        return UrlUtils.encodeHtmlDataUri(testUrl.toString());
     }
 
     public ContentViewPopupZoomerTest() {

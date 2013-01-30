@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.NavigationPopup.NavigationPopupDelegate;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
@@ -72,7 +73,7 @@ public class NavigationPopupTest extends ChromiumTestShellTestBase {
             mHistory.addEntry(new TestNavigationEntry(
                     1, "about:blank", null, null, "About Blank", null));
             mHistory.addEntry(new TestNavigationEntry(
-                    5, "data:text/html;utf-8,<html>1</html>", null, null, null, null));
+                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null));
         }
 
         @Override

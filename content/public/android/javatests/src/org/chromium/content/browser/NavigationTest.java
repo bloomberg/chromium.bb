@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell.ContentShellTestBase;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -16,13 +17,13 @@ import org.chromium.content_shell_apk.ContentShellActivity;
  */
 public class NavigationTest extends ContentShellTestBase {
 
-    private static final String URL_1 = "data:text/html;utf-8,<html>1</html>";
-    private static final String URL_2 = "data:text/html;utf-8,<html>2</html>";
-    private static final String URL_3 = "data:text/html;utf-8,<html>3</html>";
-    private static final String URL_4 = "data:text/html;utf-8,<html>4</html>";
-    private static final String URL_5 = "data:text/html;utf-8,<html>5</html>";
-    private static final String URL_6 = "data:text/html;utf-8,<html>6</html>";
-    private static final String URL_7 = "data:text/html;utf-8,<html>7</html>";
+    private static final String URL_1 = UrlUtils.encodeHtmlDataUri("<html>1</html>");
+    private static final String URL_2 = UrlUtils.encodeHtmlDataUri("<html>2</html>");
+    private static final String URL_3 = UrlUtils.encodeHtmlDataUri("<html>3</html>");
+    private static final String URL_4 = UrlUtils.encodeHtmlDataUri("<html>4</html>");
+    private static final String URL_5 = UrlUtils.encodeHtmlDataUri("<html>5</html>");
+    private static final String URL_6 = UrlUtils.encodeHtmlDataUri("<html>6</html>");
+    private static final String URL_7 = UrlUtils.encodeHtmlDataUri("<html>7</html>");
 
     private void goBack(final ContentView contentView,
             TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {

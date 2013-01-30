@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -23,8 +24,8 @@ import java.util.concurrent.ExecutionException;
  */
 public class InterstitialPageTest extends ContentShellTestBase {
 
-    private static final String URL =
-            "data:text/html;utf-8,<html><head></head><body>test</body></html>";
+    private static final String URL = UrlUtils.encodeHtmlDataUri(
+            "<html><head></head><body>test</body></html>");
 
     @Override
     protected void setUp() throws Exception {

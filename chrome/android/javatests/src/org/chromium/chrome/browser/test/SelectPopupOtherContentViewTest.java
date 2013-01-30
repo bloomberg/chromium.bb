@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.SelectPopupDialog;
 import org.chromium.content.browser.test.util.Criteria;
@@ -23,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
     private static final int WAIT_TIMEOUT_SECONDS = 2;
-    private static final String SELECT_URL =
-            "data:text/html;utf-8,<html><body>" +
+    private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
+            "<html><body>" +
             "Which animal is the strongest:<br/>" +
             "<select id=\"select\">" +
             "<option>Black bear</option>" +
@@ -35,7 +36,7 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
             "<option>Gorilla</option>" +
             "<option>Chipmunk</option>" +
             "</select>" +
-            "</body></html>";
+            "</body></html>");
 
     private static class PopupShowingCriteria implements Criteria {
         @Override

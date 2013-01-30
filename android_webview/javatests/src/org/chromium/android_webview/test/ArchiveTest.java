@@ -10,6 +10,7 @@ import android.webkit.ValueCallback;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 
 import java.io.File;
 import java.util.concurrent.Semaphore;
@@ -20,8 +21,8 @@ public class ArchiveTest extends AndroidWebViewTestBase {
 
     private static final long TEST_TIMEOUT = 20000L;
 
-    private static final String TEST_PAGE =
-            "data:text/html;utf-8,<html><head></head><body>test</body></html>";
+    private static final String TEST_PAGE = UrlUtils.encodeHtmlDataUri(
+            "<html><head></head><body>test</body></html>");
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
     private AwTestContainerView mTestContainerView;

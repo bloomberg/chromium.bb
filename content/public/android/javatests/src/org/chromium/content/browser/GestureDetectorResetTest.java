@@ -10,6 +10,7 @@ import junit.framework.Assert;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -21,15 +22,14 @@ import java.util.concurrent.TimeUnit;
 
 public class GestureDetectorResetTest extends ContentShellTestBase {
     private static final int WAIT_TIMEOUT_SECONDS = 2;
-    private static final String CLICK_TEST_URL =
-            "data:text/html;utf-8,<html>" +
-            "<body>" +
+    private static final String CLICK_TEST_URL = UrlUtils.encodeHtmlDataUri(
+            "<html><body>" +
             "<button id=\"button\" " +
             "  onclick=\"document.getElementById('test').textContent = 'clicked';\">" +
             "Button" +
             "</button><br/>" +
             "<div id=\"test\">not clicked</div><br/>" +
-            "</body></html>";
+            "</body></html>");
 
     private static class NodeContentsIsEqualToCriteria implements Criteria {
         private final ContentView mView;
