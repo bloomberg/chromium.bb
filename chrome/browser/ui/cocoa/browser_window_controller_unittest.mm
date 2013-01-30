@@ -141,8 +141,7 @@ TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
   // Force the bookmark bar to be shown.
-  profile()->GetPrefs()->
-      SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
@@ -458,8 +457,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
 
 TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // Force a display of the bookmark bar.
-  profile()->GetPrefs()->
-      SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
@@ -505,8 +503,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   CheckViewPositions(controller_);
 
   // Remove the bookmark bar and recheck
-  profile()->GetPrefs()->
-      SetBoolean(prefs::kShowBookmarkBar, false);
+  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
   [controller_ resizeView:bookmark newHeight:0];
   CheckViewPositions(controller_);
 
@@ -801,6 +798,21 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithNonSeparator) {
   EXPECT_TRUE([followingNonSeparator isEnabled]);
   EXPECT_FALSE([signinMenuItem isHidden]);
   EXPECT_TRUE([followingNonSeparator isHidden]);
+}
+
+// Verify that hit testing works correctly when the bookmark bar overlaps
+// web contents.
+TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
+  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+
+  NSView* bookmarkView = [controller_ bookmarkView];
+  NSView* contentView = [[controller_ window] contentView];
+  NSPoint point = [bookmarkView convertPoint:NSMakePoint(1, 1)
+                                      toView:[contentView superview]];
+
+  EXPECT_TRUE([[contentView hitTest:point] isDescendantOf:bookmarkView]);
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {

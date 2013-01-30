@@ -46,6 +46,15 @@
   NSRectFill(dirtyRect);
 }
 
+- (NSView*)hitTest:(NSPoint)point {
+  NSView* result = [super hitTest:point];
+  // Never return this view during hit testing. This allows overlapping views to
+  // get events even when they are not topmost.
+  if ([result isEqual:self])
+    return nil;
+  return result;
+}
+
 @end
 
 @implementation FastResizeView (PrivateMethods)

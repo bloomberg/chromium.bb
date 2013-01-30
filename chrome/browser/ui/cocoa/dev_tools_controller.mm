@@ -17,15 +17,32 @@
 
 using content::WebContents;
 
-@interface GraySplitView : NSSplitView
+@interface GraySplitView : NSSplitView {
+  CGFloat topContentOffset_;
+}
+
+@property(assign, nonatomic) CGFloat topContentOffset;
+
 - (NSColor*)dividerColor;
+
 @end
 
 
 @implementation GraySplitView
+
+@synthesize topContentOffset = topContentOffset_;
+
 - (NSColor*)dividerColor {
   return [NSColor darkGrayColor];
 }
+
+- (NSView*)hitTest:(NSPoint)point {
+  NSPoint viewPoint = [self convertPoint:point fromView:[self superview]];
+  if (viewPoint.y < topContentOffset_)
+    return nil;
+  return [super hitTest:point];
+}
+
 @end
 
 
@@ -97,6 +114,10 @@ using content::WebContents;
     dockSide_ = devToolsWindow_->dock_side();
     [self showDevToolsContainer];
   }
+}
+
+- (void)setTopContentOffset:(CGFloat)offset {
+  [splitView_ setTopContentOffset:offset];
 }
 
 - (void)showDevToolsContainer {

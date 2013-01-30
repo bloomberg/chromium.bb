@@ -10,9 +10,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/devtools/devtools_window.h"
 
-@class NSSplitView;
-@class NSView;
-
+@class GraySplitView;
 class Profile;
 
 namespace content {
@@ -25,7 +23,7 @@ class WebContents;
 @interface DevToolsController : NSObject<NSSplitViewDelegate> {
  @private
   // A view hosting docked devTools contents.
-  scoped_nsobject<NSSplitView> splitView_;
+  scoped_nsobject<GraySplitView> splitView_;
 
   DevToolsDockSide dockSide_;
 
@@ -48,6 +46,9 @@ class WebContents;
 // the actual resize).
 - (void)updateDevToolsForWebContents:(content::WebContents*)contents
                          withProfile:(Profile*)profile;
+
+- (void)setTopContentOffset:(CGFloat)offset;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DEV_TOOLS_CONTROLLER_H_

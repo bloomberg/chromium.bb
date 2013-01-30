@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
+#import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
@@ -914,6 +915,9 @@ willPositionSheet:(NSWindow*)sheet
 
   // Prevent the fast resize view from drawing white over the bookmark bar.
   [[self tabContentArea] setContentOffset:toolbarToWebContentsOffset_];
+
+  // Prevent the dev tools splitter from overlapping the bookmark bar.
+  [devToolsController_ setTopContentOffset:toolbarToWebContentsOffset_];
 }
 
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode {
