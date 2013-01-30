@@ -10,6 +10,8 @@
 #include "base/process.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace content {
 class WebRTCInternalsUIObserver;
@@ -18,16 +20,20 @@ class WebRTCInternalsUIObserver;
 // It collects peer connection infomation from the renderers,
 // forwards the data to WebRTCInternalsUIObserver and
 // sends data collecting commands to the renderers.
-class CONTENT_EXPORT WebRTCInternals {
+class CONTENT_EXPORT WebRTCInternals : public NotificationObserver{
  public:
   static WebRTCInternals* GetInstance();
 
   // This method is called when a PeerConnection is created.
+  // |render_process_id| is the id of the render process (not OS pid), which is
+  // needed because we might not be able to get the OS process id when the
+  // render process terminates and we want to clean up.
   // |pid| is the renderer process id, |lid| is the renderer local id used to
   // identify a PeerConnection, |url| is the url of the tab owning the
   // PeerConnection, |servers| is the servers configuration, |constraints| is
   // the media constraints used to initialize the PeerConnection.
-  void AddPeerConnection(base::ProcessId pid,
+  void AddPeerConnection(int render_process_id,
+                         base::ProcessId pid,
                          int lid,
                          const std::string& url,
                          const std::string& servers,
@@ -60,6 +66,11 @@ class CONTENT_EXPORT WebRTCInternals {
 
   void SendUpdate(const std::string& command, base::Value* value);
 
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   ObserverList<WebRTCInternalsUIObserver> observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
@@ -75,6 +86,8 @@ class CONTENT_EXPORT WebRTCInternals {
   // list item is a DictionaryValue containing "type" and "value", both of which
   // are strings.
   base::ListValue peer_connection_data_;
+
+  NotificationRegistrar registrar_;
 };
 
 }  // namespace content

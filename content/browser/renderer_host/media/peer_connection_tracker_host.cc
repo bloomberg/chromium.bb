@@ -9,8 +9,8 @@
 
 namespace content {
 
-PeerConnectionTrackerHost::PeerConnectionTrackerHost() {
-}
+PeerConnectionTrackerHost::PeerConnectionTrackerHost(int render_process_id)
+    : render_process_id_(render_process_id) {}
 
 bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
                                                   bool* message_was_ok) {
@@ -40,6 +40,7 @@ PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
 void PeerConnectionTrackerHost::OnAddPeerConnection(
     const PeerConnectionInfo& info) {
   WebRTCInternals::GetInstance()->AddPeerConnection(
+      render_process_id_,
       base::GetProcId(peer_handle()),
       info.lid,
       info.url,

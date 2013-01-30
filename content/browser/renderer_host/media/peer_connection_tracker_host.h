@@ -16,7 +16,7 @@ namespace content {
 // WebRTCInternals and PeerConnectionTracker.
 class PeerConnectionTrackerHost : public BrowserMessageFilter {
  public:
-  PeerConnectionTrackerHost();
+  PeerConnectionTrackerHost(int render_process_id);
 
   // content::BrowserMessageFilter override.
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -33,6 +33,8 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter {
   void OnRemovePeerConnection(int lid);
   void OnUpdatePeerConnection(
       int lid, const std::string& type, const std::string& value);
+
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTrackerHost);
 };

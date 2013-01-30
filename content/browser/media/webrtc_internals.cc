@@ -6,6 +6,10 @@
 
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -29,6 +33,10 @@ static ListValue* EnsureLogList(DictionaryValue* dict) {
 }  // namespace
 
 WebRTCInternals::WebRTCInternals() {
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_CHILD_PROCESS_CRASHED,
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 WebRTCInternals::~WebRTCInternals() {
@@ -38,7 +46,8 @@ WebRTCInternals* WebRTCInternals::GetInstance() {
   return Singleton<WebRTCInternals>::get();
 }
 
-void WebRTCInternals::AddPeerConnection(ProcessId pid,
+void WebRTCInternals::AddPeerConnection(int render_process_id,
+                                        ProcessId pid,
                                         int lid,
                                         const string& url,
                                         const string& servers,
@@ -49,6 +58,7 @@ void WebRTCInternals::AddPeerConnection(ProcessId pid,
   if (!dict)
     return;
 
+  dict->SetInteger("rid", render_process_id);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
   dict->SetString("servers", servers);
@@ -148,6 +158,49 @@ void WebRTCInternals::SendUpdate(const string& command, Value* value) {
   FOR_EACH_OBSERVER(WebRTCInternalsUIObserver,
                     observers_,
                     OnUpdate(command, value));
+}
+
+void WebRTCInternals::Observe(int type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int render_process_id = -1;
+
+  switch (type) {
+    case NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+      render_process_id = Source<RenderProcessHost>(source)->GetID();
+      break;
+    case NOTIFICATION_CHILD_PROCESS_CRASHED:
+      render_process_id = Details<ChildProcessData>(details).ptr()->id;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // Iterates from the end of the list to remove the PeerConnections created
+  // by the exitting renderer.
+  for (int i = peer_connection_data_.GetSize() - 1; i >= 0; --i) {
+    DictionaryValue* record = NULL;
+    peer_connection_data_.GetDictionary(i, &record);
+
+    int this_rid = 0;
+    record->GetInteger("rid", &this_rid);
+
+    if (this_rid == render_process_id) {
+      if (observers_.size() > 0) {
+        int lid = 0, pid = 0;
+        record->GetInteger("lid", &lid);
+        record->GetInteger("pid", &pid);
+
+        DictionaryValue update;
+        update.SetInteger("lid", lid);
+        update.SetInteger("pid", pid);
+        SendUpdate("removePeerConnection", &update);
+      }
+      peer_connection_data_.Remove(i, NULL);
+    }
+  }
 }
 
 }  // namespace content
