@@ -568,7 +568,8 @@
     { "name": "my.alfresco.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "webmail.gigahost.dk", "include_subdomains": true, "mode": "force-https" },
     { "name": "paymill.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "paymill.de", "include_subdomains": true, "mode": "force-https" },
+    { "name": "gocardless.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "espra.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
