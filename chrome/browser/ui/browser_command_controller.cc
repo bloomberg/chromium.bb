@@ -39,6 +39,10 @@
 #include "content/public/common/url_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/browser_commands_mac.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #endif
@@ -421,7 +425,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ConvertPopupToTabbedBrowser(browser_);
       break;
     case IDC_FULLSCREEN:
+#if defined(OS_MACOSX)
+      chrome::ToggleFullscreenWithChrome(browser_);
+#else
       chrome::ToggleFullscreenMode(browser_);
+#endif
       break;
 
 #if defined(USE_ASH)
@@ -450,7 +458,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
 #if defined(OS_MACOSX)
     case IDC_PRESENTATION_MODE:
-      browser_->TogglePresentationMode();
+      chrome::ToggleFullscreenMode(browser_);
       break;
 #endif
     case IDC_EXIT:

@@ -346,9 +346,6 @@ class Browser : public TabStripModelObserver,
   // See the description of FullscreenController::ToggleMetroSnapMode.
   void SetMetroSnapMode(bool enable);
 #endif
-#if defined(OS_MACOSX)
-  void TogglePresentationMode();
-#endif
 
   // Returns true if the Browser supports the specified feature. The value of
   // this varies during the lifetime of the browser. For example, if the window
