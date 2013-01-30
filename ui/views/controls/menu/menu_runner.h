@@ -82,6 +82,8 @@ class VIEWS_EXPORT MenuRunner {
   // MENU_DELETED the method is returning because the MenuRunner was deleted.
   // Typically callers should NOT do any processing if this returns
   // MENU_DELETED.
+  // If |anchor| uses a |BUBBLE_..| type, the bounds will get determined by
+  // using |bounds| as the thing to point at in screen coordinates.
   RunResult RunMenuAt(Widget* parent,
                       MenuButton* button,
                       const gfx::Rect& bounds,

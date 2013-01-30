@@ -10,6 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -165,7 +166,9 @@ class MenuScrollViewContainer::MenuScrollView : public View {
 // MenuScrollViewContainer ----------------------------------------------------
 
 MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
-    : content_view_(content_view) {
+    : content_view_(content_view),
+      arrow_location_(BubbleBorder::NONE),
+      bubble_border_(NULL) {
   scroll_up_button_ = new MenuScrollButton(content_view, true);
   scroll_down_button_ = new MenuScrollButton(content_view, false);
   AddChildView(scroll_up_button_);
@@ -174,25 +177,22 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   scroll_view_ = new MenuScrollView(content_view);
   AddChildView(scroll_view_);
 
-  const MenuConfig& menu_config =
-      content_view_->GetMenuItem()->GetMenuConfig();
+  arrow_location_ = BubbleBorderTypeFromAnchor(
+      content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 
-  int padding = menu_config.corner_radius > 0 ?
-        kBorderPaddingDueToRoundedCorners : 0;
-  int top = menu_config.menu_vertical_border_size + padding;
-  int left = menu_config.menu_horizontal_border_size + padding;
-  int bottom = menu_config.menu_vertical_border_size + padding;
-  int right = menu_config.menu_horizontal_border_size + padding;
+  if (arrow_location_ != BubbleBorder::NONE)
+    CreateBubbleBorder();
+  else
+    CreateDefaultBorder();
+}
 
-  if (NativeTheme::IsNewMenuStyleEnabled()) {
-    set_border(views::Border::CreateBorderPainter(
-        new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
-                ui::NativeTheme::kColorId_MenuBorderColor),
-            menu_config.corner_radius),
-            gfx::Insets(top, left, bottom, right)));
-  } else {
-    set_border(Border::CreateEmptyBorder(top, left, bottom, right));
-  }
+bool MenuScrollViewContainer::HasBubbleBorder() {
+  return arrow_location_ != BubbleBorder::NONE;
+}
+
+void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
+  DCHECK(HasBubbleBorder());
+  bubble_border_->set_arrow_offset(offset);
 }
 
 void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
@@ -261,6 +261,56 @@ void MenuScrollViewContainer::OnBoundsChanged(
   scroll_up_button_->SetVisible(content_pref.height() > height());
   scroll_down_button_->SetVisible(content_pref.height() > height());
   Layout();
+}
+
+void MenuScrollViewContainer::CreateDefaultBorder() {
+  arrow_location_ = BubbleBorder::NONE;
+  bubble_border_ = NULL;
+
+  const MenuConfig& menu_config =
+      content_view_->GetMenuItem()->GetMenuConfig();
+
+  int padding = menu_config.corner_radius > 0 ?
+        kBorderPaddingDueToRoundedCorners : 0;
+  int top = menu_config.menu_vertical_border_size + padding;
+  int left = menu_config.menu_horizontal_border_size + padding;
+  int bottom = menu_config.menu_vertical_border_size + padding;
+  int right = menu_config.menu_horizontal_border_size + padding;
+
+  if (NativeTheme::IsNewMenuStyleEnabled()) {
+    set_border(views::Border::CreateBorderPainter(
+        new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
+                ui::NativeTheme::kColorId_MenuBorderColor),
+            menu_config.corner_radius),
+            gfx::Insets(top, left, bottom, right)));
+  } else {
+    set_border(Border::CreateEmptyBorder(top, left, bottom, right));
+  }
+}
+
+void MenuScrollViewContainer::CreateBubbleBorder() {
+  bubble_border_ = new BubbleBorder(
+      arrow_location_,
+      BubbleBorder::NO_SHADOW);
+  set_border(bubble_border_);
+  set_background(new BubbleBackground(bubble_border_));
+}
+
+BubbleBorder::ArrowLocation
+MenuScrollViewContainer::BubbleBorderTypeFromAnchor(
+    MenuItemView::AnchorPosition anchor) {
+  switch (anchor) {
+    case views::MenuItemView::BUBBLE_LEFT:
+      return BubbleBorder::RIGHT_CENTER;
+    case views::MenuItemView::BUBBLE_RIGHT:
+      return BubbleBorder::LEFT_CENTER;
+    case views::MenuItemView::BUBBLE_ABOVE:
+      return BubbleBorder::BOTTOM_CENTER;
+    case views::MenuItemView::BUBBLE_BELOW:
+      return BubbleBorder::TOP_CENTER;
+    default:
+      return BubbleBorder::NONE;
+  }
 }
 
 }  // namespace views

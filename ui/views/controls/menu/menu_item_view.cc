@@ -22,6 +22,7 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_image_util.h"
+#include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
@@ -178,6 +179,14 @@ void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
       // No additional accessibility states currently for these menu states.
       break;
   }
+}
+
+// static
+bool MenuItemView::IsBubble(MenuItemView::AnchorPosition anchor) {
+  return anchor == MenuItemView::BUBBLE_LEFT ||
+         anchor == MenuItemView::BUBBLE_RIGHT ||
+         anchor == MenuItemView::BUBBLE_ABOVE ||
+         anchor == MenuItemView::BUBBLE_BELOW;
 }
 
 // static

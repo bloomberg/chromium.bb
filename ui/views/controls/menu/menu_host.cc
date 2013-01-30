@@ -9,10 +9,15 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/round_rect_painter.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/views/corewm/shadow_types.h"
+#endif
 
 namespace views {
 
@@ -33,19 +38,25 @@ void MenuHost::InitMenuHost(Widget* parent,
                             View* contents_view,
                             bool do_capture) {
   Widget::InitParams params(Widget::InitParams::TYPE_MENU);
-  params.has_dropshadow = true;
-  params.parent = parent ? parent->GetNativeView() : NULL;
-  params.bounds = bounds;
-
   const MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
   const MenuConfig& menu_config = submenu_->GetMenuItem()->GetMenuConfig();
-  if (menu_controller && menu_config.corner_radius > 0)
-    params.transparent = true;
+  bool rounded_border = menu_controller && menu_config.corner_radius > 0;
+  bool bubble_border = submenu_->GetScrollViewContainer() &&
+                       submenu_->GetScrollViewContainer()->HasBubbleBorder();
+  params.has_dropshadow = !bubble_border;
+  params.transparent = bubble_border || rounded_border;
+  params.parent = parent ? parent->GetNativeView() : NULL;
+  params.bounds = bounds;
   Init(params);
 
+#if defined(USE_AURA)
+  if (bubble_border)
+    SetShadowType(GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
+#endif
+
   SetContentsView(contents_view);
-  if (menu_controller && menu_config.corner_radius > 0)
+  if (bubble_border || rounded_border)
     SetOpacity(0);
   ShowMenuHost(do_capture);
 }

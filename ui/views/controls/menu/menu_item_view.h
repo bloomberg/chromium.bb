@@ -90,10 +90,17 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Where the menu should be anchored to for non-RTL languages.  The
   // opposite position will be used if base::i18n:IsRTL() is true.
+  // The BUBBLE flags are used when the menu should get enclosed by a bubble.
+  // Note that BUBBLE flags should only be used with menus which have no
+  // children.
   enum AnchorPosition {
     TOPLEFT,
     TOPRIGHT,
-    BOTTOMCENTER
+    BOTTOMCENTER,
+    BUBBLE_LEFT,
+    BUBBLE_RIGHT,
+    BUBBLE_ABOVE,
+    BUBBLE_BELOW
   };
 
   // Where the menu should be drawn, above or below the bounds (when
@@ -139,6 +146,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // X-coordinate of where the label starts.
   static int label_start() { return label_start_; }
+
+  // Returns if a given |anchor| is a bubble or not.
+  static bool IsBubble(MenuItemView::AnchorPosition anchor);
 
   // Returns the accessible name to be used with screen readers. Mnemonics are
   // removed and the menu item accelerator text is appended.

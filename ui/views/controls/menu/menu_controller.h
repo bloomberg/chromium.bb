@@ -86,6 +86,9 @@ class VIEWS_EXPORT MenuController
   // Whether or not drag operation is in progress.
   bool drag_in_progress() const { return drag_in_progress_; }
 
+  // Get the anchor position wich is used to show this menu.
+  MenuItemView::AnchorPosition GetAnchorPosition() { return state_.anchor; }
+
   // Cancels the current Run. See ExitType for a description of what happens
   // with the various parameters.
   void Cancel(ExitType type);
@@ -375,6 +378,12 @@ class VIEWS_EXPORT MenuController
   gfx::Rect CalculateMenuBounds(MenuItemView* item,
                                 bool prefer_leading,
                                 bool* is_leading);
+
+  // Calculates the bubble bounds of the menu to show. is_leading is set to
+  // match the direction the menu opened in.
+  gfx::Rect CalculateBubbleMenuBounds(MenuItemView* item,
+                                      bool prefer_leading,
+                                      bool* is_leading);
 
   // Returns the depth of the menu.
   static int MenuDepth(MenuItemView* item);

@@ -6,6 +6,8 @@
 #define UI_VIEWS_CONTROLS_MENU_MENU_SCROLL_VIEW_CONTAINER_H_
 
 #include "ui/views/view.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 
 namespace views {
 
@@ -22,6 +24,12 @@ class MenuScrollViewContainer : public View {
   View* scroll_down_button() const { return scroll_down_button_; }
   View* scroll_up_button() const { return scroll_up_button_; }
 
+  // External function to check if the bubble border is usd.
+  bool HasBubbleBorder();
+
+  // Offsets the Arrow from the default location.
+  void SetBubbleArrowOffset(int offset);
+
   // View overrides.
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -33,6 +41,15 @@ class MenuScrollViewContainer : public View {
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
+  // Create the default border.
+  void CreateDefaultBorder();
+
+  // Create the bubble border.
+  void CreateBubbleBorder();
+
+  BubbleBorder::ArrowLocation BubbleBorderTypeFromAnchor(
+      MenuItemView::AnchorPosition anchor);
+
   class MenuScrollView;
 
   // The scroll buttons.
@@ -44,6 +61,12 @@ class MenuScrollViewContainer : public View {
 
   // The content view.
   SubmenuView* content_view_;
+
+  // If set the currently set border is a bubble border.
+  BubbleBorder::ArrowLocation arrow_location_;
+
+  // The currently set border.
+  BubbleBorder* bubble_border_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollViewContainer);
 };
