@@ -38,6 +38,9 @@ base::Lock* GetSubsystemStartupTimeHashLock() {
 }
 
 bool g_main_entry_time_was_recorded = false;
+bool g_startup_stats_collection_finished = false;
+bool g_was_slow_startup = false;
+
 }  // namespace
 
 namespace startup_metric_utils {
@@ -67,12 +70,10 @@ void OnBrowserStartupComplete() {
   // autostarted and the machine is under io pressure.
   const int64 kSevenMinutesInMilliseconds =
       base::TimeDelta::FromMinutes(7).InMilliseconds();
-  if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds)
+  if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds) {
+    g_startup_stats_collection_finished = true;
     return;
-
-  const base::TimeDelta kStartupTimeMin(base::TimeDelta::FromMilliseconds(1));
-  const base::TimeDelta kStartupTimeMax(base::TimeDelta::FromMinutes(5));
-  static const size_t kStartupTimeBuckets(100);
+  }
 
   // The Startup.BrowserMessageLoopStartTime histogram recorded in
   // chrome_browser_main.cc exhibits instability in the field which limits its
@@ -90,8 +91,25 @@ void OnBrowserStartupComplete() {
 
   // Record histograms for the subsystem times for startups > 10 seconds.
   const base::TimeDelta kTenSeconds = base::TimeDelta::FromSeconds(10);
-  if (startup_time_from_main_entry < kTenSeconds)
+  if (startup_time_from_main_entry < kTenSeconds) {
+    g_startup_stats_collection_finished = true;
     return;
+  }
+
+  // If we got here this was what we consider to be a slow startup which we
+  // want to record stats for.
+  g_was_slow_startup = true;
+}
+
+void OnInitialPageLoadComplete() {
+  if (!g_was_slow_startup)
+    return;
+  DCHECK(!g_startup_stats_collection_finished);
+
+  const base::TimeDelta kStartupTimeMin(
+      base::TimeDelta::FromMilliseconds(1));
+  const base::TimeDelta kStartupTimeMax(base::TimeDelta::FromMinutes(5));
+  static const size_t kStartupTimeBuckets = 100;
 
   // Set UMA flag for histograms outside chrome/ that can't use the
   // ScopedSlowStartupUMA class.
@@ -102,27 +120,35 @@ void OnBrowserStartupComplete() {
 
   // Iterate over the stats recorded by ScopedSlowStartupUMA and create
   // histograms for them.
-  {
-    base::AutoLock locker(*GetSubsystemStartupTimeHashLock());
-    SubsystemStartupTimeHash* time_hash = GetSubsystemStartupTimeHash();
-    for (SubsystemStartupTimeHash::iterator i = time_hash->begin();
-        i != time_hash->end();
-        ++i) {
-      const std::string histogram_name = i->first;
-      base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-          histogram_name,
-          kStartupTimeMin,
-          kStartupTimeMax,
-          kStartupTimeBuckets,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-      counter->AddTime(i->second);
-    }
+  base::AutoLock locker(*GetSubsystemStartupTimeHashLock());
+  SubsystemStartupTimeHash* time_hash = GetSubsystemStartupTimeHash();
+  for (SubsystemStartupTimeHash::iterator i = time_hash->begin();
+      i != time_hash->end();
+      ++i) {
+    const std::string histogram_name = i->first;
+    base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
+        histogram_name,
+        kStartupTimeMin,
+        kStartupTimeMax,
+        kStartupTimeBuckets,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    counter->AddTime(i->second);
   }
+
+  g_startup_stats_collection_finished = true;
 }
 
 ScopedSlowStartupUMA::~ScopedSlowStartupUMA() {
+  if (g_startup_stats_collection_finished)
+    return;
+
   base::AutoLock locker(*GetSubsystemStartupTimeHashLock());
-  (*GetSubsystemStartupTimeHash())[histogram_name_] =
+  SubsystemStartupTimeHash* hash = GetSubsystemStartupTimeHash();
+  // Only record the initial sample for a given histogram.
+  if (hash->find(histogram_name_) !=  hash->end())
+    return;
+
+  (*hash)[histogram_name_] =
       base::TimeTicks::Now() - start_time_;
 }
 

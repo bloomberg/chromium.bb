@@ -106,6 +106,10 @@
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -457,6 +461,31 @@ void LaunchDevToolsHandlerIfNeeded(Profile* profile,
     }
   }
 }
+
+// Heap allocated class that listens for first page load, kicks off stat
+// recording and then deletes itself.
+class LoadCompleteListener : public content::NotificationObserver {
+ public:
+   LoadCompleteListener() {
+     registrar_.Add(this,
+                    content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                    content::NotificationService::AllSources());
+   }
+   virtual ~LoadCompleteListener() {}
+
+   // content::NotificationObserver implementation.
+   virtual void Observe(int type,
+                        const content::NotificationSource& source,
+                        const content::NotificationDetails& details) {
+     DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
+     startup_metric_utils::OnInitialPageLoadComplete();
+     delete this;
+   }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
+};
 
 }  // namespace
 
@@ -1627,6 +1656,9 @@ void RecordBrowserStartupTime() {
 
   // Record collected startup metrics.
   startup_metric_utils::OnBrowserStartupComplete();
+
+  // Deletes self.
+  new LoadCompleteListener();
 }
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.

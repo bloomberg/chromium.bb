@@ -35,6 +35,10 @@ void RecordMainEntryPointTime();
 // startup stats.
 void OnBrowserStartupComplete();
 
+// Called when the initial page load has finished in order to record startup
+// stats.
+void OnInitialPageLoadComplete();
+
 // Scoper that records the time period before it's destructed in a histogram
 // with the given name. The histogram is only recorded for slow chrome startups.
 // Useful for trying to figure out what parts of Chrome cause slow startup.
