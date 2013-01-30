@@ -9,6 +9,7 @@ namespace chromeos {
 MockIBusInputContextClient::MockIBusInputContextClient()
     : initialize_call_count_(0),
       is_initialized_(false),
+      is_xkb_layout_(false),
       reset_object_proxy_call_caount_(0),
       set_capabilities_call_count_(0),
       focus_in_call_count_(0),
@@ -99,10 +100,11 @@ void MockIBusInputContextClient::PropertyActivate(
 }
 
 bool MockIBusInputContextClient::IsXKBLayout() {
-  return true;
+  return is_xkb_layout_;
 }
 
 void MockIBusInputContextClient::SetIsXKBLayout(bool is_xkb_layout) {
+  is_xkb_layout_ = is_xkb_layout;
 }
 
 }  // namespace chromeos

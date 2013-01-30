@@ -10,12 +10,14 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ime/text_input_test_support.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace chromeos {
@@ -36,6 +38,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   virtual ~InputMethodManagerImplTest() {}
 
   virtual void SetUp() OVERRIDE {
+    ui::TextInputTestSupport::Initialize();
     delegate_ = new MockInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
@@ -54,6 +57,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     candidate_window_controller_ = NULL;
     xkeyboard_ = NULL;
     manager_.reset();
+    ui::TextInputTestSupport::Shutdown();
   }
 
  protected:
@@ -62,6 +66,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   MockIBusController* controller_;
   MockCandidateWindowController* candidate_window_controller_;
   MockXKeyboard* xkeyboard_;
+  MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImplTest);

@@ -10,8 +10,6 @@
       'composition_text.cc',
       'composition_text.h',
       'composition_underline.h',
-      'ibus_client.cc',
-      'ibus_client.h',
       'input_method.h',
       'input_method_base.cc',
       'input_method_base.h',
@@ -59,8 +57,6 @@
       'sources!': [
         'character_composer.cc',
         'character_composer.h',
-        'ibus_client.cc',
-        'ibus_client.h',
         'input_method_ibus.cc',
         'input_method_ibus.h',
       ],

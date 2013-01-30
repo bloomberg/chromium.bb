@@ -55,7 +55,9 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
   // Called when the IME hides the preedit text.
   virtual void HidePreeditText() = 0;
 
-  // TODO(nona): Introduce SetCursorLocation function.
+  // Called when the application changes its caret location.
+  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
+                                 const ibus::Rect& composition_head) = 0;
 
  protected:
   IBusPanelCandidateWindowHandlerInterface() {}

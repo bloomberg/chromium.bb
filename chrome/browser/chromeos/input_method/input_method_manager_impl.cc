@@ -15,6 +15,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -251,6 +253,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     }
   }
 
+  IBusInputContextClient* input_context =
+      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     FOR_EACH_OBSERVER(InputMethodManager::Observer,
                       observers_,
@@ -266,8 +270,12 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     } else {
       ibus_controller_->ChangeInputMethod(current_input_method_id);
     }
+    if (input_context)
+      input_context->SetIsXKBLayout(true);
   } else {
     ibus_controller_->ChangeInputMethod(input_method_id_to_switch);
+    if (input_context)
+      input_context->SetIsXKBLayout(false);
   }
 
   if (current_input_method_.id() != input_method_id_to_switch) {
@@ -564,6 +572,13 @@ void InputMethodManagerImpl::OnConnected() {
     if (!Contains(filtered_extension_imes_, ite->first))
       ite->second->OnConnected();
   }
+
+  const bool is_xkb_layout =
+      InputMethodUtil::IsKeyboardLayout(current_input_method_.id());
+  IBusInputContextClient* input_context =
+      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
+  DCHECK(input_context);
+  input_context->SetIsXKBLayout(is_xkb_layout);
 }
 
 void InputMethodManagerImpl::OnDisconnected() {

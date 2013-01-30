@@ -346,7 +346,9 @@ class IBusPanelServiceImpl : public IBusPanelService {
 
   void SetCursorLocation(const ibus::Rect& cursor_location,
                          const ibus::Rect& composition_head) {
-    // TODO(nona): implement this function.
+    if (candidate_window_handler_)
+      candidate_window_handler_->SetCursorLocation(cursor_location,
+                                                   composition_head);
   }
 
   // Handles FocusIn, FocusOut, StateChanged method calls from IBus, and ignores

@@ -45,8 +45,8 @@ class IBusUiController : public ibus::IBusPanelCandidateWindowHandlerInterface {
     virtual void OnHidePreeditText() = 0;
 
     // Called when the cursor location is set.
-    virtual void OnSetCursorLocation(const gfx::Rect& cusor_location,
-                                     const gfx::Rect& composition_head) = 0;
+    virtual void OnSetCursorLocation(const ibus::Rect& cusor_location,
+                                     const ibus::Rect& composition_head) = 0;
 
     // Called when the auxiliary text is updated.
     virtual void OnUpdateAuxiliaryText(const std::string& text,
@@ -99,12 +99,6 @@ class IBusUiController : public ibus::IBusPanelCandidateWindowHandlerInterface {
   // sent to the ibus-daemon
   void NotifyPageDown();
 
-  // Handles cursor location update event. This is originate from
-  // SetCursorLocation method call, but we can bypass it on Chrome OS because
-  // candidate window is integrated with Chrome.
-  void SetCursorLocation(const gfx::Rect& cursor_location,
-                         const gfx::Rect& composition_head);
-
  private:
   // IBusPanelHandlerInterface overrides.
   virtual void UpdateLookupTable(const ibus::IBusLookupTable& table,
@@ -116,6 +110,8 @@ class IBusUiController : public ibus::IBusPanelCandidateWindowHandlerInterface {
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
                                  bool visible) OVERRIDE;
   virtual void HidePreeditText() OVERRIDE;
+  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
+                                 const ibus::Rect& composition_head) OVERRIDE;
 
   ObserverList<Observer> observers_;
 

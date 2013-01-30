@@ -85,8 +85,8 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   virtual void OnHideAuxiliaryText() OVERRIDE;
   virtual void OnHideLookupTable() OVERRIDE;
   virtual void OnHidePreeditText() OVERRIDE;
-  virtual void OnSetCursorLocation(const gfx::Rect& cursor_position,
-                                   const gfx::Rect& composition_head) OVERRIDE;
+  virtual void OnSetCursorLocation(const ibus::Rect& cursor_position,
+                                   const ibus::Rect& composition_head) OVERRIDE;
   virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
                                      bool visible) OVERRIDE;
   virtual void OnUpdateLookupTable(

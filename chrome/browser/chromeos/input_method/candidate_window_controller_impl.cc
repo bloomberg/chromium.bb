@@ -30,6 +30,11 @@ namespace {
 const int kInfolistShowDelayMilliSeconds = 500;
 // The milliseconds of the delay to hide the infolist window.
 const int kInfolistHideDelayMilliSeconds = 500;
+
+// Converts from ibus::Rect to gfx::Rect.
+gfx::Rect IBusRectToGfxRect(const ibus::Rect& rect) {
+  return gfx::Rect(rect.x, rect.y, rect.width, rect.height);
+}
 }  // namespace
 
 bool CandidateWindowControllerImpl::Init(IBusController* controller) {
@@ -124,23 +129,24 @@ void CandidateWindowControllerImpl::OnHidePreeditText() {
 }
 
 void CandidateWindowControllerImpl::OnSetCursorLocation(
-    const gfx::Rect& cursor_location,
-    const gfx::Rect& composition_head) {
+    const ibus::Rect& cursor_location,
+    const ibus::Rect& composition_head) {
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
   const gfx::Rect& last_location =
       candidate_window_->cursor_location();
-  const int delta_y = abs(last_location.y() - cursor_location.y());
-  if ((last_location.x() == cursor_location.x()) &&
+  const int delta_y = abs(last_location.y() - cursor_location.y);
+  if ((last_location.x() == cursor_location.x) &&
       (delta_y <= kKeepPositionThreshold)) {
     DVLOG(1) << "Ignored set_cursor_location signal to prevent window shake";
     return;
   }
 
   // Remember the cursor location.
-  candidate_window_->set_cursor_location(cursor_location);
-  candidate_window_->set_composition_head_location(composition_head);
+  candidate_window_->set_cursor_location(IBusRectToGfxRect(cursor_location));
+  candidate_window_->set_composition_head_location(
+      IBusRectToGfxRect(composition_head));
   // Move the window per the cursor location.
   candidate_window_->ResizeAndMoveParentFrame();
   UpdateInfolistBounds();

@@ -31,69 +31,13 @@ ibus::IBusPanelService* GetIBusPanelService() {
   return DBusThreadManager::Get()->GetIBusPanelService();
 }
 
-// Returns a ui::InputMethodIBus object which is associated with the root
-// window. Returns NULL if the Ash shell has already been destructed.
-static ui::InputMethodIBus* GetChromeInputMethod() {
-  if (!ash::Shell::HasInstance())
-    return NULL;
-  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
-  if (!root_window)
-    return NULL;
-  return static_cast<ui::InputMethodIBus*>(root_window->GetProperty(
-      aura::client::kRootWindowInputMethodKey));
-}
-
 }  // namespace
-
-// A class for customizing the behavior of ui::InputMethodIBus for Chrome OS.
-class IBusChromeOSClientImpl : public ui::internal::IBusClient {
- public:
-  explicit IBusChromeOSClientImpl(IBusUiController* ui) : ui_(ui) {}
-
-  // ui::IBusClient override.
-  virtual InputMethodType GetInputMethodType() OVERRIDE {
-    InputMethodManager* manager = GetInputMethodManager();
-    DCHECK(manager);
-    return InputMethodUtil::IsKeyboardLayout(
-        manager->GetCurrentInputMethod().id()) ?
-            INPUT_METHOD_XKB_LAYOUT : INPUT_METHOD_NORMAL;
-  }
-
-  virtual void SetCursorLocation(const gfx::Rect& cursor_location,
-                                 const gfx::Rect& composition_head) OVERRIDE {
-    if (!ui_)
-      return;
-    // We don't have to call ibus_input_context_set_cursor_location() on
-    // Chrome OS because the candidate window for IBus is integrated with
-    // Chrome.
-    ui_->SetCursorLocation(cursor_location, composition_head);
-  }
-
-  void set_ui(IBusUiController* ui) {
-    ui_ = ui;
-  }
-
- private:
-  IBusUiController* ui_;
-  DISALLOW_COPY_AND_ASSIGN(IBusChromeOSClientImpl);
-};
 
 // The real implementation of the IBusUiController.
 IBusUiController::IBusUiController() {
-  ui::InputMethodIBus* input_method = GetChromeInputMethod();
-  DCHECK(input_method);
-  input_method->set_ibus_client(scoped_ptr<ui::internal::IBusClient>(
-      new IBusChromeOSClientImpl(this)).Pass());
 }
 
 IBusUiController::~IBusUiController() {
-  ui::InputMethodIBus* input_method = GetChromeInputMethod();
-  if (input_method) {
-    ui::internal::IBusClient* client = input_method->ibus_client();
-    // We assume that no objects other than |this| set an IBus client.
-    DCHECK(client);
-    static_cast<IBusChromeOSClientImpl*>(client)->set_ui(NULL);
-  }
 }
 
 void IBusUiController::NotifyCandidateClicked(int index, int button,
@@ -153,12 +97,6 @@ void IBusUiController::UpdateAuxiliaryText(const std::string& text,
                     OnUpdateAuxiliaryText(text, visible));
 }
 
-void IBusUiController::SetCursorLocation(const gfx::Rect& cursor_location,
-                                         const gfx::Rect& composition_head) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnSetCursorLocation(cursor_location, composition_head));
-}
-
 void IBusUiController::UpdatePreeditText(const std::string& text,
                                          uint32 cursor_pos,
                                          bool visible) {
@@ -173,6 +111,13 @@ void IBusUiController::HidePreeditText() {
 void IBusUiController::UpdateLookupTable(const ibus::IBusLookupTable& table,
                                          bool visible) {
   FOR_EACH_OBSERVER(Observer, observers_, OnUpdateLookupTable(table, visible));
+}
+
+void IBusUiController::SetCursorLocation(const ibus::Rect& cursor_location,
+                                         const ibus::Rect& composition_head) {
+  FOR_EACH_OBSERVER(Observer,
+                    observers_,
+                    OnSetCursorLocation(cursor_location, composition_head));
 }
 
 }  // namespace input_method

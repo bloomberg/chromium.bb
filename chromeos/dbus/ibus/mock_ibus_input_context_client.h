@@ -102,6 +102,7 @@ class MockIBusInputContextClient : public IBusInputContextClient {
  private:
   int initialize_call_count_;
   bool is_initialized_;
+  bool is_xkb_layout_;
   int reset_object_proxy_call_caount_;
   int set_capabilities_call_count_;
   int focus_in_call_count_;
