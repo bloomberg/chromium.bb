@@ -85,12 +85,7 @@ BrowserPlugin::BrowserPlugin(
       sad_guest_(NULL),
       guest_crashed_(false),
       navigate_src_sent_(false),
-      auto_size_(false),
       auto_size_ack_pending_(false),
-      max_height_(0),
-      max_width_(0),
-      min_height_(0),
-      min_width_(0),
       guest_process_id_(-1),
       guest_route_id_(-1),
       persist_storage_(false),
@@ -105,8 +100,6 @@ BrowserPlugin::BrowserPlugin(
       nav_entry_count_(0),
       compositing_enabled_(false) {
   bindings_.reset(new BrowserPluginBindings(this));
-
-  ParseAttributes(params);
 }
 
 BrowserPlugin::~BrowserPlugin() {
@@ -117,9 +110,8 @@ BrowserPlugin::~BrowserPlugin() {
     return;
   browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
   browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_PluginDestroyed(
-          render_view_routing_id_,
-          instance_id_));
+      new BrowserPluginHostMsg_PluginDestroyed(render_view_routing_id_,
+                                               instance_id_));
 }
 
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -147,9 +139,8 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void BrowserPlugin::UpdateDOMAttribute(
-    const std::string& attribute_name,
-    const std::string& attribute_value) {
+void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
+                                       const std::string& attribute_value) {
   if (!container())
     return;
 
@@ -168,32 +159,98 @@ void BrowserPlugin::UpdateDOMAttribute(
   }
 }
 
-void BrowserPlugin::SetNameAttribute(const std::string& name) {
-  if (name_ == name)
-    return;
+std::string BrowserPlugin::GetDOMAttributeValue(
+    const std::string& attribute_name) const {
+  if (!container())
+    return "";
 
-  name_ = name;
-  if (!navigate_src_sent_)
-    return;
-
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_SetName(
-          render_view_routing_id_,
-          instance_id_,
-          name));
+  WebKit::WebElement element = container()->element();
+  WebKit::WebString web_attribute_name =
+      WebKit::WebString::fromUTF8(attribute_name);
+  return element.getAttribute(web_attribute_name).utf8();
 }
 
-bool BrowserPlugin::SetSrcAttribute(const std::string& src,
-                                    std::string* error_message) {
+std::string BrowserPlugin::GetNameAttribute() const {
+  return GetDOMAttributeValue(browser_plugin::kAttributeName);
+}
+
+std::string BrowserPlugin::GetSrcAttribute() const {
+  return GetDOMAttributeValue(browser_plugin::kAttributeSrc);
+}
+
+bool BrowserPlugin::GetAutoSizeAttribute() const {
+  return GetDOMAttributeValue(browser_plugin::kAttributeAutoSize) == "true";
+}
+
+int BrowserPlugin::GetMaxHeightAttribute() const {
+  int maxHeight;
+  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMaxHeight),
+                    &maxHeight);
+  return maxHeight;
+}
+
+int BrowserPlugin::GetMaxWidthAttribute() const {
+  int maxWidth;
+  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMaxWidth),
+                    &maxWidth);
+  return maxWidth;
+}
+
+int BrowserPlugin::GetMinHeightAttribute() const {
+  int minHeight;
+  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMinHeight),
+                    &minHeight);
+  return minHeight;
+}
+
+int BrowserPlugin::GetMinWidthAttribute() const {
+  int minWidth;
+  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMinWidth),
+                    &minWidth);
+  return minWidth;
+}
+
+int BrowserPlugin::GetAdjustedMaxHeight() const {
+  int maxHeight = GetMaxHeightAttribute();
+  return (maxHeight == 0) ? height() : maxHeight;
+}
+
+int BrowserPlugin::GetAdjustedMaxWidth() const {
+  int maxWidth = GetMaxWidthAttribute();
+  return (maxWidth == 0) ? width() : maxWidth;
+}
+
+int BrowserPlugin::GetAdjustedMinHeight() const {
+  // For autosize, minHeight should not be bigger than maxHeight.
+  return std::min(GetMinHeightAttribute(), GetAdjustedMaxHeight());
+}
+
+int BrowserPlugin::GetAdjustedMinWidth() const {
+  // For autosize, minWidth should not be bigger than maxWidth.
+  return std::min(GetMinWidthAttribute(), GetAdjustedMaxWidth());
+}
+
+std::string BrowserPlugin::GetPartitionAttribute() const {
+  return GetDOMAttributeValue(browser_plugin::kAttributePartition);
+}
+
+void BrowserPlugin::ParseNameAttribute() {
+  if (!navigate_src_sent_)
+    return;
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_SetName(render_view_routing_id_,
+                                       instance_id_,
+                                       GetNameAttribute()));
+}
+
+bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
   if (!valid_partition_id_) {
     *error_message = browser_plugin::kErrorInvalidPartition;
     return false;
   }
-
-  if (src.empty() || (src == src_ && !guest_crashed_))
+  std::string src = GetSrcAttribute();
+  if (src.empty())
     return true;
-
-  src_ = src;
 
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
@@ -216,37 +273,29 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
   }
 
   browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_NavigateGuest(
-          render_view_routing_id_,
-          instance_id_,
-          src));
+      new BrowserPluginHostMsg_NavigateGuest(render_view_routing_id_,
+                                             instance_id_,
+                                             src));
   return true;
 }
 
-void BrowserPlugin::SetAutoSizeAttribute(bool auto_size) {
-  if (auto_size_ == auto_size)
-    return;
-  auto_size_ = auto_size;
+void BrowserPlugin::ParseAutoSizeAttribute() {
   auto_size_ack_pending_ = true;
   last_view_size_ = plugin_rect_.size();
-  UpdateGuestAutoSizeState();
+  UpdateGuestAutoSizeState(GetAutoSizeAttribute());
 }
 
 void BrowserPlugin::PopulateAutoSizeParameters(
-    BrowserPluginHostMsg_AutoSize_Params* params) {
-  // If maxWidth or maxHeight have not been set, set them to the container size.
-  max_height_ = max_height_ ? max_height_ : height();
-  max_width_ = max_width_ ? max_width_ : width();
-  // minWidth should not be bigger than maxWidth, and minHeight should not be
-  // bigger than maxHeight.
-  min_height_ = std::min(min_height_, max_height_);
-  min_width_ = std::min(min_width_, max_width_);
-  params->enable = auto_size_;
-  params->max_size = gfx::Size(max_width_, max_height_);
-  params->min_size = gfx::Size(min_width_, min_height_);
+    BrowserPluginHostMsg_AutoSize_Params* params, bool current_auto_size) {
+  params->enable = current_auto_size;
+  // No need to populate the params if autosize is off.
+  if (current_auto_size) {
+    params->max_size = gfx::Size(GetAdjustedMaxWidth(), GetAdjustedMaxHeight());
+    params->min_size = gfx::Size(GetAdjustedMinWidth(), GetAdjustedMinHeight());
+  }
 }
 
-void BrowserPlugin::UpdateGuestAutoSizeState() {
+void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
   // BrowserPlugin::UpdateRect.
@@ -254,13 +303,17 @@ void BrowserPlugin::UpdateGuestAutoSizeState() {
     return;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-  GetDamageBufferWithSizeParams(&auto_size_params, &resize_guest_params);
+  if (current_auto_size) {
+    GetDamageBufferWithSizeParams(&auto_size_params, &resize_guest_params);
+  } else {
+    GetDamageBufferWithSizeParams(NULL, &resize_guest_params);
+  }
   resize_ack_received_ = false;
-  browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetAutoSize(
-      render_view_routing_id_,
-      instance_id_,
-      auto_size_params,
-      resize_guest_params));
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_SetAutoSize(render_view_routing_id_,
+                                           instance_id_,
+                                           auto_size_params,
+                                           resize_guest_params));
 }
 
 void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
@@ -301,15 +354,14 @@ void BrowserPlugin::SetInstanceID(int instance_id) {
   create_guest_params.persist_storage = persist_storage_;
   create_guest_params.focused = ShouldGuestBeFocused();
   create_guest_params.visible = visible_;
-  create_guest_params.name = name_;
-  create_guest_params.src = src_;
+  create_guest_params.name = GetNameAttribute();
+  create_guest_params.src = GetSrcAttribute();
   GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
                                 &create_guest_params.resize_guest_params);
   browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_CreateGuest(
-          render_view_routing_id_,
-          instance_id_,
-          create_guest_params));
+      new BrowserPluginHostMsg_CreateGuest(render_view_routing_id_,
+                                           instance_id_,
+                                           create_guest_params));
 
   // Record that we sent a navigation request to the browser process.
   // Once this instance has navigated, the storage partition cannot be changed,
@@ -404,8 +456,7 @@ void BrowserPlugin::OnLoadCommit(
   // crashed.
   guest_crashed_ = false;
   if (params.is_top_level) {
-    src_ = params.url.spec();
-    UpdateDOMAttribute(browser_plugin::kAttributeSrc, src_.c_str());
+    UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
   }
   guest_process_id_ = params.process_id;
   guest_route_id_ = params.route_id;
@@ -463,7 +514,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
 }
 
 void BrowserPlugin::OnUpdatedName(int instance_id, const std::string& name) {
-  name_ = name;
   UpdateDOMAttribute(browser_plugin::kAttributeName, name);
 }
 
@@ -482,37 +532,42 @@ void BrowserPlugin::OnUpdateRect(
     use_new_damage_buffer = true;
   }
 
+  bool auto_size = GetAutoSizeAttribute();
   // We receive a resize ACK in regular mode, but not in autosize.
   // In SW, |resize_ack_received_| is reset in SwapDamageBuffers().
   // in HW mode, we need to do it here so we can continue sending
   // resize messages when needed.
   if (params.is_resize_ack ||
-      (!params.needs_ack && (auto_size_ || auto_size_ack_pending_)))
+      (!params.needs_ack && (auto_size || auto_size_ack_pending_)))
     resize_ack_received_ = true;
 
   auto_size_ack_pending_ = false;
 
-  if ((!auto_size_ &&
-       (width() != params.view_size.width() ||
-        height() != params.view_size.height())) ||
-      (auto_size_ && (!InAutoSizeBounds(params.view_size)))) {
+  if ((!auto_size && (width() != params.view_size.width() ||
+                      height() != params.view_size.height())) ||
+      (auto_size && (!InAutoSizeBounds(params.view_size)))) {
     // We are HW accelerated, render widget does not expect an ack,
     // but we still need to update the size.
     if (!params.needs_ack) {
-      UpdateGuestAutoSizeState();
+      UpdateGuestAutoSizeState(auto_size);
       return;
     }
 
     if (!resize_ack_received_) {
       // The guest has not yet responded to the last resize request, and
       // so we don't want to do anything at this point other than ACK the guest.
-      PopulateAutoSizeParameters(&auto_size_params);
+      if (auto_size)
+        PopulateAutoSizeParameters(&auto_size_params, auto_size);
     } else {
       // If we have no pending damage buffer, then the guest has not caught up
       // with the BrowserPlugin container. We now tell the guest about the new
       // container size.
-      GetDamageBufferWithSizeParams(&auto_size_params,
-                                    &resize_guest_params);
+      if (auto_size) {
+        GetDamageBufferWithSizeParams(&auto_size_params,
+                                      &resize_guest_params);
+      } else {
+        GetDamageBufferWithSizeParams(NULL, &resize_guest_params);
+      }
     }
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
         render_view_routing_id_,
@@ -522,7 +577,7 @@ void BrowserPlugin::OnUpdateRect(
     return;
   }
 
-  if (auto_size_ && (params.view_size != last_view_size_)) {
+  if (auto_size && (params.view_size != last_view_size_)) {
     if (backing_store_)
       backing_store_->Clear(SK_ColorWHITE);
     gfx::Size old_view_size = last_view_size_;
@@ -556,8 +611,8 @@ void BrowserPlugin::OnUpdateRect(
   // has updated its size state in response to a resize request. We change
   // the backing store's size to accomodate the new damage buffer size.
   if (use_new_damage_buffer) {
-    int backing_store_width = auto_size_ ? max_width_ : width();
-    int backing_store_height = auto_size_ ? max_height_: height();
+    int backing_store_width = auto_size ? GetAdjustedMaxWidth() : width();
+    int backing_store_height = auto_size ? GetAdjustedMaxHeight(): height();
     backing_store_.reset(
         new BrowserPluginBackingStore(
             gfx::Size(backing_store_width, backing_store_height),
@@ -580,7 +635,8 @@ void BrowserPlugin::OnUpdateRect(
   // NULL so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
-  PopulateAutoSizeParameters(&auto_size_params);
+  if (auto_size)
+    PopulateAutoSizeParameters(&auto_size_params, auto_size);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
       render_view_routing_id_,
       instance_id_,
@@ -588,44 +644,15 @@ void BrowserPlugin::OnUpdateRect(
       resize_guest_params));
 }
 
-void BrowserPlugin::SetMaxHeightAttribute(int max_height) {
-  if (max_height_ == max_height)
-    return;
-  max_height_ = max_height;
-  if (!auto_size_)
-    return;
-  UpdateGuestAutoSizeState();
-}
-
-void BrowserPlugin::SetMaxWidthAttribute(int max_width) {
-  if (max_width_ == max_width)
-    return;
-  max_width_ = max_width;
-  if (!auto_size_)
-    return;
-  UpdateGuestAutoSizeState();
-}
-
-void BrowserPlugin::SetMinHeightAttribute(int min_height) {
-  if (min_height_ == min_height)
-    return;
-  min_height_ = min_height;
-  if (!auto_size_)
-     return;
-  UpdateGuestAutoSizeState();
-}
-
-void BrowserPlugin::SetMinWidthAttribute(int min_width) {
-  if (min_width_ == min_width)
-    return;
-  min_width_ = min_width;
-  if (!auto_size_)
-     return;
-  UpdateGuestAutoSizeState();
+void BrowserPlugin::ParseSizeContraintsChanged() {
+  bool auto_size = GetAutoSizeAttribute();
+  if (auto_size)
+    UpdateGuestAutoSizeState(true);
 }
 
 bool BrowserPlugin::InAutoSizeBounds(const gfx::Size& size) const {
-  return size.width() <= max_width_ && size.height() <= max_height_;
+  return size.width() <= GetAdjustedMaxWidth() &&
+      size.height() <= GetAdjustedMaxHeight();
 }
 
 NPObject* BrowserPlugin::GetContentWindow() const {
@@ -639,15 +666,6 @@ NPObject* BrowserPlugin::GetContentWindow() const {
   return guest_frame->windowObject();
 }
 
-std::string BrowserPlugin::GetPartitionAttribute() const {
-  std::string value;
-  if (persist_storage_)
-    value.append(browser_plugin::kPersistPrefix);
-
-  value.append(storage_partition_id_);
-  return value;
-}
-
 bool BrowserPlugin::CanGoBack() const {
   return nav_entry_count_ > 1 && current_nav_entry_index_ > 0;
 }
@@ -657,14 +675,13 @@ bool BrowserPlugin::CanGoForward() const {
       current_nav_entry_index_ < (nav_entry_count_ - 1);
 }
 
-bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
-                                          std::string* error_message) {
+bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
   if (allocate_instance_id_sent_) {
     *error_message = browser_plugin::kErrorAlreadyNavigated;
     return false;
   }
 
-  std::string input = partition_id;
+  std::string input = GetPartitionAttribute();
 
   // Since the "persist:" prefix is in ASCII, StartsWith will work fine on
   // UTF-8 encoded |partition_id|. If the prefix is a match, we can safely
@@ -690,53 +707,14 @@ bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
   return true;
 }
 
-void BrowserPlugin::ParseAttributes(const WebKit::WebPluginParams& params) {
-  std::string src;
-  // Get the src attribute from the attributes vector
-  for (unsigned i = 0; i < params.attributeNames.size(); ++i) {
-    // Note: attibuteName will always be lowercase, even if the html used caps.
-    std::string attributeName = params.attributeNames[i].utf8();
-    std::string attributeStringValue = params.attributeValues[i].utf8();
-    if (LowerCaseEqualsASCII(
-        browser_plugin::kAttributeSrc, attributeName.c_str())) {
-      src = attributeStringValue;
-    } else if (LowerCaseEqualsASCII(
-        browser_plugin::kAttributePartition, attributeName.c_str())) {
-      // TODO(mthiesse): Handle errors here?
-      std::string error;
-      SetPartitionAttribute(attributeStringValue, &error);
-    } else if (LowerCaseEqualsASCII(
-        browser_plugin::kAttributeName, attributeName.c_str())) {
-      SetNameAttribute(attributeStringValue);
-    } else if (LowerCaseEqualsASCII(
-        browser_plugin::kAttributeAutoSize, attributeName.c_str())) {
-      SetAutoSizeAttribute(
-          LowerCaseEqualsASCII(attributeStringValue, "true"));
-    } else {
-      // Remaining attributes are all integer values, so we may as well parse
-      // the integer up front.
-      int attributeIntValue;
-      base::StringToInt(attributeStringValue.data(), &attributeIntValue);
-      if (LowerCaseEqualsASCII(
-          browser_plugin::kAttributeMaxHeight, attributeName.c_str())) {
-        SetMaxHeightAttribute(attributeIntValue);
-      } else if (LowerCaseEqualsASCII(
-          browser_plugin::kAttributeMaxWidth, attributeName.c_str())) {
-        SetMaxWidthAttribute(attributeIntValue);
-      } else if (LowerCaseEqualsASCII(
-          browser_plugin::kAttributeMinHeight, attributeName.c_str())) {
-        SetMinHeightAttribute(attributeIntValue);
-      } else if (LowerCaseEqualsASCII(
-          browser_plugin::kAttributeMinWidth, attributeName.c_str())) {
-        SetMinWidthAttribute(attributeIntValue);
-      }
-    }
-  }
-
-  // Set the 'src' attribute last, as it will set the has_navigated_ flag to
-  // true, which prevents changing the 'partition' attribute.
+void BrowserPlugin::ParseAttributes() {
+  // TODO(mthiesse): Handle errors here?
   std::string error;
-  SetSrcAttribute(src, &error);
+  ParsePartitionAttribute(&error);
+
+  // Parse the 'src' attribute last, as it will set the has_navigated_ flag to
+  // true, which prevents changing the 'partition' attribute.
+  ParseSrcAttribute(&error);
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
@@ -852,6 +830,7 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
 bool BrowserPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
   container_->setWantsWheelEvents(true);
+  ParseAttributes();
   return true;
 }
 
@@ -962,8 +941,12 @@ void BrowserPlugin::updateGeometry(
   // resized. If |!resize_ack_received_|, then we are still waiting on a
   // previous resize to be ACK'ed and so we don't issue additional resizes
   // until the previous one is ACK'ed.
-  if (!navigate_src_sent_ || auto_size_ || !resize_ack_received_ ||
-      (old_width == window_rect.width && old_height == window_rect.height)) {
+  // TODO(mthiesse): Assess the performance of calling GetAutoSizeAttribute() on
+  // resize.
+  if (!navigate_src_sent_ ||
+      !resize_ack_received_ ||
+      (old_width == window_rect.width && old_height == window_rect.height) ||
+      GetAutoSizeAttribute()) {
     return;
   }
 
@@ -1012,9 +995,10 @@ void BrowserPlugin::PopulateResizeGuestParameters(
 void BrowserPlugin::GetDamageBufferWithSizeParams(
     BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
     BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params) {
-  PopulateAutoSizeParameters(auto_size_params);
-  gfx::Size view_size = auto_size_params->enable ? auto_size_params->max_size :
-      gfx::Size(width(), height());
+  if (auto_size_params)
+    PopulateAutoSizeParameters(auto_size_params, GetAutoSizeAttribute());
+  gfx::Size view_size = (auto_size_params && auto_size_params->enable) ?
+      auto_size_params->max_size : gfx::Size(width(), height());
   if (view_size.IsEmpty())
     return;
   resize_ack_received_ = false;
