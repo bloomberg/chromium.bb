@@ -63,7 +63,7 @@
 						<object class="NSTextFieldCell" key="NSCell" id="464583340">
 							<int key="NSCellFlags">-1804599231</int>
 							<int key="NSCellFlags2">66560</int>
-							<string key="NSContents">chromium.org</string>
+							<string key="NSContents"></string>
 							<object class="NSFont" key="NSSupport">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">13</double>
