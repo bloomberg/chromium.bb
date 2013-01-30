@@ -11,7 +11,8 @@
 
 namespace remoting {
 
-BasicDesktopEnvironment::BasicDesktopEnvironment() {
+BasicDesktopEnvironment::BasicDesktopEnvironment(bool use_x_damage)
+    : use_x_damage_(use_x_damage) {
 }
 
 BasicDesktopEnvironment::~BasicDesktopEnvironment() {
@@ -38,10 +39,16 @@ scoped_ptr<media::ScreenCapturer> BasicDesktopEnvironment::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
   DCHECK(CalledOnValidThread());
 
+#if defined(OS_LINUX)
+  return media::ScreenCapturer::CreateWithXDamage(use_x_damage_);
+#else  // !defined(OS_LINUX)
   return media::ScreenCapturer::Create();
+#endif  // !defined(OS_LINUX)
 }
 
-BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory() {
+BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(
+    bool use_x_damage)
+    : use_x_damage_(use_x_damage) {
 }
 
 BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
@@ -50,7 +57,8 @@ BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() {
 scoped_ptr<DesktopEnvironment> BasicDesktopEnvironmentFactory::Create(
     const std::string& client_jid,
     const base::Closure& disconnect_callback) {
-  return scoped_ptr<DesktopEnvironment>(new BasicDesktopEnvironment());
+  return scoped_ptr<DesktopEnvironment>(
+      new BasicDesktopEnvironment(use_x_damage_));
 }
 
 bool BasicDesktopEnvironmentFactory::SupportsAudioCapture() const {

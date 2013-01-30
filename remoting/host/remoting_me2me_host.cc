@@ -31,7 +31,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -560,10 +559,6 @@ void HostProcess::StartOnUiThread() {
   }
 
 #if defined(OS_LINUX)
-  // TODO(sergeyu): Pass configuration parameters to the Linux-specific version
-  // of DesktopEnvironmentFactory when we have it.
-  media::ScreenCapturer::EnableXDamage(true);
-
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
   FilePath audio_pipe_name = CommandLine::ForCurrentProcess()->
@@ -592,7 +587,7 @@ void HostProcess::StartOnUiThread() {
 
 #else  // !defined(OS_WIN)
   DesktopEnvironmentFactory* desktop_environment_factory =
-      new BasicDesktopEnvironmentFactory();
+      new BasicDesktopEnvironmentFactory(true);
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);

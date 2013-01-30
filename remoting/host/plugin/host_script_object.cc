@@ -212,8 +212,9 @@ void HostNPScriptObject::It2MeImpl::Connect(
     return;
   }
 
-  // Create the desktop environment factory.
-  desktop_environment_factory_.reset(new BasicDesktopEnvironmentFactory());
+  // Create the desktop environment factory. Do not use X DAMAGE, since it is
+  // broken on many systems - see http://crbug.com/73423.
+  desktop_environment_factory_.reset(new BasicDesktopEnvironmentFactory(false));
 
   // Start monitoring configured policies.
   policy_watcher_.reset(

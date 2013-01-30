@@ -69,26 +69,17 @@ class MEDIA_EXPORT ScreenCapturer {
 
   virtual ~ScreenCapturer() {}
 
-  // Create platform-specific capturer.
+  // Creates platform-specific capturer.
   static scoped_ptr<ScreenCapturer> Create();
 
-  // Create platform-specific capturer that uses shared memory buffers.
+  // Creates platform-specific capturer that uses shared memory buffers.
   static scoped_ptr<ScreenCapturer> CreateWithFactory(
       SharedBufferFactory* shared_buffer_factory);
 
 #if defined(OS_LINUX)
-  // Set whether the ScreenCapturer should try to use X DAMAGE support if it
-  // is available. This needs to be called before the ScreenCapturer is
-  // created.
-  // This is used by the Virtual Me2Me host, since the XDamage extension is
-  // known to work reliably in this case.
-
-  // TODO(lambroslambrou): This currently sets a global flag, referenced during
-  // ScreenCapturer::Create().  This is a temporary solution, until the
-  // DesktopEnvironment class is refactored to allow applications to control
-  // the creation of various stubs (including the ScreenCapturer) - see
-  // http://crbug.com/104544
-  static void EnableXDamage(bool enable);
+  // Creates platform-specific capturer and instructs it whether it should use
+  // X DAMAGE support.
+  static scoped_ptr<ScreenCapturer> CreateWithXDamage(bool use_x_damage);
 #endif  // defined(OS_LINUX)
 
   // Called at the beginning of a capturing session. |delegate| must remain

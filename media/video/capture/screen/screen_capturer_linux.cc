@@ -28,14 +28,6 @@ namespace media {
 
 namespace {
 
-// Default to false, since many systems have broken XDamage support - see
-// http://crbug.com/73423.
-static bool g_should_use_x_damage = false;
-
-static bool ShouldUseXDamage() {
-  return g_should_use_x_damage;
-}
-
 // A class representing a full-frame pixel buffer.
 class ScreenCaptureFrameLinux : public ScreenCaptureFrame {
  public:
@@ -55,7 +47,8 @@ class ScreenCapturerLinux : public ScreenCapturer {
   ScreenCapturerLinux();
   virtual ~ScreenCapturerLinux();
 
-  bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
+  // TODO(ajwong): Do we really want this to be synchronous?
+  bool Init(bool use_x_damage);
 
   // Capturer interface.
   virtual void Start(Delegate* delegate) OVERRIDE;
@@ -185,7 +178,7 @@ ScreenCapturerLinux::~ScreenCapturerLinux() {
   DeinitXlib();
 }
 
-bool ScreenCapturerLinux::Init() {
+bool ScreenCapturerLinux::Init(bool use_x_damage) {
   // TODO(ajwong): We should specify the display string we are attaching to
   // in the constructor.
   display_ = XOpenDisplay(NULL);
@@ -229,7 +222,7 @@ bool ScreenCapturerLinux::Init() {
                             XFixesDisplayCursorNotifyMask);
   }
 
-  if (ShouldUseXDamage()) {
+  if (use_x_damage) {
     InitXDamage();
   }
 
@@ -597,7 +590,7 @@ void ScreenCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
 // static
 scoped_ptr<ScreenCapturer> ScreenCapturer::Create() {
   scoped_ptr<ScreenCapturerLinux> capturer(new ScreenCapturerLinux());
-  if (!capturer->Init())
+  if (!capturer->Init(false))
     capturer.reset();
   return capturer.PassAs<ScreenCapturer>();
 }
@@ -610,8 +603,12 @@ scoped_ptr<ScreenCapturer> ScreenCapturer::CreateWithFactory(
 }
 
 // static
-void ScreenCapturer::EnableXDamage(bool enable) {
-  g_should_use_x_damage = enable;
+scoped_ptr<ScreenCapturer> ScreenCapturer::CreateWithXDamage(
+    bool use_x_damage) {
+  scoped_ptr<ScreenCapturerLinux> capturer(new ScreenCapturerLinux());
+  if (!capturer->Init(use_x_damage))
+    capturer.reset();
+  return capturer.PassAs<ScreenCapturer>();
 }
 
 }  // namespace media

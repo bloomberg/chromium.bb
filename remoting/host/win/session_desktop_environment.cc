@@ -15,7 +15,8 @@ namespace remoting {
 
 SessionDesktopEnvironment::SessionDesktopEnvironment(
     const base::Closure& inject_sas)
-    : inject_sas_(inject_sas){
+    : BasicDesktopEnvironment(true),
+      inject_sas_(inject_sas){
 }
 
 SessionDesktopEnvironment::~SessionDesktopEnvironment() {
@@ -35,7 +36,8 @@ scoped_ptr<EventExecutor> SessionDesktopEnvironment::CreateEventExecutor(
 
 SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
     const base::Closure& inject_sas)
-    : inject_sas_(inject_sas) {
+    : BasicDesktopEnvironmentFactory(true),
+      inject_sas_(inject_sas) {
 }
 
 SessionDesktopEnvironmentFactory::~SessionDesktopEnvironmentFactory() {
