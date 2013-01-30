@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
 
 namespace errors = extension_manifest_errors;
@@ -23,10 +24,15 @@ ScriptBadgeHandler::ScriptBadgeHandler() {
 ScriptBadgeHandler::~ScriptBadgeHandler() {
 }
 
-bool ScriptBadgeHandler::Parse(const base::Value* value,
-                               Extension* extension,
-                               string16* error) {
+bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<ActionInfo> action_info(new ActionInfo);
+
+  // Provide a default script badge if one isn't declared in the manifest.
+  if (!extension->manifest()->HasKey(extension_manifest_keys::kScriptBadge)) {
+    SetActionInfoDefaults(extension, action_info.get());
+    ActionInfo::SetScriptBadgeInfo(extension, action_info.release());
+    return true;
+  }
 
   // So as to not confuse developers if they specify a script badge section
   // in the manifest, show a warning if the script badge declaration isn't
@@ -38,8 +44,9 @@ bool ScriptBadgeHandler::Parse(const base::Value* value,
   }
 
   const DictionaryValue* dict = NULL;
-  if (!value->GetAsDictionary(&dict)) {
-    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidScriptBadge);
+  if (!extension->manifest()->GetDictionary(
+          extension_manifest_keys::kScriptBadge, &dict)) {
+    *error = ASCIIToUTF16(errors::kInvalidScriptBadge);
     return false;
   }
 
@@ -72,11 +79,8 @@ bool ScriptBadgeHandler::Parse(const base::Value* value,
   return true;
 }
 
-bool ScriptBadgeHandler::HasNoKey(Extension* extension, string16* error) {
-  scoped_ptr<ActionInfo> action_info(new ActionInfo);
-  SetActionInfoDefaults(extension, action_info.get());
-  ActionInfo::SetScriptBadgeInfo(extension, action_info.release());
-  return true;
+bool ScriptBadgeHandler::AlwaysParseForType(Extension::Type type) {
+  return type == Extension::TYPE_EXTENSION;
 }
 
 void ScriptBadgeHandler::SetActionInfoDefaults(const Extension* extension,

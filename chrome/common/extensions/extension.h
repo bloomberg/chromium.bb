@@ -802,7 +802,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       string16* error);
   bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
                              string16* error);
-  bool LoadManifestHandlerFeatures(string16* error);
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);

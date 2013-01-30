@@ -11,7 +11,7 @@
 using extensions::Extension;
 using extensions::WebAccessibleResourcesInfo;
 
-class WebAccesibleResourcesManifestTest : public ExtensionManifestTest {
+class WebAccessibleResourcesManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
     extensions::ManifestHandler::Register(
@@ -20,7 +20,7 @@ class WebAccesibleResourcesManifestTest : public ExtensionManifestTest {
   }
 };
 
-TEST_F(WebAccesibleResourcesManifestTest, WebAccessibleResources) {
+TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResources) {
   // Manifest version 2 with web accessible resources specified.
   scoped_refptr<Extension> extension1(
       LoadAndExpectSuccess("web_accessible_resources_1.json"));

@@ -116,8 +116,7 @@ class FileBrowserHandlerParser : public extensions::ManifestHandler {
   FileBrowserHandlerParser();
   virtual ~FileBrowserHandlerParser();
 
-  virtual bool Parse(const base::Value* value,
-                     extensions::Extension* extension,
+  virtual bool Parse(extensions::Extension* extension,
                      string16* error) OVERRIDE;
 };
 

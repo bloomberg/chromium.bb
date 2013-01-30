@@ -11,6 +11,8 @@
 #include "chrome/common/extensions/manifest.h"
 #include "extensions/common/error_utils.h"
 
+namespace keys = extension_manifest_keys;
+
 namespace extensions {
 
 namespace {
@@ -29,28 +31,28 @@ CommandsInfo::~CommandsInfo() {
 const Command* CommandsInfo::GetBrowserActionCommand(
    const Extension* extension) {
   CommandsInfo* info = static_cast<CommandsInfo*>(
-      extension->GetManifestData(extension_manifest_keys::kCommands));
+      extension->GetManifestData(keys::kCommands));
   return info ? info->browser_action_command.get() : NULL;
 }
 
 // static
 const Command* CommandsInfo::GetPageActionCommand(const Extension* extension) {
   CommandsInfo* info = static_cast<CommandsInfo*>(
-      extension->GetManifestData(extension_manifest_keys::kCommands));
+      extension->GetManifestData(keys::kCommands));
   return info ? info->page_action_command.get() : NULL;
 }
 
 // static
 const Command* CommandsInfo::GetScriptBadgeCommand(const Extension* extension) {
   CommandsInfo* info = static_cast<CommandsInfo*>(
-      extension->GetManifestData(extension_manifest_keys::kCommands));
+      extension->GetManifestData(keys::kCommands));
   return info ? info->script_badge_command.get() : NULL;
 }
 
 // static
 const CommandMap* CommandsInfo::GetNamedCommands(const Extension* extension) {
   CommandsInfo* info = static_cast<CommandsInfo*>(
-      extension->GetManifestData(extension_manifest_keys::kCommands));
+      extension->GetManifestData(keys::kCommands));
   return info ? &info->named_commands : NULL;
 }
 
@@ -60,11 +62,17 @@ CommandsHandler::CommandsHandler() {
 CommandsHandler::~CommandsHandler() {
 }
 
-bool CommandsHandler::Parse(const base::Value* value,
-                            Extension* extension,
-                            string16* error) {
+bool CommandsHandler::Parse(Extension* extension, string16* error) {
+  if (!extension->manifest()->HasKey(keys::kCommands)) {
+    scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
+    MaybeSetBrowserActionDefault(extension, commands_info.get());
+    extension->SetManifestData(keys::kCommands,
+                               commands_info.release());
+    return true;
+  }
+
   const base::DictionaryValue* dict = NULL;
-  if (!value->GetAsDictionary(&dict)) {
+  if (!extension->manifest()->GetDictionary(keys::kCommands, &dict)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidCommandsKey);
     return false;
   }
@@ -112,23 +120,20 @@ bool CommandsHandler::Parse(const base::Value* value,
 
   MaybeSetBrowserActionDefault(extension, commands_info.get());
 
-  extension->SetManifestData(extension_manifest_keys::kCommands,
+  extension->SetManifestData(keys::kCommands,
                              commands_info.release());
   return true;
 }
 
-bool CommandsHandler::HasNoKey(Extension* extension,
-                               string16* error) {
-  scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
-  MaybeSetBrowserActionDefault(extension, commands_info.get());
-  extension->SetManifestData(extension_manifest_keys::kCommands,
-                             commands_info.release());
-  return true;
+bool CommandsHandler::AlwaysParseForType(Extension::Type type) {
+  return type == Extension::TYPE_EXTENSION ||
+      type == Extension::TYPE_LEGACY_PACKAGED_APP ||
+      type == Extension::TYPE_PLATFORM_APP;
 }
 
 void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
                                                    CommandsInfo* info) {
-  if (extension->manifest()->HasKey(extension_manifest_keys::kBrowserAction) &&
+  if (extension->manifest()->HasKey(keys::kBrowserAction) &&
       !info->browser_action_command.get()) {
     info->browser_action_command.reset(new Command(
         extension_manifest_values::kBrowserActionCommandEvent, string16(), ""));

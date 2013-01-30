@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "extensions/common/error_utils.h"
 #include "webkit/glue/web_intent_service_data.h"
 
@@ -167,12 +168,10 @@ WebIntentsHandler::WebIntentsHandler() {
 WebIntentsHandler::~WebIntentsHandler() {
 }
 
-bool WebIntentsHandler::Parse(const base::Value* value,
-                              Extension* extension,
-                              string16* error) {
+bool WebIntentsHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<WebIntentsInfo> info(new WebIntentsInfo);
   const DictionaryValue* all_services = NULL;
-  if (!value->GetAsDictionary(&all_services)) {
+  if (!extension->manifest()->GetDictionary(keys::kIntents, &all_services)) {
     *error = ASCIIToUTF16(errors::kInvalidIntents);
     return false;
   }

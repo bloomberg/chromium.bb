@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

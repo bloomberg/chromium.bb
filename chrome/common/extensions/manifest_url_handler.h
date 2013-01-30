@@ -59,9 +59,7 @@ class DevToolsPageHandler : public ManifestHandler {
   DevToolsPageHandler();
   virtual ~DevToolsPageHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 };
 
 // Parses the "homepage_url" manifest key.
@@ -70,9 +68,7 @@ class HomepageURLHandler : public ManifestHandler {
   HomepageURLHandler();
   virtual ~HomepageURLHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 };
 
 // Parses the "update_url" manifest key.
@@ -81,9 +77,7 @@ class UpdateURLHandler : public ManifestHandler {
   UpdateURLHandler();
   virtual ~UpdateURLHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 };
 
 // Parses the "options_page" manifest key.
@@ -92,9 +86,7 @@ class OptionsPageHandler : public ManifestHandler {
   OptionsPageHandler();
   virtual ~OptionsPageHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 };
 
 // Parses the "chrome_url_overrides" manifest key.
@@ -103,9 +95,7 @@ class URLOverridesHandler : public ManifestHandler {
   URLOverridesHandler();
   virtual ~URLOverridesHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 };
 
 }  // namespace extensions

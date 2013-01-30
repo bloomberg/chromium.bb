@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
@@ -334,11 +335,11 @@ bool LoadFileBrowserHandlers(
 
 }  // namespace
 
-bool FileBrowserHandlerParser::Parse(const base::Value* value,
-                                     extensions::Extension* extension,
+bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
                                      string16* error) {
   const ListValue* file_browser_handlers_value = NULL;
-  if (!value->GetAsList(&file_browser_handlers_value)) {
+  if (!extension->manifest()->GetList(keys::kFileBrowserHandlers,
+                                      &file_browser_handlers_value)) {
     *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
     return false;
   }

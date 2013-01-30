@@ -61,7 +61,11 @@ class Manifest {
   bool GetString(const std::string& path, std::string* out_value) const;
   bool GetString(const std::string& path, string16* out_value) const;
   bool GetDictionary(const std::string& path,
+                     const base::DictionaryValue** out_value) const;
+  bool GetDictionary(const std::string& path,
                      base::DictionaryValue** out_value) const;
+  bool GetList(const std::string& path,
+               const base::ListValue** out_value) const;
   bool GetList(const std::string& path, base::ListValue** out_value) const;
 
   // Returns a new Manifest equal to this one, passing ownership to

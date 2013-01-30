@@ -39,11 +39,8 @@ class CommandsHandler : public ManifestHandler {
   CommandsHandler();
   virtual ~CommandsHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
-
-  virtual bool HasNoKey(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool AlwaysParseForType(Extension::Type type) OVERRIDE;
 
  private:
   // If the extension defines a browser action, but no command for it, then

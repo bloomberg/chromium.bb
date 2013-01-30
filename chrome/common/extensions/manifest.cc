@@ -124,8 +124,18 @@ bool Manifest::GetString(
 }
 
 bool Manifest::GetDictionary(
+    const std::string& path, const DictionaryValue** out_value) const {
+  return GetDictionary(path, const_cast<DictionaryValue**>(out_value));
+}
+
+bool Manifest::GetDictionary(
     const std::string& path, DictionaryValue** out_value) const {
   return CanAccessPath(path) && value_->GetDictionary(path, out_value);
+}
+
+bool Manifest::GetList(
+    const std::string& path, const ListValue** out_value) const {
+  return GetList(path, const_cast<ListValue**>(out_value));
 }
 
 bool Manifest::GetList(

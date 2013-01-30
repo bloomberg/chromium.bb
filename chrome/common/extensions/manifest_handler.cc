@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 
@@ -17,8 +18,7 @@ class ManifestHandlerRegistry {
  public:
   void RegisterManifestHandler(const std::string& key,
                                ManifestHandler* handler);
-  ManifestHandler* GetManifestHandler(const std::string& key);
-  std::vector<std::string> GetManifestHandlerKeys();
+  bool ParseExtension(Extension* extension, string16* error);
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ManifestHandlerRegistry>;
@@ -33,25 +33,26 @@ void ManifestHandlerRegistry::RegisterManifestHandler(
   handlers_[key] = make_linked_ptr(handler);
 }
 
-ManifestHandler* ManifestHandlerRegistry::GetManifestHandler(
-    const std::string& key) {
-  ManifestHandlerMap::iterator iter = handlers_.find(key);
-  if (iter != handlers_.end())
-    return iter->second.get();
-  // TODO(yoz): The NOTREACHED only makes sense as long as
-  // GetManifestHandlerKeys is how we're getting the available
-  // manifest handlers.
-  NOTREACHED();
-  return NULL;
-}
-
-std::vector<std::string> ManifestHandlerRegistry::GetManifestHandlerKeys() {
-  std::vector<std::string> keys;
+bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
+                                             string16* error) {
+  std::set<ManifestHandler*> handler_set;
   for (ManifestHandlerMap::iterator iter = handlers_.begin();
        iter != handlers_.end(); ++iter) {
-    keys.push_back(iter->first);
+    ManifestHandler* handler = iter->second.get();
+    if (extension->manifest()->HasPath(iter->first) ||
+        handler->AlwaysParseForType(extension->GetType()))
+    handler_set.insert(iter->second.get());
   }
-  return keys;
+
+  // TODO(yoz): Some handlers may depend on other handlers having already
+  // parsed their keys. Reorder the handlers so that handlers needed earlier
+  // come first in the returned container.
+  for (std::set<ManifestHandler*>::iterator iter = handler_set.begin();
+       iter != handler_set.end(); ++iter) {
+    if (!(*iter)->Parse(extension, error))
+      return false;
+  }
+  return true;
 }
 
 static base::LazyInstance<ManifestHandlerRegistry> g_registry =
@@ -65,8 +66,8 @@ ManifestHandler::ManifestHandler() {
 ManifestHandler::~ManifestHandler() {
 }
 
-bool ManifestHandler::HasNoKey(Extension* extension, string16* error) {
-  return true;
+bool ManifestHandler::AlwaysParseForType(Extension::Type type) {
+  return false;
 }
 
 // static
@@ -76,13 +77,8 @@ void ManifestHandler::Register(const std::string& key,
 }
 
 // static
-ManifestHandler* ManifestHandler::Get(const std::string& key) {
-  return g_registry.Get().GetManifestHandler(key);
-}
-
-// static
-std::vector<std::string> ManifestHandler::GetKeys() {
-  return g_registry.Get().GetManifestHandlerKeys();
+bool ManifestHandler::ParseExtension(Extension* extension, string16* error) {
+  return g_registry.Get().ParseExtension(extension, error);
 }
 
 }  // namespace extensions

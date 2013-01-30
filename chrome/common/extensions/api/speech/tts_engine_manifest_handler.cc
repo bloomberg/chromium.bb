@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "extensions/common/error_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -45,11 +46,10 @@ TtsEngineManifestHandler::TtsEngineManifestHandler() {
 TtsEngineManifestHandler::~TtsEngineManifestHandler() {
 }
 
-bool TtsEngineManifestHandler::Parse(const base::Value* value,
-                                     Extension* extension, string16* error) {
+bool TtsEngineManifestHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<TtsVoices> info(new TtsVoices);
   const DictionaryValue* tts_dict = NULL;
-  if (!value->GetAsDictionary(&tts_dict)) {
+  if (!extension->manifest()->GetDictionary(keys::kTtsEngine, &tts_dict)) {
     *error = ASCIIToUTF16(errors::kInvalidTts);
     return false;
   }

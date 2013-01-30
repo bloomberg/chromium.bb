@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "extensions/common/error_utils.h"
 
 namespace extensions {
@@ -74,12 +75,11 @@ bool LoadFileHandler(const std::string& handler_id,
   return true;
 }
 
-bool FileHandlersParser::Parse(const base::Value* value,
-                               Extension* extension,
-                               string16* error) {
+bool FileHandlersParser::Parse(Extension* extension, string16* error) {
   scoped_ptr<FileHandlers> info(new FileHandlers);
   const DictionaryValue* all_handlers = NULL;
-  if (!value->GetAsDictionary(&all_handlers)) {
+  if (!extension->manifest()->GetDictionary(
+          extension_manifest_keys::kFileHandlers, &all_handlers)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidFileHandlers);
     return false;
   }

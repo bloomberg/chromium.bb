@@ -1922,6 +1922,7 @@ bool Extension::LoadSharedFeatures(
     string16* error) {
   if (!LoadDescription(error) ||
       !LoadIcons(error) ||
+      !ManifestHandler::ParseExtension(this, error) ||
       !LoadPlugins(error) ||
       !LoadNaClModules(error) ||
       !LoadSandboxedPages(error) ||
@@ -2379,28 +2380,13 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
 
-  if (!LoadManifestHandlerFeatures(error) ||
-      !LoadContentScripts(error) ||
+  if (!LoadContentScripts(error) ||
       !LoadPageAction(error) ||
       !LoadSystemIndicator(api_permissions, error) ||
       !LoadIncognitoMode(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
 
-  return true;
-}
-
-bool Extension::LoadManifestHandlerFeatures(string16* error) {
-  std::vector<std::string> keys = ManifestHandler::GetKeys();
-  for (size_t i = 0; i < keys.size(); ++i) {
-    Value* value = NULL;
-    if (!manifest_->Get(keys[i], &value)) {
-      if (!ManifestHandler::Get(keys[i])->HasNoKey(this, error))
-        return false;
-    } else if (!ManifestHandler::Get(keys[i])->Parse(value, this, error)) {
-      return false;
-    }
-  }
   return true;
 }
 

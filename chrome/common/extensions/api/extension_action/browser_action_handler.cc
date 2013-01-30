@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
 
 namespace extensions {
@@ -21,11 +22,11 @@ BrowserActionHandler::BrowserActionHandler() {
 BrowserActionHandler::~BrowserActionHandler() {
 }
 
-bool BrowserActionHandler::Parse(const base::Value* value,
-                                 Extension* extension,
+bool BrowserActionHandler::Parse(Extension* extension,
                                  string16* error) {
   const DictionaryValue* dict = NULL;
-  if (!value->GetAsDictionary(&dict)) {
+  if (!extension->manifest()->GetDictionary(
+          extension_manifest_keys::kBrowserAction, &dict)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidBrowserAction);
     return false;
   }

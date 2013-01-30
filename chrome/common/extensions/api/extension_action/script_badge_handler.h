@@ -19,11 +19,9 @@ class ScriptBadgeHandler : public ManifestHandler {
   ScriptBadgeHandler();
   virtual ~ScriptBadgeHandler();
 
-  virtual bool Parse(const base::Value* value,
-                     Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool AlwaysParseForType(Extension::Type type) OVERRIDE;
 
-  virtual bool HasNoKey(Extension* extension, string16* error) OVERRIDE;
  private:
   // Sets the fields of ActionInfo to the default values, matching the parent
   // extension's title and icons. Performed whether or not the script_badge key

@@ -32,8 +32,7 @@ class TtsEngineManifestHandler : public ManifestHandler {
   TtsEngineManifestHandler();
   virtual ~TtsEngineManifestHandler();
 
-  virtual bool Parse(const base::Value* value, Extension* extension,
-                     string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 };
 
 }  // namespace extensions
