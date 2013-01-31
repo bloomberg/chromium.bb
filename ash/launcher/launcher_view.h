@@ -231,8 +231,10 @@ class ASH_EXPORT LauncherView : public views::View,
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
   // a menu listing one or more running applications.
+  // The |click_point| is only used for |context_menu|'s.
   void ShowMenu(ui::MenuModel* menu_model,
                 views::View* source,
+                const gfx::Point& click_point,
                 bool context_menu);
 
   // Overridden from views::BoundsAnimatorObserver:
