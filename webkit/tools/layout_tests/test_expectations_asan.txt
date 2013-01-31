@@ -28,6 +28,7 @@ crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
 crbug.com/166932 [ Linux ] plugins/embed-attributes-setting.html [ Skip ]
 crbug.com/166932 [ Linux ] plugins/embed-attributes-style.html [ Skip ]
 crbug.com/166932 [ Linux ] plugins/embed-inside-object.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/embed-prefers-plugins-for-images.html [ Skip ]
 
 
 # NULL deref in HandleURLRequestInternal, http://crbug.com/142301
