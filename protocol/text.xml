@@ -76,7 +76,7 @@
       </description>
       <arg name="serial" type="uint"/>
     </request>
-    <request name="set_micro_focus">
+    <request name="set_cursor_rectangle">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
