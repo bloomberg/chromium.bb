@@ -489,8 +489,12 @@ void MediaStreamCaptureIndicator::RemoveCaptureDevices(
     return;
 
   // Decrease the usage ref-counts.
-  WebContentsDeviceUsage* const usage = usage_map_[web_contents];
-  DCHECK(usage);
+  const UsageMap::iterator it = usage_map_.find(web_contents);
+  if (it == usage_map_.end()) {
+    DLOG(FATAL) << "BUG: Attempt to remove devices more than once.";
+    return;
+  }
+  WebContentsDeviceUsage* const usage = it->second;
   usage->TallyUsage(devices, false);
 
   if (!usage->IsWebContentsDestroyed())
@@ -507,7 +511,7 @@ void MediaStreamCaptureIndicator::RemoveCaptureDevices(
         ++alias_it;
     }
     delete usage;
-    usage_map_.erase(web_contents);
+    usage_map_.erase(it);
   }
 
   UpdateStatusTrayIconContextMenu();
