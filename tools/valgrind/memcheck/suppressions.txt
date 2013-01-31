@@ -6101,7 +6101,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4dbus8Response14FromMethodCallEPNS_10MethodCallE
-   fun:_ZN8chromeos4ibus20IBusPanelServiceImpl*
+   fun:_ZN8chromeos20IBusPanelServiceImpl*
 }
 {
    bug_163922

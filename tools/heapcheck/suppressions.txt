@@ -1615,7 +1615,7 @@
    Heapcheck:Leak
    ...
    fun:dbus::Response::FromMethodCall
-   fun:chromeos::ibus::IBusPanelServiceImpl::*Properties
+   fun:chromeos::IBusPanelServiceImpl::*Properties
 }
 {
    bug_163111_b
@@ -1632,16 +1632,16 @@
    ...
    fun:dbus::MessageWriter::AppendBasic
    fun:dbus::MessageWriter::AppendString
-   fun:chromeos::ibus::IBusObjectWriter::AddAttachment
-   fun:chromeos::ibus::AppendIBusLookupTable
-   fun:chromeos::ibus::IBusPanelServiceTest_UpdateLookupTableTest_Test::TestBody
+   fun:chromeos::IBusObjectWriter::AddAttachment
+   fun:chromeos::AppendIBusLookupTable
+   fun:chromeos::IBusPanelServiceTest_UpdateLookupTableTest_Test::TestBody
 }
 {
    bug_163111_d
    Heapcheck:Leak
    ...
    fun:dbus::Response::FromMethodCall
-   fun:chromeos::ibus::IBusPanelServiceImpl::UpdateProperty
+   fun:chromeos::IBusPanelServiceImpl::UpdateProperty
 }
 {
    bug_164185
