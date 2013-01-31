@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/support/gc_extension.h"
 
@@ -22,6 +23,7 @@ using WebKit::WebFrame;
 using WebKit::WebRuntimeFeatures;
 using WebKit::WebTestingSupport;
 using WebTestRunner::WebTestDelegate;
+using WebTestRunner::WebTestInterfaces;
 
 namespace content {
 
@@ -61,6 +63,9 @@ void ShellRenderProcessObserver::SetMainWindow(
     RenderView* view,
     WebKitTestRunner* test_runner,
     WebTestDelegate* delegate) {
+  test_interfaces_->setDelegate(delegate);
+  test_interfaces_->setWebView(view->GetWebView());
+  test_interfaces_->setTestRunner(test_runner);
   main_render_view_ = view;
   main_test_runner_ = test_runner;
   test_delegate_ = delegate;
@@ -68,6 +73,7 @@ void ShellRenderProcessObserver::SetMainWindow(
 
 void ShellRenderProcessObserver::BindTestRunnersToWindow(WebFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
+  test_interfaces_->bindTo(frame);
 }
 
 void ShellRenderProcessObserver::WebKitInitialized() {
@@ -81,6 +87,8 @@ void ShellRenderProcessObserver::WebKitInitialized() {
   // We always expose GC to layout tests.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
   RenderThread::Get()->RegisterExtension(extensions_v8::GCExtension::Get());
+
+  test_interfaces_.reset(new WebTestInterfaces);
 }
 
 bool ShellRenderProcessObserver::OnControlMessageReceived(
@@ -96,6 +104,7 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
 }
 
 void ShellRenderProcessObserver::OnResetAll() {
+  test_interfaces_->resetAll();
   if (main_render_view_) {
     main_test_runner_->Reset();
     WebTestingSupport::resetInternalsObject(

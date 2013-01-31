@@ -48,6 +48,11 @@ bool IsExternalPage(const GURL& url) {
 }  // namespace
 
 ShellContentRendererClient::ShellContentRendererClient() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    EnableWebTestProxyCreation(
+        base::Bind(&ShellContentRendererClient::WebTestProxyCreated,
+                   base::Unretained(this)));
+  }
 }
 
 ShellContentRendererClient::~ShellContentRendererClient() {
@@ -55,15 +60,6 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 
 void ShellContentRendererClient::RenderThreadStarted() {
   shell_observer_.reset(new ShellRenderProcessObserver());
-}
-
-void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
-  WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
-  if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
-    ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view,
-                                                             test_runner,
-                                                             test_runner);
-  }
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
@@ -101,18 +97,30 @@ bool ShellContentRendererClient::WillSendRequest(
       ShellRenderProcessObserver::GetInstance();
   if (!command_line->HasSwitch(switches::kAllowExternalPages) &&
       IsExternalPage(url) && !IsExternalPage(first_party_for_cookies)) {
-    if (render_process_observer->test_delegate()) {
-      render_process_observer->test_delegate()->printMessage(
-          std::string("Blocked access to external URL " + url.spec() + "\n"));
-    }
+    render_process_observer->test_delegate()->printMessage(
+        std::string("Blocked access to external URL " + url.spec() + "\n"));
     *new_url = GURL();
     return true;
   }
-  if (render_process_observer->test_delegate()) {
-    *new_url = render_process_observer->test_delegate()->rewriteLayoutTestsURL(
-        url.spec());
-  }
+  *new_url = render_process_observer->test_delegate()->rewriteLayoutTestsURL(
+      url.spec());
   return true;
+}
+
+void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
+                                                     WebTestProxyBase* proxy) {
+  WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
+  if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
+    ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view,
+                                                             test_runner,
+                                                             test_runner);
+  }
+  test_runner->set_proxy(proxy);
+  proxy->setDelegate(
+      ShellRenderProcessObserver::GetInstance()->test_delegate());
+  proxy->setInterfaces(
+      ShellRenderProcessObserver::GetInstance()->test_interfaces());
+  render_view->GetWebView()->setSpellCheckClient(proxy->spellCheckClient());
 }
 
 }  // namespace content

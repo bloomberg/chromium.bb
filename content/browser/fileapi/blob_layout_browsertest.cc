@@ -19,15 +19,23 @@ IN_PROC_BROWSER_TEST_F(BlobLayoutTest, SliceTests) {
   RunLayoutTest("blob-slice-test.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_ApplyBlobUrlToImg) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_ApplyBlobUrlToImg DISABLED_ApplyBlobUrlToImg
+#else
+# define MAYBE_ApplyBlobUrlToImg ApplyBlobUrlToImg
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_ApplyBlobUrlToImg) {
   RunLayoutTest("apply-blob-url-to-img.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_ApplyBlobUrlToXhr) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_ApplyBlobUrlToXhr DISABLED_ApplyBlobUrlToXhr
+#else
+# define MAYBE_ApplyBlobUrlToXhr ApplyBlobUrlToXhr
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_ApplyBlobUrlToXhr) {
   RunLayoutTest("apply-blob-url-to-xhr.html");
 }
 
@@ -54,21 +62,33 @@ IN_PROC_BROWSER_TEST_F(BlobLayoutTest,
   RunLayoutTest("domurl-script-execution-context-crash.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_FileListTest) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_FileListTest DISABLED_FileListTest
+#else
+# define MAYBE_FileListTest FileListTest
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_FileListTest) {
   RunLayoutTest("file-list-test.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_FileReaderAbort) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_FileReaderAbort DISABLED_FileReaderAbort
+#else
+# define MAYBE_FileReaderAbort FileReaderAbort
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_FileReaderAbort) {
   RunLayoutTest("file-reader-abort.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_FileReaderDirectoryCrash) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_FileReaderDirectoryCrash DISABLED_FileReaderDirectoryCrash
+#else
+# define MAYBE_FileReaderDirectoryCrash FileReaderDirectoryCrash
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_FileReaderDirectoryCrash) {
   RunLayoutTest("file-reader-directory-crash.html");
 }
 
@@ -76,9 +96,13 @@ IN_PROC_BROWSER_TEST_F(BlobLayoutTest, FileReaderDoneReadingAbort) {
   RunLayoutTest("file-reader-done-reading-abort.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_FileReaderEventListener) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_FileReaderEventListener DISABLED_FileReaderEventListener
+#else
+# define MAYBE_FileReaderEventListener FileReaderEventListener
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_FileReaderEventListener) {
   RunLayoutTest("file-reader-event-listener.html");
 }
 
@@ -104,21 +128,33 @@ IN_PROC_BROWSER_TEST_F(BlobLayoutTest, NotEnoughArguments) {
   RunLayoutTest("not-enough-arguments.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_NullOriginString) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_NullOriginString DISABLED_NullOriginString
+#else
+# define MAYBE_NullOriginString NullOriginString
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_NullOriginString) {
   RunLayoutTest("null-origin-string.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_ReadBlobAsync) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_ReadBlobAsync DISABLED_ReadBlobAsync
+#else
+# define MAYBE_ReadBlobAsync ReadBlobAsync
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_ReadBlobAsync) {
   RunLayoutTest("read-blob-async.html");
 }
 
-// crbug.com/169240 for disabling on Windows, crbug.com/173079 for temporary
-// disabling everywhere.
-IN_PROC_BROWSER_TEST_F(BlobLayoutTest, DISABLED_ReadFileAsync) {
+#if defined(OS_WIN)
+// http://crbug/169240
+# define MAYBE_ReadFileAsync DISABLED_ReadFileAsync
+#else
+# define MAYBE_ReadFileAsync ReadFileAsync
+#endif
+IN_PROC_BROWSER_TEST_F(BlobLayoutTest, MAYBE_ReadFileAsync) {
   RunLayoutTest("read-file-async.html");
 }
 
