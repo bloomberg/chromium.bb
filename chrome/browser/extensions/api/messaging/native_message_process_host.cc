@@ -8,26 +8,28 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/path_service.h"
-#include "base/pickle.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "content/public/common/result_codes.h"
+#include "net/base/file_stream.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 
 namespace {
+
+const int kExitTimeoutMS = 5000;
+const uint32 kMaxMessageDataLength = 10 * 1024 * 1024;
 
 // Message header contains 4-byte integer size of the message.
 const size_t kMessageHeaderSize = 4;
 
-const int kExitTimeoutMS = 5000;
-const uint32 kMaxMessageDataLength = 10 * 1024 * 1024;
-const char kNativeHostsDirectoryName[] = "native_hosts";
+// Size of the buffer to be allocated for each read.
+const size_t kReadBufferSize = 4096;
 
 }  // namespace
 
@@ -41,30 +43,24 @@ NativeMessageProcessHost::NativeMessageProcessHost(
     : weak_client_ui_(weak_client_ui),
       native_host_name_(native_host_name),
       destination_port_(destination_port),
+      launcher_(launcher.Pass()),
+      closed_(false),
       native_process_handle_(base::kNullProcessHandle),
-      read_file_(base::kInvalidPlatformFileValue),
-      write_file_(base::kInvalidPlatformFileValue) {
+      read_pending_(false),
+      read_eof_(false),
+      write_pending_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // It's safe to use base::Unretained() here because NativeMessagePort always
-  // deletes us on the FILE thread.
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+  // deletes us on the IO thread.
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
       base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
-                 base::Unretained(this), base::Passed(&launcher)));
+                 base::Unretained(this)));
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  // Give the process some time to shutdown, then try and kill it.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::KillProcess),
-                 native_process_handle_,
-                 content::RESULT_CODE_NORMAL_EXIT,
-                 false /* don't wait for exit */),
-      base::TimeDelta::FromMilliseconds(kExitTimeoutMS));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  Close();
 }
 
 // static
@@ -72,9 +68,8 @@ scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
     base::WeakPtr<Client> weak_client_ui,
     const std::string& native_host_name,
     int destination_port) {
-  scoped_ptr<NativeProcessLauncher> launcher(new NativeProcessLauncher());
   return CreateWithLauncher(weak_client_ui, native_host_name, destination_port,
-                            launcher.Pass());
+                            NativeProcessLauncher::CreateDefault());
 }
 
 // static
@@ -99,112 +94,234 @@ NativeMessageProcessHost::CreateWithLauncher(
   return process.Pass();
 }
 
-void NativeMessageProcessHost::LaunchHostProcess(
-    scoped_ptr<NativeProcessLauncher> launcher) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+void NativeMessageProcessHost::LaunchHostProcess() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  FilePath native_host_program;
-  FilePath native_host_registry;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &native_host_registry));
-  native_host_registry =
-      native_host_registry.AppendASCII(kNativeHostsDirectoryName);
-  native_host_program = native_host_registry.AppendASCII(native_host_name_);
+  launcher_->Launch(
+      native_host_name_, base::Bind(
+          &NativeMessageProcessHost::OnHostProcessLaunched,
+          base::Unretained(this)));
+}
 
-  // Make sure that the client is not trying to invoke something outside of the
-  // proper directory. Eg. '../../dangerous_something.exe'.
-  if (!file_util::ContainsPath(native_host_registry, native_host_program)) {
-    LOG(ERROR) << "Could not find native host: " << native_host_name_;
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&Client::CloseChannel, weak_client_ui_,
-                   destination_port_, true));
+void NativeMessageProcessHost::OnHostProcessLaunched(
+    base::ProcessHandle native_process_handle,
+    base::PlatformFile read_file,
+    base::PlatformFile write_file) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  if (native_process_handle == base::kNullProcessHandle) {
+    OnError();
     return;
   }
 
-  if (!launcher->LaunchNativeProcess(native_host_program,
-                                     &native_process_handle_,
-                                     &read_file_,
-                                     &write_file_)) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&Client::CloseChannel, weak_client_ui_,
-                   destination_port_, true));
-    return;
-  }
+  native_process_handle_ = native_process_handle;
 
-#if defined(OS_POSIX)
-  scoped_read_file_.reset(&read_file_);
-  scoped_write_file_.reset(&write_file_);
-#endif  // defined(OS_POSIX)
+  read_file_ = read_file;
+  read_stream_.reset(new net::FileStream(
+      read_file, base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC, NULL));
+  write_stream_.reset(new net::FileStream(
+      write_file, base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC, NULL));
 
-  InitIO();
+  WaitRead();
+  DoWrite();
 }
 
 void NativeMessageProcessHost::Send(const std::string& json) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  if (native_process_handle_ == base::kNullProcessHandle) {
-    // Don't need to do anything if LaunchHostProcess() didn't succeed.
+  if (closed_)
+    return;
+
+  // Allocate new buffer for the message.
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      new net::IOBufferWithSize(json.size() + kMessageHeaderSize);
+
+  // Copy size and content of the message to the buffer.
+  COMPILE_ASSERT(sizeof(uint32) == kMessageHeaderSize, incorrect_header_size);
+  *reinterpret_cast<uint32*>(buffer->data()) = json.size();
+  memcpy(buffer->data() + kMessageHeaderSize, json.data(), json.size());
+
+  // Push new message to the write queue.
+  write_queue_.push(buffer);
+
+  // Send() may be called before the host process is started. In that case the
+  // message will be written when OnHostProcessLaunched() is called. If it's
+  // already started then write the message now.
+  if (write_stream_)
+    DoWrite();
+}
+
+#if defined(OS_POSIX)
+void NativeMessageProcessHost::OnFileCanReadWithoutBlocking(int fd) {
+  DCHECK_EQ(fd, read_file_);
+  DoRead();
+}
+
+void NativeMessageProcessHost::OnFileCanWriteWithoutBlocking(int fd) {
+  NOTREACHED();
+}
+#endif  // !defined(OS_POSIX)
+
+void NativeMessageProcessHost::ReadNowForTesting() {
+  DoRead();
+}
+
+void NativeMessageProcessHost::WaitRead() {
+  if (closed_ || read_eof_)
+    return;
+
+  DCHECK(!read_pending_);
+
+  // On POSIX FileStream::Read() uses blocking thread pool, so it's better to
+  // wait for the file to become readable before calling DoRead(). Otherwise it
+  // would always be consuming one thread in the thread pool. On Windows
+  // FileStream uses overlapped IO, so that optimization isn't necessary there.
+#if defined(OS_POSIX)
+  MessageLoopForIO::current()->WatchFileDescriptor(
+    read_file_, true /* persistent */, MessageLoopForIO::WATCH_READ,
+    &read_watcher_, this);
+#else  // defined(OS_POSIX)
+  DoRead();
+#endif  // defined(!OS_POSIX)
+}
+
+void NativeMessageProcessHost::DoRead() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  while (!closed_ && !read_eof_ && !read_pending_) {
+    read_buffer_ = new net::IOBuffer(kReadBufferSize);
+    int result = read_stream_->Read(
+        read_buffer_, kReadBufferSize,
+        base::Bind(&NativeMessageProcessHost::OnRead,
+                   base::Unretained(this)));
+    HandleReadResult(result);
+  }
+}
+
+void NativeMessageProcessHost::OnRead(int result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(read_pending_);
+  read_pending_ = false;
+
+  HandleReadResult(result);
+  WaitRead();
+}
+
+void NativeMessageProcessHost::HandleReadResult(int result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  if (closed_)
+    return;
+
+  if (result > 0) {
+    ProcessIncomingData(read_buffer_->data(), result);
+  } else if (result == 0) {
+    read_eof_ = true;
+  } else if (result == net::ERR_IO_PENDING) {
+    read_pending_ = true;
+  } else {
+    LOG(ERROR) << "Error when reading from Native Messaging host: " << result;
+    OnError();
+  }
+}
+
+void NativeMessageProcessHost::ProcessIncomingData(
+    const char* data, int data_size) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  incoming_data_.append(data, data_size);
+
+  while (true) {
+    if (incoming_data_.size() < kMessageHeaderSize)
+      return;
+
+    size_t message_size =
+        *reinterpret_cast<const uint32*>(incoming_data_.data());
+
+    if (incoming_data_.size() < message_size + kMessageHeaderSize)
+      return;
+
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&Client::PostMessageFromNativeProcess, weak_client_ui_,
+            destination_port_,
+            incoming_data_.substr(kMessageHeaderSize, message_size)));
+
+    incoming_data_.erase(0, kMessageHeaderSize + message_size);
+  }
+}
+
+void NativeMessageProcessHost::DoWrite() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  while (!write_pending_ && !closed_) {
+    if (!current_write_buffer_ || !current_write_buffer_->BytesRemaining()) {
+      if (write_queue_.empty())
+        return;
+      current_write_buffer_ = new net::DrainableIOBuffer(
+          write_queue_.front(), write_queue_.front()->size());
+      write_queue_.pop();
+    }
+
+    int result = write_stream_->Write(
+        current_write_buffer_, current_write_buffer_->BytesRemaining(),
+        base::Bind(&NativeMessageProcessHost::OnWritten,
+                   base::Unretained(this)));
+    HandleWriteResult(result);
+  }
+}
+
+void NativeMessageProcessHost::HandleWriteResult(int result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  if (result <= 0) {
+    if (result == net::ERR_IO_PENDING) {
+      write_pending_ = true;
+    } else {
+      LOG(ERROR) << "Error when writing to Native Messaging host: " << result;
+      OnError();
+    }
     return;
   }
 
-  // Make sure that the process has not died.
-  if (base::GetTerminationStatus(native_process_handle_, NULL) !=
-      base::TERMINATION_STATUS_STILL_RUNNING) {
-    // Notify the message service that the channel should close.
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&Client::CloseChannel, weak_client_ui_,
-                   destination_port_, true));
-  }
-
-  WriteMessage(json);
+  current_write_buffer_->DidConsume(result);
 }
 
-bool NativeMessageProcessHost::WriteMessage(const std::string& message) {
-  Pickle pickle;
+void NativeMessageProcessHost::OnWritten(int result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  // Pickles write the length of a string before it as a uint32.
-  pickle.WriteString(message);
+  DCHECK(write_pending_);
+  write_pending_ = false;
 
-  // Make sure that the pickle doesn't do any unexpected padding.
-  CHECK_EQ(kMessageHeaderSize + message.length(), pickle.payload_size());
-
-  if (!WriteData(write_file_, pickle.payload(), pickle.payload_size())) {
-    LOG(ERROR) << "Error writing message to the native client.";
-    return false;
-  }
-
-  return true;
+  HandleWriteResult(result);
+  DoWrite();
 }
 
-bool NativeMessageProcessHost::ReadMessage(std::string* message) {
-  // Read the length (uint32).
-  char message_meta_data[kMessageHeaderSize];
-  if (!ReadData(read_file_, message_meta_data, sizeof(message_meta_data))) {
-    LOG(ERROR) << "Error reading the message length.";
-    return false;
-  }
+void NativeMessageProcessHost::OnError() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  Pickle pickle;
-  pickle.WriteBytes(message_meta_data, sizeof(message_meta_data));
-  PickleIterator pickle_it(pickle);
-  uint32 data_length;
-  if (!pickle_it.ReadUInt32(&data_length)) {
-    LOG(ERROR) << "Error getting the message  length from the pickle.";
-    return false;
-  }
+  Close();
+}
 
-  if (data_length > kMaxMessageDataLength) {
-    LOG(ERROR) << data_length << " is too large for the length of a message. "
-               << "Max message size is " << kMaxMessageDataLength;
-    return false;
-  }
+void NativeMessageProcessHost::Close() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  message->resize(data_length, '\0');
-  if (!ReadData(read_file_, &(*message)[0], data_length)) {
-    LOG(ERROR) << "Error reading the json data.";
-    return false;
-  }
+  closed_ = true;
+  read_stream_.reset();
+  write_stream_.reset();
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&Client::CloseChannel, weak_client_ui_,
+          destination_port_, true));
 
-  return true;
+  if (native_process_handle_ != base::kNullProcessHandle) {
+    // Give the process some time to shutdown, then try and kill it.
+    content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::KillProcess),
+                 native_process_handle_, 0,
+                 false /* don't wait for exit */),
+      base::TimeDelta::FromMilliseconds(kExitTimeoutMS));
+    native_process_handle_ = base::kNullProcessHandle;
+  }
 }
 
 }  // namespace extensions

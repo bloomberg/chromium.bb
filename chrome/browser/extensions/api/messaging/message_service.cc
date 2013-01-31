@@ -208,7 +208,6 @@ void MessageService::OpenChannelToNativeApp(
   channel->opener.reset(new ExtensionMessagePort(source, MSG_ROUTING_CONTROL,
                                                  source_extension_id));
 
-
   scoped_ptr<NativeMessageProcessHost> native_process =
       NativeMessageProcessHost::Create(
           base::WeakPtr<NativeMessageProcessHost::Client>(

@@ -14,19 +14,16 @@ NativeMessagePort::NativeMessagePort(NativeMessageProcessHost* native_process)
 }
 
 NativeMessagePort::~NativeMessagePort() {
-  content::BrowserThread::DeleteSoon(content::BrowserThread::FILE,
-                                     FROM_HERE,
-                                     native_process_);
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::IO, FROM_HERE, native_process_);
 }
 
 void NativeMessagePort::DispatchOnMessage(const std::string& message,
                                           int target_port_id) {
   content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&NativeMessageProcessHost::Send,
-                 base::Unretained(native_process_),
-                 message));
+                 base::Unretained(native_process_), message));
 }
 
 }  // namespace extensions

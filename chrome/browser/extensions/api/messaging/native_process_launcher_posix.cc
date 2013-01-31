@@ -12,11 +12,12 @@
 
 namespace extensions {
 
+// static
 bool NativeProcessLauncher::LaunchNativeProcess(
     const FilePath& path,
     base::ProcessHandle* native_process_handle,
-    NativeMessageProcessHost::FileHandle* read_file,
-    NativeMessageProcessHost::FileHandle* write_file) const {
+    base::PlatformFile* read_file,
+    base::PlatformFile* write_file) {
   base::FileHandleMappingVector fd_map;
 
   int read_pipe_fds[2] = {0};

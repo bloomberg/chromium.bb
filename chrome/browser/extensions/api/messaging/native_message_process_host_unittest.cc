@@ -13,7 +13,11 @@
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/common/chrome_paths.h"
@@ -47,23 +51,19 @@ class FakeLauncher : public NativeProcessLauncher {
   FakeLauncher(FilePath read_file, FilePath write_file) {
     read_file_ = base::CreatePlatformFile(
         read_file,
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
+            base::PLATFORM_FILE_ASYNC,
         NULL, NULL);
     write_file_ = base::CreatePlatformFile(
         write_file,
-        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE |
+            base::PLATFORM_FILE_ASYNC,
         NULL, NULL);
   }
 
-  virtual bool LaunchNativeProcess(
-      const FilePath& path,
-      base::ProcessHandle* native_process_handle,
-      NativeMessageProcessHost::FileHandle* read_file,
-      NativeMessageProcessHost::FileHandle* write_file) const OVERRIDE {
-    *native_process_handle = base::GetCurrentProcessHandle();
-    *read_file = read_file_;
-    *write_file = write_file_;
-    return true;
+  virtual void Launch(const std::string& native_host_name,
+                      LaunchedCallback callback) const {
+    callback.Run(base::GetCurrentProcessHandle(), read_file_, write_file_);
   }
 
  private:
@@ -90,8 +90,8 @@ class NativeMessagingTest : public ::testing::Test,
     ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, GetTestDir()));
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &message_loop_));
-    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
-                                                      &message_loop_));
+    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
+                                                    &message_loop_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -108,6 +108,7 @@ class NativeMessagingTest : public ::testing::Test,
       int port_id,
       const std::string& message) OVERRIDE  {
     last_posted_message_ = message;
+    read_message_run_loop_.Quit();
   }
 
   virtual void CloseChannel(int port_id, bool error) OVERRIDE {
@@ -122,7 +123,7 @@ class NativeMessagingTest : public ::testing::Test,
   }
 
   FilePath CreateTempFileWithMessage(const std::string& message) {
-    FilePath filename = temp_dir_.path().Append("input");
+    FilePath filename = temp_dir_.path().AppendASCII("input");
     file_util::CreateTemporaryFile(&filename);
     std::string message_with_header = FormatMessage(message);
     EXPECT_TRUE(file_util::WriteFile(
@@ -136,14 +137,15 @@ class NativeMessagingTest : public ::testing::Test,
   scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
   FilePath user_data_dir_;
   MessageLoopForIO message_loop_;
+  base::RunLoop read_message_run_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<content::TestBrowserThread> file_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   std::string last_posted_message_;
 };
 
 // Read a single message from a local file.
 TEST_F(NativeMessagingTest, SingleSendMessageRead) {
-  FilePath temp_output_file = temp_dir_.path().Append("output");
+  FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
   FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
 
   scoped_ptr<NativeProcessLauncher> launcher(
@@ -154,14 +156,14 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   message_loop_.RunUntilIdle();
 
   native_message_process_host_->ReadNowForTesting();
-  message_loop_.RunUntilIdle();
+  read_message_run_loop_.Run();
   EXPECT_EQ(kTestMessage, last_posted_message_);
 }
 
 // Tests sending a single message. The message should get written to
 // |temp_file| and should match the contents of single_message_request.msg.
 TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
-  FilePath temp_output_file = temp_dir_.path().Append("output");
+  FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
   FilePath temp_input_file = CreateTempFileWithMessage(std::string());
 
   scoped_ptr<NativeProcessLauncher> launcher(
@@ -175,7 +177,14 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   message_loop_.RunUntilIdle();
 
   std::string output;
-  ASSERT_TRUE(file_util::ReadFileToString(temp_output_file, &output));
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  while (base::TimeTicks::Now() - start_time < TestTimeouts::action_timeout()) {
+    ASSERT_TRUE(file_util::ReadFileToString(temp_output_file, &output));
+    if (!output.empty())
+      break;
+    base::PlatformThread::YieldCurrentThread();
+  }
+
   EXPECT_EQ(FormatMessage(kTestMessage), output);
 }
 
@@ -189,17 +198,12 @@ TEST_F(NativeMessagingTest, DISABLED_EchoConnect) {
   message_loop_.RunUntilIdle();
 
   native_message_process_host_->Send("{\"text\": \"Hello.\"}");
-  message_loop_.RunUntilIdle();
-
-  native_message_process_host_->ReadNowForTesting();
-  message_loop_.RunUntilIdle();
+  read_message_run_loop_.Run();
   EXPECT_EQ("{\"id\": 1, \"echo\": {\"text\": \"Hello.\"}}",
             last_posted_message_);
 
   native_message_process_host_->Send("{\"foo\": \"bar\"}");
-  message_loop_.RunUntilIdle();
-  native_message_process_host_->ReadNowForTesting();
-  message_loop_.RunUntilIdle();
+  read_message_run_loop_.Run();
   EXPECT_EQ("{\"id\": 2, \"echo\": {\"foo\": \"bar\"}}", last_posted_message_);
 }
 
