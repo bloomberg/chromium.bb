@@ -6,6 +6,8 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/prerender/prerender_link_manager.h"
+#include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -16,6 +18,9 @@
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
+
+using prerender::PrerenderLinkManager;
+using prerender::PrerenderLinkManagerFactory;
 
 class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
@@ -244,6 +249,41 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
+}
+
+// This test verifies that prerendering has been disabled inside <webview>.
+// This test is here rather than in PrerenderBrowserTest for testing convenience
+// only. If it breaks then this is a bug in the prerenderer.
+IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
+  ASSERT_TRUE(StartTestServer());
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(host_str);
+
+  GURL guest_url = test_server()->GetURL(
+      "files/extensions/platform_apps/web_view/noprerenderer/guest.html");
+  guest_url = guest_url.ReplaceComponents(replace_host);
+
+  ui_test_utils::UrlLoadObserver guest_observer(
+      guest_url, content::NotificationService::AllSources());
+
+  ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
+  LoadAndLaunchPlatformApp("web_view/noprerenderer");
+  guest_observer.Wait();
+
+  content::Source<content::NavigationController> source =
+      guest_observer.source();
+  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
+
+  ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
+  content::WebContents* guest_web_contents = source->GetWebContents();
+  ASSERT_TRUE(guest_web_contents != NULL);
+
+  PrerenderLinkManager* prerender_link_manager =
+      PrerenderLinkManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(guest_web_contents->GetBrowserContext()));
+  ASSERT_TRUE(prerender_link_manager != NULL);
+  EXPECT_TRUE(prerender_link_manager->IsEmpty());
 }
 
 // This tests cookie isolation for packaged apps with webview tags. It navigates

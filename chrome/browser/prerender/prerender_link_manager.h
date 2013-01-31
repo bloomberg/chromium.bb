@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -22,6 +23,8 @@ struct Referrer;
 namespace gfx {
 class Size;
 }
+
+FORWARD_DECLARE_TEST(WebViewTest, NoPrerenderer);
 
 namespace prerender {
 
@@ -65,6 +68,8 @@ class PrerenderLinkManager : public ProfileKeyedService,
  private:
   friend class PrerenderBrowserTest;
   friend class PrerenderTest;
+  // WebViewTest.NoPrerenderer needs to access the private IsEmpty() method.
+  FRIEND_TEST_ALL_PREFIXES(::WebViewTest, NoPrerenderer);
 
   struct LinkPrerender {
     LinkPrerender(int launcher_child_id,
