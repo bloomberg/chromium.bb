@@ -93,6 +93,7 @@
             '../cc/cc_tests.gyp:cc_unittests_apk',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components.gyp:components_unittests_apk',
+            '../content/content.gyp:content_browsertests_apk',
             '../content/content.gyp:content_unittests_apk',
             '../gpu/gpu.gyp:gpu_unittests_apk',
             '../ipc/ipc.gyp:ipc_tests_apk',
@@ -124,7 +125,6 @@
       'target_name': 'android_in_progress',
       'type': 'none',
       'dependencies': [
-        '../content/content.gyp:content_browsertests',
       ],
     },
   ],  # targets
