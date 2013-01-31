@@ -640,6 +640,8 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     globals_->max_spdy_concurrent_streams_limit.set(
         GetSwitchValueAsInt(command_line, switches::kMaxSpdyConcurrentStreams));
   }
+  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   bool used_spdy_switch = false;
   if (command_line.HasSwitch(switches::kUseSpdy)) {

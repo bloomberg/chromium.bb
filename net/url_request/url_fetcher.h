@@ -117,6 +117,13 @@ class NET_EXPORT URLFetcher {
   // of testing code that uses an URLFetcher.
   static void SetEnableInterceptionForTests(bool enabled);
 
+  // Normally, URLFetcher will abort loads that request SSL client certificate
+  // authentication, but this method may be used to cause URLFetchers to ignore
+  // requests for client certificates and continue anonymously. Because such
+  // behaviour affects the URLRequestContext's shared network state and socket
+  // pools, it should only be used for testing.
+  static void SetIgnoreCertificateRequests(bool ignored);
+
   // Sets data only needed by POSTs.  All callers making POST requests should
   // call one of the SetUploadData* methods before the request is started.
   // |upload_content_type| is the MIME type of the content, while

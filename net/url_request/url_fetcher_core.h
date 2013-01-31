@@ -124,11 +124,15 @@ class URLFetcherCore
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(URLRequest* request,
                                int bytes_read) OVERRIDE;
+  virtual void OnCertificateRequested(
+      URLRequest* request,
+      SSLCertRequestInfo* cert_request_info) OVERRIDE;
 
   URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
   static int GetNumFetcherCores();
   static void SetEnableInterceptionForTests(bool enabled);
+  static void SetIgnoreCertificateRequests(bool ignored);
 
  private:
   friend class base::RefCountedThreadSafe<URLFetcherCore>;
