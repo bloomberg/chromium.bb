@@ -855,7 +855,8 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
 }
 
 // Verify that VP9 video in WebM containers can be played back.
-TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
+// Disabled since it might crash or corrupt heap, see http://crbug.com/173333
+TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VideoOnly_VP9_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9.webm"),
                     PIPELINE_OK));
   Play();
@@ -864,7 +865,8 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
 
 // Verify that VP9 video and Opus audio in the same WebM container can be played
 // back.
-TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Opus_WebM) {
+// Disabled since it might crash or corrupt heap, see http://crbug.com/173333
+TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VP9_Opus_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9-opus.webm"),
                     PIPELINE_OK));
   Play();

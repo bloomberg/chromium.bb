@@ -667,7 +667,7 @@
    fun:IPC::ChannelProxy::Context::OnAddFilter
 }
 {
-   bug_67378
+   bug_67378_a
    Heapcheck:Leak
    ...
    fun:net::::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
