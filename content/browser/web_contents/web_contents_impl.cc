@@ -2739,7 +2739,8 @@ void WebContentsImpl::DidNavigate(
     // RenderViewHostManager::DidNavigateMainFrame, because that can change
     // WebContents::GetRenderViewHost to return the new host, instead of the one
     // that may have just been swapped out.
-    controller_.TakeScreenshot();
+    if (delegate_ && delegate_->CanOverscrollContent())
+      controller_.TakeScreenshot();
 
     render_manager_.DidNavigateMainFrame(rvh);
   }

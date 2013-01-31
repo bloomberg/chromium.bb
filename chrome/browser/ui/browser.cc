@@ -1161,7 +1161,7 @@ void Browser::TabStripEmpty() {
 
 bool Browser::CanOverscrollContent() const {
 #if defined(USE_AURA)
-  return true;
+  return !is_app() && !is_devtools() && is_type_tabbed();
 #else
   return false;
 #endif
