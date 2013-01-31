@@ -142,6 +142,22 @@ private:
     int m_alphaLocation;
 };
 
+class FragmentTexClampAlphaBinding {
+public:
+    FragmentTexClampAlphaBinding();
+
+    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
+    int alphaLocation() const { return m_alphaLocation; }
+    int edgeLocation() const { return -1; }
+    int fragmentTexTransformLocation() const { return m_fragmentTexTransformLocation; }
+    int samplerLocation() const { return m_samplerLocation; }
+
+private:
+    int m_samplerLocation;
+    int m_alphaLocation;
+    int m_fragmentTexTransformLocation;
+};
+
 class FragmentTexOpaqueBinding {
 public:
     FragmentTexOpaqueBinding();
@@ -154,6 +170,21 @@ public:
 
 private:
     int m_samplerLocation;
+};
+
+class FragmentTexClampOpaqueBinding {
+public:
+    FragmentTexClampOpaqueBinding();
+
+    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
+    int alphaLocation() const { return -1; }
+    int edgeLocation() const { return -1; }
+    int fragmentTexTransformLocation() const { return m_fragmentTexTransformLocation; }
+    int samplerLocation() const { return m_samplerLocation; }
+
+private:
+    int m_samplerLocation;
+    int m_fragmentTexTransformLocation;
 };
 
 class FragmentShaderRGBATexFlipVaryingAlpha : public FragmentTexOpaqueBinding {
@@ -171,6 +202,11 @@ public:
     std::string getShaderString() const;
 };
 
+class FragmentShaderRGBATexClampAlpha : public FragmentTexClampAlphaBinding {
+public:
+    std::string getShaderString() const;
+};
+
 class FragmentShaderRGBATexRectFlipVaryingAlpha : public FragmentTexAlphaBinding {
 public:
     std::string getShaderString() const;
@@ -181,7 +217,7 @@ public:
     std::string getShaderString() const;
 };
 
-class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
+class FragmentShaderRGBATexClampOpaque : public FragmentTexClampOpaqueBinding {
 public:
     std::string getShaderString() const;
 };
@@ -192,13 +228,13 @@ public:
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
-class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
+class FragmentShaderRGBATexClampSwizzleAlpha : public FragmentTexClampAlphaBinding {
 public:
     std::string getShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
-class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
+class FragmentShaderRGBATexClampSwizzleOpaque : public FragmentTexClampOpaqueBinding {
 public:
     std::string getShaderString() const;
 };

@@ -345,6 +345,31 @@ void FragmentTexAlphaBinding::init(WebGraphicsContext3D* context, unsigned progr
     DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1);
 }
 
+FragmentTexClampAlphaBinding::FragmentTexClampAlphaBinding()
+    : m_samplerLocation(-1)
+    , m_alphaLocation(-1)
+    , m_fragmentTexTransformLocation(-1)
+{
+}
+
+void FragmentTexClampAlphaBinding::init(WebGraphicsContext3D* context, unsigned program, bool usingBindUniform, int* baseUniformIndex)
+{
+    static const char* shaderUniforms[] = {
+        "s_texture",
+        "alpha",
+        "fragmentTexTransform",
+    };
+    int locations[3];
+
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
+
+    m_samplerLocation = locations[0];
+    m_alphaLocation = locations[1];
+    m_fragmentTexTransformLocation = locations[2];
+    DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1);
+}
+
+
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
     : m_samplerLocation(-1)
 {
@@ -360,6 +385,27 @@ void FragmentTexOpaqueBinding::init(WebGraphicsContext3D* context, unsigned prog
     getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
+    DCHECK(m_samplerLocation != -1);
+}
+
+FragmentTexClampOpaqueBinding::FragmentTexClampOpaqueBinding()
+    : m_samplerLocation(-1)
+    , m_fragmentTexTransformLocation(-1)
+{
+}
+
+void FragmentTexClampOpaqueBinding::init(WebGraphicsContext3D* context, unsigned program, bool usingBindUniform, int* baseUniformIndex)
+{
+    static const char* shaderUniforms[] = {
+        "s_texture",
+        "fragmentTexTransform",
+    };
+    int locations[2];
+
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
+
+    m_samplerLocation = locations[0];
+    m_fragmentTexTransformLocation = locations[1];
     DCHECK(m_samplerLocation != -1);
 }
 
@@ -420,6 +466,24 @@ std::string FragmentShaderRGBATexAlpha::getShaderString() const
     );
 }
 
+std::string FragmentShaderRGBATexClampAlpha::getShaderString() const
+{
+    return SHADER(
+        precision mediump float;
+        varying vec2 v_texCoord;
+        uniform sampler2D s_texture;
+        uniform float alpha;
+        uniform vec4 fragmentTexTransform;
+        void main()
+        {
+            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
+            vec4 texColor = texture2D(s_texture, texCoord);
+            gl_FragColor = texColor * alpha;
+        }
+    );
+}
+
+
 std::string FragmentShaderRGBATexVaryingAlpha::getShaderString() const
 {
     return SHADER(
@@ -466,15 +530,17 @@ std::string FragmentShaderRGBATexRectVaryingAlpha::getShaderString() const
             "}\n";
 }
 
-std::string FragmentShaderRGBATexOpaque::getShaderString() const
+std::string FragmentShaderRGBATexClampOpaque::getShaderString() const
 {
     return SHADER(
         precision mediump float;
         varying vec2 v_texCoord;
         uniform sampler2D s_texture;
+        uniform vec4 fragmentTexTransform;
         void main()
         {
-            vec4 texColor = texture2D(s_texture, v_texCoord);
+            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
+            vec4 texColor = texture2D(s_texture, texCoord);
             gl_FragColor = vec4(texColor.rgb, 1.0);
         }
     );
@@ -493,30 +559,34 @@ std::string FragmentShaderRGBATex::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATexSwizzleAlpha::getShaderString() const
+std::string FragmentShaderRGBATexClampSwizzleAlpha::getShaderString() const
 {
     return SHADER(
         precision mediump float;
         varying vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform float alpha;
+        uniform vec4 fragmentTexTransform;
         void main()
         {
-            vec4 texColor = texture2D(s_texture, v_texCoord);
+            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
+            vec4 texColor = texture2D(s_texture, texCoord);
             gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, texColor.w) * alpha;
         }
     );
 }
 
-std::string FragmentShaderRGBATexSwizzleOpaque::getShaderString() const
+std::string FragmentShaderRGBATexClampSwizzleOpaque::getShaderString() const
 {
     return SHADER(
         precision mediump float;
         varying vec2 v_texCoord;
         uniform sampler2D s_texture;
+        uniform vec4 fragmentTexTransform;
         void main()
         {
-            vec4 texColor = texture2D(s_texture, v_texCoord);
+            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
+            vec4 texColor = texture2D(s_texture, texCoord);
             gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, 1.0);
         }
     );
