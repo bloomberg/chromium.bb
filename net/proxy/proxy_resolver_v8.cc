@@ -343,12 +343,6 @@ class ProxyResolverV8::Context {
 
     v8_this_.Dispose();
     v8_context_.Dispose();
-
-    // Run the V8 garbage collector. We do this to be sure the
-    // ExternalStringResource objects we allocated get properly disposed.
-    // Otherwise when running the unit-tests they may get leaked.
-    // See crbug.com/48145.
-    PurgeMemory();
   }
 
   JSBindings* js_bindings() {
