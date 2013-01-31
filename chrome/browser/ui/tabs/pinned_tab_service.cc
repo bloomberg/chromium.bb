@@ -6,18 +6,19 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {
 
+// Returns true if |browser| is the only normal (tabbed) browser for |browser|'s
+// profile (across all desktops).
 bool IsOnlyNormalBrowser(Browser* browser) {
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if (*i != browser && (*i)->is_type_tabbed() &&
-        (*i)->profile() == browser->profile()) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (*it != browser && it->is_type_tabbed() &&
+        it->profile() == browser->profile()) {
       return false;
     }
   }
