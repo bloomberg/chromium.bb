@@ -1539,18 +1539,13 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
 void RenderWidgetHostImpl::OnSwapCompositorFrame(
     const cc::CompositorFrame& frame) {
 #if defined(OS_ANDROID)
-  gfx::Vector2dF scroll_offset = ScaleVector2d(
-      frame.metadata.root_scroll_offset, frame.metadata.page_scale_factor);
-  gfx::SizeF content_size = ScaleSize(
-      frame.metadata.root_layer_size, frame.metadata.page_scale_factor);
-
   if (view_) {
     view_->UpdateFrameInfo(
-        gfx::ToRoundedVector2d(scroll_offset),
+        gfx::ToRoundedVector2d(frame.metadata.root_scroll_offset),
         frame.metadata.page_scale_factor,
         frame.metadata.min_page_scale_factor,
         frame.metadata.max_page_scale_factor,
-        gfx::ToCeiledSize(content_size),
+        gfx::ToCeiledSize(frame.metadata.root_layer_size),
         frame.metadata.location_bar_offset,
         frame.metadata.location_bar_content_translation);
   }
