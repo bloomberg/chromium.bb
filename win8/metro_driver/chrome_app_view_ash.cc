@@ -20,6 +20,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
+#include "win8/metro_driver/file_picker_ash.h"
 #include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
 
@@ -74,6 +75,10 @@ class ChromeChannelListener : public IPC::Listener {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursor, OnSetCursor)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplayFileOpen,
+                          OnDisplayFileOpenDialog)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplayFileSaveAs,
+                          OnDisplayFileSaveAsDialog)
       IPC_MESSAGE_UNHANDLED(__debugbreak())
     IPC_END_MESSAGE_MAP()
     return true;
@@ -85,15 +90,37 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
  private:
-   void OnSetCursor(int64 cursor) {
-     ui_proxy_->PostTask(FROM_HERE,
-                         base::Bind(&ChromeAppViewAsh::OnSetCursor,
-                                    base::Unretained(app_view_),
-                                    reinterpret_cast<HCURSOR>(cursor)));
-   }
+  void OnSetCursor(int64 cursor) {
+    ui_proxy_->PostTask(FROM_HERE,
+                        base::Bind(&ChromeAppViewAsh::OnSetCursor,
+                                   base::Unretained(app_view_),
+                                   reinterpret_cast<HCURSOR>(cursor)));
+  }
 
-   scoped_refptr<base::MessageLoopProxy> ui_proxy_;
-   ChromeAppViewAsh* app_view_;
+  void OnDisplayFileOpenDialog(const string16& title,
+                               const string16& filter,
+                               const string16& default_path,
+                               bool allow_multiple_files) {
+    ui_proxy_->PostTask(FROM_HERE,
+                        base::Bind(&ChromeAppViewAsh::OnDisplayFileOpenDialog,
+                                   base::Unretained(app_view_),
+                                   title,
+                                   filter,
+                                   default_path,
+                                   allow_multiple_files));
+  }
+
+  void OnDisplayFileSaveAsDialog(
+    const MetroViewerHostMsg_SaveAsDialogParams& params) {
+    ui_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnDisplayFileSaveAsDialog,
+                   base::Unretained(app_view_),
+                   params));
+  }
+
+  scoped_refptr<base::MessageLoopProxy> ui_proxy_;
+  ChromeAppViewAsh* app_view_;
 };
 
 bool WaitForChromeIPCConnection(const std::string& channel_name) {
@@ -374,8 +401,96 @@ ChromeAppViewAsh::Uninitialize() {
   return S_OK;
 }
 
+// static
+HRESULT ChromeAppViewAsh::Unsnap() {
+  mswr::ComPtr<winui::ViewManagement::IApplicationViewStatics> view_statics;
+  HRESULT hr = winrt_utils::CreateActivationFactory(
+      RuntimeClass_Windows_UI_ViewManagement_ApplicationView,
+      view_statics.GetAddressOf());
+  CheckHR(hr);
+
+  winui::ViewManagement::ApplicationViewState state =
+      winui::ViewManagement::ApplicationViewState_FullScreenLandscape;
+  hr = view_statics->get_Value(&state);
+  CheckHR(hr);
+
+  if (state == winui::ViewManagement::ApplicationViewState_Snapped) {
+    boolean success = FALSE;
+    hr = view_statics->TryUnsnap(&success);
+
+    if (FAILED(hr) || !success) {
+      LOG(ERROR) << "Failed to unsnap. Error 0x" << hr;
+      if (SUCCEEDED(hr))
+        hr = E_UNEXPECTED;
+    }
+  }
+  return hr;
+}
+
+
 void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {
   ::SetCursor(HCURSOR(cursor));
+}
+
+void ChromeAppViewAsh::OnDisplayFileOpenDialog(const string16& title,
+                                               const string16& filter,
+                                               const string16& default_path,
+                                               bool allow_multiple_files) {
+  DVLOG(1) << __FUNCTION__;
+
+  // The OpenFilePickerSession instance is deleted when we receive a
+  // callback from the OpenFilePickerSession class about the completion of the
+  // operation.
+  OpenFilePickerSession* open_file_picker =
+      new OpenFilePickerSession(this,
+                                title,
+                                filter,
+                                default_path,
+                                allow_multiple_files);
+  open_file_picker->Run();
+}
+
+void ChromeAppViewAsh::OnDisplayFileSaveAsDialog(
+    const MetroViewerHostMsg_SaveAsDialogParams& params) {
+  DVLOG(1) << __FUNCTION__;
+
+  // The SaveFilePickerSession instance is deleted when we receive a
+  // callback from the OpenFilePickerSession class about the completion of the
+  // operation.
+  SaveFilePickerSession* save_file_picker =
+      new SaveFilePickerSession(this, params);
+  save_file_picker->Run();
+}
+
+void ChromeAppViewAsh::OnOpenFileCompleted(
+    OpenFilePickerSession* open_file_picker,
+    bool success) {
+  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << "Success: " << success;
+  if (ui_channel_) {
+    if (open_file_picker->allow_multi_select()) {
+      ui_channel_->Send(new MetroViewerHostMsg_MultiFileOpenDone(
+          success, open_file_picker->filenames()));
+    } else {
+      ui_channel_->Send(new MetroViewerHostMsg_FileOpenDone(
+          success, open_file_picker->result()));
+    }
+  }
+  delete open_file_picker;
+}
+
+void ChromeAppViewAsh::OnSaveFileCompleted(
+    SaveFilePickerSession* save_file_picker,
+    bool success) {
+  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << "Success: " << success;
+  if (ui_channel_) {
+    ui_channel_->Send(new MetroViewerHostMsg_FileSaveAsDone(
+        success,
+        save_file_picker->result(),
+        save_file_picker->filter_index()));
+  }
+  delete save_file_picker;
 }
 
 HRESULT ChromeAppViewAsh::OnActivate(

@@ -4,6 +4,8 @@
 
 // Multiply-included message file, no include guard.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/events/event_constants.h"
@@ -65,8 +67,57 @@ IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchMoved,
                      int32,           /* y-coordinate */
                      uint64)          /* timestamp */
 
+// Informs the browser of the result of a file save as operation.
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_FileSaveAsDone,
+                     bool,           /* success */
+                     string16,       /* filename */
+                     int)            /* filter_index */
+
+// Informs the browser of the result of a file open operation.
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_FileOpenDone,
+                     bool,           /* success */
+                     string16)       /* filename */
+
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_MultiFileOpenDone,
+                     bool,                    /* success */
+                     std::vector<FilePath>)   /* filenames */
+
+
 // Messages sent from the browser to the viewer:
 
 // Requests the viewer to change the pointer to a new cursor.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetCursor,
                      int64         /* cursor */);
+
+// This structure contains the parameters sent to the viewer process to display
+// the file save dialog.
+IPC_STRUCT_BEGIN(MetroViewerHostMsg_SaveAsDialogParams)
+
+  // The title of the file save dialog if any.
+  IPC_STRUCT_MEMBER(string16, title)
+
+  // The suggested file name.
+  IPC_STRUCT_MEMBER(string16, suggested_name)
+
+  // The save as filter to be used.
+  IPC_STRUCT_MEMBER(string16, filter)
+
+  // The filter index.
+  IPC_STRUCT_MEMBER(uint32, filter_index)
+
+  // The default extension.
+  IPC_STRUCT_MEMBER(string16, default_extension)
+
+IPC_STRUCT_END()
+
+// Requests the viewer to display the file save dialog.
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_DisplayFileSaveAs,
+                     MetroViewerHostMsg_SaveAsDialogParams)
+
+// Requests the viewer to display the file open dialog.
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_DisplayFileOpen,
+                     string16,   /* title */
+                     string16,   /* filter */
+                     string16,   /* Default path */
+                     bool)       /* allow_multi_select */
+

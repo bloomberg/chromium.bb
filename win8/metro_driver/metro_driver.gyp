@@ -77,6 +77,8 @@
                 'chrome_app_view_ash.h',
                 'direct3d_helper.cc',
                 'direct3d_helper.h',
+                'file_picker_ash.h',
+                'file_picker_ash.cc',
               ],
             }, {  # use_aura!=1
               'sources': [

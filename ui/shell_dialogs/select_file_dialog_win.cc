@@ -29,10 +29,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
+#include "ui/shell_dialogs/shell_dialogs_delegate.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #endif
 
 namespace {
@@ -510,8 +511,11 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
 
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
-  bool has_multiple_file_type_choices_;
+  // Returns the filter to be used while displaying the open/save file dialog.
+  // This is computed from the extensions for the file types being opened.
+  string16 GetFilterForFileTypes(const FileTypeInfo& file_types);
 
+  bool has_multiple_file_type_choices_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
@@ -538,6 +542,38 @@ void SelectFileDialogImpl::SelectFileImpl(
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 #if defined(USE_AURA)
+  // If the owning_window passed in is in metro then we need to forward the
+  // file open/save operations to metro.
+  if (GetShellDialogsDelegate() &&
+      GetShellDialogsDelegate()->IsWindowInMetro(owning_window)) {
+    if (type == SELECT_SAVEAS_FILE) {
+      aura::HandleSaveFile(
+          UTF16ToWide(title),
+          default_path,
+          GetFilterForFileTypes(*file_types),
+          file_type_index,
+          default_extension,
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
+                     base::Unretained(listener_)));
+      return;
+    } else if (type == SELECT_OPEN_FILE) {
+      aura::HandleOpenFile(
+          UTF16ToWide(title),
+          default_path,
+          GetFilterForFileTypes(*file_types),
+          base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
+                     base::Unretained(listener_)));
+      return;
+    } else if (type == SELECT_OPEN_MULTI_FILE) {
+      aura::HandleOpenMultipleFiles(
+          UTF16ToWide(title),
+          default_path,
+          GetFilterForFileTypes(*file_types),
+          base::Bind(&ui::SelectFileDialog::Listener::MultiFilesSelected,
+                     base::Unretained(listener_)));
+      return;
+    }
+  }
   HWND owner = owning_window->GetRootWindow()->GetAcceleratedWidget();
 #else
   HWND owner = owning_window;
@@ -573,23 +609,7 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 
 void SelectFileDialogImpl::ExecuteSelectFile(
     const ExecuteSelectParams& params) {
-  std::vector<std::wstring> exts;
-  for (size_t i = 0; i < params.file_types.extensions.size(); ++i) {
-    const std::vector<std::wstring>& inner_exts =
-        params.file_types.extensions[i];
-    std::wstring ext_string;
-    for (size_t j = 0; j < inner_exts.size(); ++j) {
-      if (!ext_string.empty())
-        ext_string.push_back(L';');
-      ext_string.append(L"*.");
-      ext_string.append(inner_exts[j]);
-    }
-    exts.push_back(ext_string);
-  }
-  std::wstring filter = FormatFilterForExtensions(
-      exts,
-      params.file_types.extension_description_overrides,
-      params.file_types.include_all_files);
+  string16 filter = GetFilterForFileTypes(params.file_types);
 
   FilePath path = params.default_path;
   bool success = false;
@@ -823,6 +843,26 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
     }
   }
   return success;
+}
+
+string16 SelectFileDialogImpl::GetFilterForFileTypes(
+    const FileTypeInfo& file_types) {
+  std::vector<string16> exts;
+  for (size_t i = 0; i < file_types.extensions.size(); ++i) {
+    const std::vector<string16>& inner_exts = file_types.extensions[i];
+    string16 ext_string;
+    for (size_t j = 0; j < inner_exts.size(); ++j) {
+      if (!ext_string.empty())
+        ext_string.push_back(L';');
+      ext_string.append(L"*.");
+      ext_string.append(inner_exts[j]);
+    }
+    exts.push_back(ext_string);
+  }
+  return FormatFilterForExtensions(
+      exts,
+      file_types.extension_description_overrides,
+      file_types.include_all_files);
 }
 
 }  // namespace

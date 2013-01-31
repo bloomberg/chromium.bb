@@ -23,6 +23,7 @@ namespace ui {
 class SelectFileDialogFactory;
 class SelectFilePolicy;
 struct SelectedFileInfo;
+class ShellDialogsDelegate;
 
 // Shows a dialog box for selecting a file or a folder.
 class SHELL_DIALOGS_EXPORT SelectFileDialog
@@ -157,6 +158,9 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
                   void* params);
   bool HasMultipleFileTypeChoices();
 
+  // Sets the global ShellDialogsDelegate. Defaults to NULL.
+  static void SetShellDialogsDelegate(ShellDialogsDelegate* delegate);
+
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
   explicit SelectFileDialog(Listener* listener,
@@ -175,6 +179,9 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
                               const FilePath::StringType& default_extension,
                               gfx::NativeWindow owning_window,
                               void* params) = 0;
+
+  // Returns the global ShellDialogsDelegate instance if any.
+  ShellDialogsDelegate* GetShellDialogsDelegate();
 
   // The listener to be notified of selection completion.
   Listener* listener_;

@@ -21,6 +21,7 @@
 #include <windows.applicationmodel.core.h>
 #include <windows.applicationModel.datatransfer.h>
 #include <windows.graphics.printing.h>
+#include <windows.storage.pickers.h>
 #include <windows.ui.notifications.h>
 
 namespace mswr =       Microsoft::WRL;
@@ -34,5 +35,6 @@ namespace winfoundtn = ABI::Windows::Foundation;
 namespace wingfx =     ABI::Windows::Graphics;
 namespace winui =      ABI::Windows::UI;
 namespace winsys =     ABI::Windows::System;
+namespace winstorage = ABI::Windows::Storage;
 
 #endif  // WIN8_METRO_DRIVER_STDAFX_H_
