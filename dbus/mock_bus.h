@@ -49,7 +49,7 @@ class MockBus : public Bus {
                                   void* user_data));
   MOCK_METHOD2(AddMatch, void(const std::string& match_rule,
                               DBusError* error));
-  MOCK_METHOD2(RemoveMatch, void(const std::string& match_rule,
+  MOCK_METHOD2(RemoveMatch, bool(const std::string& match_rule,
                                  DBusError* error));
   MOCK_METHOD4(TryRegisterObjectPath, bool(const ObjectPath& object_path,
                                            const DBusObjectPathVTable* vtable,

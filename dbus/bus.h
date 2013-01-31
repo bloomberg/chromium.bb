@@ -405,8 +405,8 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Instead, you should check if an incoming message is what you are
   // interested in, in the filter functions.
   //
-  // The same match rule can be added more than once, but ignored from the
-  // second time.
+  // The same match rule can be added more than once and should be removed
+  // as many times as it was added.
   //
   // The match rule looks like:
   // "type='signal', interface='org.chromium.SomeInterface'".
@@ -419,9 +419,11 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   virtual void AddMatch(const std::string& match_rule, DBusError* error);
 
   // Removes the match rule previously added by AddMatch().
+  // Returns false if the requested match rule is unknown or has already been
+  // removed. Otherwise, returns true and sets |error| accordingly.
   //
   // BLOCKING CALL.
-  virtual void RemoveMatch(const std::string& match_rule, DBusError* error);
+  virtual bool RemoveMatch(const std::string& match_rule, DBusError* error);
 
   // Tries to register the object path. Returns true on success.
   // Returns false if the object path is already registered.
@@ -554,7 +556,9 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   std::set<std::string> owned_service_names_;
   // The following sets are used to check if rules/object_paths/filters
   // are properly cleaned up before destruction of the bus object.
-  std::set<std::string> match_rules_added_;
+  // Since it's not an error to add the same match rule twice, the repeated
+  // match rules are counted in a map.
+  std::map<std::string, int> match_rules_added_;
   std::set<ObjectPath> registered_object_paths_;
   std::set<std::pair<DBusHandleMessageFunction, void*> >
       filter_functions_added_;

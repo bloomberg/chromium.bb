@@ -617,26 +617,38 @@ void Bus::AddMatch(const std::string& match_rule, DBusError* error) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  if (match_rules_added_.find(match_rule) != match_rules_added_.end()) {
+  std::map<std::string, int>::iterator iter =
+      match_rules_added_.find(match_rule);
+  if (iter != match_rules_added_.end()) {
+    // The already existing rule's counter is incremented.
+    iter->second++;
+
     VLOG(1) << "Match rule already exists: " << match_rule;
     return;
   }
 
   dbus_bus_add_match(connection_, match_rule.c_str(), error);
-  match_rules_added_.insert(match_rule);
+  match_rules_added_[match_rule] = 1;
 }
 
-void Bus::RemoveMatch(const std::string& match_rule, DBusError* error) {
+bool Bus::RemoveMatch(const std::string& match_rule, DBusError* error) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  if (match_rules_added_.find(match_rule) == match_rules_added_.end()) {
+  std::map<std::string, int>::iterator iter =
+      match_rules_added_.find(match_rule);
+  if (iter == match_rules_added_.end()) {
     LOG(ERROR) << "Requested to remove an unknown match rule: " << match_rule;
-    return;
+    return false;
   }
 
-  dbus_bus_remove_match(connection_, match_rule.c_str(), error);
-  match_rules_added_.erase(match_rule);
+  // The rule's counter is decremented and the rule is deleted when reachs 0.
+  iter->second--;
+  if (iter->second == 0) {
+    dbus_bus_remove_match(connection_, match_rule.c_str(), error);
+    match_rules_added_.erase(match_rule);
+  }
+  return true;
 }
 
 bool Bus::TryRegisterObjectPath(const ObjectPath& object_path,
