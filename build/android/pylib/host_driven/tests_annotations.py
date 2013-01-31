@@ -73,6 +73,10 @@ def LargeTest(function):
   return AnnotatedFunctions._AddFunction('LargeTest', function)
 
 
+def EnormousTest(function):
+  return AnnotatedFunctions._AddFunction('EnormousTest', function)
+
+
 def FlakyTest(function):
   return AnnotatedFunctions._AddFunction('FlakyTest', function)
 
