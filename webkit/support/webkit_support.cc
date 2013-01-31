@@ -192,7 +192,9 @@ class TestEnvironment {
 #if defined(OS_ANDROID)
     media_player_manager_->ReleaseMediaResources();
 #endif
-    WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
+    webkit_platform_support_->ResetIDBFactory();
+    // TODO(darin): Uncomment this once DRT calls ResetTestEnvironment().
+    //WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
   }
 
   TestWebKitPlatformSupport* webkit_platform_support() const {
