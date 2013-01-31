@@ -517,6 +517,8 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                       WebKit::WebDevToolsAgent::inspectorProtocolVersion());
     version.SetString("WebKit-Version",
                       webkit_glue::GetWebKitVersion());
+    version.SetString("Browser",
+                      content::GetContentClient()->GetProduct());
     version.SetString("User-Agent",
                       webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
     SendJson(connection_id, net::HTTP_OK, &version, "", jsonp);
