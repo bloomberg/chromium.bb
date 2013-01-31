@@ -23,6 +23,8 @@ class URLRequest;
 
 namespace components {
 
+class NavigationParams;
+
 // Native side of the InterceptNavigationDelegate Java interface.
 // This is used to create a InterceptNavigationResourceThrottle that calls the
 // Java interface method to determine whether a navigation should be ignored or
@@ -54,10 +56,8 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   static content::ResourceThrottle* CreateThrottleFor(
       net::URLRequest* request);
 
-  virtual bool ShouldIgnoreNavigation(const GURL& url,
-                                      bool is_post,
-                                      bool has_user_gesture,
-                                      content::PageTransition transition_type);
+  virtual bool ShouldIgnoreNavigation(
+      const NavigationParams& navigation_params);
  private:
   JavaObjectWeakGlobalRef weak_jdelegate_;
 };

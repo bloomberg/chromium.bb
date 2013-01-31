@@ -10,13 +10,11 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/common/page_transition_types.h"
 
 class GURL;
 
 namespace content {
 class RenderViewHost;
-struct Referrer;
 }
 
 namespace net {
@@ -25,17 +23,15 @@ class URLRequest;
 
 namespace components {
 
+class NavigationParams;
+
 // This class allows the provider of the Callback to selectively ignore top
 // level navigations.
 class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
  public:
-  typedef base::Callback<
-      bool(content::RenderViewHost* /* source */,
-           const GURL& /* url */,
-           const content::Referrer& /*referrer*/,
-           bool /* is_post */,
-           bool /* has_user_gesture */,
-           content::PageTransition /* page transition type */)>
+  typedef base::Callback<bool(
+          content::RenderViewHost* /* source */,
+          const NavigationParams& /* navigation_params */)>
       CheckOnUIThreadCallback;
 
   InterceptNavigationResourceThrottle(

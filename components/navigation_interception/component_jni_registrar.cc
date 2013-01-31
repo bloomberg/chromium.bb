@@ -7,11 +7,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/navigation_interception/navigation_params_android.h"
 
 namespace components {
 
 static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
   { "InterceptNavigationDelegate", RegisterInterceptNavigationDelegate },
+  { "NavigationParams", RegisterNavigationParams },
 };
 
 bool RegisterNavigationInterceptionJni(JNIEnv* env) {

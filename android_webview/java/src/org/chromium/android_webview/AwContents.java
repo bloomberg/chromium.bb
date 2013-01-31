@@ -33,6 +33,7 @@ import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.net.GURLUtils;
 import org.chromium.net.X509Util;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -177,8 +178,8 @@ public class AwContents {
         }
 
         @Override
-        public boolean shouldIgnoreNavigation(String url, boolean isPost, boolean hasUserGesture,
-                                              int pageTransition) {
+        public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
+            final String url = navigationParams.url;
             boolean ignoreNavigation = false;
             if (mLastLoadUrlAddress != null && mLastLoadUrlAddress.equals(url)) {
                 // Support the case where the user clicks on a link that takes them back to the
@@ -189,7 +190,7 @@ public class AwContents {
                 // do not offer it to AwContentsClient.shouldIgnoreNavigation.
                 // The embedder is also not allowed to intercept POST requests because of
                 // crbug.com/155250.
-            } else if (!isPost) {
+            } else if (!navigationParams.isPost) {
                 ignoreNavigation = AwContents.this.mContentsClient.shouldIgnoreNavigation(url);
             }
 

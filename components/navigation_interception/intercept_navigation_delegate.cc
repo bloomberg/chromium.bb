@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "components/navigation_interception/navigation_params_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -30,11 +31,7 @@ const void* kInterceptNavigationDelegateUserDataKey =
     &kInterceptNavigationDelegateUserDataKey;
 
 bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
-                                             const GURL& url,
-                                             const content::Referrer& referrer,
-                                             bool is_post,
-                                             bool has_user_gesture,
-                                             PageTransition transition_type) {
+                                             const NavigationParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(source);
 
@@ -46,8 +43,7 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
   if (!intercept_navigation_delegate)
     return false;
 
-  return intercept_navigation_delegate->ShouldIgnoreNavigation(
-      url, is_post, has_user_gesture, transition_type);
+  return intercept_navigation_delegate->ShouldIgnoreNavigation(params);
 }
 
 } // namespace
@@ -83,11 +79,8 @@ InterceptNavigationDelegate::~InterceptNavigationDelegate() {
 }
 
 bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
-    const GURL& url,
-    bool is_post,
-    bool has_user_gesture,
-    PageTransition transition_type) {
-  if (!url.is_valid())
+    const NavigationParams& navigation_params) {
+  if (!navigation_params.url().is_valid())
     return false;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -96,15 +89,13 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
   if (jdelegate.is_null())
     return false;
 
-  ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, url.spec());
+  ScopedJavaLocalRef<jobject> jobject_params =
+      CreateJavaNavigationParams(env, navigation_params);
+
   return Java_InterceptNavigationDelegate_shouldIgnoreNavigation(
       env,
       jdelegate.obj(),
-      jstring_url.obj(),
-      is_post,
-      has_user_gesture,
-      transition_type);
+      jobject_params.obj());
 }
 
 // Register native methods.

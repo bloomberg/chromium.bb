@@ -4,6 +4,7 @@
 
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
 
+#include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -25,37 +26,25 @@ namespace components {
 
 namespace {
 
-struct ShouldIgnoreCallbackParams {
-  int render_process_id;
-  int render_view_id;
-  GURL url;
-  Referrer referrer;
-  bool has_user_gesture;
-  bool is_post;
-  PageTransition transition_type;
-};
-
 void CheckIfShouldIgnoreNavigationOnUIThread(
-    const ShouldIgnoreCallbackParams& params,
+    int render_process_id,
+    int render_view_id,
+    const NavigationParams& navigation_params,
     InterceptNavigationResourceThrottle::CheckOnUIThreadCallback
     should_ignore_callback,
     base::Callback<void(bool)> callback) {
 
   bool should_ignore_navigation = false;
   RenderViewHost* rvh =
-      RenderViewHost::FromID(params.render_process_id, params.render_view_id);
+      RenderViewHost::FromID(render_process_id, render_view_id);
 
   if (rvh) {
-    GURL validated_url(params.url);
-    RenderViewHost::FilterURL(rvh->GetProcess(), false, &validated_url);
+    NavigationParams validated_params(navigation_params);
+    RenderViewHost::FilterURL(
+        rvh->GetProcess(), false, &validated_params.url());
 
-    should_ignore_navigation = should_ignore_callback.Run(
-        rvh,
-        validated_url,
-        params.referrer,
-        params.is_post,
-        params.has_user_gesture,
-        params.transition_type);
+    should_ignore_navigation = should_ignore_callback.Run(rvh,
+                                                          validated_params);
   }
 
   BrowserThread::PostTask(
@@ -99,26 +88,22 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
   if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
     return false;
 
-  ShouldIgnoreCallbackParams params;
-  params.render_process_id = render_process_id;
-  params.render_view_id = render_view_id;
-  params.url = url;
-  params.referrer = Referrer(GURL(request_->referrer()),
-                             info->GetReferrerPolicy());
-  params.has_user_gesture = info->HasUserGesture();
-  params.is_post = request_->method() == "POST";
-  params.transition_type = info->GetPageTransition();
-  if (is_redirect) {
-    uint32 transition = params.transition_type |
-        content::PAGE_TRANSITION_SERVER_REDIRECT;
-    params.transition_type = static_cast<content::PageTransition>(transition);
-  }
+  NavigationParams navigation_params(url,
+                                     Referrer(GURL(request_->referrer()),
+                                              info->GetReferrerPolicy()),
+                                     info->HasUserGesture(),
+                                     request_->method() == "POST",
+                                     info->GetPageTransition(),
+                                     is_redirect);
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &CheckIfShouldIgnoreNavigationOnUIThread,
-          params,
+          render_process_id,
+          render_view_id,
+          navigation_params,
           should_ignore_callback_,
           base::Bind(
               &InterceptNavigationResourceThrottle::OnResultObtained,

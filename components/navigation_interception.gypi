@@ -26,6 +26,8 @@
           'sources': [
             'navigation_interception/intercept_navigation_resource_throttle.cc',
             'navigation_interception/intercept_navigation_resource_throttle.h',
+            'navigation_interception/navigation_params.h',
+            'navigation_interception/navigation_params.cc',
           ],
           'conditions': [
             ['OS=="android"', {
@@ -37,6 +39,8 @@
                 'navigation_interception/component_jni_registrar.h',
                 'navigation_interception/intercept_navigation_delegate.cc',
                 'navigation_interception/intercept_navigation_delegate.h',
+                'navigation_interception/navigation_params_android.h',
+                'navigation_interception/navigation_params_android.cc',
               ],
             }],
           ],
@@ -62,6 +66,7 @@
               'type': 'none',
               'sources': [
                 'navigation_interception/android/java/src/org/chromium/content/components/navigation_interception/InterceptNavigationDelegate.java',
+                'navigation_interception/android/java/src/org/chromium/content/components/navigation_interception/NavigationParams.java',
               ],
               'variables': {
                 'jni_gen_dir': 'navigation_interception',

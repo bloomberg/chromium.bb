@@ -8,6 +8,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
@@ -27,6 +28,7 @@
 
 using testing::_;
 using testing::Eq;
+using testing::Property;
 using testing::Ne;
 using testing::Return;
 
@@ -42,19 +44,30 @@ void ContinueTestCase() {
       content::BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
+// The MS C++ compiler complains about not being able to resolve which url()
+// method (const or non-const) to use if we use the Property matcher to check
+// the return value of the NavigationParams::url() method.
+// It is possible to suppress the error by specifying the types directly but
+// that results in very ugly syntax, which is why these custom matchers are
+// used instead.
+MATCHER(NavigationParamsUrlIsTest, "") {
+  return arg.url() == GURL(kTestUrl);
+}
+
+MATCHER(NavigationParamsUrlIsSafe, "") {
+  return arg.url() != GURL(kUnsafeTestUrl);
+}
+
 } // namespace
+
 
 // MockInterceptCallbackReceiver ----------------------------------------------
 
 class MockInterceptCallbackReceiver {
  public:
-  MOCK_METHOD6(ShouldIgnoreNavigation,
+  MOCK_METHOD2(ShouldIgnoreNavigation,
                bool(content::RenderViewHost* source,
-                    const GURL& url,
-                    const content::Referrer& referrer,
-                    bool is_post,
-                    bool has_user_gesture,
-                    content::PageTransition page_transition));
+                    const NavigationParams& navigation_params));
 };
 
 // MockResourceController -----------------------------------------------------
@@ -205,11 +218,10 @@ class InterceptNavigationResourceThrottleTest
       ShouldIgnoreNavigationCallbackAction callback_action,
       bool* defer) {
 
-    ON_CALL(*mock_callback_receiver_,
-            ShouldIgnoreNavigation(_, _, _, _, _, _))
+    ON_CALL(*mock_callback_receiver_, ShouldIgnoreNavigation(_, _))
       .WillByDefault(Return(callback_action == IgnoreNavigation));
     EXPECT_CALL(*mock_callback_receiver_,
-                ShouldIgnoreNavigation(rvh(), Eq(GURL(kTestUrl)), _, _, _, _))
+                ShouldIgnoreNavigation(rvh(), NavigationParamsUrlIsTest()))
       .Times(1);
 
     content::BrowserThread::PostTask(
@@ -281,7 +293,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(this)));
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, _, _, _, _, _))
+              ShouldIgnoreNavigation(_, _))
       .Times(0);
 
   content::BrowserThread::PostTask(
@@ -336,10 +348,10 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   ON_CALL(*mock_callback_receiver_,
-          ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _, _))
+          ShouldIgnoreNavigation(_, NavigationParamsUrlIsSafe()))
       .WillByDefault(Return(false));
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _, _))
+              ShouldIgnoreNavigation(_, NavigationParamsUrlIsSafe()))
       .Times(1);
 
   content::BrowserThread::PostTask(
@@ -364,8 +376,9 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, false, _,
-                                     _))
+              ShouldIgnoreNavigation(_, AllOf(
+                  NavigationParamsUrlIsSafe(),
+                  Property(&NavigationParams::is_post, Eq(false)))))
       .WillOnce(Return(false));
 
   content::BrowserThread::PostTask(
@@ -390,8 +403,9 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, true, _,
-                                     _))
+              ShouldIgnoreNavigation(_, AllOf(
+                  NavigationParamsUrlIsSafe(),
+                  Property(&NavigationParams::is_post, Eq(true)))))
       .WillOnce(Return(false));
 
   content::BrowserThread::PostTask(
