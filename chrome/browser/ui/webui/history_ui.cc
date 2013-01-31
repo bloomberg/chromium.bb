@@ -431,34 +431,40 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
     for (unsigned int i = 0; i < events->GetSize(); ++i) {
       const DictionaryValue* event = NULL;
       const DictionaryValue* result = NULL;
-      const DictionaryValue* id = NULL;
       const ListValue* results = NULL;
       const ListValue* ids = NULL;
-      string16 timestamp_string;
       string16 url;
-      int64 timestamp_usec;
+      string16 title;
 
-      if (!events->GetDictionary(i, &event) ||
-          !event->GetList("result", &results)) {
-        LOG(WARNING) << "Improperly formed JSON response.";
-        continue;  // Skip this result.
+      if (!(events->GetDictionary(i, &event) &&
+          event->GetList("result", &results) &&
+          results->GetDictionary(0, &result) &&
+          result->GetString("url", &url) &&
+          result->GetList("id", &ids))) {
+        LOG(WARNING) << "Improperly formed JSON response from history server.";
+        continue;
       }
 
-      DCHECK_GT(results->GetSize(), 0U);
+      // Title is optional, so the return value is ignored here.
+      result->GetString("title", &title);
 
-      if (results->GetDictionary(0, &result) &&
-          result->GetList("id", &ids) &&
-          result->GetStringWithoutPathExpansion("url", &url) &&
-          ids->GetDictionary(0, &id) &&
-          id->GetString("timestamp_usec", &timestamp_string) &&
-          base::StringToInt64(timestamp_string, &timestamp_usec)) {
-        results_value_.Append(
-            CreateQueryResultValue(
-                GURL(url),
-                string16(),
-                base::Time::FromJsTime(timestamp_usec / 1000),
-                !search_text.empty(),
-                string16()));
+      // Extract the timestamps of each visit to this URL.
+      for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
+        const DictionaryValue* id = NULL;
+        string16 timestamp_string;
+        int64 timestamp_usec;
+
+        if (ids->GetDictionary(j, &id) &&
+            id->GetString("timestamp_usec", &timestamp_string) &&
+            base::StringToInt64(timestamp_string, &timestamp_usec)) {
+          results_value_.Append(
+              CreateQueryResultValue(
+                  GURL(url),
+                  title,
+                  base::Time::FromJsTime(timestamp_usec / 1000),
+                  !search_text.empty(),
+                  string16()));
+        }
       }
     }
     // The results are sorted if and only if they were empty before.

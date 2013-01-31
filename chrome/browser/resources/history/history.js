@@ -47,9 +47,11 @@ function Visit(result, continued, model, id) {
   this.snippet_ = result.snippet || '';
   this.id_ = id;
 
-  this.changed = false;
+  this.isRendered = false;  // Has the visit already been rendered on the page?
 
-  this.isRendered = false;
+  // Holds the timestamps of duplicates of this visit (visits to the same URL on
+  // the same day).
+  this.duplicateTimestamps_ = [];
 
   // All the date information is public so that owners can compare properties of
   // two items easily.
@@ -67,6 +69,14 @@ function Visit(result, continued, model, id) {
 }
 
 // Visit, public: -------------------------------------------------------------
+
+/**
+ * Records the timestamp of another visit to the same URL as this visit.
+ * @param {Number} timestamp The timestamp to add.
+ */
+Visit.prototype.addDuplicateTimestamp = function(timestamp) {
+  this.duplicateTimestamps_.push(timestamp);
+};
 
 /**
  * Returns a dom structure for a browse page result or a search page result.
@@ -399,11 +409,18 @@ HistoryModel.prototype.addResults = function(info, results) {
     // latest visit from that day.
     if (!isSameDay)
       this.urlsFromLastSeenDay_ = {};
-    else if (thisResult.url in this.urlsFromLastSeenDay_)
-      continue;
-    this.urlsFromLastSeenDay_[thisResult.url] = thisResult.time;
 
-    this.visits_.push(new Visit(thisResult, isSameDay, this, this.last_id_++));
+    // Only create a new Visit object for the first visit to a URL on a
+    // particular day.
+    var visit = this.urlsFromLastSeenDay_[thisResult.url];
+    if (visit) {
+      // Record the timestamp of the duplicate visit.
+      visit.addDuplicateTimestamp(thisResult.timestamp);
+      continue;
+    }
+    visit = new Visit(thisResult, isSameDay, this, this.nextVisitId_++);
+    this.urlsFromLastSeenDay_[thisResult.url] = visit;
+    this.visits_.push(visit);
     this.changed = true;
     lastDay = thisDay;
   }
@@ -450,7 +467,7 @@ HistoryModel.prototype.clearModel_ = function() {
   this.groupByDomain_ = false;
 
   this.visits_ = [];  // Date-sorted list of visits (most recent first).
-  this.last_id_ = 0;
+  this.nextVisitId_ = 0;
   selectionAnchor = -1;
 
   // The page that the view wants to see - we only fetch slightly past this
@@ -792,9 +809,7 @@ HistoryView.prototype.addDayResults_ = function(visits, parentElement) {
         dayResults.appendChild(createElementWithClassName('li', 'gap'));
 
       // Insert the visit into the DOM.
-      dayResults.appendChild(visit.getResultDOM({
-        addTitleFavicon: true
-      }));
+      dayResults.appendChild(visit.getResultDOM({ addTitleFavicon: true }));
       this.setVisitRendered_(visit);
 
       lastTime = thisTime;
