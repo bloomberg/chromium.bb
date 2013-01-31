@@ -324,5 +324,19 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
   EXPECT_TRUE(IsCalloutVisible());
 }
 
+TEST_F(PanelLayoutManagerTest, PanelOnMultipleDisplays) {
+  UpdateDisplay("300x400,400x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> p1_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
+  scoped_ptr<aura::Window> p2_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
+  scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(400, 0, 50, 50)));
+  scoped_ptr<aura::Window> p2_d2(CreatePanelWindow(gfx::Rect(400, 0, 50, 50)));
+  EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
+  EXPECT_EQ(root_windows[1], p2_d2->GetRootWindow());
+}
+
 }  // namespace internal
 }  // namespace ash

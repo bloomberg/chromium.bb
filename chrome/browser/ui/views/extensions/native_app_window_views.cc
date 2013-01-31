@@ -26,9 +26,12 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/screen_ash.h"
+#include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/panel_frame_view.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "ui/aura/root_window.h"
 #endif
 
 namespace {
@@ -119,17 +122,30 @@ void NativeAppWindowViews::InitializePanelWindow(
     preferred_size_.set_height(kDefaultPanelHeight);
   else if (preferred_size_.height() < kMinPanelHeight)
     preferred_size_.set_height(kMinPanelHeight);
-
-  params.bounds = gfx::Rect(preferred_size_.width(), preferred_size_.height());
+#if defined(USE_ASH)
+  // Open a new panel on the active root window where
+  // a current active/focused window is on.
+  aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
+  params.bounds = ash::ScreenAsh::ConvertRectToScreen(
+      active, gfx::Rect(preferred_size_));
+#else
+  params.bounds = gfx::Rect(preferred_size_);
+#endif
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
   params.top_level = true;
   window_->Init(params);
 
+#if !defined(USE_ASH)
+  // TODO(oshima|stevenjb): Ideally, we should be able to just pre-determine
+  // the exact location and size, but this doesn't work well
+  // on non-ash environment where we don't have full control over
+  // window management.
   gfx::Rect window_bounds =
       window_->non_client_view()->GetWindowBoundsForClientBounds(
           create_params.bounds);
   window_->SetBounds(window_bounds);
+#endif
 }
 
 // BaseWindow implementation.

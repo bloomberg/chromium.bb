@@ -4,6 +4,7 @@
 
 #include "ash/shell/panel_window.h"
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/panel_frame_view.h"
 #include "base/utf_string_conversions.h"
@@ -45,6 +46,9 @@ views::Widget* PanelWindow::CreateWidget() {
     params().bounds.set_width(kDefaultWidth);
   if (params().bounds.height() == 0)
     params().bounds.set_height(kDefaultHeight);
+  params().bounds = ScreenAsh::ConvertRectToScreen(
+      Shell::GetActiveRootWindow(),
+      params().bounds);
 
   widget->Init(params());
   widget->GetNativeView()->SetName(name_);
