@@ -20,4 +20,18 @@ class GetRegistrationCodeFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getRegistrationCode",
                              ECHOPRIVATE_GETREGISTRATIONCODE)
 };
+
+class GetOobeTimestampFunction : public AsyncExtensionFunction {
+ public:
+  GetOobeTimestampFunction();
+
+ protected:
+  virtual ~GetOobeTimestampFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  bool GetOobeTimestampOnFileThread();
+  DECLARE_EXTENSION_FUNCTION("echoPrivate.getOobeTimestamp",
+                             ECHOPRIVATE_GETOOBETIMESTAMP)
+};
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_ECHO_PRIVATE_API_H_

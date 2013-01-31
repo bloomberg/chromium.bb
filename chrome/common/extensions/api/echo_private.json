@@ -31,6 +31,24 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getOobeTimestamp",
+        "description": "Get the OOBE timestamp.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string",
+                "description" : "The OOBE timestamp."
+              }
+            ]
+          }
+        ]
       }
     ]
   }

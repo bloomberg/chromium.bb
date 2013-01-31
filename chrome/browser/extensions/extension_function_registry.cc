@@ -183,6 +183,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Echo
   RegisterFunction<GetRegistrationCodeFunction>();
+  RegisterFunction<GetOobeTimestampFunction>();
 
   // Terminal
   RegisterFunction<OpenTerminalProcessFunction>();
