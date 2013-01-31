@@ -24,11 +24,10 @@ class TestPackage(object):
     timeout: Timeout for each test.
     cleanup_test_files: Whether or not to cleanup test files on device.
     tool: Name of the Valgrind tool.
-    dump_debug_info: A debug_info object.
   """
 
   def __init__(self, adb, device, test_suite, timeout,
-               cleanup_test_files, tool, dump_debug_info):
+               cleanup_test_files, tool):
     self.adb = adb
     self.device = device
     self.test_suite_full = test_suite
@@ -44,7 +43,6 @@ class TestPackage(object):
     if os.environ.get('BUILDBOT_SLAVENAME'):
       timeout = timeout * 2
     self.timeout = timeout * self.tool.GetTimeoutScale()
-    self.dump_debug_info = dump_debug_info
 
   def GetDisabledPrefixes(self):
     return ['DISABLED_', 'FLAKY_', 'FAILS_']
@@ -147,9 +145,6 @@ class TestPackage(object):
         elif found == 2:  # re_runner_fail
           break
         else:  # re_run
-          if self.dump_debug_info:
-            self.dump_debug_info.TakeScreenshot('_Test_Start_Run_')
-
           full_test_name = p.match.group(1).replace('\r', '')
           found = p.expect([re_ok, re_fail, re_crash], timeout=self.timeout)
           if found == 0:  # re_ok

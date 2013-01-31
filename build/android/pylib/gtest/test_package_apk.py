@@ -27,13 +27,12 @@ class TestPackageApk(TestPackage):
     timeout: Timeout for each test.
     cleanup_test_files: Whether or not to cleanup test files on device.
     tool: Name of the Valgrind tool.
-    dump_debug_info: A debug_info object.
   """
 
   def __init__(self, adb, device, test_suite, timeout,
-               cleanup_test_files, tool, dump_debug_info):
+               cleanup_test_files, tool):
     TestPackage.__init__(self, adb, device, test_suite, timeout,
-                         cleanup_test_files, tool, dump_debug_info)
+                         cleanup_test_files, tool)
 
   def _CreateTestRunnerScript(self, options):
     command_line_file = tempfile.NamedTemporaryFile()

@@ -95,7 +95,6 @@ def _RunATestSuite(options):
       options.timeout,
       options.cleanup_test_files,
       options.tool,
-      options.log_dump,
       options.build_type,
       options.webkit,
       options.flakiness_dashboard_server)
