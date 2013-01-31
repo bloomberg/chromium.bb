@@ -100,6 +100,99 @@ template <> bool CheckAddressBits<8 * sizeof(void*)>(uintptr_t ptr) {
   return true;
 }
 
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
+#define ASLR_IS_SUPPORTED
+#endif
+
+#if defined(ASLR_IS_SUPPORTED)
+// From libdieharder, public domain library by Bob Jenkins (rngav.c).
+// Described at http://burtleburtle.net/bob/rand/smallprng.html.
+// Not cryptographically secure, but good enough for what we need.
+typedef uint32_t u4;
+struct ranctx {
+  u4 a;
+  u4 b;
+  u4 c;
+  u4 d;
+};
+
+#define rot(x,k) (((x)<<(k))|((x)>>(32-(k))))
+
+u4 ranval(ranctx* x) {
+  /* xxx: the generator being tested */
+  u4 e = x->a - rot(x->b, 27);
+  x->a = x->b ^ rot(x->c, 17);
+  x->b = x->c + x->d;
+  x->c = x->d + e;
+  x->d = e + x->a;
+  return x->d;
+}
+
+void raninit(ranctx* x, u4 seed) {
+  u4 i;
+  x->a = 0xf1ea5eed;
+  x->b = x->c = x->d = seed;
+  for (i = 0; i < 20; ++i) {
+    (void) ranval(x);
+  }
+}
+
+#endif  // defined(ASLR_IS_SUPPORTED)
+
+// Give a random "hint" that is suitable for use with mmap(). This cannot make
+// mmap fail, as the kernel will simply not follow the hint if it can't.
+// However, this will create address space fragmentation.  Currently, we only
+// implement it on x86_64, where we have a 47 bits userland address space and
+// fragmentation is not an issue.
+void* GetRandomAddrHint() {
+#if !defined(ASLR_IS_SUPPORTED)
+  return NULL;
+#else
+  // Note: we are protected by the general TCMalloc_SystemAlloc spinlock. Given
+  // the nature of what we're doing, it wouldn't be critical if we weren't for
+  // ctx, but it is for the "initialized" variable.
+  // It's nice to share the state between threads, because scheduling will add
+  // some randomness to the succession of ranval() calls.
+  static ranctx ctx;
+  static bool initialized = false;
+  if (!initialized) {
+    initialized = true;
+    // We really want this to be a stack variable and don't want any compiler
+    // optimization. We're using its address as a poor-man source of
+    // randomness.
+    volatile char c;
+    // Pre-initialize our seed with a "random" address in case /dev/urandom is
+    // not available.
+    uint32_t seed = (reinterpret_cast<uint64_t>(&c) >> 32) ^
+                    reinterpret_cast<uint64_t>(&c);
+    int urandom_fd = open("/dev/urandom", O_RDONLY);
+    if (urandom_fd >= 0) {
+      ssize_t len;
+      len = read(urandom_fd, &seed, sizeof(seed));
+      ASSERT(len == sizeof(seed));
+      int ret = close(urandom_fd);
+      ASSERT(ret == 0);
+    }
+    raninit(&ctx, seed);
+  }
+  uint64_t random_address = (static_cast<uint64_t>(ranval(&ctx)) << 32) |
+                            ranval(&ctx);
+  // If the kernel cannot honor the hint in arch_get_unmapped_area_topdown, it
+  // will simply ignore it. So we give a hint that has a good chance of
+  // working.
+  // The mmap top-down allocator will normally allocate below TASK_SIZE - gap,
+  // with a gap that depends on the max stack size. See x86/mm/mmap.c. We
+  // should make allocations that are below this area, which would be
+  // 0x7ffbf8000000.
+  // We use 0x3ffffffff000 as the mask so that we only "pollute" half of the
+  // address space. In the unlikely case where fragmentation would become an
+  // issue, the kernel will still have another half to use.
+  // A a bit-wise "and" won't bias our random distribution.
+  random_address &= 0x3ffffffff000ULL;
+  return reinterpret_cast<void*>(random_address);
+#endif  // ASLR_IS_SUPPORTED
+}
+
 }  // Anonymous namespace to avoid name conflicts on "CheckAddressBits".
 
 COMPILE_ASSERT(kAddressBits <= 8 * sizeof(void*),
@@ -138,6 +231,14 @@ DEFINE_bool(malloc_skip_sbrk,
 DEFINE_bool(malloc_skip_mmap,
             EnvToBool("TCMALLOC_SKIP_MMAP", false),
             "Whether mmap can be used to obtain memory.");
+
+DEFINE_bool(malloc_random_allocator,
+#if defined(ASLR_IS_SUPPORTED)
+            EnvToBool("TCMALLOC_ASLR", true),
+#else
+            EnvToBool("TCMALLOC_ASLR", false),
+#endif
+            "Whether to randomize the address space via mmap().");
 
 // static allocators
 class SbrkSysAllocator : public SysAllocator {
@@ -304,7 +405,11 @@ void* MmapSysAllocator::Alloc(size_t size, size_t *actual_size,
   //            size + alignment < (1<<NBITS).
   // and        extra <= alignment
   // therefore  size + extra < (1<<NBITS)
-  void* result = mmap(NULL, size + extra,
+  void* address_hint = NULL;
+  if (FLAGS_malloc_random_allocator) {
+    address_hint = GetRandomAddrHint();
+  }
+  void* result = mmap(address_hint, size + extra,
                       PROT_READ|PROT_WRITE,
                       MAP_PRIVATE|MAP_ANONYMOUS,
                       -1, 0);
@@ -453,6 +558,12 @@ void InitSystemAllocators(void) {
   // the heap-checker is less likely to misinterpret a number as a
   // pointer).
   DefaultSysAllocator *sdef = new (default_space) DefaultSysAllocator();
+  // Unfortunately, this code runs before flags are initialized. So
+  // we can't use FLAGS_malloc_random_allocator.
+#if defined(ASLR_IS_SUPPORTED)
+  // Our only random allocator is mmap.
+  sdef->SetChildAllocator(mmap, 0, mmap_name);
+#else
   if (kDebugMode && sizeof(void*) > 4) {
     sdef->SetChildAllocator(mmap, 0, mmap_name);
     sdef->SetChildAllocator(sbrk, 1, sbrk_name);
@@ -460,6 +571,7 @@ void InitSystemAllocators(void) {
     sdef->SetChildAllocator(sbrk, 0, sbrk_name);
     sdef->SetChildAllocator(mmap, 1, mmap_name);
   }
+#endif  // ASLR_IS_SUPPORTED
   sys_alloc = sdef;
 }
 

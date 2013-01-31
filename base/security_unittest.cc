@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <algorithm>
 #include <limits>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -191,5 +195,60 @@ TEST(SecurityTest, DISABLE_ON_ASAN(CallocOverflow)) {
     EXPECT_TRUE(HideValueFromCompiler(array_pointer.get()) == NULL);
   }
 }
+
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
+// Useful for debugging.
+void PrintProcSelfMaps() {
+  int fd = open("/proc/self/maps", O_RDONLY);
+  file_util::ScopedFD fd_closer(&fd);
+  ASSERT_GE(fd, 0);
+  char buffer[1<<13];
+  int ret;
+  ret = read(fd, buffer, sizeof(buffer) - 1);
+  ASSERT_GT(ret, 0);
+  buffer[ret - 1] = 0;
+  fprintf(stdout, "%s\n", buffer);
+}
+
+// Check if TCMalloc uses an underlying random memory allocator.
+TEST(SecurityTest, ALLOC_TEST(RandomMemoryAllocations)) {
+  if (IsTcMallocBypassed())
+    return;
+  // Two successsive calls to mmap() have roughly one chance out of 2^6 to
+  // have the same two high order nibbles, which is what we are looking at in
+  // this test. (In the implementation, we mask these two nibbles with 0x3f,
+  // hence the 6 bits).
+  // With 32 allocations, we see ~16 that end-up in different buckets (i.e.
+  // zones mapped via mmap(), so the chances of this test flaking is roughly
+  // 2^-(6*15).
+  const int kAllocNumber = 32;
+  // Make kAllocNumber successive allocations of growing size and compare the
+  // successive pointers to detect adjacent mappings. We grow the size because
+  // TCMalloc can sometimes over-allocate.
+  scoped_ptr<char, base::FreeDeleter> ptr[kAllocNumber];
+  for (int i = 0; i < kAllocNumber; ++i) {
+    // Grow the Malloc size slightly sub-exponentially.
+    const size_t kMallocSize = 1 << (12 + (i>>1));
+    ptr[i].reset(static_cast<char*>(malloc(kMallocSize)));
+    ASSERT_TRUE(ptr[i] != NULL);
+    if (i > 0) {
+      // Without mmap randomization, the two high order nibbles
+      // of a 47 bits userland address address will be identical.
+      // We're only watching the 6 bits that we actually do touch
+      // in our implementation.
+      const uintptr_t kHighOrderMask = 0x3f0000000000ULL;
+      bool pointer_have_same_high_order =
+          (reinterpret_cast<size_t>(ptr[i].get()) & kHighOrderMask) ==
+          (reinterpret_cast<size_t>(ptr[i - 1].get()) & kHighOrderMask);
+      if (!pointer_have_same_high_order) {
+        // PrintProcSelfMaps();
+        return;  // Test passes.
+      }
+    }
+  }
+  ASSERT_TRUE(false);  // NOTREACHED();
+}
+
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
 
 }  // namespace
