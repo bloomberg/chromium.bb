@@ -76,7 +76,7 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
 
   if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
       request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-    HandleTapMediaRequest();
+    HandleTabMediaRequest();
     return true;
   }
 
@@ -237,7 +237,10 @@ bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
   return (current_setting == CONTENT_SETTING_BLOCK);
 }
 
-void MediaStreamDevicesController::HandleTapMediaRequest() {
+void MediaStreamDevicesController::HandleTabMediaRequest() {
+#if defined(OS_ANDROID)
+  Deny(false);
+#else
   // For tab media requests, we need to make sure the request came from the
   // extension API, so we check the registry here.
   extensions::TabCaptureRegistry* registry =
@@ -260,6 +263,7 @@ void MediaStreamDevicesController::HandleTapMediaRequest() {
 
     callback_.Run(devices);
   }
+#endif
 }
 
 bool MediaStreamDevicesController::IsSchemeSecure() const {

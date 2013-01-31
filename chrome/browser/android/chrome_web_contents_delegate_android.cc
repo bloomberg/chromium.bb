@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/find_bar/find_match_rects_details.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/navigation_entry.h"
@@ -297,6 +298,13 @@ void ChromeWebContentsDelegateAndroid::DidNavigateMainFramePostCommit(
   } else {
     UMA_HISTOGRAM_TIMES("Omnibox.GoogleSearch.SearchTime", time_delta);
   }
+}
+
+void ChromeWebContentsDelegateAndroid::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
 }
 
 }  // namespace android

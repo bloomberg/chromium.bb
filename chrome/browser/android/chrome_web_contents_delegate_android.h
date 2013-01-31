@@ -61,6 +61,10 @@ class ChromeWebContentsDelegateAndroid
   virtual void DidNavigateToPendingEntry(content::WebContents* source) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       content::WebContents* source) OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
  private:
   // NotificationObserver implementation.
