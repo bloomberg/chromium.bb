@@ -164,8 +164,6 @@
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
       # crbug.com/168809
       '-instant.InstantTest.testInstantCaseSensitivity',
-      # crbug.com/125424
-      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
       # crbug.com/171490
       '-passwords.PasswordTest.testPasswdInfoNotStoredWhenAutocompleteOff',
       # crbug.com/117569
