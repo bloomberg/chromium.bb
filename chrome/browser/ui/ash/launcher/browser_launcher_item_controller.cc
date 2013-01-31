@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -168,10 +169,11 @@ void BrowserLauncherItemController::LauncherItemChanged(
   }
 }
 
-ChromeLauncherAppMenuItems*
+ChromeLauncherAppMenuItems
 BrowserLauncherItemController::GetApplicationList() {
   // This will never be called and the entire class will go away.
-  return new ChromeLauncherAppMenuItems;
+  ChromeLauncherAppMenuItems items;
+  return items.Pass();
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(

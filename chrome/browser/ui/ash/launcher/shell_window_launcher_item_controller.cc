@@ -164,14 +164,14 @@ ShellWindowLauncherItemController::GetIconOfIndexedApp(size_t index) {
   return new gfx::Image();
 }
 
-ChromeLauncherAppMenuItems*
+ChromeLauncherAppMenuItems
 ShellWindowLauncherItemController::GetApplicationList() {
-  ChromeLauncherAppMenuItems* items = new ChromeLauncherAppMenuItems;
+  ChromeLauncherAppMenuItems items;
   if (!launcher_controller()->GetPerAppInterface()) {
-    items->push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL));
+    items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL));
     for (size_t i = 0; i < shell_window_count(); i++) {
       gfx::Image* image = GetIconOfIndexedApp(i);
-      items->push_back(new ChromeLauncherAppMenuItemV2App(
+      items.push_back(new ChromeLauncherAppMenuItemV2App(
           GetTitleOfIndexedApp(i),
           image,
           app_id(),
@@ -180,7 +180,7 @@ ShellWindowLauncherItemController::GetApplicationList() {
       delete image;
     }
   }
-  return items;
+  return items.Pass();
 }
 
 void ShellWindowLauncherItemController::RestoreOrShow(

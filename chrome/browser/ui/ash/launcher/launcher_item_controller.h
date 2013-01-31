@@ -82,7 +82,7 @@ class LauncherItemController {
   virtual void OnRemoved() = 0;
 
   // Called to retrieve the list of running applications.
-  virtual ChromeLauncherAppMenuItems* GetApplicationList() = 0;
+  virtual ChromeLauncherAppMenuItems GetApplicationList() = 0;
 
   // Helper function to get the ash::LauncherItemType for the item type.
   ash::LauncherItemType GetLauncherItemType() const;

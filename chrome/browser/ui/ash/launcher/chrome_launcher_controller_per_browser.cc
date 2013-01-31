@@ -116,8 +116,9 @@ class AppShortcutLauncherItemController : public LauncherItemController {
       const ash::LauncherItem& old_item) OVERRIDE {
   }
 
-  virtual ChromeLauncherAppMenuItems* GetApplicationList() OVERRIDE {
-    return new ChromeLauncherAppMenuItems;
+  virtual ChromeLauncherAppMenuItems GetApplicationList() OVERRIDE {
+    ChromeLauncherAppMenuItems items;
+    return items.Pass();
   }
 
   // Stores the optional refocus url pattern for this item.

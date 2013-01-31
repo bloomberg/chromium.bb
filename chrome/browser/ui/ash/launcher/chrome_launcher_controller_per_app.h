@@ -277,8 +277,7 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
                            const gfx::ImageSkia& image) OVERRIDE;
 
   // Get the list of all running incarnations of this item.
-  ChromeLauncherAppMenuItems* GetApplicationList(
-      const ash::LauncherItem& item);
+  ChromeLauncherAppMenuItems GetApplicationList(const ash::LauncherItem& item);
 
   // Get the list of all tabs which belong to a certain application type.
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
@@ -371,7 +370,7 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // Returns the list of all browsers runing.
   // TODO(skuhne): Move to wherever the BrowserLauncherItemController
   // functionality moves to.
-  ChromeLauncherAppMenuItems* GetBrowserApplicationList();
+  ChromeLauncherAppMenuItems GetBrowserApplicationList();
 
   ash::LauncherModel* model_;
 

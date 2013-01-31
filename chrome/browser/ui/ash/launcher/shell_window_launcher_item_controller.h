@@ -56,7 +56,7 @@ class ShellWindowLauncherItemController : public LauncherItemController {
   virtual void LauncherItemChanged(
       int model_index,
       const ash::LauncherItem& old_item) OVERRIDE {}
-  virtual ChromeLauncherAppMenuItems* GetApplicationList() OVERRIDE;
+  virtual ChromeLauncherAppMenuItems GetApplicationList() OVERRIDE;
 
   // Get the number of running applications/incarnations of this.
   size_t shell_window_count() const { return shell_windows_.size(); }

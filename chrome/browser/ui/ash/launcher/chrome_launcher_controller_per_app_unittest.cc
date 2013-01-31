@@ -285,9 +285,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
                        const ash::LauncherItem& item,
                        size_t expected_items,
                        string16 title[]) {
-  scoped_ptr<ChromeLauncherAppMenuItems>
-      app_list(controller->GetApplicationList(item));
-  ChromeLauncherAppMenuItems items(app_list.get());
+  ChromeLauncherAppMenuItems items = controller->GetApplicationList(item);
   // There should be one item in there: The title.
   EXPECT_EQ(expected_items + 1, items.size());
   EXPECT_FALSE(items[0]->IsEnabled());

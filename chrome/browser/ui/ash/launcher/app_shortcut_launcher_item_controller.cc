@@ -108,11 +108,11 @@ void AppShortcutLauncherItemController::LauncherItemChanged(
     const ash::LauncherItem& old_item) {
 }
 
-ChromeLauncherAppMenuItems*
+ChromeLauncherAppMenuItems
 AppShortcutLauncherItemController::GetApplicationList() {
-  ChromeLauncherAppMenuItems* items = new ChromeLauncherAppMenuItems;
+  ChromeLauncherAppMenuItems items;
   // Add the application name to the menu.
-  items->push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL));
+  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL));
 
   std::vector<content::WebContents*> content_list =
       GetRunningApplications();
@@ -121,12 +121,12 @@ AppShortcutLauncherItemController::GetApplicationList() {
     content::WebContents* web_contents = content_list[i];
     // Get the icon.
     gfx::Image app_icon = app_controller_->GetAppListIcon(web_contents);
-    items->push_back(new ChromeLauncherAppMenuItemTab(
-                             web_contents->GetTitle(),
-                             app_icon.IsEmpty() ? NULL : &app_icon,
-                             web_contents));
+    items.push_back(new ChromeLauncherAppMenuItemTab(
+        web_contents->GetTitle(),
+        app_icon.IsEmpty() ? NULL : &app_icon,
+        web_contents));
   }
-  return items;
+  return items.Pass();
 }
 
 std::vector<content::WebContents*>

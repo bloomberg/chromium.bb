@@ -38,7 +38,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   virtual void LauncherItemChanged(
       int model_index,
       const ash::LauncherItem& old_item) OVERRIDE;
-  virtual ChromeLauncherAppMenuItems* GetApplicationList() OVERRIDE;
+  virtual ChromeLauncherAppMenuItems GetApplicationList() OVERRIDE;
   std::vector<content::WebContents*> GetRunningApplications();
 
   // Get the refocus url pattern, which can be used to identify this application

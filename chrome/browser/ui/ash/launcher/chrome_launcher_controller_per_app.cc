@@ -810,7 +810,7 @@ ui::MenuModel* ChromeLauncherControllerPerApp::CreateContextMenu(
 ui::MenuModel* ChromeLauncherControllerPerApp::CreateApplicationMenu(
     const ash::LauncherItem& item) {
   return new LauncherApplicationMenuItemModel(
-      scoped_ptr<ChromeLauncherAppMenuItems>(GetApplicationList(item)));
+      GetApplicationList(item));
 }
 
 ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
@@ -962,7 +962,7 @@ void ChromeLauncherControllerPerApp::ExtensionEnableFlowAborted(
   extension_enable_flow_.reset();
 }
 
-ChromeLauncherAppMenuItems* ChromeLauncherControllerPerApp::GetApplicationList(
+ChromeLauncherAppMenuItems ChromeLauncherControllerPerApp::GetApplicationList(
     const ash::LauncherItem& item) {
   if (item.type == ash::TYPE_BROWSER_SHORTCUT)
     return GetBrowserApplicationList();
@@ -1323,11 +1323,11 @@ ChromeLauncherControllerPerApp::GetV1ApplicationsFromController(
   return app_controller->GetRunningApplications();
 }
 
-ChromeLauncherAppMenuItems*
+ChromeLauncherAppMenuItems
 ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
-  ChromeLauncherAppMenuItems* items = new ChromeLauncherAppMenuItems;
+  ChromeLauncherAppMenuItems items;
   // Add the application name to the menu.
-  items->push_back(new ChromeLauncherAppMenuItem(
+  items.push_back(new ChromeLauncherAppMenuItem(
       l10n_util::GetStringFUTF16(IDS_LAUNCHER_CHROME_BROWSER_NAME,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)), NULL));
   int index = 1;
@@ -1339,10 +1339,10 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     WebContents* web_contents =
         tab_strip->GetWebContentsAt(tab_strip->active_index());
     gfx::Image app_icon = GetAppListIcon(web_contents);
-    items->push_back(new ChromeLauncherAppMenuItemBrowser(
-                             web_contents->GetTitle(),
-                             app_icon.IsEmpty() ? NULL : &app_icon,
-                             browser));
+    items.push_back(new ChromeLauncherAppMenuItemBrowser(
+        web_contents->GetTitle(),
+        app_icon.IsEmpty() ? NULL : &app_icon,
+        browser));
   }
-  return items;
+  return items.Pass();
 }
