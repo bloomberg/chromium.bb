@@ -654,10 +654,9 @@ void AwContents::PerformLongClick() {
   Java_AwContents_performLongClick(env, obj.obj());
 }
 
-void AwContents::onReceivedHttpAuthRequest(
-    const JavaRef<jobject>& handler,
-    const std::string& host,
-    const std::string& realm) {
+void AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
+                                           const std::string& host,
+                                           const std::string& realm) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jhost = ConvertUTF8ToJavaString(env, host);
   ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);

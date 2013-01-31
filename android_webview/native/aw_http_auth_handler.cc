@@ -61,8 +61,7 @@ void AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
 
-  aw_contents->onReceivedHttpAuthRequest(
-      http_auth_handler_, host_, realm_);
+  aw_contents->OnReceivedHttpAuthRequest(http_auth_handler_, host_, realm_);
 }
 
 // static
