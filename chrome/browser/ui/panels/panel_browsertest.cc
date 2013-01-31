@@ -45,7 +45,6 @@
 #include "ui/gfx/screen.h"
 
 using content::WebContents;
-using extensions::Extension;
 
 class PanelBrowserTest : public BasePanelBrowserTest {
  public:
@@ -1438,9 +1437,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        MAYBE_NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
-  scoped_refptr<Extension> extension =
+  scoped_refptr<extensions::Extension> extension =
       CreateExtension(FILE_PATH_LITERAL("TestExtension"),
-      Extension::INVALID, empty_value);
+                      extensions::Manifest::INVALID_LOCATION, empty_value);
   std::string extension_app_name =
       web_app::GenerateApplicationNameFromExtensionId(extension->id());
 
@@ -1464,9 +1463,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_EQ(2, panel_manager->num_panels());
 
   // Create another extension and a panel from that extension.
-  scoped_refptr<Extension> extension_other =
+  scoped_refptr<extensions::Extension> extension_other =
       CreateExtension(FILE_PATH_LITERAL("TestExtensionOther"),
-      Extension::INVALID, empty_value);
+                      extensions::Manifest::INVALID_LOCATION, empty_value);
   std::string extension_app_name_other =
       web_app::GenerateApplicationNameFromExtensionId(extension_other->id());
   Panel* panel_other = CreatePanel(extension_app_name_other);

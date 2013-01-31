@@ -96,7 +96,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   ExtensionServiceInterface* esi =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Extension::TYPE_EXTENSION);
+      AddExtensionWithId(id, Manifest::TYPE_EXTENSION);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
@@ -129,7 +129,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   ExtensionServiceInterface* esi =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Extension::TYPE_LEGACY_PACKAGED_APP);
+      AddExtensionWithId(id, Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
@@ -157,7 +157,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   ExtensionServiceInterface* esi =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Extension::TYPE_EXTENSION);
+      AddExtensionWithId(id, Manifest::TYPE_EXTENSION);
 
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
@@ -195,7 +195,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   ExtensionServiceInterface* esi =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Extension::TYPE_EXTENSION);
+      AddExtensionWithId(id, Manifest::TYPE_EXTENSION);
 
   ValueStore* sync_storage =
       util::GetStorage(id, settings::SYNC, frontend_.get());
@@ -274,7 +274,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   ExtensionServiceInterface* esi =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithIdAndPermissions(id, Extension::TYPE_EXTENSION,
+      AddExtensionWithIdAndPermissions(id, Manifest::TYPE_EXTENSION,
           permissions);
 
   frontend_->RunWithStorage(

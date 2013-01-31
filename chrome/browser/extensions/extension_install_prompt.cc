@@ -29,6 +29,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
@@ -43,6 +44,7 @@
 
 using extensions::BundleInstaller;
 using extensions::Extension;
+using extensions::Manifest;
 using extensions::PermissionSet;
 
 namespace {
@@ -375,7 +377,7 @@ scoped_refptr<Extension>
 
   return Extension::Create(
       FilePath(),
-      Extension::INTERNAL,
+      Manifest::INTERNAL,
       localized_manifest.get() ? *localized_manifest.get() : *manifest,
       flags,
       id,
@@ -630,8 +632,8 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 void ExtensionInstallPrompt::ShowConfirmation() {
   if (permissions_ &&
       (!extension_ || !extension_->ShouldSkipPermissionWarnings())) {
-    Extension::Type extension_type = extension_ ? extension_->GetType() :
-                                                  Extension::TYPE_UNKNOWN;
+    Manifest::Type extension_type = extension_ ?
+        extension_->GetType() : Manifest::TYPE_UNKNOWN;
     prompt_.SetPermissions(permissions_->GetWarningMessages(extension_type));
   }
 

@@ -47,6 +47,7 @@
 using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::FeatureSwitch;
+using extensions::Manifest;
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -112,14 +113,14 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     return NULL;
 
   if (!(flags & kFlagIgnoreManifestWarnings)) {
-    const Extension::InstallWarningVector& install_warnings =
+    const std::vector<extensions::InstallWarning>& install_warnings =
         extension->install_warnings();
     if (!install_warnings.empty()) {
       std::string install_warnings_message = StringPrintf(
           "Unexpected warnings when loading test extension %s:\n",
           path.AsUTF8Unsafe().c_str());
 
-      for (Extension::InstallWarningVector::const_iterator it =
+      for (std::vector<extensions::InstallWarning>::const_iterator it =
           install_warnings.begin(); it != install_warnings.end(); ++it) {
         install_warnings_message += "  " + it->message + "\n";
       }
@@ -296,7 +297,7 @@ const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
     const FilePath& path,
     int expected_change) {
   return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
-                                  expected_change, Extension::INTERNAL,
+                                  expected_change, Manifest::INTERNAL,
                                   browser(), true);
 }
 
@@ -306,7 +307,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     InstallUIType ui_type,
     int expected_change) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  Extension::INTERNAL, browser(), false);
+                                  Manifest::INTERNAL, browser(), false);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -317,7 +318,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     Browser* browser,
     bool from_webstore) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  Extension::INTERNAL, browser, from_webstore);
+                                  Manifest::INTERNAL, browser, from_webstore);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -325,7 +326,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const FilePath& path,
     InstallUIType ui_type,
     int expected_change,
-    Extension::Location install_source) {
+    Manifest::Location install_source) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
                                   install_source, browser(), false);
 }
@@ -335,7 +336,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const FilePath& path,
     InstallUIType ui_type,
     int expected_change,
-    Extension::Location install_source,
+    Manifest::Location install_source,
     Browser* browser,
     bool from_webstore) {
   ExtensionService* service = browser->profile()->GetExtensionService();

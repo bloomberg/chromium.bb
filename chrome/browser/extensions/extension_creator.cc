@@ -112,7 +112,7 @@ bool ExtensionCreator::ValidateManifest(const FilePath& extension_dir,
       extension_file_util::LoadExtension(
           extension_dir,
           extension_id,
-          Extension::INTERNAL,
+          Manifest::INTERNAL,
           create_flags,
           &error_message_));
   return !!extension.get();

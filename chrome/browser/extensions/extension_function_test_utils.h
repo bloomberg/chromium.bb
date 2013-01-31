@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 class AsyncExtensionFunction;
 class Browser;
@@ -52,7 +52,7 @@ scoped_refptr<extensions::Extension> CreateEmptyExtension();
 // Creates an extension instance with a specified location that can be attached
 // to an ExtensionFunction before running.
 scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
-    extensions::Extension::Location location);
+    extensions::Manifest::Location location);
 
 // Creates an empty extension with a variable ID, for tests that require
 // multiple extensions side-by-side having distinct IDs. If not empty, then
@@ -64,7 +64,7 @@ scoped_refptr<extensions::Extension> CreateEmptyExtension(
     const std::string& id_input);
 
 scoped_refptr<extensions::Extension> CreateExtension(
-    extensions::Extension::Location location,
+    extensions::Manifest::Location location,
     base::DictionaryValue* test_extension_value,
     const std::string& id_input);
 
@@ -74,7 +74,7 @@ scoped_refptr<extensions::Extension> CreateExtension(
     base::DictionaryValue* test_extension_value);
 
 scoped_refptr<extensions::Extension> CreateExtension(
-    extensions::Extension::Location location,
+    extensions::Manifest::Location location,
     base::DictionaryValue* test_extension_value);
 
 // Returns true if |val| contains privacy information, e.g. url,

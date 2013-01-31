@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "extensions/common/install_warning.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,9 +21,9 @@ namespace extensions {
 
 namespace {
 
-std::vector<Extension::InstallWarning> StripMissingFlagWarning(
-    const std::vector<Extension::InstallWarning>& install_warnings) {
-  std::vector<Extension::InstallWarning> result;
+std::vector<InstallWarning> StripMissingFlagWarning(
+    const std::vector<InstallWarning>& install_warnings) {
+  std::vector<InstallWarning> result;
   for (size_t i = 0; i < install_warnings.size(); ++i) {
     if (install_warnings[i].message != errors::kScriptBadgeRequiresFlag)
       result.push_back(install_warnings[i]);
@@ -104,12 +105,10 @@ TEST_F(ScriptBadgeManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
 
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
               testing::ElementsAre(
-                  Extension::InstallWarning(
-                      Extension::InstallWarning::FORMAT_TEXT,
-                      errors::kScriptBadgeTitleIgnored),
-                  Extension::InstallWarning(
-                      Extension::InstallWarning::FORMAT_TEXT,
-                      errors::kScriptBadgeIconIgnored)));
+                  InstallWarning(InstallWarning::FORMAT_TEXT,
+                                 errors::kScriptBadgeTitleIgnored),
+                  InstallWarning(InstallWarning::FORMAT_TEXT,
+                                 errors::kScriptBadgeIconIgnored)));
 
   const ExtensionIconSet& default_icon =
       script_badge_info->default_icon;

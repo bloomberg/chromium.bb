@@ -8,7 +8,7 @@
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSecure;
 using extensions::csp_validator::ContentSecurityPolicyIsSandboxed;
-using extensions::Extension;
+using extensions::Manifest;
 
 TEST(ExtensionCSPValidator, IsLegal) {
   EXPECT_TRUE(ContentSecurityPolicyIsLegal("foo"));
@@ -24,156 +24,156 @@ TEST(ExtensionCSPValidator, IsLegal) {
 
 TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "", Extension::TYPE_EXTENSION));
+      "", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "img-src https://google.com", Extension::TYPE_EXTENSION));
+      "img-src https://google.com", Manifest::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src *", Extension::TYPE_EXTENSION));
+      "default-src *", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self'", Extension::TYPE_EXTENSION));
+      "default-src 'self'", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'none'", Extension::TYPE_EXTENSION));
+      "default-src 'none'", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' ftp://google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' ftp://google.com", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://google.com", Manifest::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src *; default-src 'self'", Extension::TYPE_EXTENSION));
+      "default-src *; default-src 'self'", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self'; default-src *", Extension::TYPE_EXTENSION));
+      "default-src 'self'; default-src *", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self'; default-src *; script-src *; script-src 'self'",
-       Extension::TYPE_EXTENSION));
+       Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self'; default-src *; script-src 'self'; script-src *",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src *; script-src 'self'", Extension::TYPE_EXTENSION));
+      "default-src *; script-src 'self'", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src *; script-src 'self'; img-src 'self'",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src *; script-src 'self'; object-src 'self'",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "script-src 'self'; object-src 'self'", Extension::TYPE_EXTENSION));
+      "script-src 'self'; object-src 'self'", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'unsafe-eval'", Extension::TYPE_EXTENSION));
+      "default-src 'unsafe-eval'", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'unsafe-eval'", Extension::TYPE_LEGACY_PACKAGED_APP));
+      "default-src 'unsafe-eval'", Manifest::TYPE_LEGACY_PACKAGED_APP));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'unsafe-eval'", Extension::TYPE_PLATFORM_APP));
+      "default-src 'unsafe-eval'", Manifest::TYPE_PLATFORM_APP));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'unsafe-inline'", Extension::TYPE_EXTENSION));
+      "default-src 'unsafe-inline'", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'unsafe-inline' 'none'", Extension::TYPE_EXTENSION));
+      "default-src 'unsafe-inline' 'none'", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' http://google.com", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://google.com", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' chrome://resources", Extension::TYPE_EXTENSION));
+      "default-src 'self' chrome://resources", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' chrome-extension://aabbcc",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
      "default-src 'self' chrome-extension-resource://aabbcc",
-     Extension::TYPE_EXTENSION));
+     Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https:", Extension::TYPE_EXTENSION));
+      "default-src 'self' https:", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http:", Extension::TYPE_EXTENSION));
+      "default-src 'self' http:", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' google.com", Manifest::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' *", Extension::TYPE_EXTENSION));
+      "default-src 'self' *", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' *:*", Extension::TYPE_EXTENSION));
+      "default-src 'self' *:*", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' *:*/", Extension::TYPE_EXTENSION));
+      "default-src 'self' *:*/", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' *:*/path", Extension::TYPE_EXTENSION));
+      "default-src 'self' *:*/path", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*:*", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*:*", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*:*/", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*:*/", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*:*/path", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*:*/path", Manifest::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*.google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*.google.com", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*.google.com:1", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*.google.com:1", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*.google.com:*", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*.google.com:*", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*.google.com:1/", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*.google.com:1/", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*.google.com:*/", Extension::TYPE_EXTENSION));
+      "default-src 'self' https://*.google.com:*/", Manifest::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://127.0.0.1", Extension::TYPE_EXTENSION));
+      "default-src 'self' http://127.0.0.1", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://localhost", Extension::TYPE_EXTENSION));
+      "default-src 'self' http://localhost", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://lOcAlHoSt", Extension::TYPE_EXTENSION));
+      "default-src 'self' http://lOcAlHoSt", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://127.0.0.1:9999", Extension::TYPE_EXTENSION));
+      "default-src 'self' http://127.0.0.1:9999", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://localhost:8888", Extension::TYPE_EXTENSION));
+      "default-src 'self' http://localhost:8888", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' http://127.0.0.1.example.com",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' http://localhost.example.com",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' blob:", Extension::TYPE_EXTENSION));
+      "default-src 'self' blob:", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' blob:http://example.com/XXX",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' filesystem:", Extension::TYPE_EXTENSION));
+      "default-src 'self' filesystem:", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' filesystem:http://example.com/XXX",
-      Extension::TYPE_EXTENSION));
+      Manifest::TYPE_EXTENSION));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
-  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed("", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSandboxed("", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
-      "img-src https://google.com", Extension::TYPE_EXTENSION));
+      "img-src https://google.com", Manifest::TYPE_EXTENSION));
 
   // Sandbox directive is required.
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
-      "sandbox", Extension::TYPE_EXTENSION));
+      "sandbox", Manifest::TYPE_EXTENSION));
 
   // Additional sandbox tokens are OK.
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
-      "sandbox allow-scripts", Extension::TYPE_EXTENSION));
+      "sandbox allow-scripts", Manifest::TYPE_EXTENSION));
   // Except for allow-same-origin.
   EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
-      "sandbox allow-same-origin", Extension::TYPE_EXTENSION));
+      "sandbox allow-same-origin", Manifest::TYPE_EXTENSION));
 
   // Additional directives are OK.
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
-      "sandbox; img-src https://google.com", Extension::TYPE_EXTENSION));
+      "sandbox; img-src https://google.com", Manifest::TYPE_EXTENSION));
 
   // Extensions allow navigation, platform apps don't.
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
-      "sandbox allow-top-navigation", Extension::TYPE_EXTENSION));
+      "sandbox allow-top-navigation", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSandboxed(
-      "sandbox allow-top-navigation", Extension::TYPE_PLATFORM_APP));
+      "sandbox allow-top-navigation", Manifest::TYPE_PLATFORM_APP));
 
   // Popups are OK.
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
-      "sandbox allow-popups", Extension::TYPE_EXTENSION));
+      "sandbox allow-popups", Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSandboxed(
-      "sandbox allow-popups", Extension::TYPE_PLATFORM_APP));
+      "sandbox allow-popups", Manifest::TYPE_PLATFORM_APP));
 }

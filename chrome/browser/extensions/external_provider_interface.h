@@ -8,9 +8,10 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 class FilePath;
+class GURL;
 class Version;
 
 namespace extensions {
@@ -33,7 +34,7 @@ class ExternalProviderInterface {
         const std::string& id,
         const Version* version,
         const FilePath& path,
-        Extension::Location location,
+        Manifest::Location location,
         int creation_flags,
         bool mark_acknowledged) = 0;
 
@@ -43,7 +44,7 @@ class ExternalProviderInterface {
     virtual bool OnExternalExtensionUpdateUrlFound(
         const std::string& id,
         const GURL& update_url,
-        Extension::Location location) = 0;
+        Manifest::Location location) = 0;
 
     // Called after all the external extensions have been reported
     // through the above two methods. |provider| is a pointer to the
@@ -75,7 +76,7 @@ class ExternalProviderInterface {
   // provider type, it will not be changed.
   // This function is no longer used outside unit tests.
   virtual bool GetExtensionDetails(const std::string& id,
-                                   Extension::Location* location,
+                                   Manifest::Location* location,
                                    scoped_ptr<Version>* version) const = 0;
 
   // Determines if this provider had loaded the list of external extensions

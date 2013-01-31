@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 
@@ -29,7 +29,7 @@ bool ContentSecurityPolicyIsLegal(const std::string& policy);
 // 'unsafe-eval' in the script-src directive, so that is allowed as a special
 // case for extensions. Platform apps disallow it.
 bool ContentSecurityPolicyIsSecure(
-    const std::string& policy, Extension::Type type);
+    const std::string& policy, Manifest::Type type);
 
 // Checks whether the given |policy| enforces a unique origin sandbox as
 // defined by http://www.whatwg.org/specs/web-apps/current-work/multipage/
@@ -38,7 +38,7 @@ bool ContentSecurityPolicyIsSecure(
 // "allow-same-origin". Additional restrictions may be imposed depending on
 // |type|.
 bool ContentSecurityPolicyIsSandboxed(
-    const std::string& policy, Extension::Type type);
+    const std::string& policy, Manifest::Type type);
 
 }  // namespace csp_validator
 

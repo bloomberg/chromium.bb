@@ -8,9 +8,9 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/common/extensions/manifest.h"
 
 using sync_datatype_helper::test;
 
@@ -60,7 +60,7 @@ bool HasOrWillHaveCustomTheme(Profile* profile, const std::string& id) {
 
 void UseCustomTheme(Profile* profile, int index) {
   SyncExtensionHelper::GetInstance()->InstallExtension(
-      profile, MakeName(index), extensions::Extension::TYPE_THEME);
+      profile, MakeName(index), extensions::Manifest::TYPE_THEME);
 }
 
 void UseDefaultTheme(Profile* profile) {

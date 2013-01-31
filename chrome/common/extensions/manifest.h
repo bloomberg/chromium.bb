@@ -12,27 +12,89 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
 
 namespace extensions {
+struct InstallWarning;
 
 // Wraps the DictionaryValue form of extension's manifest. Enforces access to
 // properties of the manifest using ManifestFeatureProvider.
 class Manifest {
  public:
-  Manifest(Extension::Location location, scoped_ptr<DictionaryValue> value);
+  // What an extension was loaded from.
+  // NOTE: These values are stored as integers in the preferences and used
+  // in histograms so don't remove or reorder existing items.  Just append
+  // to the end.
+  enum Location {
+    INVALID_LOCATION,
+    INTERNAL,           // A crx file from the internal Extensions directory.
+    EXTERNAL_PREF,      // A crx file from an external directory (via prefs).
+    EXTERNAL_REGISTRY,  // A crx file from an external directory (via eg the
+                        // registry on Windows).
+    LOAD,               // --load-extension.
+    COMPONENT,          // An integral component of Chrome itself, which
+                        // happens to be implemented as an extension. We don't
+                        // show these in the management UI.
+    EXTERNAL_PREF_DOWNLOAD,    // A crx file from an external directory (via
+                               // prefs), installed from an update URL.
+    EXTERNAL_POLICY_DOWNLOAD,  // A crx file from an external directory (via
+                               // admin policies), installed from an update URL.
+
+    NUM_LOCATIONS
+  };
+
+  // Do not change the order of entries or remove entries in this list
+  // as this is used in UMA_HISTOGRAM_ENUMERATIONs about extensions.
+  enum Type {
+    TYPE_UNKNOWN = 0,
+    TYPE_EXTENSION,
+    TYPE_THEME,
+    TYPE_USER_SCRIPT,
+    TYPE_HOSTED_APP,
+    // This is marked legacy because platform apps are preferred. For
+    // backwards compatibility, we can't remove support for packaged apps
+    TYPE_LEGACY_PACKAGED_APP,
+    TYPE_PLATFORM_APP
+  };
+
+  // Given two install sources, return the one which should take priority
+  // over the other. If an extension is installed from two sources A and B,
+  // its install source should be set to GetHigherPriorityLocation(A, B).
+  static Location GetHigherPriorityLocation(Location loc1, Location loc2);
+
+  // Whether the |location| is external or not.
+  static inline bool IsExternalLocation(Location location) {
+    return location == EXTERNAL_PREF ||
+           location == EXTERNAL_REGISTRY ||
+           location == EXTERNAL_PREF_DOWNLOAD ||
+           location == EXTERNAL_POLICY_DOWNLOAD;
+  }
+
+  // Whether extensions with |location| are auto-updatable or not.
+  static inline bool IsAutoUpdateableLocation(Location location) {
+    // Only internal and external extensions can be autoupdated.
+    return location == INTERNAL ||
+           IsExternalLocation(location);
+  }
+
+  // Unpacked extensions start off with file access since they are a developer
+  // feature.
+  static inline bool ShouldAlwaysAllowFileAccess(Location location) {
+    return location == LOAD;
+  }
+
+  Manifest(Location location, scoped_ptr<DictionaryValue> value);
   virtual ~Manifest();
 
   const std::string& extension_id() const { return extension_id_; }
   void set_extension_id(const std::string& id) { extension_id_ = id; }
 
-  Extension::Location location() const { return location_; }
+  Location location() const { return location_; }
 
   // |error| will be non-empty if the manifest is malformed. |warnings| will
   // be populated if there are keys in the manifest that cannot be specified by
   // the extension type.
   void ValidateManifest(std::string* error,
-                        Extension::InstallWarningVector* warnings) const;
+                        std::vector<InstallWarning>* warnings) const;
 
   // The version of this extension's manifest. We increase the manifest
   // version when making breaking changes to the extension system. If the
@@ -41,15 +103,15 @@ class Manifest {
   int GetManifestVersion() const;
 
   // Returns the manifest type.
-  Extension::Type type() const { return type_; }
+  Type type() const { return type_; }
 
-  bool is_theme() const { return type_ == Extension::TYPE_THEME; }
-  bool is_platform_app() const { return type_ == Extension::TYPE_PLATFORM_APP; }
-  bool is_hosted_app() const { return type_ == Extension::TYPE_HOSTED_APP; }
+  bool is_theme() const { return type_ == TYPE_THEME; }
+  bool is_platform_app() const { return type_ == TYPE_PLATFORM_APP; }
+  bool is_hosted_app() const { return type_ == TYPE_HOSTED_APP; }
   bool is_legacy_packaged_app() const {
-    return type_ == Extension::TYPE_LEGACY_PACKAGED_APP;
+    return type_ == TYPE_LEGACY_PACKAGED_APP;
   }
-  bool is_extension() const { return type_ == Extension::TYPE_EXTENSION; }
+  bool is_extension() const { return type_ == TYPE_EXTENSION; }
 
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.
@@ -91,12 +153,12 @@ class Manifest {
   std::string extension_id_;
 
   // The location the extension was loaded from.
-  Extension::Location location_;
+  Location location_;
 
   // The underlying dictionary representation of the manifest.
   scoped_ptr<base::DictionaryValue> value_;
 
-  Extension::Type type_;
+  Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(Manifest);
 };

@@ -187,6 +187,7 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionActionManager;
 using extensions::ExtensionList;
+using extensions::Manifest;
 
 namespace {
 
@@ -3704,14 +3705,14 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
     extension_value->Set("effective_host_permissions",
                          GetHostPermissions(extension, true));
     extension_value->Set("api_permissions", GetAPIPermissions(extension));
-    Extension::Location location = extension->location();
+    Manifest::Location location = extension->location();
     extension_value->SetBoolean("is_component",
-                                location == Extension::COMPONENT);
+                                location == Manifest::COMPONENT);
     extension_value->SetBoolean("is_internal",
-                                location == Extension::INTERNAL);
+                                location == Manifest::INTERNAL);
     extension_value->SetBoolean("is_user_installed",
-        location == Extension::INTERNAL ||
-        location == Extension::LOAD);
+        location == Manifest::INTERNAL ||
+        location == Manifest::LOAD);
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
                                 service->IsIncognitoEnabled(id));

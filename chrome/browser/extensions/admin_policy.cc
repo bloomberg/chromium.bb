@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -15,8 +16,8 @@ bool ManagementPolicyImpl(const extensions::Extension* extension,
                           string16* error,
                           bool modifiable_value) {
   bool modifiable =
-      extension->location() != extensions::Extension::COMPONENT &&
-      extension->location() != extensions::Extension::EXTERNAL_POLICY_DOWNLOAD;
+      extension->location() != extensions::Manifest::COMPONENT &&
+      extension->location() != extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD;
   // Some callers equate "no restriction" to true, others to false.
   if (modifiable)
     return modifiable_value;
@@ -56,7 +57,7 @@ bool UserMayLoad(const base::ListValue* blacklist,
                  const Extension* extension,
                  string16* error) {
   // Component extensions are always allowed.
-  if (extension->location() == Extension::COMPONENT)
+  if (extension->location() == Manifest::COMPONENT)
     return true;
 
   // Early exit for the common case of no policy restrictions.
@@ -71,14 +72,14 @@ bool UserMayLoad(const base::ListValue* blacklist,
   // branch to the second block and add a line to the definition of
   // kExtensionAllowedTypesMap in configuration_policy_handler_list.cc.
   switch (extension->GetType()) {
-    case Extension::TYPE_UNKNOWN:
+    case Manifest::TYPE_UNKNOWN:
       break;
-    case Extension::TYPE_EXTENSION:
-    case Extension::TYPE_THEME:
-    case Extension::TYPE_USER_SCRIPT:
-    case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_LEGACY_PACKAGED_APP:
-    case Extension::TYPE_PLATFORM_APP:
+    case Manifest::TYPE_EXTENSION:
+    case Manifest::TYPE_THEME:
+    case Manifest::TYPE_USER_SCRIPT:
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
+    case Manifest::TYPE_PLATFORM_APP:
       base::FundamentalValue type_value(extension->GetType());
       if (allowed_types &&
           allowed_types->Find(type_value) == allowed_types->end())

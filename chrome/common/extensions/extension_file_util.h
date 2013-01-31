@@ -8,7 +8,8 @@
 #include <string>
 #include <map>
 
-#include "chrome/common/extensions/extension.h"
+#include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/message_bundle.h"
 
 class FilePath;
@@ -19,7 +20,9 @@ class DictionaryValue;
 }
 
 namespace extensions {
+class Extension;
 class MessageBundle;
+struct InstallWarning;
 }
 
 // Utilities for manipulating the on-disk storage of extensions.
@@ -41,7 +44,7 @@ void UninstallExtension(const FilePath& extensions_dir,
 // on failure, with a description of the error in |error|.
 scoped_refptr<extensions::Extension> LoadExtension(
     const FilePath& extension_root,
-    extensions::Extension::Location location,
+    extensions::Manifest::Location location,
     int flags,
     std::string* error);
 
@@ -49,7 +52,7 @@ scoped_refptr<extensions::Extension> LoadExtension(
 scoped_refptr<extensions::Extension> LoadExtension(
     const FilePath& extension_root,
     const std::string& extension_id,
-    extensions::Extension::Location location,
+    extensions::Manifest::Location location,
     int flags,
     std::string* error);
 
@@ -69,7 +72,7 @@ bool ValidateFilePath(const FilePath& path);
 // returned in |error|.
 bool ValidateExtension(const extensions::Extension* extension,
                        std::string* error,
-                       extensions::Extension::InstallWarningVector* warnings);
+                       std::vector<extensions::InstallWarning>* warnings);
 
 // Returns a list of files that contain private keys inside |extension_dir|.
 std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir);

@@ -32,7 +32,7 @@ class DeveloperPrivateApiTest : public ExtensionApiTest {
 
   void InstallNamedExtension(const FilePath& path,
                              const std::string& name,
-                             Extension::Location install_source) {
+                             Manifest::Location install_source) {
     const Extension* extension = InstallExtension(path.AppendASCII(name), 1,
                                                   install_source);
     ASSERT_TRUE(extension);
@@ -46,9 +46,9 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
   LoadExtensions();
 
   FilePath basedir = test_data_dir_.AppendASCII("developer");
-  InstallNamedExtension(basedir, "packaged_app", Extension::INTERNAL);
+  InstallNamedExtension(basedir, "packaged_app", Manifest::INTERNAL);
 
-  InstallNamedExtension(basedir, "simple_extension", Extension::INTERNAL);
+  InstallNamedExtension(basedir, "simple_extension", Manifest::INTERNAL);
 
   ASSERT_TRUE(RunExtensionSubtest(
       "developer/test", "basics.html", kFlagLoadAsComponent));

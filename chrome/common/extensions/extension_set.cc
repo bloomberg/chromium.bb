@@ -156,7 +156,7 @@ bool ExtensionSet::ExtensionBindingsAllowed(
 
   ExtensionMap::const_iterator i = extensions_.begin();
   for (; i != extensions_.end(); ++i) {
-    if (i->second->location() == Extension::COMPONENT &&
+    if (i->second->location() == extensions::Manifest::COMPONENT &&
         i->second->web_extent().MatchesURL(info.url()))
       return true;
   }

@@ -10,6 +10,7 @@
 
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 class ExtensionServiceInterface;
 class GURL;
@@ -80,14 +81,14 @@ class PendingExtensionManager {
   // to be fetched, installed, and activated.
   bool AddFromExternalUpdateUrl(const std::string& id,
                                 const GURL& update_url,
-                                Extension::Location location);
+                                Manifest::Location location);
 
   // Add a pending extension record for an external CRX file.
   // Return true if the CRX should be installed, false if an existing
   // pending record overrides it.
   bool AddFromExternalFile(
       const std::string& id,
-      Extension::Location location,
+      Manifest::Location location,
       const Version& version);
 
   // Get the list of pending IDs that should be installed from an update URL.
@@ -108,7 +109,7 @@ class PendingExtensionManager {
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
-      Extension::Location install_source);
+      Manifest::Location install_source);
 
   // Add a pending extension record directly.  Used for unit tests that need
   // to set an inital state. Use friendship to allow the tests to call this

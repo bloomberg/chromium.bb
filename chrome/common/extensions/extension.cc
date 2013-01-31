@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/extension.h"
 
-#include <ostream>
-
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -166,60 +164,6 @@ class ExtensionConfig {
   Extension::ScriptingWhitelist scripting_whitelist_;
 };
 
-// Rank extension locations in a way that allows
-// Extension::GetHigherPriorityLocation() to compare locations.
-// An extension installed from two locations will have the location
-// with the higher rank, as returned by this function. The actual
-// integer values may change, and should never be persisted.
-int GetLocationRank(Extension::Location location) {
-  const int kInvalidRank = -1;
-  int rank = kInvalidRank;  // Will CHECK that rank is not kInvalidRank.
-
-  switch (location) {
-    // Component extensions can not be overriden by any other type.
-    case Extension::COMPONENT:
-      rank = 6;
-      break;
-
-    // Policy controlled extensions may not be overridden by any type
-    // that is not part of chrome.
-    case Extension::EXTERNAL_POLICY_DOWNLOAD:
-      rank = 5;
-      break;
-
-    // A developer-loaded extension should override any installed type
-    // that a user can disable.
-    case Extension::LOAD:
-      rank = 4;
-      break;
-
-    // The relative priority of various external sources is not important,
-    // but having some order ensures deterministic behavior.
-    case Extension::EXTERNAL_REGISTRY:
-      rank = 3;
-      break;
-
-    case Extension::EXTERNAL_PREF:
-      rank = 2;
-      break;
-
-    case Extension::EXTERNAL_PREF_DOWNLOAD:
-      rank = 1;
-      break;
-
-    // User installed extensions are overridden by any external type.
-    case Extension::INTERNAL:
-      rank = 0;
-      break;
-
-    default:
-      NOTREACHED() << "Need to add new extension locaton " << location;
-  }
-
-  CHECK(rank != kInvalidRank);
-  return rank;
-}
-
 bool ReadLaunchDimension(const extensions::Manifest* manifest,
                          const char* key,
                          int* target,
@@ -319,13 +263,9 @@ Extension::OAuth2Info::~OAuth2Info() {}
 // Extension
 //
 
-bool Extension::InstallWarning::operator==(const InstallWarning& other) const {
-  return format == other.format && message == other.message;
-}
-
 // static
 scoped_refptr<Extension> Extension::Create(const FilePath& path,
-                                           Location location,
+                                           Manifest::Location location,
                                            const DictionaryValue& value,
                                            int flags,
                                            std::string* utf8_error) {
@@ -338,7 +278,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
 }
 
 scoped_refptr<Extension> Extension::Create(const FilePath& path,
-                                           Location location,
+                                           Manifest::Location location,
                                            const DictionaryValue& value,
                                            int flags,
                                            const std::string& explicit_id,
@@ -354,7 +294,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
     return NULL;
   }
 
-  InstallWarningVector install_warnings;
+  std::vector<InstallWarning> install_warnings;
   manifest->ValidateManifest(utf8_error, &install_warnings);
   if (!utf8_error->empty())
     return NULL;
@@ -373,23 +313,6 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
   }
 
   return extension;
-}
-
-// static
-Extension::Location Extension::GetHigherPriorityLocation(
-    Extension::Location loc1, Extension::Location loc2) {
-  if (loc1 == loc2)
-    return loc1;
-
-  int loc1_rank = GetLocationRank(loc1);
-  int loc2_rank = GetLocationRank(loc2);
-
-  // If two different locations have the same rank, then we can not
-  // deterministicly choose a location.
-  CHECK(loc1_rank != loc2_rank);
-
-  // Highest rank has highest priority.
-  return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
 // static
@@ -440,8 +363,9 @@ void Extension::GetBasicInfo(bool enabled,
   info->SetBoolean(info_keys::kPackagedAppKey, is_platform_app());
 }
 
-Extension::Type Extension::GetType() const {
-  return converted_from_user_script() ? TYPE_USER_SCRIPT : manifest_->type();
+Manifest::Type Extension::GetType() const {
+  return converted_from_user_script() ?
+      Manifest::TYPE_USER_SCRIPT : manifest_->type();
 }
 
 // static
@@ -817,14 +741,14 @@ const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
 }
 
 bool Extension::CanSilentlyIncreasePermissions() const {
-  return location() != INTERNAL;
+  return location() != Manifest::INTERNAL;
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
       url.host() != chrome::kChromeUIFaviconHost &&
       url.host() != chrome::kChromeUIThumbnailHost &&
-      location() != Extension::COMPONENT) {
+      location() != Manifest::COMPONENT) {
     return false;
   }
 
@@ -882,7 +806,7 @@ bool Extension::ShowConfigureContextMenus() const {
   // options for component extension button but now there is no component
   // extension with options. All other menu items like uninstall have
   // no sense for component extensions.
-  return location() != Extension::COMPONENT;
+  return location() != Manifest::COMPONENT;
 }
 
 std::set<FilePath> Extension::GetBrowserImages() const {
@@ -1037,7 +961,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Extension::COMPONENT)
+  if (location() == Manifest::COMPONENT)
     return true;
 
   ScriptingWhitelist* whitelist = ExtensionConfig::GetInstance()->whitelist();
@@ -1120,19 +1044,19 @@ Extension::SyncType Extension::GetSyncType() const {
   }
 
   switch (GetType()) {
-    case Extension::TYPE_EXTENSION:
+    case Manifest::TYPE_EXTENSION:
       return SYNC_TYPE_EXTENSION;
 
-    case Extension::TYPE_USER_SCRIPT:
+    case Manifest::TYPE_USER_SCRIPT:
       // We only want to sync user scripts with gallery update URLs.
       if (UpdatesFromGallery())
         return SYNC_TYPE_EXTENSION;
       else
         return SYNC_TYPE_NONE;
 
-    case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_LEGACY_PACKAGED_APP:
-    case Extension::TYPE_PLATFORM_APP:
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
+    case Manifest::TYPE_PLATFORM_APP:
         return SYNC_TYPE_APP;
 
     default:
@@ -1147,7 +1071,7 @@ bool Extension::IsSyncable() const {
   // that don't already have them. Specially, if a user doesn't have default
   // apps, creates a new profile (which get default apps) and then enables sync
   // for it, then their profile everywhere gets the default apps.
-  bool is_syncable = (location() == Extension::INTERNAL &&
+  bool is_syncable = (location() == Manifest::INTERNAL &&
       !was_installed_by_default());
   // Sync the chrome web store to maintain its position on the new tab page.
   is_syncable |= (id() ==  extension_misc::kWebStoreAppId);
@@ -1175,14 +1099,14 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
 
   // Don't show component extensions because they are only extensions as an
   // implementation detail of Chrome.
-  if (location() == Extension::COMPONENT &&
+  if (location() == Manifest::COMPONENT &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kShowComponentExtensionOptions)) {
     return false;
   }
 
   // Always show unpacked extensions and apps.
-  if (location() == Extension::LOAD)
+  if (location() == Manifest::LOAD)
     return true;
 
   // Unless they are unpacked, never show hosted apps. Note: We intentionally
@@ -1238,7 +1162,7 @@ void Extension::SetManifestData(const std::string& key,
   manifest_data_[key] = linked_ptr<ManifestData>(data);
 }
 
-Extension::Location Extension::location() const {
+Manifest::Location Extension::location() const {
   return manifest_->location();
 }
 
@@ -1255,7 +1179,7 @@ void Extension::AddInstallWarning(const InstallWarning& new_warning) {
 }
 
 void Extension::AddInstallWarnings(
-    const InstallWarningVector& new_warnings) {
+    const std::vector<InstallWarning>& new_warnings) {
   install_warnings_.insert(install_warnings_.end(),
                            new_warnings.begin(), new_warnings.end());
 }
@@ -2972,7 +2896,7 @@ void Extension::OverrideLaunchUrl(const GURL& override_url) {
 }
 
 bool Extension::CanSpecifyExperimentalPermission() const {
-  if (location() == Extension::COMPONENT)
+  if (location() == Manifest::COMPONENT)
     return true;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -3079,25 +3003,10 @@ bool Extension::CheckConflictingFeatures(std::string* utf8_error) const {
   return true;
 }
 
-void PrintTo(const Extension::InstallWarning& warning, ::std::ostream* os) {
-  *os << "InstallWarning(";
-  switch (warning.format) {
-    case Extension::InstallWarning::FORMAT_TEXT:
-      *os << "FORMAT_TEXT, \"";
-      break;
-    case Extension::InstallWarning::FORMAT_HTML:
-      *os << "FORMAT_HTML, \"";
-      break;
-  }
-  // This is just for test error messages, so no need to escape '"'
-  // characters inside the message.
-  *os << warning.message << "\")";
-}
-
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
                              const std::string& id,
                              const FilePath& path,
-                             Extension::Location location)
+                             Manifest::Location location)
     : extension_id(id),
       extension_path(path),
       extension_location(location) {

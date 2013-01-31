@@ -7,13 +7,10 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/common/extensions/manifest.h"
 
 class PrefServiceSyncable;
 class Profile;
-
-namespace extensions {
-class Extension;
-}
 
 namespace base {
 class DictionaryValue;
@@ -44,8 +41,8 @@ class Provider : public extensions::ExternalProviderImpl {
   Provider(Profile* profile,
            VisitorInterface* service,
            extensions::ExternalLoader* loader,
-           extensions::Extension::Location crx_location,
-           extensions::Extension::Location download_location,
+           extensions::Manifest::Location crx_location,
+           extensions::Manifest::Location download_location,
            int creation_flags);
 
   bool ShouldInstallInProfile();

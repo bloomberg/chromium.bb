@@ -135,7 +135,7 @@ class ComponentLoader {
 
   ExtensionServiceInterface* extension_service_;
 
-  // List of registered component extensions (see Extension::Location).
+  // List of registered component extensions (see Manifest::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extensions_;
 

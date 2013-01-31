@@ -165,6 +165,7 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::APIPermission;
 using extensions::Extension;
+using extensions::Manifest;
 using webkit_glue::WebPreferences;
 
 namespace {
@@ -795,7 +796,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   // permission, or that does not allow JavaScript access to the background
   // page, we want to give each instance its own process to improve
   // responsiveness.
-  if (extension->GetType() == Extension::TYPE_HOSTED_APP) {
+  if (extension->GetType() == Manifest::TYPE_HOSTED_APP) {
     if (!extension->HasAPIPermission(APIPermission::kBackground) ||
         !extension->allow_background_js_access()) {
       return false;
@@ -1919,8 +1920,8 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   if (allowed_list == "*") {
     // The wildcard allows socket API only for packaged and platform apps.
     return extension &&
-        (extension->GetType() == Extension::TYPE_LEGACY_PACKAGED_APP ||
-         extension->GetType() == Extension::TYPE_PLATFORM_APP);
+        (extension->GetType() == Manifest::TYPE_LEGACY_PACKAGED_APP ||
+         extension->GetType() == Manifest::TYPE_PLATFORM_APP);
   } else if (!allowed_list.empty()) {
     StringTokenizer t(allowed_list, ",");
     while (t.GetNext()) {

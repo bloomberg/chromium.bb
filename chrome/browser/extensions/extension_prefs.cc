@@ -43,7 +43,7 @@ namespace {
 // Whether this extension was running when chrome last shutdown.
 const char kPrefRunning[] = "running";
 
-// Where an extension was installed from. (see Extension::Location)
+// Where an extension was installed from. (see Manifest::Location)
 const char kPrefLocation[] = "location";
 
 // Enabled, disabled, killed, etc. (see Extension::State)
@@ -430,7 +430,7 @@ void ExtensionPrefs::MakePathsRelative() {
       continue;
     int location_value;
     if (extension_dict->GetInteger(kPrefLocation, &location_value) &&
-        location_value == Extension::LOAD) {
+        location_value == Manifest::LOAD) {
       // Unpacked extensions can have absolute paths.
       continue;
     }
@@ -1445,7 +1445,7 @@ void ExtensionPrefs::OnExtensionInstalled(
 }
 
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
-                                            const Extension::Location& location,
+                                            const Manifest::Location& location,
                                             bool external_uninstall) {
   extension_sorting_->ClearOrdinals(extension_id);
 
@@ -1453,7 +1453,7 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
   // and install the extension anymore (except when |external_uninstall| is
   // true, which signifies that the registry key was deleted or the pref file
   // no longer lists the extension).
-  if (!external_uninstall && Extension::IsExternalLocation(location)) {
+  if (!external_uninstall && Manifest::IsExternalLocation(location)) {
     UpdateExtensionPref(extension_id, kPrefState,
                         Value::CreateIntegerValue(
                             Extension::EXTERNAL_EXTENSION_UNINSTALLED));
@@ -1524,7 +1524,7 @@ std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
 }
 
 void ExtensionPrefs::UpdateManifest(const Extension* extension) {
-  if (extension->location() != Extension::LOAD) {
+  if (extension->location() != Manifest::LOAD) {
     const DictionaryValue* extension_dict = GetExtensionPref(extension->id());
     if (!extension_dict)
       return;
@@ -1612,25 +1612,25 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
 
   // Make path absolute. Unpacked extensions will already have absolute paths,
   // otherwise make it so.
-  if (location_value != Extension::LOAD) {
-    DCHECK(location_value == Extension::COMPONENT ||
+  if (location_value != Manifest::LOAD) {
+    DCHECK(location_value == Manifest::COMPONENT ||
            !FilePath(path).IsAbsolute());
     path = install_directory_.Append(path).value();
   }
 
   // Only the following extension types can be installed permanently in the
   // preferences.
-  Extension::Location location =
-      static_cast<Extension::Location>(location_value);
-  if (location != Extension::INTERNAL &&
-      location != Extension::LOAD &&
-      !Extension::IsExternalLocation(location)) {
+  Manifest::Location location =
+      static_cast<Manifest::Location>(location_value);
+  if (location != Manifest::INTERNAL &&
+      location != Manifest::LOAD &&
+      !Manifest::IsExternalLocation(location)) {
     NOTREACHED();
     return scoped_ptr<ExtensionInfo>();
   }
 
   const DictionaryValue* manifest = NULL;
-  if (location != Extension::LOAD &&
+  if (location != Manifest::LOAD &&
       !ext->GetDictionary(kPrefManifest, &manifest)) {
     LOG(WARNING) << "Missing manifest for extension " << extension_id;
     // Just a warning for now.
@@ -1744,25 +1744,25 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
 
   // Make path absolute. Unpacked extensions will already have absolute paths,
   // otherwise make it so.
-  if (location_value != Extension::LOAD) {
-    DCHECK(location_value == Extension::COMPONENT ||
+  if (location_value != Manifest::LOAD) {
+    DCHECK(location_value == Manifest::COMPONENT ||
            !FilePath(path).IsAbsolute());
     path = install_directory_.Append(path).value();
   }
 
   // Only the following extension types can be installed permanently in the
   // preferences.
-  Extension::Location location =
-      static_cast<Extension::Location>(location_value);
-  if (location != Extension::INTERNAL &&
-      location != Extension::LOAD &&
-      !Extension::IsExternalLocation(location)) {
+  Manifest::Location location =
+      static_cast<Manifest::Location>(location_value);
+  if (location != Manifest::INTERNAL &&
+      location != Manifest::LOAD &&
+      !Manifest::IsExternalLocation(location)) {
     NOTREACHED();
     return scoped_ptr<ExtensionInfo>();
   }
 
   const DictionaryValue* manifest = NULL;
-  if (location != Extension::LOAD &&
+  if (location != Manifest::LOAD &&
       !ext->GetDictionary(kPrefManifest, &manifest)) {
     LOG(WARNING) << "Missing manifest for extension " << extension_id;
     // Just a warning for now.
@@ -2317,7 +2317,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(kPrefPath, Value::CreateStringValue(path));
   // We store prefs about LOAD extensions, but don't cache their manifest
   // since it may change on disk.
-  if (extension->location() != Extension::LOAD) {
+  if (extension->location() != Manifest::LOAD) {
     extension_dict->Set(kPrefManifest,
                         extension->manifest()->value()->DeepCopy());
   }

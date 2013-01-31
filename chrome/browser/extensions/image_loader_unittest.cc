@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/component_extension_resources.h"
@@ -25,6 +26,7 @@
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::ImageLoader;
+using extensions::Manifest;
 
 class ImageLoaderTest : public testing::Test {
  public:
@@ -56,7 +58,7 @@ class ImageLoaderTest : public testing::Test {
   }
 
   scoped_refptr<Extension> CreateExtension(const char* name,
-                                           Extension::Location location) {
+                                           Manifest::Location location) {
     // Create and load an extension.
     FilePath test_file;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
@@ -79,7 +81,7 @@ class ImageLoaderTest : public testing::Test {
     if (!valid_value.get())
       return NULL;
 
-    if (location == Extension::COMPONENT) {
+    if (location == Manifest::COMPONENT) {
       if (!PathService::Get(chrome::DIR_RESOURCES, &test_file)) {
         EXPECT_FALSE(true);
         return NULL;
@@ -109,7 +111,7 @@ class ImageLoaderTest : public testing::Test {
 // Tests loading an image works correctly.
 TEST_F(ImageLoaderTest, LoadImage) {
   scoped_refptr<Extension> extension(CreateExtension(
-      "image_loading_tracker", Extension::INVALID));
+      "image_loading_tracker", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
@@ -141,7 +143,7 @@ TEST_F(ImageLoaderTest, LoadImage) {
 // problems.
 TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   scoped_refptr<Extension> extension(CreateExtension(
-      "image_loading_tracker", Extension::INVALID));
+      "image_loading_tracker", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
@@ -187,7 +189,7 @@ TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
 // Tests loading multiple dimensions of the same image.
 TEST_F(ImageLoaderTest, MultipleImages) {
   scoped_refptr<Extension> extension(CreateExtension(
-      "image_loading_tracker", Extension::INVALID));
+      "image_loading_tracker", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
 
   std::vector<ImageLoader::ImageRepresentation> info_list;
@@ -234,7 +236,7 @@ TEST_F(ImageLoaderTest, MultipleImages) {
 // Tests IsComponentExtensionResource function.
 TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
   scoped_refptr<Extension> extension(CreateExtension(
-      "file_manager", Extension::COMPONENT));
+      "file_manager", Manifest::COMPONENT));
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource resource =

@@ -142,7 +142,7 @@ scoped_ptr<developer::ItemInfo>
     NOTREACHED();
   }
 
-  if (item.location() == Extension::LOAD) {
+  if (item.location() == Manifest::LOAD) {
     info->path.reset(
         new std::string(UTF16ToUTF8(item.path().LossyDisplayName())));
   }
@@ -150,8 +150,8 @@ scoped_ptr<developer::ItemInfo>
   info->incognito_enabled = service->IsIncognitoEnabled(item.id());
   info->wants_file_access = item.wants_file_access();
   info->allow_file_access = service->AllowFileAccess(&item);
-  info->allow_reload = (item.location() == Extension::LOAD);
-  info->is_unpacked = (item.location() == Extension::LOAD);
+  info->allow_reload = (item.location() == Manifest::LOAD);
+  info->is_unpacked = (item.location() == Manifest::LOAD);
   info->terminated = service->terminated_extensions()->Contains(item.id());
   info->allow_incognito = item.can_be_incognito_enabled();
 
@@ -195,7 +195,7 @@ void DeveloperPrivateGetItemsInfoFunction::AddItemsInfo(
   for (ExtensionSet::const_iterator iter = items.begin();
        iter != items.end(); ++iter) {
     const Extension& item = **iter;
-    if (item.location() == Extension::COMPONENT)
+    if (item.location() == Manifest::COMPONENT)
       continue;  // Skip built-in extensions / apps;
     item_list->push_back(make_linked_ptr<developer::ItemInfo>(
         CreateItemInfo(item, system, false).release()));

@@ -11,7 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -29,6 +31,7 @@ using content::ChildProcessSecurityPolicy;
 using content::RenderViewHost;
 using content::SiteInstance;
 using extensions::Extension;
+using extensions::Manifest;
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)
@@ -85,9 +88,9 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   content::RenderProcessHost* process = render_view_host()->GetProcess();
 
   // Some extensions use chrome:// URLs.
-  Extension::Type type = extension->GetType();
-  if (type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_LEGACY_PACKAGED_APP) {
+  Manifest::Type type = extension->GetType();
+  if (type == Manifest::TYPE_EXTENSION ||
+      type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
         process->GetID(), chrome::kChromeUIScheme);
 
@@ -99,11 +102,11 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   }
 
   switch (type) {
-    case Extension::TYPE_EXTENSION:
-    case Extension::TYPE_USER_SCRIPT:
-    case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_LEGACY_PACKAGED_APP:
-    case Extension::TYPE_PLATFORM_APP:
+    case Manifest::TYPE_EXTENSION:
+    case Manifest::TYPE_USER_SCRIPT:
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
+    case Manifest::TYPE_PLATFORM_APP:
       // Always send a Loaded message before ActivateExtension so that
       // ExtensionDispatcher knows what Extension is active, not just its ID.
       // This is important for classifying the Extension's JavaScript context
@@ -114,8 +117,8 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
       Send(new ExtensionMsg_ActivateExtension(extension->id()));
       break;
 
-    case Extension::TYPE_UNKNOWN:
-    case Extension::TYPE_THEME:
+    case Manifest::TYPE_UNKNOWN:
+    case Manifest::TYPE_THEME:
       break;
   }
 }

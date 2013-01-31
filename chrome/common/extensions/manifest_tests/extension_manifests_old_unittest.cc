@@ -11,7 +11,7 @@
 // backwards compatibility (we renamed it to "unlimitedStorage").
 TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
   scoped_refptr<extensions::Extension> extension = LoadAndExpectSuccess(
-      "old_unlimited_storage.json", extensions::Extension::INTERNAL,
+      "old_unlimited_storage.json", extensions::Manifest::INTERNAL,
       extensions::Extension::NO_FLAGS);
   EXPECT_TRUE(extension->HasAPIPermission(
       extensions::APIPermission::kUnlimitedStorage));

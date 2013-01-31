@@ -26,6 +26,7 @@
 using content::PluginService;
 using content::WebContents;
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace {
 
@@ -141,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, ComponentExtension) {
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_COMPONENT);
   ASSERT_TRUE(extension);
-  ASSERT_EQ(extension->location(), Extension::COMPONENT);
+  ASSERT_EQ(extension->location(), Manifest::COMPONENT);
   CheckPluginsCreated(extension, true);
 }
 
@@ -151,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_UNPACKED);
   ASSERT_TRUE(extension);
-  ASSERT_EQ(extension->location(), Extension::LOAD);
+  ASSERT_EQ(extension->location(), Manifest::LOAD);
   CheckPluginsCreated(extension, true);
 }
 

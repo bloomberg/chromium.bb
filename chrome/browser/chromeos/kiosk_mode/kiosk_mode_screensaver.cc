@@ -96,7 +96,7 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
   std::string error;
   scoped_refptr<Extension> screensaver_extension =
       extension_file_util::LoadExtension(screensaver_extension_path,
-                                         Extension::COMPONENT,
+                                         extensions::Manifest::COMPONENT,
                                          Extension::NO_FLAGS,
                                          &error);
   if (!screensaver_extension) {
@@ -186,7 +186,7 @@ void KioskModeScreensaver::ScreensaverPathCallback(
       new SandboxedUnpacker(
           screensaver_crx,
           true,
-          Extension::COMPONENT,
+          extensions::Manifest::COMPONENT,
           Extension::NO_FLAGS,
           extensions_dir,
           content::BrowserThread::GetMessageLoopProxyForThread(

@@ -58,7 +58,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     alarm_manager_->set_delegate(alarm_delegate_);
 
     extension_ = utils::CreateEmptyExtensionWithLocation(
-        extensions::Extension::LOAD);
+        extensions::Manifest::LOAD);
 
     // Make sure there's a RenderViewHost for alarms to warn into.
     AddTab(browser(), extension_->GetBackgroundURL());
@@ -491,7 +491,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
 
 TEST_F(ExtensionAlarmsSchedulingTest, ReleasedExtensionPollsInfrequently) {
   extension_ = utils::CreateEmptyExtensionWithLocation(
-      extensions::Extension::INTERNAL);
+      extensions::Manifest::INTERNAL);
   current_time_ = base::Time::FromJsTime(300000);
   CreateAlarm("[\"a\", {\"when\": 300010}]");
   CreateAlarm("[\"b\", {\"when\": 340000}]");

@@ -51,7 +51,7 @@ scoped_refptr<Extension> CreateDummyExtension(const BundleInstaller::Item& item,
 
   std::string error;
   return Extension::Create(FilePath(),
-                           Extension::INTERNAL,
+                           Manifest::INTERNAL,
                            *manifest,
                            Extension::NO_FLAGS,
                            item.id,

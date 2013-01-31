@@ -135,7 +135,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // Helper for AddExtension() and AddPendingExtension().
   bool AddExtensionData(const std::string& id,
                         const Version& version,
-                        Extension::Type extension_type,
+                        Manifest::Type extension_type,
                         const GURL& extension_update_url,
                         const std::string& update_url_data,
                         int request_id);

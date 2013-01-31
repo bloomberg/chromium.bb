@@ -25,6 +25,7 @@
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::ImageLoader;
+using extensions::Manifest;
 
 namespace {
 
@@ -243,7 +244,7 @@ void ImageLoader::LoadImagesAsync(
            extension->path() == it->resource.extension_root());
 
     int resource_id;
-    if (extension->location() == Extension::COMPONENT &&
+    if (extension->location() == Manifest::COMPONENT &&
         IsComponentExtensionResource(extension->path(),
                                      it->resource.relative_path(),
                                      &resource_id)) {

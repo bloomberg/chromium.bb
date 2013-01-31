@@ -73,7 +73,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name,
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       bogus_file_path().AppendASCII(name),
-      Extension::INVALID,
+      extensions::Manifest::INVALID_LOCATION,
       manifest,
       Extension::NO_FLAGS,
       &error);

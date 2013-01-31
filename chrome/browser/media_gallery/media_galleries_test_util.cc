@@ -45,7 +45,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   FilePath path = profile->GetPath().AppendASCII(name);
   std::string errors;
   scoped_refptr<extensions::Extension> extension =
-      extensions::Extension::Create(path, extensions::Extension::INTERNAL,
+      extensions::Extension::Create(path, extensions::Manifest::INTERNAL,
                                     *manifest.get(),
                                     extensions::Extension::NO_FLAGS, &errors);
   EXPECT_TRUE(extension.get() != NULL) << errors;

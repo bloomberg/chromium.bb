@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 SyncExtensionHelper::ExtensionState::ExtensionState()
     : enabled_state(ENABLED), incognito_enabled(false) {}
@@ -64,7 +65,7 @@ void SyncExtensionHelper::SetupIfNecessary(SyncTest* test) {
 }
 
 std::string SyncExtensionHelper::InstallExtension(
-    Profile* profile, const std::string& name, Extension::Type type) {
+    Profile* profile, const std::string& name, Manifest::Type type) {
   scoped_refptr<Extension> extension = GetExtension(profile, name, type);
   if (!extension.get()) {
     NOTREACHED() << "Could not install extension " << name;
@@ -266,27 +267,26 @@ std::string NameToPublicKey(const std::string& name) {
 // TODO(akalin): Somehow unify this with MakeExtension() in
 // extension_util_unittest.cc.
 scoped_refptr<Extension> CreateExtension(
-    const FilePath& base_dir, const std::string& name,
-    Extension::Type type) {
+    const FilePath& base_dir, const std::string& name, Manifest::Type type) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName, name);
   const std::string& public_key = NameToPublicKey(name);
   source.SetString(extension_manifest_keys::kPublicKey, public_key);
   source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
   switch (type) {
-    case Extension::TYPE_EXTENSION:
+    case Manifest::TYPE_EXTENSION:
       // Do nothing.
       break;
-    case Extension::TYPE_THEME:
+    case Manifest::TYPE_THEME:
       source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
       break;
-    case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_LEGACY_PACKAGED_APP:
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
       source.Set(extension_manifest_keys::kApp, new DictionaryValue());
       source.SetString(extension_manifest_keys::kLaunchWebURL,
                        "http://www.example.com");
       break;
-    case Extension::TYPE_PLATFORM_APP: {
+    case Manifest::TYPE_PLATFORM_APP: {
       source.Set(extension_manifest_keys::kApp, new DictionaryValue());
       source.Set(extension_manifest_keys::kPlatformAppBackground,
                  new DictionaryValue());
@@ -314,7 +314,7 @@ scoped_refptr<Extension> CreateExtension(
   }
   std::string error;
   scoped_refptr<Extension> extension =
-      Extension::Create(extension_dir, Extension::INTERNAL, source,
+      Extension::Create(extension_dir, Manifest::INTERNAL, source,
                         Extension::NO_FLAGS, &error);
   if (!error.empty()) {
     ADD_FAILURE() << error;
@@ -338,8 +338,7 @@ scoped_refptr<Extension> CreateExtension(
 }  // namespace
 
 scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
-    Profile* profile, const std::string& name,
-    Extension::Type type) {
+    Profile* profile, const std::string& name, Manifest::Type type) {
   if (name.empty()) {
     ADD_FAILURE();
     return NULL;

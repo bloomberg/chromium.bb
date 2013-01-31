@@ -57,7 +57,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
                      FilePath /* extension_filename */,
                      std::string /* extension_id */,
-                     int /* Extension::Location */,
+                     int /* Manifest::Location */,
                      int /* InitFromValue flags */)
 
 // Tell the utility process to parse the given JSON data and verify its

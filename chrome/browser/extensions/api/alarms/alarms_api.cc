@@ -52,7 +52,7 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
   if (create_info.delay_in_minutes.get()) {
     if (*create_info.delay_in_minutes < kReleaseDelayMinimum) {
       COMPILE_ASSERT(kReleaseDelayMinimum == 1, update_warning_message_below);
-      if (extension->location() == Extension::LOAD)
+      if (extension->location() == Manifest::LOAD)
         warnings->push_back(ErrorUtils::FormatErrorMessage(
             "Alarm delay is less than minimum of 1 minutes."
             " In released .crx, alarm \"*\" will fire in approximately"
@@ -68,7 +68,7 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
   if (create_info.period_in_minutes.get()) {
     if (*create_info.period_in_minutes < kReleaseDelayMinimum) {
       COMPILE_ASSERT(kReleaseDelayMinimum == 1, update_warning_message_below);
-      if (extension->location() == Extension::LOAD)
+      if (extension->location() == Manifest::LOAD)
         warnings->push_back(ErrorUtils::FormatErrorMessage(
             "Alarm period is less than minimum of 1 minutes."
             " In released .crx, alarm \"*\" will fire approximately"
@@ -108,7 +108,7 @@ bool AlarmsCreateFunction::RunImpl() {
   Alarm alarm(alarm_name,
               params->alarm_info,
               base::TimeDelta::FromMinutes(
-                  GetExtension()->location() == Extension::LOAD ?
+                  GetExtension()->location() == Manifest::LOAD ?
                   kDevDelayMinimum : kReleaseDelayMinimum),
               now_);
   ExtensionSystem::Get(profile())->alarm_manager()->AddAlarm(

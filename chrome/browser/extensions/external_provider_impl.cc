@@ -21,6 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,8 +56,8 @@ const char ExternalProviderImpl::kIsFromWebstore[] = "is_from_webstore";
 ExternalProviderImpl::ExternalProviderImpl(
     VisitorInterface* service,
     ExternalLoader* loader,
-    Extension::Location crx_location,
-    Extension::Location download_location,
+    Manifest::Location crx_location,
+    Manifest::Location download_location,
     int creation_flags)
   : crx_location_(crx_location),
     download_location_(download_location),
@@ -195,7 +197,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
     }
 
     if (has_external_crx) {
-      if (crx_location_ == Extension::INVALID) {
+      if (crx_location_ == Manifest::INVALID_LOCATION) {
         LOG(WARNING) << "This provider does not support installing external "
                      << "extensions from crx files.";
         continue;
@@ -232,7 +234,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
                                              auto_acknowledge_);
     } else { // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
-      if (download_location_ == Extension::INVALID) {
+      if (download_location_ == Manifest::INVALID_LOCATION) {
         LOG(WARNING) << "This provider does not support installing external "
                      << "extensions from update URLs.";
         continue;
@@ -277,7 +279,7 @@ bool ExternalProviderImpl::HasExtension(
 }
 
 bool ExternalProviderImpl::GetExtensionDetails(
-    const std::string& id, Extension::Location* location,
+    const std::string& id, Manifest::Location* location,
     scoped_ptr<Version>* version) const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(prefs_.get());
@@ -286,7 +288,7 @@ bool ExternalProviderImpl::GetExtensionDetails(
   if (!prefs_->GetDictionary(id, &extension))
     return false;
 
-  Extension::Location loc = Extension::INVALID;
+  Manifest::Location loc = Manifest::INVALID_LOCATION;
   if (extension->HasKey(kExternalUpdateUrl)) {
     loc = download_location_;
 
@@ -322,8 +324,8 @@ void ExternalProviderImpl::CreateExternalProviders(
           new ExternalProviderImpl(
               service,
               new ExternalPolicyLoader(profile),
-              Extension::INVALID,
-              Extension::EXTERNAL_POLICY_DOWNLOAD,
+              Manifest::INVALID_LOCATION,
+              Manifest::EXTERNAL_POLICY_DOWNLOAD,
               Extension::NO_FLAGS)));
 
   // In tests don't install extensions from default external sources.
@@ -361,8 +363,8 @@ void ExternalProviderImpl::CreateExternalProviders(
                 service,
                 new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
                                        check_admin_permissions_on_mac),
-                Extension::EXTERNAL_PREF,
-                Extension::EXTERNAL_PREF_DOWNLOAD,
+                Manifest::EXTERNAL_PREF,
+                Manifest::EXTERNAL_PREF_DOWNLOAD,
                 bundled_extension_creation_flags)));
   }
 
@@ -375,8 +377,8 @@ void ExternalProviderImpl::CreateExternalProviders(
               service,
               new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
                                      ExternalPrefLoader::NONE),
-              Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD,
+              Manifest::EXTERNAL_PREF,
+              Manifest::EXTERNAL_PREF_DOWNLOAD,
               Extension::NO_FLAGS)));
 #endif
 #if defined(OS_WIN)
@@ -385,8 +387,8 @@ void ExternalProviderImpl::CreateExternalProviders(
           new ExternalProviderImpl(
               service,
               new ExternalRegistryLoader,
-              Extension::EXTERNAL_REGISTRY,
-              Extension::INVALID,
+              Manifest::EXTERNAL_REGISTRY,
+              Manifest::INVALID_LOCATION,
               Extension::NO_FLAGS)));
 #endif
 
@@ -397,8 +399,8 @@ void ExternalProviderImpl::CreateExternalProviders(
               service,
               new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
                                      ExternalPrefLoader::NONE),
-              Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD,
+              Manifest::EXTERNAL_PREF,
+              Manifest::EXTERNAL_PREF_DOWNLOAD,
               bundled_extension_creation_flags)));
 #endif
 
@@ -412,8 +414,8 @@ void ExternalProviderImpl::CreateExternalProviders(
               service,
               new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
                                      ExternalPrefLoader::NONE),
-              Extension::INTERNAL,
-              Extension::INVALID,
+              Manifest::INTERNAL,
+              Manifest::INVALID_LOCATION,
               Extension::FROM_WEBSTORE |
                   Extension::WAS_INSTALLED_BY_DEFAULT)));
 #endif
@@ -427,8 +429,8 @@ void ExternalProviderImpl::CreateExternalProviders(
           new ExternalProviderImpl(
               service,
               connector->GetAppPackUpdater()->CreateExternalLoader(),
-              Extension::EXTERNAL_PREF,
-              Extension::INVALID,
+              Manifest::EXTERNAL_PREF,
+              Manifest::INVALID_LOCATION,
               Extension::NO_FLAGS)));
   }
 #endif

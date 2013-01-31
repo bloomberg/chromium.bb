@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 class ExtensionPrefValueMap;
 class PrefServiceSyncable;
@@ -20,6 +21,7 @@ class SequencedTaskRunner;
 }
 
 namespace extensions {
+class Extension;
 class ExtensionPrefs;
 
 // This is a test class intended to make it easier to work with ExtensionPrefs
@@ -51,13 +53,13 @@ class TestExtensionPrefs {
   // Similar to AddExtension, but takes a dictionary with manifest values.
   scoped_refptr<Extension> AddExtensionWithManifest(
       const base::DictionaryValue& manifest,
-      Extension::Location location);
+      Manifest::Location location);
 
   // Similar to AddExtension, but takes a dictionary with manifest values
   // and extension flags.
   scoped_refptr<Extension> AddExtensionWithManifestAndFlags(
       const base::DictionaryValue& manifest,
-      Extension::Location location,
+      Manifest::Location location,
       int extra_flags);
 
   // Similar to AddExtension, this adds a new test Extension. This is useful for

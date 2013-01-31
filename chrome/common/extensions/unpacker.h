@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/tuple.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 class SkBitmap;
 
@@ -31,7 +31,7 @@ class Unpacker {
 
   Unpacker(const FilePath& extension_path,
            const std::string& extension_id,
-           Extension::Location location,
+           Manifest::Location location,
            int creation_flags);
   ~Unpacker();
 
@@ -95,7 +95,7 @@ class Unpacker {
   std::string extension_id_;
 
   // The location to use for the created extension.
-  Extension::Location location_;
+  Manifest::Location location_;
 
   // The creation flags to use with the created extension.
   int creation_flags_;

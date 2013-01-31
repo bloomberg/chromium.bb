@@ -205,7 +205,7 @@ TEST_F(FileBrowserHandlerManifestTest, FileManagerURLOverride) {
   // A component extention can override chrome://files/ URL.
   std::string error;
   LoadExtension(Manifest(manifest_value.get(), "override_files"),
-                &error, Extension::COMPONENT, Extension::NO_FLAGS);
+                &error, extensions::Manifest::COMPONENT, Extension::NO_FLAGS);
 #if defined(FILE_MANAGER_EXTENSION)
   EXPECT_EQ("", error);
 #else

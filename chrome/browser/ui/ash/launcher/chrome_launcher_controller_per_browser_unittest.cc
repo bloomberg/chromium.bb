@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace {
 const int kExpectedAppIndex = 1;
@@ -51,21 +52,21 @@ class ChromeLauncherControllerPerBrowserTest : public testing::Test {
         CommandLine::ForCurrentProcess(), FilePath(), false);
 
     std::string error;
-    extension1_ = Extension::Create(FilePath(), Extension::LOAD, manifest,
+    extension1_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                                     &error);
-    extension2_ = Extension::Create(FilePath(), Extension::LOAD, manifest,
+    extension2_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     &error);
     // Fake gmail extension.
-    extension3_ = Extension::Create(FilePath(), Extension::LOAD, manifest,
+    extension3_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "pjkljhegncpnkpknbcohdijeoejaedia",
                                     &error);
     // Fake search extension.
-    extension4_ = Extension::Create(FilePath(), Extension::LOAD, manifest,
+    extension4_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "coobgpohoikkiipiblmjeljniedjpjpf",
                                     &error);

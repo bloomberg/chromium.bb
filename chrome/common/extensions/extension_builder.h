@@ -5,12 +5,14 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
 
+#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/value_builder.h"
 
 namespace extensions {
+class Extension;
 
 // An easier way to create extensions than Extension::Create.  The
 // constructor sets up some defaults which are customized using the
@@ -27,8 +29,8 @@ class ExtensionBuilder {
   // Defaults to FilePath().
   ExtensionBuilder& SetPath(const FilePath& path);
 
-  // Defaults to Extension::LOAD.
-  ExtensionBuilder& SetLocation(Extension::Location location);
+  // Defaults to Manifest::LOAD.
+  ExtensionBuilder& SetLocation(Manifest::Location location);
 
   ExtensionBuilder& SetManifest(scoped_ptr<base::DictionaryValue> manifest);
   ExtensionBuilder& SetManifest(DictionaryBuilder& manifest_builder) {
@@ -42,7 +44,7 @@ class ExtensionBuilder {
 
  private:
   FilePath path_;
-  Extension::Location location_;
+  Manifest::Location location_;
   scoped_ptr<base::DictionaryValue> manifest_;
   int flags_;
   std::string id_;

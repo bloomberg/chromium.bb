@@ -66,7 +66,7 @@ ManifestHandler::ManifestHandler() {
 ManifestHandler::~ManifestHandler() {
 }
 
-bool ManifestHandler::AlwaysParseForType(Extension::Type type) {
+bool ManifestHandler::AlwaysParseForType(Manifest::Type type) {
   return false;
 }
 

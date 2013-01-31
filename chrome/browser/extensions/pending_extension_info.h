@@ -9,6 +9,7 @@
 
 #include "base/version.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "googleurl/src/gurl.h"
 
 FORWARD_DECLARE_TEST(ExtensionServiceTest, AddPendingExtensionFromSync);
@@ -32,7 +33,7 @@ class PendingExtensionInfo {
       ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
-      Extension::Location install_source);
+      Manifest::Location install_source);
 
   // Required for STL container membership.  Should not be used directly.
   PendingExtensionInfo();
@@ -55,7 +56,7 @@ class PendingExtensionInfo {
   }
   bool is_from_sync() const { return is_from_sync_; }
   bool install_silently() const { return install_silently_; }
-  Extension::Location install_source() const { return install_source_; }
+  Manifest::Location install_source() const { return install_source_; }
 
   // Returns -1, 0 or 1 if |this| has lower, equal or higher precedence than
   // |other|, respectively. "Equal" precedence means that the version and the
@@ -77,7 +78,7 @@ class PendingExtensionInfo {
 
   bool is_from_sync_;  // This update check was initiated from sync.
   bool install_silently_;
-  Extension::Location install_source_;
+  Manifest::Location install_source_;
 
   FRIEND_TEST_ALL_PREFIXES(::ExtensionServiceTest, AddPendingExtensionFromSync);
 };

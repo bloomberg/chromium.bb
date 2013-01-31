@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -175,7 +176,7 @@ namespace extensions {
 SandboxedUnpacker::SandboxedUnpacker(
     const FilePath& crx_path,
     bool run_out_of_process,
-    Extension::Location location,
+    Manifest::Location location,
     int creation_flags,
     const FilePath& extensions_dir,
     base::SequencedTaskRunner* unpacker_io_task_runner,

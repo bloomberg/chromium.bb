@@ -175,7 +175,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   std::string utf8_error;
   scoped_refptr<Extension> extension = Extension::Create(
       temp_dir.path(),
-      Extension::INTERNAL,
+      Manifest::INTERNAL,
       *root,
       Extension::NO_FLAGS,
       &utf8_error);

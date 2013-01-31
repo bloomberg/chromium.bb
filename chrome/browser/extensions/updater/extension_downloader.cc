@@ -220,7 +220,7 @@ bool ExtensionDownloader::AddPendingExtension(const std::string& id,
   Version version("0.0.0.0");
   DCHECK(version.IsValid());
 
-  return AddExtensionData(id, version, Extension::TYPE_UNKNOWN, update_url, "",
+  return AddExtensionData(id, version, Manifest::TYPE_UNKNOWN, update_url, "",
                           request_id);
 }
 
@@ -256,7 +256,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
 
 bool ExtensionDownloader::AddExtensionData(const std::string& id,
                                            const Version& version,
-                                           Extension::Type extension_type,
+                                           Manifest::Type extension_type,
                                            const GURL& extension_update_url,
                                            const std::string& update_url_data,
                                            int request_id) {
@@ -290,21 +290,21 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
   }
 
   switch (extension_type) {
-    case Extension::TYPE_THEME:
+    case Manifest::TYPE_THEME:
       ++url_stats_.theme_count;
       break;
-    case Extension::TYPE_EXTENSION:
-    case Extension::TYPE_USER_SCRIPT:
+    case Manifest::TYPE_EXTENSION:
+    case Manifest::TYPE_USER_SCRIPT:
       ++url_stats_.extension_count;
       break;
-    case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_LEGACY_PACKAGED_APP:
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
       ++url_stats_.app_count;
       break;
-    case Extension::TYPE_PLATFORM_APP:
+    case Manifest::TYPE_PLATFORM_APP:
       ++url_stats_.platform_app_count;
       break;
-    case Extension::TYPE_UNKNOWN:
+    case Manifest::TYPE_UNKNOWN:
     default:
       ++url_stats_.pending_count;
       break;

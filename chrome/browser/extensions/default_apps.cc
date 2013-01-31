@@ -132,8 +132,8 @@ bool Provider::ShouldInstallInProfile() {
 Provider::Provider(Profile* profile,
                    VisitorInterface* service,
                    extensions::ExternalLoader* loader,
-                   extensions::Extension::Location crx_location,
-                   extensions::Extension::Location download_location,
+                   extensions::Manifest::Location crx_location,
+                   extensions::Manifest::Location download_location,
                    int creation_flags)
     : extensions::ExternalProviderImpl(service, loader, crx_location,
                                        download_location, creation_flags),

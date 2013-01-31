@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
@@ -132,13 +133,13 @@ void ChromeContentUtilityClient::OnUnpackExtension(
     const std::string& extension_id,
     int location,
     int creation_flags) {
-  CHECK(location > extensions::Extension::INVALID);
-  CHECK(location < extensions::Extension::NUM_LOCATIONS);
+  CHECK(location > extensions::Manifest::INVALID_LOCATION);
+  CHECK(location < extensions::Manifest::NUM_LOCATIONS);
   RegisterExtensionManifestHandlers();
   extensions::Unpacker unpacker(
       extension_path,
       extension_id,
-      static_cast<extensions::Extension::Location>(location),
+      static_cast<extensions::Manifest::Location>(location),
       creation_flags);
   if (unpacker.Run() && unpacker.DumpImagesToFile() &&
       unpacker.DumpMessageCatalogsToFile()) {

@@ -102,7 +102,7 @@ scoped_refptr<Extension> LoadManifest(std::string* error) {
     return NULL;
 
   scoped_refptr<Extension> extension = Extension::Create(
-      path.DirName(), Extension::INTERNAL,
+      path.DirName(), Manifest::INTERNAL,
       *static_cast<DictionaryValue*>(result.get()), Extension::NO_FLAGS, error);
   return extension;
 }

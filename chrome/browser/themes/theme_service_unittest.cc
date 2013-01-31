@@ -28,7 +28,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
     std::string error;
     scoped_refptr<extensions::Extension> extension =
         extensions::Extension::Create(
-            path, extensions::Extension::EXTERNAL_PREF_DOWNLOAD,
+            path, extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
             source, extensions::Extension::NO_FLAGS, &error);
     EXPECT_TRUE(extension);
     EXPECT_EQ("", error);

@@ -41,8 +41,9 @@ scoped_refptr<Extension> LoadInstallPromptExtension() {
     return extension;
   }
 
-  extension = Extension::Create(path.DirName(), Extension::INVALID, *value,
-                                Extension::NO_FLAGS, &error);
+  extension = Extension::Create(
+      path.DirName(), extensions::Manifest::INVALID_LOCATION, *value,
+      Extension::NO_FLAGS, &error);
   if (!extension.get())
     LOG(ERROR) << error;
 

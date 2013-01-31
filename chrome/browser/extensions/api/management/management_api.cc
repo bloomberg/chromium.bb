@@ -174,18 +174,18 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   }
 
   switch (extension.location()) {
-    case Extension::INTERNAL:
+    case Manifest::INTERNAL:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_NORMAL;
       break;
-    case Extension::LOAD:
+    case Manifest::LOAD:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_DEVELOPMENT;
       break;
-    case Extension::EXTERNAL_PREF:
-    case Extension::EXTERNAL_REGISTRY:
-    case Extension::EXTERNAL_PREF_DOWNLOAD:
+    case Manifest::EXTERNAL_PREF:
+    case Manifest::EXTERNAL_REGISTRY:
+    case Manifest::EXTERNAL_PREF_DOWNLOAD:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_SIDELOAD;
       break;
-    case Extension::EXTERNAL_POLICY_DOWNLOAD:
+    case Manifest::EXTERNAL_POLICY_DOWNLOAD:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_ADMIN;
       break;
     default:
@@ -203,7 +203,7 @@ void AddExtensionInfo(const ExtensionSet& extensions,
        iter != extensions.end(); ++iter) {
     const Extension& extension = **iter;
 
-    if (extension.location() == Extension::COMPONENT)
+    if (extension.location() == Manifest::COMPONENT)
       continue;  // Skip built-in extensions.
 
     extension_list->push_back(make_linked_ptr<management::ExtensionInfo>(
@@ -382,8 +382,8 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
   CHECK(parsed_manifest);
 
   scoped_refptr<Extension> extension = Extension::Create(
-      FilePath(), Extension::INVALID, *parsed_manifest, Extension::NO_FLAGS,
-      &error_);
+      FilePath(), Manifest::INVALID_LOCATION, *parsed_manifest,
+      Extension::NO_FLAGS, &error_);
   if (!extension.get()) {
     OnParseFailure(keys::kExtensionCreateError);
     return;

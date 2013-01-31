@@ -111,8 +111,8 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 
     std::string error;
     scoped_refptr<Extension> extension =
-        Extension::Create(path, Extension::INVALID, extension_input_value,
-                          Extension::NO_FLAGS, &error);
+        Extension::Create(path, extensions::Manifest::INVALID_LOCATION,
+                          extension_input_value, Extension::NO_FLAGS, &error);
     extension_service_->AddExtension(extension);
     return extension;
   }

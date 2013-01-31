@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/string_ordinal.h"
 
@@ -135,7 +136,7 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
   std::string error;
   extension_ = extension_file_util::LoadExtension(
       extension_path_,
-      Extension::LOAD,
+      Manifest::LOAD,
       GetFlags(),
       &error);
 
@@ -169,7 +170,7 @@ void UnpackedInstaller::OnRequirementsChecked(
 int UnpackedInstaller::GetFlags() {
   std::string id = Extension::GenerateIdForPath(extension_path_);
   bool allow_file_access =
-      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
+      Manifest::ShouldAlwaysAllowFileAccess(Manifest::LOAD);
   if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))
     allow_file_access = service_weak_->extension_prefs()->AllowFileAccess(id);
 
@@ -220,7 +221,7 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   extension_ = extension_file_util::LoadExtension(
       extension_path_,
-      Extension::LOAD,
+      Manifest::LOAD,
       flags,
       &error);
 

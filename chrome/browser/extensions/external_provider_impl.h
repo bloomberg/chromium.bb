@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/external_loader.h"
+#include "chrome/common/extensions/manifest.h"
 
 class Profile;
 class Version;
@@ -20,7 +21,6 @@ class DictionaryValue;
 }
 
 namespace extensions {
-class Extension;
 class ExternalLoader;
 
 // A specialization of the ExternalProvider that uses an instance of
@@ -35,11 +35,11 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // |crx_location|: extensions originating from crx files
   // |download_location|: extensions originating from update URLs
   // If either of the origins is not supported by this provider, then it should
-  // be initialized as Extensions::INVALID.
+  // be initialized as Manifest::INVALID_LOCATION.
   ExternalProviderImpl(VisitorInterface* service,
                        ExternalLoader* loader,
-                       Extension::Location crx_location,
-                       Extension::Location download_location,
+                       Manifest::Location crx_location,
+                       Manifest::Location download_location,
                        int creation_flags);
 
   virtual ~ExternalProviderImpl();
@@ -59,7 +59,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   virtual void VisitRegisteredExtension() OVERRIDE;
   virtual bool HasExtension(const std::string& id) const OVERRIDE;
   virtual bool GetExtensionDetails(const std::string& id,
-                                   Extension::Location* location,
+                                   Manifest::Location* location,
                                    scoped_ptr<Version>* version) const OVERRIDE;
 
   virtual bool IsReady() const OVERRIDE;
@@ -78,11 +78,11 @@ class ExternalProviderImpl : public ExternalProviderInterface {
  private:
   // Location for external extensions that are provided by this provider from
   // local crx files.
-  const Extension::Location crx_location_;
+  const Manifest::Location crx_location_;
 
   // Location for external extensions that are provided by this provider from
   // update URLs.
-  const Extension::Location download_location_;
+  const Manifest::Location download_location_;
 
   // Weak pointer to the object that consumes the external extensions.
   // This is zeroed out by: ServiceShutdown()
@@ -100,7 +100,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   scoped_refptr<ExternalLoader> loader_;
 
   // Creation flags to use for the extension.  These flags will be used
-  // when calling Extenion::Create() by the crx installer.
+  // when calling Extension::Create() by the crx installer.
   int creation_flags_;
 
   // Whether loaded extensions should be automatically acknowledged, so that

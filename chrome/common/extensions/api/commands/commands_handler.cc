@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_manifest_keys;
@@ -125,10 +124,10 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
-bool CommandsHandler::AlwaysParseForType(Extension::Type type) {
-  return type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_LEGACY_PACKAGED_APP ||
-      type == Extension::TYPE_PLATFORM_APP;
+bool CommandsHandler::AlwaysParseForType(Manifest::Type type) {
+  return type == Manifest::TYPE_EXTENSION ||
+      type == Manifest::TYPE_LEGACY_PACKAGED_APP ||
+      type == Manifest::TYPE_PLATFORM_APP;
 }
 
 void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,

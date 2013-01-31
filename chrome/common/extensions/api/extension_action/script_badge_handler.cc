@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
+#include "extensions/common/install_warning.h"
 
 namespace errors = extension_manifest_errors;
 
@@ -39,8 +40,8 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
   // going to have any effect.
   if (!FeatureSwitch::script_badges()->IsEnabled()) {
     extension->AddInstallWarning(
-        Extension::InstallWarning(Extension::InstallWarning::FORMAT_TEXT,
-                                  errors::kScriptBadgeRequiresFlag));
+        InstallWarning(InstallWarning::FORMAT_TEXT,
+                       errors::kScriptBadgeRequiresFlag));
   }
 
   const DictionaryValue* dict = NULL;
@@ -64,14 +65,14 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
 
   if (!action_info->default_title.empty()) {
     extension->AddInstallWarning(
-        Extension::InstallWarning(Extension::InstallWarning::FORMAT_TEXT,
-                                  errors::kScriptBadgeTitleIgnored));
+        InstallWarning(InstallWarning::FORMAT_TEXT,
+                       errors::kScriptBadgeTitleIgnored));
   }
 
   if (!action_info->default_icon.empty()) {
     extension->AddInstallWarning(
-        Extension::InstallWarning(Extension::InstallWarning::FORMAT_TEXT,
-                                  errors::kScriptBadgeIconIgnored));
+        InstallWarning(InstallWarning::FORMAT_TEXT,
+                       errors::kScriptBadgeIconIgnored));
   }
 
   SetActionInfoDefaults(extension, action_info.get());
@@ -79,8 +80,8 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
-bool ScriptBadgeHandler::AlwaysParseForType(Extension::Type type) {
-  return type == Extension::TYPE_EXTENSION;
+bool ScriptBadgeHandler::AlwaysParseForType(Manifest::Type type) {
+  return type == Manifest::TYPE_EXTENSION;
 }
 
 void ScriptBadgeHandler::SetActionInfoDefaults(const Extension* extension,

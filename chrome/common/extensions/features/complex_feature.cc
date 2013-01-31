@@ -17,7 +17,7 @@ ComplexFeature::~ComplexFeature() {
 }
 
 Feature::Availability ComplexFeature::IsAvailableToManifest(
-    const std::string& extension_id, Extension::Type type, Location location,
+    const std::string& extension_id, Manifest::Type type, Location location,
     int manifest_version, Platform platform) const {
   Feature::Availability first_availability =
       features_[0]->IsAvailableToManifest(
@@ -65,7 +65,7 @@ std::set<Feature::Context>* ComplexFeature::GetContexts() {
 }
 
 std::string ComplexFeature::GetAvailabilityMessage(AvailabilityResult result,
-                                                   Extension::Type type) const {
+                                                   Manifest::Type type) const {
   if (result == IS_AVAILABLE)
     return "";
 

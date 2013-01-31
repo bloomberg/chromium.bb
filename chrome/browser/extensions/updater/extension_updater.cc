@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -304,7 +305,7 @@ void ExtensionUpdater::AddToDownloader(
   for (ExtensionSet::const_iterator extension_iter = extensions->begin();
        extension_iter != extensions->end(); ++extension_iter) {
     const Extension& extension = **extension_iter;
-    if (!Extension::IsAutoUpdateableLocation(extension.location())) {
+    if (!Manifest::IsAutoUpdateableLocation(extension.location())) {
       VLOG(2) << "Extension " << extension.id() << " is not auto updateable";
       continue;
     }
@@ -354,7 +355,7 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
     for (iter = pending_ids.begin(); iter != pending_ids.end(); ++iter) {
       const PendingExtensionInfo* info = pending_extension_manager->GetById(
           *iter);
-      if (!Extension::IsAutoUpdateableLocation(info->install_source())) {
+      if (!Manifest::IsAutoUpdateableLocation(info->install_source())) {
         VLOG(2) << "Extension " << *iter << " is not auto updateable";
         continue;
       }

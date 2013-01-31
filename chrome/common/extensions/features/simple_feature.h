@@ -8,10 +8,12 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 
@@ -24,7 +26,7 @@ class SimpleFeature : public Feature {
   virtual ~SimpleFeature();
 
   std::set<std::string>* whitelist() { return &whitelist_; }
-  std::set<Extension::Type>* extension_types() { return &extension_types_; }
+  std::set<Manifest::Type>* extension_types() { return &extension_types_; }
 
   // Parses the JSON representation of a feature into the fields of this object.
   // Unspecified values in the JSON are not modified in the object. This allows
@@ -57,7 +59,7 @@ class SimpleFeature : public Feature {
 
   // extension::Feature:
   virtual Availability IsAvailableToManifest(const std::string& extension_id,
-                                             Extension::Type type,
+                                             Manifest::Type type,
                                              Location location,
                                              int manifest_version,
                                              Platform platform) const OVERRIDE;
@@ -67,14 +69,14 @@ class SimpleFeature : public Feature {
                                             Platform platform) const OVERRIDE;
 
   virtual std::string GetAvailabilityMessage(
-      AvailabilityResult result, Extension::Type type) const OVERRIDE;
+      AvailabilityResult result, Manifest::Type type) const OVERRIDE;
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 
  protected:
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
-                                  Extension::Type type) const;
+                                  Manifest::Type type) const;
 
  private:
   // For clarity and consistency, we handle the default value of each of these
@@ -82,7 +84,7 @@ class SimpleFeature : public Feature {
   // code that reads Features out of static data to validate that data and set
   // sensible defaults.
   std::set<std::string> whitelist_;
-  std::set<Extension::Type> extension_types_;
+  std::set<Manifest::Type> extension_types_;
   std::set<Context> contexts_;
   Location location_;  // we only care about component/not-component now
   Platform platform_;  // we only care about chromeos/not-chromeos now

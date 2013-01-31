@@ -145,7 +145,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
-                              const Extension::Location& location,
+                              const Manifest::Location& location,
                               bool external_uninstall);
 
   // Called to change the extension's state when it is enabled/disabled.

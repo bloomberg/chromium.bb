@@ -260,7 +260,7 @@ const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
        it != service->extensions()->end(); ++it) {
     // Ignore any component extensions. They are automatically loaded into all
     // profiles and aren't the extension we're looking for here.
-    if ((*it)->location() == extensions::Extension::COMPONENT)
+    if ((*it)->location() == extensions::Manifest::COMPONENT)
       continue;
 
     if (extension != NULL) {

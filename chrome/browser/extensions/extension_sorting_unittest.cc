@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace keys = extension_manifest_keys;
 
@@ -627,14 +628,14 @@ class ExtensionSortingPreinstalledAppsBase
 
     std::string error;
     app1_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("app1_"), Extension::EXTERNAL_PREF,
+        prefs_.temp_dir().AppendASCII("app1_"), Manifest::EXTERNAL_PREF,
         simple_dict, Extension::NO_FLAGS, &error);
     prefs()->OnExtensionInstalled(app1_scoped_.get(),
                                   Extension::ENABLED,
                                   syncer::StringOrdinal());
 
     app2_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("app2_"), Extension::EXTERNAL_PREF,
+        prefs_.temp_dir().AppendASCII("app2_"), Manifest::EXTERNAL_PREF,
         simple_dict, Extension::NO_FLAGS, &error);
     prefs()->OnExtensionInstalled(app2_scoped_.get(),
                                   Extension::ENABLED,
@@ -804,7 +805,7 @@ class ExtensionSortingDefaultOrdinalsBase : public ExtensionSortingTest {
 
     std::string errors;
     scoped_refptr<Extension> app = Extension::Create(
-        prefs_.temp_dir().AppendASCII(name), Extension::EXTERNAL_PREF,
+        prefs_.temp_dir().AppendASCII(name), Manifest::EXTERNAL_PREF,
         simple_dict, Extension::NO_FLAGS, &errors);
     EXPECT_TRUE(app) << errors;
     EXPECT_TRUE(Extension::IdIsValid(app->id()));

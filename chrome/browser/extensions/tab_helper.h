@@ -129,7 +129,7 @@ class TabHelper : public content::WebContentsObserver,
   // is returned.
   //
   // NOTE: the returned icon is larger than 16x16 (its size is
-  // Extension::EXTENSION_ICON_SMALLISH).
+  // extension_misc::EXTENSION_ICON_SMALLISH).
   SkBitmap* GetExtensionAppIcon();
 
   content::WebContents* web_contents() const {

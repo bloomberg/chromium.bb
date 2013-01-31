@@ -163,7 +163,7 @@ struct ExtensionMsg_Loaded_Params {
   linked_ptr<DictionaryValue> manifest;
 
   // The location the extension was installed from.
-  extensions::Extension::Location location;
+  extensions::Manifest::Location location;
 
   // The path the extension was loaded from. This is used in the renderer only
   // to generate the extension ID for extensions that are loaded unpacked.

@@ -98,7 +98,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     int found_extensions = 0;
     for (ExtensionSet::const_iterator it = service->extensions()->begin();
          it != service->extensions()->end(); ++it)
-      if ((*it)->location() != extensions::Extension::COMPONENT)
+      if ((*it)->location() != extensions::Manifest::COMPONENT)
         found_extensions++;
 
     ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
       browser()->profile())->extension_service();
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
-    if ((*it)->location() == extensions::Extension::COMPONENT)
+    if ((*it)->location() == extensions::Manifest::COMPONENT)
       continue;
     if (service->AllowFileAccess(*it))
       extension_list.push_back(*it);

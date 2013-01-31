@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 
@@ -119,8 +120,8 @@ class Feature {
   // Gets the platform the code is currently running on.
   static Platform GetCurrentPlatform();
 
-  // Gets the Feature::Location value for the specified Extension::Location.
-  static Location ConvertLocation(Extension::Location extension_location);
+  // Gets the Feature::Location value for the specified Manifest::Location.
+  static Location ConvertLocation(Manifest::Location extension_location);
 
   // TODO(justinlin): Remove and move to APIFeature when it exists.
   virtual std::set<Context>* GetContexts() = 0;
@@ -128,14 +129,14 @@ class Feature {
   // Returns true if the feature is available to be parsed into a new extension
   // manifest.
   Availability IsAvailableToManifest(const std::string& extension_id,
-                                     Extension::Type type,
+                                     Manifest::Type type,
                                      Location location,
                                      int manifest_version) const {
     return IsAvailableToManifest(extension_id, type, location, manifest_version,
                                  GetCurrentPlatform());
   }
   virtual Availability IsAvailableToManifest(const std::string& extension_id,
-                                             Extension::Type type,
+                                             Manifest::Type type,
                                              Location location,
                                              int manifest_version,
                                              Platform platform) const = 0;
@@ -151,7 +152,7 @@ class Feature {
                                             Platform platform) const = 0;
 
   virtual std::string GetAvailabilityMessage(
-      AvailabilityResult result, Extension::Type type) const = 0;
+      AvailabilityResult result, Manifest::Type type) const = 0;
 
  protected:
   std::string name_;

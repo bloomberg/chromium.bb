@@ -29,7 +29,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
     return prefs_.prefs();
   }
 
-  scoped_refptr<const Extension> CreateExtension(Extension::Location location,
+  scoped_refptr<const Extension> CreateExtension(Manifest::Location location,
                                                  bool required) {
     base::DictionaryValue values;
     values.SetString(extension_manifest_keys::kName, "test");
@@ -54,7 +54,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
 // extension required by policy.
 TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
   scoped_refptr<const Extension> extension =
-      CreateExtension(Extension::EXTERNAL_POLICY_DOWNLOAD, true);
+      CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD, true);
 
   string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
@@ -72,7 +72,7 @@ TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
 // extension required by policy.
 TEST_F(StandardManagementPolicyProviderTest, NotRequiredExtension) {
   scoped_refptr<const Extension> extension =
-      CreateExtension(Extension::INTERNAL, false);
+      CreateExtension(Manifest::INTERNAL, false);
 
   string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));

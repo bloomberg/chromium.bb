@@ -10,7 +10,7 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "grit/generated_resources.h"
@@ -355,14 +355,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 };
 
-// Mapping from extension type names to Extension::Type.
+// Mapping from extension type names to Manifest::Type.
 StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
-  { "extension", extensions::Extension::TYPE_EXTENSION },
-  { "theme", extensions::Extension::TYPE_THEME },
-  { "user_script", extensions::Extension::TYPE_USER_SCRIPT },
-  { "hosted_app", extensions::Extension::TYPE_HOSTED_APP },
-  { "legacy_packaged_app", extensions::Extension::TYPE_LEGACY_PACKAGED_APP },
-  { "platform_app", extensions::Extension::TYPE_PLATFORM_APP },
+  { "extension", extensions::Manifest::TYPE_EXTENSION },
+  { "theme", extensions::Manifest::TYPE_THEME },
+  { "user_script", extensions::Manifest::TYPE_USER_SCRIPT },
+  { "hosted_app", extensions::Manifest::TYPE_HOSTED_APP },
+  { "legacy_packaged_app", extensions::Manifest::TYPE_LEGACY_PACKAGED_APP },
+  { "platform_app", extensions::Manifest::TYPE_PLATFORM_APP },
 };
 
 }  // namespace

@@ -27,7 +27,7 @@ class SocketUnitTest : public BrowserWithTestWindowTest {
     system->CreateSocketManager();
 
     extension_ = utils::CreateEmptyExtensionWithLocation(
-        extensions::Extension::LOAD);
+        extensions::Manifest::LOAD);
   }
 
   base::Value* RunFunctionWithExtension(

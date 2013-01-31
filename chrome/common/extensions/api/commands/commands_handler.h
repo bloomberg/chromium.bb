@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 
 namespace extensions {
@@ -40,7 +41,7 @@ class CommandsHandler : public ManifestHandler {
   virtual ~CommandsHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
-  virtual bool AlwaysParseForType(Extension::Type type) OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) OVERRIDE;
 
  private:
   // If the extension defines a browser action, but no command for it, then

@@ -28,6 +28,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace {
 
@@ -306,7 +307,7 @@ void ImageLoadingTracker::LoadImages(
       loader_ = new ImageLoader(this);
 
     int resource_id = -1;
-    if (extension->location() == Extension::COMPONENT &&
+    if (extension->location() == Manifest::COMPONENT &&
         extensions::ImageLoader::IsComponentExtensionResource(
             extension->path(), it->resource.relative_path(), &resource_id)) {
       loader_->LoadResource(*it, id, resource_id);

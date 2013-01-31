@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -57,34 +58,34 @@ class ExtensionManifestTest : public testing::Test {
   scoped_refptr<extensions::Extension> LoadExtension(
       const Manifest& manifest,
       std::string* error,
-      extensions::Extension::Location location =
-          extensions::Extension::INTERNAL,
+      extensions::Manifest::Location location =
+          extensions::Manifest::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
   scoped_refptr<extensions::Extension> LoadAndExpectSuccess(
       const Manifest& manifest,
-      extensions::Extension::Location location =
-          extensions::Extension::INTERNAL,
+      extensions::Manifest::Location location =
+          extensions::Manifest::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
   scoped_refptr<extensions::Extension> LoadAndExpectSuccess(
       char const* manifest_name,
-      extensions::Extension::Location location =
-          extensions::Extension::INTERNAL,
+      extensions::Manifest::Location location =
+          extensions::Manifest::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
   scoped_refptr<extensions::Extension> LoadAndExpectWarning(
       const Manifest& manifest,
       const std::string& expected_error,
-      extensions::Extension::Location location =
-          extensions::Extension::INTERNAL,
+      extensions::Manifest::Location location =
+          extensions::Manifest::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
   scoped_refptr<extensions::Extension> LoadAndExpectWarning(
       char const* manifest_name,
       const std::string& expected_error,
-      extensions::Extension::Location location =
-          extensions::Extension::INTERNAL,
+      extensions::Manifest::Location location =
+          extensions::Manifest::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
   void VerifyExpectedError(extensions::Extension* extension,
@@ -94,14 +95,14 @@ class ExtensionManifestTest : public testing::Test {
 
   void LoadAndExpectError(char const* manifest_name,
                           const std::string& expected_error,
-                          extensions::Extension::Location location =
-                              extensions::Extension::INTERNAL,
+                          extensions::Manifest::Location location =
+                              extensions::Manifest::INTERNAL,
                           int flags = extensions::Extension::NO_FLAGS);
 
   void LoadAndExpectError(const Manifest& manifest,
                           const std::string& expected_error,
-                          extensions::Extension::Location location =
-                              extensions::Extension::INTERNAL,
+                          extensions::Manifest::Location location =
+                              extensions::Manifest::INTERNAL,
                           int flags = extensions::Extension::NO_FLAGS);
 
   void AddPattern(extensions::URLPatternSet* extent,
@@ -118,18 +119,18 @@ class ExtensionManifestTest : public testing::Test {
   struct Testcase {
     std::string manifest_filename_;
     std::string expected_error_; // only used for ExpectedError tests
-    extensions::Extension::Location location_;
+    extensions::Manifest::Location location_;
     int flags_;
 
     Testcase(std::string manifest_filename, std::string expected_error,
-        extensions::Extension::Location location, int flags);
+        extensions::Manifest::Location location, int flags);
 
     Testcase(std::string manifest_filename, std::string expected_error);
 
     explicit Testcase(std::string manifest_filename);
 
     Testcase(std::string manifest_filename,
-             extensions::Extension::Location location,
+             extensions::Manifest::Location location,
              int flags);
   };
 

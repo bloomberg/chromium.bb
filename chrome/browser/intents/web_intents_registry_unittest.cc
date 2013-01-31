@@ -15,8 +15,10 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/web_intents_handler.h"
 #include "content/public/test/test_browser_thread.h"
@@ -25,6 +27,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::Manifest;
 using webkit_glue::WebIntentServiceData;
 
 class MockExtensionService: public TestExtensionService {
@@ -49,7 +52,7 @@ DictionaryValue* LoadManifestFile(const FilePath& path,
 
 scoped_refptr<Extension> LoadExtensionWithLocation(
     const std::string& name,
-    Extension::Location location,
+    Manifest::Location location,
     std::string* error) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
@@ -69,7 +72,7 @@ scoped_refptr<Extension> LoadExtensionWithLocation(
 
 scoped_refptr<Extension> LoadExtension(const std::string& name,
                                        std::string* error) {
-  return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
+  return LoadExtensionWithLocation(name, Manifest::INTERNAL, error);
 }
 
 scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {

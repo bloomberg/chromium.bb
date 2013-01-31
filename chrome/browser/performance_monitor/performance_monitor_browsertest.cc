@@ -74,7 +74,7 @@ struct ExtensionBasicInfo {
   std::string name;
   std::string url;
   std::string version;
-  Extension::Location location;
+  extensions::Manifest::Location location;
 };
 
 // Compare the fields of |extension| to those in |value|; this is a check to

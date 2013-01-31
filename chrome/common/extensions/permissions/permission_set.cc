@@ -268,7 +268,7 @@ std::set<std::string>
 }
 
 PermissionMessages PermissionSet::GetPermissionMessages(
-    Extension::Type extension_type) const {
+    Manifest::Type extension_type) const {
   PermissionMessages messages;
 
   if (HasEffectiveFullAccess()) {
@@ -280,7 +280,7 @@ PermissionMessages PermissionSet::GetPermissionMessages(
 
   // Since platform apps always use isolated storage, they can't (silently)
   // access user data on other domains, so there's no need to prompt.
-  if (extension_type != Extension::TYPE_PLATFORM_APP) {
+  if (extension_type != Manifest::TYPE_PLATFORM_APP) {
     if (HasEffectiveAccessToAllHosts()) {
       messages.push_back(PermissionMessage(
           PermissionMessage::kHostsAll,
@@ -300,7 +300,7 @@ PermissionMessages PermissionSet::GetPermissionMessages(
 }
 
 std::vector<string16> PermissionSet::GetWarningMessages(
-    Extension::Type extension_type) const {
+    Manifest::Type extension_type) const {
   std::vector<string16> messages;
   PermissionMessages permissions = GetPermissionMessages(extension_type);
 

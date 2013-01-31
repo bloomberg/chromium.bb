@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/zip.h"
 #include "content/public/common/common_param_traits.h"
@@ -84,7 +85,7 @@ namespace extensions {
 
 Unpacker::Unpacker(const FilePath& extension_path,
                    const std::string& extension_id,
-                   Extension::Location location,
+                   Manifest::Location location,
                    int creation_flags)
     : extension_path_(extension_path),
       extension_id_(extension_id),
@@ -185,7 +186,7 @@ bool Unpacker::Run() {
     return false;
   }
 
-  Extension::InstallWarningVector warnings;
+  std::vector<InstallWarning> warnings;
   if (!extension_file_util::ValidateExtension(extension.get(),
                                               &error, &warnings)) {
     SetError(error);

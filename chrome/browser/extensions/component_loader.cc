@@ -182,7 +182,7 @@ void ComponentLoader::Load(const ComponentExtensionInfo& info) {
 
   scoped_refptr<const Extension> extension(Extension::Create(
       info.root_directory,
-      Extension::COMPONENT,
+      Manifest::COMPONENT,
       *info.manifest,
       flags,
       &error));

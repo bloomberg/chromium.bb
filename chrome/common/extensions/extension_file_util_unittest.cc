@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,6 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace keys = extension_manifest_keys;
 
@@ -124,7 +126,7 @@ TEST_F(ExtensionFileUtilTest, LoadExtensionWithValidLocales) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      install_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension != NULL);
   EXPECT_EQ("The first extension that I made.", extension->description());
 }
@@ -140,7 +142,7 @@ TEST_F(ExtensionFileUtilTest, LoadExtensionWithoutLocalesFolder) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      install_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_FALSE(extension == NULL);
   EXPECT_TRUE(error.empty());
 }
@@ -214,7 +216,7 @@ TEST_F(ExtensionFileUtilTest,
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      install_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
   ASSERT_STREQ("Manifest file is missing or unreadable.", error.c_str());
@@ -231,7 +233,7 @@ TEST_F(ExtensionFileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      install_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
   ASSERT_STREQ("Manifest is not valid JSON.  "
@@ -247,7 +249,7 @@ TEST_F(ExtensionFileUtilTest, FailLoadingNonUTF8Scripts) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      install_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_STREQ("Could not load file 'bad_encoding.js' for content script. "
                "It isn't UTF-8 encoded.", error.c_str());
@@ -368,7 +370,7 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
 static scoped_refptr<Extension> LoadExtensionManifest(
     DictionaryValue* manifest,
     const FilePath& manifest_dir,
-    Extension::Location location,
+    Manifest::Location location,
     int extra_flags,
     std::string* error) {
   scoped_refptr<Extension> extension = Extension::Create(
@@ -379,7 +381,7 @@ static scoped_refptr<Extension> LoadExtensionManifest(
 static scoped_refptr<Extension> LoadExtensionManifest(
     const std::string& manifest_value,
     const FilePath& manifest_dir,
-    Extension::Location location,
+    Manifest::Location location,
     int extra_flags,
     std::string* error) {
   JSONStringValueSerializer serializer(manifest_value);
@@ -415,10 +417,10 @@ TEST_F(ExtensionFileUtilTest, ValidateThemeUTF8) {
           "}", non_ascii_file.c_str());
   std::string error;
   scoped_refptr<Extension> extension = LoadExtensionManifest(
-      kManifest, temp.path(), Extension::LOAD, 0, &error);
+      kManifest, temp.path(), Manifest::LOAD, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
-  Extension::InstallWarningVector warnings;
+  std::vector<extensions::InstallWarning> warnings;
   EXPECT_TRUE(extension_file_util::ValidateExtension(extension,
                                                      &error, &warnings)) <<
       error;
@@ -445,9 +447,9 @@ TEST_F(ExtensionFileUtilTest, MAYBE_BackgroundScriptsMustExist) {
   value->Set("background.scripts", scripts);
 
   std::string error;
-  Extension::InstallWarningVector warnings;
+  std::vector<extensions::InstallWarning> warnings;
   scoped_refptr<Extension> extension = LoadExtensionManifest(
-      value.get(), temp.path(), Extension::LOAD, 0, &error);
+      value.get(), temp.path(), Manifest::LOAD, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
   EXPECT_FALSE(extension_file_util::ValidateExtension(extension,
@@ -460,7 +462,7 @@ TEST_F(ExtensionFileUtilTest, MAYBE_BackgroundScriptsMustExist) {
   scripts->Clear();
   scripts->Append(Value::CreateStringValue("http://google.com/foo.js"));
 
-  extension = LoadExtensionManifest(value.get(), temp.path(), Extension::LOAD,
+  extension = LoadExtensionManifest(value.get(), temp.path(), Manifest::LOAD,
                                     0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
@@ -541,7 +543,7 @@ TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      ext_path, "the_id", Extension::EXTERNAL_PREF,
+      ext_path, "the_id", Manifest::EXTERNAL_PREF,
       Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get()) << error;
   ASSERT_EQ(1u, extension->install_warnings().size());
@@ -549,13 +551,13 @@ TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
       extension->install_warnings(),
       testing::ElementsAre(
           testing::Field(
-              &Extension::InstallWarning::message,
+              &extensions::InstallWarning::message,
               testing::ContainsRegex(
                   "extension includes the key file.*ext_root.a_key.pem"))));
 
   // Turn the warning into an error with ERROR_ON_PRIVATE_KEY.
   extension = extension_file_util::LoadExtension(
-      ext_path, "the_id", Extension::EXTERNAL_PREF,
+      ext_path, "the_id", Manifest::EXTERNAL_PREF,
       Extension::ERROR_ON_PRIVATE_KEY, &error);
   EXPECT_FALSE(extension.get());
   EXPECT_THAT(error,
@@ -575,7 +577,7 @@ TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      ext_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      ext_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_STREQ("Could not load extension icon 'icon.png'.",
       error.c_str());
@@ -587,7 +589,7 @@ TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
       .AppendASCII("gggggggggggggggggggggggggggggggg");
 
   scoped_refptr<Extension> extension2(extension_file_util::LoadExtension(
-      ext_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      ext_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension2 == NULL);
   ASSERT_STREQ("Could not load icon 'icon.png' for browser action.",
       error.c_str());
@@ -599,7 +601,7 @@ TEST_F(ExtensionFileUtilTest, CheckZeroLengthImageFile) {
       .AppendASCII("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
 
   scoped_refptr<Extension> extension3(extension_file_util::LoadExtension(
-      ext_dir, Extension::LOAD, Extension::NO_FLAGS, &error));
+      ext_dir, Manifest::LOAD, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension3 == NULL);
   ASSERT_STREQ("Could not load icon 'icon.png' for page action.",
       error.c_str());

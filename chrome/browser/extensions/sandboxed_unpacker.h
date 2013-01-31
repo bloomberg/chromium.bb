@@ -10,7 +10,8 @@
 #include "base/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/extension.h"
+#include "base/time.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/utility_process_host_client.h"
 
 namespace base {
@@ -19,6 +20,7 @@ class SequencedTaskRunner;
 }
 
 namespace extensions {
+class Extension;
 
 class SandboxedUnpackerClient
     : public base::RefCountedThreadSafe<SandboxedUnpackerClient> {
@@ -73,7 +75,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedUnpacker(const FilePath& crx_path,
                     bool run_out_of_process,
-                    Extension::Location location,
+                    Manifest::Location location,
                     int creation_flags,
                     const FilePath& extensions_dir,
                     base::SequencedTaskRunner* unpacker_io_task_runner,
@@ -225,7 +227,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   base::TimeTicks unpack_start_time_;
 
   // Location to use for the unpacked extension.
-  Extension::Location location_;
+  Manifest::Location location_;
 
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.

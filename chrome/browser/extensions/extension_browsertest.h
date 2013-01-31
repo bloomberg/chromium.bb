@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -97,12 +98,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                                     expected_change);
   }
 
-  // Same as above, but an install source other than Extension::INTERNAL can be
+  // Same as above, but an install source other than Manifest::INTERNAL can be
   // specified.
   const extensions::Extension* InstallExtension(
       const FilePath& path,
       int expected_change,
-      extensions::Extension::Location install_source) {
+      extensions::Manifest::Location install_source) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
                                     expected_change, install_source);
   }
@@ -240,13 +241,13 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
       const FilePath& path,
       InstallUIType ui_type,
       int expected_change,
-      extensions::Extension::Location install_source);
+      extensions::Manifest::Location install_source);
   const extensions::Extension* InstallOrUpdateExtension(
       const std::string& id,
       const FilePath& path,
       InstallUIType ui_type,
       int expected_change,
-      extensions::Extension::Location install_source,
+      extensions::Manifest::Location install_source,
       Browser* browser,
       bool from_webstore);
 

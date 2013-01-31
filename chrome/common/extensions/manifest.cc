@@ -13,32 +13,107 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/install_warning.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
 namespace extensions {
 
-Manifest::Manifest(Extension::Location location,
-                   scoped_ptr<DictionaryValue> value)
+namespace {
+
+// Rank extension locations in a way that allows
+// Manifest::GetHigherPriorityLocation() to compare locations.
+// An extension installed from two locations will have the location
+// with the higher rank, as returned by this function. The actual
+// integer values may change, and should never be persisted.
+int GetLocationRank(Manifest::Location location) {
+  const int kInvalidRank = -1;
+  int rank = kInvalidRank;  // Will CHECK that rank is not kInvalidRank.
+
+  switch (location) {
+    // Component extensions can not be overriden by any other type.
+    case Manifest::COMPONENT:
+      rank = 6;
+      break;
+
+    // Policy controlled extensions may not be overridden by any type
+    // that is not part of chrome.
+    case Manifest::EXTERNAL_POLICY_DOWNLOAD:
+      rank = 5;
+      break;
+
+    // A developer-loaded extension should override any installed type
+    // that a user can disable.
+    case Manifest::LOAD:
+      rank = 4;
+      break;
+
+    // The relative priority of various external sources is not important,
+    // but having some order ensures deterministic behavior.
+    case Manifest::EXTERNAL_REGISTRY:
+      rank = 3;
+      break;
+
+    case Manifest::EXTERNAL_PREF:
+      rank = 2;
+      break;
+
+    case Manifest::EXTERNAL_PREF_DOWNLOAD:
+      rank = 1;
+      break;
+
+    // User installed extensions are overridden by any external type.
+    case Manifest::INTERNAL:
+      rank = 0;
+      break;
+
+    default:
+      NOTREACHED() << "Need to add new extension location " << location;
+  }
+
+  CHECK(rank != kInvalidRank);
+  return rank;
+}
+
+}  // namespace
+
+// static
+Manifest::Location Manifest::GetHigherPriorityLocation(
+    Location loc1, Location loc2) {
+  if (loc1 == loc2)
+    return loc1;
+
+  int loc1_rank = GetLocationRank(loc1);
+  int loc2_rank = GetLocationRank(loc2);
+
+  // If two different locations have the same rank, then we can not
+  // deterministicly choose a location.
+  CHECK(loc1_rank != loc2_rank);
+
+  // Highest rank has highest priority.
+  return (loc1_rank > loc2_rank ? loc1 : loc2 );
+}
+
+Manifest::Manifest(Location location, scoped_ptr<DictionaryValue> value)
     : location_(location),
       value_(value.Pass()),
-      type_(Extension::TYPE_UNKNOWN) {
+      type_(TYPE_UNKNOWN) {
   if (value_->HasKey(keys::kTheme)) {
-    type_ = Extension::TYPE_THEME;
+    type_ = TYPE_THEME;
   } else if (value_->HasKey(keys::kApp)) {
     if (value_->Get(keys::kWebURLs, NULL) ||
         value_->Get(keys::kLaunchWebURL, NULL)) {
-      type_ = Extension::TYPE_HOSTED_APP;
+      type_ = TYPE_HOSTED_APP;
     } else if (value_->Get(keys::kPlatformAppBackground, NULL)) {
-      type_ = Extension::TYPE_PLATFORM_APP;
+      type_ = TYPE_PLATFORM_APP;
     } else {
-      type_ = Extension::TYPE_LEGACY_PACKAGED_APP;
+      type_ = TYPE_LEGACY_PACKAGED_APP;
     }
   } else {
-    type_ = Extension::TYPE_EXTENSION;
+    type_ = TYPE_EXTENSION;
   }
-  CHECK_NE(type_, Extension::TYPE_UNKNOWN);
+  CHECK_NE(type_, TYPE_UNKNOWN);
 }
 
 Manifest::~Manifest() {
@@ -46,9 +121,9 @@ Manifest::~Manifest() {
 
 void Manifest::ValidateManifest(
     std::string* error,
-    Extension::InstallWarningVector* warnings) const {
+    std::vector<InstallWarning>* warnings) const {
   *error = "";
-  if (type_ == Extension::TYPE_PLATFORM_APP && GetManifestVersion() < 2) {
+  if (type_ == Manifest::TYPE_PLATFORM_APP && GetManifestVersion() < 2) {
     *error = errors::kPlatformAppNeedsManifestVersion2;
     return;
   }
@@ -73,16 +148,16 @@ void Manifest::ValidateManifest(
         extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
     if (!result.is_available())
-      warnings->push_back(Extension::InstallWarning(
-          Extension::InstallWarning::FORMAT_TEXT, result.message()));
+      warnings->push_back(InstallWarning(
+          InstallWarning::FORMAT_TEXT, result.message()));
   }
 
   // Also generate warnings for keys that are not features.
   for (DictionaryValue::key_iterator key = value_->begin_keys();
       key != value_->end_keys(); ++key) {
     if (!BaseFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
-      warnings->push_back(Extension::InstallWarning(
-          Extension::InstallWarning::FORMAT_TEXT,
+      warnings->push_back(InstallWarning(
+          InstallWarning::FORMAT_TEXT,
           base::StringPrintf("Unrecognized manifest key '%s'.",
                              (*key).c_str())));
     }
@@ -157,7 +232,7 @@ bool Manifest::Equals(const Manifest* other) const {
 int Manifest::GetManifestVersion() const {
   // Platform apps were launched after manifest version 2 was the preferred
   // version, so they default to that.
-  int manifest_version = type_ == Extension::TYPE_PLATFORM_APP ? 2 : 1;
+  int manifest_version = type_ == TYPE_PLATFORM_APP ? 2 : 1;
   value_->GetInteger(keys::kManifestVersion, &manifest_version);
   return manifest_version;
 }

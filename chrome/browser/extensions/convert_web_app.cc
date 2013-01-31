@@ -186,7 +186,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     extension_flags |= Extension::FROM_BOOKMARK;
   scoped_refptr<Extension> extension = Extension::Create(
       temp_dir.path(),
-      Extension::INTERNAL,
+      Manifest::INTERNAL,
       *root,
       extension_flags,
       &error);

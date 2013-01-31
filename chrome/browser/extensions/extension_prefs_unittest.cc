@@ -468,7 +468,7 @@ class ExtensionPrefsVersionString : public ExtensionPrefsTest {
     extension = prefs_.AddExtension("test");
     EXPECT_EQ("0.1", prefs()->GetVersionString(extension->id()));
     prefs()->OnExtensionUninstalled(extension->id(),
-                                    Extension::INTERNAL, false);
+                                    Manifest::INTERNAL, false);
   }
 
   virtual void Verify() {
@@ -591,7 +591,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     FilePath path = prefs_.extensions_dir().AppendASCII(base::IntToString(num));
     std::string errors;
     scoped_refptr<Extension> extension = Extension::Create(
-        path, Extension::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
+        path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
     ASSERT_TRUE(extension) << errors;
     ASSERT_EQ(id, extension->id());
     prefs()->SetDelayedInstallInfo(extension.get(), Extension::ENABLED,
@@ -740,7 +740,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       dictionary.SetString(extension_manifest_keys::kName, "from_webstore");
       dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
       webstore_extension_ = prefs_.AddExtensionWithManifestAndFlags(
-          dictionary, Extension::INTERNAL, Extension::FROM_WEBSTORE);
+          dictionary, Manifest::INTERNAL, Extension::FROM_WEBSTORE);
     }
 
     {
@@ -748,7 +748,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       dictionary.SetString(extension_manifest_keys::kName, "from_bookmark");
       dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
       bookmark_extension_ = prefs_.AddExtensionWithManifestAndFlags(
-          dictionary, Extension::INTERNAL, Extension::FROM_BOOKMARK);
+          dictionary, Manifest::INTERNAL, Extension::FROM_BOOKMARK);
     }
 
     {
@@ -758,7 +758,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
       default_extension_ = prefs_.AddExtensionWithManifestAndFlags(
           dictionary,
-          Extension::INTERNAL,
+          Manifest::INTERNAL,
           Extension::WAS_INSTALLED_BY_DEFAULT);
     }
   }
@@ -796,16 +796,16 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
   simple_dict.SetString(keys::kName, "unused");
 
   ext1_scoped_ = Extension::Create(
-      prefs_.temp_dir().AppendASCII("ext1_"), Extension::EXTERNAL_PREF,
+      prefs_.temp_dir().AppendASCII("ext1_"), Manifest::EXTERNAL_PREF,
       simple_dict, Extension::NO_FLAGS, &error);
   ext2_scoped_ = Extension::Create(
-      prefs_.temp_dir().AppendASCII("ext2_"), Extension::EXTERNAL_PREF,
+      prefs_.temp_dir().AppendASCII("ext2_"), Manifest::EXTERNAL_PREF,
       simple_dict, Extension::NO_FLAGS, &error);
   ext3_scoped_ = Extension::Create(
-      prefs_.temp_dir().AppendASCII("ext3_"), Extension::EXTERNAL_PREF,
+      prefs_.temp_dir().AppendASCII("ext3_"), Manifest::EXTERNAL_PREF,
       simple_dict, Extension::NO_FLAGS, &error);
   ext4_scoped_ = Extension::Create(
-      prefs_.temp_dir().AppendASCII("ext4_"), Extension::EXTERNAL_PREF,
+      prefs_.temp_dir().AppendASCII("ext4_"), Manifest::EXTERNAL_PREF,
       simple_dict, Extension::NO_FLAGS, &error);
 
   ext1_ = ext1_scoped_.get();
@@ -888,7 +888,7 @@ void ExtensionPrefsPrepopulatedTest::EnsureExtensionUninstalled(
       break;
     }
   }
-  prefs()->OnExtensionUninstalled(extension_id, Extension::INTERNAL, false);
+  prefs()->OnExtensionUninstalled(extension_id, Manifest::INTERNAL, false);
 }
 
 class ExtensionPrefsInstallOneExtension

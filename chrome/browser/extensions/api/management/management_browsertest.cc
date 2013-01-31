@@ -29,6 +29,7 @@
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 class ExtensionManagementTest : public ExtensionBrowserTest {
  protected:
@@ -433,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
 
   EXPECT_TRUE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
-      Extension::EXTERNAL_PREF_DOWNLOAD));
+      Manifest::EXTERNAL_PREF_DOWNLOAD));
 
   // Run autoupdate and make sure version 2 of the extension was installed.
   service->updater()->CheckNow(params);
@@ -456,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   // because of the killbit.
   EXPECT_FALSE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
-      Extension::EXTERNAL_PREF_DOWNLOAD));
+      Manifest::EXTERNAL_PREF_DOWNLOAD));
   EXPECT_FALSE(pending_extension_manager->IsIdPending(kExtensionId))
       << "External reinstall of a killed extension shouldn't work.";
   EXPECT_TRUE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))
@@ -528,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   const Extension* extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
   ASSERT_EQ("2.0", extension->VersionString());
-  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
+  EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, extension->location());
 
   // Try to disable and uninstall the extension which should fail.
   DisableExtension(kExtensionId);
@@ -592,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   const Extension* extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
-  EXPECT_EQ(Extension::INTERNAL, extension->location());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
 
   // Setup the force install policy. It should override the location.
@@ -606,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
-  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
+  EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
 
   // Remove the policy, and verify that the extension was uninstalled.
@@ -623,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
-  EXPECT_EQ(Extension::INTERNAL, extension->location());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
   EXPECT_TRUE(service->disabled_extensions()->is_empty());
 
@@ -645,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   extension = service->GetExtensionById(kExtensionId, false);
   ASSERT_TRUE(extension);
-  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
+  EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
   EXPECT_TRUE(service->disabled_extensions()->is_empty());
 }

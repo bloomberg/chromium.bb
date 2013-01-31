@@ -17,6 +17,7 @@
 using content::BrowserThread;
 using extensions::APIPermission;
 using extensions::Extension;
+using extensions::Manifest;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 
@@ -51,7 +52,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      path.AppendASCII(name), Extension::INVALID, manifest,
+      path.AppendASCII(name), Manifest::INVALID_LOCATION, manifest,
       Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension) << error;
 
@@ -73,7 +74,8 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      path, Extension::INVALID, *static_cast<DictionaryValue*>(result.get()),
+      path, Manifest::INVALID_LOCATION,
+      *static_cast<DictionaryValue*>(result.get()),
       Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension) << error;
 

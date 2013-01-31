@@ -51,14 +51,14 @@ const Extension* MockExtensionService::GetExtensionById(
 }
 
 void MockExtensionService::AddExtensionWithId(
-    const std::string& id, Extension::Type type) {
+    const std::string& id, Manifest::Type type) {
   std::set<std::string> empty_permissions;
   AddExtensionWithIdAndPermissions(id, type, empty_permissions);
 }
 
 void MockExtensionService::AddExtensionWithIdAndPermissions(
     const std::string& id,
-    Extension::Type type,
+    Manifest::Type type,
     const std::set<std::string>& permissions_set) {
   DictionaryValue manifest;
   manifest.SetString("name", std::string("Test extension ") + id);
@@ -72,10 +72,10 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
   manifest.Set("permissions", permissions.release());
 
   switch (type) {
-    case Extension::TYPE_EXTENSION:
+    case Manifest::TYPE_EXTENSION:
       break;
 
-    case Extension::TYPE_LEGACY_PACKAGED_APP: {
+    case Manifest::TYPE_LEGACY_PACKAGED_APP: {
       DictionaryValue* app = new DictionaryValue();
       DictionaryValue* app_launch = new DictionaryValue();
       app_launch->SetString("local_path", "fake.html");
@@ -91,7 +91,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
       FilePath(),
-      Extension::INTERNAL,
+      Manifest::INTERNAL,
       manifest,
       Extension::NO_FLAGS,
       id,

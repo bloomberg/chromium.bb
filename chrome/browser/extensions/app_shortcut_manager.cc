@@ -69,7 +69,7 @@ void AppShortcutManager::Observe(int type,
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
       if (extension->is_platform_app() &&
-          extension->location() != Extension::COMPONENT) {
+          extension->location() != Manifest::COMPONENT) {
 #if defined(OS_WIN)
         if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
             extensions::AppHostInstaller::GetInstallWithLauncher()) {

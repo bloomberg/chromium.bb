@@ -235,7 +235,7 @@ class MockService : public TestExtensionService {
   // no two extensions share the same name.
   void CreateTestExtensions(int id, int count, ExtensionList *list,
                             const std::string* update_url,
-                            Extension::Location location) {
+                            Manifest::Location location) {
     for (int i = 1; i <= count; i++) {
       DictionaryValue manifest;
       manifest.SetString(extension_manifest_keys::kVersion,
@@ -269,7 +269,7 @@ std::string GenerateId(std::string input) {
 }
 
 bool ShouldInstallExtensionsOnly(const Extension& extension) {
-  return extension.GetType() == Extension::TYPE_EXTENSION;
+  return extension.GetType() == Manifest::TYPE_EXTENSION;
 }
 
 bool ShouldInstallThemesOnly(const Extension& extension) {
@@ -299,7 +299,7 @@ void SetupPendingExtensionManagerForTest(
                              should_allow_install,
                              kIsFromSync,
                              kInstallSilently,
-                             Extension::INTERNAL));
+                             Manifest::INTERNAL));
   }
 }
 
@@ -522,7 +522,7 @@ class ExtensionUpdaterTest : public testing::Test {
                                           pending_extension_manager);
     } else {
       service.CreateTestExtensions(1, 1, &extensions, &update_url,
-                                   Extension::INTERNAL);
+                                   Manifest::INTERNAL);
       service.set_extensions(extensions);
     }
 
@@ -667,7 +667,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionList extensions;
     std::string url(gallery_url);
 
-    service.CreateTestExtensions(1, 1, &extensions, &url, Extension::INTERNAL);
+    service.CreateTestExtensions(1, 1, &extensions, &url, Manifest::INTERNAL);
 
     const std::string& id = extensions[0]->id();
     EXPECT_CALL(delegate, GetPingDataForExtension(id, _));
@@ -1004,7 +1004,7 @@ class ExtensionUpdaterTest : public testing::Test {
           PendingExtensionInfo(id, test_url, version,
                                &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently,
-                               Extension::INTERNAL));
+                               Manifest::INTERNAL));
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data
@@ -1288,9 +1288,9 @@ class ExtensionUpdaterTest : public testing::Test {
     GURL url1("http://clients2.google.com/service/update2/crx");
     GURL url2("http://www.somewebsite.com");
     service.CreateTestExtensions(1, 1, &tmp, &url1.possibly_invalid_spec(),
-                                 Extension::INTERNAL);
+                                 Manifest::INTERNAL);
     service.CreateTestExtensions(2, 1, &tmp, &url2.possibly_invalid_spec(),
-                                 Extension::INTERNAL);
+                                 Manifest::INTERNAL);
     EXPECT_EQ(2u, tmp.size());
     service.set_extensions(tmp);
 
@@ -1409,7 +1409,7 @@ class ExtensionUpdaterTest : public testing::Test {
     GURL update_url("http://www.google.com/manifest");
     ExtensionList tmp;
     service.CreateTestExtensions(1, 1, &tmp, &update_url.spec(),
-                                 Extension::INTERNAL);
+                                 Manifest::INTERNAL);
     service.set_extensions(tmp);
 
     ExtensionUpdater updater(
@@ -1543,8 +1543,9 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
 
   // Non-internal non-external extensions should be rejected.
   ExtensionList extensions;
-  service.CreateTestExtensions(1, 1, &extensions, NULL, Extension::INVALID);
-  service.CreateTestExtensions(2, 1, &extensions, NULL, Extension::INTERNAL);
+  service.CreateTestExtensions(1, 1, &extensions, NULL,
+                               Manifest::INVALID_LOCATION);
+  service.CreateTestExtensions(2, 1, &extensions, NULL, Manifest::INTERNAL);
   ASSERT_EQ(2u, extensions.size());
   const std::string& updateable_id = extensions[1]->id();
 
@@ -1577,9 +1578,9 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
   ExtensionList enabled_extensions;
   ExtensionList disabled_extensions;
   service.CreateTestExtensions(1, 1, &enabled_extensions, NULL,
-      Extension::INTERNAL);
+      Manifest::INTERNAL);
   service.CreateTestExtensions(2, 1, &disabled_extensions, NULL,
-      Extension::INTERNAL);
+      Manifest::INTERNAL);
   ASSERT_EQ(1u, enabled_extensions.size());
   ASSERT_EQ(1u, disabled_extensions.size());
   const std::string& enabled_id = enabled_extensions[0]->id();

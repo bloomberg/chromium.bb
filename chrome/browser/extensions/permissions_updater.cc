@@ -135,8 +135,8 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
 
   // We only maintain the granted permissions prefs for INTERNAL and LOAD
   // extensions.
-  if (extension->location() != Extension::LOAD &&
-      extension->location() != Extension::INTERNAL)
+  if (extension->location() != Manifest::LOAD &&
+      extension->location() != Manifest::INTERNAL)
     return;
 
   if (record_oauth2_grant) {

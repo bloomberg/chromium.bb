@@ -88,7 +88,7 @@ bool AppWindowCreateFunction::RunImpl() {
   GURL url = GetExtension()->GetResourceURL(params->url);
   // Allow absolute URLs for component apps, otherwise prepend the extension
   // path.
-  if (GetExtension()->location() == extensions::Extension::COMPONENT) {
+  if (GetExtension()->location() == extensions::Manifest::COMPONENT) {
     GURL absolute = GURL(params->url);
     if (absolute.has_scheme())
       url = absolute;

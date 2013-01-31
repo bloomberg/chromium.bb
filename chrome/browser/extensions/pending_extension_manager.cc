@@ -113,7 +113,7 @@ bool PendingExtensionManager::AddFromSync(
   }
 
   const bool kIsFromSync = true;
-  const Extension::Location kSyncLocation = Extension::INTERNAL;
+  const Manifest::Location kSyncLocation = Manifest::INTERNAL;
 
   return AddExtensionImpl(id, update_url, Version(), should_allow_install,
                           kIsFromSync, install_silently, kSyncLocation);
@@ -122,7 +122,7 @@ bool PendingExtensionManager::AddFromSync(
 bool PendingExtensionManager::AddFromExternalUpdateUrl(
     const std::string& id,
     const GURL& update_url,
-    Extension::Location location) {
+    Manifest::Location location) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const bool kIsFromSync = false;
@@ -130,7 +130,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
 
   const Extension* extension = service_.GetInstalledExtension(id);
   if (extension &&
-      location == Extension::GetHigherPriorityLocation(location,
+      location == Manifest::GetHigherPriorityLocation(location,
                                                        extension->location())) {
     // If the new location has higher priority than the location of an existing
     // extension, let the update process overwrite the existing extension.
@@ -153,7 +153,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
 
 bool PendingExtensionManager::AddFromExternalFile(
     const std::string& id,
-    Extension::Location install_source,
+    Manifest::Location install_source,
     const Version& version) {
   // TODO(skerner): AddFromSync() checks to see if the extension is
   // installed, but this method assumes that the caller already
@@ -179,13 +179,13 @@ void PendingExtensionManager::GetPendingIdsForUpdateCheck(
   for (iter = pending_extension_list_.begin();
        iter != pending_extension_list_.end();
        ++iter) {
-    Extension::Location install_source = iter->install_source();
+    Manifest::Location install_source = iter->install_source();
 
     // Some install sources read a CRX from the filesystem.  They can
     // not be fetched from an update URL, so don't include them in the
     // set of ids.
-    if (install_source == Extension::EXTERNAL_PREF ||
-        install_source == Extension::EXTERNAL_REGISTRY)
+    if (install_source == Manifest::EXTERNAL_PREF ||
+        install_source == Manifest::EXTERNAL_REGISTRY)
       continue;
 
     out_ids_for_update_check->push_back(iter->id());
@@ -199,7 +199,7 @@ bool PendingExtensionManager::AddExtensionImpl(
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
-    Extension::Location install_source) {
+    Manifest::Location install_source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PendingExtensionInfo info(id,

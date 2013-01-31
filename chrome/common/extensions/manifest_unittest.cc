@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/install_warning.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -27,14 +28,14 @@ class ManifestTest : public testing::Test {
   ManifestTest() : default_value_("test") {}
 
  protected:
-  void AssertType(Manifest* manifest, Extension::Type type) {
+  void AssertType(Manifest* manifest, Manifest::Type type) {
     EXPECT_EQ(type, manifest->type());
-    EXPECT_EQ(type == Extension::TYPE_THEME, manifest->is_theme());
-    EXPECT_EQ(type == Extension::TYPE_PLATFORM_APP,
+    EXPECT_EQ(type == Manifest::TYPE_THEME, manifest->is_theme());
+    EXPECT_EQ(type == Manifest::TYPE_PLATFORM_APP,
               manifest->is_platform_app());
-    EXPECT_EQ(type == Extension::TYPE_LEGACY_PACKAGED_APP,
+    EXPECT_EQ(type == Manifest::TYPE_LEGACY_PACKAGED_APP,
               manifest->is_legacy_packaged_app());
-    EXPECT_EQ(type == Extension::TYPE_HOSTED_APP, manifest->is_hosted_app());
+    EXPECT_EQ(type == Manifest::TYPE_HOSTED_APP, manifest->is_hosted_app());
   }
 
   // Helper function that replaces the Manifest held by |manifest| with a copy
@@ -48,7 +49,7 @@ class ManifestTest : public testing::Test {
       manifest_value->Set(key, value);
     else
       manifest_value->Remove(key, NULL);
-    manifest->reset(new Manifest(Extension::INTERNAL, manifest_value.Pass()));
+    manifest->reset(new Manifest(Manifest::INTERNAL, manifest_value.Pass()));
   }
 
   std::string default_value_;
@@ -64,13 +65,13 @@ TEST_F(ManifestTest, Extension) {
   manifest_value->SetString("unknown_key", "foo");
 
   scoped_ptr<Manifest> manifest(
-      new Manifest(Extension::INTERNAL, manifest_value.Pass()));
+      new Manifest(Manifest::INTERNAL, manifest_value.Pass()));
   std::string error;
-  Extension::InstallWarningVector warnings;
+  std::vector<InstallWarning> warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
   ASSERT_EQ(1u, warnings.size());
-  AssertType(manifest.get(), Extension::TYPE_EXTENSION);
+  AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
 
   // The known key 'background_page' should be accessible.
   std::string value;
@@ -119,44 +120,44 @@ TEST_F(ManifestTest, ExtensionTypes) {
   value->SetString(keys::kVersion, "1");
 
   scoped_ptr<Manifest> manifest(
-      new Manifest(Extension::INTERNAL, value.Pass()));
+      new Manifest(Manifest::INTERNAL, value.Pass()));
   std::string error;
-  Extension::InstallWarningVector warnings;
+  std::vector<InstallWarning> warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());
 
   // By default, the type is Extension.
-  AssertType(manifest.get(), Extension::TYPE_EXTENSION);
+  AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
 
   // Theme.
   MutateManifest(
       &manifest, keys::kTheme, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_THEME);
+  AssertType(manifest.get(), Manifest::TYPE_THEME);
   MutateManifest(
       &manifest, keys::kTheme, NULL);
 
   // Packaged app.
   MutateManifest(
       &manifest, keys::kApp, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_LEGACY_PACKAGED_APP);
+  AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   // Platform app.
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_PLATFORM_APP);
+  AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
 
   // Hosted app.
   MutateManifest(
       &manifest, keys::kWebURLs, new ListValue());
-  AssertType(manifest.get(), Extension::TYPE_HOSTED_APP);
+  AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kWebURLs, NULL);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, Value::CreateStringValue("foo"));
-  AssertType(manifest.get(), Extension::TYPE_HOSTED_APP);
+  AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, NULL);
 };
@@ -168,9 +169,9 @@ TEST_F(ManifestTest, RestrictedKeys) {
   value->SetString(keys::kVersion, "1");
 
   scoped_ptr<Manifest> manifest(
-      new Manifest(Extension::INTERNAL, value.Pass()));
+      new Manifest(Manifest::INTERNAL, value.Pass()));
   std::string error;
-  Extension::InstallWarningVector warnings;
+  std::vector<InstallWarning> warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());
@@ -178,14 +179,14 @@ TEST_F(ManifestTest, RestrictedKeys) {
   // Platform apps cannot have a "page_action" key.
   MutateManifest(
       &manifest, keys::kPageAction, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_EXTENSION);
+  AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
   base::Value* output = NULL;
   EXPECT_TRUE(manifest->HasKey(keys::kPageAction));
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_PLATFORM_APP);
+  AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   EXPECT_FALSE(manifest->HasKey(keys::kPageAction));
   EXPECT_FALSE(manifest->Get(keys::kPageAction, &output));
   MutateManifest(

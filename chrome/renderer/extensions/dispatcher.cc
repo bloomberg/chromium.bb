@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
@@ -774,7 +775,7 @@ void Dispatcher::DidCreateScriptContext(
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =
-      (extension && extension->location() == Extension::LOAD &&
+      (extension && extension->location() == Manifest::LOAD &&
        extension->has_lazy_background_page());
   module_system->RegisterNativeHandler("process",
       scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(

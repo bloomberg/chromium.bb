@@ -4,8 +4,9 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/install_warning.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -64,7 +65,7 @@ TEST_F(ExtensionManifestTest, OAuth2SectionParsing) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_EQ(1U, extension->install_warnings().size());
-    const extensions::Extension::InstallWarning& warning =
+    const extensions::InstallWarning& warning =
         extension->install_warnings()[0];
     EXPECT_EQ("'oauth2' is only allowed for extensions, legacy packaged apps "
                   "and packaged apps, and this is a hosted app.",

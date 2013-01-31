@@ -56,6 +56,8 @@
         '../extensions/common/constants.h',
         '../extensions/common/error_utils.cc',
         '../extensions/common/error_utils.h',
+        '../extensions/common/install_warning.h',
+        '../extensions/common/install_warning.cc',
         '../extensions/common/url_pattern.cc',
         '../extensions/common/url_pattern.h',
         '../extensions/common/url_pattern_set.cc',

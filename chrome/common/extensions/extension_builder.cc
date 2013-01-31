@@ -9,7 +9,7 @@
 namespace extensions {
 
 ExtensionBuilder::ExtensionBuilder()
-    : location_(Extension::LOAD),
+    : location_(Manifest::LOAD),
       flags_(Extension::NO_FLAGS) {
 }
 ExtensionBuilder::~ExtensionBuilder() {}
@@ -32,7 +32,7 @@ ExtensionBuilder& ExtensionBuilder::SetPath(const FilePath& path) {
   return *this;
 }
 
-ExtensionBuilder& ExtensionBuilder::SetLocation(Extension::Location location) {
+ExtensionBuilder& ExtensionBuilder::SetLocation(Manifest::Location location) {
   location_ = location;
   return *this;
 }

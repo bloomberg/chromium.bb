@@ -96,7 +96,7 @@ class SandboxedUnpackerTest : public testing::Test {
         ", Crx path: " << crx_path.value();
 
     unpacker_.reset(new Unpacker(
-        crx_path, std::string(), Extension::INTERNAL, Extension::NO_FLAGS));
+        crx_path, std::string(), Manifest::INTERNAL, Extension::NO_FLAGS));
 
     // Build a temp area where the extension will be unpacked.
     temp_path_ =
@@ -105,7 +105,7 @@ class SandboxedUnpackerTest : public testing::Test {
 
     sandboxed_unpacker_ =
         new SandboxedUnpacker(
-            crx_path, false, Extension::INTERNAL, Extension::NO_FLAGS,
+            crx_path, false, Manifest::INTERNAL, Extension::NO_FLAGS,
             extensions_dir_.path(),
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
             client_);

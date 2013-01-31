@@ -86,7 +86,7 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
 
   void InstallNamedExtension(const FilePath& path,
                              const std::string& name,
-                             Extension::Location install_source) {
+                             Manifest::Location install_source) {
     const Extension* extension = InstallExtension(path.AppendASCII(name), 1,
                                                   install_source);
     ASSERT_TRUE(extension);
@@ -101,11 +101,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
   LoadExtensions();
 
   FilePath basedir = test_data_dir_.AppendASCII("management");
-  InstallNamedExtension(basedir, "internal_extension", Extension::INTERNAL);
+  InstallNamedExtension(basedir, "internal_extension", Manifest::INTERNAL);
   InstallNamedExtension(basedir, "external_extension",
-                        Extension::EXTERNAL_PREF);
+                        Manifest::EXTERNAL_PREF);
   InstallNamedExtension(basedir, "admin_extension",
-                        Extension::EXTERNAL_POLICY_DOWNLOAD);
+                        Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
   ASSERT_TRUE(RunExtensionSubtest("management/test", "basics.html"));
 }

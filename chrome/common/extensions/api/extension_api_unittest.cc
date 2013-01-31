@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/simple_feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -31,7 +32,7 @@ class TestFeatureProvider : public FeatureProvider {
   virtual Feature* GetFeature(const std::string& name) OVERRIDE {
     SimpleFeature* result = new SimpleFeature();
     result->set_name(name);
-    result->extension_types()->insert(Extension::TYPE_EXTENSION);
+    result->extension_types()->insert(Manifest::TYPE_EXTENSION);
     result->GetContexts()->insert(context_);
     to_destroy_.push_back(make_linked_ptr(result));
     return result;
@@ -207,7 +208,7 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      FilePath(), Extension::LOAD, manifest, Extension::NO_FLAGS, &error));
+      FilePath(), Manifest::LOAD, manifest, Extension::NO_FLAGS, &error));
   CHECK(extension.get());
   CHECK(error.empty());
 

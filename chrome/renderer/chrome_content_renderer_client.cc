@@ -349,7 +349,7 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }
 
-const extensions::Extension* ChromeContentRendererClient::GetExtension(
+const Extension* ChromeContentRendererClient::GetExtension(
     const WebSecurityOrigin& origin) const {
   if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return NULL;
@@ -372,7 +372,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
         switches::kEnableBrowserPluginForAllViewTypes))
       return false;
     WebDocument document = frame->document();
-    const extensions::Extension* extension =
+    const Extension* extension =
         GetExtension(document.securityOrigin());
     if (extension && extension->HasAPIPermission(
         extensions::APIPermission::kWebView))
@@ -520,8 +520,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               extension && extension->from_webstore();
           // Allow built-in extensions and extensions under development.
           bool is_extension_unrestricted = extension &&
-              (extension->location() == Extension::COMPONENT ||
-              extension->location() == Extension::LOAD);
+              (extension->location() == extensions::Manifest::COMPONENT ||
+               extension->location() == extensions::Manifest::LOAD);
           GURL top_url = frame->top()->document().url();
           if (!IsNaClAllowed(manifest_url,
                              top_url,

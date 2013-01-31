@@ -10,10 +10,9 @@
 
 #include "base/string16.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
-
-class Manifest;
 
 class ManifestHandler {
  public:
@@ -31,7 +30,7 @@ class ManifestHandler {
   // are present. This allows specifying a default parsed value for
   // extensions that don't declare our key in the manifest.
   // TODO(yoz): Use Feature availability instead.
-  virtual bool AlwaysParseForType(Extension::Type type);
+  virtual bool AlwaysParseForType(Manifest::Type type);
 
   // Associate |handler| with |key| in the manifest. A handler can register
   // for multiple keys. The global registry takes ownership of |handler|;

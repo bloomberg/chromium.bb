@@ -10,7 +10,7 @@
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 
 using sync_datatype_helper::test;
 
@@ -44,14 +44,14 @@ std::string InstallApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->InstallExtension(
       profile,
       CreateFakeAppName(index),
-      extensions::Extension::TYPE_HOSTED_APP);
+      extensions::Manifest::TYPE_HOSTED_APP);
 }
 
 std::string InstallPlatformApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->InstallExtension(
       profile,
       CreateFakeAppName(index),
-      extensions::Extension::TYPE_PLATFORM_APP);
+      extensions::Manifest::TYPE_PLATFORM_APP);
 }
 
 std::string InstallAppForAllProfiles(int index) {

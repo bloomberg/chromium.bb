@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -47,7 +48,7 @@ namespace {
 scoped_refptr<Extension> LoadManifestUnchecked(
     const std::string& dir,
     const std::string& test_file,
-    Extension::Location location,
+    Manifest::Location location,
     int extra_flags,
     std::string* error) {
   FilePath path;
@@ -69,7 +70,7 @@ scoped_refptr<Extension> LoadManifestUnchecked(
 
 static scoped_refptr<Extension> LoadManifest(const std::string& dir,
                                              const std::string& test_file,
-                                             Extension::Location location,
+                                             Manifest::Location location,
                                              int extra_flags) {
   std::string error;
   scoped_refptr<Extension> extension = LoadManifestUnchecked(dir, test_file,
@@ -82,7 +83,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 static scoped_refptr<Extension> LoadManifest(const std::string& dir,
                                              const std::string& test_file,
                                              int extra_flags) {
-  return LoadManifest(dir, test_file, Extension::INVALID, extra_flags);
+  return LoadManifest(dir, test_file, Manifest::INVALID_LOCATION, extra_flags);
 }
 
 static scoped_refptr<Extension> LoadManifest(const std::string& dir,
@@ -114,7 +115,7 @@ static void LoadActionAndExpectError(const std::string& manifest,
                                      const std::string& expected_error) {
   std::string error;
   scoped_refptr<Extension> extension = LoadManifestUnchecked("page_action",
-      manifest, Extension::INTERNAL, Extension::NO_FLAGS, &error);
+      manifest, Manifest::INTERNAL, Extension::NO_FLAGS, &error);
   EXPECT_FALSE(extension);
   EXPECT_EQ(expected_error, error);
 }
@@ -132,51 +133,51 @@ class ExtensionTest : public testing::Test {
 // We persist location values in the preferences, so this is a sanity test that
 // someone doesn't accidentally change them.
 TEST_F(ExtensionTest, LocationValuesTest) {
-  ASSERT_EQ(0, Extension::INVALID);
-  ASSERT_EQ(1, Extension::INTERNAL);
-  ASSERT_EQ(2, Extension::EXTERNAL_PREF);
-  ASSERT_EQ(3, Extension::EXTERNAL_REGISTRY);
-  ASSERT_EQ(4, Extension::LOAD);
-  ASSERT_EQ(5, Extension::COMPONENT);
-  ASSERT_EQ(6, Extension::EXTERNAL_PREF_DOWNLOAD);
-  ASSERT_EQ(7, Extension::EXTERNAL_POLICY_DOWNLOAD);
+  ASSERT_EQ(0, Manifest::INVALID_LOCATION);
+  ASSERT_EQ(1, Manifest::INTERNAL);
+  ASSERT_EQ(2, Manifest::EXTERNAL_PREF);
+  ASSERT_EQ(3, Manifest::EXTERNAL_REGISTRY);
+  ASSERT_EQ(4, Manifest::LOAD);
+  ASSERT_EQ(5, Manifest::COMPONENT);
+  ASSERT_EQ(6, Manifest::EXTERNAL_PREF_DOWNLOAD);
+  ASSERT_EQ(7, Manifest::EXTERNAL_POLICY_DOWNLOAD);
 }
 
 TEST_F(ExtensionTest, LocationPriorityTest) {
-  for (int i = 0; i < Extension::NUM_LOCATIONS; i++) {
-    Extension::Location loc = static_cast<Extension::Location>(i);
+  for (int i = 0; i < Manifest::NUM_LOCATIONS; i++) {
+    Manifest::Location loc = static_cast<Manifest::Location>(i);
 
     // INVALID is not a valid location.
-    if (loc == Extension::INVALID)
+    if (loc == Manifest::INVALID_LOCATION)
       continue;
 
     // Comparing a location that has no rank will hit a CHECK. Do a
     // compare with every valid location, to be sure each one is covered.
 
     // Check that no install source can override a componenet extension.
-    ASSERT_EQ(Extension::COMPONENT,
-              Extension::GetHigherPriorityLocation(Extension::COMPONENT, loc));
-    ASSERT_EQ(Extension::COMPONENT,
-              Extension::GetHigherPriorityLocation(loc, Extension::COMPONENT));
+    ASSERT_EQ(Manifest::COMPONENT,
+              Manifest::GetHigherPriorityLocation(Manifest::COMPONENT, loc));
+    ASSERT_EQ(Manifest::COMPONENT,
+              Manifest::GetHigherPriorityLocation(loc, Manifest::COMPONENT));
 
     // Check that any source can override a user install. This might change
     // in the future, in which case this test should be updated.
     ASSERT_EQ(loc,
-              Extension::GetHigherPriorityLocation(Extension::INTERNAL, loc));
+              Manifest::GetHigherPriorityLocation(Manifest::INTERNAL, loc));
     ASSERT_EQ(loc,
-              Extension::GetHigherPriorityLocation(loc, Extension::INTERNAL));
+              Manifest::GetHigherPriorityLocation(loc, Manifest::INTERNAL));
   }
 
   // Check a few interesting cases that we know can happen:
-  ASSERT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
-            Extension::GetHigherPriorityLocation(
-                Extension::EXTERNAL_POLICY_DOWNLOAD,
-                Extension::EXTERNAL_PREF));
+  ASSERT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD,
+            Manifest::GetHigherPriorityLocation(
+                Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                Manifest::EXTERNAL_PREF));
 
-  ASSERT_EQ(Extension::EXTERNAL_PREF,
-            Extension::GetHigherPriorityLocation(
-                Extension::INTERNAL,
-                Extension::EXTERNAL_PREF));
+  ASSERT_EQ(Manifest::EXTERNAL_PREF,
+            Manifest::GetHigherPriorityLocation(
+                Manifest::INTERNAL,
+                Manifest::EXTERNAL_PREF));
 }
 
 TEST_F(ExtensionTest, GetResourceURLAndPath) {
@@ -202,7 +203,7 @@ TEST_F(ExtensionTest, GetAbsolutePathNoError) {
       "absolute.json");
   EXPECT_TRUE(extension.get());
   std::string err;
-  Extension::InstallWarningVector warnings;
+  std::vector<InstallWarning> warnings;
   EXPECT_TRUE(extension_file_util::ValidateExtension(extension.get(),
                                                      &err, &warnings));
   EXPECT_EQ(0U, warnings.size());
@@ -473,7 +474,7 @@ TEST_F(ExtensionTest, SocketPermissions) {
 
   extension = LoadManifestUnchecked("socket_permissions",
                                     "socket1.json",
-                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    Manifest::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension == NULL);
   ASSERT_EQ(ErrorUtils::FormatErrorMessage(
@@ -518,7 +519,7 @@ TEST_F(ExtensionTest, ImageCaching) {
   values.SetString(keys::kName, "test");
   values.SetString(keys::kVersion, "0.1");
   scoped_refptr<Extension> extension(Extension::Create(
-      path, Extension::INVALID, values, Extension::NO_FLAGS, &errors));
+      path, Manifest::INVALID_LOCATION, values, Extension::NO_FLAGS, &errors));
   ASSERT_TRUE(extension.get());
 
   // Create an ExtensionResource pointing at an icon.
@@ -904,7 +905,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   std::string error;
   extension = LoadManifestUnchecked("script_and_capture",
                                     "extension_wildcard_chrome.json",
-                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    Manifest::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension == NULL);
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
@@ -926,7 +927,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
 
   // Component extensions with <all_urls> should get everything.
   extension = LoadManifest("script_and_capture", "extension_component_all.json",
-      Extension::COMPONENT, Extension::NO_FLAGS);
+      Manifest::COMPONENT, Extension::NO_FLAGS);
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Allowed(extension, https_url));
   EXPECT_TRUE(Allowed(extension, settings_url));
@@ -936,7 +937,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
 
   // Component extensions should only get access to what they ask for.
   extension = LoadManifest("script_and_capture",
-      "extension_component_google.json", Extension::COMPONENT,
+      "extension_component_google.json", Manifest::COMPONENT,
       Extension::NO_FLAGS);
   EXPECT_TRUE(Allowed(extension, http_url));
   EXPECT_TRUE(Blocked(extension, https_url));
@@ -1058,7 +1059,7 @@ static scoped_refptr<Extension> MakeSyncTestExtension(
     SyncTestExtensionType type,
     const GURL& update_url,
     const GURL& launch_url,
-    Extension::Location location,
+    Manifest::Location location,
     int num_plugins,
     const FilePath& extension_path,
     int creation_flags) {
@@ -1107,7 +1108,7 @@ static const char kValidUpdateUrl2[] =
 TEST_F(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
@@ -1116,7 +1117,7 @@ TEST_F(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
 TEST_F(ExtensionTest, DISABLED_GetSyncTypeUserScriptValidUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
@@ -1124,7 +1125,7 @@ TEST_F(ExtensionTest, DISABLED_GetSyncTypeUserScriptValidUpdateUrl) {
 TEST_F(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
@@ -1132,7 +1133,7 @@ TEST_F(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
 TEST_F(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(THEME, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
@@ -1140,7 +1141,7 @@ TEST_F(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
 TEST_F(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
@@ -1148,7 +1149,7 @@ TEST_F(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
 TEST_F(ExtensionTest, GetSyncTypeExtensionExternal) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::EXTERNAL_PREF, 0, FilePath(),
+                            Manifest::EXTERNAL_PREF, 0, FilePath(),
                             Extension::NO_FLAGS));
 
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
@@ -1158,14 +1159,14 @@ TEST_F(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
-          Extension::INTERNAL, 0, FilePath(), Extension::NO_FLAGS));
+          Manifest::INTERNAL, 0, FilePath(), Extension::NO_FLAGS));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST_F(ExtensionTest, OnlyDisplayAppsInLauncher) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
 
   EXPECT_FALSE(extension->ShouldDisplayInAppLauncher());
@@ -1173,7 +1174,7 @@ TEST_F(ExtensionTest, OnlyDisplayAppsInLauncher) {
 
   scoped_refptr<Extension> app(
       MakeSyncTestExtension(APP, GURL(), GURL("http://www.google.com"),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
   EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
@@ -1191,7 +1192,7 @@ TEST_F(ExtensionTest, DisplayInXManifestProperties) {
 
   // Default to true.
   app = Extension::Create(
-      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+      FilePath(), Manifest::COMPONENT, manifest, 0, &error);
   EXPECT_EQ(error, std::string());
   EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
   EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
@@ -1199,7 +1200,7 @@ TEST_F(ExtensionTest, DisplayInXManifestProperties) {
   // Value display_in_NTP defaults to display_in_launcher.
   manifest.SetBoolean(keys::kDisplayInLauncher, false);
   app = Extension::Create(
-      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+      FilePath(), Manifest::COMPONENT, manifest, 0, &error);
   EXPECT_EQ(error, std::string());
   EXPECT_FALSE(app->ShouldDisplayInAppLauncher());
   EXPECT_FALSE(app->ShouldDisplayInNewTabPage());
@@ -1207,7 +1208,7 @@ TEST_F(ExtensionTest, DisplayInXManifestProperties) {
   // Value display_in_NTP = true overriding display_in_launcher = false.
   manifest.SetBoolean(keys::kDisplayInNewTabPage, true);
   app = Extension::Create(
-      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+      FilePath(), Manifest::COMPONENT, manifest, 0, &error);
   EXPECT_EQ(error, std::string());
   EXPECT_FALSE(app->ShouldDisplayInAppLauncher());
   EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
@@ -1216,7 +1217,7 @@ TEST_F(ExtensionTest, DisplayInXManifestProperties) {
   manifest.Remove(keys::kDisplayInLauncher, NULL);
   manifest.SetBoolean(keys::kDisplayInNewTabPage, false);
   app = Extension::Create(
-      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+      FilePath(), Manifest::COMPONENT, manifest, 0, &error);
   EXPECT_EQ(error, std::string());
   EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
   EXPECT_FALSE(app->ShouldDisplayInNewTabPage());
@@ -1224,20 +1225,20 @@ TEST_F(ExtensionTest, DisplayInXManifestProperties) {
   // Error checking.
   manifest.SetString(keys::kDisplayInNewTabPage, "invalid");
   app = Extension::Create(
-      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+      FilePath(), Manifest::COMPONENT, manifest, 0, &error);
   EXPECT_EQ(error, std::string(errors::kInvalidDisplayInNewTabPage));
 }
 
 TEST_F(ExtensionTest, OnlySyncInternal) {
   scoped_refptr<Extension> extension_internal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(extension_internal->IsSyncable());
 
   scoped_refptr<Extension> extension_noninternal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::COMPONENT, 0, FilePath(),
+                            Manifest::COMPONENT, 0, FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_FALSE(extension_noninternal->IsSyncable());
 }
@@ -1245,7 +1246,7 @@ TEST_F(ExtensionTest, OnlySyncInternal) {
 TEST_F(ExtensionTest, DontSyncDefault) {
   scoped_refptr<Extension> extension_default(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath(),
+                            Manifest::INTERNAL, 0, FilePath(),
                             Extension::WAS_INSTALLED_BY_DEFAULT));
   EXPECT_FALSE(extension_default->IsSyncable());
 }
@@ -1260,7 +1261,7 @@ TEST_F(ExtensionTest, OptionalOnlyPermission) {
   std::string error;
   extension = LoadManifestUnchecked("optional_only_permission",
                                     "manifest1.json",
-                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    Manifest::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension == NULL);
   ASSERT_EQ(ErrorUtils::FormatErrorMessage(
@@ -1269,7 +1270,7 @@ TEST_F(ExtensionTest, OptionalOnlyPermission) {
   error.clear();
   extension = LoadManifestUnchecked("optional_only_permission",
                                     "manifest2.json",
-                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    Manifest::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension != NULL);
   EXPECT_TRUE(error.empty());
@@ -1281,7 +1282,7 @@ TEST_F(ExtensionTest, OptionalOnlyPermission) {
 TEST_F(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 1, FilePath(),
+                            Manifest::INTERNAL, 1, FilePath(),
                             Extension::NO_FLAGS));
   if (extension)
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
@@ -1290,7 +1291,7 @@ TEST_F(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
 TEST_F(ExtensionTest, GetSyncTypeExtensionWithTwoPlugins) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 2, FilePath(),
+                            Manifest::INTERNAL, 2, FilePath(),
                             Extension::NO_FLAGS));
   if (extension)
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);

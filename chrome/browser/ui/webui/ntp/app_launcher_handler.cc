@@ -134,7 +134,7 @@ void AppLauncherHandler::CreateAppInfo(
       prefs->GetLaunchType(extension,
                            ExtensionPrefs::LAUNCH_DEFAULT));
   value->SetBoolean("is_component",
-      extension->location() == Extension::COMPONENT);
+                    extension->location() == extensions::Manifest::COMPONENT);
   value->SetBoolean("is_webstore",
       extension->id() == extension_misc::kWebStoreAppId);
 

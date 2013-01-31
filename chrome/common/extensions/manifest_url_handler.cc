@@ -227,7 +227,7 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
 #endif
 #if defined(FILE_MANAGER_EXTENSION)
     is_override = (is_override &&
-                   !(extension->location() == Extension::COMPONENT &&
+                   !(extension->location() == Manifest::COMPONENT &&
                      page == chrome::kChromeUIFileManagerHost));
 #endif
 
@@ -240,7 +240,7 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
 
     // For component extensions, add override URL to extent patterns.
     if (extension->is_legacy_packaged_app() &&
-        extension->location() == Extension::COMPONENT) {
+        extension->location() == Manifest::COMPONENT) {
       URLPattern pattern(URLPattern::SCHEME_CHROMEUI);
       std::string url = base::StringPrintf(kOverrideExtentUrlPatternFormat,
                                            page.c_str());

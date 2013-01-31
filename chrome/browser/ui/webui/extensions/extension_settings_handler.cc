@@ -75,6 +75,7 @@ using extensions::Extension;
 using extensions::ExtensionUpdater;
 using extensions::ExtensionWarning;
 using extensions::ManagementPolicy;
+using extensions::Manifest;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -131,11 +132,11 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
                                       extension_misc::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       !enabled, NULL);
-  if (extension->location() == Extension::LOAD)
+  if (extension->location() == Manifest::LOAD)
     extension_data->SetString("path", extension->path().value());
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
-                             extension->location() == Extension::LOAD);
+                             extension->location() == Manifest::LOAD);
   extension_data->SetBoolean("terminated",
       extension_service_->terminated_extensions()->Contains(extension->id()));
   extension_data->SetBoolean("enabledIncognito",
@@ -149,7 +150,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       enabled && CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityUI));
   extension_data->SetBoolean("allow_reload",
-                             extension->location() == Extension::LOAD);
+                             extension->location() == Manifest::LOAD);
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
   extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
@@ -165,11 +166,11 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("disableReason", automatically_disabled_text);
 
   string16 location_text;
-  if (extension->location() == Extension::INTERNAL &&
+  if (extension->location() == Manifest::INTERNAL &&
       !extension->UpdatesFromGallery()) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_UNKNOWN);
-  } else if (extension->location() == Extension::EXTERNAL_REGISTRY) {
+  } else if (extension->location() == Manifest::EXTERNAL_REGISTRY) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_3RD_PARTY);
   }
@@ -177,7 +178,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
 
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.
-  if (extension->location() == Extension::LOAD)
+  if (extension->location() == Manifest::LOAD)
     extension_data->SetInteger("order", 1);
   else
     extension_data->SetInteger("order", 2);
@@ -228,16 +229,16 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   }
 
   // Add install warnings (these are not the same as warnings!).
-  if (extension->location() == Extension::LOAD) {
-    const Extension::InstallWarningVector& install_warnings =
+  if (extension->location() == Manifest::LOAD) {
+    const std::vector<extensions::InstallWarning>& install_warnings =
         extension->install_warnings();
     if (!install_warnings.empty()) {
       scoped_ptr<ListValue> list(new ListValue());
-      for (Extension::InstallWarningVector::const_iterator it =
+      for (std::vector<extensions::InstallWarning>::const_iterator it =
                install_warnings.begin(); it != install_warnings.end(); ++it) {
         DictionaryValue* item = new DictionaryValue();
         item->SetBoolean("isHTML",
-                         it->format == Extension::InstallWarning::FORMAT_HTML);
+                         it->format == extensions::InstallWarning::FORMAT_HTML);
         item->SetString("message", it->message);
         list->Append(item);
       }
@@ -506,7 +507,7 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
   std::vector<const Extension*> unpacked_extensions;
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if ((*extension)->location() == Extension::LOAD)
+    if ((*extension)->location() == Manifest::LOAD)
       unpacked_extensions.push_back(*extension);
   }
 

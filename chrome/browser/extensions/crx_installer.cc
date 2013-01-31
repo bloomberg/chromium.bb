@@ -89,7 +89,7 @@ CrxInstaller::CrxInstaller(
     ExtensionInstallPrompt* client,
     const WebstoreInstaller::Approval* approval)
     : install_directory_(frontend_weak->install_directory()),
-      install_source_(Extension::INTERNAL),
+      install_source_(Manifest::INTERNAL),
       approved_(false),
       extensions_enabled_(frontend_weak->extensions_enabled()),
       delete_source_(false),
@@ -243,7 +243,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   // TODO(pamg): After ManagementPolicy refactoring is complete, remove this
   // and other uses of install_source_ that are no longer needed now that the
   // SandboxedUnpacker sets extension->location.
-  if (extension->is_theme() || Extension::IsExternalLocation(install_source_))
+  if (extension->is_theme() || Manifest::IsExternalLocation(install_source_))
     return CrxInstallerError();
 
   if (!extensions_enabled_) {
@@ -342,7 +342,7 @@ void CrxInstaller::OnUnpackFailure(const string16& error_message) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallSource",
-                            install_source(), Extension::NUM_LOCATIONS);
+                            install_source(), Manifest::NUM_LOCATIONS);
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallCause",
                             install_cause(),
@@ -358,7 +358,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
-                            install_source(), Extension::NUM_LOCATIONS);
+                            install_source(), Manifest::NUM_LOCATIONS);
 
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallCause",

@@ -43,6 +43,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -431,7 +432,7 @@ Blacklist* ExtensionSystemImpl::blacklist() {
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
     const Extension* extension) {
   base::Time install_time;
-  if (extension->location() != Extension::COMPONENT) {
+  if (extension->location() != Manifest::COMPONENT) {
     install_time = extension_service()->extension_prefs()->
         GetInstallTime(extension->id());
   }

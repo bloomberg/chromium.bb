@@ -48,13 +48,13 @@ class MockExtensionService : public TestExtensionService {
   virtual ~MockExtensionService();
 
   // Adds an extension with id |id| to be returned by GetExtensionById.
-  void AddExtensionWithId(const std::string& id, Extension::Type type);
+  void AddExtensionWithId(const std::string& id, Manifest::Type type);
 
   // Adds an extension with id |id| to be returned by GetExtensionById, with
   // a set of permissions.
   void AddExtensionWithIdAndPermissions(
       const std::string& id,
-      Extension::Type type,
+      Manifest::Type type,
       const std::set<std::string>& permissions);
 
   virtual const Extension* GetExtensionById(

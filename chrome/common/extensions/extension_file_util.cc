@@ -27,14 +27,17 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/message_bundle.h"
+#include "extensions/common/install_warning.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace errors = extension_manifest_errors;
 
@@ -137,7 +140,7 @@ void UninstallExtension(const FilePath& extensions_dir,
 }
 
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
-                                       Extension::Location location,
+                                       Manifest::Location location,
                                        int flags,
                                        std::string* error) {
   return LoadExtension(extension_path, std::string(), location, flags, error);
@@ -145,7 +148,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
 
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
                                        const std::string& extension_id,
-                                       Extension::Location location,
+                                       Manifest::Location location,
                                        int flags,
                                        std::string* error) {
   scoped_ptr<DictionaryValue> manifest(LoadManifest(extension_path, error));
@@ -165,7 +168,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
   if (!extension.get())
     return NULL;
 
-  Extension::InstallWarningVector warnings;
+  std::vector<extensions::InstallWarning> warnings;
   if (!ValidateExtension(extension.get(), error, &warnings))
     return NULL;
   extension->AddInstallWarnings(warnings);
@@ -246,7 +249,7 @@ bool ValidateFilePath(const FilePath& path) {
 
 bool ValidateExtension(const Extension* extension,
                        std::string* error,
-                       Extension::InstallWarningVector* warnings) {
+                       std::vector<extensions::InstallWarning>* warnings) {
   // Validate icons exist.
   for (ExtensionIconSet::IconMap::const_iterator iter =
            extension->icons().map().begin();
@@ -414,8 +417,8 @@ bool ValidateExtension(const Extension* extension,
     }
   } else {
     for (size_t i = 0; i < private_keys.size(); ++i) {
-      warnings->push_back(Extension::InstallWarning(
-          Extension::InstallWarning::FORMAT_TEXT,
+      warnings->push_back(extensions::InstallWarning(
+          extensions::InstallWarning::FORMAT_TEXT,
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_CONTAINS_PRIVATE_KEY,
               private_keys[i].LossyDisplayName())));

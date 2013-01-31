@@ -17,6 +17,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::Manifest;
 
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.
@@ -116,7 +117,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      manifest_path.DirName(), Extension::INVALID, *manifest.get(),
+      manifest_path.DirName(), Manifest::INVALID_LOCATION, *manifest.get(),
       Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
   TestIconManager icon_manager(this);
@@ -157,7 +158,7 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      manifest_path.DirName(), Extension::COMPONENT, *manifest.get(),
+      manifest_path.DirName(), Manifest::COMPONENT, *manifest.get(),
       Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
 

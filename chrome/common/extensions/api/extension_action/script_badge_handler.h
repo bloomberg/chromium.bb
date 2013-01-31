@@ -20,7 +20,7 @@ class ScriptBadgeHandler : public ManifestHandler {
   virtual ~ScriptBadgeHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
-  virtual bool AlwaysParseForType(Extension::Type type) OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) OVERRIDE;
 
  private:
   // Sets the fields of ActionInfo to the default values, matching the parent

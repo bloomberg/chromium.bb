@@ -411,7 +411,7 @@ NativePanelTesting* BasePanelBrowserTest::CreateNativePanelTesting(
 
 scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
     const FilePath::StringType& path,
-    Extension::Location location,
+    extensions::Manifest::Location location,
     const DictionaryValue& extra_value) {
 #if defined(OS_WIN)
   FilePath full_path(FILE_PATH_LITERAL("c:\\"));

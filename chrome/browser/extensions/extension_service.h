@@ -35,6 +35,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/api/string_ordinal.h"
@@ -594,14 +595,14 @@ class ExtensionService
       const std::string& id,
       const Version* version,
       const FilePath& path,
-      extensions::Extension::Location location,
+      extensions::Manifest::Location location,
       int creation_flags,
       bool mark_acknowledged) OVERRIDE;
 
   virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id,
       const GURL& update_url,
-      extensions::Extension::Location location) OVERRIDE;
+      extensions::Manifest::Location location) OVERRIDE;
 
   virtual void OnExternalProviderReady(
       const extensions::ExternalProviderInterface* provider) OVERRIDE;

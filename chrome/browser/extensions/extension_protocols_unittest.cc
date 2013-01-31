@@ -22,6 +22,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace {
 
@@ -37,7 +38,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(path, Extension::INTERNAL, manifest,
+      Extension::Create(path, Manifest::INTERNAL, manifest,
                         Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
@@ -55,7 +56,7 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
 
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(path, Extension::COMPONENT, manifest,
+      Extension::Create(path, Manifest::COMPONENT, manifest,
                         Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;

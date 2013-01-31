@@ -1717,8 +1717,8 @@ TEST_F(TabStripModelTest, Apps) {
   manifest.SetString("version", "1");
   std::string error;
   scoped_refptr<Extension> extension_app(
-      Extension::Create(path, Extension::INVALID, manifest, Extension::NO_FLAGS,
-                        &error));
+      Extension::Create(path, extensions::Manifest::INVALID_LOCATION,
+                        manifest, Extension::NO_FLAGS, &error));
   extension_app->launch_web_url_ = "http://www.google.com";
   WebContents* contents1 = CreateWebContents();
   extensions::TabHelper::CreateForWebContents(contents1);

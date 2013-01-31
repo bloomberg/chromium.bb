@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/web_apps.h"
 #include "sync/api/string_ordinal.h"
 
@@ -109,10 +110,10 @@ class CrxInstaller
 
   const FilePath& source_file() const { return source_file_; }
 
-  Extension::Location install_source() const {
+  Manifest::Location install_source() const {
     return install_source_;
   }
-  void set_install_source(Extension::Location source) {
+  void set_install_source(Manifest::Location source) {
     install_source_ = source;
   }
 
@@ -259,7 +260,7 @@ class CrxInstaller
   // The location the installation came from (bundled with Chromium, registry,
   // manual install, etc). This metadata is saved with the installation if
   // successful. Defaults to INTERNAL.
-  Extension::Location install_source_;
+  Manifest::Location install_source_;
 
   // Indicates whether the user has already approved the extension to be
   // installed. If true, |expected_manifest_| and |expected_id_| must match

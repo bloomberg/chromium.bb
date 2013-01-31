@@ -15,11 +15,12 @@ using extensions::APIPermissionInfo;
 using extensions::APIPermissionMap;
 using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::Manifest;
 using extensions::PermissionSet;
 using extensions::URLPatternSet;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
-    : location(Extension::INVALID),
+    : location(Manifest::INVALID_LOCATION),
       creation_flags(Extension::NO_FLAGS){}
 
 ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
@@ -57,8 +58,8 @@ scoped_refptr<Extension>
 namespace IPC {
 
 template <>
-struct ParamTraits<Extension::Location> {
-  typedef Extension::Location param_type;
+struct ParamTraits<Manifest::Location> {
+  typedef Manifest::Location param_type;
   static void Write(Message* m, const param_type& p) {
     int val = static_cast<int>(p);
     WriteParam(m, val);
@@ -66,8 +67,8 @@ struct ParamTraits<Extension::Location> {
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     int val = 0;
     if (!ReadParam(m, iter, &val) ||
-        val < Extension::INVALID ||
-        val >= Extension::NUM_LOCATIONS)
+        val < Manifest::INVALID_LOCATION ||
+        val >= Manifest::NUM_LOCATIONS)
       return false;
     *p = static_cast<param_type>(val);
     return true;

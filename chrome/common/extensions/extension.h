@@ -23,10 +23,12 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/user_script.h"
+#include "extensions/common/install_warning.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
@@ -51,7 +53,6 @@ FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
 struct ActionInfo;
-class Manifest;
 class PermissionSet;
 
 typedef std::set<std::string> OAuth2Scopes;
@@ -59,35 +60,11 @@ typedef std::set<std::string> OAuth2Scopes;
 // Represents a Chrome extension.
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
-  struct InstallWarning;
   struct ManifestData;
 
   typedef std::vector<std::string> ScriptingWhitelist;
-  typedef std::vector<InstallWarning> InstallWarningVector;
   typedef std::map<const std::string, linked_ptr<ManifestData> >
       ManifestDataMap;
-
-  // What an extension was loaded from.
-  // NOTE: These values are stored as integers in the preferences and used
-  // in histograms so don't remove or reorder existing items.  Just append
-  // to the end.
-  enum Location {
-    INVALID,
-    INTERNAL,           // A crx file from the internal Extensions directory.
-    EXTERNAL_PREF,      // A crx file from an external directory (via prefs).
-    EXTERNAL_REGISTRY,  // A crx file from an external directory (via eg the
-                        // registry on Windows).
-    LOAD,               // --load-extension.
-    COMPONENT,          // An integral component of Chrome itself, which
-                        // happens to be implemented as an extension. We don't
-                        // show these in the management UI.
-    EXTERNAL_PREF_DOWNLOAD,    // A crx file from an external directory (via
-                               // prefs), installed from an update URL.
-    EXTERNAL_POLICY_DOWNLOAD,  // A crx file from an external directory (via
-                               // admin policies), installed from an update URL.
-
-    NUM_LOCATIONS
-  };
 
   enum State {
     DISABLED = 0,
@@ -128,20 +105,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     NEW_INSTALL
   };
 
-  // Do not change the order of entries or remove entries in this list
-  // as this is used in UMA_HISTOGRAM_ENUMERATIONs about extensions.
-  enum Type {
-    TYPE_UNKNOWN = 0,
-    TYPE_EXTENSION,
-    TYPE_THEME,
-    TYPE_USER_SCRIPT,
-    TYPE_HOSTED_APP,
-    // This is marked legacy because platform apps are preferred. For
-    // backwards compatibility, we can't remove support for packaged apps
-    TYPE_LEGACY_PACKAGED_APP,
-    TYPE_PLATFORM_APP
-  };
-
   enum SyncType {
     SYNC_TYPE_NONE = 0,
     SYNC_TYPE_EXTENSION,
@@ -179,21 +142,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
     std::string client_id;
     std::vector<std::string> scopes;
-  };
-
-  struct InstallWarning {
-    enum Format {
-      // IMPORTANT: Do not build HTML strings from user or developer-supplied
-      // input.
-      FORMAT_TEXT,
-      FORMAT_HTML,
-    };
-    InstallWarning(Format format, const std::string& message)
-        : format(format), message(message) {
-    }
-    bool operator==(const InstallWarning& other) const;
-    Format format;
-    std::string message;
   };
 
   // A base class for parsed manifest data that APIs want to store on
@@ -245,7 +193,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
-                                         Location location,
+                                         Manifest::Location location,
                                          const base::DictionaryValue& value,
                                          int flags,
                                          std::string* error);
@@ -253,16 +201,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the other Create() method.
   static scoped_refptr<Extension> Create(const FilePath& path,
-      Location location,
+      Manifest::Location location,
       const base::DictionaryValue& value,
       int flags,
       const std::string& explicit_id,
       std::string* error);
-
-  // Given two install sources, return the one which should take priority
-  // over the other. If an extension is installed from two sources A and B,
-  // its install source should be set to GetHigherPriorityLocation(A, B).
-  static Location GetHigherPriorityLocation(Location loc1, Location loc2);
 
   // Max size (both dimensions) for browser and page actions.
   static const int kPageActionIconMaxSize;
@@ -303,33 +246,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the specified file is an extension.
   static bool IsExtension(const FilePath& file_name);
 
-  // Whether the |location| is external or not.
-  static inline bool IsExternalLocation(Location location) {
-    return location == Extension::EXTERNAL_PREF ||
-           location == Extension::EXTERNAL_REGISTRY ||
-           location == Extension::EXTERNAL_PREF_DOWNLOAD ||
-           location == Extension::EXTERNAL_POLICY_DOWNLOAD;
-  }
-
-  // Whether extensions with |location| are auto-updatable or not.
-  static inline bool IsAutoUpdateableLocation(Location location) {
-    // Only internal and external extensions can be autoupdated.
-    return location == Extension::INTERNAL ||
-           IsExternalLocation(location);
-  }
-
-  // Unpacked extensions start off with file access since they are a developer
-  // feature.
-  static inline bool ShouldAlwaysAllowFileAccess(Location location) {
-    return location == Extension::LOAD;
-  }
-
   // Fills the |info| dictionary with basic information about the extension.
   // |enabled| is injected for easier testing.
   void GetBasicInfo(bool enabled, base::DictionaryValue* info) const;
 
-  // See Type definition above.
-  Type GetType() const;
+  // See Type definition in Manifest.
+  Manifest::Type GetType() const;
 
   // Returns an absolute url to a resource inside of an extension. The
   // |extension_url| argument should be the url() from an Extension object. The
@@ -588,7 +510,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const Requirements& requirements() const { return requirements_; }
   const FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
-  Location location() const;
+  Manifest::Location location() const;
   const std::string& id() const;
   const Version* version() const { return version_.get(); }
   const std::string VersionString() const;
@@ -635,8 +557,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   // Appends |new_warning[s]| to install_warnings_.
   void AddInstallWarning(const InstallWarning& new_warning);
-  void AddInstallWarnings(const InstallWarningVector& new_warnings);
-  const InstallWarningVector& install_warnings() const {
+  void AddInstallWarnings(const std::vector<InstallWarning>& new_warnings);
+  const std::vector<InstallWarning>& install_warnings() const {
     return install_warnings_;
   }
   const ExtensionIconSet& icons() const { return icons_; }
@@ -925,7 +847,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   scoped_refptr<const PermissionSet> required_permission_set_;
 
   // Any warnings that occurred when trying to create/parse the extension.
-  InstallWarningVector install_warnings_;
+  std::vector<InstallWarning> install_warnings_;
 
   // The icons for the extension.
   ExtensionIconSet icons_;
@@ -1071,21 +993,18 @@ typedef std::vector< scoped_refptr<const Extension> > ExtensionList;
 typedef std::set<std::string> ExtensionIdSet;
 typedef std::vector<std::string> ExtensionIdList;
 
-// Let gtest print InstallWarnings.
-void PrintTo(const Extension::InstallWarning&, ::std::ostream* os);
-
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {
   ExtensionInfo(const base::DictionaryValue* manifest,
                 const std::string& id,
                 const FilePath& path,
-                Extension::Location location);
+                Manifest::Location location);
   ~ExtensionInfo();
 
   scoped_ptr<base::DictionaryValue> extension_manifest;
   std::string extension_id;
   FilePath extension_path;
-  Extension::Location extension_location;
+  Manifest::Location extension_location;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);

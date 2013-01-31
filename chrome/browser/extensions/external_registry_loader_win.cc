@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

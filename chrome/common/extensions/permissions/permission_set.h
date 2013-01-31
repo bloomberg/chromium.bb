@@ -14,13 +14,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {
+class Extension;
 
 // The PermissionSet is an immutable class that encapsulates an
 // extension's permissions. The class exposes set operations for combining and
@@ -80,12 +81,12 @@ class PermissionSet
 
   // Gets the localized permission messages that represent this set.
   // The set of permission messages shown varies by extension type.
-  PermissionMessages GetPermissionMessages(Extension::Type extension_type)
+  PermissionMessages GetPermissionMessages(Manifest::Type extension_type)
       const;
 
   // Gets the localized permission messages that represent this set (represented
   // as strings). The set of permission messages shown varies by extension type.
-  std::vector<string16> GetWarningMessages(Extension::Type extension_type)
+  std::vector<string16> GetWarningMessages(Manifest::Type extension_type)
       const;
 
   // Returns true if this is an empty set (e.g., the default permission set).

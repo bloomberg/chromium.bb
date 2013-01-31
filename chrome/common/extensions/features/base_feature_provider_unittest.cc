@@ -8,12 +8,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome::VersionInfo;
+using extensions::BaseFeatureProvider;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
 using extensions::Feature;
 using extensions::ListBuilder;
+using extensions::Manifest;
 using extensions::SimpleFeature;
-using extensions::BaseFeatureProvider;
 
 TEST(BaseFeatureProvider, ManifestFeatures) {
   BaseFeatureProvider* provider =
@@ -22,13 +23,13 @@ TEST(BaseFeatureProvider, ManifestFeatures) {
       static_cast<SimpleFeature*>(provider->GetFeature("description"));
   ASSERT_TRUE(feature);
   EXPECT_EQ(5u, feature->extension_types()->size());
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
+  EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_EXTENSION));
   EXPECT_EQ(1u,
-      feature->extension_types()->count(Extension::TYPE_LEGACY_PACKAGED_APP));
+      feature->extension_types()->count(Manifest::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_HOSTED_APP));
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_THEME));
+            feature->extension_types()->count(Manifest::TYPE_PLATFORM_APP));
+  EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_HOSTED_APP));
+  EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_THEME));
 
   DictionaryValue manifest;
   manifest.SetString("name", "test extension");
@@ -37,7 +38,7 @@ TEST(BaseFeatureProvider, ManifestFeatures) {
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Extension::INTERNAL, manifest, Extension::NO_FLAGS,
+      FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
       &error));
 
   ASSERT_TRUE(extension.get());
@@ -64,11 +65,11 @@ TEST(BaseFeatureProvider, PermissionFeatures) {
       static_cast<SimpleFeature*>(provider->GetFeature("contextMenus"));
   ASSERT_TRUE(feature);
   EXPECT_EQ(3u, feature->extension_types()->size());
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
+  EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_EXTENSION));
   EXPECT_EQ(1u,
-      feature->extension_types()->count(Extension::TYPE_LEGACY_PACKAGED_APP));
+      feature->extension_types()->count(Manifest::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
+            feature->extension_types()->count(Manifest::TYPE_PLATFORM_APP));
 
   DictionaryValue manifest;
   manifest.SetString("name", "test extension");
@@ -79,7 +80,7 @@ TEST(BaseFeatureProvider, PermissionFeatures) {
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Extension::INTERNAL, manifest, Extension::NO_FLAGS,
+      FilePath(), Manifest::INTERNAL, manifest, Extension::NO_FLAGS,
       &error));
 
   ASSERT_TRUE(extension.get());
@@ -159,12 +160,12 @@ TEST(BaseFeatureProvider, ComplexFeatures) {
     Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
     EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "1",
-        Extension::TYPE_EXTENSION,
+        Manifest::TYPE_EXTENSION,
         Feature::UNSPECIFIED_LOCATION,
         Feature::UNSPECIFIED_PLATFORM).result());
     EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "2",
-        Extension::TYPE_LEGACY_PACKAGED_APP,
+        Manifest::TYPE_LEGACY_PACKAGED_APP,
         Feature::UNSPECIFIED_LOCATION,
         Feature::UNSPECIFIED_PLATFORM).result());
   }
@@ -172,12 +173,12 @@ TEST(BaseFeatureProvider, ComplexFeatures) {
     Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_STABLE);
     EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "1",
-        Extension::TYPE_EXTENSION,
+        Manifest::TYPE_EXTENSION,
         Feature::UNSPECIFIED_LOCATION,
         Feature::UNSPECIFIED_PLATFORM).result());
     EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "2",
-        Extension::TYPE_LEGACY_PACKAGED_APP,
+        Manifest::TYPE_LEGACY_PACKAGED_APP,
         Feature::UNSPECIFIED_LOCATION,
         Feature::UNSPECIFIED_PLATFORM).result());
   }
