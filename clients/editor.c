@@ -336,24 +336,6 @@ text_model_keysym(void *data,
 }
 
 static void
-text_model_selection_replacement(void *data,
-				 struct text_model *text_model)
-{
-}
-
-static void
-text_model_direction(void *data,
-		     struct text_model *text_model)
-{
-}
-
-static void
-text_model_locale(void *data,
-		  struct text_model *text_model)
-{
-}
-
-static void
 text_model_enter(void *data,
 		 struct text_model *text_model,
 		 struct wl_surface *surface)
@@ -389,9 +371,6 @@ static const struct text_model_listener text_model_listener = {
 	text_model_preedit_cursor,
 	text_model_modifiers_map,
 	text_model_keysym,
-	text_model_selection_replacement,
-	text_model_direction,
-	text_model_locale,
 	text_model_enter,
 	text_model_leave
 };

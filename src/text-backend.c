@@ -226,12 +226,6 @@ text_model_set_micro_focus(struct wl_client *client,
 }
 
 static void
-text_model_set_preedit(struct wl_client *client,
-		       struct wl_resource *resource)
-{
-}
-
-static void
 text_model_set_content_type(struct wl_client *client,
 			    struct wl_resource *resource,
 			    uint32_t hint,
@@ -269,7 +263,6 @@ static const struct text_model_interface text_model_implementation = {
 	text_model_deactivate,
 	text_model_reset,
 	text_model_set_micro_focus,
-	text_model_set_preedit,
 	text_model_set_content_type,
 	text_model_invoke_action
 };

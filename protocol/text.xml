@@ -82,7 +82,6 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>
-    <request name="set_preedit"/>
     <enum name="content_hint">
       <description summary="content hint">
         Content hint is a bitmask to allow to modify the behavior of the text input
@@ -233,9 +232,6 @@
       <arg name="state" type="uint"/>
       <arg name="modifiers" type="uint"/>
     </event>
-    <event name="selection_replacement"/>
-    <event name="direction"/>
-    <event name="locale"/>
     <event name="enter">
       <description summary="enter event">
         Notify the model when it is activated. Typically in response to an
