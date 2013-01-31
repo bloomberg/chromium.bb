@@ -72,12 +72,12 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     manager_->Connect(&prefs_, &device_management_service_,
                       USER_AFFILIATION_NONE);
     Mock::VerifyAndClearExpectations(store_);
-    EXPECT_FALSE(manager_->IsInitializationComplete());
+    EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
     // Finishing the Load() operation shouldn't set the initialized flag.
     EXPECT_CALL(observer_, OnUpdatePolicy(_)).Times(0);
     store_->NotifyStoreLoaded();
-    EXPECT_FALSE(manager_->IsInitializationComplete());
+    EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
     Mock::VerifyAndClearExpectations(&observer_);
   }
 
@@ -111,21 +111,21 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, WaitForPolicyFetch) {
       .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
   manager_->core()->client()->SetupRegistration("dm_token", "client_id");
   ASSERT_TRUE(fetch_request);
-  EXPECT_FALSE(manager_->IsInitializationComplete());
+  EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Respond to the policy fetch, which should trigger a write to |store_|.
   EXPECT_CALL(observer_, OnUpdatePolicy(_)).Times(0);
   EXPECT_CALL(*store_, Store(_));
   fetch_request->SendResponse(DM_STATUS_SUCCESS, policy_blob_);
-  EXPECT_FALSE(manager_->IsInitializationComplete());
+  EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   Mock::VerifyAndClearExpectations(&observer_);
 
   // The load notification from |store_| should trigger the policy update and
   // flip the initialized bit.
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   store_->NotifyStoreLoaded();
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
@@ -140,13 +140,13 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, WaitForPolicyFetchError) {
       .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
   manager_->core()->client()->SetupRegistration("dm_token", "client_id");
   ASSERT_TRUE(fetch_request);
-  EXPECT_FALSE(manager_->IsInitializationComplete());
+  EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Make the policy fetch fail, at which point the manager should bail out.
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(AtLeast(1));
   fetch_request->SendResponse(DM_STATUS_REQUEST_FAILED, policy_blob_);
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
@@ -156,7 +156,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, WaitForPolicyFetchCancel) {
   // Cancelling the initial fetch should flip the flag.
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   manager_->CancelWaitForPolicyFetch();
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   Mock::VerifyAndClearExpectations(&observer_);
 }
 

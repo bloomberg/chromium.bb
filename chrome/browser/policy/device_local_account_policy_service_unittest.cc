@@ -401,7 +401,7 @@ class DeviceLocalAccountPolicyProviderTest
 };
 
 TEST_F(DeviceLocalAccountPolicyProviderTest, Initialization) {
-  EXPECT_FALSE(provider_.IsInitializationComplete());
+  EXPECT_FALSE(provider_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // Policy change should complete initialization.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));
@@ -411,7 +411,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Initialization) {
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
-  EXPECT_TRUE(provider_.IsInitializationComplete());
+  EXPECT_TRUE(provider_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // The account disappearing should *not* flip the initialization flag back.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_))
@@ -422,7 +422,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Initialization) {
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
-  EXPECT_TRUE(provider_.IsInitializationComplete());
+  EXPECT_TRUE(provider_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
 TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
@@ -531,7 +531,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
-  EXPECT_TRUE(provider_.IsInitializationComplete());
+  EXPECT_TRUE(provider_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // When the response comes in, it should propagate and fire the notification.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));

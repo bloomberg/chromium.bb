@@ -77,7 +77,7 @@ TEST_F(UserCloudPolicyManagerTest, DisconnectAndRemovePolicy) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   store_->NotifyStoreLoaded();
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_CALL(*store_, Clear());
   manager_->DisconnectAndRemovePolicy();
   EXPECT_FALSE(manager_->core()->service());

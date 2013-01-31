@@ -27,9 +27,11 @@ DeviceLocalAccountPolicyProvider::~DeviceLocalAccountPolicyProvider() {
   service_->RemoveObserver(this);
 }
 
-bool DeviceLocalAccountPolicyProvider::IsInitializationComplete() const {
-  return ConfigurationPolicyProvider::IsInitializationComplete() &&
-      store_initialized_;
+bool DeviceLocalAccountPolicyProvider::IsInitializationComplete(
+    PolicyDomain domain) const {
+  if (domain == POLICY_DOMAIN_CHROME)
+    return store_initialized_;
+  return true;
 }
 
 void DeviceLocalAccountPolicyProvider::RefreshPolicies() {

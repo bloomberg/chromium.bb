@@ -71,8 +71,11 @@ void ManagedModePolicyProvider::RefreshPolicies() {
   UpdatePolicyFromCache();
 }
 
-bool ManagedModePolicyProvider::IsInitializationComplete() const {
-  return store_->IsInitializationComplete();
+bool ManagedModePolicyProvider::IsInitializationComplete(
+    PolicyDomain domain) const {
+  if (domain == POLICY_DOMAIN_CHROME)
+    return store_->IsInitializationComplete();
+  return true;
 }
 
 void ManagedModePolicyProvider::OnPrefValueChanged(const std::string& key) {}

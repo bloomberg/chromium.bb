@@ -50,7 +50,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
-  virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
 
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;

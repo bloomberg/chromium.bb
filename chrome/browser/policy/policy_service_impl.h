@@ -41,7 +41,7 @@ class PolicyServiceImpl : public PolicyService,
   virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
-  virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
 
  private:
@@ -94,8 +94,8 @@ class PolicyServiceImpl : public PolicyService,
   // Maps each policy domain to its observer list.
   ObserverMap observers_;
 
-  // True if all the providers are initialized.
-  bool initialization_complete_;
+  // True if all the providers are initialized for the indexed policy domain.
+  bool initialization_complete_[POLICY_DOMAIN_SIZE];
 
   // Set of providers that have a pending update that was triggered by a
   // call to RefreshPolicies().

@@ -28,7 +28,7 @@ class PolicyServiceStub : public PolicyService {
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
 
-  virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
 
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
  private:

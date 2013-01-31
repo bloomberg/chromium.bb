@@ -24,7 +24,7 @@ const PolicyMap& PolicyServiceStub::GetPolicies(
   return kEmpty_;
 };
 
-bool PolicyServiceStub::IsInitializationComplete() const {
+bool PolicyServiceStub::IsInitializationComplete(PolicyDomain domain) const {
   return true;
 }
 

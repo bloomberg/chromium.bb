@@ -41,6 +41,7 @@ using testing::AllOf;
 using testing::Mock;
 using testing::Property;
 using testing::Return;
+using testing::_;
 
 namespace base {
 
@@ -169,7 +170,7 @@ void PreferencesBrowserTest::OnPreferenceChanged(const std::string& pref_name) {
 
 // Sets up a mock user policy provider.
 void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
-  EXPECT_CALL(policy_provider_, IsInitializationComplete())
+  EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
       &policy_provider_);

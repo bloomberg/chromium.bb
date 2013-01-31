@@ -43,7 +43,7 @@ class ConfigurationPolicyPrefStore
                                const std::string& component_id,
                                const PolicyMap& previous,
                                const PolicyMap& current) OVERRIDE;
-  virtual void OnPolicyServiceInitialized() OVERRIDE;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
 
   // Creates a ConfigurationPolicyPrefStore that only provides policies that
   // have POLICY_LEVEL_MANDATORY level.

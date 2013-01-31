@@ -29,7 +29,7 @@ class DeviceLocalAccountPolicyProvider
   virtual ~DeviceLocalAccountPolicyProvider();
 
   // ConfigurationPolicyProvider:
-  virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 
   // DeviceLocalAccountPolicyService::Observer:

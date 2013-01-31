@@ -40,7 +40,7 @@ class ProxyPolicyProviderTest : public testing::Test {
 };
 
 TEST_F(ProxyPolicyProviderTest, Init) {
-  EXPECT_TRUE(proxy_provider_.IsInitializationComplete());
+  EXPECT_TRUE(proxy_provider_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_TRUE(PolicyBundle().Equals(proxy_provider_.policies()));
 }
 

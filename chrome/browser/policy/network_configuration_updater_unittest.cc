@@ -31,7 +31,7 @@ class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<const char*>{
  protected:
   virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(provider_, IsInitializationComplete())
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     provider_.Init();
     PolicyServiceImpl::Providers providers;

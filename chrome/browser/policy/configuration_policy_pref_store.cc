@@ -62,7 +62,7 @@ size_t ConfigurationPolicyPrefStore::NumberOfObservers() const {
 }
 
 bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
-  return policy_service_->IsInitializationComplete();
+  return policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME);
 }
 
 bool ConfigurationPolicyPrefStore::GetValue(const std::string& key,
@@ -86,9 +86,12 @@ void ConfigurationPolicyPrefStore::OnPolicyUpdated(
   Refresh();
 }
 
-void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized() {
-  FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                    OnInitializationCompleted(true));
+void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized(
+    PolicyDomain domain) {
+  if (domain == POLICY_DOMAIN_CHROME) {
+    FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
+                      OnInitializationCompleted(true));
+  }
 }
 
 // static

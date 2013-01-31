@@ -115,6 +115,7 @@
 using content::BrowserThread;
 using content::URLRequestMockHTTPJob;
 using testing::Return;
+using testing::_;
 
 namespace policy {
 
@@ -405,7 +406,7 @@ class PolicyTest : public InProcessBrowserTest {
   virtual ~PolicyTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    EXPECT_CALL(provider_, IsInitializationComplete())
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }

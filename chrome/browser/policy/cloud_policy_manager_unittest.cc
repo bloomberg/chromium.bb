@@ -199,7 +199,7 @@ class CloudPolicyManagerTest : public testing::Test {
 TEST_F(CloudPolicyManagerTest, InitAndShutdown) {
   PolicyBundle empty_bundle;
   EXPECT_TRUE(empty_bundle.Equals(manager_->policies()));
-  EXPECT_FALSE(manager_->IsInitializationComplete());
+  EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   EXPECT_CALL(observer_, OnUpdatePolicy(_)).Times(0);
   manager_->CheckAndPublishPolicy();
@@ -211,7 +211,7 @@ TEST_F(CloudPolicyManagerTest, InitAndShutdown) {
   store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
   EXPECT_CALL(*client, SetupRegistration(_, _));
@@ -233,7 +233,7 @@ TEST_F(CloudPolicyManagerTest, RegistrationAndFetch) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
   manager_->core()->Connect(scoped_ptr<CloudPolicyClient>(client));
@@ -257,7 +257,7 @@ TEST_F(CloudPolicyManagerTest, Update) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   PolicyBundle empty_bundle;
   EXPECT_TRUE(empty_bundle.Equals(manager_->policies()));
 
@@ -266,7 +266,7 @@ TEST_F(CloudPolicyManagerTest, Update) {
   store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
 TEST_F(CloudPolicyManagerTest, RefreshNotRegistered) {
@@ -333,7 +333,7 @@ TEST_F(CloudPolicyManagerTest, SignalOnError) {
   store_.NotifyStoreError();
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
 }  // namespace

@@ -71,7 +71,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, FreshDevice) {
   owner_key_util_->Clear();
   FlushDeviceSettings();
-  EXPECT_TRUE(manager_.IsInitializationComplete());
+  EXPECT_TRUE(manager_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   manager_.Connect(&local_state_, &device_management_service_,
                    scoped_ptr<CloudPolicyClient::StatusProvider>(NULL));
@@ -87,7 +87,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
                                            PolicyBuilder::kFakeDeviceId));
   FlushDeviceSettings();
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-  EXPECT_TRUE(manager_.IsInitializationComplete());
+  EXPECT_TRUE(manager_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   PolicyBundle bundle;
   bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
@@ -106,7 +106,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
   FlushDeviceSettings();
   EXPECT_EQ(CloudPolicyStore::STATUS_BAD_STATE, store_->status());
-  EXPECT_TRUE(manager_.IsInitializationComplete());
+  EXPECT_TRUE(manager_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   PolicyBundle bundle;
   EXPECT_TRUE(manager_.policies().Equals(bundle));
@@ -156,7 +156,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     // Initialize the manager.
     FlushDeviceSettings();
     EXPECT_EQ(CloudPolicyStore::STATUS_BAD_STATE, store_->status());
-    EXPECT_TRUE(manager_.IsInitializationComplete());
+    EXPECT_TRUE(manager_.IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
     PolicyBundle bundle;
     EXPECT_TRUE(manager_.policies().Equals(bundle));

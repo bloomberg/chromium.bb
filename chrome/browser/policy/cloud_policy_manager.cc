@@ -36,8 +36,10 @@ void CloudPolicyManager::Shutdown() {
   ConfigurationPolicyProvider::Shutdown();
 }
 
-bool CloudPolicyManager::IsInitializationComplete() const {
-  return store()->is_initialized();
+bool CloudPolicyManager::IsInitializationComplete(PolicyDomain domain) const {
+  if (domain == POLICY_DOMAIN_CHROME)
+    return store()->is_initialized();
+  return true;
 }
 
 void CloudPolicyManager::RefreshPolicies() {
@@ -65,7 +67,8 @@ void CloudPolicyManager::OnStoreError(CloudPolicyStore* cloud_policy_store) {
 }
 
 void CloudPolicyManager::CheckAndPublishPolicy() {
-  if (IsInitializationComplete() && !waiting_for_policy_refresh_) {
+  if (IsInitializationComplete(POLICY_DOMAIN_CHROME) &&
+      !waiting_for_policy_refresh_) {
     scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
     bundle->Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(
         store()->policy_map());

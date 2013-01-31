@@ -78,7 +78,8 @@ void ConfigurationPolicyProvider::Shutdown() {
   did_shutdown_ = true;
 }
 
-bool ConfigurationPolicyProvider::IsInitializationComplete() const {
+bool ConfigurationPolicyProvider::IsInitializationComplete(
+    PolicyDomain domain) const {
   return true;
 }
 

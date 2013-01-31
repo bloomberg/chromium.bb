@@ -52,7 +52,7 @@ class ManagedModePolicyProvider
   // ConfigurationPolicyProvider implementation:
   virtual void Shutdown() OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
-  virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
 
   // PrefStore::Observer implementation:
   virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;

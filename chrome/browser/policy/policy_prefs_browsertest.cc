@@ -38,6 +38,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Return;
+using testing::_;
 
 namespace policy {
 
@@ -385,7 +386,7 @@ class PolicyPrefsTest
       public testing::WithParamInterface<PolicyDefinitionList::Entry> {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    EXPECT_CALL(provider_, IsInitializationComplete())
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }

@@ -47,10 +47,10 @@ class ConfigurationPolicyProvider {
   // Returns the current PolicyBundle.
   const PolicyBundle& policies() const { return policy_bundle_; }
 
-  // Check whether this provider has completed initialization. This is used to
-  // detect whether initialization is done in case providers implementations
-  // need to do asynchronous operations for initialization.
-  virtual bool IsInitializationComplete() const;
+  // Check whether this provider has completed initialization for the given
+  // policy |domain|. This is used to detect whether initialization is done in
+  // case implementations need to do asynchronous operations for initialization.
+  virtual bool IsInitializationComplete(PolicyDomain domain) const;
 
   // Asks the provider to refresh its policies. All the updates caused by this
   // call will be visible on the next call of OnUpdatePolicy on the observers,

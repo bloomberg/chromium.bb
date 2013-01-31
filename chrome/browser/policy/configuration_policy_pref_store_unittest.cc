@@ -46,7 +46,7 @@ class PolicyAndPref {
 class ConfigurationPolicyPrefStoreTest : public testing::Test {
  protected:
   ConfigurationPolicyPrefStoreTest() {
-    EXPECT_CALL(provider_, IsInitializationComplete())
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(false));
     provider_.Init();
     PolicyServiceImpl::Providers providers;
@@ -1025,7 +1025,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
 
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   EXPECT_FALSE(store_->IsInitializationComplete());
-  EXPECT_CALL(provider_, IsInitializationComplete())
+  EXPECT_CALL(provider_, IsInitializationComplete(POLICY_DOMAIN_CHROME))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(observer_, OnInitializationCompleted(true)).Times(1);
   PolicyMap policy;

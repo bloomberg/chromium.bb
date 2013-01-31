@@ -79,7 +79,7 @@ class ProxyPolicyTest : public testing::Test {
       : command_line_(CommandLine::NO_PROGRAM) {}
 
   virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(provider_, IsInitializationComplete())
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
 
     PolicyServiceImpl::Providers providers;
