@@ -846,7 +846,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_2));
   new_browser = FindOneOtherBrowserForProfile(profile_2, NULL);
   ASSERT_TRUE(new_browser);
-  EXPECT_TRUE(new_browser->window()->IsActive());
+// TODO(mad): Uncomment once the test is moved to interactive_ui_tests where
+// we can more reliably test for window activeness (http://crbug/com/173452).
+// Note that commenting this line instead of the whole test is useful since,
+// at least, we can make sure that none of the other windows are active, since
+// we expect this one to be.
+//  EXPECT_TRUE(new_browser->window()->IsActive());
 
   // All other profiles browser should not be active.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_1));
