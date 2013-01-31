@@ -6626,6 +6626,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION" desc="Description for the flag to disable WebGL.">
         Enabling this option prevents web applications from accessing the WebGL API.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBRTC_NAME" desc="Name of the 'Enable WebRTC' lab.">
+        Enable WebRTC
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBRTC_DESCRIPTION" desc="Description for the flag to enable WebRTC.">
+        Enabling this option allows web applications to access the WebRTC API.
+      </message>
       <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME" desc="Name of the 'Fixed position creates stacking context' lab.">
         Fixed position elements create stacking contexts.
       </message>

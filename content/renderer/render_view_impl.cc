@@ -4060,6 +4060,11 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
     return;
 
+#if defined(OS_ANDROID)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebRTC))
+    return;
+#endif
+
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);

@@ -424,6 +424,17 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
+    "enable-webrtc",
+    IDS_FLAGS_ENABLE_WEBRTC_NAME,
+    IDS_FLAGS_ENABLE_WEBRTC_DESCRIPTION,
+    kOsAndroid,
+#if defined(OS_ANDROID)
+    SINGLE_VALUE_TYPE(switches::kEnableWebRTC)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },
+  {
     "fixed-position-creates-stacking-context",
     IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME,
     IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_DESCRIPTION,
