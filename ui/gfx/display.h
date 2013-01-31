@@ -28,6 +28,10 @@ class UI_EXPORT Display {
   // "--force-device-scale-factor".
   static float GetForcedDeviceScaleFactor();
 
+  // Indicates if a device scale factor is being explicitly enforced from the
+  // command line via "--force-device-scale-factor".
+  static bool HasForceDeviceScaleFactor();
+
   // Returns 64-bit persistent ID for the specified manufacturer's ID and
   // product_code, and the index of the output it is connected to.
   // |output_index| is used to distinguish the displays of the same type. For

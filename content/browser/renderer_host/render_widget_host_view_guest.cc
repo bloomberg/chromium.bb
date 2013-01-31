@@ -362,9 +362,7 @@ void RenderWidgetHostViewGuest::WillWmDestroy() {
 }
 #endif
 
-#if defined(OS_POSIX) || defined(USE_AURA)
 void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
 }
-#endif  // defined(OS_POSIX) || defined(USE_AURA)
 
 }  // namespace content

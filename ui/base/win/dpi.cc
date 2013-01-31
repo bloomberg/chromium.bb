@@ -7,11 +7,25 @@
 #include <windows.h>
 
 #include "base/win/scoped_hdc.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace {
 
 int kDefaultDPIX = 96;
 int kDefaultDPIY = 96;
+
+
+float GetDeviceScaleFactorImpl() {
+#if defined(ENABLE_HIDPI)
+  return gfx::Display::HasForceDeviceScaleFactor() ?
+      gfx::Display::GetForcedDeviceScaleFactor() : ui::GetDPIScale();
+#else
+  return 1.0f;
+#endif
+}
 
 }  // namespace
 
@@ -52,5 +66,40 @@ void EnableHighDPISupport() {
   if (set_process_dpi_aware_func)
     set_process_dpi_aware_func();
 }
+
+namespace win {
+
+float GetDeviceScaleFactor() {
+  static const float device_scale_factor = GetDeviceScaleFactorImpl();
+  return device_scale_factor;
+}
+
+gfx::Point ScreenToDIPPoint(const gfx::Point& pixel_point) {
+  return gfx::ToFlooredPoint(
+      gfx::ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
+}
+
+gfx::Rect ScreenToDIPRect(const gfx::Rect& pixel_bounds) {
+  // TODO(kevers): Switch to non-deprecated method for float to int conversions.
+  return gfx::ToFlooredRectDeprecated(
+      gfx::ScaleRect(pixel_bounds, 1.0f / GetDeviceScaleFactor()));
+}
+
+gfx::Rect DIPToScreenRect(const gfx::Rect& dip_bounds) {
+  // TODO(kevers): Switch to non-deprecated method for float to int conversions.
+  return gfx::ToFlooredRectDeprecated(
+      gfx::ScaleRect(dip_bounds, GetDeviceScaleFactor()));
+}
+
+gfx::Size ScreenToDIPSize(const gfx::Size& size_in_pixels) {
+  return gfx::ToFlooredSize(
+      gfx::ScaleSize(size_in_pixels, 1.0f / GetDeviceScaleFactor()));
+}
+
+gfx::Size DIPToScreenSize(const gfx::Size& dip_size) {
+  return gfx::ToFlooredSize(gfx::ScaleSize(dip_size, GetDeviceScaleFactor()));
+}
+
+}  // namespace win
 
 }  // namespace ui

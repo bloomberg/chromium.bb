@@ -119,7 +119,7 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
     if (base::mac::IsOSLionOrLater())
       supported_scale_factors->push_back(SCALE_FACTOR_200P);
 #elif defined(OS_WIN) && defined(ENABLE_HIDPI)
-    if (base::win::IsMetroProcess() && base::win::IsTouchEnabled()) {
+    if (base::win::IsMetroProcess() && ui::IsTouchDevicePresent()) {
       supported_scale_factors->push_back(SCALE_FACTOR_140P);
       supported_scale_factors->push_back(SCALE_FACTOR_180P);
     }

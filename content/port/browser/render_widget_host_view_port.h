@@ -30,11 +30,9 @@ struct WebPluginGeometry;
 }
 }
 
-#if defined(OS_POSIX) || defined(USE_AURA)
 namespace WebKit {
 struct WebScreenInfo;
 }
-#endif
 
 namespace skia {
 class PlatformBitmap;
@@ -254,11 +252,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void WillWmDestroy() = 0;
 #endif
 
-#if defined(OS_POSIX) || defined(USE_AURA)
   static void GetDefaultScreenInfo(
       WebKit::WebScreenInfo* results);
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
-#endif
 
   // Gets the bounds of the window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;

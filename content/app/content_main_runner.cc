@@ -660,7 +660,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #elif defined(OS_WIN)
     // This must be done early enough since some helper functions like
-    // IsTouchEnanbled, needed to load resources, may call into the theme dll.
+    // IsTouchEnabled, needed to load resources, may call into the theme dll.
     EnableThemeSupportOnAllWindowStations();
 #if defined(ENABLE_HIDPI)
     ui::EnableHighDPISupport();

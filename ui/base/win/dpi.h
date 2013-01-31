@@ -5,6 +5,8 @@
 #ifndef UI_BASE_WIN_DPI_H_
 #define UI_BASE_WIN_DPI_H_
 
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/base/ui_export.h"
 
@@ -19,6 +21,24 @@ UI_EXPORT float GetDPIScale();
 UI_EXPORT bool IsInHighDPIMode();
 
 UI_EXPORT void EnableHighDPISupport();
+
+// TODO(kevers|girard):  Move above methods into win namespace.
+
+namespace win {
+
+UI_EXPORT float GetDeviceScaleFactor();
+
+UI_EXPORT gfx::Point ScreenToDIPPoint(const gfx::Point& pixel_point);
+
+UI_EXPORT gfx::Rect ScreenToDIPRect(const gfx::Rect& pixel_bounds);
+
+UI_EXPORT gfx::Rect DIPToScreenRect(const gfx::Rect& dip_bounds);
+
+UI_EXPORT gfx::Size ScreenToDIPSize(const gfx::Size& size_in_pixels);
+
+UI_EXPORT gfx::Size DIPToScreenSize(const gfx::Size& dip_size);
+
+}  // namespace win
 
 }  // namespace ui
 

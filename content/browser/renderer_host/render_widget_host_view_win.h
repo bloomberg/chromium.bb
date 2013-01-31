@@ -48,6 +48,10 @@ namespace ui {
 class ViewProp;
 }
 
+namespace WebKit {
+struct WebScreenInfo;
+}
+
 namespace content {
 class BackingStore;
 class RenderWidgetHost;
@@ -210,6 +214,7 @@ class RenderWidgetHostViewWin
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
@@ -419,6 +424,9 @@ class RenderWidgetHostViewWin
   // Configures the enable/disable state of |ime_input_| to match with the
   // current |text_input_type_|.
   void UpdateIMEState();
+
+  // Returns bounds of the view in pixels.
+  gfx::Rect GetPixelBounds() const;
 
   // Sets the appropriate input scope for given |text_input_type| if TSF-aware
   // is not required. Does nothing if TSF-aware is required (and TSF text store

@@ -176,9 +176,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void WillWmDestroy() OVERRIDE;
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
-#if defined(OS_POSIX) || defined(USE_AURA)
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
-#endif  // defined(OS_POSIX) || defined(USE_AURA)
  protected:
   friend class RenderWidgetHostView;
 

@@ -36,7 +36,11 @@ ScreenWin::~ScreenWin() {
 }
 
 bool ScreenWin::IsDIPEnabled() {
+#if defined(ENABLE_HIDPI)
+  return true;
+#else
   return false;
+#endif
 }
 
 gfx::Point ScreenWin::GetCursorScreenPoint() {
@@ -92,8 +96,12 @@ gfx::Display ScreenWin::GetPrimaryDisplay() const {
   MONITORINFO mi = GetMonitorInfoForMonitor(
       MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
   gfx::Display display = GetDisplay(mi);
+#if !defined(ENABLE_HIDPI)
+  // TODO(kevers|girard): Test if these checks can be reintroduced for high-DIP
+  // once more of the app is DIP-aware.
   DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
   DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
+#endif
   return display;
 }
 
