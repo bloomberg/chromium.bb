@@ -418,11 +418,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       plugin_data_remover_.reset(content::PluginDataRemover::Create(profile_));
     base::WaitableEvent* event =
         plugin_data_remover_->StartRemoving(delete_begin_);
-
-    base::WaitableEventWatcher::EventCallback watcher_callback =
-        base::Bind(&BrowsingDataRemover::OnWaitableEventSignaled,
-                   base::Unretained(this));
-    watcher_.StartWatching(event, watcher_callback);
+    watcher_.StartWatching(event, this);
   }
 #endif
 

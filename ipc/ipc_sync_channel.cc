@@ -234,8 +234,6 @@ SyncChannel::SyncContext::SyncContext(
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
       shutdown_event_(shutdown_event),
       restrict_dispatch_group_(kRestrictDispatchGroup_None) {
-  shutdown_watcher_callback_ = base::Bind(
-     &SyncChannel::SyncContext::OnWaitableEventSignaled, this);
 }
 
 SyncChannel::SyncContext::~SyncContext() {
@@ -355,7 +353,7 @@ void SyncChannel::SyncContext::OnChannelError() {
 }
 
 void SyncChannel::SyncContext::OnChannelOpened() {
-  shutdown_watcher_.StartWatching(shutdown_event_, shutdown_watcher_callback_);
+  shutdown_watcher_.StartWatching(shutdown_event_, this);
   Context::OnChannelOpened();
 }
 
@@ -519,22 +517,21 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
   base::WaitableEventWatcher* old_send_done_event_watcher =
       sync_msg_queue->top_send_done_watcher();
 
-  base::WaitableEventWatcher::EventCallback old_callback;
+  base::WaitableEventWatcher::Delegate* old_delegate = NULL;
   base::WaitableEvent* old_event = NULL;
 
   // Maintain a local global stack of send done delegates to ensure that
   // nested sync calls complete in the correct sequence, i.e. the
   // outermost call completes first, etc.
   if (old_send_done_event_watcher) {
-    old_callback = old_send_done_event_watcher->callback();
+    old_delegate = old_send_done_event_watcher->delegate();
     old_event = old_send_done_event_watcher->GetWatchedEvent();
     old_send_done_event_watcher->StopWatching();
   }
 
   sync_msg_queue->set_top_send_done_watcher(&send_done_watcher);
 
-  send_done_watcher.StartWatching(context->GetSendDoneEvent(),
-                                  context->shutdown_watcher_callback());
+  send_done_watcher.StartWatching(context->GetSendDoneEvent(), context);
 
   {
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
@@ -543,7 +540,7 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
 
   sync_msg_queue->set_top_send_done_watcher(old_send_done_event_watcher);
   if (old_send_done_event_watcher && old_event) {
-    old_send_done_event_watcher->StartWatching(old_event, old_callback);
+    old_send_done_event_watcher->StartWatching(old_event, old_delegate);
   }
 }
 
@@ -552,7 +549,7 @@ void SyncChannel::OnWaitableEventSignaled(WaitableEvent* event) {
   // The call to DispatchMessages might delete this object, so reregister
   // the object watcher first.
   event->Reset();
-  dispatch_watcher_.StartWatching(event, dispatch_watcher_callback_);
+  dispatch_watcher_.StartWatching(event, this);
   sync_context()->DispatchMessages();
 }
 
@@ -563,11 +560,7 @@ void SyncChannel::StartWatching() {
   // stop or keep watching.  So we always watch it, and create the event as
   // manual reset since the object watcher might otherwise reset the event
   // when we're doing a WaitMany.
-  dispatch_watcher_callback_ =
-      base::Bind(&SyncChannel::OnWaitableEventSignaled,
-                  base::Unretained(this));
-  dispatch_watcher_.StartWatching(sync_context()->GetDispatchEvent(),
-                                  dispatch_watcher_callback_);
+  dispatch_watcher_.StartWatching(sync_context()->GetDispatchEvent(), this);
 }
 
 }  // namespace IPC

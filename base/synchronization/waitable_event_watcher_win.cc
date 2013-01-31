@@ -10,23 +10,35 @@
 
 namespace base {
 
+WaitableEventWatcher::ObjectWatcherHelper::ObjectWatcherHelper(
+    WaitableEventWatcher* watcher)
+    : watcher_(watcher) {
+};
+
+void WaitableEventWatcher::ObjectWatcherHelper::OnObjectSignaled(HANDLE h) {
+  watcher_->OnObjectSignaled();
+}
+
+
 WaitableEventWatcher::WaitableEventWatcher()
-    : event_(NULL) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(helper_(this)),
+      event_(NULL),
+      delegate_(NULL) {
 }
 
 WaitableEventWatcher::~WaitableEventWatcher() {
 }
 
-bool WaitableEventWatcher::StartWatching(
-    WaitableEvent* event,
-    const EventCallback& callback) {
-  callback_ = callback;
+bool WaitableEventWatcher::StartWatching(WaitableEvent* event,
+                                         Delegate* delegate) {
+  delegate_ = delegate;
   event_ = event;
-  return watcher_.StartWatching(event->handle(), this);
+
+  return watcher_.StartWatching(event->handle(), &helper_);
 }
 
 void WaitableEventWatcher::StopWatching() {
-  callback_.Reset();
+  delegate_ = NULL;
   event_ = NULL;
   watcher_.StopWatching();
 }
@@ -35,14 +47,14 @@ WaitableEvent* WaitableEventWatcher::GetWatchedEvent() {
   return event_;
 }
 
-void WaitableEventWatcher::OnObjectSignaled(HANDLE h) {
+void WaitableEventWatcher::OnObjectSignaled() {
   WaitableEvent* event = event_;
-  EventCallback callback = callback_;
+  Delegate* delegate = delegate_;
   event_ = NULL;
-  callback_.Reset();
+  delegate_ = NULL;
   DCHECK(event);
 
-  callback.Run(event);
+  delegate->OnWaitableEventSignaled(event);
 }
 
 }  // namespace base

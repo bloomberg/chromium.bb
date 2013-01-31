@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -25,15 +23,18 @@ const MessageLoop::Type testing_message_loops[] = {
 
 const int kNumTestingMessageLoops = arraysize(testing_message_loops);
 
-void QuitWhenSignaled(WaitableEvent* event) {
-  MessageLoop::current()->QuitWhenIdle();
-}
-
-class DecrementCountContainer {
+class QuitDelegate : public WaitableEventWatcher::Delegate {
  public:
-  explicit DecrementCountContainer(int* counter) : counter_(counter) {
+  virtual void OnWaitableEventSignaled(WaitableEvent* event) OVERRIDE {
+    MessageLoop::current()->QuitWhenIdle();
   }
-  void OnWaitableEventSignaled(WaitableEvent* object) {
+};
+
+class DecrementCountDelegate : public WaitableEventWatcher::Delegate {
+ public:
+  explicit DecrementCountDelegate(int* counter) : counter_(counter) {
+  }
+  virtual void OnWaitableEventSignaled(WaitableEvent* object) OVERRIDE {
     --(*counter_);
   }
  private:
@@ -49,7 +50,8 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
   WaitableEventWatcher watcher;
   EXPECT_TRUE(watcher.GetWatchedEvent() == NULL);
 
-  watcher.StartWatching(&event, Bind(&QuitWhenSignaled));
+  QuitDelegate delegate;
+  watcher.StartWatching(&event, &delegate);
   EXPECT_EQ(&event, watcher.GetWatchedEvent());
 
   event.Signal();
@@ -67,7 +69,8 @@ void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
 
   WaitableEventWatcher watcher;
 
-  watcher.StartWatching(&event, Bind(&QuitWhenSignaled));
+  QuitDelegate delegate;
+  watcher.StartWatching(&event, &delegate);
 
   watcher.StopWatching();
 }
@@ -81,11 +84,9 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
   WaitableEventWatcher watcher;
 
   int counter = 1;
-  DecrementCountContainer delegate(&counter);
-  WaitableEventWatcher::EventCallback callback =
-      Bind(&DecrementCountContainer::OnWaitableEventSignaled,
-           Unretained(&delegate));
-  watcher.StartWatching(&event, callback);
+  DecrementCountDelegate delegate(&counter);
+
+  watcher.StartWatching(&event, &delegate);
 
   event.Signal();
 
@@ -110,7 +111,8 @@ void RunTest_OutlivesMessageLoop(MessageLoop::Type message_loop_type) {
     {
       MessageLoop message_loop(message_loop_type);
 
-      watcher.StartWatching(&event, Bind(&QuitWhenSignaled));
+      QuitDelegate delegate;
+      watcher.StartWatching(&event, &delegate);
     }
   }
 }
@@ -125,8 +127,8 @@ void RunTest_DeleteUnder(MessageLoop::Type message_loop_type) {
     WaitableEventWatcher watcher;
 
     WaitableEvent* event = new WaitableEvent(false, false);
-
-    watcher.StartWatching(event, Bind(&QuitWhenSignaled));
+    QuitDelegate delegate;
+    watcher.StartWatching(event, &delegate);
     delete event;
   }
 }
