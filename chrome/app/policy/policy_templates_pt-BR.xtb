@@ -16,18 +16,43 @@
 <translation id="4680961954980851756">Ativar Preenchimento automático</translation>
 <translation id="5183383917553127163">Permite especificar quais extensões não estão sujeitas à lista negra. Um valor da lista negra de * significa que todas as extensões estão na lista negra, e que os usuários só podem instalar extensões listadas na lista branca. Por padrão, todas as extensões estão na lista branca, mas se todas as extensões forem incluídas na lista negra pela política, a lista branca poderá ser usada para substituir a política.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION"/></translation>
+<translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
 <translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME"/> trabalhe com os tipos de conteúdo a seguir</translation>
 <translation id="5469825884154817306">Bloquear imagens nestes sites</translation>
 <translation id="8412312801707973447">Define se as verificações on-line de OCSP/CRL devem ser executadas</translation>
+<translation id="3213821784736959823">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME"/>.
+
+      Se esta política estiver definida como verdadeira, o cliente DNS integrado será usado, se disponível.
+
+      Se esta política estiver definida como falsa, o cliente DNS integrado nunca será usado.
+
+      Se esta política não for definida, os usuários poderão decidir se o cliente DNS integrado será usado editando-se chrome://flags ou especificando-se a sinalização de uma linha de comando.</translation>
 <translation id="2908277604670530363">Número máximo de conexões simultâneas ao servidor proxy</translation>
+<translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME"/>.
+
+      Se esta política estiver definida como &quot;AlwaysAutoHideShelf&quot;, a estante sempre será ocultada automaticamente.
+
+      Se esta política estiver definida como &quot;NeverAutoHideShelf&quot;, a estante nunca será ocultada automaticamente.
+
+      Se esta política for definida, os usuários não poderão alterar nem substituí-la.
+
+      Se esta política não for definida, os usuários poderão decidir se a estante deve ser ocultada automaticamente.</translation>
 <translation id="4838572175671839397">Contém uma expressão regular que é usada para determinar quais usuários podem fazer login no <ph name="PRODUCT_NAME"/>.
 
       Se o usuário tentar fazer login com um nome de usuário que não corresponda a esse padrão, o erro correspondente é exibido.
 
       Se esta política for deixada sem configuração ou em branco, qualquer usuário poderá fazer login no <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7298195798382681320">Recomendada</translation>
 <translation id="1438955478865681012">Configura as políticas relacionadas à extensão. O usuário não tem permissão para instalar extensões presentes na lista negra, a menos que elas passem para a lista branca. Você também pode forçar o <ph name="PRODUCT_NAME"/> a instalar automaticamente as extensões, especificando-as na <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. A lista negra tem prioridade sobre a lista de extensões forçadas.</translation>
+<translation id="3516856976222674451">Limita a duração máxima de uma sessão do usuário.
+
+      Quando esta política estiver definida, especificará depois de quanto tempo um usuário será automaticamente desconectado, encerrando a sessão. O usuário é informado sobre o tempo restante por um cronômetro mostrado na bandeja do sistema.
+
+      Quando esta política não estiver definida, a duração da sessão será ilimitada.
+
+      Se você definir esta política, os usuários não poderão alterar nem substituí-la.
+
+      O valor da política deve ser especificado em milissegundos, Os valores são fixados em um intervalo de 30 segundos a 24 horas.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio obrigatório para hosts de acesso remoto</translation>
 <translation id="3478024346823118645">Limpa os dados do usuário ao sair</translation>
 <translation id="8668394701842594241">Especifica uma lista de plug-ins ativados em <ph name="PRODUCT_NAME"/> e impede que os usuários modifiquem esta configuração. Os caracteres curinga &quot;*&quot; e &quot;?&quot; podem ser utilizados para combinar seqüências de caracteres arbitrários. &quot;*&quot; corresponde a um número arbitrário de caracteres enquanto &quot;?&quot; especifica um único caractere opcional, ou seja, corresponde a zero ou um caractere. O caractere de escape é &quot;\&quot;, ou seja, para fazer uma busca que inclua os caracteres &quot;*&quot;, &quot;?&quot;, ou &quot;\&quot;, você pode adicionar um &quot;\&quot; à frente. A lista de plug-ins especificados será sempre utilizada em <ph name="PRODUCT_NAME"/>, caso eles tenham sido instalados. Os plug-ins são marcados como ativados em &quot;about: plugins&quot; e os usuários não podem desativá-los. Esta política se sobrepõe tanto a DisabledPlugins como a DisabledPluginsExceptions. Se esta política for deixada sem definição, o usuário pode desativar qualquer plug-in instalado no sistema.</translation>
@@ -58,7 +83,7 @@
 <translation id="7567380065339179813">Permitir plug-ins nestes sites</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
 <translation id="3153348162326497318">Permite que você especifique quais extensões os usuários NÃO podem instalar. Extensões já instaladas serão removidas se adicionadas à lista negra. Um valor &quot;*&quot; na lista negra significa que todas as extensões são proibidas a menos que sejam listadas explicitamente na lista de permissões. Se esta política for deixada sem definição, o usuário pode instalar qualquer extensão em <ph name="PRODUCT_NAME"/> .</translation>
-<translation id="2129233336491582973">Permite que <ph name="PRODUCT_NAME"/> atue como um proxy entre <ph name="CLOUD_PRINT_NAME"/> e impressoras antigas conectadas à máquina. Se esta configuração estiver ativada ou não configurada, os usuários podem permitir o proxy de impressão na nuvem através de autenticação com sua Conta do Google. Caso esta configuração tenha sido desativada, os usuários não podem permitir proxy e a máquina não terá permissão para compartilhar suas impressoras com <ph name="CLOUD_PRINT_NAME"/>. Se esta política for deixada sem definição, ela será ativada, mas o usuário será capaz de modificá-la.</translation>
+<translation id="5809728392451418079">Definir o nome de exibição das contas locais de dispositivo</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1827523283178827583">Usar servidores proxy fixos</translation>
 <translation id="3021409116652377124">Desativar localizador de plug-ins</translation>
@@ -91,6 +116,15 @@
 <translation id="2906874737073861391">Lista de extensões AppPack</translation>
 <translation id="3758249152301468420">Desativar Ferramentas de desenvolvedor</translation>
 <translation id="8665076741187546529">Configurar a lista de extensões instaladas forçadamente</translation>
+<translation id="1675391920437889033">Controla quais tipos de aplicativos/extensões podem ser instalados.
+
+          Esta configuração autoriza os tipos permitidos de extensão/aplicativos que podem ser instalados no <ph name="PRODUCT_NAME"/>. O valor é uma lista de strings, sendo que cada uma delas deve ter um dos seguintes tipos: &quot;extensão&quot;, &quot;tema&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; e &quot;platform_app&quot;. Consulte a documentação das extensões do Google Chrome para obter mais informações sobre esses tipos.
+
+          Esta política também afeta extensões e aplicativos a terem a instalação forçada via ExtensionInstallForcelist.
+
+          Se esta configuração for definida, as extensões e os aplicativos que têm um tipo não presente na lista não serão instalados.
+
+          Se estas configurações não forem definidas, nenhuma restrição será aplicada aos tipos aceitos de extensão/aplicativo.</translation>
 <translation id="8818173863808665831">Informar a localização geográfica do dispositivo. 
 
       Se a política não for configurada, ou for configurada como falsa, o local não será informado.</translation>
@@ -102,6 +136,11 @@
 <translation id="4655130238810647237">Ativa ou desativa a edição de favoritos em <ph name="PRODUCT_NAME"/>. Se ativar esta configuração, os favoritos podem ser adicionados, removidos ou modificados. Este é o padrão também quando esta política não é definida. Se desativar esta configuração, os favoritos não podem ser adicionados, removidos ou modificados. Os favoritos já existentes continuam disponíveis.</translation>
 <translation id="3496296378755072552">Gerenciador de senhas</translation>
 <translation id="2565967352111237512">Ativa relatórios anônimos sobre o uso e dados relacionados a falhas sobre <ph name="PRODUCT_NAME"/> para o Google e impede que os usuários alterem esta configuração. Se ativar esta configuração, relatórios anônimos sobre o uso e dados relacionados a falhas são enviados ao Google. Se desativar esta configuração, os relatórios anônimos sobre o uso e dados relacionados a falhas nunca serão enviados para o Google. Se ativar ou desativar esta configuração, os usuários não podem alterar ou substituir esta configuração em <ph name="PRODUCT_NAME"/>. Se esta política for deixada sem definição, a configuração será a escolha do usuário durante a instalação ou primeira execução.</translation>
+<translation id="2516600974234263142">Permite a impressão em <ph name="PRODUCT_NAME"/> e impede os usuários de alterarem esta configuração.
+
+      Se esta configuração estiver ativada ou não configurada, os usuários poderão imprimir.
+
+      Se esta configuração estiver desativada, os usuários não poderão imprimir em <ph name="PRODUCT_NAME"/>. A impressão é desativada no menu de ferramentas, nas extensões, em aplicativos JavaScript etc. Ainda é possível imprimir a partir de plug-ins que ignoram <ph name="PRODUCT_NAME"/> durante a impressão. Por exemplo, determinados aplicativos Flash trazem a opção de impressão no menu de contexto, o que não é abordado nesta política.</translation>
 <translation id="9135033364005346124">Ativar proxy do <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
 <translation id="6925212669267783763">Configura o diretório que o <ph name="PRODUCT_FRAME_NAME"/> usará para armazenar dados do usuário.
@@ -162,7 +201,6 @@
 
       Se esta política for deixada sem definição, o valor padrão de 32 será utilizado.</translation>
 <translation id="5395271912574071439">Ativa as cortinas de hosts de acesso remoto enquanto uma conexão está em andamento. Se essa configuração for ativada, os dispositivos de entrada e saída físicas dos hosts serão desativados enquanto houver uma conexão remota em andamento. Se essa configuração for desativada ou não estiver definida, os usuários locais e remotos poderão interagir com o host quando ele estiver sendo compartilhado.</translation>
-<translation id="2312509925391670075">Perguntar toda vez que um site quiser acessar minha câmera e/ou meu microfone</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="4962195944157514011">Especifica o URL do mecanismo de pesquisa utilizado ao fazer uma busca padrão. O URL deve conter a sequência &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, que será substituída no momento da consulta pelos termos que o usuário estiver utilizando para a pesquisa. Esta opção deve ser definida quando a política &quot;DefaultSearchProviderEnabled&quot; estiver ativada e será respeitada somente se este for o caso.</translation>
 <translation id="3343454696188645600">Desativa a sincronização do Google Drive quando definida como &quot;Verdadeira&quot;. Nesse caso, nenhum dado é enviado ao Google Drive.
@@ -175,6 +213,7 @@
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros em uma página pode acionar pop-up de uma caixa de diálogo básica de autorização HTTP. Normalmente, esta função é desativada como proteção contra phishing. Se esta política não estiver definida, a função é desativada e o subconteúdo de terceiros não terá permissão para acionar pop-up de uma caixa de diálogo básica de autorização HTTP.</translation>
 <translation id="7447786363267535722">Permite salvar senhas e a utilização de senhas salvas em <ph name="PRODUCT_NAME"/>. Ao ativar esta configuração, os usuários podem permitir que <ph name="PRODUCT_NAME"/> memorize senhas e as forneça automaticamente na próxima vez que efetuarem login em um site. Se desativar essa configuração, os usuários não poderão  salvar senhas ou utilizar senhas já salvas. Se ativar ou desativar esta configuração, os usuários não podem alterar ou substituir essa configuração em <ph name="PRODUCT_NAME"/>. Se esta política for deixada sem definição, esta opção será ativada, mas o usuário será capaz de modificá-la.</translation>
 <translation id="1138294736309071213">Esta política é ativa somente no modo de varejo. Determina o tempo antes do protetor de tela ser mostrado na tela de login para os dispositivos no modo de varejo. O valor da política deve ser especificado em milésimos de segundos.</translation>
+<translation id="1082519594196055704">Permitir captura de vídeo</translation>
 <translation id="6368011194414932347">Configurar o URL da página inicial</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
@@ -209,6 +248,7 @@
 <translation id="7003334574344702284">Se ativada, esta política força a importação de senhas a partir do navegador padrão anterior. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, as senhas salvas não são importadas. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="6258193603492867656">Especifica se o SPN do Kerberos gerado deve incluir uma porta fora do padrão. Se ativar esta configuração e uma porta fora do padrão (uma porta diferente da 80 ou 443, por exemplo) for inserida, ela será incluída no SPN do Kerberos gerado. De qualquer maneira, se desativar esta configuração ou deixar sem definição, o SPN do Kerberos não incluirá uma porta.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalação de extensões, aplicativos e scripts do usuário a partir de</translation>
+<translation id="2498238926436517902">Sempre ocultar automaticamente a estante</translation>
 <translation id="3442095178490656861">Especifica o fuso horário a ser usado para o dispositivo. Os usuários podem substituir o fuso horário especificado para a sessão atual. No entanto, após o logout, o fuso horário especificado é restaurado. Se um valor inválido é fornecido, a política é ativada usando &quot;GMT&quot;. 
 
 Se essa política não for usada, o fuso horário ativo no momento permanecerá em uso. No entanto, os usuários podem alterar o fuso horário, e a alteração é permanente. Assim, uma alteração feita por um usuário afeta a tela de login e todos os outros usuários. 
@@ -235,6 +275,9 @@ Novos dispositivos são iniciados com o fuso horário definido como &quot;EUA/Pa
       Exceções podem ser definidas na política de lista de permissões de URL. Essas políticas são limitadas a 1.000 entradas. Entradas subsequentes serão ignoradas. 
 
      Se esta política não for definida, nenhum URL será adicionado à lista negra no navegador.</translation>
+<translation id="2762164719979766599">Especifica a lista de contas locais de dispositivo a serem mostradas na tela de login.
+
+      Cada entrada da lista especifica um identificador, que é usado internamente para diferenciar as contas locais de dispositivo.</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="2534584045044686957">Configura o tamanho do cache que o <ph name="PRODUCT_NAME"/> usará para armazenar arquivos de mídia armazenados em cache no disco.
 
@@ -285,6 +328,7 @@ Novos dispositivos são iniciados com o fuso horário definido como &quot;EUA/Pa
 <translation id="2959898425599642200">Regras de proxies ignoráveis</translation>
 <translation id="1098794473340446990">Informa o horário das atividades do dispositivo. Se essa configuração for definida para True, os dispositivos inscritos informarão os períodos de tempo em que um usuário está ativo no dispositivo. Se essa configuração não for definida ou for definida para False, os horários das atividade do dispositivo não serão gravados ou informados.</translation>
 <translation id="896575211736907134">Modo de navegação anônima forçado.</translation>
+<translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
 <translation id="817455428376641507">Permite acesso aos URLs listados, como exceções à lista negra de URLs.
 
       Consulte a descrição da política de lista negra de URLs para saber o formato das entradas dessa lista.
@@ -328,6 +372,16 @@ Novos dispositivos são iniciados com o fuso horário definido como &quot;EUA/Pa
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="4052765007567912447">Controla se é permitido ao usuário mostrar senhas em texto não criptografado no gerenciador de senhas. Se desativar esta configuração, o gerenciador de senhas não permitirá a exibição de senhas armazenadas em texto não criptografado na janela do gerenciador de senhas. Se ativar ou não definir esta política, os usuários poderão visualizar suas senhas em texto não criptografado no gerenciador de senhas.</translation>
+<translation id="5936622343001856595">Força as consultas no Google Web Search a serem feitas com o SafeSearch ativado e impede que os usuários alterem esta configuração.
+
+      Se você ativar esta configuração, o SafeSearch estará sempre ativo na Pesquisa do Google.
+
+      Se você desativar esta configuração ou não definir nenhum valor, o SafeSearch não será aplicado na Pesquisa do Google.</translation>
+<translation id="6017568866726630990">Mostrar a caixa de diálogo de impressão do sistema em vez da visualização de impressão.
+
+      Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME"/> abrirá a caixa de diálogo de impressão do sistema em vez da visualização de impressão integrada, quando um usuário solicitar a impressão de uma página.
+
+      Se esta política não estiver definida ou se estiver definida como falsa, os comandos de impressão acionarão a tela de visualização de impressão.</translation>
 <translation id="3120725863988702582">Esta política é uma substituição para a opção de configurações de conteúdo &quot;Limpar cookies e outros dados do site ao fechar o navegador&quot; que o <ph name="PRODUCT_NAME"/> suportava antes da versão 21.
 
       Esta política existe apenas para compatibilidade com versões anteriores e será desativada no futuro. A forma recomendada para limpar dados do site ao sair a partir da versão 21 é configurar a política DefaultCookiesSetting para &quot;somente sessão&quot;.
@@ -341,13 +395,14 @@ Novos dispositivos são iniciados com o fuso horário definido como &quot;EUA/Pa
       Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou substituí-la no <ph name="PRODUCT_NAME"/>.
 
       Se essa política não for definida, ela ficará ativada, e o usuário poderá alterá-la.</translation>
+<translation id="4541530620466526913">Contas locais de dispositivo</translation>
 <translation id="1757688868319862958">Permite que o <ph name="PRODUCT_NAME"/> execute plug-ins que requerem autorização. Se você ativar essa configuração, os plug-ins que não estão desatualizados serão sempre executados. Se essa configuração estiver desativada ou não estiver definida, os usuários receberão uma solicitação para permitir a execução de plug-ins que requerem autorização. Esses plug-ins podem comprometer a segurança.</translation>
 <translation id="6392973646875039351">Ativa o recurso de Preenchimento automático do <ph name="PRODUCT_NAME"/> e permite aos usuários utilizarem o preenchimento automático em formulários da web, utlizando as informações previamente armazenadas, como endereço ou informações de cartão de crédito. Se desativar esta configuração, o Preenchimento automático ficará inacessível para os usuários. Se ativar esta configuração ou não configurar um valor, o Preenchimento automático permanecerá sob o controle do usuário. Isso permitirá que ele configure os perfis de Preenchimento automático e ative ou desative o Preenchimento automático como achar conveniente.</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras de proxies ignoráveis</translation>
+<translation id="7788511847830146438">Por perfil</translation>
 <translation id="3965339130942650562">Tempo limite até que a saída do usuário ocioso seja executada</translation>
 <translation id="5293547923319914979">Ative cortinas de hosts de acesso remoto.</translation>
 <translation id="7091198954851103976">Sempre executa plug-ins que requerem autorização</translation>
-<translation id="2021307518684405078">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="1240643596769627465">Especifica o URL do mecanismo de pesquisa utilizado para fornecer resultados instantâneos. O URL deve conter a sequência <ph name="SEARCH_TERM_MARKER"/>, que será substituída no momento da consulta pelo texto digitado pelo usuário até então. Esta política é opcional. Caso não seja definida, nenhum resultado de pesquisa instantânea será fornecido. Esta política só é respeitada caso a política &quot;DefaultSearchProviderEnabled&quot; seja ativada.</translation>
 <translation id="6693751878507293182">Se definir esta configuração como ativada, a pesquisa e instalação automáticas de plug-ins ausentes serão desativadas em <ph name="PRODUCT_NAME"/>. Desativar ou deixar esta política sem definição ativará o localizador de plug-ins.</translation>
@@ -363,7 +418,6 @@ Novos dispositivos são iniciados com o fuso horário definido como &quot;EUA/Pa
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="8451988835943702790">Usar a página &quot;Nova guia&quot; como página inicial</translation>
-<translation id="8853920132856176349">Esta configuração é usada para forçar o uso da caixa de diálogo de impressão do sistema em vez da visualização de impressão.</translation>
 <translation id="8469342921412620373">Permite o uso de um mecanismo de pesquisa padrão. Se ativar esta configuração, uma pesquisa padrão será feita quando o usuário digitar texto que não seja um URL em sua omnibox. Você pode especificar o mecanismo de pesquisa padrão a ser utilizado definindo o restante das políticas padrão de pesquisa. Se forem deixadas em branco, o usuário pode escolher seu provedor padrão. Se desativar esta configuração, nenhuma pesquisa será realizada quando o usuário inserir texto que não seja um URL na omnibox. Se ativar ou desativar esta configuração, os usuários não poderão alterar ou substituir essa configuração em <ph name="PRODUCT_NAME"/>. Caso esta política seja deixada sem definição, o mecanismo de pesquisa padrão será ativado e o usuário será capaz de definir a lista de mecanismo de pesquisa.</translation>
 <translation id="8731693562790917685">As configurações de conteúdo permitem que você especifique como o conteúdo de um tipo específico (por exemplo cookies, imagens ou JavaScript) é tratado.</translation>
 <translation id="2411919772666155530">Bloquear notificações nestes sites</translation>
@@ -384,6 +438,13 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="4928632305180102854">Controla se o <ph name="PRODUCT_OS_NAME"/> permite a criação de novas contas de usuários. Se esta política for configurada como false, os usuários que ainda não têm uma conta não poderão fazer login. Se esta política for configurada como true ou não for configurada, será permitida a criação de novas contas de usuários, desde que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> não impeça que o usuário faça login.</translation>
+<translation id="8256688113167012935">Controla o nome da conta que o <ph name="PRODUCT_OS_NAME"/> mostra na tela de login para a conta local de dispositivo correspondente.
+
+      Se esta política estiver definida, a tela de login usará a string especificada no seletor de login baseado em imagem para a conta local de dispositivo correspondente.
+
+      Se a política não estiver definida, o <ph name="PRODUCT_OS_NAME"/> usará o ID da conta de e-mail da conta local de dispositivo como nome de exibição na tela de login.
+
+      Esta política é ignorada para contas de usuário comuns.</translation>
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política &quot;DefaultSearchProviderEnabled&quot; estiver ativada.</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política &quot;DefaultJavaScriptSetting&quot;, caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME"/> lide com os seguintes tipos de conteúdo.</translation>
@@ -408,6 +469,7 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
 <translation id="3072045631333522102">Protetor de tela a ser utilizado na tela de login no modo de varejo</translation>
 <translation id="8079569179819932120">Especifica quais servidores devem ser incluídos na lista de permissões para autenticação integrada. A autenticação integrada só é ativada quando <ph name="PRODUCT_NAME"/> recebe um desafio de autenticação de um proxy ou de um servidor nesta lista de permissões. Separe múltiplos nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos. Se deixar esta política sem definição, qualquer servidor será aceito para autenticação integrada.</translation>
+<translation id="7712109699186360774">Perguntar toda vez que um site quiser acessar minha câmera e/ou meu microfone</translation>
 <translation id="350797926066071931">Ativar Traduzir</translation>
 <translation id="4010738624545340900">Permitir a chamada de caixas de diálogo de seleção de arquivos</translation>
 <translation id="4518251772179446575">Perguntar sempre que um site desejar rastrear a localização física dos usuários</translation>
@@ -441,6 +503,11 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política &quot;DefaultPopupsSetting&quot;, caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
 <translation id="913195841488580904">Bloquear acesso a uma lista de URLs</translation>
+<translation id="3292147213643666827">Permite que o <ph name="PRODUCT_NAME"/> atue como um proxy entre o <ph name="CLOUD_PRINT_NAME"/> e impressoras legadas conectadas à máquina.
+
+     Se essa configuração estiver ativada ou não configurada, os usuários poderão ativar o proxy de impressão em nuvem pela autenticação com sua Conta do Google.
+
+      Se essa configuração for desativada, os usuários não poderão ativar o proxy, e a máquina não terá permissão para compartilhar as impressoras com o <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Desativa as atualizações automáticas quando configurada como true. Os dispositivos <ph name="PRODUCT_OS_NAME"/> verificam automaticamente se há atualizações quando essa configuração não é definida ou quando é configurada como False.</translation>
 <translation id="6190022522129724693">Configuração padrão de pop-ups</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
@@ -452,6 +519,7 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="1727394138581151779">Bloqueia todos os plug-ins</translation>
 <translation id="8118665053362250806">Definir tamanho do cache de disco da mídia</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
+<translation id="1859633270756049523">Limitar a duração da sessão</translation>
 <translation id="7433714841194914373">Ativar o Instant</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="443665821428652897">Limpar dados do site ao fechar o navegador (obsoleto)</translation>
@@ -465,9 +533,15 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
       Se esta política não for definida, será usado o diretório de cache padrão, e o usuário poderá substituí-lo pela sinalização de linha de comando '--disk-cache-dir'.</translation>
 <translation id="7202926611616207807">Permitir que todos os sites definam dados locais.</translation>
 <translation id="3034580675120919256">Permite que você defina se os websites estão autorizados a executar JavaScript. O JavaScript em execução pode ser permitido ou negado para todos os websites. Se esta política for deixada sem definição, a política &quot;AllowJavaScript&quot; será utilizada, podendo ser modificada pelo usuário.</translation>
+<translation id="193900697589383153">Adicionar um botão de logout à bandeja do sistema.
+
+      Se esta opção estiver ativada, um grande botão vermelho de logout será mostrado na bandeja do sistema enquanto uma sessão estiver ativa e a tela não estiver bloqueada.
+
+      Se esta opção estiver desativada ou não especificada, esse botão não será exibido na bandeja do sistema.</translation>
 <translation id="3195451902035818945">Especifica se a divisão de registro SSL deve ser desativada. A divisão de registro é uma solução alternativa para uma fraqueza no SSL 3.0 e TLS 1.0, mas pode causar problemas de compatibilidade com alguns servidores HTTPS e proxies. Se a política não for configurada, ou for configurada para false, a divisão de registro será usada nas conexões SSL/TLS que usam ciphersuites CBC.</translation>
 <translation id="6903814433019432303">Esta política é ativa somente no modo de varejo. Determina o conjunto de URLs a serem carregados quando a sessão de demonstração for iniciada. Esta política substitui quaisquer outros mecanismos de definição do URL inicial e, portanto, somente pode ser aplicada a uma sessão não associada a determinado usuário.</translation>
 <translation id="5868414965372171132">Configuração de rede em nível do usuário</translation>
+<translation id="4480694116501920047">Forçar SafeSearch</translation>
 <translation id="1221359380862872747">Carrega os urls especificados no login de demonstração</translation>
 <translation id="5493552890659553833">Permite sugestões de pesquisa na omnibox de <ph name="PRODUCT_NAME"/> e impede que os usuários alterem esta configuração. Se ativar esta configuração, as sugestões de pesquisa serão utilizadas. Se desativar esta configuração, as sugestões de pesquisa nunca são utilizadas. Se ativar ou desativar esta configuração, os usuários não podem alterar ou substituí-la em <ph name="PRODUCT_NAME"/>. Se esta política for deixada sem definição, esta configuração será ativada, podendo ser modificada pelo usuário.</translation>
 <translation id="2431811512983100641">Especifica se a extensão dos certificados vinculados ao domínio TLS devem ser ativados. Esta configuração é usada para permitir testes na extensão de certificados vinculados ao domínio TLS. Esta configuração experimental será removida no futuro.</translation>
@@ -476,6 +550,7 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="4650759511838826572">Desativar esquemas do protocolo de URL</translation>
 <translation id="602728333950205286">URL instantâneo do provedor de pesquisa padrão</translation>
 <translation id="3030000825273123558">Ativa relatórios de métricas</translation>
+<translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
 <translation id="1675002386741412210">Com suporte em:</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="4482640907922304445">Mostra o botão &quot;Página inicial&quot; na barra de ferramentas de <ph name="PRODUCT_NAME"/>. Se ativar esta configuração, o botão &quot;Página inicial&quot; será sempre exibido. Se desativar esta configuração, o botão &quot;Página inicial&quot; nunca será exibido. Se ativar ou desativar esta configuração, os usuários não podem alterá-la ou substituí-la em <ph name="PRODUCT_NAME"/>. Deixar esta política sem definição permitirá ao usuário escolher se deseja exibir o botão &quot;Página inicial&quot;.</translation>
@@ -522,6 +597,7 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
       Se esta política não for definida, será usado &quot;PromptOnAccess&quot;, e o usuário poderá  fazer alterações.</translation>
 <translation id="8889026535261486875">Servidores aos quais <ph name="PRODUCT_NAME"/> pode delegar. Separe múltiplos nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos. Se deixar esta política sem definição, qualquer servidor será aceito para autenticação integrada.</translation>
 <translation id="2299220924812062390">Especifica uma lista de plug-ins ativados</translation>
+<translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
 <translation id="924557436754151212">Importar senhas salvas do navegador padrão na primeira execução</translation>
 <translation id="1465619815762735808">Clique para reproduzir</translation>
 <translation id="7227967227357489766">Define a lista de usuários que têm permissão para fazer login no dispositivo. As entradas são feitas no formato <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, como, por exemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Para permitir usuários arbitrários em um domínio, use entradas no formato <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -545,6 +621,7 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deve ser desativado</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política &quot;DefaultJavaScriptSetting&quot;, caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="2757054304033424106">Tipos de extensões/aplicativos que podem ser instalados</translation>
 <translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>
 <translation id="5757829681942414015">Configura o diretório que o <ph name="PRODUCT_NAME"/> usará para armazenar dados do usuário.
 
@@ -564,6 +641,8 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="3808945828600697669">Especificar uma lista de plug-ins desativados</translation>
 <translation id="4525521128313814366">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir imagens. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política &quot;DefaultJavaScriptSetting&quot;, caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="8499172469244085141">Configurações padrão (podem ser substituídas pelos usuários)</translation>
+<translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="3866530186104388232">Se esta política for configurada como true ou não for configurada, o <ph name="PRODUCT_OS_NAME"/> mostrará os usuários existentes na tela de login e permitirá a escolha de um deles. Se a política for configurada como false, o <ph name="PRODUCT_OS_NAME"/> usará o prompt de nome de usuário/senha no login.</translation>
 <translation id="2098658257603918882">Ativar relato de uso e dados relacionados a falhas</translation>
 <translation id="1151353063931113432">Permitir imagens nestes sites</translation>
@@ -590,9 +669,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       ExtensionInstallBlacklist tem precedência sobre esta política. Ou seja, as extensões da lista negra não serão instaladas, mesmo se forem de um site desta lista.</translation>
 <translation id="7848840259379156480">Permite configurar o renderizador padrão de HTML, quando o <ph name="PRODUCT_FRAME_NAME"/> estiver instalado. A configuração padrão é permitir que o navegador do host faça a renderização, mas você pode, opcionalmente, substituí-la e fazer com que o <ph name="PRODUCT_FRAME_NAME"/> renderize páginas HTML por padrão.</translation>
-<translation id="9142678351429467783">Permite a impressão em <ph name="PRODUCT_NAME"/> e impede que os usuários alterem esta configuração. Se esta configuração for ativada ou não for configurada, os usuários poderão imprimir. Se esta configuração for desativada, os usuários não poderão imprimir a partir de <ph name="PRODUCT_NAME"/>. A impressão é desativada no menu de chave inglesa, nas extensões, nos aplicativos do JavaScript etc. Ainda é possível imprimir a partir de plug-ins que ignoram o <ph name="PRODUCT_NAME"/> durante a impressão. Por exemplo, certos aplicativos Flash têm a opção de impressão em seu menu de contexto, sendo que essa opção não será desativada. Se esta política for deixada sem definição, esse recurso será ativado, mas o usuário poderá modificar a configuração.</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
+<translation id="3973371701361892765">Nunca ocultar automaticamente a estante</translation>
 <translation id="7635471475589566552">Configura a localidade do aplicativo em <ph name="PRODUCT_NAME"/> e impede que os usuários a alterem. Se ativar esta configuração, <ph name="PRODUCT_NAME"/> utilizará a localidade especificada. Se a localidade configurada não for compatível, &quot;pt-BR&quot; será utilizada. Se esta configuração for desativada ou não for configurada, <ph name="PRODUCT_NAME"/> utilizará a localidade preferida especificada pelo usuário (se configurada), a localidade do sistema ou a localidade padrão &quot;pt-BR&quot;.</translation>
 <translation id="1681852583119028071">Lista de URLs alternativos para o provedor de pesquisa padrão.</translation>
 <translation id="7842869978353666042">Configurar opções do Google Drive</translation>
@@ -619,6 +698,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="6672934768721876104">Esta política é obsoleta, utilize ProxyMode em seu lugar. Permite que você especifique o servidor proxy utilizado por <ph name="PRODUCT_NAME"/> e impede que usuários alterem as configurações de proxy. Se optar por não utilizar um servidor proxy e conectar-se sempre diretamente, todas as outras opções serão ignoradas. Se optar por utilizar as configurações de proxy do sistema ou detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas. Se escolher configurações manuais de proxy, você pode especificar outras opções em &quot;Endereço ou URL do servidor proxy&quot;, &quot;URL para um arquivo .pac do proxy&quot; e &quot;lista separada por vírgulas de regras para ignorar proxys&quot;. Para obter exemplos detalhados, visite: <ph name="PROXY_HELP_URL"/>. Se ativar esta configuração, <ph name="PRODUCT_NAME"/> passará a ignorar todas as opções relacionadas a proxy especificadas na linha de comando. Caso deixe esta política sem definição, você permitirá aos usuários escolher as configurações de proxy por conta própria.</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
+<translation id="2302939792212564737">Permitir captura de vídeo.
+
+      Quando esta política estiver definida como falsa, a captura de vídeo não estará disponível no dispositivo enquanto o usuário estiver conectado.
+
+      Esta política afeta todos os tipos de entradas de vídeo, não apenas a câmera integrada.
+
+      Se esta configuração estiver definida como verdadeira ou não configurada, os usuários poderão usar todas as entradas de vídeo suportadas pelo dispositivo.</translation>
 <translation id="2660846099862559570">Nunca usar um proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
 <translation id="5512418063782665071">URL da página inicial</translation>

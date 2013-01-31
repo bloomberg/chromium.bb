@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="8000275528373650868">להפעלת Google Chrome יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="8485767968786176057">במקרה זה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן ניסה להגיע. סיבה אפשרית אחת לכך היא שפעולות התקשורת שלך נלכדו על ידי תוקף שמציג אישור עבור אתר שונה, ובעקבות זאת נוצרה אי ההתאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להחזיר אותו אישור עבור אתרים מרובים, לרבות האתר שבו אתה מנסה לבקר, גם אם האישור אינו תקף לכל אותם אתרים. Google Chrome יכול לקבוע בוודאות שהגעת ל-‏&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, אך אינו יכול לאמת כי הוא זהה לאתר &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chrome לא יחפש אי התאמות שמיות נוספות.</translation>
 <translation id="5430073640787465221">קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">התחל את Google Chrome</translation>
 <translation id="4891791193823137474">אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
+<translation id="2896252579017640304">הפעל את יישומי Chrome</translation>
 <translation id="2370289711218562573">Google Chrome מייבא כעת מועדפים/סימניות.</translation>
+<translation id="8762286861469007470">מזהה Chrome Captive Portal</translation>
 <translation id="1761870329818521071">אין אפשרות להתקין את אותה גירסת Google Chrome Frame הפועלת כעת. סגור את Google Chrome Frame ונסה שוב.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6541116830060437475">נסה להשבית את חיזוי הרשת על ידי ביצוע הפעולות הבאות:
@@ -43,12 +46,14 @@
 <translation id="4728575227883772061">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="3080151273017101988">המשך הפעלת יישומים ברקע כאשר Google Chrome סגור</translation>
 <translation id="4149882025268051530">המתקין נכשל בביצוע דחיסה לארכיון. הורד שוב את Google Chrome.</translation>
+<translation id="2886077349328709775">השתמש ב-Chrome Apps Launcher כדי להפעיל את היישומים שלך.</translation>
 <translation id="6989339256997917931">Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="5744005218040929396">תוכנית השירות Google Chrome Utility</translation>
 <translation id="1682634494516646069">Google Chrome אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">ספריית ההתקנה של Google Chrome נמצאת בשימוש. אתחל את המחשב מחדש ונסה שנית.</translation>
 <translation id="8227755444512189073">Google Chrome חייב לבצע יישום חיצוני על מנת לנהל <ph name="SCHEME"/> קישורים הקישור המבוקש הוא <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">וואו! Google Chrome קרס. להפעיל מחדש עכשיו?</translation>
+<translation id="1480489203462860648">נסה את זה, זה כבר מותקן</translation>
 <translation id="5204098752394657250">Google Chrome‏ <ph name="TERMS_OF_SERVICE_LINK"/>תנאים והגבלות<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">קבלת עזרה לשימוש ב-Chrome</translation>
 <translation id="3487814320513494737">הדף 'כרטיסייה חדשה' של Chrome עוצב מחדש. עבור בין קטעים על ידי לחיצה על תוויות. Chrome יזכור את ההעדפה שלך בשביל הפעם הבאה.</translation>
@@ -78,13 +83,13 @@
 <translation id="3282568296779691940">כניסה ל-Chrome</translation>
 <translation id="3089968997497233615">גרסה חדשה ובטוחה יותר של Google Chrome זמינה כעת</translation>
 <translation id="5037239767309817516">כדי ששינוי זה ייכנס לתוקף, סגור את כל החלונות של Google Chrome והפעל אותו מחדש.</translation>
+<translation id="345168553362876363">Google Chrome App Launcher הוא פלטפורמה עצמאית עבור יישומי Chrome.</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="7451721381978275812">ארגומנטים לא חוקיים. לא ניתן להתקין את Google Chrome Frame במצב מוכן ללא התקנת Google Chrome.</translation>
 <translation id="8684521613357479262">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שעדיין אינו תקף. אין מידע זמין שיכול לציין אם ניתן לבטוח באישור. Google Chrome אינו יכול להבטיח באופן מהימן שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את שעון המערכת ולרענן את דף.</translation>
 <translation id="4585888816441913908">במחשב זה קיימת כבר גרסה עדכנית יותר של Google Chrome ו-Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ו-Google Chrome Frame ונסה שוב.</translation>
 <translation id="6368958679917195344">השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS"/>תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>
 <translation id="7459554271817304652">הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Google Chrome בכל מחשב.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שהונפק על ידי יישות שמערכת ההפעלה של המחשב אינה בוטחת בה. משמעות הדבר היא שהשרת ייצר בעצמו את אימותי האבטחה שלו, ש-Google Chrome אינו יכול לסמוך עליהם לצרכי השגת פרטי זהות, או שתוקף ניתן מנסה ליירט את התקשורת שלך.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">עדכן</translation>
@@ -93,6 +98,7 @@
 <translation id="2783467918276328046">עיין ב<ph name="BEGIN_LINK"/>יתרונות נוספים<ph name="END_LINK"/> של הכניסה ל-Chrome‏.</translation>
 <translation id="2580411288591421699">אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="1457721931618994305">מעדכן את Google Chrome...</translation>
+<translation id="6536030683808219174">הצג קיצור דרך ל-Chrome Apps Launcher בשורת המשימות של Windows.</translation>
 <translation id="4351362253593301573">עבור אל
           <ph name="BEGIN_BOLD"/>
           תפריט Chrome &gt;
@@ -149,10 +155,11 @@
           <ph name="NETWORK_TAB"/>
           <ph name="END_BOLD"/>
           ) נמצא, לחץ עליו וודא הגדרת התצורה היא &quot;ישיר&quot;.</translation>
+<translation id="5788838254726722945">הסר את ההתקנה של Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="61852838583753520">עדכן את מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="6650142020817594541">אתר זה ממליץ על Google Chrome Frame (כבר מותקן).</translation>
+<translation id="550529737713987795">הצג את Chrome Apps Launcher.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
 <translation id="5577648424992741236">במחשב זה מותקנת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome Frame ונסה שוב.</translation>
 <translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
@@ -188,6 +195,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome מעודכן.</translation>
 <translation id="2084710999043359739">הוסף ל-Chrome</translation>
+<translation id="4710332363312836873">מפעיל יישומי Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame כבר מותקן וזמין לכל המשתמשים במחשב זה. אם ברצונך להתקין את Google Chrome Frame ברמת המשתמש, עליך ראשית להסיר את הגרסה המותקנת ברמת המערכת שהותקנה על ידי מנהל המערכת.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3451115285585441894">הוספה ל-‏Chrome...</translation>
@@ -199,7 +207,6 @@
 <translation id="3419750618886995598">עדכון של Chrome Frame.</translation>
 <translation id="3336524238463733095">לא ניתן לעדכן את Google Chrome או את Google Chrome Frame בשל הגדרות מדיניות קבוצה לא עקביים של 'עדכוני Google'. השתמש ב'עורך מדיניות הקבוצות' כדי להגדיר את ביטול מדיניות העדכונים עבור היישום Google Chrome Binaries ונסה שוב; לקבלת פרטים בקר בכתובת http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">במערכת זו הותקן דפדפן Google Chrome על ידי מנהל והוא זמין עבור כל המשתמשים. Google Chrome ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
-<translation id="7123348595797445166">נסה את זה (מותקן כבר)</translation>
 <translation id="4338032231047635328">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהשרת הציג מכיל שגיאות. Google Chrome אינו יכול להשתמש באישור המכיל שגיאות ואינו יכול לאמת את זהות האתר שאליו ניסית להתחבר.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">הגדרות המילוי האוטומטי של Chrome</translation>

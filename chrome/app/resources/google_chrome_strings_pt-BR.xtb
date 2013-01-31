@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. Todos os direitos reservados.</translation>
 <translation id="8485767968786176057">Neste caso, o endereço listado no certificado não corresponde ao endereço do site que seu navegador tentou acessar. Uma possível razão para isso é suas comunicações estarem sendo interceptadas por um invasor que está apresentando um certificado de outro site, o que causa incompatibilidade. Outra possível razão é o servidor estar configurado para retornar o mesmo certificado para diversos sites, incluindo o que você está tentando visitar, mas esse certificado não ser válido para todos esses sites. O Google Chrome pode afirmar com certeza que você acessou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/ strong&gt;, mas não pode confirmar se esse é o mesmo site &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt; que você pretendia acessar. Se você continuar, o Google Chrome não verificará se há quaisquer outras incompatibilidades de nome.</translation>
 <translation id="5430073640787465221">Seu arquivo de preferências está corrompido ou é inválido. O Google Chrome não foi capaz de recuperar suas configurações.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Iniciar o Google Chrome</translation>
 <translation id="4891791193823137474">Executar o Google Chrome em segundo plano</translation>
 <translation id="2879385160622431163">Instant do Google Chrome</translation>
+<translation id="2896252579017640304">Iniciar aplicativos do Google Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está importando os Favoritos.</translation>
+<translation id="8762286861469007470">Detector de portal prisioneiro do Google Chrome</translation>
 <translation id="1761870329818521071">Não é possível instalar a mesma versão do Frame do Google Chrome que está em execução. Feche o Frame do Google Chrome e tente novamente.</translation>
 <translation id="2040709530900803995">Visualizador do Google Chrome</translation>
 <translation id="6541116830060437475">Tente desativar a previsão da rede seguindo estas etapas: 
@@ -43,12 +46,14 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="3080151273017101988">Executar aplicativos em segundo plano quando o Google Chrome estiver fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
+<translation id="2886077349328709775">Use o Iniciador de aplicativos do Google Chrome para iniciar seus aplicativos.</translation>
 <translation id="6989339256997917931">O Google Chrome foi atualizado, mas ele não é utilizado há pelo menos trinta dias.</translation>
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
 <translation id="1682634494516646069">O Google Chrome não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Aparentemente o diretório de instalação do Google Chrome está sendo utilizado. Reinicie o computador e tente novamente.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa iniciar um aplicativo externo para lidar com  os links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Nossa! Houve uma falha no Google Chrome. Reiniciar agora?</translation>
+<translation id="1480489203462860648">Experimente, já está instalado</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Termos de Serviço<ph name="END_TERMS_OF_SERVICE_LINK"/> do Google Chrome</translation>
 <translation id="1393853151966637042">Obter ajuda para usar o Google Chrome</translation>
 <translation id="3487814320513494737">A página Nova guia do Google Chrome foi remodelada. Alterne entre seções clicando nestes marcadores. O Google Chrome lembrará suas preferências no próximo acesso.</translation>
@@ -71,13 +76,13 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que essa alteração entre em vigor.</translation>
+<translation id="345168553362876363">O Iniciador de aplicativos do Google Chrome é uma plataforma autônoma para aplicativos do Google Chrome.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="7451721381978275812">Argumentos inválidos. O Frame do Google Chrome não pode ser instalado em modo pronto sem a instalação do Google Chrome.</translation>
 <translation id="8684521613357479262">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Nenhuma informação está disponível para indicar se o certificado é confiável. O Google Chrome não pode garantir que você esteja se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um invasor. O relógio do computador está definido como <ph name="CURRENT_TIME"/> no momento. Isso está correto? Se não estiver, corrija o erro e atualize esta página..</translation>
 <translation id="4585888816441913908">Este computador já possui versões mais recentes do Google Chrome e do Frame do Google Chrome. Caso o software não esteja funcionando, desinstale estes aplicativos e tente novamente.</translation>
 <translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="7459554271817304652">Configure a sincronização para salvar seus recursos de navegador personalizados na web e acessá-los do Google Chrome em qualquer computador.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade que não é confiável para o sistema operacional do seu computador. Isso pode significar que o servidor gerou suas próprias credenciais de segurança, nas quais o Google Chrome não pode confiar como informações de identidade ou que um invasor esteja tentando interceptar suas comunicações.</translation>
 <translation id="4331809312908958774">Sistema operacional do Google Chrome</translation>
 <translation id="473775607612524610">Atualizar</translation>
@@ -86,6 +91,7 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="2783467918276328046">Veja <ph name="BEGIN_LINK"/>mais benefícios<ph name="END_LINK"/> de fazer login no Google Chrome.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome que está em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="1457721931618994305">Atualizando o Google Chrome...</translation>
+<translation id="6536030683808219174">Mostra uma atalho para o Iniciador de aplicativos do Google Chrome na janela de tarefas do Windows.</translation>
 <translation id="4351362253593301573">Vá para
           <ph name="BEGIN_BOLD"/>
           o menu do Google Chrome &gt;
@@ -140,10 +146,11 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
           <ph name="END_BOLD"/>
           tab) estiver presente, clique nele e verifique se sua configuração
           está definida como &quot;Direta&quot;.</translation>
+<translation id="5788838254726722945">Desinstalar Iniciador de aplicativos do Google Chrome</translation>
 <translation id="3612333635265770873">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Google Chrome.</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc. Todos os direitos reservados.</translation>
 <translation id="61852838583753520">Atualizar o Chrome OS</translation>
 <translation id="6650142020817594541">O site recomenda o Frame do Google Chrome (já instalado).</translation>
+<translation id="550529737713987795">Mostrar Iniciador de aplicativos do Google Chrome.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outro aplicativo instalado.</translation>
 <translation id="5577648424992741236">Este computador já tem uma versão mais recente do Frame do Google Chrome. Caso e o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="7018032895891496381">O Google Chrome usa o seu mecanismo de pesquisa padrão, que no momento está definido como <ph name="PAGE_TITLE"/>. Deseja manter o seu mecanismo de pesquisa padrão?</translation>
@@ -179,6 +186,7 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="2084710999043359739">Adicionar ao Google Chrome</translation>
+<translation id="4710332363312836873">Inicializador dos aplicativos do Google Chrome</translation>
 <translation id="4084877369264707540">O Frame do Google Chrome já está instalado e disponível para todos os usuários deste computador. Se quiser instalar o Frame do Google Chrome em nível de usuário, você deve antes desinstalar a versão em nível de sistema instalada por um administrador.</translation>
 <translation id="3360895254066713204">Auxiliar do Google Chrome</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
@@ -190,7 +198,6 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="3419750618886995598">Atualização do Frame do Google Chrome.</translation>
 <translation id="3336524238463733095">O Google Chrome ou o Frame do Google Chrome não pode ser atualizado devido a configurações inconsistentes da política de grupo do Google Update. Utilize o Editor de Política de grupo para definir a substituição de política de atualização para o aplicativo dos binários do Google Chrome e tente novamente; veja http://goo.gl/uJ9gV para mais detalhes.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome no sistema e ele está disponível para todos os usuários. O Google Chrome no nível do sistema substituirá sua instalação no nível do usuário agora.</translation>
-<translation id="7123348595797445166">Experimentar (já instalado)</translation>
 <translation id="4338032231047635328">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode usar um certificado com erros e não pode validar a identidade do site ao qual você tentou se conectar.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Configurações de preenchimento automático do Google Chrome</translation>

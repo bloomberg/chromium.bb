@@ -33,6 +33,7 @@
 
           Som standard är alla tillägg vitlistade, men om alla tillägg har svartlistats av en policy kan vitlistan användas för att åsidosätta den policyn.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
+<translation id="2204753382813641270">Kontrollera hur hyllan döljs automatiskt</translation>
 <translation id="3214164532079860003">Om den här policyn är aktiverad tvingar den startsidan att importeras från den nuvarande standardwebbläsaren.
 
       Om policyn inte är aktiverad importeras inte startsidan.
@@ -41,14 +42,38 @@
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME"/> hanterar följande innehållstyper</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
+<translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME"/>.
+
+      Om policyn tillämpas används den inbyggda DNS-klienten om den är tillgänglig.
+
+      Om policyn inte tillämpas används aldrig den inbyggda DNS-klienten.
+
+      Om policyn inte tillämpas kan användarna ändra huruvida den inbyggda DNS-klienten används genom att redigera chrome://flags eller ange en flagga i kommandoraden.</translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
+<translation id="556941986578702361">Kontrollera hur <ph name="PRODUCT_OS_NAME"/>-hyllan döljs automatiskt.
+
+      Om policyn har angetts till AlwaysAutoHideShelf döljs alltid hyllan automatiskt.
+
+      Om policyn har angetts till NeverAutoHideShelf döljs aldrig hyllan automatiskt.
+
+      Om du tillämpar den här policyn kan inte användarna ändra eller förbigå den.
+
+      Om policyn inte tillämpas kan användarna välja om de vill att hyllan ska döljas automatiskt.</translation>
 <translation id="4838572175671839397">Innehåller ett reguljärt uttryck som används för att bestämma vilka användare som kan logga in på <ph name="PRODUCT_NAME"/>.
 
       Ett lämpligt fel visas om en användare försöker logga in med ett användarnamn som inte matchar detta mönster. 
 
       Om denna policy inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7298195798382681320">Rekommenderas</translation>
 <translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
+<translation id="3516856976222674451">Begränsa den maximala längden för en användarsession.
+
+      När policyn tillämpas anges den tidsrymd efter vilken en användare loggas ut automatiskt, och sessionen avslutas. Användaren informeras om den återstående tiden med hjälp av en nedräkningstimer som visas i systemfältet.
+
+      När policyn inte tillämpas begränsas inte sessionslängden.
+
+      Om du tillämpar policyn kan användarna inte ändra eller åsidosätta den.
+
+      Policyvärdet ska anges i millisekunder. Värden anges inom ett intervall från 30 sekunder till 24 timmar.</translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="8668394701842594241">Policyn anger en lista med plugin-program som är aktiverade i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
@@ -93,13 +118,7 @@
           Om du svartlistar värdet * svartlistas alla tillägg som du inte uttryckligen tillåter på vitlistan.
 
           Om policyn inte ställs in kan användaren installera alla tillägg i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2129233336491582973">Policyn gör att <ph name="PRODUCT_NAME"/> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME"/> och äldre skrivare som är anslutna till datorn.
-
-      Om inställningen är aktiverad eller inte konfigurerad kan användarna aktivera molnskrivarproxyn genom att autentisera med Google-kontot.
-
-      Om inställningen är inaktiverad kan användarna inte aktivera proxyn och datorn kan inte dela sina skrivare med <ph name="CLOUD_PRINT_NAME"/>.
-
-      Om policyn inte ställs in är den aktiverad, men kan ändras av användaren.</translation>
+<translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1827523283178827583">Använd fasta proxyservrar</translation>
 <translation id="3021409116652377124">Inaktivera plugin-sökaren</translation>
@@ -163,6 +182,15 @@
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="8665076741187546529">Konfigurera listan med tillägg som måste installeras</translation>
+<translation id="1675391920437889033">Kontrollerar vilka appar/tillägg som får installeras.
+
+          Med den här inställningen tillåts de typer av tillägg/appar som kan installeras i <ph name="PRODUCT_NAME"/>. Värdet är en lista med strängar som alla ska vara antingen &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; eller &quot;platform_app&quot;. Läs dokumentationen för Chrome-tillägg om du vill få mer information om typerna.
+
+          Observera att policyn också påverkar tillägg och appar så att installationen av dem tvingas fram via ExtensionInstallForcelist.
+
+          Om inställningen konfigureras installeras inte tillägg/appar som har en typ som inte finns på listan.
+
+          Om inställningen inte konfigureras tvingas inte några begränsningar på de accepterade tilläggs- och apptyperna fram.</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
       Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>
@@ -186,6 +214,11 @@
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.
 
       Om du inte ställer in policyn kan användaren välja inställningen när programmet installeras eller körs första gången.</translation>
+<translation id="2516600974234263142">Aktiverar utskrift i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar inställningen.
+
+      Om inställningen är aktiverad eller inte har konfigurerats kan användarna skriva ut.
+
+      Om inställningen har inaktiverats kan användarna inte skriva ut från <ph name="PRODUCT_NAME"/>. Utskrifter inaktiveras bland annat via skiftnyckelmenyn, tillägg och JavaScript-appar. Det går fortfarande att skriva ut från pluginprogram som kopplas förbi <ph name="PRODUCT_NAME"/> under utskriften. Vissa Flash-appar har till exempel utskriftsalternativet i kontextmenyn, som inte omfattas av policyn.</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME"/>-proxy</translation>
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="6925212669267783763">Konfigurerar vilken katalog som <ph name="PRODUCT_FRAME_NAME"/> ska använda för att spara användardata.
@@ -273,7 +306,6 @@
           Om den här inställningen är aktiverad inaktiveras värdens fysiska indata- och utadataenheter när en fjärranslutning har upprättats.
 
           Om inställningen inaktiveras eller inte har konfigurerats kan både lokala användare och fjärranvändare kommunicera med värden när den delas.</translation>
-<translation id="2312509925391670075">Fråga varje gång en webbplats vill komma åt min kamera och/eller mikrofon</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4962195944157514011">Policyn anger webbadressen till sökmotorn som används för standardsökning. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av användarens sökord när sökningen utförs.
 
@@ -304,6 +336,7 @@
       Avgör hur länge skärmsläckaren ska visas på inloggningsskärmen för enheter i återförsäljarläge.
 
       Policyns värde anges i millisekunder.</translation>
+<translation id="1082519594196055704">Tillåt inspelning av video</translation>
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
@@ -356,6 +389,7 @@
 
           Om du inaktiverar inställningen eller inte anger den tas ingen port med när Kerberos SPN genereras.</translation>
 <translation id="3236046242843493070">Webbadressmönster för att tillåta installationer av tillägg, appar och användarskript från</translation>
+<translation id="2498238926436517902">Dölj alltid hyllan automatiskt</translation>
 <translation id="3442095178490656861">Anger vilken tidszon som används på enheten. Användare kan åsidosätta den angivna tidszonen för den aktuella sessionen. När användaren loggar ut återgår dock inställningen till den angivna tidszonen. Om en ogiltig tidszon anges är policyn fortfarande aktiverad och använder GMT istället.
 
       Om denna policy inte används är det den tidszon som för närvarande är aktiv som används. Användare kan dock ändra tidszonen och ändringen är permanent. Därför påverkas inloggningsskärmen och alla användare av de ändringar som en enskild användare gör.
@@ -383,6 +417,9 @@
       Undantag kan anges i policyn för listan över godkända webbadresser. Dessa policyer är begränsade till 1 000 poster. Efterföljande poster kommer att ignoreras.
 
       Om policyn inte anges svartlistas inga webbadresser i webbläsaren.</translation>
+<translation id="2762164719979766599">Anger en lista över lokala konton på enheten som ska visas på inloggningsskärmen.
+
+      Alla poster i listan anger en identifierare som används internt för att skilja de olika lokala kontona på enheten från varandra.</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
 <translation id="2534584045044686957">Policyn konfigurerar storleken på det cacheminne som används i <ph name="PRODUCT_NAME"/> för att spara cachelagrade mediefiler på hårddisken.
 
@@ -465,6 +502,7 @@
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="1098794473340446990">Rapportera aktivitetstider för enhet. Om inställningen är True kommer registrerade enheter att rapportera tidsperioder när en användare är aktiv på enheten. Om inställningen inte är angiven eller inställd på False kommer enhetens aktivitetstider inte att registreras eller rapporteras.</translation>
 <translation id="896575211736907134">Tvingat inkognitoläge.</translation>
+<translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
 <translation id="817455428376641507">Tillåter åtkomst till de webbadresser som anges, som undantag till svartlistan för webbadresser.
 
       Formatet för poster i listan beskrivs i policyn för svartlistade webbadresser.
@@ -519,6 +557,16 @@
           Om du inaktiverar inställningen går det inte att visa sparade lösenord som vanlig text i lösenordshanteraren.
 
           Om du aktiverar eller inte anger policyn kan användarna visa lösenord som vanlig text i lösenordshanteraren.</translation>
+<translation id="5936622343001856595">Tvingar sökfrågor i Googles webbsökning att genomföras med SafeSearch aktiverat och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar den här inställningen är funktionen SafeSearch i Sök på Google alltid aktiv.
+
+      Om du inaktiverar den här inställningen eller inte anger ett värde tvingas inte användningen av SafeSearch i Sök på Google fram.</translation>
+<translation id="6017568866726630990">Visa systemets utskriftsdialogruta istället för förhandsgranskning av utskriften.
+
+      När inställningen är aktiverad öppnar <ph name="PRODUCT_NAME"/> systemets utskriftsdialogruta istället för den inbyggda förhandsgranskningen av utskriften när en användare skriver ut en sida.
+
+      Om policyn inte tillämpas eller tillämpas felaktigt visas skärmen med förhandsgranskning av utskriften vid utskrifter.</translation>
 <translation id="3120725863988702582">Policyn åsidosätter alternativet Ta bort cookies och andra webbplatsdata när jag stänger webbläsaren i Innehållsinställningar som <ph name="PRODUCT_NAME"/> hade stöd för före version 21.
 
       Policyn har endast bakåtkompabilitet och kommer att försvinna i framtiden. Vi rekommenderar att du tar bort webbplatsdata vid stängningen av version 21 och senare och konfigurerar policyn DefaultCookiesSetting endast för sessioner.
@@ -534,6 +582,7 @@
       Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.
 
       Om policyn inte ställs in är funktionen aktiverad, men den kan ändras av användarna.</translation>
+<translation id="4541530620466526913">Lokala konton på enheten</translation>
 <translation id="1757688868319862958">Tillåter att <ph name="PRODUCT_NAME"/> kör pluginprogram som kräver auktorisering.
 
       Om du aktiverar den här inställningen kan pluginprogram som inte är föråldrade alltid köras.
@@ -545,10 +594,10 @@
 
       Om du aktiverar inställningen eller inte anger något värde kan användarna styra autofyll. De kan konfigurera autofyllprofiler och aktivera och inaktivera autofyllfunktionen när de vill.</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
+<translation id="7788511847830146438">Per profil</translation>
 <translation id="3965339130942650562">Tidsgräns för utloggning av inaktiv användare</translation>
 <translation id="5293547923319914979">Aktivera avskärmning av fjärråtkomstvärdar.</translation>
 <translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
-<translation id="2021307518684405078">Tillåt inte att webbplatser kommer åt min kamera och mikrofon</translation>
 <translation id="8870318296973696995">Startsida</translation>
 <translation id="1240643596769627465">Policyn anger webbadressen till sökmotorn som användes för att visa direktresultat. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av den text användaren skrivit hittills när sökningen körs.
 
@@ -590,7 +639,6 @@
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
-<translation id="8853920132856176349">Inställningen används för att dialogrutan Skriv ut ska användas istället för förhandsgranskning av utskrift.</translation>
 <translation id="8469342921412620373">Policyn gör att en standardsökleverantör kan användas.
 
           Om du aktiverar inställningen görs en standardsökning när användaren skriver text som inte är en webbadress i adressfältet.
@@ -625,6 +673,13 @@
 <translation id="4928632305180102854">Avgör om det går att skapa nya användarkonton i <ph name="PRODUCT_OS_NAME"/>. Om policyn är inställd på falskt kan inte användare som inte har något konto logga in.
 
       Om policyn är inställd på sant eller inte är konfigurerad kan nya användarkonton skapas under förutsättning att <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> inte förhindrar att användaren loggar in.</translation>
+<translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME"/> visas på inloggningssidan för motsvarande lokala konto på enheten.
+
+      Om policyn tillämpas används den angivna strängen på inloggningsskärmen i den bildbaserade inloggningsväljaren för motsvarande lokala konto på enheten.
+
+      Om policyn inte tillämpas använder <ph name="PRODUCT_OS_NAME"/> det lokala kontot på enhetens e-postkonto-ID som visningsnamn på inloggningsskärmen.
+
+      Policyn ignoreras för vanliga användarkonton.</translation>
 <translation id="267596348720209223">Policyn anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De testas i den ordning som de anges.
 
           Policyn är valfri. Om den inte anges används standarden UTF-8.
@@ -678,6 +733,7 @@
           Avgränsa flera servernamn med komma. Jokertecken (*) får användas.
 
           Om policyn inte anges godkänns vilken server som helst för integrerad autentisering.</translation>
+<translation id="7712109699186360774">Fråga varje gång en webbplats vill komma åt min kamera och/eller mikrofon</translation>
 <translation id="350797926066071931">Aktivera Översätt</translation>
 <translation id="4010738624545340900">Tillåt anrop till dialogrutor för filval</translation>
 <translation id="4518251772179446575">Fråga när en webbplats vill spåra användarens fysiska plats</translation>
@@ -745,6 +801,11 @@
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
+<translation id="3292147213643666827">Gör att <ph name="PRODUCT_NAME"/> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME"/> och gamla skrivare som är anslutna till datorn.
+
+      Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
+
+      Om inställningen inte är inaktiverad kan användarna inte aktivera proxyn och datorn tillåts inte att dela skrivare med <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Inaktiverar automatiska uppdateringar när inställningen är sant.
 
       <ph name="PRODUCT_OS_NAME"/> enheter söker automatiskt efter uppdateringar när inställningen inte är konfigurerad eller inställd på falskt.</translation>
@@ -758,6 +819,7 @@
 <translation id="1727394138581151779">Blockera alla plugin-program</translation>
 <translation id="8118665053362250806">Ange cachestorlek för medieenhet</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
+<translation id="1859633270756049523">Begränsa sessionslängd</translation>
 <translation id="7433714841194914373">Aktivera Instant</translation>
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="443665821428652897">Ta bort webbplatsdata när webbläsaren avslutas</translation>
@@ -777,6 +839,11 @@
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
 
           Om policyn inte anges används AllowJavaScript och användaren kan ändra inställningen.</translation>
+<translation id="193900697589383153">Lägger till en utloggningsknapp i systemfältet.
+
+      Om funktionen aktiveras visas en stor röd utloggningsknapp i systemfältet medan en session är aktiv och skärmen inte är låst.
+
+      Om funktionen inaktiveras eller inte används visas ingen stor röd utloggningsknapp i systemfältet.</translation>
 <translation id="3195451902035818945">Anger om delade SSL-poster ska inaktiveras. Delade poster är ett sätt att komma runt en svaghet i SSL 3.0 och TLS 1.0, men funktionen kan orsaka kompatibilitetsproblem med vissa HTTPS-servrar och proxyservrar.
 
       Om policyn inte är angiven eller inställd på False kommer delade poster att användas på SSL/TLS-anslutningar som använder CBC-krypteringsmetoder.</translation>
@@ -784,6 +851,7 @@
 
       Policyn avgör om webbadresser ska läsas in när demosessionen startas. Policyn ersätter andra funktioner som anger startadresser och kan därför bara användas i sessioner som inte är kopplade till någon enskild användare.</translation>
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
+<translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="5493552890659553833">Policyn aktiverar sökförslag i adressfältet i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
@@ -806,6 +874,7 @@
 <translation id="4650759511838826572">Inaktivera protokollscheman för webbadresser</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
+<translation id="6559057113164934677">Tillåt inte att webbplatser kommer åt min kamera och mikrofon</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME"/>.
@@ -900,6 +969,7 @@
 
           Om du inte anger policyn kan valfri server användas för integrerad autentisering.</translation>
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
+<translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="1465619815762735808">Klicka för att spela</translation>
 <translation id="7227967227357489766">Definierar listan med användare som får logga in på enheten. Poster har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, till exempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Om du vill att användare ska kunna logga in på en domän helt godtyckligt använder du poster i formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -935,6 +1005,7 @@
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
+<translation id="2757054304033424106">Typer av tillägg/appar som får installeras</translation>
 <translation id="7053678646221257043">Om den här policyn är aktiverad gör den att bokmärken måste importeras från den nuvarande standardwebbläsaren. Policyn påverkar också importfönstret.
 
       Om policyn är inaktiverad importeras inga bokmärken.
@@ -964,6 +1035,8 @@
 <translation id="4525521128313814366">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
           Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
+<translation id="8499172469244085141">Standardinställningar (kan åsidosättas av användare)</translation>
+<translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="3866530186104388232">Om den här policyn är inställd på sant eller inte är konfigurerad visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME"/> och det går att välja en. Om policyn är inställd på falskt används inloggningsfönstret för användarnamn och lösenord i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
 <translation id="1151353063931113432">Tillåt bilder på dessa webbplatser</translation>
@@ -997,15 +1070,9 @@
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
-<translation id="9142678351429467783">Policyn aktiverar utskrift i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
-
-      Om inställningen är aktiverad eller inte konfigurerad kan användarna skriva ut. 
-
-      Om inställningen är inaktiverad kan användarna inte skriva ut från <ph name="PRODUCT_NAME"/>. Utskrift är inaktiverad på skiftnyckelmenyn, i tillägg, i JavaScript-program osv. Det går fortfarande att skriva ut från plugin-program som förbigår <ph name="PRODUCT_NAME"/> under utskriften. Vissa Flash-program har till exempel alternativet Skriv ut på snabbmenyn, och det inaktiveras inte.
-
-      Om policyn inte anges är inställningen aktiverad men kan ändras av användaren.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
+<translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
 <translation id="7635471475589566552">Policyn konfigurerar appens språkversion i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar språk.
 
       Om du aktiverar den här inställningen används den angivna språkversionen av <ph name="PRODUCT_NAME"/>. Om den språkversion som anges inte stöds används en-US istället.
@@ -1085,6 +1152,13 @@
 
       Om du inte anger policyn kan användarna själva välja sina proxyinställningar.</translation>
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
+<translation id="2302939792212564737">Tillåt inspelning av video.
+
+      När policyn tillämpas felaktigt går det inte att spela in video på enheten när användaren är inloggad.
+
+      Policyn påverkar alla typer av videoindata och inte bara via den inbyggda kameran.
+
+      Om inställningen används eller inte har konfigurerats kan användarna använda alla videoindata som stöds på enheten.</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
 <translation id="5512418063782665071">Webbadress för startsida</translation>

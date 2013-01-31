@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">Adakah anda pasti mahu menyahpasang Chromium?</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="6893813176749746474">Chromium telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
+<translation id="1550579416447684632">Lancarkan apl Chromium</translation>
+<translation id="4267347018362241535">Pelancar Apl Chromium ialah platform tersendiri untuk apl Chromium.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="6613594504749178791">Perubahan anda akan dilaksanakan apabila anda melancarkan semula Chromium pada masa hadapan.</translation>
 <translation id="3748537968684000502">Anda melihat halaman Chromium yang selamat.</translation>
@@ -19,8 +21,10 @@
 <translation id="4330297532943865716">Pemasangan Chromium atau Chromium Frame yang bercanggah telah dijumpai pada sistem. Sila nyahpasang dan cuba lagi.</translation>
 <translation id="6953661834318318668">Bar Alat Chromium</translation>
 <translation id="7097100943370017396">Chromium tidak lagi dikemas kini kerana sistem pengendalian anda usang.</translation>
+<translation id="2245147136185581459">Pengesan Portal Tawanan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="2589479092236095792">Tetapan Autoisi Chromium</translation>
+<translation id="658492233547000995">Gunakan Pelancar Apl Chromium untuk melancarkan apl anda.</translation>
 <translation id="3555616473548901994">Selesai nyahpasang.</translation>
 <translation id="3674409928058572366">Hos Apl Chromium</translation>
 <translation id="2886012850691518054">Pilihan: Bantu jadikan Chromium lebih baik dengan menghantar statistik penggunaan dan laporan ranap kepada Google secara automatik.</translation>
@@ -30,7 +34,9 @@
 <translation id="872034308864968620">Benarkan Chromium Dijalankan dalam Latar Belakang</translation>
 <translation id="5109068449432240255">Ya, keluar dari Chromium</translation>
 <translation id="4320129595801648679">Halaman Tab Baharu kromium telah diubah suai. Saling bertukar antara bahagian dengan mengklik label ini. Chromium akan ingat pilihan anda pada masa akan datang.</translation>
+<translation id="1480489203462860648">Cubalah, ia sudah dipasang</translation>
 <translation id="3032787606318309379">Menambah ke Chromium...</translation>
+<translation id="4831257561365056138">Nyahpasang Pelancar Apl Chromium</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Amaran:<ph name="END_BOLD"/> Chromium tidak dapat menghalang pelanjutan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan pelanjutan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 <translation id="8628626585870903697">Chromium tidak menyertakan pemapar PDF yang diperlukan oleh Pratonton Cetakan untuk berfungsi.</translation>
@@ -71,7 +77,6 @@
 <translation id="4077262827416206768">Sila tutup semua tetingkap Chromium dan lancarkan semula Chromium agar perubahan ini boleh dilaksanakan.</translation>
 <translation id="6944967875980567883">Modul yang dimuatkan dalam Chromium</translation>
 <translation id="118298050220780080">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang dikeluarkan oleh entiti yang tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin bermakna pelayan tersebut telah menghasilkan bukti kelayakannya sendiri yang tidak dipercayai oleh Chromium untuk mendapatkan maklumat identiti atau penyerang mungkin cuba memintas komunikasi anda.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Terus menjalankan apl latar belakang apabila Chromium ditutup</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="6055895534982063517">Terdapat versi baharu Chromium yang lebih pantas daripada biasa tersedia.</translation>
@@ -127,7 +132,6 @@
 <translation id="6717134281241384636">Profil anda tidak boleh digunakan kerana profil anda dihasilkan dari versi Chromium yang lebih baharu.
 
 Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbeza atau gunakan versi Chromium yang lebih baharu.</translation>
-<translation id="4499972362520386277">Hak Cipta 2012 Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="2712549016134575851">Percanggahan dengan aplikasi lain yang dipasang telah dikesan.</translation>
 <translation id="4881709374218686648">Sebelum ini, anda telah log masuk menggunakan akaun yang berbeza, log masuk akan menggabungkan data anda. Pertimbangkan untuk membuat pengguna Chromium baharu melalui <ph name="BEGIN_LINK"/>halaman tetapan<ph name="END_LINK"/> untuk bahan Chromium anda.</translation>
 <translation id="9013087743919948559">Tambah ke Chromium</translation>
@@ -182,9 +186,13 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="7483335560992089831">Tidak boleh memasang versi Chromium yang sama dengan yang sedang dijalankan. Sila tutup Chromium dan cuba lagi.</translation>
 <translation id="7641113255207688324">Chromium bukan penyemak imbas lalai anda.</translation>
+<translation id="6208388956150196549">Pelancar Apl Chromium</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
+<translation id="9109696651501887488">Tunjukkan pintasan ke Pelancar Apl Chromium dalam Windows Taskbar.</translation>
 <translation id="2119636228670142020">Mengenai &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
+<translation id="1539981464052805551">Hak Cipta 2013 Pengarang Chromium. Hak cipta terpelihara.</translation>
+<translation id="6606161915035466984">Paparkan Pelancar Apl Chromium.</translation>
 <translation id="8616882682724010661">Lihat <ph name="BEGIN_LINK"/>lagi faedah<ph name="END_LINK"/> apabila log masuk ke Chromium.</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
 <translation id="8724049448828509830">Muat turun sedang dijalankan. Adakah anda ingin keluar dari Chromium dan membatalkan muat turun?</translation>
@@ -202,7 +210,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="7318036098707714271">Fail pilihan anda rosak atau tidak sah.
 
 Chromium tidak dapat mengembalikan tetapan anda.</translation>
-<translation id="7123348595797445166">Cubanya (sudah dipasang)</translation>
 <translation id="6403826409255603130">Chromium merupakan penyemak imbas yang mengendalikan laman web dan aplikasi dengan kelajuan sepantas kilat. Chromium cepat, stabil dan mudah digunakan. Semak imbas web lebih selamat dengan perlindungan perisian hasad dan pancingan data terbina dalam Chromium.</translation>
 <translation id="2927042866129133279">Hujah tidak sah. Chromium Frame tidak boleh dipasang dalam mod sedia tanpa memasang Chromium juga.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>

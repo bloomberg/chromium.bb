@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="4820616160060340806">Comando+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">Modalità silenziosa</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Canc</translation>
 <translation id="528468243742722775">Fine</translation>
 <translation id="5613020302032141669">Freccia sinistra</translation>
 <translation id="8602707065186045623">File <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">Modalità silenziosa per un giorno</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">Freccia GIÙ</translation>
 <translation id="3087734570205094154">In basso</translation>
 <translation id="6364916375976753737">Scorri a sinistra</translation>
+<translation id="6354639579297445993">Esci dalla modalità silenziosa</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6620110761915583480">Salva file</translation>
+<translation id="7394346403752882908">Modalità silenziosa per un'ora</translation>
 <translation id="8210608804940886430">Pagina giù</translation>
 <translation id="5329858601952122676">&amp;Elimina</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>

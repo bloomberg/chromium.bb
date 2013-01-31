@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. Todos os direitos reservados.</translation>
 <translation id="8485767968786176057">Neste caso, o endereço indicado no certificado não corresponde ao endereço do Web site ao qual o seu navegador tentou aceder. Uma razão possível para tal é o facto de as suas comunicações estarem a ser intercetadas por um utilizador mal intencionado que esteja a apresentar um certificado para um Web site diferente, o que causaria uma não correspondência. Outra razão possível é o facto de o servidor estar configurado para devolver o mesmo certificado para vários Web sites, incluindo o que está a tentar visitar, mesmo que esse certificado não seja válido para todos os Web sites. O Google Chrome pode afirmar com certeza que acedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não pode confirmar que seja o mesmo site de &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ao qual pretende aceder. Se continuar, o Chrome não irá verificar se existem mais não correspondências de nomes.</translation>
 <translation id="5430073640787465221">O ficheiro de preferências está danificado ou não é válido. O Google Chrome não consegue recuperar as suas definições.</translation>
 <translation id="6676384891291319759">Aceder à Internet</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Iniciar o Google Chrome</translation>
 <translation id="4891791193823137474">Permitir que o Google Chrome seja executado em segundo plano</translation>
 <translation id="2879385160622431163">Google Chrome Instantâneo</translation>
+<translation id="2896252579017640304">Iniciar aplicações do Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está neste momento a importar Favoritos/Marcadores.</translation>
+<translation id="8762286861469007470">Detetor do Captive Portal para Chrome</translation>
 <translation id="1761870329818521071">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome Frame e tente novamente.</translation>
 <translation id="2040709530900803995">Processador do Google Chrome</translation>
 <translation id="6541116830060437475">Tente desativar a previsão de rede seguindo estes passos:
@@ -44,12 +47,14 @@
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver actualmente em execução, feche-o e tente de novo.</translation>
 <translation id="3080151273017101988">Continuar a executar aplicações em segundo plano quando o Google Chrome está fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira de novo o Google Chrome.</translation>
+<translation id="2886077349328709775">Utilize o Chrome Apps Launcher para iniciar as suas aplicações.</translation>
 <translation id="6989339256997917931">O Google Chrome foi atualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
 <translation id="1682634494516646069">O Google Chrome não consegue ler e escrever no respetivo diretório de dados: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">O directório para instalação do Google Chrome parece estar a ser utilizado. Reinicie o computador e tente de novo.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>
+<translation id="1480489203462860648">Experimente, já está instalado</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK"/> do Google Chrome</translation>
 <translation id="1393853151966637042">Obter ajuda para utilizar o Chrome</translation>
 <translation id="3487814320513494737">A página Novo Separador do Chrome foi remodelada. Alterne entre secções clicando nestas etiquetas. O Chrome memorizará as suas preferências para a próxima vez.</translation>
@@ -79,13 +84,13 @@
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
+<translation id="345168553362876363">O Google Chrome App Launcher é uma plataforma autónoma para aplicações do Chrome.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="7451721381978275812">Argumentos inválidos. Não é possível instalar o Google Chrome Frame no modo de prontidão sem instalar o Google Chrome.</translation>
 <translation id="8684521613357479262">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não existem informações disponíveis que indiquem que o certificado é de confiança. O Google Chrome não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o relógio do sistema e atualizar esta página.</translation>
 <translation id="4585888816441913908">Este computador já tem uma versão mais recente do Google Chrome e do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome e o Google Chrome Frame e tente novamente.</translation>
 <translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="7459554271817304652">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Google Chrome em qualquer computador.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade considerada não fidedigna pelo sistema operativo do seu computador. Isto pode significar que o servidor gerou as suas próprias credenciais de segurança, nas quais o Google Chrome não pode confiar para efeitos de informações de identidade, ou que um utilizador mal intencionado pode estar a tentar intercetar as suas comunicações.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Actualizar</translation>
@@ -94,6 +99,7 @@
 <translation id="2783467918276328046">Conheça <ph name="BEGIN_LINK"/>mais benefícios<ph name="END_LINK"/> de iniciar sessão no Chrome.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="1457721931618994305">A atualizar o Google Chrome...</translation>
+<translation id="6536030683808219174">Mostrar um atalho para o Chrome Apps Launcher na Barra de Tarefas do Windows.</translation>
 <translation id="4351362253593301573">Aceda ao
           <ph name="BEGIN_BOLD"/>
           menu Chrome &gt;
@@ -151,10 +157,11 @@
           <ph name="END_BOLD"/>
           ) estiver presente, clique sobre o mesmo e certifique-se de que a sua configuração
           está definida como &quot;Direta&quot;.</translation>
+<translation id="5788838254726722945">Desinstalar Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc. Todos os direitos reservados.</translation>
 <translation id="61852838583753520">Atualizar o SO &amp;Chrome</translation>
 <translation id="6650142020817594541">Este Web site recomenda o Google Chrome Frame (já instalado).</translation>
+<translation id="550529737713987795">Mostrar Chrome Apps Launcher.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outra aplicação instalada.</translation>
 <translation id="5577648424992741236">Este computador já tem uma versão mais recente do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome Frame e tente novamente.</translation>
 <translation id="7018032895891496381">O Google Chrome utiliza o motor de pesquisa predefinido, que está actualmente definido como <ph name="PAGE_TITLE"/>. Pretende manter o motor de pesquisa predefinido?</translation>
@@ -190,6 +197,7 @@
 <translation id="4407807842708586359">SO do Google Chrome</translation>
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
+<translation id="4710332363312836873">Iniciador de Aplicações do Chrome</translation>
 <translation id="4084877369264707540">O Google Chrome Frame já está instalado e disponível para todos os utilizadores deste computador. Caso pretenda instalar o Google Chrome Frame ao nível do utilizador, será necessário desinstalar primeiro a versão ao nível do sistema instalada por um administrador.</translation>
 <translation id="3360895254066713204">Ajudante do Chrome</translation>
 <translation id="3451115285585441894">A adicionar ao Chrome...</translation>
@@ -201,7 +209,6 @@
 <translation id="3419750618886995598">Actualização do Chrome Frame.</translation>
 <translation id="3336524238463733095">Não é possível atualizar o Google Chrome ou o Google Chrome Frame devido a definições inconsistentes da Política de Grupo do Google Update. Utilize o Editor de Política de Grupo para definir a substituição da política de atualização para a aplicação Google Chrome Binaries e tente novamente; consulte http://goo.gl/uJ9gV para obter mais detalhes.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome neste sistema, disponível para todos os utilizadores. O Google Chrome ao nível do sistema substituirá a instalação ao nível do utilizador.</translation>
-<translation id="7123348595797445166">Experimentar (já instalado)</translation>
 <translation id="4338032231047635328">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode utilizar um certificado com erros nem pode validar a identidade do site ao qual tentou estabelecer ligação.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Definições de Preenchimento Automático do Chrome</translation>

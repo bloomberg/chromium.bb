@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">Stille modus</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5613020302032141669">Pijl-links</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/>-bestand (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">Stille modus gedurende één dag</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">Pijl-omlaag</translation>
 <translation id="3087734570205094154">Onderaan</translation>
 <translation id="6364916375976753737">Naar links bladeren</translation>
+<translation id="6354639579297445993">Stille modus afsluiten</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6620110761915583480">Bestand opslaan</translation>
+<translation id="7394346403752882908">Stille modus gedurende één uur</translation>
 <translation id="8210608804940886430">Pagina omlaag</translation>
 <translation id="5329858601952122676">Verwij&amp;deren</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>

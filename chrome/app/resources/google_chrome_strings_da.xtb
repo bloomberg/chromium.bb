@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="8000275528373650868">Google Chrome kræver Windows Vista eller Windows XP med SP2 eller nyere.</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="8485767968786176057">I dette tilfælde stemmer adressen i certifikatet ikke overens med adressen på det website, som din browser forsøger at gå til. Årsagen kan være, at din kommunikation bliver opsnappet af en hacker, som viser et certifikat for et andet website, hvilket medfører en uoverensstemmelse. Det kan også skyldes, at serveren er konfigureret til at returnere det samme certifikat for flere websites, heriblandt et, som du forsøger at besøge, selvom certifikatet ikke er gyldigt for alle disse websites. Google Chrome kan sige med sikkerhed, at du er kommet til &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan ikke bekræfte, at det er det samme website som &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, som du forsøgte at åbne. Hvis du fortsætter, kontrollerer Chrome ikke yderligere uoverensstemmelser mellem navne.</translation>
 <translation id="5430073640787465221">Din præferencefil er beskadiget eller ugyldig. Google Chrome kan ikke gendanne dine indstillinger.</translation>
 <translation id="6676384891291319759">Få adgang til internettet</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Start Google Chrome</translation>
 <translation id="4891791193823137474">Lad Google Chrome køre i baggrunden</translation>
 <translation id="2879385160622431163">Google Chrome Direkte</translation>
+<translation id="2896252579017640304">Åbn Chrome-apps</translation>
 <translation id="2370289711218562573">Google Chrome importerer nu Foretrukne/Bogmærker.</translation>
+<translation id="8762286861469007470">Registrering af Chrome-gæsteportaler</translation>
 <translation id="1761870329818521071">Det er ikke muligt at installere samme version af Google Chrome Frame som den, der allerede kører. Luk Google Chrome Frame, og prøv igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6541116830060437475">Prøv at deaktivere forudsigelse af netværk vha. denne vejledning:
@@ -44,12 +47,14 @@
 <translation id="4728575227883772061">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Google Chrome kører, bedes du lukke programmet og prøve igen.</translation>
 <translation id="3080151273017101988">Fortsæt med at køre baggrundsapps, når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installationsprogrammet kunne ikke pakke arkivet ud. Download Google Chrome igen.</translation>
+<translation id="2886077349328709775">Brug Chrome-applisten til at åbne dine apps.</translation>
 <translation id="6989339256997917931">Google Chrome er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
 <translation id="5744005218040929396">Google Chrome-værktøj</translation>
 <translation id="1682634494516646069">Google Chrome kan ikke læse og skrive i sin egen datamappe: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chromes installationsmappe ser ud til at være i brug. Genstart din computer, og prøv igen.</translation>
 <translation id="8227755444512189073">Google Chrome er nødt til at starte en ekstern applikation for at håndtere links fra <ph name="SCHEME"/>. Det link, der anmodes om, er <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hold da op! Google Chrome er gået ned. Vil du genstarte nu?</translation>
+<translation id="1480489203462860648">Prøv det, det er allerede installeret</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK"/>Servicevilkår<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Få hjælp til at bruge Chrome</translation>
 <translation id="3487814320513494737">Chromes Ny fane-side er blevet ombygget. Skift mellem sektioner ved at klikke på disse etiketter. Chrome vil huske din indstilling til næste gang.</translation>
@@ -79,13 +84,13 @@
 <translation id="3282568296779691940">Log ind på Chrome</translation>
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="5037239767309817516">Luk alle vinduer i Google Chrome, og genstart, så denne ændring kan træde i kraft.</translation>
+<translation id="345168553362876363">Google Chrome-applisten er en selvstændig platform til Chrome-apps.</translation>
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="7451721381978275812">Ugyldige argumenter. Google Chrome Frame kan ikke installeres i klar tilstand uden installation af Google Chrome.</translation>
 <translation id="8684521613357479262">Du forsøgte at besøge &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et certifikat, der endnu ikke er gyldigt. Der er ingen tilgængelige oplysninger, der indikerer, om certifikatet stammer fra en kilde, der er tillid til. Google Chrome kan ikke med sikkerhed garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en angriber. Uret på din computer viser i øjeblikket <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, bør du rette systemuret og derefter opdatere siden.</translation>
 <translation id="4585888816441913908">Denne computer har allerede en nyere version af Google Chrome og Google Chrome Frame. Hvis softwaren ikke fungerer, skal du afinstallere både Google Chrome og Google Chrome Frame og prøve igen.</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Konfigurer synkroniseringen til at gemme dine personlige browserfunktioner på nettet, og få adgang til dem i Google Chrome på en hvilken som helst computer.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Du har forsøgt at kontakte &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren præsenterede et certifikat, der er udstedt af en enhed, som din computers operativsystem ikke har  tillid til. Det kan betyde, at serveren har genereret sine egne sikkerhedsoplysninger, som Google Chrome kan kvalificere som identitetsoplysninger, eller at en hacker forsøger at opsnappe din kommunikation.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Opdater</translation>
@@ -94,6 +99,7 @@
 <translation id="2783467918276328046">Se <ph name="BEGIN_LINK"/>flere fordele<ph name="END_LINK"/> ved at logge ind på Chrome.</translation>
 <translation id="2580411288591421699">Det er ikke muligt at installere den samme version af Google Chrome, som allerede kører. Luk Google Chrome, og prøv igen.</translation>
 <translation id="1457721931618994305">Opdaterer Google Chrome...</translation>
+<translation id="6536030683808219174">Vis en genvej til Chrome-applisten på proceslinjen i Windows.</translation>
 <translation id="4351362253593301573">Gå til
           <ph name="BEGIN_BOLD"/>
           Chrome-menuen &gt;
@@ -151,10 +157,11 @@
           <ph name="END_BOLD"/>
           ) vises, skal du klikke på den og sørge for, at din konfiguration
           er indstillet til &quot;Direkte&quot;.</translation>
+<translation id="5788838254726722945">Afinstaller Google Chrome-appliste</translation>
 <translation id="3612333635265770873">Et modul med samme navn konflikter med Google Chrome.</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="61852838583753520">Opdater &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Dette website anbefaler Google Chrome Frame (installeret).</translation>
+<translation id="550529737713987795">Vis Chrome-applisten.</translation>
 <translation id="2712549016134575851">Der er opstået en konflikt med et andet installeret program.</translation>
 <translation id="5577648424992741236">Denne computer har allerede en nyere version af Google Chrome Frame. Hvis programmet ikke virker, skal du afinstallere Google Chrome Frame og downloade det igen.</translation>
 <translation id="7018032895891496381">Google Chrome bruger dit standardvalg for søgemaskiner, som i øjeblikket er <ph name="PAGE_TITLE"/>. Vil du beholde din standardsøgemaskine?</translation>
@@ -190,6 +197,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome er opdateret.</translation>
 <translation id="2084710999043359739">Føj til Chrome</translation>
+<translation id="4710332363312836873">Chromes applikationsliste</translation>
 <translation id="4084877369264707540">Google Chrome Frame er allerede installeret og tilgængelig for alle brugerne af denne computer. Hvis du vil installere Google Chrome Frame på brugerniveau, skal du først afinstallere versionen på systemniveau, der er installeret af en administrator.</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
@@ -201,7 +209,6 @@
 <translation id="3419750618886995598">Opdatering af Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome eller Google Chrome Frame kan ikke opdateres på grund af inkonsekvente gruppepolitikindstillinger for Google Update. Brug redigeringsprogrammet til gruppepolitik for at angive tilsidesættelsen af opdateringspolitikken for applikationen Google Chrome Binaries, og prøv igen. Se http://goo.gl/uJ9gV for at få flere oplysninger.</translation>
 <translation id="6049075767726609708">En administrator har allerede installeret Google Chrome på dette system, og det er tilgængeligt for alle brugere. Google Chrome-programmet på systemniveau vil nu erstatte din installation på brugerniveau.</translation>
-<translation id="7123348595797445166">Prøv den (allerede installeret)</translation>
 <translation id="4338032231047635328">Du har forsøgt at kontakte &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men det certifikat, som serveren præsenterede, indeholder fejl. Google Chrome kan ikke bruge et certifikat med fejl og kan ikke bekræfte identiteten af ​​det website, som du har forsøgt at oprette forbindelse til.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Indstillinger for Autofyld i Chrome</translation>

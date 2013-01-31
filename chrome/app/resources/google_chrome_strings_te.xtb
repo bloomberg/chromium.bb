@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="8000275528373650868">Google Chromeకి Windows Vista లేదా Windows XPతో SP2 లేదా తదుపరిది అవసరం.</translation>
+<translation id="8124352762008487242">కాపీరైట్ 2013 Google Inc. సర్వ హక్కులు ప్రత్యేకించబడ్డాయి.</translation>
 <translation id="8485767968786176057">ఈ సందర్భంలో, ప్రమాణపత్రంలో జాబితా చేసిన చిరునామా మీ బ్రౌజర్ వెళ్లడానికి ప్రయత్నించిన చిరునామాతో సరిపోలడం లేదు. సరిపోలకపోవడానికి కారణమయ్యే మరొక వెబ్‌సైట్ కోసం ప్రమాణపత్రాన్ని అందించే దాడి చేసే వ్యక్తి ద్వారా మీ కమ్యూనికేషన్‌లు అడ్డగించబడుతుండటం దీనికి ఒక సాధ్యమయ్యే కారణం. అటువంటి అన్ని వెబ్‌సైట్‌ల కోసం ప్రమాణపత్రం చెల్లుబాటు కానప్పటికీ, మీరు సందర్శించడానికి ప్రయత్నిస్తున్న దానితో సహా, బహుళ వెబ్‌సైట్‌ల కోసం అదే ప్రమాణపత్రం తిరిగి రావడానికి సర్వర్ సెట్ అప్ చేయబడటం మరొక సాధ్యమయ్యే కారణం. మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;ను చేరుకున్నారని Google Chrome ఖచ్చితంగా తెలియజేస్తుంది, కానీ మీరు చేరుకోవాలనుకున్న &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; వలే అదే సైట్‌ అని ధృవీకరించలేదు. మీరు కొనసాగితే, Chrome ఏదైనా తదుపరి పేరు సరిపోలకపోవడాన్ని తనిఖీ చేయదు.</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Google Chromeను ప్రారంభించు</translation>
 <translation id="4891791193823137474">Google Chromeను నేపథ్యంలో అమలు అయ్యేలా అనుమతించండి</translation>
 <translation id="2879385160622431163">Google Chrome తక్షణం</translation>
+<translation id="2896252579017640304">Chrome అనువర్తనాలను ప్రారంభించు</translation>
 <translation id="2370289711218562573">Google Chrome ఇప్పుడు ఇష్టమైనవి/బుక్‌మార్క్‌లను దిగుమతి చేస్తోంది.</translation>
+<translation id="8762286861469007470">Chrome నిర్బంధ పోర్టల్ శోధిని</translation>
 <translation id="1761870329818521071">ప్రస్తుతం అమలవుతున్న అదే Google Chrome Frame సంస్కరణను వ్యవస్థాపించలేదు. దయచేసి Google Chrome Frameను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6541116830060437475">ఈ దశలను అనుసరించడం ద్వారా నెట్‌వర్క్ సూచనను నిలిపివేయడానికి ప్రయత్నించండి:
@@ -42,12 +45,14 @@
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="3080151273017101988">Google Chrome మూసివేసినపుడు అనువర్తనాలను నేపథ్యంలో అమలు చేయడాన్ని కొనసాగించు</translation>
 <translation id="4149882025268051530">ఆర్కైవ్‌ను విస్తరించడంలో ఇన్‌స్టాలర్ విఫలమైంది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
+<translation id="2886077349328709775">మీ అనువర్తనాలను ప్రారంభించడానికి Chrome అనువర్తనాల లాంచర్‌ను ఉపయోగించండి.</translation>
 <translation id="6989339256997917931">Google Chrome నవీకరింబడింది, కానీ మీరు దీన్ని కనీసం 30 రోజులు ఉయోగించలేరు.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="1682634494516646069">Google Chrome దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో వ్రాయలేదు: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chrome ఇన్‌స్టాలేషన్ డైరెక్టరీ ఉపయోగంలో ఉన్నట్టుగా ఉంది. దయచేసి మీ కంప్యూటర్‌ను రీబూట్ చేసి మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> లింకులను నిర్వహించడానికి Google Chrome ఒక బాహ్య అప్లికేషన్‌ను ప్రారంభించాల్సి ఉంది. అభ్యర్థించిన లింక్ <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">ఆపండి! Google Chrome క్రాష్ అయ్యింది. ఇప్పుడు మళ్ళీ ప్రారంభించాల?</translation>
+<translation id="1480489203462860648">దీన్ని ప్రయత్నించండి, ఇది ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Chromeని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="3487814320513494737">Chrome యొక్క క్రొత్త ట్యాబ్ పేజీ మార్చబడింది. ఈ లేబుల్‌లు క్లిక్ చేయడం ద్వారా విభాగాల మధ్య మారవచ్చు. తదుపరి సమయానికి మీ ప్రాధాన్యతను Chrome గుర్తుంచుకుంటుంది.</translation>
@@ -75,13 +80,13 @@
 <translation id="3282568296779691940">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="3089968997497233615">Google Chrome యొక్క క్రొత్త సురక్షితమైన సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="5037239767309817516">దయచేసి ఈ మార్పు అమలులోకి రావడానికి అన్ని Google Chrome విండోలను మూసివేయండి మరియు దీన్ని మళ్ళీ ప్రారంభించండి.</translation>
+<translation id="345168553362876363">Google Chrome అనువర్తన లాంచర్ అనేది Chrome అనువర్తనాల కోసం ప్రత్యేక ప్లాట్‌ఫారమ్.</translation>
 <translation id="225614027745146050">స్వాగతం</translation>
 <translation id="7451721381978275812">చెల్లని కారకాలు. Google Chromeని కూడా వ్యవస్థాపించకుండా Google Chrome Frame సిద్ధమైన మోడ్‌లో వ్యవస్థాపించబడదు.</translation>
 <translation id="8684521613357479262">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ని చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ ఇప్పటికీ చెల్లని ప్రమాణపత్రాన్ని అందించింది. ఆ ప్రమాణపత్రం విశ్వసనీయమైనదో కాదో సూచించడానికి సమాచారం అందుబాటులో లేదు. Google Chrome మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;తో కమ్యూనికేట్ చేస్తున్నారని మరియు దాడి చేసే వారితో కాదని విశ్వసనీయమైన హామీని ఇవ్వలేదు. ప్రస్తుతం మీ కంప్యూటర్ యొక్క గడియారం <ph name="CURRENT_TIME"/>కు సెట్ చేయబడింది. అది సరిగానే కనిపిస్తోందా? అలా కాకపోతే, మీరు సిస్టమ్ గడియారాన్ని సరి చేసి ఆపై ఈ పేజీని రిఫ్రెష్ చేయాలి.</translation>
 <translation id="4585888816441913908">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome మరియు Google Chrome Frame యొక్క తాజా సంస్కరణను కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chrome, Google Chrome Frame రెండింటినీ అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="6368958679917195344">అదనపు <ph name="BEGIN_LINK_CROS_OSS"/>ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS"/> ద్వారా  Chrome OS సాధ్యం అవుతుంది.</translation>
 <translation id="7459554271817304652">వెబ్‌కు మీ వ్యక్తిగతీకరించి బ్రౌజర్ లక్షణాలను సేవ్ చేయడానికి మరియు ఏదైనా కంప్యూటర్‌లోని Google Chrome నుండి అయినా వాటిని ప్రాప్యత చేయడానికి సమకాలీకరణని సెటప్ చేయండి.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ మీ కంప్యూటర్ యొక్క ఆపరేటింగ్ సిస్టమ్ ద్వారా విశ్వసించబడని వాస్తవికత ద్వారా జారీ చేయబడిన ప్రమాణపత్రాన్ని అందించింది. అంటే గుర్తింపు సమాచారం Google Chrome ఆధారపడలేని స్వంత భద్రత ఆధారాలను సర్వర్ రూపొందించిందని లేదా మీ కమ్యూనికేషన్‌లను అడ్డగించడానికి దాడి చేసేవారు ప్రయత్నిస్తుండవచ్చని దీని అర్థం.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">నవీకరణ</translation>
@@ -90,6 +95,7 @@
 <translation id="2783467918276328046">Chromeకు సైన్ ఇన్ చేయడం వల్ల కలిగే <ph name="BEGIN_LINK"/>మరిన్ని ప్రయోజనాలు<ph name="END_LINK"/> చూడండి.</translation>
 <translation id="2580411288591421699">ప్రస్తుతం అమలవుతున్న అదే Google Chrome సంస్కరణను వ్యవస్థాపించలేదు. దయచేసి Google Chromeను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="1457721931618994305">Google Chromeని నవీకరిస్తోంది...</translation>
+<translation id="6536030683808219174">Windows టాస్క్‌బార్‌లో Chrome అనువర్తనాల లాంచర్‌కు సత్వర మార్గాన్ని చూపు.</translation>
 <translation id="4351362253593301573"><ph name="BEGIN_BOLD"/>
           Chrome మెను &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -144,10 +150,11 @@
           <ph name="NETWORK_TAB"/>
           <ph name="END_BOLD"/>
           ట్యాబ్‌లో) ఉనికిలో ఉంటే, దానిపై క్లిక్ చేసి, మీ కాన్ఫిగరేషన్ &quot;ప్రత్యక్షం&quot;కు సెట్ చేయబడిందని నిర్ధారించుకోండి.</translation>
+<translation id="5788838254726722945">Google Chrome అనువర్తన లాంచర్‌ను అన్‌ఇన్‌స్టాల్ చేయి</translation>
 <translation id="3612333635265770873">Google Chromeతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
-<translation id="824729746779295798">కాపీరైట్ 2012 Google Inc. సర్వ హక్కులు ప్రత్యేకించబడ్డాయి.</translation>
 <translation id="61852838583753520">&amp;Chrome OSను నవీకరించు</translation>
 <translation id="6650142020817594541">ఈ సైట్ Google Chrome Frame (ఇప్పటికే వ్యవస్థాపించబడిన)ని సిఫార్సు చేస్తుంది.</translation>
+<translation id="550529737713987795">Chrome అనువర్తనాల లాంచర్‌ను చూపు.</translation>
 <translation id="2712549016134575851">ఇన్‌స్టాల్ చెయ్యబడిన మరొక అప్లికేషన్‌తో విరోధం కనుగొనబడింది.</translation>
 <translation id="5577648424992741236">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome Frame యొక్క తాజా సంస్కరణను కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chrome Frameని అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="7018032895891496381">Google Chrome ప్రస్తుతం <ph name="PAGE_TITLE"/>కు సెట్ చేసిన, మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉపయోగిస్తుంది. మీరు మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉంచాలనుకుంటున్నారా?</translation>
@@ -183,6 +190,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="2084710999043359739">Chromeకి జోడించు</translation>
+<translation id="4710332363312836873">Chrome అనువర్తనాల లాంచర్</translation>
 <translation id="4084877369264707540">Google Chrome Frame ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది మరియు ఈ కంప్యూటర్ యొక్క వినియోగదారులందరికీ అందుబాటులో ఉంటుంది. మీరు Google Chrome Frameను వినియోగదారు స్థాయిలో ఇన్‌స్టాల్ చేయాలకుంటే, మీరు మొదట నిర్వాహకుడి ద్వారా ఇన్‌స్టాల్ చేయబడిన సిస్టమ్-స్థాయి సంస్కరణను ఖచ్చితంగా అన్‌ఇన్‌స్టాల్ చేయాలి.</translation>
 <translation id="3360895254066713204">Chrome సహాయకారుడు</translation>
 <translation id="3451115285585441894">Chromeకు జోడిస్తోంది...</translation>
@@ -194,7 +202,6 @@
 <translation id="3419750618886995598">Chrome Frame నవీకరణ.</translation>
 <translation id="3336524238463733095">సరిపోలని Google నవీకరణ సమూహం విధానం సెట్టింగ్‌లు కారణంగా Google Chrome లేదా Google Chrome Frame నవీకరించబడదు. Google Chrome Binaries అనువర్తనం కోసం నవీకరణ విధానం భర్తీని సెట్ చేయడానికి సమూహం విధానం ఎడిటర్‌ను ఉపయోగించండి మరియు మళ్ళీ ప్రయత్నించండి; వివరాల కోసం http://goo.gl/uJ9gVని చూడండి.</translation>
 <translation id="6049075767726609708">ఒక నిర్వాహకుడు ఈ సిస్టమ్‌పై Google Chromeను ఇన్‌స్టాల్ చేసారు మరియు ఇది మొత్తం యూజర్‌లకు అందుబాటులో ఉంటుంది. ఇప్పుడు సిస్టమ్ స్థాయి Google Chrome మీ యూజర్ స్థాయి ఇన్‌స్టాలేషన్‌ను భర్తీ చేస్తుంది.</translation>
-<translation id="7123348595797445166">దీనిని ప్రయత్నించండి(ఇప్పటికే వ్యవస్థాపించబడింది)</translation>
 <translation id="4338032231047635328">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నిస్తున్నారు, కానీ సర్వర్ అందించిన ప్రమాణపత్రంలో లోపాలు ఉన్నాయి. Google Chrome లోపాలతో ఉన్న ప్రమాణపత్రాన్ని ఉపయోగించదు మరియు దీనికి కనెక్ట్ చేయడానికి మీరు ప్రయత్నిస్తున్న సైట్ యొక్క గుర్తింపుని ధృవీకరించదు.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chrome స్వీయపూర్తి సెట్టింగ్‌లు</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="8000275528373650868">Prehliadač Google Chrome vyžaduje systém Windows Vista alebo Windows XP s balíkom SP2 alebo vyšším.</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. Všetky práva vyhradené.</translation>
 <translation id="8485767968786176057">Adresa uvedená v certifikáte v tomto prípade nezodpovedá adrese webových stránok, na ktoré sa váš prehliadač pokúšal prejsť. Jedným z možných dôvodov je, že vaša komunikácia môže byť zachytávaná útočníkom, ktorý predkladá certifikát pre iné webové stránky, ktoré by mohli spôsobovať nezhodu. Ďalším možným dôvodom je, že server je nastavený tak, aby vracal rovnaký certifikát pre viacero rôznych webových stránok vrátane tej, ktorú sa pokúšate navštíviť, hoci tento certifikát nie je platný pre všetky tieto webové stránky. Prehliadač Google Chrome môže potvrdiť, že ste prešli na doménu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nemôže overiť, že sa jedná o rovnaké stránky ako v prípade domény &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na ktorú ste chceli prejsť. Ak budete pokračovať, prehliadač Chrome nebude kontrolovať žiadne ďalšie nezhody názvov.</translation>
 <translation id="5430073640787465221">Súbor predvolieb je poškodený alebo neplatný. 
 
@@ -20,7 +21,9 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="7101265395643981223">Spustiť prehľadávač Google Chrome</translation>
 <translation id="4891791193823137474">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
 <translation id="2879385160622431163">Dynamický režim Google Chrome</translation>
+<translation id="2896252579017640304">Spustiť aplikácie Chrome</translation>
 <translation id="2370289711218562573">Prehliadač Google Chrome práve importuje Obľúbené položky/Záložky.</translation>
+<translation id="8762286861469007470">Detektor Chrome Captive Portal</translation>
 <translation id="1761870329818521071">Nie je možné nainštalovať rovnakú verziu doplnku Google Chrome Frame, ako je aktuálne spustená verzia. Zavrite doplnok Google Chrome Frame a skúste to znova.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6541116830060437475">Skúste zakázať predvídanie siete podľa týchto pokynov:
@@ -48,12 +51,14 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4728575227883772061">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Google Chrome momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="3080151273017101988">Ponechať aplikácie na pozadí spustené po zatvorení prehliadača Google Chrome</translation>
 <translation id="4149882025268051530">Inštalátor pri dekomprimovaní archívu zlyhal. Prevezmite prehliadač Google Chrome znova.</translation>
+<translation id="2886077349328709775">Spúšťajte aplikácie pomocou platformy Chrome Apps Launcher.</translation>
 <translation id="6989339256997917931">Prehliadač Google Chrome bol aktualizovaný, ale najmenej 30 dní ste ho nepoužili.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="1682634494516646069">Prehliadač Google Chrome nemôže čítať ani zapisovať do adresára s údajmi: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Inštalačný adresár aplikácie Google Chrome sa používa. Reštartujte počítač a skúste to znova.</translation>
 <translation id="8227755444512189073">Prehľadávač Google Chrome potrebuje spustiť externú aplikáciu na spracovanie odkazov <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Google Chrome zlyhal. Chcete ho spustiť znova?</translation>
+<translation id="1480489203462860648">Vyskúšať, prehliadač je už nainštalovaný</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK"/> prehliadača Google Chrome</translation>
 <translation id="1393853151966637042">Získajte pomoc pri používaní prehliadača Chrome</translation>
 <translation id="3487814320513494737">Stránka Nová karta prehliadača Chrome bola prerobená. Kliknutím na tieto menovky môžete prepínať medzi sekciami. Prehliadač Chrome si zapamätá vašu predvoľbu.</translation>
@@ -83,13 +88,13 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3282568296779691940">Prihlásenie do prehliadača Chrome</translation>
 <translation id="3089968997497233615">K dispozícii je nová, bezpečnejšia verzia prehliadača Google Chrome.</translation>
 <translation id="5037239767309817516">Táto zmena sa prejaví po zavretí všetkých okien prehliadača Google Chrome a jeho opätovnom spustení.</translation>
+<translation id="345168553362876363">Google Chrome App Launcher je samostatná platforma pre aplikácie Chrome.</translation>
 <translation id="225614027745146050">Vitajte</translation>
 <translation id="7451721381978275812">Argumenty sú neplatné. Google Chrome Frame nie je možné nainštalovať v režime pripravenom na použitie bez súčasnej inštalácie prehliadača Google Chrome.</translation>
 <translation id="8684521613357479262">Pokúšali ste sa dostať na doménu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server poskytol certifikát, ktorý ešte nie je platný. K dispozícii nie sú žiadne informácie o tom, či je tento certifikát dôveryhodný alebo nie. Prehliadač Google Chrome nemôže zaručiť, že komunikujete s doménou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie s útočníkom. Hodiny vo vašom počítači sú momentálne nastavené na čas <ph name="CURRENT_TIME"/>. Je to v poriadku? Ak nie, mali by ste hodiny systému opraviť a túto stránku obnoviť.</translation>
 <translation id="4585888816441913908">Tento počítač už má novšiu verziu prehliadača Google Chrome a doplnku Google Chrome Frame. Ak softvér nefunguje, odinštalujte  prehliadač Google Chrome aj doplnok Google Chrome Frame a skúste to znova.</translation>
 <translation id="6368958679917195344">Chrome OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS"/>softvéru s otvoreným zdrojom<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Google Chrome v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Pokúsili ste sa o prístup do domény &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server predložil certifikát vydaný osobou, ktorej operačný systém vášho počítača nedôveruje. Môže to znamenať, že server vygeneroval vlastné poverenia zabezpečenia, na ktoré sa prehliadač Google Chrome nemôže pri získavaní údajov o totožnosti spoľahnúť. Môže sa jednať aj o situáciu, kedy sa útočník pokúša zachytiť vašu komunikáciu.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
@@ -98,6 +103,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2783467918276328046"><ph name="BEGIN_LINK"/>Ďalšie výhody<ph name="END_LINK"/> prihlásenia do prehliadača Chrome.</translation>
 <translation id="2580411288591421699">Nie je možné nainštalovať rovnakú verziu prehliadača Google Chrome, ako je aktuálne spustená verzia. Zavrite Google Chrome a skúste znova.</translation>
 <translation id="1457721931618994305">Prebieha aktualizácia prehliadača Google Chrome...</translation>
+<translation id="6536030683808219174">Zobraziť odkaz aplikácie Chrome Apps Launcher na paneli úloh systému Windows.</translation>
 <translation id="4351362253593301573">Prejdite na
           <ph name="BEGIN_BOLD"/>
           ponuku Chrome &gt;
@@ -157,10 +163,11 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
           <ph name="END_BOLD"/>
           karte), kliknite naň a uistite sa, že je vaša konfigurácia
           nastavená na hodnotu Priame.</translation>
+<translation id="5788838254726722945">Odinštalovať platformu Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc. Všetky práva vyhradené.</translation>
 <translation id="61852838583753520">Aktualizácia systému &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Na týchto stránkach je odporúčaný doplnok Google Chrome Frame (už je nainštalovaný).</translation>
+<translation id="550529737713987795">Zobraziť platformu Chrome Apps Launcher.</translation>
 <translation id="2712549016134575851">Zistil sa konflikt s inou nainštalovanou aplikáciou.</translation>
 <translation id="5577648424992741236">Tento počítač už obsahuje novšiu verziu doplnku Google Chrome Frame. Ak softvér nefunguje, odinštalujte doplnok Google Chrome a skúste to znova.</translation>
 <translation id="7018032895891496381">Google Chrome používa váš predvolený vyhľadávací nástroj, ktorý je v súčasnosti nastavený na <ph name="PAGE_TITLE"/>. Chcete ponechať predvolený vyhľadávací nástroj?</translation>
@@ -198,6 +205,7 @@ Vaše záložky, história a ďalšie nastavenia budú synchronizované s vaší
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Prehliadač Google Chrome bol aktualizovaný.</translation>
 <translation id="2084710999043359739">Pridať do prehliadača Chrome</translation>
+<translation id="4710332363312836873">Spúšťač aplikácií Chrome</translation>
 <translation id="4084877369264707540">Doplnok Google Chrome Frame je už nainštalovaný a dostupný pre všetkých používateľov tohto počítača. Ak chcete doplnok Google Chrome Frame inštalovať na úrovni používateľa, musíte najskôr odinštalovať verziu na úrovni systému, ktorú nainštaloval váš správca.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3451115285585441894">Prebieha pridávanie do prehliadača Chrome...</translation>
@@ -209,7 +217,6 @@ Vaše záložky, história a ďalšie nastavenia budú synchronizované s vaší
 <translation id="3419750618886995598">Aktualizácia doplnku Chrome Frame.</translation>
 <translation id="3336524238463733095">Prehliadač Google Chrome alebo doplnok Google Chrome Frame nie je možné aktualizovať, pretože nastavenia skupinových pravidiel Aktualizácií Google sú nekonzistentné. Použite editor skupinových pravidiel, prepíšte nastavenia aktualizácie pre aplikáciu Google Chrome Binaries a skúste to znova. Podrobné informácie nájdete na stránke http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">Správca nainštaloval v tomto systéme prehliadač Google Chrome a je k dispozícii pre všetkých používateľov. Prehliadač Google Chrome na úrovni systému teraz nahradí vašu inštaláciu na úrovni používateľa.</translation>
-<translation id="7123348595797445166">Vyskúšať (prehliadač je už nainštalovaný)</translation>
 <translation id="4338032231047635328">Pokúsili ste sa o prístup do domény &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale certifikát predložený serverom obsahuje chyby. Prehliadač Google Chrome nemôže použiť certifikát obsahujúci chyby a nemôže overiť totožnosť stránok, ku ktorým sa pokúšate pripojiť.</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="1847321074516120686">Nastavenia Automatického dopĺňania prehliadača Chrome</translation>

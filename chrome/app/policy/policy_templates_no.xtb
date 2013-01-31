@@ -27,18 +27,43 @@
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
 <translation id="5183383917553127163">Lar deg angi hvilke utvidelser som ikke omfattes av sperrelisten. En sperrelisteverdi på * betyr at alle utvidelser settes på sperrelisten, og at brukere kun kan installere utvidelser som står oppført på godkjenningslisten. Alle utvidelser står på godkjenningslisten som standard. Men hvis alle utvidelser har blitt oppført på sperrelisten, kan godkjenningslisten overstyre dette.</translation>
 <translation id="3185009703220253572">siden versjon <ph name="SINCE_VERSION"/></translation>
+<translation id="2204753382813641270">Kontrollér automatisk skjuling av hyllen</translation>
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME"/> tillatelse til å håndtere de følgende innholdstypene</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
+<translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME"/>.
+
+      Hvis denne innstillingen er angitt som «true», blir den innebygde DNS-klienten brukt, så sant den er tilgjengelig.
+
+      Hvis denne innstillingen angis til «false», blir den innebygde DNS-klienten aldri brukt.
+
+      Hvis denne innstillingen ikke angis, kan brukerne endre hvorvidt den innebygde DNS-klienten blir brukt ved å redigere chrome://flagg, eller spesifiserer et kommandolinjeflagg.</translation>
 <translation id="2908277604670530363">Maksimalt antall samtidige tilkoblinger til proxytjeneren</translation>
+<translation id="556941986578702361">Kontroller automatisk skjuling av <ph name="PRODUCT_OS_NAME"/>-hyllen.
+
+      Hvis denne innstillingen angis til «AlwaysAutoHideShelf'», skjules alltid hyllen automatisk.
+
+      Hvis denne innstillingen angis til «NeverAutoHideShelf'», skjules aldri hyllen automatisk.
+
+      Hvis du angir denne innstillingen, kan ikke brukere endre eller ovekjøre den.
+
+      Hvis innstillingen ikke angis, kan brukerne velge hvorvidt hyllen skal skjules automatisk eller ikke.</translation>
 <translation id="4838572175671839397">Inneholder et regeluttrykk som brukes for å avgjøre hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME"/>.
 
       Hvis en bruker forsøker å logge seg på med et brukernavn som ikke samsvarer med dette mønsteret, vises det en relatert feilmelding.
 
       Hvis denne retningslinjen ikke angis eller står tom, kan alle brukere logge seg på <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7298195798382681320">Anbefalt</translation>
 <translation id="1438955478865681012">Konfigurerer utvidelsesrelaterte retningslinjer. Brukeren får ikke installerte utvidelser som står på sperrelisten med mindre de også står på godkjenningslisten. Du kan også tvinge <ph name="PRODUCT_NAME"/> til å installere utvidelser automatisk, ved å spesifisere dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sperrelisten prioriteres over listen over tvungne utvidelser.</translation>
+<translation id="3516856976222674451">Begrens maksimal lengde for brukerøkter.
+
+      Når denne innstillingen angis, spesifiserer den hvor lenge brukere kan være pålogget før de automatisk logges av og økten avsluttes. 
+
+      Når denne innstillingen ikke angis, begrenses ikke lengden på øktene.
+
+      Hvis du angir denne innstillingen, kan ikke brukere endre eller overkjøre den.
+
+      Verdien for innstillingen må spesifiseres i millisekunder. Verdier settes innenfor et spenn fra 30 sekunder til 24 timer.</translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
 <translation id="3478024346823118645">Slett brukerdata ved avlogging</translation>
 <translation id="8668394701842594241">Angir en liste over programtillegg som er aktivert i <ph name="PRODUCT_NAME"/>, og forhindrer brukerne i å endre denne innstillingen.
@@ -79,11 +104,7 @@
           En svartelisteverdi på * betyr at alle utvidelser er svartelistet med mindre de er uttrykkelig oppført på godkjenningslisten.
 
          Hvis denne retningslinjen ikke er angitt, kan brukeren installere alle utvidelse i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2129233336491582973">Gjør at <ph name="PRODUCT_NAME"/> kan fungere som en mellomtjener mellom <ph name="CLOUD_PRINT_NAME"/> og eldre skrivere som er koblet til maskinen.
-
-      Hvis denne innstillingen er aktivert eller ikke er konfigurert, kan brukerne aktivere mellomtjeneren for skybasert utskrift ved å autentisere dette i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukerne aktivere mellomtjeneren, og maskinen kan ikke dele skriverne sine med <ph name="CLOUD_PRINT_NAME"/>.
-
-      Hvis denne retningslinjen ikke angis, vil den være aktivert, men brukeren har mulighet til å endre den.</translation>
+<translation id="5809728392451418079">Angi skjermnavn for lokale kontoer på enheten</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxytjener</translation>
 <translation id="1827523283178827583">Bruk faste proxytjenere</translation>
 <translation id="3021409116652377124">Deaktiver programtilleggssøk</translation>
@@ -140,6 +161,15 @@
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="8665076741187546529">Konfigurer listen over tvangsinstallerte utvidelser</translation>
+<translation id="1675391920437889033">Kontrollerer hvilke apper/utvidelser som kan installeres.
+
+          Denne innstillingen godkjenner utvidelsene og appene som tillates for installering i <ph name="PRODUCT_NAME"/>. Verdien er en liste over strenger der hver skal tilhøre én av følgende: «utvidelse», «tema», «bruker_skript», «vertsbasert_app», «pakket_app», «plattformsapp». Se i utvidelsesdokumentasjonen for Chrome for å finne ut mer om disse typene.
+
+          Vær oppmerksom på at denne innstillingen også påvirker utvidelser og apper som skal tvangsinstalleres via ExtensionInstallForcelist.
+
+          Hvis denne innstillingen konfigureres, installeres ikke apper og utvidelser som har en type som ikke er i listen.
+
+          Hvis instillingen ikke konfigureres, settes det ingen begrensninger for hvilke typer utvidelser og apper som kan installeres.</translation>
 <translation id="8818173863808665831">Rapportering av enhetens geografiske posisjon.
 
       Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>
@@ -160,6 +190,11 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
 
      Hvis denne retningslinjen ikke angis, blir blir gjeldende innstilling det samme som brukeren velger ved installasjon / første kjøring.</translation>
+<translation id="2516600974234263142">Aktiverer utskrift i <ph name="PRODUCT_NAME"/> og hindrer brukere fra å endre denne innstillingen.
+
+      Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukere skrive ut.
+
+      Hvis denne innstillingen er deaktivert, kan ikke brukere skrive ut fra <ph name="PRODUCT_NAME"/>. Utskrift deaktiveres i skiftenøkkelmenyen, utvidelser, JavaScript-apper osv. Det er fortsatt mulig å skrive ut fra programtillegg som ignorerer <ph name="PRODUCT_NAME"/> mens utskriften pågår. For eksempel er det visse Flash-apper som har alternativet for utskrift i kontekstmenyen, som ikke dekkes av denne innstillingen.</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="6925212669267783763">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME"/> bruker til lagring av brukerdata. 
@@ -237,7 +272,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Hvis denne innstillingen er aktivert, deaktiveres vertenes fysiske enheter for inn- og utdata mens en fjerntilkobling er aktiv.
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, kan både lokale og eksterne brukere samhandle med verten når den deles.</translation>
-<translation id="2312509925391670075">Spør hver gang et nettsted ønsker å bruke kameraet og/eller mikrofonen min</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4962195944157514011">Angir nettadressen til søkemotoren som brukes til et standard søk. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som erstattes når søket utføres av termene brukeren søker etter.
 
@@ -268,6 +302,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Avgjør varighet før skjermspareren vises på påloggingssiden for enheter i detaljistmodus.
 
       Retningslinjeverdien må angis i millisekunder.</translation>
+<translation id="1082519594196055704">Tillat videoopptak</translation>
 <translation id="6368011194414932347">Konfigurer nettadresse for startsiden</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
@@ -316,6 +351,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis du deaktiverer denne innstillingen eller ikke angir den, omfatter ikke den genererte Kerberos SPN-en noen port i noe tilfelle.</translation>
 <translation id="3236046242843493070">Nettadressemønstre du vil tillate installasjoner av utvidelser, programmer og brukerskript fra</translation>
+<translation id="2498238926436517902">Alltid skjul hyllen automatisk</translation>
 <translation id="3442095178490656861">Angir tidssonen som skal brukes for enheten. Brukere kan overstyre den angitte tidssone for den gjeldende økten. Men ved avlogging tilbakestilles denne til den angitte tidssonen. Hvis en ugyldig verdi angis, er retningslinjen fremdeles aktivert, og benytter «GMT» i stedet.
 
       Hvis denne retningslinjen ikke brukes, blir den gjeldende tidssonen fremdeles brukt, men brukere kan endre tidssonen, og endringen er vedvarende. Dermed kommer en endring som gjøres av én bruker til å påvirke påloggingssiden og alle andre brukere.
@@ -342,6 +378,9 @@ Hvis ingenting angis, blokkeres alle porter. Hvis den valgfrie banen angis, blok
 Det kan gis unntak i retningslinjenene for nettadressenes godkjenningsliste. Disse retningslinjene er begrenset til 1000 oppføringer. Oppføringer etter de første 1000 blir ignorert.
 
 Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettleseren.</translation>
+<translation id="2762164719979766599">Spesifiserer listen over lokale kontoer på enheten til å vises på påloggingsskjermen.
+
+      Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="2534584045044686957">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME"/> bruker for lagring av bufrede mediefiler på disken.
 
@@ -417,6 +456,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
 <translation id="1098794473340446990">Rapportér aktivitetstider for enhet. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke aktivitetstider registrert eller rapportert.</translation>
 <translation id="896575211736907134">Tvungen inkognitomodus.</translation>
+<translation id="7912255076272890813">Konfigurer tillatte typer apper og utvidelser</translation>
 <translation id="817455428376641507">Gir tilgang til de oppførte nettadressene, som unntak for nettadressene på svartelisten. 
 
       Se beskrivelsen av nettadressesvartelistens retningslinjer for formatet på oppføringer i listen.
@@ -460,6 +500,16 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="7063895219334505671">Tillat forgrunnsvindu på disse nettstedene</translation>
 <translation id="4052765007567912447">Kontrollerer om brukeren kan vise passord i klartekst i passordbehandlingen. Hvis du deaktiverer denne innstillingen, tillater ikke passordbehandlingen at lagrede passord vises i klartekst i vinduet til passordbehandlingen. Hvis du aktiverer eller ikke angir denne retningslinjen, kan brukerne se passordene i klartekst i passordbehandlingen.</translation>
+<translation id="5936622343001856595">Tvinger søkene i Google Nettsøk til å gjennomføres med Sikkert Søk aktivert, og hindrer brukere fra å endre denne innstillingen.
+
+      Hvis du aktiverer denne innstillingen, er Sikkert Søk i Google Søk alltid aktivert.
+
+      Hvsi du deaktiverer denne innstillingen, eller ikke angir noen verdi, blir ikke Sikkert Søk i Google Søk iverksatt.</translation>
+<translation id="6017568866726630990">Vis utskriftsdialogen for systemet i stedet for utskriftsforhåndsvisning.
+
+      Når denne innstillingen aktiveres, åpner <ph name="PRODUCT_NAME"/> utskriftsdialogen for systemet i stedet for den innebygde utskriftsforhåndsvisningen når en bruker ber om å skrive ut en side.
+
+      Hvis denne innstillingen ikke angis, eller angis som feil, kommer utskriftskommandoene til å utløse forhåndsvisningsskjermen for utskrifter.</translation>
 <translation id="3120725863988702582">Denne retningslinjen er en overstyring for «Slett informasjonskapsler og andre nettsteddata når jeg lukker nettleseren»-alternativet for innholdsinnstillinger, som <ph name="PRODUCT_NAME"/> støttet i forkant av versjon 21.
 
       Denne retningslinjen eksisterer bare for bakoverkompatibilitet, og blir fjernet i fremtiden. Hvis du vil slette nettsteddata når du lukker versjon 21 og nyere versjoner, anbefaler vi at du konfigurerer DefaultCookiesSetting-retningslinjen til å gjelde for enkeltøkter.
@@ -474,6 +524,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
 
       Hvis denne retningslinjen ikke angis, aktiveres dette, men brukeren kan endre på det.</translation>
+<translation id="4541530620466526913">Lokale kontoer på enheten</translation>
 <translation id="1757688868319862958">Lar <ph name="PRODUCT_NAME"/> kjøre programtillegg som krever godkjenning. Hvis du aktiverer denne innstillingen, kjører alltid programtillegg som ikke er foreldede. Hvis denne innstillingen er deaktivert eller ikke angitt, blir brukerne bedt om tillatelse til å kjøre programtillegg som krever godkjenning. Dette er programtillegg som kan sette sikkerheten på spill.</translation>
 <translation id="6392973646875039351">Aktiverer autofyll-funksjonen til <ph name="PRODUCT_NAME"/>, og gjør at brukerne kan autofullføre nettskjemaer ved hjelp av tidligere lagret informasjon, som adresser eller kredittkortinformasjon.
 
@@ -481,10 +532,10 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Hvis du aktiverer denne innstillingen eller ikke angir noen verdi, fortsetter autofyll-funksjonen å være under brukerens kontroll. Dette gjør at de kan konfigurere autofyll-profiler og slå autofyll-funksjonen på og av etter eget ønske.</translation>
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå mellomtjener</translation>
+<translation id="7788511847830146438">Per profil</translation>
 <translation id="3965339130942650562">Tidsavbrudd før inaktiv brukeravlogging utføres</translation>
 <translation id="5293547923319914979">Aktiver begrensning (curtaining) av verter for fjerntilgang.</translation>
 <translation id="7091198954851103976">Kjører alltid programtillegg som krever godkjenning</translation>
-<translation id="2021307518684405078">Forby nettsteder fra å bruke kameraet og/eller mikrofonen min</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="1240643596769627465">Angir nettadressen til søkemotoren som brukes til å gi umiddelbare resultater. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som blir erstattet av teksten brukeren har skrevet inn, når søket utføres. Denne retningslinjen er valgfri. Hvis den ikke er aktivert, brukes det ingen forslagsnettadresse. Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="6693751878507293182">Hvis du aktiverer denne innstillingen, deaktiveres automatisk søk og installering av manglende programtillegg i <ph name="PRODUCT_NAME"/>.
@@ -515,7 +566,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
-<translation id="8853920132856176349">Denne innstillingen brukes for å tvinge frem bruk av systemdialogen for utskrift i stedet for forhåndsvisning av utskrift.</translation>
 <translation id="8469342921412620373">Aktiverer bruk av standard søkeleverandør.
 
           Hvis du aktiverer denne innstillingen, utføres et standardsøk når brukeren skriver tekst som ikke er en nettadresse, inn i søkefeltet.
@@ -550,6 +600,13 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="4928632305180102854">Kontrollerer om <ph name="PRODUCT_OS_NAME"/> tillater oppretting av nye brukerkontoer. Hvis denne retningslinjen er angitt som Usann, vil ikke brukere som ikke allerede har en konto, ikke kunne logge seg på.
 
       Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, tillates det oppretting av nye brukerkontoer dersom <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ikke forhindrer brukeren fra å logge seg på.</translation>
+<translation id="8256688113167012935">Kontrollerer hvilket kontonavn <ph name="PRODUCT_OS_NAME"/> viser på påloggingsskjermen for enhetens tilhørende lokale konto.
+
+      Hvis denne innstillingen angis, bruker påloggingsskjermen den spesifiserte strengen i den bildebaserte påloggingsvelgeren for enhetens tilhørende lokale konto.
+
+      Hvis innstillingen ikke angis, bruker <ph name="PRODUCT_OS_NAME"/> ID-en for e-postkontoen til enhetens lokale konto som skjermnavn på påloggingsskjermen.
+
+      Denne innstillingen ignoreres for vanlige brukerkontoer.</translation>
 <translation id="267596348720209223">Angir tegnkodingen som støttes av søkeleverandøren. Kodingene er kodesidenavn som UTF-8, GB2312 og ISO-8859-1. De prøves i oppgitt rekkefølge.
 
           Denne retningslinjen er valgfri. Hvis den ikke er angitt, vil standarden brukes, som er UTF-8.
@@ -601,6 +658,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Flere tjenernavn skal adskilles med komma. Jokertegn (*) er tillatt.
 
           Hvis du ikke angir denne retningslinjen, kan alle tjenere godkjennes for integrert autentisering.</translation>
+<translation id="7712109699186360774">Spør hver gang et nettsted ønsker å bruke kameraet og/eller mikrofonen min</translation>
 <translation id="350797926066071931">Aktiver oversettelse</translation>
 <translation id="4010738624545340900">Tillat anrop av av filvalgdialoger.</translation>
 <translation id="4518251772179446575">Spør hver gang et nettsted ønsker å spore brukernes fysiske plassering</translation>
@@ -661,6 +719,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
+<translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME"/> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME"/> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Deaktiverer automatiske oppdateringer når angitt som Sann.
 
       <ph name="PRODUCT_OS_NAME"/>-enheter ser automatisk etter oppdateringer når denne innstillingen ikke er konfigurert eller angitt som Usann.</translation>
@@ -674,6 +733,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="1727394138581151779">Blokkér alle programtillegg</translation>
 <translation id="8118665053362250806">Angi størrelse på mediediskbuffer</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
+<translation id="1859633270756049523">Begrens innloggingstiden</translation>
 <translation id="7433714841194914373">Aktiver Instant</translation>
 <translation id="4983201894483989687">Tillat kjøring av foreldede programtillegg</translation>
 <translation id="443665821428652897">Tøm nettsteddata når nettleseren lukkes (foreldet)</translation>
@@ -692,11 +752,17 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="7202926611616207807">Lar alle nettsteder angi lokale data.</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
           Hvis denne retningslinjen ikke angis, brukes AllowJavaScript, og brukeren kan endre på dette.</translation>
+<translation id="193900697589383153">Legger til en avlogginsknapp i systemstatusfeltet.
+
+      Hvis dette aktiveres, vises en rød avlogginsknapp i systemstatusfeltet mens en økt er aktiv og skjermen ikke er låst.
+
+      Hvis det deaktiveres eller ikke spesifiseres, vises det ingen stor, rød knapp i systemstatusfeltet.</translation>
 <translation id="3195451902035818945">Angir hvorvidt splitting av SSL-oppføringer skal være deaktivert. Splitting av oppføringer er en problemløsning for en svakhet i SSL 3.0 og TLS 1.0, men kan føre til kompatibilitetsproblemer med enkelte HTTPS-tjenere og mellomtjenere. Hvis disse retningslinjene ikke angis, eller er deaktivert, blir splitting av oppføringer tatt i bruk for SSL/TLS-tilkoblinger som bruker «CBC ciphersuites» (kombinasjonssystem for sikkerhet).</translation>
 <translation id="6903814433019432303">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør hvilket sett av nettadresser som blir lastet inn når demo-økten startes. Denne retningslinjen overstyrer enhver annen mekanisme for angivelse av den første nettadressen og kan således brukes bare for en økt som ikke er tilknyttet en viss bruker.</translation>
 <translation id="5868414965372171132">Nettverkskonfigurasjon på brukernivå</translation>
+<translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="5493552890659553833">Aktiverer søkeforslag i søkefeltet til <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre på dette.
 
@@ -719,6 +785,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="4650759511838826572">Deaktiver protokollsystemer for nettadresse</translation>
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
+<translation id="6559057113164934677">Forby nettsteder fra å bruke kameraet og mikrofonen min</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
 <translation id="3547954654003013442">Innstillinger for mellomtjener</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME"/>.
@@ -808,6 +875,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis du ikke angir denne retningslinjen, vil alle tjenere godtas for integrert autentisering.</translation>
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
+<translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
 <translation id="1465619815762735808">Klikk for å spille av</translation>
 <translation id="7227967227357489766">Definerer listen over brukere som kan logge seg på enheten. Oppføringer har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, som for eksempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Hvis du vil tillate vilkårlige brukere på domenet, må oppføringer bruke formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -841,6 +909,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="6145799962557135888">Gjør at du kan angi en liste over nettadressemønstre som angir hvilke nettsteder som får kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis denne er angitt, eller fra brukerens egen konfigurasjoner hvis den nevnte retningslinjen ikke er angitt.</translation>
+<translation id="2757054304033424106">Utvidelser og apper som kan installeres</translation>
 <translation id="7053678646221257043">Denne retningslinjen fremtvinger import av bokmerker fra gjeldende standard nettleser, hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importeringsdialogen. Hvis den er deaktivert, kan det hende brukeren blir spurt om vedkommende vil importere, eller så kan importen skje automatisk.</translation>
 <translation id="5757829681942414015">Konfigurerer katalogen <ph name="PRODUCT_NAME"/> bruker til lagring av brukerdata.
 
@@ -864,6 +933,8 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
 <translation id="3808945828600697669">Angi en liste over deaktiverte programtillegg</translation>
 <translation id="4525521128313814366">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultImagesSetting, eller fra brukerens egne retningslinjer hvis den nevnte retningslinjen ikke er angitt.</translation>
+<translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
+<translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="3866530186104388232">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME"/> eksisterende brukere på påloggingssiden og tillate valg av én. Hvis denne retningslinjen er angitt som Usann, ber <ph name="PRODUCT_OS_NAME"/> om brukernavn og passord ved pålogging.</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
 <translation id="1151353063931113432">Tillat bilder på disse nettstedene</translation>
@@ -890,14 +961,9 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           ExtensionInstallBlacklist har forrang for denne retningslinjen. I klartekst betyr dette at en utvidelse oppført på sperrelisten, ikke blir installert, selv om nedlastingen skal skje fra et nettsted på denne listen.</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME"/> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME"/> gjengi HTML-sider som standard.</translation>
-<translation id="9142678351429467783">Aktiverer utskrift i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukerne skrive ut.
-
-      Hvis denne innstillingen er deaktivert, kan ikke brukerne skrive ut fra <ph name="PRODUCT_NAME"/>. Utskrift er da deaktivert i verktøymenyen, utvidelsene, JavaScript-programmene og så videre. Det er fortsatt mulig å skrive ut fra programtillegg som går forbi <ph name="PRODUCT_NAME"/> under utskrift. Enkelte Flash-programmer har for eksempel utskriftsalternativet i kontekstmenyen, og vil ikke deaktiveres.
-      Hvis denne retningslinjen ikke angis, vil den være aktivert, men brukeren har mulighet til å endre på dette.</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
+<translation id="3973371701361892765">Aldri skjul hyllen automatisk</translation>
 <translation id="7635471475589566552">Konfigurerer programmets språk i <ph name="PRODUCT_NAME"/>, og hindrer brukeren i å endre på språket.
 
       Hvis du aktiverer denne innstillingen, bruker <ph name="PRODUCT_NAME"/> det angitte språket. Hvis det konfigurerte språket ikke håndteres, brukes språket en-US i stedet.
@@ -964,6 +1030,13 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne retningslinjen ikke angis, kan brukerne velge mellomtjenerinnstillinger på egen hånd.</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
+<translation id="2302939792212564737">Tillat videoopptak
+
+      Når en innstilling angis som «false», er ikke videoopptak mulig på enheten mens brukeren er pålogget.
+
+      Denne innstillingen påvirker alle typer videoinnganger – ikke bare fra det innebygde kameraet.
+
+      Hvis denne innstillingen angis til sann, eller ikke konfigureres, kan brukere benytte seg av alle støttede videoinnganger på enheten sin.</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
 <translation id="5512418063782665071">Nettadresse for startside</translation>

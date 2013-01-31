@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="8000275528373650868">Google Chrome-এর জন্য SP2 বা উচ্চতর সহ Windows Vista বা Windows XP প্রয়োজন৷</translation>
+<translation id="8124352762008487242">কপিরাইট ২০১৩ Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="8485767968786176057">এই ক্ষেত্রে, শংসাপত্রে তালিকাভুক্ত ঠিকানাটি আপনার ব্রাউজার যে ওয়েবসাইটে যাওয়ার চেষ্টা করছে তার ঠিকানার সাথে মেলে না৷ একটি সম্ভাব্য কারণ হতে পারে আপনার যোগাযোগ একজন আক্রমণকারী কতৃক বিচ্ছিন্ন হচ্ছে যে কোনো আলাদা ওয়েবসাইটের একটি শংসাপত্র উপস্থাপন করছে যার কারণে এই অমিল ঘটছে৷ অন্য সম্ভাব্য কারণ হতে পারে যে, আপনি যে ওয়েবসাইট দেখার চেষ্টা করছেন সেটি সহ, সার্ভারটি একাধিক ওয়েবসাইটের জন্য একই শংসাপত্র ফিরিয়ে দেওয়াতে সেট আছে, শংসাপত্রটি সমস্ত ওয়েবসাইটের জন্য বৈধ না হওয়া সত্ত্বেও৷ Google Chrome নিশ্চিত হয়ে বলতে পারে যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;-এ পৌঁছেছেন, কিন্তু এটি যাচাই করতে পারে না আপনি যে সাইটে যেতে চান &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; সেটিই কি না৷ আপনি যদি এগিয়ে যান, তাহলে Chrome কোনো নাম অমিল চেক করবে না৷</translation>
 <translation id="5430073640787465221">আপনার অভিরুচিসমূহ ফাইল দূষিত অথবা অবৈধ৷\n\nGoogle Chrome আপনার সেটিংস পুনরুদ্ধার করতে অক্ষম৷</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Google Chrome শুরু করুন</translation>
 <translation id="4891791193823137474">Google Chrome-কে পশ্চাদপটে চালতে দিন</translation>
 <translation id="2879385160622431163">Google Chrome  ঝটপট</translation>
+<translation id="2896252579017640304">Chrome অ্যাপ্লিকেশনগুলি লঞ্চ করুন</translation>
 <translation id="2370289711218562573">Google Chrome এখন প্রিয়/বুকমার্কগুলি আমদানি করছে৷</translation>
+<translation id="8762286861469007470">Chrome ক্যাপটিভ পোর্টাল ডিটেকটর</translation>
 <translation id="1761870329818521071">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6541116830060437475">এই পদক্ষেপগুলি অনুসরণ করে নেটওয়ার্ক পূর্বানুমান অক্ষম করার চেষ্টা করুন:
@@ -43,6 +46,7 @@
 <translation id="4728575227883772061">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ যদি Google Chrome বর্তমানে চলতে থাকে তবে দয়া করে এটি বন্ধ করে আবার চেষ্টা করুন৷</translation>
 <translation id="3080151273017101988">Google Chrome বন্ধ হলে পশ্চাদপট অ্যাপ্লিকেশানের চলা অবিরত রাখুন</translation>
 <translation id="4149882025268051530">ইনস্টলারটি সংরক্ষণাগার কমপ্রেস মুক্ত করতে ব্যর্থ হয়েছে৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
+<translation id="2886077349328709775">আপনার অ্যাপ্লিকেশনগুলি লঞ্চ করতে Chrome অ্যাপ্লিকেশন লঞ্চার ব্যবহার করুন৷</translation>
 <translation id="6989339256997917931">Google Chrome আপডেট হয়েছে তবে আপনি এটি কমপক্ষে 30 দিন যাবত ব্যবহার করেন নি৷</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="1682634494516646069">Google Chrome-এর ডেটা নির্দেশিকা পড়তে এবং লিখতে পারে না:
@@ -51,6 +55,7 @@
 <translation id="4343226815564935778">Google Chrome ইনস্টলেশন ডিরেক্টরি ব্যবহার হচ্ছে বলে মনে হয়৷ দয়া করে আপনার কম্পিউটারটি রিবুট করে আবার চেষ্টা করুন৷</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> লিঙ্কগুলি নিয়ন্ত্রণ করার জন্য Google Chrome-এর একটি বহিরাগত অ্যাপ্লিকেশন প্রবর্তন করা দরকার৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="8290100596633877290">হোয়া! Google Chrome ক্র্যাশ হয়েছে৷ এখনই পুনঃলঞ্চ করবেন?</translation>
+<translation id="1480489203462860648">এটি ব্যবহার করে দেখুন, ইতিমধ্যেই এটি ইনস্টল করা হয়েছে</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/> পরিষেবার শর্তাবলী <ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Chrome ব্যবহার করে সাহায্য নিন</translation>
 <translation id="3487814320513494737">Chrome এর নতুন ট্যাব পৃষ্ঠাটির পুনরায় মডেল করা হয়েছে৷ এই লেবেলগুলির মধ্যে ক্লিক করে বিভাগগুলির মধ্যে স্যুইচ করুন৷ Chrome পরের বারের জন্য আপনার পছন্দটি মনে রাখবে৷</translation>
@@ -78,13 +83,13 @@
 <translation id="3282568296779691940">Chrome-এ সাইন ইন করুন</translation>
 <translation id="3089968997497233615">Google Chrome-এর একটি নতুন, তুলনামূলক নিরাপদ সংস্করণ উপলব্ধ৷</translation>
 <translation id="5037239767309817516">দয়া করে সব Google Chrome উইন্ডো বন্ধ করুন এবং এই পরিবর্তনকে প্রভাবশালী করতে এটিকে পুনঃলঞ্চ  করুন৷ </translation>
+<translation id="345168553362876363">Chrome অ্যাপ্লিকেশনগুলির জন্য Google Chrome অ্যাপ্লিকেশন লঞ্চার হল একটি স্বতন্ত্র প্ল্যাটফর্ম৷</translation>
 <translation id="225614027745146050">স্বাগতম</translation>
 <translation id="7451721381978275812">অকার্যকর আর্গুমেন্ট৷ Google Chrome ইনস্টল না করে Google Chrome Frame প্রস্তুত মোডে ইনস্টল করতে পারা যায়না৷</translation>
 <translation id="8684521613357479262">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt; এ পৌঁছানোর চেষ্টা করেছেন, কিন্তু সার্ভারটি একটি শংসাপত্র উপস্থাপন করেছে যা এখন পর্যন্ত বৈধ নয়৷ সেইরকম কোনো তথ্য পাওয়া যায়নি যা নির্দেশ করবে যে এই শংসাপত্রটিকে বিশ্বাস করা যাবে কি না৷ Google Chrome নির্ভরযোগ্যভাবে নিশ্চয়তা দিতে পারে না যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; এর সঙ্গেই যোগাযোগ করছেন এবং কোনো আক্রমণকারীর সাথে নয়৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/> এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার সিস্টেমের ঘড়িটিকে ঠিক করা উচিত ও তারপরে এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
 <translation id="4585888816441913908">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome এবং Google Chrome ফ্রেমের অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে তবে দয়া করে Google Chrome এবং Google Chrome ফ্রেম দু'টিই আনইনস্টল করে আবার চেষ্টা করুন৷</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS"/>মুক্ত উত্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS"/> দিয়ে তৈরি৷</translation>
 <translation id="7459554271817304652">ওয়েবে আপনার ব্যক্তিগতকৃত ব্রাউজার বিষয় সংরক্ষণ করতে এবং যেকোন কম্পিউটারে Google Chrome থেকে প্রবেশ করতে সিঙ্ক সেট আপ করুন৷ </translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-তে পৌঁছানোর চেষ্টা করেছেন, কিন্তু আপনার কম্পিউটারের অপারেটিং সিস্টেমের মাধ্যমে বিশ্বস্ত নয় এরকম একটি অস্তিত্বের মাধ্যমে ইস্যু করা একটি শংসাপত্র সার্ভার উপস্থাপন করেছে৷ এর মানে এটি হতে পারে যে সার্ভার এর নিজস্ব নিরাপত্তা প্রমানপত্র জেনারেট করেছে, যার উপর Google Chrome শনাক্ত তথ্যের জন্য নির্ভর করতে পারে না, অথবা কোনো আক্রমণকারী আপনার যোগাযোগকে ব্যাহত করার চেষ্টা করতে পারে৷</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">আপডেট</translation>
@@ -93,6 +98,7 @@
 <translation id="2783467918276328046">Chrome-এ সাইন ইনের জন্য <ph name="BEGIN_LINK"/>আরো সুবিধা<ph name="END_LINK"/> দেখুন৷</translation>
 <translation id="2580411288591421699">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="1457721931618994305">Google Chrome আপডেট হচ্ছে...</translation>
+<translation id="6536030683808219174">Windows TaskBar এ Chrome অ্যাপ্লিকেশন লঞ্চারের একটি শর্টকাট দেখান৷</translation>
 <translation id="4351362253593301573"><ph name="BEGIN_BOLD"/>
           Chrome মেনু &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -150,10 +156,11 @@
           <ph name="END_BOLD"/>
           ট্যাবে) উপস্থিত থাকে তাহলে, সেটিতে ক্লিক করুন এবং আপনার কনফিগারেশন
           &quot;সরাসরি&quot;তে সেট আছে কি না নিশ্চিত করুন৷</translation>
+<translation id="5788838254726722945">Google Chrome অ্যাপ্লিকেশন লঞ্চার আনইনস্টল করুন</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
-<translation id="824729746779295798">কপিরাইট 2012 Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="6650142020817594541">এই সাইটটি Google Chrome Frame(ইতিমধ্যে ইনস্টল আছে)-এর পরামর্শ দেয়৷</translation>
+<translation id="550529737713987795">Chrome অ্যাপ্লিকেশন লঞ্চার দেখান৷</translation>
 <translation id="2712549016134575851">অন্য একটি ইনস্টল থাকা প্রয়োগের সাথে বিরোধ সনাক্ত করা হয়েছে৷</translation>
 <translation id="5577648424992741236">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome Frame-এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome Frame আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="7018032895891496381">Google Chrome আপনার ডিফল্ট সার্চ ইঞ্জিন ব্যবহার করে, যা বর্তমানে <ph name="PAGE_TITLE"/>-এ সেট আছে৷ আপনি কি নিজের ডিফল্ট সার্চ ইঞ্জিন রাখতে চান?</translation>
@@ -191,6 +198,7 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome আপ টু ডেট আছে:</translation>
 <translation id="2084710999043359739">Chrome এ জুড়ুন</translation>
+<translation id="4710332363312836873">Chrome অ্যাপ্লিকেশনগুলির লঞ্চার</translation>
 <translation id="4084877369264707540">Google Chrome Frame ইতিমধ্যেই এই কম্পিউটারে ইনস্টল এবং এর সকল ব্যবহারকারীর জন্য উপলব্ধ আছে৷ আপনি যদি ব্যবহারকারী স্তরে Google Chrome Frame ইনস্টল করতে চান, তাহলে প্রথমে আপনাকে একজন প্রশাসক দ্বারা ইনস্টল থাকা সিস্টেম-স্তর সংস্করণ আনইনস্টল করতে হবে৷</translation>
 <translation id="3360895254066713204">Chrome সহায়তাকারী</translation>
 <translation id="3451115285585441894">Chrome-এ জোড়া হচ্ছে...</translation>
@@ -202,7 +210,6 @@
 <translation id="3419750618886995598">Chrome  ফ্রেম  আপডেট৷</translation>
 <translation id="3336524238463733095">Google Chrome বা Google Chrome Frame অসঙ্গত Google আপডেট গোষ্ঠী নীতি সেটিংসের কারণে আপডেট করা যায় না৷ Google Chrome Binaries অ্যাপ্লিকেশনের জন্য আপডেট নীতি ওভাররাইড সেট করতে গোষ্ঠী নীতি সম্পাদক ব্যবহার করুন এবং আবার চেষ্টা করুন; বিশদের জন্য http://goo.gl/uJ9gV দেখুন৷</translation>
 <translation id="6049075767726609708">একজ প্রশাসক এই সিস্টেমে Google Chrome ইনস্টল করেছে এবং এটি সমস্ত ব্যবহারকারীর কাছেই উপলব্ধ৷  সিস্টেম স্তরীয় Google Chrome আপনার ব্যবহারকারী-স্তরীয় ইনস্টলেশনকে এখনই প্রতিস্থাপিত করবে৷</translation>
-<translation id="7123348595797445166">এটা চেষ্টা করুন (ইনস্টল করা আছে)</translation>
 <translation id="4338032231047635328">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-তে পৌঁছানোর চেষ্টা করেছেন, কিন্তু সার্ভারের উপস্থাপিত শংসাপত্রে ত্রুটি রয়েছে৷ Google Chrome ত্রুটি থাকা কোনো শংসাপত্র ব্যবহার করে না এবং সংযোগের জন্য আপনি যে সাইটে চেষ্টা করেছেন তার পরিচয় যাচাই করতে পারে না৷</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chrome স্বতসম্পূর্ণ সেটিংস</translation>

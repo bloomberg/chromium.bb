@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="4820616160060340806">Amri+ <ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">Modi tulivu</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Futa</translation>
 <translation id="528468243742722775">Mwisho</translation>
 <translation id="5613020302032141669">Mshale Kushoto</translation>
 <translation id="8602707065186045623">Faili ya <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">Modi tulivu kwa siku moja</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">Mshale Chini</translation>
 <translation id="3087734570205094154">Chini</translation>
 <translation id="6364916375976753737">Vingirisha Kushoto</translation>
+<translation id="6354639579297445993">Ondoka kwenye modi tulivu</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6620110761915583480">Hifadhi Faili</translation>
+<translation id="7394346403752882908">Modi tulivu kwa saa moja</translation>
 <translation id="8210608804940886430">Ukurasa mmoja chini</translation>
 <translation id="5329858601952122676">&amp;Futa</translation>
 <translation id="8901569739625249689">KB <ph name="QUANTITY"/></translation>

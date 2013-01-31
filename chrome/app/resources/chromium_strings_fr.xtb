@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">Voulez-vous vraiment désinstaller Chromium ?</translation>
 <translation id="6510925080656968729">Désinstaller Chromium</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
+<translation id="1550579416447684632">Lancer des applications Chromium</translation>
+<translation id="4267347018362241535">Le lanceur d'applications Chromium est une plate-forme autonome pour les applications Chromium.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="6613594504749178791">Vos modifications seront prises en compte au prochain redémarrage de Chromium.</translation>
 <translation id="3748537968684000502">Cette page Chromium est sécurisée.</translation>
@@ -20,8 +22,10 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4330297532943865716">Une installation conflictuelle de Chromium ou de Chromium Frame a été trouvée sur le système. Veuillez la désinstaller, puis réessayer.</translation>
 <translation id="6953661834318318668">Barre d'outils Chromium</translation>
 <translation id="7097100943370017396">Impossible de mettre à jour Chromium, car la version de votre système d'exploitation est obsolète.</translation>
+<translation id="2245147136185581459">Détecteur de portail captif Chromium</translation>
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="2589479092236095792">Paramètres de saisie automatique de Chromium</translation>
+<translation id="658492233547000995">Utilisez le lanceur d'applications Chromium pour lancer vos applications.</translation>
 <translation id="3555616473548901994">Désinstallation terminée</translation>
 <translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
@@ -31,7 +35,9 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="872034308864968620">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="5109068449432240255">Oui, quitter Chromium</translation>
 <translation id="4320129595801648679">La page Nouvel onglet de Chromium a été remodelée. Cliquez sur ces libellés pour passer d'une section à une autre. Chromium se souviendra de votre préférence la prochaine fois.</translation>
+<translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
+<translation id="4831257561365056138">Désinstaller le lanceur d'applications Chromium</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Avertissement<ph name="END_BOLD"/> : Chromium ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>
 <translation id="8628626585870903697">Chromium ne comprend pas le lecteur de PDF qui est nécessaire au fonctionnement de l'aperçu avant impression.</translation>
@@ -72,7 +78,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4077262827416206768">Pour que cette modification soit prise en compte, veuillez fermer toutes les fenêtres de Chromium, puis relancer le logiciel.</translation>
 <translation id="6944967875980567883">Modules chargés dans Chromium</translation>
 <translation id="118298050220780080">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat émis par une entité non approuvée par le système d'exploitation de votre ordinateur. Cela peut signifier que le serveur a généré son propre certificat de sécurité, auquel cas Chromium ne peut pas s'y fier pour valider les informations d'identification. Il se peut également qu'un pirate informatique ait intercepté vos communications.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Poursuivre l'exécution des applications en arrière-plan après la fermeture de Chromium</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="6055895534982063517">Une nouvelle version de Chromium encore plus rapide est disponible.</translation>
@@ -128,7 +133,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="6717134281241384636">Votre profil ne peut pas être utilisé, car il provient d'une version plus récente de Chromium.
 
 Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier un autre répertoire de profil ou utiliser une version plus récente de Chromium.</translation>
-<translation id="4499972362520386277">Copyright des auteurs de Chromium 2012. Tous droits réservés.</translation>
 <translation id="2712549016134575851">Détection d'un conflit avec une autre application installée.</translation>
 <translation id="4881709374218686648">Vous vous êtes déjà connecté avec un compte différent. Si vous vous connectez, vos données seront fusionnées. Vous pouvez créer un nouvel utilisateur Chromium depuis la page des <ph name="BEGIN_LINK"/>paramètres<ph name="END_LINK"/> pour vos contenus Chromium.</translation>
 <translation id="9013087743919948559">Ajouter à Chromium</translation>
@@ -184,9 +188,13 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="7641113255207688324">Chromium n'est pas votre navigateur par défaut.</translation>
+<translation id="6208388956150196549">Lanceur d'applications Chromium</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
+<translation id="9109696651501887488">Affiche un raccourci vers le lanceur d'applications Chromium dans la barre des tâches de Windows.</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
+<translation id="1539981464052805551">Copyright des auteurs de Chromium 2013. Tous droits réservés.</translation>
+<translation id="6606161915035466984">Afficher le lanceur d'applications Chromium</translation>
 <translation id="8616882682724010661">Découvrez <ph name="BEGIN_LINK"/>plus d'avantages<ph name="END_LINK"/> sur la connexion à Chromium.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="8724049448828509830">Un téléchargement est actuellement en cours. Voulez-vous quitter Chromium et annuler le téléchargement ?</translation>
@@ -204,7 +212,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="7318036098707714271">Le fichier des préférences est corrompu ou n'est pas valide. 
 
 Chromium ne peut pas récupérer vos paramètres.</translation>
-<translation id="7123348595797445166">Essayer cette version (déjà installée)</translation>
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
 <translation id="2927042866129133279">Arguments non valides. Chromium Frame ne peut pas être installé ni fonctionner sans l'installation préalable de Chromium.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

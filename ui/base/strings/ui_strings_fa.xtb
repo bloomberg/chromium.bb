@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="4820616160060340806">فرمان+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">حالت بی‌صدا</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">حذف</translation>
 <translation id="528468243742722775">پایان</translation>
 <translation id="5613020302032141669">پیکان چپ</translation>
 <translation id="8602707065186045623">فایل <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">حالت بی‌صدا برای یک روز</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">پیکان پایین</translation>
 <translation id="3087734570205094154">پایین</translation>
 <translation id="6364916375976753737">پیمایش به چپ</translation>
+<translation id="6354639579297445993">خروج از حالت بی‌صدا</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6620110761915583480">ذخیره کردن فایل</translation>
+<translation id="7394346403752882908">حالت بی‌صدا برای یک ساعت</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> کیلوبایت</translation>

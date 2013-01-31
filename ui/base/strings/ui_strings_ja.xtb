@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">サイレント モード</translation>
 <translation id="1871244248791675517">Insert</translation>
 <translation id="6135826906199951471">Delete</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5613020302032141669">左矢印キー</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> ファイル (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">サイレント モード（1 日）</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">下矢印キー</translation>
 <translation id="3087734570205094154">一番下</translation>
 <translation id="6364916375976753737">左にスクロール</translation>
+<translation id="6354639579297445993">サイレント モードを終了</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6620110761915583480">ファイルを保存</translation>
+<translation id="7394346403752882908">サイレント モード（1 時間）</translation>
 <translation id="8210608804940886430">次のページへ</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
@@ -51,7 +55,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">下にスクロール</translation>
 <translation id="3157931365184549694">復元</translation>
-<translation id="8179976553408161302">開始</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">設定...</translation>

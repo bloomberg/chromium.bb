@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">您確定要解除安裝 Chromium 嗎？</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您至少超過 30 天沒有使用 Chromium 了。</translation>
+<translation id="1550579416447684632">啟動 Chromium 應用程式</translation>
+<translation id="4267347018362241535">Chromium 應用程式啟動器是適用於 Chromium 應用程式的獨立平台。</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
 <translation id="6613594504749178791">您的變更將於下次重新啟動 Chromium 時生效。</translation>
 <translation id="3748537968684000502">您正在瀏覽安全型 Chromium 網頁。</translation>
@@ -19,8 +21,10 @@
 <translation id="4330297532943865716">系統在安裝 Chromium 或 Chromium 頁框時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="6953661834318318668">Chromium 工具列</translation>
 <translation id="7097100943370017396">您的作業系統版本過舊，因此 Chromium 無法繼續更新。 </translation>
+<translation id="2245147136185581459">Chromium 強制性登入畫面偵測工具</translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="2589479092236095792">Chromium 自動填入設定</translation>
+<translation id="658492233547000995">使用 Chromium 應用程式啟動器來啟動您的應用程式。</translation>
 <translation id="3555616473548901994">解除安裝已完成。</translation>
 <translation id="3674409928058572366">Chromium 應用程式主控中心</translation>
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
@@ -30,7 +34,9 @@
 <translation id="872034308864968620">讓 Chromium 在背景執行</translation>
 <translation id="5109068449432240255">是，結束 Chromium</translation>
 <translation id="4320129595801648679">Chromium 的新分頁現已重新設計，按一下這些標籤切換不同部分。Chromium 會記住您的偏好設定，並且在您下次使用時直接顯示您的偏好設定。</translation>
+<translation id="1480489203462860648">安裝完畢，馬上試試吧！</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
+<translation id="4831257561365056138">解除安裝 Chromium 應用程式啟動器</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告：<ph name="END_BOLD"/>Chromium 無法阻止擴充功能記錄您的瀏覽活動，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium 不含 PDF 檢視器，因此無法執行預覽列印功能。</translation>
@@ -71,7 +77,6 @@
 <translation id="4077262827416206768">請關閉所有 Chromium 視窗，並且重新啟用 Chromium，這項變更即會生效。</translation>
 <translation id="6944967875980567883">已載入 Chromium 的模組</translation>
 <translation id="118298050220780080">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證，電腦作業系統不信任的實體簽署。這可能表示伺服器自行產生安全性憑證，因此 Chromium 無法藉以辨認身分；或者有攻擊者試圖攔截您的通訊。</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">在 Chromium 關閉時繼續執行背景應用程式</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="6055895534982063517">新版 Chromium 現已推出，速度更勝以往。</translation>
@@ -127,7 +132,6 @@
 <translation id="6717134281241384636">由於您的設定檔是來自較新版本的 Chromium，所以系統無法使用該檔案。
 
 這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chromium。</translation>
-<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. 版權所有。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
 <translation id="4881709374218686648">您先前已使用其他帳戶登入，如果繼續使用這個帳戶登入，您的資料將會匯整至目前登入的帳戶中。建議您透過<ph name="BEGIN_LINK"/>設定網頁<ph name="END_LINK"/>為 Chromium 內容建立新的 Chromium 使用者。</translation>
 <translation id="9013087743919948559">新增至 Chromium</translation>
@@ -182,9 +186,13 @@
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="7483335560992089831">無法安裝這個版本的 Chromium，因為目前正在執行相同版本。請關閉 Chromium，然後再試一次。</translation>
 <translation id="7641113255207688324">Chromium 不是您的預設瀏覽器。</translation>
+<translation id="6208388956150196549">Chromium 應用程式啟動器</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
+<translation id="9109696651501887488">在 Windows 工作列中顯示 Chromium 應用程式起動器的捷徑。</translation>
 <translation id="2119636228670142020">關於 Chromium 作業系統(&amp;C)</translation>
 <translation id="1708666629004767631">新版 Chromium 現已推出，安全更上一層樓。</translation>
+<translation id="1539981464052805551">Copyright 2013 The Chromium Authors. 版權所有。</translation>
+<translation id="6606161915035466984">顯示 Chromium 應用程式啟動器。</translation>
 <translation id="8616882682724010661">參閱登入 Chromium 可享用的<ph name="BEGIN_LINK"/>更多好處<ph name="END_LINK"/>。</translation>
 <translation id="378917192836375108">透過 Chromium，您只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="8724049448828509830">目前正在進行下載，您要結束 Chromium 並取消下載嗎？</translation>
@@ -202,7 +210,6 @@
 <translation id="7318036098707714271">您的偏好設定檔案已毀損或無效。
 
 Chromium 無法復原您的設定。</translation>
-<translation id="7123348595797445166">立即使用 (已安裝)</translation>
 <translation id="6403826409255603130">Chromium 網路瀏覽器開啟網頁和執行應用程式的速度十分迅速。除了迅速、穩定且易於使用之外，Chromium 的內建惡意軟體與網路釣魚防護功能，可讓您安心悠遊網路。</translation>
 <translation id="2927042866129133279">無效的引數。您必須安裝 Chromium，才能在就緒模式中安裝 Chromium 頁框。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

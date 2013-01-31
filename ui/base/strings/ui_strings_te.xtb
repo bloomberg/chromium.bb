@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">నిశబ్ద మోడ్</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">ముగింపు</translation>
 <translation id="5613020302032141669">ఎడమ బాణం</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> ఫైల్ (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">ఒక రోజు వరకు నిశబ్ద మోడ్</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">రద్దు చెయ్యి</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">క్రింది బాణం</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="6364916375976753737">ఎడమకి స్క్రోల్ చేయి</translation>
+<translation id="6354639579297445993">నిశబ్ద మోడ్ నుండి నిష్క్రమించు</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
+<translation id="7394346403752882908">ఒక గంట వరకు నిశబ్ద మోడ్</translation>
 <translation id="8210608804940886430">పేజీ క్రిందికి</translation>
 <translation id="5329858601952122676">&amp;తొలగించు</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>

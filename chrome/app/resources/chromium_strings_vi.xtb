@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">Bạn có chắc chắn muốn gỡ cài đặt Chromium không?</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
+<translation id="1550579416447684632">Khởi chạy ứng dụng Chromium</translation>
+<translation id="4267347018362241535">Trình khởi chạy ứng dụng Chromium là một nền tảng độc lập với ứng dụng Chromium.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="6613594504749178791">Các thay đổi của bạn sẽ có hiệu lực vào lần tới khi bạn khởi chạy lại Chromium.</translation>
 <translation id="3748537968684000502">Bạn đang xem trang Chromium an toàn.</translation>
@@ -19,8 +21,10 @@
 <translation id="4330297532943865716">Đã phát hiện thấy cài đặt Chromium hoặc Chromium Frame xung đột trên hệ thống. Hãy gỡ cài đặt và thử lại.</translation>
 <translation id="6953661834318318668">Thanh công cụ của Chromium</translation>
 <translation id="7097100943370017396">Chromium hiện không còn cập nhật nhật do hệ điều hành của bạn đã lỗi thời.</translation>
+<translation id="2245147136185581459">Trình phát hiện Chromium Captive Portal</translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="2589479092236095792">Cài đặt tự động điền trong Chromium</translation>
+<translation id="658492233547000995">Sử dụng Trình khởi chạy ứng dụng Chromium để khởi chạy ứng dụng của bạn.</translation>
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
 <translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
@@ -30,7 +34,9 @@
 <translation id="872034308864968620">Cho phép Chromium chạy dưới nền</translation>
 <translation id="5109068449432240255">Có, thoát Chromium</translation>
 <translation id="4320129595801648679">Trang tab mới của Chromium đã được tổ chức lại. Chuyển đổi giữa các phần bằng cách nhấp vào các nhãn này. Chromium sẽ nhớ tùy chọn của bạn cho lần sau.</translation>
+<translation id="1480489203462860648">Hãy dùng thử, ứng dụng đã được cài đặt</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
+<translation id="4831257561365056138">Gỡ cài đặt Trình khởi chạy ứng dụng Chromium</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Cảnh báo:<ph name="END_BOLD"/> Chromium không thể ngăn các tiện ích mở rộng ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích mở rộng này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="985602178874221306">Tác giả Chromium</translation>
 <translation id="8628626585870903697">Chromium không bao gồm trình xem PDF được yêu cầu để tính năng xem trước bản in hoạt động.</translation>
@@ -71,7 +77,6 @@
 <translation id="4077262827416206768">Hãy đóng tất cả cửa sổ Chromium và khởi chạy lại Chromium để thay đổi này có hiệu lực.</translation>
 <translation id="6944967875980567883">Mô-đun được tải vào Chromium</translation>
 <translation id="118298050220780080">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ được cấp bởi một tổ chức không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể có nghĩa là máy chủ đã tạo thông tin xác thực bảo mật riêng mà Chromium không thể dựa vào để biết thông tin nhận dạng hoặc một kẻ tấn công có thể đang cố chặn các kết nối của bạn.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Tiếp tục chạy các ứng dụng dưới nền khi Chromium bị đóng</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="6055895534982063517">Hiện đã có phiên bản Chromium mới và phiên bản này nhanh hơn bao giờ hết.</translation>
@@ -127,7 +132,6 @@
 <translation id="6717134281241384636">Không thể sử dụng cấu hình của bạn do cấu hình này đến từ một phiên bản Chromium mới hơn.
 
 Một số tính năng có thể không khả dụng. Hãy chỉ định thư mục cấu hình khác hoặc sử dụng phiên bản Chromium mới hơn.</translation>
-<translation id="4499972362520386277">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
 <translation id="4881709374218686648">Trước đó bạn đã đăng nhập bằng tài khoản khác, việc đăng nhập sẽ kết hợp dữ liệu của bạn. Hãy xem xét tạo người dùng Chromium mới qua <ph name="BEGIN_LINK"/>trang cài đặt<ph name="END_LINK"/> cho nội dung trên Chromium của bạn.</translation>
 <translation id="9013087743919948559">Thêm vào Chromium</translation>
@@ -180,9 +184,13 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
 <translation id="7641113255207688324">Chromium không phải là trình duyệt mặc định của bạn.</translation>
+<translation id="6208388956150196549">Trình khởi chạy ứng dụng Chromium</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
+<translation id="9109696651501887488">Hiển thị lối tắt đến Trình khởi chạy ứng dụng Chromium trong Thanh tác vụ Windows.</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
+<translation id="1539981464052805551">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
+<translation id="6606161915035466984">Hiển thị Trình khởi chạy ứng dụng Chromium.</translation>
 <translation id="8616882682724010661">Xem <ph name="BEGIN_LINK"/>những lợi ích khác<ph name="END_LINK"/> của việc đăng nhập vào Chromium.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="8724049448828509830">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
@@ -200,7 +208,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7318036098707714271">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. 
 
 Chromium không thể khôi phục cài đặt của bạn.</translation>
-<translation id="7123348595797445166">Hãy dùng thử (đã được cài đặt)</translation>
 <translation id="6403826409255603130">Chromium là trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Đây là một trình duyệt web nhanh, ổn định và dễ sử dụng. Duyệt web trở nên an toàn hơn với tính năng bảo vệ chống lại phần mềm độc hại và lừa đảo được tích hợp sẵn vào Chromium.</translation>
 <translation id="2927042866129133279">Đối số không hợp lệ. Không thể cài đặt Chromium Frame ở chế độ sẵn sàng mà không cài đặt Chromium.</translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>

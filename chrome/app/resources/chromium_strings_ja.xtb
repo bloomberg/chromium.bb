@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
+<translation id="1550579416447684632">Chromium アプリを起動</translation>
+<translation id="4267347018362241535">Chromium アプリ ランチャーは、Chromium アプリ用のスタンドアロン プラットフォームです。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="6613594504749178791">変更内容は次に Chromium を再起動したときに有効になります。</translation>
 <translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
@@ -19,8 +21,10 @@
 <translation id="4330297532943865716">システム上に競合している Chromium または Chromium Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="6953661834318318668">Chromium ツールバー</translation>
 <translation id="7097100943370017396">お使いのオペレーティング システムはサポートが終了しているため、今後 Chromium は更新されません。</translation>
+<translation id="2245147136185581459">Chromium キャプティブ ポータル検出機能</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="2589479092236095792">Chromium 自動入力設定</translation>
+<translation id="658492233547000995">Chromium アプリ ランチャーを使用してアプリを起動できます。</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
 <translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">オプション: 使用状況データと障害レポートを Google に自動送信して Chromium の機能向上に役立てる。</translation>
@@ -30,7 +34,9 @@
 <translation id="872034308864968620">Chromium をバックグラウンドで実行する</translation>
 <translation id="5109068449432240255">はい、Chromium を終了します</translation>
 <translation id="4320129595801648679">Chromium の新しいタブ ページが改良されました。これらのラベルをクリックしてセクションを切り替えることができます。設定は次回使用時にも引き継がれます。</translation>
+<translation id="1480489203462860648">使ってみる（既にインストール済み）</translation>
 <translation id="3032787606318309379">Chromium に追加...</translation>
+<translation id="4831257561365056138">Chromium アプリ ランチャーをアンインストール</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告:<ph name="END_BOLD"/> 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>
 <translation id="8628626585870903697">印刷プレビューの表示に必要な PDF ビューアが Chromium にインストールされていません。</translation>
@@ -70,7 +76,6 @@
 <translation id="4077262827416206768">変更内容を反映するには、すべての Chromium ウィンドウを閉じてから Chromium を再起動してください。</translation>
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムによって信頼されていない発行元です。サーバーが独自のセキュリティ認証情報を生成し、それが Chromium では認証情報として信頼できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="6055895534982063517">Chromium がさらに速くなりました！最新バージョンをぜひお試しください。</translation>
@@ -125,7 +130,6 @@
 <translation id="6717134281241384636">バージョンが新しい Chromium のプロフィールは使用できません。
 
 一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chromium をご使用ください。</translation>
-<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. All rights reserved.</translation>
 <translation id="2712549016134575851">インストールされている別のアプリケーションとの競合が検出されました。</translation>
 <translation id="4881709374218686648">前回、別のアカウントでログインしていたため、今回ログインするとデータが統合されます。Chromium データの<ph name="BEGIN_LINK"/>設定ページ<ph name="END_LINK"/>で新しい Chromium ユーザーを作成することをおすすめします。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
@@ -178,9 +182,13 @@
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="7641113255207688324">Chromium は既定のブラウザとして設定されていません。</translation>
+<translation id="6208388956150196549">Chromium アプリ ランチャー</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
+<translation id="9109696651501887488">Windows タスクバーに Chromium アプリ ランチャーへのショートカットを表示します。</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
+<translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
+<translation id="6606161915035466984">Chromium アプリ ランチャーを表示する。</translation>
 <translation id="8616882682724010661">Chromium にログインするとその他にも<ph name="BEGIN_LINK"/>さまざまなメリット<ph name="END_LINK"/>があります。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="8724049448828509830">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
@@ -198,7 +206,6 @@
 <translation id="7318036098707714271">ユーザー設定ファイルが壊れているか無効です。
 
 設定を復元できません。</translation>
-<translation id="7123348595797445166">使ってみる（既にインストール済み）</translation>
 <translation id="6403826409255603130">Chromium は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="2927042866129133279">引数が無効です。Chromium Frame を準備完了モードでインストールするには、一緒に Chromium をインストールする必要があります。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

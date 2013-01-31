@@ -2,11 +2,13 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6420214550675866556">Беззвучний режим</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5613020302032141669">Курсор ліворуч</translation>
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
+<translation id="4519844444318892125">Беззвучний режим на один день</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -24,8 +26,10 @@
 <translation id="3234408098842461169">Курсор униз</translation>
 <translation id="3087734570205094154">Низ</translation>
 <translation id="6364916375976753737">Прокрутка вліво</translation>
+<translation id="6354639579297445993">Вийти з беззвучного режиму</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6620110761915583480">Зберегти файл</translation>
+<translation id="7394346403752882908">Беззвучний режим на одну годину</translation>
 <translation id="8210608804940886430">Сторінка вниз</translation>
 <translation id="5329858601952122676">&amp;Видалити</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> Кб</translation>

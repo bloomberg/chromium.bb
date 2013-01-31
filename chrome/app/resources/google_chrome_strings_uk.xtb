@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="8000275528373650868">Для роботи Google Chrome потрібно мати ОС Windows Vista чи Windows XP із SP2 або новішу версію.</translation>
+<translation id="8124352762008487242">Авторське право 2013 Google Inc. Усі права захищено.</translation>
 <translation id="8485767968786176057">У такому випадку адреса, указана в сертифікаті, не збігається з адресою веб-сайту, за якою намагався перейти ваш веб-переглядач. Однією з причин може бути перехоплення вашого обміну даними зловмисником, який представив сертифікат для іншого веб-сайту, що спричинило невідповідність. Іншою причиною може може бути налаштування сервера представляти один і той же сертифікат для різних сайтів, включно із сайтом, який ви намагаєтеся відвідати, навіть якщо такий сертифікат не дійсний для всіх цих веб-сайтів. Google Chrome може з упевненістю визначити, що ви встановили зв’язок із доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, але не може перевірити, чи це той самий сайт, що і в домені &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, зв’язок із яким ви намагалися встановити. Якщо продовжити, Chrome не перевірятиме інші подальші невідповідності імен.</translation>
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Запустити Google Chrome</translation>
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
+<translation id="2896252579017640304">Запустити програми Chrome</translation>
 <translation id="2370289711218562573">Google Chrome імпортує &quot;Улюблені/Закладки&quot;.</translation>
+<translation id="8762286861469007470">Детектор приєднаного порталу Chrome</translation>
 <translation id="1761870329818521071">Неможливо встановити версію Google Chrome Frame, аналогічну запущеній на цей момент. Закрийте Google Chrome Frame і повторіть спробу.</translation>
 <translation id="2040709530900803995">Рендерер Google Chrome</translation>
 <translation id="6541116830060437475">Спробуйте вимкнути прогнозування мережі, виконавши такі дії:
@@ -44,12 +47,14 @@
 <translation id="4728575227883772061">Не вдалося здійснити встановлення через невизначену помилку. Якщо наразі Google Chrome запущено, закрийте його та повторіть спробу.</translation>
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="4149882025268051530">Не вдалося відкрити архів за допомогою програми встановлення. Завантажте Google Chrome ще раз.</translation>
+<translation id="2886077349328709775">Використовуйте панель запуску програм Chrome для запуску програм.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="5744005218040929396">Утиліта Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Каталог встановлення Google Chrome наразі використовується. Перезавантажте свій комп'ютер і спробуйте ще раз.</translation>
 <translation id="8227755444512189073">Google Chrome потребує запуску зовнішньої прикладної програми для опрацювання посилань <ph name="SCHEME"/>. Посилання, на яке здійснено запит, - <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Відбулося аварійне завершення роботи Google Chrome. Перезапустити зараз?</translation>
+<translation id="1480489203462860648">Уже встановлено. Спробуйте</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Загальні положення та умови<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="1393853151966637042">Отримати довідку щодо користування Chrome</translation>
 <translation id="3487814320513494737">Сторінку нової вкладки Chrome було перероблено. Переключайтеся між розділами, натискаючи ці мітки. Chrome запам’ятає ваші налаштування.</translation>
@@ -75,13 +80,13 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
+<translation id="345168553362876363">Панель запуску програм Google Chrome – окрема платформа для програм Chrome.</translation>
 <translation id="225614027745146050">Вітаємо!</translation>
 <translation id="7451721381978275812">Недійсні аргументи. Google Chrome Frame неможливо встановити в режимі готовності, не встановивши при цьому Google Chrome.</translation>
 <translation id="8684521613357479262">Ви пробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, який ще не дійсний. Немає доступних даних, які б допомогли визначити, чи можна довіряти цьому сертифікату. Google Chrome не може повністю гарантувати, що ви обмінюєтеся даними з доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не зі зловмисником. Годинник вашого комп’ютера зараз показує: <ph name="CURRENT_TIME"/>. Правильно? Якщо ні, потрібно виправити помилку й оновити цю сторінку.</translation>
 <translation id="4585888816441913908">На цьому комп’ютері вже встановлено новішу версію Google Chrome і Google Chrome Frame. Якщо це програмне забезпечення не працює, видаліть Google Chrome і Google Chrome Frame і повторіть спробу.</translation>
 <translation id="6368958679917195344">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS"/>програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Google Chrome на будь-якому комп’ютері.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Ви пробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер представив сертифікат, виданий організацією, якій не довіряє операційна система вашого комп’ютера. Це може означати, що сервер створив власні облікові дані системи захисту, ідентичності інформації яких Google Chrome не може довіряти. Також можливо, що зловмисник намагається перехопити ваш обмін даними.</translation>
 <translation id="4331809312908958774">ОС Chrome</translation>
 <translation id="473775607612524610">Оновити</translation>
@@ -90,6 +95,7 @@
 <translation id="2783467918276328046"><ph name="BEGIN_LINK"/>Інші переваги<ph name="END_LINK"/> входу в Chrome.</translation>
 <translation id="2580411288591421699">Поки Google Chrome працює, неможливо встановити версію, аналогічну поточній. Закрийте Google Chrome і повторіть спробу.</translation>
 <translation id="1457721931618994305">Оновлення Google Chrome...</translation>
+<translation id="6536030683808219174">Показати ярлик панелі запуску програм Chrome на панелі завдань Windows.</translation>
 <translation id="4351362253593301573">Перейдіть у
           <ph name="BEGIN_BOLD"/>
           меню Chrome &gt;
@@ -147,10 +153,11 @@
           <ph name="END_BOLD"/>),
           натисніть її, і переконайтеся, що встановлено значення конфігурації
           &quot;Безпосередньо&quot;.</translation>
+<translation id="5788838254726722945">Видалити панель запуску програм Google Chrome</translation>
 <translation id="3612333635265770873">Відомо, що модуль із такою назвою конфліктує з Google Chrome.</translation>
-<translation id="824729746779295798">Авторське право 2012 Google Inc. Усі права захищено.</translation>
 <translation id="61852838583753520">Оновити &amp;ОС Chrome</translation>
 <translation id="6650142020817594541">Цей сайт рекомендує Google Chrome Frame (уже встановлено).</translation>
+<translation id="550529737713987795">Показати панель запуску програм Chrome.</translation>
 <translation id="2712549016134575851">Виявлено несумісність з іншим встановленим застосунком.</translation>
 <translation id="5577648424992741236">На цьому комп’ютері вже встановлено новішу версію Google Chrome Frame. Якщо це програмне забезпечення не працює, видаліть Google Chrome Frame і повторіть спробу.</translation>
 <translation id="7018032895891496381">Google Chrome використовує вашу пошукову систему за умовчанням, якою на даний момент є <ph name="PAGE_TITLE"/>. Не змінювати пошукову систему за умовчанням?</translation>
@@ -186,6 +193,7 @@
 <translation id="4407807842708586359">ОС Google Chrome</translation>
 <translation id="6634887557811630702">У вас остання версія Google Chrome.</translation>
 <translation id="2084710999043359739">Додати в Chrome</translation>
+<translation id="4710332363312836873">Панель запуску програм Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame уже встановлено на цьому комп’ютері, і всі користувачі мають до нього доступ. Щоб установити Google Chrome Frame на рівні користувача, потрібно спочатку видалити встановлену адміністратором версію на рівні системи.</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
@@ -197,7 +205,6 @@
 <translation id="3419750618886995598">Оновлення Chrome Frame.</translation>
 <translation id="3336524238463733095">Не вдається оновити Google Chrome або Google Chrome Frame через несумісність налаштувань групової політики оновлення Google. Скористайтеся редактором групової політики, щоб налаштувати заміну політики оновлення для програми Google Chrome Binaries, і повторіть спробу. Перегляньте сторінку http://goo.gl/uJ9gV, щоб дізнатися більше.</translation>
 <translation id="6049075767726609708">Адміністратор установив Google Chrome у цій системі, веб-переглядач доступний для всіх користувачів. Установку Google Chrome на рівні користувача буде змінено установкою на рівні системи.</translation>
-<translation id="7123348595797445166">Спробувати (уже встановлено)</translation>
 <translation id="4338032231047635328">Ви пробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але представлений сервером сертифікат містить помилки. Google Chrome не може використовувати сертифікат із помилками та не може перевірити ідентичність сайту, до якого ви намагалися під’єднатись.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Налаштування автозаповнення Chrome</translation>

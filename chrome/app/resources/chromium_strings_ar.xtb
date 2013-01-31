@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">هل تريد بالتأكيد إزالة Chromium؟</translation>
 <translation id="6510925080656968729">إزالة Chromium</translation>
 <translation id="6893813176749746474">تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
+<translation id="1550579416447684632">تشغيل تطبيقات Chromium</translation>
+<translation id="4267347018362241535">مشغل تطبيقات Chromium عبارة عن نظام أساسي مستقل لتطبيقات Chromium.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="6613594504749178791">ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Chromium.</translation>
 <translation id="3748537968684000502">أنت تعرض صفحة Google Chrome آمنة.</translation>
@@ -19,8 +21,10 @@
 <translation id="4330297532943865716">تم العثور على عملية تثبيت متعارضة لـ Chromium أو إطار Chromium على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="6953661834318318668">شريط أدوات Chromium</translation>
 <translation id="7097100943370017396">لم يعد يتم تحديث Chromium لأن نظام التشغيل لديك قديم.</translation>
+<translation id="2245147136185581459">أداة اكتشاف البوابات المقيدة في Chromium</translation>
 <translation id="4285930937574705105">أخفقت عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="2589479092236095792">إعدادات الملء التلقائي في Chromium</translation>
+<translation id="658492233547000995">استخدام مشغل تطبيقات Chromium لتشغيل تطبيقاتك.</translation>
 <translation id="3555616473548901994">تمت عملية الإزالة.</translation>
 <translation id="3674409928058572366">استضافة تطبيق Chromium</translation>
 <translation id="2886012850691518054">اختياري: ساعد في تحسين Chromium عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
@@ -30,7 +34,9 @@
 <translation id="872034308864968620">دع Chromium يعمل في الخلفية</translation>
 <translation id="5109068449432240255">نعم، الخروج من Chromium</translation>
 <translation id="4320129595801648679">لقد تمت إعادة هيكلة صفحة علامة تبويب جديدة في Chromium. يمكنك التبديل بين الأقسام من خلال النقر على هذه التصنيفات. سيتذكر Chromium تفضيلك للمرة التالية.</translation>
+<translation id="1480489203462860648">يمكنك تجريبه، إنه مثبت من قبل</translation>
 <translation id="3032787606318309379">جارٍ الإضافة إلى Chromium...</translation>
+<translation id="4831257561365056138">إلغاء تثبيت مشغل تطبيقات Chromium</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>تحذير:<ph name="END_BOLD"/> لا يستطيع منع الإضافات من تسجيل سجل التصفح. لتعطيل هذه الإضافة في وضع التصفح المخفي، ألغ تحديد هذا الخيار.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
@@ -56,7 +62,6 @@
 <translation id="4077262827416206768">الرجاء إغلاق جميع نوافذ Chromium وإعادة تشغيل Chromium حتى يسري هذا التغيير.</translation>
 <translation id="6944967875980567883">الوحدات المحملة في Chromium</translation>
 <translation id="118298050220780080">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ولكن الخادم قدم شهادة تم إصدارها بواسطة كيان غير موثوق فيه من قِبل نظام تشغيل الكمبيوتر. قد يعني ذلك أن الخادم قد أنشأ بيانات اعتماد الأمان الخاصة به، والتي لا يمكن لـ Chromium الاعتماد عليها للحصول على معلومات الهوية أو ربما أن أحد المخترقين يحاول اعتراض اتصالاتك.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">استمرار تشغيل تطبيقات الخلفية عند إغلاق Chromium</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="6055895534982063517">يتوفر إصدار جديد من Chromium، وهو أسرع بكثير من ذي قبل.</translation>
@@ -102,7 +107,6 @@
 <translation id="6717134281241384636">لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Chromium.
 
 قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chromium.</translation>
-<translation id="4499972362520386277">حقوق الطبع والنشر لعام 2012 لصالح شركة The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="2712549016134575851">تم اكتشاف تعارض مع تطبيق آخر مثبَّت.</translation>
 <translation id="4881709374218686648">لقد سجلت الدخول في السابق باستخدام حساب مختلف، سيؤدي تسجيل الدخول إلى دمج بياناتك. جرِّب إنشاء مستخدم Chromium جديد عبر <ph name="BEGIN_LINK"/>صفحة الإعدادات<ph name="END_LINK"/> من أجل عناصر Chromium.</translation>
 <translation id="9013087743919948559">إضافة إلى Chromium</translation>
@@ -131,9 +135,13 @@
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="7483335560992089831">لا يمكن تثبيت إصدار Chromium ذاته الذي يتم تشغيله حاليًا. الرجاء إغلاق Chromium وإعادة المحاولة.</translation>
 <translation id="7641113255207688324">ليس Chromium متصفحك الافتراضي.</translation>
+<translation id="6208388956150196549">مشغل تطبيقات Chromium</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
+<translation id="9109696651501887488">إظهار اختصار لمشغل تطبيقات Chromium في شريط مهام Windows.</translation>
 <translation id="2119636228670142020">حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="1708666629004767631">يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
+<translation id="1539981464052805551">حقوق الطبع والنشر لعام 2013 لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
+<translation id="6606161915035466984">إظهار مشغل تطبيقات Chromium.</translation>
 <translation id="8616882682724010661">اطلع على <ph name="BEGIN_LINK"/>المزيد من فوائد<ph name="END_LINK"/> تسجيل الدخول إلى Chromium.</translation>
 <translation id="378917192836375108">يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="8724049448828509830">هناك تنزيل قيد التقدم. هل تريد الخروج من Chromium وإلغاء التنزيل؟</translation>
@@ -151,7 +159,6 @@
 <translation id="7318036098707714271">ملف التفضيلات تالف أو غير صالح.
 
 يتعذر على Chromium استعادة إعداداتك.</translation>
-<translation id="7123348595797445166">تجربة المتصفح (مثبت فعلاً)</translation>
 <translation id="6403826409255603130"> إن Chromium هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة مذهلة. إنه سريع وثابت وسهل الاستخدام. يمكنك تصفح الويب بشكل أكثر أمانًا من خلال ميزات الحماية من البرامج الضارة والتصيّد الاحتيالي المدمجة في Chromium.</translation>
 <translation id="2927042866129133279">وسيطات غير صالحة. لا يمكن تثبيت إطار Chromium في وضع الاستعداد بدون تثبيت Chromium أيضًا.</translation>
 <translation id="2572494885440352020">أداة مساعدة Chromium</translation>

@@ -33,6 +33,7 @@
 
           By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION"/></translation>
+<translation id="2204753382813641270">Control shelf auto-hiding</translation>
 <translation id="3214164532079860003">This policy forces the home page to be imported from the current default browser if enabled.
 
       If disabled, the home page is not imported.
@@ -41,14 +42,38 @@
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the following content types</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
+<translation id="3213821784736959823">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME"/>.
+
+      If this policy is set to true, the built-in DNS client will be used, if available.
+
+      If this policy is set to false, the built-in DNS client will never be used.
+
+      If this policy is left not set, the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.</translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
+<translation id="556941986578702361">Control auto-hiding of the <ph name="PRODUCT_OS_NAME"/> shelf.
+
+      If this policy is set to 'AlwaysAutoHideShelf', the shelf will always auto-hide.
+
+      If this policy is set to 'NeverAutoHideShelf', the shelf never auto-hides.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, users can choose whether the shelf should auto-hide.</translation>
 <translation id="4838572175671839397">Contains a regular expression which is used to determine which users can sign in to <ph name="PRODUCT_NAME"/>.
 
       An appropriate error is displayed if a user tries to log in with a username that does not match this pattern.
 
       If this policy is left not set or blank, then any user can sign in to <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7298195798382681320">Recommended</translation>
 <translation id="1438955478865681012">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. The blacklist takes precedence over the list of forced extensions.</translation>
+<translation id="3516856976222674451">Limit the maximum length of a user session.
+
+      When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
+
+      When this policy is not set, the session length is not limited.
+
+      If you set this policy, users cannot change or override it.
+
+      The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="3478024346823118645">Wipe user data on sign-out</translation>
 <translation id="8668394701842594241">Specifies a list of plug-ins that are enabled in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
@@ -93,13 +118,7 @@
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
 
           If this policy is left unset, the user can install any extension in <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2129233336491582973">Enables <ph name="PRODUCT_NAME"/> to act as a proxy between <ph name="CLOUD_PRINT_NAME"/> and legacy printers connected to the machine.
-
-      If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
-
-      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME"/>.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
+<translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
 <translation id="3021409116652377124">Disable plug-in finder</translation>
@@ -163,6 +182,15 @@
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
 <translation id="8665076741187546529">Configure the list of force-installed extensions</translation>
+<translation id="1675391920437889033">Controls which app/extension types are allowed to be installed.
+
+          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME"/>. The value is a list of strings, each of which should be one of the following: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. See the Chrome extensions documentation for more information on these types.
+
+          Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
+
+          If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
+
+          If this settings is left not-configured, no restrictions on the acceptable extension/app types are enforced.</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
       If the policy is not set or set to false, the location will not be reported.</translation>
@@ -186,6 +214,11 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       If this policy is left unset the setting will be what the user chose upon installation / first run.</translation>
+<translation id="2516600974234263142">Enables printing in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
+
+      If this setting is enabled or not configured, users can print.
+
+      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME"/>. Printing is disabled in the wrench menu, extensions, JavaScript applications etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME"/> while printing. For example, certain Flash applications have the print option in their context menu, which is not covered by this policy.</translation>
 <translation id="9135033364005346124">Enable <ph name="CLOUD_PRINT_NAME"/> proxy</translation>
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="6925212669267783763">Configures the directory that <ph name="PRODUCT_FRAME_NAME"/> will use for storing user data.
@@ -273,7 +306,6 @@
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
 
           If this setting is disabled or not set, then both local and remote users can interact with the host when it is being shared.</translation>
-<translation id="2312509925391670075">Ask every time a site wants to access my camera and/or microphone</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="4962195944157514011">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER"/>', which will be replaced at query time by the terms the user is searching for.
 
@@ -304,6 +336,7 @@
       Determines the duration before the screen saver is shown on the sign-in screen for devices in retail mode.
 
       The policy value should be specified in milliseconds.</translation>
+<translation id="1082519594196055704">Allow capturing video</translation>
 <translation id="6368011194414932347">Configure the home page URL</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
@@ -354,6 +387,7 @@
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="6258193603492867656">Specifies whether the generated Kerberos SPN should include a non-standard port. If you enable this setting, and a non-standard port (i.e. a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN. If you disable this setting, the generated Kerberos SPN will not include a port in any case.</translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
+<translation id="2498238926436517902">Always auto-hide the shelf</translation>
 <translation id="3442095178490656861">Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using &quot;GMT&quot; instead.
 
       If this policy is not used, the currently active timezone will remain in use however users can change the timezone and the change is persistent. Thus a change by one user affects the login-screen and all other users.
@@ -383,6 +417,9 @@
       Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
 
       If this policy is not set no URL will be blacklisted in the browser.</translation>
+<translation id="2762164719979766599">Specifies the list of device-local accounts to be shown on the login screen.
+
+      Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
 <translation id="8955719471735800169">Back to top</translation>
 <translation id="2534584045044686957">Configures the cache size that <ph name="PRODUCT_NAME"/> will use for storing cached media files on the disk.
 
@@ -469,6 +506,7 @@
 
       If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.</translation>
 <translation id="896575211736907134">Incognito mode forced.</translation>
+<translation id="7912255076272890813">Configure allowed app/extension types</translation>
 <translation id="817455428376641507">Allows access to the listed URLs, as exceptions to the URL blacklist.
 
       See the description of the URL blacklist policy for the format of entries of this list.
@@ -523,6 +561,16 @@
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
 
           If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
+<translation id="5936622343001856595">Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
+
+      If you enable this setting, SafeSearch in Google Search is always active.
+
+      If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.</translation>
+<translation id="6017568866726630990">Show the system print dialogue instead of print preview.
+
+      When this setting is enabled, <ph name="PRODUCT_NAME"/> will open the system print dialogue instead of the built-in print preview when a user requests a page to be printed.
+
+      If this policy is not set or is set to false, print commands trigger the print preview screen.</translation>
 <translation id="3120725863988702582">This policy is an override for the &quot;Clear cookies and other site data when I close my browser&quot; content settings option that <ph name="PRODUCT_NAME"/> supported prior to version 21.
 
       This policy exists only for backward-compatibility and will go away in the future. The recommended way to clear site data on exit on version 21 and later is to configure the DefaultCookiesSetting policy to session-only.
@@ -538,6 +586,7 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
+<translation id="4541530620466526913">Device-local accounts</translation>
 <translation id="1757688868319862958">Allows <ph name="PRODUCT_NAME"/> to run plug-ins that require authorisation. If you enable this setting, plug-ins that are not outdated always run. If this setting is disabled or not set, users will be asked for permission to run plug-ins that require authorisation. These are plug-ins that can compromise security.</translation>
 <translation id="6392973646875039351">Enables <ph name="PRODUCT_NAME"/>'s Auto-fill feature and allows users to auto-complete web forms using previously stored information such as address or credit card information.
 
@@ -545,10 +594,10 @@
 
       If you enable this setting or do not set a value, Auto-fill will remain under the control of the user. This will allow them to configure Auto-fill profiles and to switch Auto-fill on or off at their own discretion.</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
+<translation id="7788511847830146438">Per Profile</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
 <translation id="5293547923319914979">Enable curtaining of remote access hosts.</translation>
 <translation id="7091198954851103976">Always runs plug-ins that require authorisation</translation>
-<translation id="2021307518684405078">Do not allow any site to access my camera and microphone</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="1240643596769627465">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER"/>, which will be replaced at query time by the text that the user has entered so far.
 
@@ -590,7 +639,6 @@
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
-<translation id="8853920132856176349">This setting is used to force the use of the system print dialogue instead of print preview.</translation>
 <translation id="8469342921412620373">Enables the use of a default search provider.
 
           If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
@@ -625,6 +673,13 @@
 <translation id="4928632305180102854">Controls whether <ph name="PRODUCT_OS_NAME"/> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
       If this policy is set to true or not configured, new user accounts are allowed to be created, provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> does not prevent the user from logging in.</translation>
+<translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME"/> shows on the login screen for the corresponding device-local account.
+
+      If this policy is set, the login screen will use the specified string in the picture-based login chooser for the corresponding device-local account.
+
+      If the policy is left not set, <ph name="PRODUCT_OS_NAME"/> will use the device-local account's email account ID as the display name on the login screen.
+
+      This policy is ignored for regular user accounts.</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
           This policy is optional. If not set, the default will be used which is UTF-8.
@@ -680,6 +735,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Separate multiple server names with commas. wild cards (*) are allowed.
 
           If you leave this policy unset, any server will be accepted for integrated authentication.</translation>
+<translation id="7712109699186360774">Ask every time a site wants to access the camera and/or microphone</translation>
 <translation id="350797926066071931">Enable Translate</translation>
 <translation id="4010738624545340900">Allow invocation of file selection dialogues</translation>
 <translation id="4518251772179446575">Ask whenever a site wants to track the users' physical location</translation>
@@ -747,6 +803,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
 <translation id="913195841488580904">Block access to a list of URLs</translation>
+<translation id="3292147213643666827">Enables <ph name="PRODUCT_NAME"/> to act as a proxy between <ph name="CLOUD_PRINT_NAME"/> and legacy printers connected to the machine.
+
+      If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
+
+      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Disables automatic updates when set to True.
 
       <ph name="PRODUCT_OS_NAME"/> devices automatically check for updates when this setting is not configured or set to False.</translation>
@@ -760,6 +821,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="1727394138581151779">Block all plug-ins</translation>
 <translation id="8118665053362250806">Set media disk cache size</translation>
 <translation id="7079519252486108041">Block pop-ups on these sites</translation>
+<translation id="1859633270756049523">Limit the session length</translation>
 <translation id="7433714841194914373">Enable Instant</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="443665821428652897">Clear site data on browser shutdown (deprecated)</translation>
@@ -779,6 +841,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowJavaScript' will be used and the user will be able to change it.</translation>
+<translation id="193900697589383153">Adds a logout button to the system tray.
+
+      If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
+
+      If disabled or not specified, no big, red logout button is shown in the system tray.</translation>
 <translation id="3195451902035818945">Specifies whether SSL record splitting should be disabled. Record splitting is a workaround for a weakness in SSL 3.0 and TLS 1.0 but can cause compatibility issues with some HTTPS servers and proxies.
 
       If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC cipher suites.</translation>
@@ -786,6 +853,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       Determines the set of URLs to be loaded when the demo session is started. This policy will override any other mechanisms for setting the initial URL and thus can only be applied to a session not associated with a particular user.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
+<translation id="4480694116501920047">Force SafeSearch</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="5493552890659553833">Enables search suggestions in <ph name="PRODUCT_NAME"/>'s Omnibox and prevents users from changing this setting.
 
@@ -808,6 +876,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="4650759511838826572">Disable URL protocol schemes</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
+<translation id="6559057113164934677">Do not allow any site to access the camera and microphone</translation>
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME"/>'s toolbar.
@@ -902,6 +971,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If you leave this policy unset, any server will be accepted for integrated authentication.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
+<translation id="4325690621216251241">Add a logout button to the system tray</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="1465619815762735808">Click to play</translation>
 <translation id="7227967227357489766">Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -937,6 +1007,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="2757054304033424106">Types of extensions/apps that are allowed to be installed</translation>
 <translation id="7053678646221257043">This policy forces bookmarks to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, no bookmarks are imported.
@@ -966,6 +1037,8 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="4525521128313814366">Allows you to set a list of url patterns that specify sites which are not allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="8499172469244085141">Default Settings (users can override)</translation>
+<translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="3866530186104388232">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME"/> will show existing users on the login screen and allow the user to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME"/> will use the username/password prompt for login.</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
 <translation id="1151353063931113432">Allow images on these sites</translation>
@@ -999,15 +1072,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME"/> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
-<translation id="9142678351429467783">Enables printing in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
-
-      If this setting is enabled or not configured, users can print.
-
-      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME"/>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plug-ins that bypass <ph name="PRODUCT_NAME"/> while printing. For example, certain Flash applications has the print option in their context menu and that will not be disabled.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
+<translation id="3973371701361892765">Never auto-hide the shelf</translation>
 <translation id="7635471475589566552">Configures the application locale in <ph name="PRODUCT_NAME"/> and prevents users from changing the locale.
 
       If you enable this setting, <ph name="PRODUCT_NAME"/> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
@@ -1084,6 +1151,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
+<translation id="2302939792212564737">Allow capturing video.
+
+      When this policy is set to false, video capturing will not be available on the device while the user is logged in.
+
+      This policy affects all types of video inputs and not only the built-in camera.
+
+      If this setting is set to true or not configured then users can use all supported video inputs on their device.</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
 <translation id="5512418063782665071">Home page URL</translation>

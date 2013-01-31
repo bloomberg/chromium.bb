@@ -29,6 +29,7 @@
 
           Standaard staan alle extensies op de witte lijst, maar als alle extensies door een beleidsmaatregel op de zwarte lijst zijn geplaatst, kan de witte lijst worden gebruikt om dat beleid voor specifieke extensies op te heffen.</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION"/></translation>
+<translation id="2204753382813641270">Automatisch verbergen van archief beheren</translation>
 <translation id="3214164532079860003">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de startpagina wordt geïmporteerd uit de huidige standaardbrowser.
 
       Als dit beleid is uitgeschakeld, wordt de startpagina niet geïmporteerd.
@@ -37,10 +38,34 @@
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME"/> toestaan de volgende soorten inhoud te verwerken.</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
+<translation id="3213821784736959823">Hiermee wordt bepaald of de ingebouwde DNS-client wordt gebruikt in <ph name="PRODUCT_NAME"/>.
+
+      Als dit beleid is ingesteld op 'waar', wordt de ingebouwde DNS-client gebruikt (indien beschikbaar).
+
+      Als dit beleid is ingesteld op 'onwaar', wordt de ingebouwde DNS-client nooit gebruikt.
+
+      Als dit beleid niet wordt ingesteld, kunnen de gebruikers wijzigen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of een opdrachtregelmarkering op te geven.</translation>
 <translation id="2908277604670530363">Maximaal aantal gelijktijdige verbindingen met de proxyserver</translation>
+<translation id="556941986578702361">Het automatisch verbergen van het <ph name="PRODUCT_OS_NAME"/>-archief beheren.
+
+      Als dit beleid is ingesteld op 'AlwaysAutoHideShelf', wordt het archief altijd automatisch verborgen.
+
+      Als dit beleid is ingesteld op 'NeverAutoHideShelf', wordt het archief nooit automatisch verborgen.
+
+      Als u dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
+
+      Als het beleid niet wordt ingesteld, kunnen gebruikers kiezen of het archief automatisch wordt verborgen.</translation>
 <translation id="4838572175671839397">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke gebruikers zich kunnen aanmelden bij <ph name="PRODUCT_NAME"/>. Er wordt een fout weergegeven als een gebruiker probeert zich aan te melden met een gebruikersnaam die niet overeenkomt met dit patroon. Als dit beleid niet wordt ingesteld of leeg blijft, kan elke gebruiker zich aanmelden bij <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="1438955478865681012">Hiermee wordt extensiegerelateerd beleid geconfigureerd. De gebruiker mag geen extensies installeren die op de zwarte lijst staan, tenzij ze ook op de witte lijst staan. U kunt ook instellen dat <ph name="PRODUCT_NAME"/> extensies automatisch installeert, door deze te specificeren in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Voor de lijst met automatisch geïnstalleerde extensies heeft de zwarte lijst voorrang op de witte lijst.</translation>
+<translation id="3516856976222674451">Hiermee wordt de maximale lengte van een gebruikerssessie beperkt.
+
+      Als dit beleid is ingesteld, geeft het de periode op waarna een gebruiker automatisch wordt afgemeld en de sessie wordt beëindigd. De gebruiker wordt geïnformeerd over de resterende tijd door een afteltimer die in de systeembalk wordt weergegeven.
+
+      Als dit beleid niet is ingesteld, wordt de sessieduur niet beperkt.
+
+      Als u dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
+
+      De beleidswaarde moet worden opgegeven in milliseconden. Waarden worden afgerond tot een bereik van 30 seconden tot 24 uur.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij afmelden</translation>
 <translation id="8668394701842594241">Hiermee wordt een lijst met plug-ins gespecificeerd die zijn ingeschakeld in <ph name="PRODUCT_NAME"/> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
@@ -85,13 +110,7 @@
           De waarde '*' van een zwarte lijst houdt in dat alle extensies op de zwarte lijst worden geplaatst, tenzij ze expliciet op de witte lijst worden vermeld.
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker alle extensies installeren in <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2129233336491582973">Hiermee wordt <ph name="PRODUCT_NAME"/> ingesteld als proxy tussen <ph name="CLOUD_PRINT_NAME"/> en verouderde printers die aan de computer zijn gekoppeld.
-
-      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers de proxy voor de cloudprinter inschakelen door zichzelf te verifiëren via hun Google-account.
-
-      Als deze instelling is uitgeschakeld, kunnen gebruikers de proxy niet inschakelen, en kan de computer geen printers delen met <ph name="CLOUD_PRINT_NAME"/>.
-
-      Als dit beleid niet wordt ingesteld, wordt dit ingeschakeld maar kan dit door de gebruiker worden gewijzigd.</translation>
+<translation id="5809728392451418079">De weergavenaam voor lokale accounts van het apparaat instellen</translation>
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
 <translation id="3021409116652377124">Plug-inzoeker uitschakelen</translation>
@@ -155,6 +174,15 @@
 <translation id="2906874737073861391">Lijst met app-pakketextensies</translation>
 <translation id="3758249152301468420">Hulpprogramma's voor ontwikkelaars uitschakelen</translation>
 <translation id="8665076741187546529">De lijst met automatisch geïnstalleerde extensies configureren</translation>
+<translation id="1675391920437889033">Hiermee wordt bepaald welke typen apps/extensies mogen worden geïnstalleerd.
+
+          Met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME"/> kunnen worden geïnstalleerd op de witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende zou moeten zijn: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. Raadpleeg de documentatie over Chrome-extensies voor meer informatie over deze typen.
+
+          Houd er rekening mee dat dit beleid ook invloed heeft op extensies en apps die geforceerd worden geïnstalleerd via ExtensionInstallForcelist.
+
+          Als deze instelling is geconfigureerd, worden extensies/apps met een type dat niet op de lijst staat, niet geïnstalleerd.
+
+          Als deze instelling niet wordt geconfigureerd, worden er geen beperkingen afgedwongen voor de geaccepteerde typen extensies/apps.</translation>
 <translation id="8818173863808665831">De geografische locatie van het apparaat rapporteren.
 
       Als het beleid niet is ingesteld of is ingesteld op 'False', wordt de locatie niet gerapporteerd.</translation>
@@ -178,6 +206,11 @@
       Als u deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME"/>.
 
       Als dit beleid niet wordt ingesteld, komt de instelling overeen met de keuze van de gebruiker bij installatie/eerste uitvoering.</translation>
+<translation id="2516600974234263142">Hiermee wordt afdrukken in <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers afdrukken.
+
+      Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken via <ph name="PRODUCT_NAME"/>. Afdrukken is uitgeschakeld in het menu 'Gereedschap', extensies, JavaScript-applicaties, enzovoort. Het is nog steeds mogelijk af te drukken via plug-ins die <ph name="PRODUCT_NAME"/> omzeilen tijdens het afdrukken. Bij Flash-applicaties bevindt de afdrukoptie zich in het contextmenu, wat niet onder dit beleid valt.</translation>
 <translation id="9135033364005346124">Proxy voor <ph name="CLOUD_PRINT_NAME"/> inschakelen</translation>
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="6925212669267783763">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_FRAME_NAME"/> gebruikt voor het opslaan van gebruikersgegevens.
@@ -265,7 +298,6 @@
           Als deze instelling is ingeschakeld, worden de fysieke invoer- en uitvoerapparaten van hosts uitgeschakeld terwijl een externe verbinding tot stand wordt gebracht.
 
           Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen zowel lokale als externe gebruikers met de host communiceren terwijl deze wordt gedeeld.</translation>
-<translation id="2312509925391670075">Elke keer vragen wanneer een site toegang wil hebben tot mijn camera en/of microfoon</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4962195944157514011">Hiermee wordt de URL gespecificeerd voor de zoekmachine die wordt gebruikt voor standaard zoekopdrachten. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER"/>' bevatten, die op het moment van de zoekopdracht wordt vervangen door de termen waarnaar de gebruiker zoekt.
 
@@ -296,6 +328,7 @@
       Bepaalt de periode waarna de schermbeveiliging wordt weergegeven in het aanmeldvenster voor apparaten in de winkelmodus.
 
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
+<translation id="1082519594196055704">Vastleggen van video's toestaan</translation>
 <translation id="6368011194414932347">De startpagina-URL configureren</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
@@ -348,6 +381,7 @@
 
           Als u deze instelling uitschakelt of niet instelt, bevat de gegenereerde Kerberos-SPN in geen geval een poortnummer.</translation>
 <translation id="3236046242843493070">URL-patronen om de installatie van extensies, apps en gebruikersscripts toe te staan vanaf</translation>
+<translation id="2498238926436517902">Archief altijd automatisch verbergen</translation>
 <translation id="3442095178490656861">Hiermee wordt de tijdzone gespecificeerd die voor het apparaat moet worden gebruikt. Gebruikers kunnen de gespecificeerde tijdzone overschrijven voor de huidige sessie. Bij het afmelden wordt de tijd echter teruggezet naar de gespecificeerde tijdzone. Als een ongeldige waarde wordt opgegeven, wordt het beleid nog steeds geactiveerd, maar wordt 'GMT' gebruikt.
 
       Als dit beleid niet wordt gebruikt, blijft de huidige actieve tijdzone in gebruik. Gebruikers kunnen de tijdzone echter wijzigen en de wijziging is blijvend. Een wijziging door één gebruiker is dus van invloed op het aanmeldscherm en op alle andere gebruikers.
@@ -376,6 +410,9 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
       Uitzonderingen kunnen worden gedefinieerd in het beleid voor de witte lijst voor URL's. Dit beleid is beperkt tot 1000 items. Daaropvolgende items worden genegeerd.
 
       Als dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van de browser geplaatst.</translation>
+<translation id="2762164719979766599">Hiermee wordt de lijst met lokale accounts op het apparaat weergegeven op het aanmeldscherm.
+
+      Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="8955719471735800169">Bovenkant pagina</translation>
 <translation id="2534584045044686957">Hiermee configureert u de cachegrootte die <ph name="PRODUCT_NAME"/> gebruikt voor het opslaan van gecachte mediabestanden op de schijf.
 
@@ -459,6 +496,7 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
 <translation id="1098794473340446990">Perioden van apparaatgebruik melden.
 Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waarin een gebruiker het apparaat gebruikt. Als deze instelling niet is ingesteld of op 'False' is ingesteld, worden perioden van apparaatgebruik niet geregistreerd of gemeld.</translation>
 <translation id="896575211736907134">Incognitomodus afgedwongen.</translation>
+<translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
 <translation id="817455428376641507">Verleent toegang tot de vermelde URL's, ter uitzondering op de zwarte lijst voor URL's.
 
       Bekijk de beschrijving van het beleid voor de zwarte lijst voor URL's voor de notatie van items in deze lijst.
@@ -513,6 +551,16 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
           Als u deze instelling uitschakelt, staat Wachtwoordbeheer de gebruiker niet toe opgeslagen wachtwoorden als leesbare tekst weer te geven in het venster van Wachtwoordbeheer.
 
           Als u deze instelling inschakelt of niet configureert, kunnen gebruikers hun wachtwoorden als leesbare tekst bekijken in Wachtwoordbeheer.</translation>
+<translation id="5936622343001856595">Hiermee wordt afgedwongen dat zoekopdrachten in Google Zoeken worden uitgevoerd met SafeSearch ingesteld op 'actief' en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Als u deze instelling inschakelt, is SafeSearch altijd actief in Google Zoeken.
+
+      Als u deze instelling uitschakelt of geen waarde instelt, wordt SafeSearch Zoeken niet afgedwongen voor Google Zoeken.</translation>
+<translation id="6017568866726630990">Het systeemdialoogvenster voor afdrukken weergeven in plaats van een afdrukvoorbeeld.
+
+      Wanneer deze instelling is ingeschakeld, opent <ph name="PRODUCT_NAME"/> het systeemdialoogvenster voor afdrukken in plaats van het ingebouwde afdrukvoorbeeld wanneer een gebruiker een pagina wil laten afdrukken.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', activeren afdrukopdrachten het afdrukvoorbeeldscherm.</translation>
 <translation id="3120725863988702582">Dit beleid is een overschrijving voor de optie 'Cookies en andere sitegegevens wissen wanneer ik mijn browser sluit' bij 'Instellingen voor inhoud' die <ph name="PRODUCT_NAME"/> ondersteunde vóór versie 21.
 
       Dit beleid bestaat alleen voor compatibiliteit met eerdere versies en verdwijnt in de toekomst. De aanbevolen manier voor het verwijderen van sitegegevens bij het sluiten van de browser in versie 21 en hoger is het beleid DefaultCookiesSetting alleen voor sessies configureren.
@@ -528,6 +576,7 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
       Als u deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME"/>.
 
       Als dit beleid niet wordt ingesteld, wordt het automatisch ingeschakeld, maar de gebruiker kan het wijzigen.</translation>
+<translation id="4541530620466526913">Lokale accounts op apparaat</translation>
 <translation id="1757688868319862958">Hiermee kan <ph name="PRODUCT_NAME"/> plug-ins uitvoeren waarvoor toestemming is vereist.
 
       Als u deze instelling inschakelt, worden plug-ins altijd uitgevoerd als ze niet verouderd zijn.
@@ -539,10 +588,10 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 
       Als u de instelling inschakelt of geen waarde instelt, kunnen gebruikers de opties voor Automatisch aanvullen zelf beheren. Zo kunnen ze profielen voor Automatisch aanvullen configureren en de functie naar wens in- of uitschakelen.</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
+<translation id="7788511847830146438">Per profiel</translation>
 <translation id="3965339130942650562">Time-out tot de inactieve gebruiker is afgemeld</translation>
 <translation id="5293547923319914979">Afschermen van hosts voor externe toegang inschakelen.</translation>
 <translation id="7091198954851103976">Plug-ins waarvoor toestemming is vereist, altijd uitvoeren</translation>
-<translation id="2021307518684405078">Niet toestaan dat sites toegang krijgen tot mijn camera en microfoon</translation>
 <translation id="8870318296973696995">Startpagina</translation>
 <translation id="1240643596769627465">Hiermee kunt u de URL opgeven van de zoekmachine die wordt gebruikt om instant resultaten te leveren. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER"/>' bevatten, die op het moment van de zoekopdracht wordt vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
 
@@ -584,7 +633,6 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 <translation id="5365946944967967336">Knop 'Startpagina' in de werkbalk weergeven</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="8451988835943702790">De pagina 'Nieuw tabblad' als startpagina gebruiken</translation>
-<translation id="8853920132856176349">Deze instelling zorgt ervoor dat het automatische dialoogvenster voor afdrukken wordt gebruikt in plaats van Afdrukvoorbeeld.</translation>
 <translation id="8469342921412620373">Hiermee wordt het gebruik van een standaardzoekprovider ingeschakeld.
 
           Als u deze instelling inschakelt, wordt er een zoekopdracht uitgevoerd via een standaardzoekprovider wanneer een gebruiker tekst in de omnibox opgeeft die geen URL is.
@@ -619,6 +667,13 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 <translation id="4928632305180102854">Controleert of <ph name="PRODUCT_OS_NAME"/> het maken van nieuwe gebruikersaccounts toestaat. Als dit beleid is ingesteld op 'false', kunnen gebruikers die nog geen account hebben zich niet aanmelden.
 
       Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, kunnen er nieuwe gebruikersaccounts worden gemaakt, mits <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> de gebruiker toestaat zich aan te melden.</translation>
+<translation id="8256688113167012935">Hiermee wordt de weergave van de accountnaam in <ph name="PRODUCT_OS_NAME"/> op het aanmeldscherm beheerd voor het bijbehorende lokale account van het apparaat.
+
+      Als dit beleid is ingesteld, gebruikt het aanmeldscherm de opgegeven tekenreeks in de afbeeldinggebaseerde aanmeldkiezer voor het bijbehorende lokale account van het apparaat.
+
+      Als het beleid niet wordt ingesteld, gebruikt <ph name="PRODUCT_OS_NAME"/> de e-mailaccount-ID van het lokale account van het apparaat als de weergavenaam op het aanmeldscherm.
+
+      Dit beleid wordt genegeerd voor gewone gebruikersaccounts.</translation>
 <translation id="267596348720209223">Hiermee worden de tekencoderingen gespecificeerd die door de zoekprovider worden ondersteund. Deze coderingen zijn codepaginanamen zoals UTF-8, GB2312 en ISO-8859-1. Ze worden getest in de volgorde waarin ze worden opgegeven.
 
           Dit beleid is optioneel. Als het beleid niet wordt ingesteld, wordt de standaardcodering (UTF-8) gebruikt.
@@ -673,6 +728,7 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
           Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.
 
           Als u dit beleid niet instelt, worden alle servers geaccepteerd voor geïntegreerde authenticatie.</translation>
+<translation id="7712109699186360774">Elke keer vragen wanneer een site toegang wil hebben tot de camera en/of microfoon</translation>
 <translation id="350797926066071931">Vertalen inschakelen</translation>
 <translation id="4010738624545340900">Activering van dialoogvensters voor het selecteren van bestanden toestaan</translation>
 <translation id="4518251772179446575">Vragen wanneer een site de fysieke locatie van gebruikers wil bijhouden</translation>
@@ -740,6 +796,11 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
 <translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
+<translation id="3292147213643666827">Met deze instelling kan <ph name="PRODUCT_NAME"/> als proxy worden ingesteld tussen <ph name="CLOUD_PRINT_NAME"/> en printers die zijn aangesloten op het apparaat.
+
+      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers de proxy voor Cloudprinter inschakelen met authenticatie via hun Google-account.
+
+      Als deze instelling is uitgeschakeld, kunnen gebruikers de proxy niet inschakelen en kan de computer zijn printers niet delen met <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Schakelt automatische updates uit als dit is ingesteld op 'True'.
 
       <ph name="PRODUCT_OS_NAME"/>-apparaten zoeken automatisch naar updates als deze instelling niet is geconfigureerd of is ingesteld op 'False'.</translation>
@@ -753,6 +814,7 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 <translation id="1727394138581151779">Alle plug-ins blokkeren</translation>
 <translation id="8118665053362250806">Grootte voor mediaschijfcache instellen</translation>
 <translation id="7079519252486108041">Pop-ups blokkeren op deze sites</translation>
+<translation id="1859633270756049523">De sessielengte beperken</translation>
 <translation id="7433714841194914373">Instant inschakelen</translation>
 <translation id="4983201894483989687">Verouderde plug-ins toestaan die actief zijn</translation>
 <translation id="443665821428652897">Sitegegevens wissen als de browser wordt gesloten (verouderd)</translation>
@@ -772,12 +834,18 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 <translation id="3034580675120919256">Hiermee kunt u instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
 
           Als dit beleid niet wordt ingesteld, wordt 'AllowJavaScript' gebruikt en kan de gebruiker dit aanpassen.</translation>
+<translation id="193900697589383153">Hiermee wordt een afmeldknop aan de systeembalk toegevoegd.
+
+      Als dit beleid is ingeschakeld, wordt een grote rode afmeldknop weergegeven in de systeembalk terwijl een sessie actief is en het scherm niet is vergrendeld.
+
+      Als dit beleid is uitgeschakeld of niet is gespecificeerd, wordt er geen grote rode afmeldknop weergegeven in de systeembalk.</translation>
 <translation id="3195451902035818945">Geeft aan of het splitsen van SSL-records moet worden uitgeschakeld. Het splitsen van records is een tijdelijke oplossing voor een fout in SSL 3.0 en TLS 1.0, maar kan compatibiliteitsproblemen met bepaalde HTTPS-servers en -proxy's veroorzaken.
 Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het splitsen van records gebruikt bij SSL-/TLS-verbindingen die gebruikmaken van CBC-coderingssuites.</translation>
 <translation id="6903814433019432303">Dit beleid is alleen ingeschakeld in de winkelmodus.
 
       Bepaalt welke serie URL's moet worden geladen als de demosessie wordt gestart. Dit beleid overschrijft alle andere procedures voor het instellen van de eerste URL en kan daarom alleen worden toegepast in een sessie die niet is toegewezen aan een specifieke gebruiker.</translation>
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
+<translation id="4480694116501920047">SafeSearch afdwingen</translation>
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
 <translation id="5493552890659553833">Hiermee worden zoeksuggesties in de omnibox van <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -800,6 +868,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="4650759511838826572">URL-protocolschema's uitschakelen</translation>
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
+<translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="4482640907922304445">Hiermee wordt de knop 'Startpagina' weergegeven in de werkbalk van <ph name="PRODUCT_NAME"/>.
@@ -894,6 +963,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Als u dit beleid niet instelt, worden alle servers geaccepteerd voor geïntegreerde authenticatie.</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
+<translation id="4325690621216251241">Een afmeldknop toevoegen aan de systeembalk</translation>
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="1465619815762735808">Klikken om te spelen</translation>
 <translation id="7227967227357489766">Hiermee definieert u de lijst met gebruikers die toestemming hebben zich aan te melden bij het apparaat. Vermeldingen hebben de vorm <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, zoals <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Als u willekeurige gebruikers toegang wilt verlenen tot een domein, gebruikt u vermeldingen in de vorm <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -929,6 +999,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="6145799962557135888">Hiermee kunt u een lijst URL-patronen instellen waarmee sites worden gespecificeerd die JavaScript mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultJavaScriptSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
+<translation id="2757054304033424106">Typen extensies/apps die mogen worden geïnstalleerd</translation>
 <translation id="7053678646221257043">Indien ingeschakeld, wordt met dit beleid afgedwongen dat bladwijzers worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
       Als het beleid is uitgeschakeld, worden er geen bladwijzers geïmporteerd.
@@ -958,6 +1029,8 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="4525521128313814366">Hiermee kunt u een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop geen afbeeldingen kunnen worden weergegeven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
+<translation id="8499172469244085141">Standaardinstellingen (gebruikers kunnen overschrijven)</translation>
+<translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="3866530186104388232">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, worden in het aanmeldscherm van <ph name="PRODUCT_OS_NAME"/> bestaande gebruikers weergegeven die kunnen worden geselecteerd. Als dit beleid is ingesteld op 'false', krijgt de gebruiker bij aanmelding op <ph name="PRODUCT_OS_NAME"/> de vraag de combinatie van gebruikersnaam/wachtwoord in te voeren.</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
 <translation id="1151353063931113432">Afbeeldingen toestaan op deze sites</translation>
@@ -991,15 +1064,9 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="7848840259379156480">Hiermee kunt u de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME"/> is geïnstalleerd.
           De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           u kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME"/> HTML-pagina's standaard laten renderen.</translation>
-<translation id="9142678351429467783">Hiermee wordt afdrukken ingeschakeld in <ph name="PRODUCT_NAME"/> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers afdrukken.
-
-      Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken via <ph name="PRODUCT_NAME"/>. Afdrukken wordt uitgeschakeld in het menu 'Gereedschap', extensies, JavaScript-applicaties, enzovoort. Het is nog steeds mogelijk af te drukken via plug-ins die <ph name="PRODUCT_NAME"/> omzeilen. Zo staat er bij sommige Flash-applicaties een afdrukoptie in het contextmenu, en deze functie wordt niet uitgeschakeld.
-
-      Als dit beleid niet wordt ingesteld, wordt dit ingeschakeld maar kan de gebruiker dit wijzigen.</translation>
 <translation id="4121350739760194865">Voorkomen dat app-promoties worden weergegeven op de pagina 'Nieuw tabblad'</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
+<translation id="3973371701361892765">Archief nooit automatisch verbergen</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME"/> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.
 
       Als u deze instelling inschakelt, gebruikt <ph name="PRODUCT_NAME"/> de gespecificeerde landinstelling. Als de geconfigureerde landinstelling niet wordt ondersteund, wordt 'en-US' gebruikt.
@@ -1076,6 +1143,13 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Als u dit beleid niet instelt, kunnen gebruikers zelf proxyinstellingen selecteren.</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
+<translation id="2302939792212564737">Vastleggen van video's toestaan.
+
+      Wanneer dit beleid is ingesteld op 'onwaar', is het vastleggen van video's niet beschikbaar op het apparaat terwijl de gebruiker is aangemeld.
+
+      Dit beleid beïnvloedt alle typen video-invoer en niet alleen de ingebouwde camera.
+
+      Als deze instelling is ingesteld op 'waar' of 'niet geconfigureerd', kunnen gebruikers alle ondersteunde typen video-invoer op hun apparaat gebruiken.</translation>
 <translation id="2660846099862559570">Nooit een proxy gebruiken</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
 <translation id="5512418063782665071">URL van startpagina</translation>

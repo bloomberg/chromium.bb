@@ -16,18 +16,43 @@
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
 <translation id="5183383917553127163">Umożliwia określenie rozszerzeń, których nie obejmuje czarna lista. Wartość * na czarnej liście oznacza dodanie do niej wszystkich rozszerzeń i zezwolenie użytkownikom na instalowanie wyłącznie rozszerzeń wymienionych na białej liście. Domyślnie wszystkie rozszerzenia znajdują się na białej liście, jeśli jednak za pomocą zasady wszystkie rozszerzenia dodano do czarnej listy, białej listy można użyć do zmodyfikowania tej zasady.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION"/></translation>
+<translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony startowej z bieżącej przeglądarki domyślnej. Jeśli zasada będzie wyłączona, strona startowa nie zostanie zaimportowana. Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME"/> na obsługę tych typów treści</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
+<translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME"/> jest używany wbudowany klient DNS.
+
+      W przypadku włączenia tej opcji będzie używany wbudowany klient DNS (jeśli będzie dostępny).
+
+      Jeśli ta opcja zostanie wyłączona, wbudowany klient DNS w ogóle nie będzie używany.
+
+      W przypadku nieskonfigurowania tego ustawienia użytkownicy będą mogli wybrać, czy używać wbudowanego klienta DNS. W tym celu trzeba edytować chrome://flags lub podać opcje wiersza poleceń.</translation>
 <translation id="2908277604670530363">Maksymalna liczba jednoczesnych połączeń z serwerem proxy</translation>
+<translation id="556941986578702361">Steruje autoukrywaniem półki <ph name="PRODUCT_OS_NAME"/>.
+
+      W przypadku ustawienia wartości „AlwaysAutoHideShelf” półka zawsze będzie ukrywana automatycznie.
+
+      Jeśli zostanie ustawiona wartość „NeverAutoHideShelf”, półka nigdy nie będzie ukrywana automatycznie.
+
+      W przypadku ustawienia tej zasady, użytkownicy nie będą mogli jej zmienić ani nadpisać.
+
+      Jeśli ta opcja pozostanie nieustawiona, półka będzie ukrywana automatycznie.</translation>
 <translation id="4838572175671839397">Zawiera wyrażenie regularne służące do określania, którzy użytkownicy mogą logować się w <ph name="PRODUCT_NAME"/>.
 
       Jeśli użytkownik o nazwie niepasującej do tego wzorca spróbuje się zalogować, zostanie wyświetlony odpowiedni komunikat o błędzie.
 
       Jeśli ta zasada pozostanie nieustawiona lub pusta, każdy użytkownik będzie mógł zalogować się w <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7298195798382681320">Zalecane</translation>
 <translation id="1438955478865681012">Pozwala skonfigurować zasady dotyczące rozszerzeń. Użytkownikowi nie wolno instalować rozszerzeń dodanych do czarnej listy, jeśli nie wymieniono ich na białej liście. Możesz ponadto wymusić automatyczne instalowanie rozszerzeń w przeglądarce <ph name="PRODUCT_NAME"/>, wskazując je za pomocą zasady <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Czarna lista ma priorytet nad listą wymuszonych rozszerzeń.</translation>
+<translation id="3516856976222674451">Ogranicz maksymalną długość sesji użytkownika
+
+      Jeśli ta opcja jest ustawiona, określa czas, po upływie którego użytkownik jest automatycznie wylogowywany, a jego sesja przerywana. Użytkownik jest informowany o pozostałym czasie przez licznik czasu pokazywany na pasku zadań.
+
+      W przypadku nieustawienia tej opcji długość sesji jest nieograniczona.
+
+      Jeśli ta opcja zostanie ustawiona, użytkownicy nie będą mogli jej zmienić ani nadpisać.
+
+      Wartość opcji należy podać w milisekundach. Wartości są dopasowywane do przedziału od 30 sekund od 24 godzin.</translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
 <translation id="3478024346823118645">Wyczyść dane użytkownika przy wylogowaniu</translation>
 <translation id="8668394701842594241">Określa listę wtyczek włączonych w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, które zastąpią sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Wtyczki wymienione na liście są zawsze używane w <ph name="PRODUCT_NAME"/>, jeśli zostały zainstalowane. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączyć. Pamiętaj, że ta zasada zastępuje zasady DisabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie skonfigurowana, użytkownik będzie mógł wyłączyć każdą wtyczkę zainstalowaną w systemie.</translation>
@@ -52,7 +77,7 @@
 <translation id="7567380065339179813">Zezwalaj na wtyczki w tych witrynach</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
 <translation id="3153348162326497318">Pozwala określić rozszerzenia, których użytkownicy NIE mogą instalować. Zainstalowane rozszerzenia zostaną usunięte w przypadku umieszczenia ich na tej liście. Wartość „*” na liście blokad oznacza, że zablokowane są wszystkie rozszerzenia, które nie znajdują się na liście dozwolonych rozszerzeń. Jeśli zasada ta nie zostanie skonfigurowana, użytkownicy mogą instalować dowolne rozszerzenia w <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2129233336491582973">Umożliwia działanie przeglądarki <ph name="PRODUCT_NAME"/> jako serwera proxy między usługą <ph name="CLOUD_PRINT_NAME"/> a starszymi drukarkami podłączonymi do komputera. Jeśli to ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą włączyć serwer proxy drukowania w chmurze, dokonując uwierzytelnienia na swoim koncie Google. W przypadku wyłączenia ustawienia użytkownicy nie mogą włączyć serwera proxy ani udostępnić w usłudze <ph name="CLOUD_PRINT_NAME"/> drukarek podłączonych do komputera. Jeśli zasada nie zostanie skonfigurowana, ustawienie będzie włączone, ale użytkownik będzie mógł je zmienić.</translation>
+<translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="1427655258943162134">Adres URL serwera proxy</translation>
 <translation id="1827523283178827583">Używaj stałych serwerów proxy</translation>
 <translation id="3021409116652377124">Wyłącz znajdowanie wtyczek</translation>
@@ -89,6 +114,15 @@
 <translation id="2906874737073861391">Lista rozszerzeń z pakietu aplikacji</translation>
 <translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
 <translation id="8665076741187546529">Konfiguruj listę rozszerzeń, których instalacja jest wymuszana</translation>
+<translation id="1675391920437889033">Określa typy aplikacji/rozszerzeń, które można instalować.
+
+          To ustawienie tworzy białą listę typów rozszerzeń/aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME"/>. Wartość jest listą łańcuchów spośród: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach można znaleźć w dokumentacji rozszerzeń Chrome.
+
+          Ta zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana przez ExtensionInstallForcelist.
+
+          W przypadku skonfigurowania tej opcji rozszerzenia/aplikacje o typie innym niż wymienione na liście nie będą instalowane.
+
+          Jeśli to ustawienie nie zostanie skonfigurowane, nie będą obowiązywać żadne ograniczenia dotyczące dozwolonych typów rozszerzeń/aplikacji.</translation>
 <translation id="8818173863808665831">Zgłoś lokalizację geograficzną urządzenia.
 
       Jeśli ta zasada nie jest ustawiona lub jest ustawiona na wartość nieprawdziwą, lokalizacja nie będzie zgłaszana.</translation>
@@ -100,6 +134,11 @@
 <translation id="4655130238810647237">Włącza lub wyłącza funkcję edytowania zakładek w przeglądarce <ph name="PRODUCT_NAME"/>. Po włączeniu tego ustawienia zakładki można dodawać, usuwać i modyfikować. Jest to wartość domyślna. Jeśli wyłączysz ustawienie, zakładek nie będzie można dodawać, usuwać ani modyfikować. Istniejące zakładki nadal będą dostępne.</translation>
 <translation id="3496296378755072552">Menedżer haseł</translation>
 <translation id="2565967352111237512">Włącza funkcję anonimowego przesyłania do Google raportów o użytkowaniu i danych dotyczących awarii <ph name="PRODUCT_NAME"/> oraz uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, raporty o użytkowaniu i dane dotyczące awarii będą anonimowo przesyłane do Google. W przypadku jego wyłączenia raporty i dane nigdy nie są przesyłane do Google. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady stosowane będzie ustawienie wybrane przez użytkownika podczas instalacji/przy pierwszym uruchomieniu.</translation>
+<translation id="2516600974234263142">Włącza drukowanie w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Jeśli ta opcja jest włączona lub nieskonfigurowana, użytkownicy mogą drukować.
+
+      W przypadku wyłączenia tej opcji użytkownicy nie mogą drukować z <ph name="PRODUCT_NAME"/>. Drukowanie jest wyłączone w menu klucza, aplikacjach JavaScript itd. Nadal można drukować z poziomu wtyczek pomijających <ph name="PRODUCT_NAME"/> podczas drukowania. Na przykład menu niektórych aplikacji Flash zawiera opcję drukowania, która nie jest objęta tą zasadą.</translation>
 <translation id="9135033364005346124">Włącz serwer proxy usługi <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="6943577887654905793">Nazwa ustawienia w systemie Mac OS/Linux:</translation>
 <translation id="6925212669267783763">Konfiguruje katalog używany przez  <ph name="PRODUCT_FRAME_NAME"/> do przechowywania danych użytkownika.
@@ -156,7 +195,6 @@
           W przypadku włączenia tej opcji fizyczne urządzenia wejściowe i wyjściowe hosta będą wyłączane na czas trwania połączenia zdalnego.
 
           Jeśli to ustawienie będzie wyłączone lub nieustawione, zarówno zdalni, jak i lokalni użytkownicy będą mogli korzystać z udostępnianego hosta.</translation>
-<translation id="2312509925391670075">Zawsze mnie pytaj, gdy strona chce użyć kamery i/lub mikrofonu</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="4962195944157514011">Określa URL wyszukiwarki używanej podczas wyszukiwania domyślnego. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER"/>”, który podczas zapytania zostanie zastąpiony hasłami wyszukiwanymi przez użytkownika. Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie uwzględniana.</translation>
 <translation id="3343454696188645600">Jeśli zostanie włączona, wyłącza synchronizację Dysku Google. W takim przypadku żadne dane nie będą przesyłane na Dysk Google.
@@ -173,6 +211,7 @@
       W przypadku urządzeń w trybie sklepu określa czas, po upływie którego na ekranie logowania jest wyświetlany wygaszacz ekranu.
 
       Wartość tej zasady należy podać w milisekundach.</translation>
+<translation id="1082519594196055704">Zezwól na przechwytywanie wideo</translation>
 <translation id="6368011194414932347">Konfiguruj adres URL strony startowej</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
@@ -207,6 +246,7 @@
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
 <translation id="3236046242843493070">Wzorce URL-ów, z których dozwolone jest instalowanie rozszerzeń, aplikacji i skryptów użytkownika</translation>
+<translation id="2498238926436517902">Zawsze autoukrywaj półkę</translation>
 <translation id="3442095178490656861">Określa strefę czasową używaną na urządzeniu. Użytkownicy mogą zmienić podaną strefę czasową na czas bieżącej sesji. Jednak po wylogowaniu ponownie ustawiana jest podana strefa czasowa. W przypadku podania nieprawidłowej wartości zasada jest aktywowana z ustawieniem „GMT”.
 
       Jeśli ta zasada jest nieużywana, aktualnie aktywna strefa czasowa będzie nadal stosowana, ale użytkownicy będą mogli ją zmienić w sposób trwały. Dlatego zmiana wprowadzona przez jednego użytkownika będzie wpływać na ekran logowania wszystkich innych użytkowników.
@@ -234,6 +274,9 @@
       Wyjątki można zdefiniować w zasadzie dotyczącej białej listy adresów URL. Maksymalna liczba wpisów w tych zasadach wynosi 1000. Kolejne wpisy są ignorowane.
 
       W przypadku nieskonfigurowania tej zasady żadne URL-e nie będą blokowane w przeglądarce.</translation>
+<translation id="2762164719979766599">Określa listę kont na urządzeniu, które będą pokazywane na ekranie logowania.
+
+      Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
 <translation id="8955719471735800169">Powrót do góry</translation>
 <translation id="2534584045044686957">Umożliwia skonfigurowanie wielkości pamięci podręcznej używanej przez <ph name="PRODUCT_NAME"/> do przechowywania buforowanych plików multimedialnych na dysku.
 
@@ -300,6 +343,7 @@
 <translation id="2959898425599642200">Reguły omijania serwera proxy</translation>
 <translation id="1098794473340446990">Zgłasza godziny aktywności urządzenia. Po włączeniu zasady zarejestrowane urządzenie zgłasza, kiedy korzysta z niego użytkownik. Jeśli zasada nie jest ustawiona lub jest wyłączona, okresy aktywności urządzenia nie są rejestrowane ani zgłaszane.</translation>
 <translation id="896575211736907134">Tryb incognito wymuszany</translation>
+<translation id="7912255076272890813">Skonfiguruj dozwolone typy aplikacji/rozszerzeń</translation>
 <translation id="817455428376641507">Zezwala na otwieranie wymienionych URL-i jako wyjątków względem czarnej listy URL-i.
 
       Format pozycji tej listy znajdziesz w opisie zasady czarnej listy adresów URL.
@@ -343,6 +387,16 @@
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="7063895219334505671">Zezwalaj na wyskakujące okienka w tych witrynach</translation>
 <translation id="4052765007567912447">Pozwala określić, czy użytkownik może wyświetlać tekst haseł w menedżerze haseł. Jeśli wyłączysz to ustawienie, w oknie menedżera haseł nie będzie można wyświetlać tekstu przechowywanych haseł. W przypadku włączenia lub nieskonfigurowania tej zasady użytkownicy będą mogli wyświetlać tekst haseł w menedżerze haseł.</translation>
+<translation id="5936622343001856595">Wymusza realizację zapytań do wyszukiwarki Google z aktywnym filtrem SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Jeśli ta opcja zostanie włączona, filtr SafeSearch w wyszukiwarce Google będzie zawsze aktywny.
+
+      W przypadku wyłączenia tego ustawienia lub niepodania wartości nie będzie wymuszane stosowanie filtru SafeSearch w wyszukiwarce Google.</translation>
+<translation id="6017568866726630990">Pokaż systemowo okno wydruku zamiast podglądu wydruku.
+
+      W przypadku włączenia tej opcji <ph name="PRODUCT_NAME"/> będzie otwierać systemowe okno drukowania zamiast wbudowanego podglądu wydruku, gdy użytkownik będzie chciał wydrukować stronę.
+
+      Jeśli ta opcja będzie nieustawiona lub wyłączona, polecenia wydruku będą wyświetlać ekran podglądu.</translation>
 <translation id="3120725863988702582">Ta zasada zastępuje opcję ustawień treści „Usuń pliki cookie i inne dane witryn w momencie zamknięcia przeglądarki” obsługiwaną przez <ph name="PRODUCT_NAME"/> przed wersją 21.
 
       Ta zasada istnieje tylko w celu zachowania zgodności wstecznej i w przyszłości zostanie usunięta. W wersjach 21 i nowszych zalecany sposób czyszczenia danych witryn przy kończeniu pracy polega na skonfigurowaniu zasady DefaultCookiesSetting na przechowywanie tylko na czas sesji.
@@ -358,13 +412,14 @@
       Jeśli włączysz lub wyłączysz tę zasadę, użytkownicy nie będą mogli zmienić ani nadpisać tego ustawienia w <ph name="PRODUCT_NAME"/>.
 
       Jeśli ta zasada pozostanie nieustawiona, ustawienie zostanie włączone, ale użytkownicy będą mogli je zmienić.</translation>
+<translation id="4541530620466526913">Lokalne konta na urządzeniu</translation>
 <translation id="1757688868319862958">Zezwala na uruchamianie w przeglądarce <ph name="PRODUCT_NAME"/> wtyczek wymagających autoryzacji. W przypadku włączenia tego ustawienia aktualne wtyczki są zawsze uruchamiane. Jeśli ustawienie jest wyłączone lub nie jest skonfigurowane, użytkownikom są wyświetlane monity o udzielenie pozwolenia na uruchomienie wtyczek wymagających autoryzacji. Wtyczki te mogą naruszyć bezpieczeństwo danych.</translation>
 <translation id="6392973646875039351">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME"/> i umożliwia użytkownikom automatyczne wypełnianie formularzy internetowych za pomocą zapisanych wcześniej informacji, takich jak np. adres czy dane karty kredytowej. Jeśli wyłączysz to ustawienie, autouzupełnianie będzie niedostępne dla użytkowników. Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownik zachowuje kontrolę nad autouzupełnianiem. Może wówczas konfigurować profile autouzupełniania oraz włączać i wyłączać tę funkcję według własnego uznania.</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
+<translation id="7788511847830146438">Według profilu</translation>
 <translation id="3965339130942650562">Limit czasu bezczynności, po którym następuje wylogowanie</translation>
 <translation id="5293547923319914979">Włącz separację hostów zdalnego dostępu.</translation>
 <translation id="7091198954851103976">Zawsze uruchamiaj wtyczki wymagające autoryzacji</translation>
-<translation id="2021307518684405078">Nie pozwalaj żadnym stronom na dostęp do mojej kamery i mikrofonu</translation>
 <translation id="8870318296973696995">Strona startowa</translation>
 <translation id="1240643596769627465">Pozwala określić URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER"/>, który podczas wyszukiwania jest zastępowany tekstem wprowadzonym przez użytkownika. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane. Ta zasada jest egzekwowana tylko wówczas, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="6693751878507293182">Jeśli włączysz to ustawienie, automatyczne wyszukiwanie i instalowanie brakujących wtyczek zostanie wyłączone w <ph name="PRODUCT_NAME"/>. W przypadku wyłączenia lub nieskonfigurowania tej opcji mechanizm wyszukujący wtyczki będzie aktywny.</translation>
@@ -380,7 +435,6 @@
 <translation id="5365946944967967336">Pokaż przycisk strony startowej na pasku narzędzi</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
-<translation id="8853920132856176349">To ustawienie wymusza użycie systemowego okna drukowania zamiast podglądu wydruku.</translation>
 <translation id="8469342921412620373">Powoduje korzystanie z usług domyślnego dostawcy wyszukiwania. Jeśli włączysz to ustawienie, wpisanie w omniboksie tekstu, który nie jest URL-em, będzie powodować użycie wyszukiwarki domyślnej. Możesz określić domyślnego dostawcę wyszukiwania, konfigurując pozostałe zasady dotyczące wyszukiwarki domyślnej. Jeśli te pola pozostaną puste, użytkownik będzie mógł wybrać dostawcę domyślnego. W przypadku wyłączenia ustawienia wpisanie w omniboksie tekstu, który nie jest URL-em, nie powoduje wykonania wyszukiwania. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w przeglądarce <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady używany jest domyślny dostawca wyszukiwania, a użytkownik może określić listę dostawców wyszukiwania.</translation>
 <translation id="8731693562790917685">Ustawienia treści umożliwiają określenie sposobu obsługi treści danego typu (na przykład plików cookie, grafik czy kodu JavaScript).</translation>
 <translation id="2411919772666155530">Blokuj powiadomienia w tych witrynach.</translation>
@@ -403,6 +457,13 @@
 <translation id="4928632305180102854">Określa, czy <ph name="PRODUCT_OS_NAME"/> pozwala na tworzenie nowych kont użytkowników. Jeśli będzie mieć wartość false, użytkownicy, którzy nie mają jeszcze konta, nie będą mogli się zalogować.
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> nie będzie zakazywać użytkownikom logowania się.</translation>
+<translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME"/> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
+
+      W przypadku ustawienia tej opcji na ekranie logowania w graficznym module wybierania loginu dla odpowiedniego lokalnego konta na urządzeniu będzie używany podany łańcuch.
+
+      Jeśli ta opcja nie zostanie ustawiona, <ph name="PRODUCT_OS_NAME"/> użyje identyfikatora konta e-mail lokalnego konta na urządzeniu jako nazwy wyświetlanej na ekranie logowania.
+
+      Ta zasada jest ignorowana w przypadku zwykłych kont użytkownika.</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME"/> na obsługę następujących typów treści</translation>
@@ -438,6 +499,7 @@
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="3072045631333522102">Wygaszacz ekranu używany na ekranie logowania w trybie sklepu</translation>
 <translation id="8079569179819932120">Pozwala określić białą listę serwerów na potrzeby zintegrowanego uwierzytelniania. Zintegrowane uwierzytelnianie jest stosowane tylko wówczas, gdy <ph name="PRODUCT_NAME"/> otrzyma wezwanie do uwierzytelnienia od serwera proxy lub serwera wymienionego na tej liście dozwolonych serwerów. Poszczególne nazwy serwerów rozdziel przecinkami. Możesz używać symboli wieloznacznych (*). Jeśli nie skonfigurujesz tej zasady, zintegrowane uwierzytelnianie będzie dozwolone dla wszystkich serwerów.</translation>
+<translation id="7712109699186360774">Zawsze mnie pytaj, gdy strona chce użyć kamery i/lub mikrofonu</translation>
 <translation id="350797926066071931">Włącz Tłumacza</translation>
 <translation id="4010738624545340900">Zezwolenie na wywoływanie okien dialogowych wyboru plików</translation>
 <translation id="4518251772179446575">Pytaj, gdy witryna chce śledzić fizyczną lokalizację użytkownika</translation>
@@ -471,6 +533,11 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
 <translation id="913195841488580904">Blokuj dostęp do listy adresów URL</translation>
+<translation id="3292147213643666827">Umożliwia działanie <ph name="PRODUCT_NAME"/> jako serwera proxy między <ph name="CLOUD_PRINT_NAME"/> a starszymi drukarkami podłączonymi do komputera.
+
+      Jeśli to ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą włączyć serwer proxy drukowania w chmurze, uwierzytelniając się na swoim koncie Google.
+
+      W przypadku wyłączenia ustawienia użytkownicy nie mogą włączyć serwera proxy ani udostępnić w <ph name="CLOUD_PRINT_NAME"/> drukarek podłączonych do komputera.</translation>
 <translation id="6373222873250380826">Włączone ustawienie wyłącza automatyczne aktualizacje.
 
       Jeśli to ustawienie jest nieskonfigurowane lub wyłączone, urządzenia z <ph name="PRODUCT_OS_NAME"/> automatycznie sprawdzają dostępność aktualizacji.</translation>
@@ -484,6 +551,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="1727394138581151779">Blokuj wszystkie wtyczki</translation>
 <translation id="8118665053362250806">Ustaw rozmiar dyskowej pamięci podręcznej</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
+<translation id="1859633270756049523">Ogranicz długość sesji</translation>
 <translation id="7433714841194914373">Włącz wyszukiwanie dynamiczne</translation>
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
 <translation id="443665821428652897">Wyczyść dane witryn w momencie zamknięcia przeglądarki (wycofana)</translation>
@@ -497,11 +565,17 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       W przypadku nieustawienia tej zasady zostanie użyty domyślny katalog pamięci podręcznej, a użytkownik będzie mógł go zmienić, używając flagi „--disk-cache-dir” w wierszu poleceń.</translation>
 <translation id="7202926611616207807">Zezwalaj wszystkim witrynom na tworzenie danych lokalnych</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="193900697589383153">Dodaje przycisk wylogowania do paska zadań.
+
+      Po włączeniu tej opcji, gdy sesja jest aktywna a ekran niezablokowany, na pasku zadań jest wyświetlany duży czerwony przycisk wylogowania.
+
+      Jeśli ta opcja jest wyłączona, na pasku zadań nie jest wyświetlany duży czerwony przycisk wylogowania.</translation>
 <translation id="3195451902035818945">Wyłącza dzielenie rekordów SSL. Pozwala on uniknąć luki w zabezpieczeniach protokołów SSL 3.0 i TLS 1.0, ale może powodować problemy ze zgodnością z niektórymi serwerami HTTPS i proxy. Jeśli zasada nie jest ustawiona lub jest wyłączona, dzielenie rekordów obowiązuje przy połączeniach SSL/TLS z szyfrowaniem CBC.</translation>
 <translation id="6903814433019432303">Ta zasada jest aktywna tylko w trybie sklepu.
 
       Określa zestaw URL-i do załadowania po uruchomieniu sesji demonstracyjnej. Ta zasada zastępuje pozostałe mechanizmy ustawiania początkowego URL-a i dlatego można ją zastosować tylko do sesji niepowiązanej z konkretnym użytkownikiem.</translation>
 <translation id="5868414965372171132">Konfiguracja sieci na poziomie użytkownika</translation>
+<translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="5493552890659553833">Włącza propozycje wyszukiwania w omniboksie <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, funkcja propozycji będzie aktywna. W przypadku jego wyłączenia funkcja jest nieaktywna. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieustawienia tej zasady ustawienie zostanie włączone, ale użytkownik będzie mógł to zmienić.</translation>
 <translation id="2431811512983100641">Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
@@ -512,6 +586,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="4650759511838826572">Wyłącz schematy protokołów adresów URL</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
+<translation id="6559057113164934677">Nie pozwalaj żadnym stronom na dostęp do kamery i mikrofonu</translation>
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
@@ -566,6 +641,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
           Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „PromptOnAccess” i użytkownik nie będzie mógł go zmienić.</translation>
 <translation id="8889026535261486875">Serwery, którym <ph name="PRODUCT_NAME"/> może przekazywać poświadczenia. Poszczególne nazwy serwerów rozdziel przecinkami. Możesz używać symboli wieloznacznych (*). Jeśli nie skonfigurujesz tej zasady, zintegrowane uwierzytelnianie będzie dozwolone dla wszystkich serwerów.</translation>
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
+<translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="1465619815762735808">Kliknij, by uruchomić</translation>
 <translation id="7227967227357489766">Określa listę użytkowników, którzy mogą logować się do urządzenia. Pozycje mają postać <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, np. <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Aby zezwolić na logowanie dowolnym użytkownikom z domeny, użyj wpisów w postaci <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -589,6 +665,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="5226033722357981948">Określ, czy funkcja znajdowania wtyczek ma być wyłączona</translation>
 <translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="2757054304033424106">Typy rozszerzeń/aplikacji, które można instalować</translation>
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5757829681942414015">Określa katalog, w którym <ph name="PRODUCT_NAME"/> będzie przechowywać dane użytkownika.
 
@@ -608,6 +685,8 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
 <translation id="3808945828600697669">Określ listę wyłączonych wtyczek</translation>
 <translation id="4525521128313814366">Pozwala na ustawienie listy wzorcowych URL-i, które określają witryny mogące wyświetlać obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
+<translation id="8693243869659262736">Użyj wbudowanego klienta DNS</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME"/> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME"/> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="1151353063931113432">Zezwalaj na grafiki w tych witrynach</translation>
@@ -634,9 +713,9 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
           Pierwszeństwo zachowuje jednak zasada ExtensionInstallBlacklist. Oznacza to, że rozszerzenie znajdujące się na czarnej liście nie zostanie zainstalowane, nawet jeśli pochodzi z witryny odpowiadającej pozycji na tej liście.</translation>
 <translation id="7848840259379156480">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME"/>. Ustawieniem domyślnym jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME"/>.</translation>
-<translation id="9142678351429467783">Włącza drukowanie w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą drukować. W przypadku wyłączenia ustawienia użytkownicy nie będą mogli drukować z <ph name="PRODUCT_NAME"/>. Drukowanie jest wyłączane w menu klucza, rozszerzeniach, aplikacjach języka JavaScript itd. Nadal będzie możliwe drukowanie z wtyczek pomijających <ph name="PRODUCT_NAME"/> podczas drukowania. Na przykład w menu kontekstowym niektórych aplikacji Flash znajduje się opcja drukowania i nie zostanie ona wyłączona. W przypadku nieskonfigurowania tej zasady ustawienie zostanie włączone, ale użytkownik będzie mógł to zmienić.</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
+<translation id="3973371701361892765">Nigdy nie autoukrywaj półki</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME"/> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME"/> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
 <translation id="1681852583119028071">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania.</translation>
 <translation id="7842869978353666042">Skonfiguruj opcje Dysku Google</translation>
@@ -663,6 +742,13 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="6672934768721876104">Ta zasada jest przestarzała, zamiast niej użyj zasady ProxyMode. Pozwala ona określić serwer proxy używany w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę jego ustawień. Jeśli zdecydujesz się nie korzystać z serwera proxy i zawsze bezpośrednio nawiązywać połączenia, wszystkie pozostałe opcje będą ignorowane. Są one ignorowane również w przypadku użycia systemowych ustawień serwera proxy lub automatycznego wykrywania serwera proxy. Jeśli chcesz ręcznie wprowadzić ustawienia serwera proxy, możesz określić dodatkowe opcje w polach „Adres URL serwera proxy”, „Adres URL pliku PAC serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. Szczegółowe przykłady można znaleźć na <ph name="PROXY_HELP_URL"/>. Jeśli ustawienie jest włączone, przeglądarka <ph name="PRODUCT_NAME"/> ignoruje wszystkie opcje dotyczące serwera proxy określone w wierszu polecenia. W przypadku nieskonfigurowania tej zasady użytkownicy mogą samodzielnie wybrać ustawienia proxy.</translation>
 <translation id="3780152581321609624">Umieść port niestandardowy w nazwie SPN w protokole Kerberos</translation>
+<translation id="2302939792212564737">Zezwalaj na przechwytywanie wideo.
+
+      W przypadku wyłączenia tej zasady przechwytywanie wideo nie będzie dostępne na urządzeniu, gdy użytkownik będzie zalogowany.
+
+      Ta zasada wpływa na wszystkie wejścia wideo, a nie tylko na wbudowaną kamerę.
+
+      Jeśli to ustawienie zostanie włączone lub nieskonfigurowane, użytkownicy będą mogli używać wszystkich wejść wideo obsługiwanych przez urządzenie.</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
 <translation id="5512418063782665071">Adres URL strony startowej</translation>

@@ -5,6 +5,8 @@
 <translation id="6373523479360886564">Er du sikker på at du vil avinstallere Chromium?</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
+<translation id="1550579416447684632">Start Chromium-apper</translation>
+<translation id="4267347018362241535">Chromium App Launcher er en frittstående plattform for Chromium-apper.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="6613594504749178791">Endringene dine trer i kraft neste gang du starter Chromium.</translation>
 <translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
@@ -19,8 +21,10 @@
 <translation id="4330297532943865716">Det ble funnet en konfliktskapende installasjon av Chromium eller Chromium Frame på systemet. Avinstaller den og prøv på nytt.</translation>
 <translation id="6953661834318318668">Chromium-verktøylinjen</translation>
 <translation id="7097100943370017396">Chromium oppdateres ikke lenger, fordi operativsystemet ditt er foreldet.</translation>
+<translation id="2245147136185581459">Chromium Captive Portal-detektor</translation>
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="2589479092236095792">Chromium-innstillinger for autofyll</translation>
+<translation id="658492233547000995">Bruk Chromium Apps Launcher å starte appene dine.</translation>
 <translation id="3555616473548901994">Avinstallering fullført.</translation>
 <translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
@@ -30,7 +34,9 @@
 <translation id="872034308864968620">La Chromium kjøre i bakgrunnen</translation>
 <translation id="5109068449432240255">Ja, avslutt Chromium</translation>
 <translation id="4320129595801648679">Siden Ny fane i Chromium har nytt oppsett. Bytt mellom valg ved å klikke på disse etikettene. Chromium husker innstillingen din til neste gang.</translation>
+<translation id="1480489203462860648">Prøv det – det er allerede installert</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
+<translation id="4831257561365056138">Avinstaller Chromium App Launcher</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advarsel:<ph name="END_BOLD"/> Chromium kan ikke forhindre utvidelser fra å registrere nettleserloggen din. Du kan deaktivere denne utvidelsen i inkognitomodus ved å oppheve merkingen av dette alternativet.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium omfatter ikke PDF-visningsprogrammet som er nødvendig for at «Forhåndsvisning av utskrift» skal fungere.</translation>
@@ -71,7 +77,6 @@
 <translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="118298050220780080">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat utstedt av en enhet som operativsystemet på datamaskinen din ikke anser som pålitelig. Dette kan bety at tjeneren har generert sine egne sikkerhetslegitimasjoner, som Chromium ikke kan stole på for identitetsinformasjon, eller at en angriper prøver å fange opp kommunikasjonen din.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="6055895534982063517">En nyere versjon av Chromium er tilgjengelig, og den er raskere enn noen gang.</translation>
@@ -127,7 +132,6 @@
 <translation id="6717134281241384636">Profilen din kan ikke brukes fordi den kommer fra en nyere versjon av Chromium.
 
 Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chromium.</translation>
-<translation id="4499972362520386277">Copyright 2012 – The Chromium Authors. Med enerett.</translation>
 <translation id="2712549016134575851">Det er registrert en konflikt med et annet installert program.</translation>
 <translation id="4881709374218686648">Du tidligere har logget deg på med en annen konto, og pålogging slår sammen dataene dine. Vurder å opprette en ny Chromium-bruker via <ph name="BEGIN_LINK"/>innstillingssiden<ph name="END_LINK"/> for Chromium-tingene dine.</translation>
 <translation id="9013087743919948559">Legg til i Chromium</translation>
@@ -182,9 +186,13 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="7641113255207688324">Chromium er ikke standard nettleser.</translation>
+<translation id="6208388956150196549">Chromium Apps Launcher</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
+<translation id="9109696651501887488">Vis en snarvei til Chromium Apps Launcher på oppgavelinjen i Windows.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
+<translation id="1539981464052805551">Copyright 2013 – The Chromium Authors. Med enerett.</translation>
+<translation id="6606161915035466984">Vis Chromium Apps Launcher.</translation>
 <translation id="8616882682724010661">Se <ph name="BEGIN_LINK"/>flere fordeler<ph name="END_LINK"/> ved pålogging til Chromium.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
 <translation id="8724049448828509830">Du har en aktiv nedlasting. Vil du avslutte Chromium og avbryte nedlastingen?</translation>
@@ -202,7 +210,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="7318036098707714271">Innstillingerfilen din er ødelagt eller ugyldig.
 
 Chromium kan ikke gjenopprette innstillingen dine.</translation>
-<translation id="7123348595797445166">Prøv den (allerede installert)</translation>
 <translation id="6403826409255603130">Chromium er en nettleser som kjører nettsider og programmer i lynets hastighet. Den er rask, stabil og enkel å bruke. Surf på nettet på en tryggere måte med Chromium, som har innebygd beskyttelse mot skadelig programvare og nettfisking.</translation>
 <translation id="2927042866129133279">Ugyldige argumenter. Chromium Frame kan ikke installeres i klar-modus uten også å installere Chromium.</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>

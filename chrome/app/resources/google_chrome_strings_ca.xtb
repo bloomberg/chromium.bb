@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="8000275528373650868">Google Chrome requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. Tots els drets reservats.</translation>
 <translation id="8485767968786176057">En aquest cas, l'adreça que apareix al certificat no coincideix amb la del lloc web al qual el vostre navegador ha provat d'accedir. És possible que un atacant hagi interceptat les comunicacions i que presenti un certificat per a un lloc web diferent, la qual cosa provocaria un error de coincidència. També pot ser que el servidor estigui configurat per retornar el mateix certificat per a diversos llocs web, inclòs el que esteu provant de visitar, malgrat que aquest certificat no sigui vàlid per a tots els llocs web. Google Chrome pot assegurar-vos que heu arribat a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, però no pot verificar que sigui el mateix lloc que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, que és on voleu arribar. Si continueu, Chrome no comprovarà cap més error en la coincidència de noms.</translation>
 <translation id="5430073640787465221">El fitxer de preferències està malmès o no és vàlid. Google Chrome no pot recuperar la configuració.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Inicieu Google Chrome</translation>
 <translation id="4891791193823137474">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
+<translation id="2896252579017640304">Inicia les aplicacions de Chrome</translation>
 <translation id="2370289711218562573">Google Chrome està important els preferits/els marcadors.</translation>
+<translation id="8762286861469007470">Detector de Captive Portal a Chrome</translation>
 <translation id="1761870329818521071">No es pot instal·lar la mateixa versió de Google Chrome Frame que s'executa actualment. Tanqueu Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="2040709530900803995">Renderitzador de Google Chrome</translation>
 <translation id="6541116830060437475">Per provar de desactivar la predicció de xarxa seguiu aquests passos:
@@ -44,12 +47,14 @@
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
 <translation id="3080151273017101988">Continua executant les aplicacions de fons quan es tanqui Google Chrome</translation>
 <translation id="4149882025268051530">L'instal·lador no ha pogut descomprimir el fitxer. Torna a baixar Google Chrome.</translation>
+<translation id="2886077349328709775">Feu servir la barra d'execució ràpida d'aplicacions de Chrome per iniciar les aplicacions.</translation>
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="5744005218040929396">Utilitat de Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome no pot llegir ni escriure en el directori de dades: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Sembla que s'està utilitzant el directori d'instal·lació de Google Chrome. Reinicieu l'equip i torneu-ho a provar.</translation>
 <translation id="8227755444512189073">Google Chrome ha d'iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
+<translation id="1480489203462860648">Prova'l, ja està instal·lat</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Condicions d'ús<ph name="END_TERMS_OF_SERVICE_LINK"/> de Google Chrome</translation>
 <translation id="1393853151966637042">Obtén ajuda per a l'ús de Chrome</translation>
 <translation id="3487814320513494737">S'ha remodelat la pàgina de pestanya nova de Chrome. Podeu canviar entre les seccions si feu clic en aquestes etiquetes. Chrome recordarà la vostra preferència per a la propera vegada.</translation>
@@ -79,13 +84,13 @@
 <translation id="3282568296779691940">Inici de sessió a Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="5037239767309817516">Tanqueu totes les finestres de Google Chrome i torneu a iniciar el programa perquè aquest canvi tingui efecte.</translation>
+<translation id="345168553362876363">La barra d'execució ràpida d'aplicacions de Google Chrome és una plataforma independent per a les aplicacions de Chrome.</translation>
 <translation id="225614027745146050">Benvingut</translation>
 <translation id="7451721381978275812">Arguments no vàlids. Google Chrome Frame no es pot instal·lar en mode preparat sense instal·lar també Google Chrome.</translation>
 <translation id="8684521613357479262">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que indica que encara no és vàlid. No hi ha cap informació disponible que indiqui si el certificat és de confiança. Google Chrome no pot garantir amb seguretat que us estigueu comunicant amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. Actualment, el rellotge del vostre equip està definit a <ph name="CURRENT_TIME"/>. És l'hora correcta? Si no, hauríeu de corregir l'error i actualitzar aquesta pàgina.</translation>
 <translation id="4585888816441913908">Aquest equip ja té una versió més recent de Google Chrome i de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome i Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="6368958679917195344">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS"/>programari addicional de codi obert<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Google Chrome.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat emès per una entitat que el sistema operatiu del vostre equip no considera de confiança. Això pot significar que el servidor ha generat les seves pròpies credencials de seguretat, en les quals Google Chrome no pot confiar per a la informació d'identitat, o bé que un atacant està provant d'interceptar les vostres comunicacions.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Actualitza</translation>
@@ -94,6 +99,7 @@
 <translation id="2783467918276328046">Consulteu <ph name="BEGIN_LINK"/>més beneficis<ph name="END_LINK"/> d'iniciar la sessió a Chrome.</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
 <translation id="1457721931618994305">S'està actualitzant Google Chrome...</translation>
+<translation id="6536030683808219174">Mostra una drecera a la barra d'execució ràpida d'aplicacions de Chrome a la barra de tasques de Windows.</translation>
 <translation id="4351362253593301573">Aneu al
           <ph name="BEGIN_BOLD"/>
           menú de Chrome &gt;
@@ -151,10 +157,11 @@
           <ph name="END_BOLD"/>),
           feu-hi clic i assegureu-vos que la configuració
           està definida com a &quot;Directa&quot;.</translation>
+<translation id="5788838254726722945">Desinstal·la la barra d'execució ràpida d'aplicacions de Google Chrome</translation>
 <translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc. Tots els drets reservats.</translation>
 <translation id="61852838583753520">Actualitza &amp;SO Chrome</translation>
 <translation id="6650142020817594541">Aquest lloc recomana Google Chrome Frame (ja instal·lat).</translation>
+<translation id="550529737713987795">Mostra la barra d'execució ràpida d'aplicacions a Chrome.</translation>
 <translation id="2712549016134575851">S'ha detectat un conflicte amb una altra aplicació instal·lada.</translation>
 <translation id="5577648424992741236">Aquest equip ja disposa d'una versió més recent de Google Chrome Frame. Si el programari no funciona, desinstal·leu Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="7018032895891496381">Google Chrome utilitza el vostre motor de cerca predeterminat, que actualment és <ph name="PAGE_TITLE"/>. Voleu mantenir el motor de cerca predeterminat?</translation>
@@ -190,6 +197,7 @@
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome està actualitzat.</translation>
 <translation id="2084710999043359739">Afegeix a Chrome</translation>
+<translation id="4710332363312836873">Barra d'execució ràpida d'aplicacions de Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame ja està instal·lat i disponible per a tots els usuaris d'aquest equip. Si voleu instal·lar Google Chrome Frame a nivell d'usuari, primer heu de desinstal·lar la versió de nivell de sistema instal·lada per un administrador.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
 <translation id="3451115285585441894">S'està afegint a Chrome...</translation>
@@ -201,7 +209,6 @@
 <translation id="3419750618886995598">Actualització de Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome o Google Chrome Frame no es pot actualitzar a causa de la configuració incoherent de la política de grup de Google Update. Utilitzeu l'Editor de la política de grup per definir la substitució de la política d'actualització per a l'aplicació de fitxers binaris de Google Chrome i torneu-ho a provar; consulteu http://goo.gl/uJ9gV per obtenir més informació.</translation>
 <translation id="6049075767726609708">Un administrador ha instal·lat Google Chrome en aquest sistema i ja està disponible per a tots els usuaris. Ara substituirem la instal·lació de Google Chrome en l'àmbit del sistema per la instal·lació en l'àmbit dels usuaris.</translation>
-<translation id="7123348595797445166">Prova-la (ja instal·lada)</translation>
 <translation id="4338032231047635328">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el certificat que el servidor ha presentat conté errors. Google Chrome no pot fer servir un certificat amb errors i no pot validar la identitat del lloc amb el qual heu provat de connectar.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Configuració d'Emplenament automàtic de Chrome</translation>

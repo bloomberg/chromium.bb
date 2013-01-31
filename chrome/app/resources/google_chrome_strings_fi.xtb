@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="8000275528373650868">Google Chrome edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP (SP2 tai uudempi).</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="8485767968786176057">Tässä tapauksessa varmenteessa annettu osoite ei vastannut sivustoa, johon selaimesi yritti siirtyä. Tämä voi johtua siitä, että hakkeri on kaapannut yhteyden ja esittää nyt selaimellesi eri sivuston varmenteen, mikä aiheuttaa ristiriidan. Saattaa myös olla, että palvelin on määritetty palauttamaan sama varmenne useille sivustoille, vaikka se ei ole voimassa kaikissa näissä sivustoissa. Google Chrome voi vahvistaa, että saavuit sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mutta ei voi taata, että kyseessä on verkkotunnuksessa &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; oleva sivusto, johon yritit siirtyä. Jos jatkat, Chrome ei tarkista muita nimiristiriitoja.</translation>
 <translation id="5430073640787465221">Asetustiedostosi on virheellinen. Google Chrome ei voi palauttaa asetuksiasi.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
@@ -16,7 +17,9 @@
 <translation id="7101265395643981223">Käynnistä Google Chrome</translation>
 <translation id="4891791193823137474">Jätä Google Chrome käyntiin taustalle</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
+<translation id="2896252579017640304">Käynnistä Chrome-sovelluksia</translation>
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
+<translation id="8762286861469007470">Chromen Captive Portal -havaitsin</translation>
 <translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6541116830060437475">Kokeile poistaa verkon ennakointi käytöstä seuraavasti:
@@ -43,12 +46,14 @@
 <translation id="4728575227883772061">Asennus epäonnistui tuntemattoman virheen takia. Jos Google Chrome on tällä hetkellä käynnissä, sulje ohjelma ja yritä uudelleen.</translation>
 <translation id="3080151273017101988">Jätä taustaohjelmat käyntiin, kun Google Chrome suljetaan</translation>
 <translation id="4149882025268051530">Asennusohjelma ei pystynyt purkamaan arkistotiedostoa. Lataa Google Chrome uudelleen.</translation>
+<translation id="2886077349328709775">Käynnistä sovellukset Chromen sovellusten käynnistysohjelman avulla.</translation>
 <translation id="6989339256997917931">Google Chrome on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="1682634494516646069">Chrome ei voi lukea tietohakemistoaan <ph name="USER_DATA_DIRECTORY"/> tai kirjoittaa siihen</translation>
 <translation id="4343226815564935778">Google Chromen asennushakemisto vaikuttaa olevan käytössä. Käynnistä tietokoneesi uudelleen ja yritä uudestaan.</translation>
 <translation id="8227755444512189073">Google Chrome käynnistää ulkopuolisen ohjelman käsitelläkseen <ph name="SCHEME"/> linkkiä. Pyydetty linkki on <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hups! Google Chrome kaatui. Käynnistetäänkö uudelleen?</translation>
+<translation id="1480489203462860648">Kokeile, selain on jo asennettu</translation>
 <translation id="5204098752394657250">Google Chromen <ph name="TERMS_OF_SERVICE_LINK"/>käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Apua Chromen käytössä</translation>
 <translation id="3487814320513494737">Chromen uusi välilehti -sivua on uudistettu. Vaihtele kohtien välillä klikkaamalla tunnisteita. Chrome muistaa asetuksesi seuraavalla kerralla.</translation>
@@ -78,13 +83,13 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
 <translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
 <translation id="5037239767309817516">Sulje kaikki Chrome-ikkunat ja käynnistä selain uudelleen, jotta muutos tulee voimaan.</translation>
+<translation id="345168553362876363">Google Chromen sovellusten käynnistysohjelma on Chrome-sovelluksien itsenäinen käyttöympäristö.</translation>
 <translation id="225614027745146050">Tervetuloa</translation>
 <translation id="7451721381978275812">Virheelliset argumentit. Google Chrome -kehystä ei voi asentaa ilman Google Chromen asennusta.</translation>
 <translation id="8684521613357479262">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti varmenteen, joka ei ole vielä voimassa. Emme voi selvittää, onko varmenne luotettava. Google Chrome ei voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="4585888816441913908">Tässä tietokoneessa on jo Google Chromen uudempi versio ja Google Chrome -kehys. Jos sovellus ei toimi, poista sekä Google Chrome että Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Google Chromella.</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin esitti varmenteen, jonka myöntäjään tietokoneesi käyttöjärjestelmä ei luota. Tämä voi tarkoittaa, että palvelin on luonut omat suojausmääritykset, joista Google Chrome ei saa identiteettitietoja, tai että hakkeri yrittää kaapata yhteyden.</translation>
 <translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
 <translation id="473775607612524610">Päivitä</translation>
@@ -93,6 +98,7 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
 <translation id="2783467918276328046">Katso, <ph name="BEGIN_LINK"/>mitä muuta hyötyä<ph name="END_LINK"/> Chromeen kirjautumisesta on.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="1457721931618994305">Päivitetään Google Chromea...</translation>
+<translation id="6536030683808219174">Näytä Chromen sovellusten käynnistysohjelman pikakuvake Windowsin tehtäväpalkissa.</translation>
 <translation id="4351362253593301573">Siirry kohtaan
           <ph name="BEGIN_BOLD"/>
           Chrome-valikko &gt;
@@ -149,10 +155,11 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
           <ph name="NETWORK_TAB"/>
           <ph name="END_BOLD"/>,
           klikkaa sitä ja varmista, että asetus on Suora.</translation>
+<translation id="5788838254726722945">Poista Google Chromen sovellusten käynnistysohjelma</translation>
 <translation id="3612333635265770873">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Google Chromen kanssa.</translation>
-<translation id="824729746779295798">Copyright © 2012 Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="61852838583753520">Päivitä &amp;Chrome-käyttöjärjestelmä</translation>
 <translation id="6650142020817594541">Tämä sivusto suosittelee käyttämään Google Chrome -kehystä (jo asennettu).</translation>
+<translation id="550529737713987795">Näytä Chromen sovellusten käynnistysohjelma.</translation>
 <translation id="2712549016134575851">Ristiriita toisen asennetun sovelluksen kanssa havaittu.</translation>
 <translation id="5577648424992741236">Tietokoneessa on jo Google Chrome -kehyksen uudempi versio. Jos sovellus ei toimi, poista Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="7018032895891496381">Google Chrome käyttää oletushakukonettasi, joka on tällä hetkellä <ph name="PAGE_TITLE"/>. Haluatko säilyttää oletushakukoneen samana?</translation>
@@ -188,6 +195,7 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome on ajan tasalla.</translation>
 <translation id="2084710999043359739">Lisää Chromeen</translation>
+<translation id="4710332363312836873">Chromen sovellusten käynnistysohjelma</translation>
 <translation id="4084877369264707540">Google Chrome -kehys on jo asennettu ja käytettävissä kaikille tämän tietokoneen käyttäjille. Jos haluat asentaa Google Chrome -kehyksen käyttäjän tasolla, sinun tulee ensin poistaa järjestelmänvalvojan asentama järjestelmän tason versio.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3451115285585441894">Lisätään Chromeen...</translation>
@@ -199,7 +207,6 @@ ja poista valinta kaikista välityspalvelimista, jotka on valittu.</translation>
 <translation id="3419750618886995598">Chrome-kehyksen päivitys.</translation>
 <translation id="3336524238463733095">Google Chromea tai Google Chrome -kehystä ei voi päivittää, koska Google Update -ryhmäkäytännön asetuksissa on ristiriitoja. Aseta päivityskäytännön ohitus Google Chrome Binaries -sovellukselle ryhmäkäytäntöjen muokkausohjelman avulla ja yritä uudelleen. Lisätietoja saat osoitteesta http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">Järjestelmänvalvoja on asentanut Google Chromen tähän järjestelmään ja selain on kaikkien käyttäjien käytettävissä. Järjestelmätason Google Chrome korvaa käyttäjätason asennuksen.</translation>
-<translation id="7123348595797445166">Kokeile (valmiiksi asennettu)</translation>
 <translation id="4338032231047635328">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelimen esittämä varmenne on virheellinen. Google Chrome ei voi käyttää virheellistä varmennetta eikä siis voi vahvistaa tavoittelemasi sivuston identiteettiä.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chromen automaattisen täytön asetukset</translation>

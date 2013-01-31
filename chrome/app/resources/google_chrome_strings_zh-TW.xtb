@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="8000275528373650868">Google Chrome 支援的作業系統為 Windows Vista 或 Windows XP SP2 以上版本。</translation>
+<translation id="8124352762008487242">Copyright 2013 Google Inc. 版權所有。</translation>
 <translation id="8485767968786176057">在這種情況中，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者攔截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，即便該憑證並不適用於某些網站。Google Chrome 可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是不是同一個網站。如果您繼續，Chrome 將不再檢查任何名稱不符的情況。</translation>
 <translation id="5430073640787465221">您的偏好設定檔已毀損或無效。
 
@@ -18,7 +19,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7101265395643981223">開啟 Google Chrome</translation>
 <translation id="4891791193823137474">讓 Google Chrome 在背景執行</translation>
 <translation id="2879385160622431163">Google Chrome 互動智慧搜尋</translation>
+<translation id="2896252579017640304">啟動 Chrome 應用程式</translation>
 <translation id="2370289711218562573">Google Chrome 現正匯入 [我的最愛/書籤]。</translation>
+<translation id="8762286861469007470">Chrome 強制性登入畫面偵測工具</translation>
 <translation id="1761870329818521071">無法安裝這個版本的「Google Chrome 內嵌框架」，因為相同的版本目前正在執行中。請關閉「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="2040709530900803995">Google Chrome 成像器</translation>
 <translation id="6541116830060437475">請試著按照下列步驟停用網路預測功能：
@@ -46,12 +49,14 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載 Google Chrome。</translation>
+<translation id="2886077349328709775">使用 Chrome 應用程式啟動器來啟動您的應用程式。</translation>
 <translation id="6989339256997917931">Google Chrome 已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
 <translation id="5744005218040929396">Google Chrome 公用程式</translation>
 <translation id="1682634494516646069">Google Chrome 無法讀取及寫入資料目錄：<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chrome 安裝目錄使用中。請重新啟動電腦，然後再試一次。</translation>
 <translation id="8227755444512189073">Google Chrome 需要啟動外部應用程式以處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。 </translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>
+<translation id="1480489203462860648">安裝完畢，馬上試試吧！</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>服務條款<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">前往 Chrome 說明頁面</translation>
 <translation id="3487814320513494737">Chrome 的「新分頁」現已重新設計，按一下這些標籤即可切換不同部分。Chrome 會記住您的偏好設定，以便在您下次使用時直接顯示偏好的內容。</translation>
@@ -81,13 +86,13 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
+<translation id="345168553362876363">Google Chrome 應用程式啟動器是適用於 Chrome 應用程式的獨立平台。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="7451721381978275812">無效的引數。您必須安裝 Google Chrome，才能在就緒模式中安裝「Google Chrome 內嵌框架」。</translation>
 <translation id="8684521613357479262">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;&gt;，但伺服器提供了無效的憑證。我們沒有足夠資訊判斷憑證是否可靠，因此 Google Chrome 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="4585888816441913908">這台電腦已安裝較新的 Google Chrome 和「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝 Google Chrome 和「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的相關技術才得以問世。</translation>
 <translation id="7459554271817304652">設定同步處理功能，即可在網路上儲存您的個人化瀏覽器功能，並且透過任何電腦從 Google Chrome 使用這些功能。</translation>
-<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證由您電腦作業系統不信任的實體簽署。這可能表示伺服器自行產生安全性憑證，因此 Google Chrome 無法藉以辨認身分；或者有攻擊者試圖攔截您的通訊。</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">更新</translation>
@@ -96,6 +101,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2783467918276328046">參閱登入 Chrome 可享用的<ph name="BEGIN_LINK"/>更多好處<ph name="END_LINK"/>。</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
+<translation id="6536030683808219174">在 Windows 工作列中顯示 Chrome 應用程式起動器的捷徑。</translation>
 <translation id="4351362253593301573">前往
           <ph name="BEGIN_BOLD"/>
           Chrome 選單 &gt;
@@ -153,10 +159,11 @@ Google Chrome 無法復原您的設定。</translation>
           <ph name="END_BOLD"/>
           按鈕，請按一下該按鈕，將您的設定
           調整為 [直接]。</translation>
+<translation id="5788838254726722945">解除安裝 Google Chrome 應用程式啟動器</translation>
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
-<translation id="824729746779295798">Copyright 2012 Google Inc. 版權所有。</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
+<translation id="550529737713987795">顯示 Chrome 應用程式啟動器。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
 <translation id="5577648424992741236">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="7018032895891496381">Google Chrome 使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
@@ -192,6 +199,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
+<translation id="4710332363312836873">Chrome 應用程式啟動器</translation>
 <translation id="4084877369264707540">「Google Chrome 內嵌框架」已安裝，且支援這台電腦的所有使用者。如果您要安裝使用者等級的「Google Chrome 內嵌框架」，首先必須解除安裝管理員安裝的系統等級版本。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="3451115285585441894">正在新增至 Chrome...</translation>
@@ -203,7 +211,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3419750618886995598">Chrome 內嵌框架更新。</translation>
 <translation id="3336524238463733095">由於「Google 更新群組政策」設定不一致，因此 Google Chrome 或「Google Chrome 內嵌框架」無法更新。使用「群組政策編輯器」設定要覆寫「Google Chrome Binaries」應用程式的更新政策，然後再試一次；詳情請參閱 http://goo.gl/uJ9gV。</translation>
 <translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
-<translation id="7123348595797445166">立即使用 (已安裝)</translation>
 <translation id="4338032231047635328">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證含有錯誤資訊。Google Chrome 無法使用含有錯誤資訊的憑證，也無法驗證您要連結的網站的身分。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chrome 自動填入設定</translation>
