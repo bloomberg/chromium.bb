@@ -168,6 +168,8 @@
         'browser/ui/fullscreen/fullscreen_controller_test.cc',
         'browser/ui/fullscreen/fullscreen_controller_test.h',
         'browser/ui/gtk/find_bar_host_unittest_util_gtk.cc',
+        'browser/ui/test/test_confirm_bubble_model.cc',
+        'browser/ui/test/test_confirm_bubble_model.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
         'common/extensions/extension_builder.cc',
         'common/extensions/extension_builder.h',

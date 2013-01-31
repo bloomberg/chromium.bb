@@ -4,62 +4,13 @@
 
 #include "chrome/browser/ui/views/confirm_bubble_views.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/confirm_bubble.h"
-#include "chrome/browser/ui/confirm_bubble_model.h"
-#include "grit/theme_resources.h"
+#include "chrome/browser/ui/test/test_confirm_bubble_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
-
-class TestConfirmBubbleModel : public ConfirmBubbleModel {
- public:
-  TestConfirmBubbleModel() {}
-  virtual ~TestConfirmBubbleModel() {}
-
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(BubbleButton button) const OVERRIDE;
-  virtual void Accept() OVERRIDE {}
-  virtual void Cancel() OVERRIDE {}
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual void LinkClicked() OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestConfirmBubbleModel);
-};
-
-string16 TestConfirmBubbleModel::GetTitle() const {
-  return ASCIIToUTF16("Title");
-}
-
-string16 TestConfirmBubbleModel::GetMessageText() const {
-  return ASCIIToUTF16("Message");
-}
-
-gfx::Image* TestConfirmBubbleModel::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_PRODUCT_LOGO_16);
-}
-
-int TestConfirmBubbleModel::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
-string16 TestConfirmBubbleModel::GetButtonLabel(BubbleButton button) const {
-  return button == BUTTON_OK ? ASCIIToUTF16("OK") : ASCIIToUTF16("Cancel");
-}
-
-string16 TestConfirmBubbleModel::GetLinkText() const {
-  return ASCIIToUTF16("Link");
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 typedef views::ViewsTestBase ConfirmBubbleViewsTest;
 
@@ -72,10 +23,13 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   parent_widget->Show();
 
   // Bubble owns the model.
+  bool model_deleted = false;
+  TestConfirmBubbleModel* model =
+      new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL);
   ConfirmBubbleViews* bubble =
       new ConfirmBubbleViews(parent_widget->GetNativeView(),
                              gfx::Point(12, 34),
-                             new TestConfirmBubbleModel);
+                             model);
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 
@@ -87,4 +41,5 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   // Clean up.
   bubble->GetWidget()->CloseNow();
   parent_widget->CloseNow();
+  EXPECT_TRUE(model_deleted);
 }
