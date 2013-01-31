@@ -15,7 +15,6 @@ class FilterCollectionTest : public ::testing::Test {
 
  protected:
   FilterCollection collection_;
-  MockFilterCollection mock_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(FilterCollectionTest);
 };
@@ -27,7 +26,7 @@ TEST_F(FilterCollectionTest, SelectXXXMethods) {
   EXPECT_FALSE(audio_renderer);
 
   // Add an audio decoder.
-  collection_.AddAudioRenderer(mock_filters_.audio_renderer());
+  collection_.AddAudioRenderer(new MockAudioRenderer());
 
   // Verify that we can select the audio decoder.
   collection_.SelectAudioRenderer(&audio_renderer);
