@@ -6582,3 +6582,10 @@
    fun:_ZN7WebCore18RenderLayerBacking13updateFiltersEPKNS_11RenderStyleE
    fun:_ZN7WebCore18RenderLayerBacking*GraphicsLayer*
 }
+{
+   bug_173356
+   Memcheck:Overlap
+   fun:memcpy
+   fun:_ZN3gpu5gles2*Immediate4InitE*
+   fun:_ZN3gpu5gles2*GLES2ImplementationTest_*_Test8TestBodyEv
+}

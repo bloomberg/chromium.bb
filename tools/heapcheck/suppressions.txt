@@ -1852,3 +1852,30 @@
    ...
    fun:chromeos::MagnificationManagerTest_MagnificationObserver_Test::TestBody
 }
+{
+   bug_173362_a (OnRead)
+   Heapcheck:Leak
+   ...
+   fun:extensions::NativeMessageProcessHost::ProcessIncomingData
+   fun:extensions::NativeMessageProcessHost::HandleReadResult
+   fun:extensions::NativeMessageProcessHost::OnRead
+}
+{
+   bug_173362_b (DoRead)
+   Heapcheck:Leak
+   ...
+   fun:extensions::NativeMessageProcessHost::DoRead
+   fun:extensions::NativeMessageProcessHost::ReadNowForTesting
+   fun:extensions::NativeMessagingTest_SingleSendMessageRead_Test::TestBody
+}
+{
+   bug_173362_c
+   Heapcheck:Leak
+   fun:extensions::NativeMessageProcessHost::OnHostProcessLaunched
+}
+{
+   bug_173362_d
+   Heapcheck:Leak
+   ...
+   fun:extensions::NativeMessagingTest_SingleSendMessage*_Test::TestBody
+}
