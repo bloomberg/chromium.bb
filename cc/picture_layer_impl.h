@@ -48,6 +48,9 @@ public:
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
                                          gfx::Rect content_rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE;
+  virtual gfx::Size CalculateTileSize(
+      gfx::Size current_tile_size,
+      gfx::Size content_bounds) OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree
   void SyncFromActiveLayer();
@@ -68,7 +71,6 @@ protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
-  gfx::Size TileSize() const;
   void ManageTilings(float ideal_contents_scale);
   void CleanUpUnusedTilings(std::vector<PictureLayerTiling*> used_tilings);
 

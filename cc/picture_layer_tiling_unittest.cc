@@ -20,7 +20,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
                   float contents_scale,
                   gfx::Size layer_bounds) {
     client_.SetTileSize(tile_size);
-    tiling_ = PictureLayerTiling::Create(contents_scale, tile_size);
+    tiling_ = PictureLayerTiling::Create(contents_scale);
     tiling_->SetClient(&client_);
     tiling_->SetLayerBounds(layer_bounds);
   }

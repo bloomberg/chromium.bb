@@ -70,10 +70,8 @@ gfx::Size PictureLayerTilingSet::LayerBounds() const {
   return layer_bounds_;
 }
 
-PictureLayerTiling* PictureLayerTilingSet::AddTiling(
-    float contents_scale,
-    gfx::Size tile_size) {
-  tilings_.push_back(PictureLayerTiling::Create(contents_scale, tile_size));
+PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
+  tilings_.push_back(PictureLayerTiling::Create(contents_scale));
   PictureLayerTiling* appended = tilings_.back();
   appended->SetClient(client_);
   appended->SetLayerBounds(layer_bounds_);

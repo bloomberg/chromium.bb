@@ -26,7 +26,13 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
-    tile_size_ = tile_size;
+  tile_size_ = tile_size;
+}
+
+gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
+    gfx::Size /* current_tile_size */,
+    gfx::Size /* content_bounds */) {
+  return tile_size_;
 }
 
 }  // namespace cc
