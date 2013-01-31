@@ -430,12 +430,15 @@ bool DriveScheduler::ShouldStopJobLoop() {
   if (net::NetworkChangeNotifier::IsOffline())
     return true;
 
+  // TODO(zork): This is a temporary fix for crbug.com/172270.  It should be
+  // re-enabled once it's merged.
+  //
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
-      net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType()))
-    return true;
+  // if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
+  //    net::NetworkChangeNotifier::IsConnectionCellular(
+  //        net::NetworkChangeNotifier::GetConnectionType()))
+  //  return true;
 
   return false;
 }
