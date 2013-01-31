@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
-#include "base/event_recorder.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -370,23 +369,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       KeystoneInfoBar::PromotionInfoBar(profile);
     }
 #endif
-  }
-
-  // If we're recording or playing back, startup the EventRecorder now
-  // unless otherwise specified.
-  if (!command_line_.HasSwitch(switches::kNoEvents)) {
-    FilePath script_path;
-    PathService::Get(chrome::FILE_RECORDED_SCRIPT, &script_path);
-
-    bool record_mode = command_line_.HasSwitch(switches::kRecordMode);
-    bool playback_mode = command_line_.HasSwitch(switches::kPlaybackMode);
-
-    if (record_mode && chrome::kRecordModeEnabled)
-      base::EventRecorder::current()->StartRecording(script_path);
-    // Do not enter Playback mode if PageCycler is running; Playback mode does
-    // not work correctly.
-    if (playback_mode && !command_line_.HasSwitch(switches::kVisitURLs))
-      base::EventRecorder::current()->StartPlayback(script_path);
   }
 
 #if defined(OS_WIN)
