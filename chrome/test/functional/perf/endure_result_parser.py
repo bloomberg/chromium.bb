@@ -12,13 +12,13 @@ stored in local text files to be graphed by the Chrome Endure graphing code.
 It is assumed that any Chrome Endure tests that show up on the waterfall have
 names that are of the following form:
 
-"endure_<webapp_name>_test <test_name>" (non-Web Page Replay tests)
+"endure_<webapp_name>-<test_name>" (non-Web Page Replay tests)
 
 or
 
-"endure_<webapp_name>_wpr_test <test_name>" (Web Page Replay tests)
+"endure_<webapp_name>_wpr-<test_name>" (Web Page Replay tests)
 
-For example: "endure_gmail_wpr_test testGmailComposeDiscard"
+For example: "endure_gmail_wpr-testGmailComposeDiscard"
 
 This script accepts either a URL or a local path as a buildbot location.
 It switches its behavior if a URL is given, or a local path is given.
@@ -380,6 +380,8 @@ def GetRevisionAndLogs(slave_location, build_num):
   else:
     location = os.path.join(slave_location, str(build_num))
 
+  revision = False
+  logs = []
   fp = None
   try:
     if location.startswith('http://'):
@@ -387,16 +389,21 @@ def GetRevisionAndLogs(slave_location, build_num):
       contents = fp.read()
       revisions = re.findall(r'<td class="left">got_revision</td>\s+'
                              '<td>(\d+)</td>\s+<td>Source</td>', contents)
-      revision = revisions[0]
-      logs = [location + link + '/text' for link
-              in re.findall(r'(/steps/endure[^/]+/logs/stdio)', contents)]
+      if revisions:
+        revision = revisions[0]
+        logs = [location + link + '/text' for link
+                in re.findall(r'(/steps/endure[^/]+/logs/stdio)', contents)]
     else:
       fp = open(location, 'rb')
       build = cPickle.load(fp)
-      revision = build.getProperty('got_revision')
-      candidates = os.listdir(slave_location)
-      logs = [os.path.join(slave_location, filename) for filename in candidates
-              if re.match(r'%d-log-endure[^/]+-stdio' % build_num, filename)]
+      properties = build.getProperties()
+      if properties.has_key('got_revision'):
+        revision = build.getProperty('got_revision')
+        candidates = os.listdir(slave_location)
+        logs = [os.path.join(slave_location, filename)
+                for filename in candidates
+                if re.match(r'%d-log-endure[^/]+-stdio' % build_num, filename)]
+
   except urllib2.URLError, e:
     logging.exception('Error reading build URL "%s": %s', location, str(e))
     return False, []
@@ -418,12 +425,12 @@ def ExtractTestNames(log_location, is_dbg):
   """
   if log_location.startswith('http://'):
     location = urllib.unquote(log_location)
-    test_pattern = r'endure_([^_]+)_test ([^/]+)/'
-    wpr_test_pattern = r'endure_([^_]+)_wpr_test ([^/]+)/'
+    test_pattern = r'endure_([^_]+)(_test |-)([^/]+)/'
+    wpr_test_pattern = r'endure_([^_]+)_wpr(_test |-)([^/]+)/'
   else:
     location = log_location
-    test_pattern = r'endure_([^_]+)_test_([^/]+)-stdio'
-    wpr_test_pattern = 'endure_([^_]+)_wpr_test_([^/]+)-stdio'
+    test_pattern = r'endure_([^_]+)(_test_|-)([^/]+)-stdio'
+    wpr_test_pattern = 'endure_([^_]+)_wpr(_test_|-)([^/]+)-stdio'
 
   found_wpr_result = False
   match = re.findall(test_pattern, location)
@@ -437,7 +444,7 @@ def ExtractTestNames(log_location, is_dbg):
   match = match[0]
   webapp_name = match[0] + '_wpr' if found_wpr_result else match[0]
   webapp_name = webapp_name + '_dbg' if is_dbg else webapp_name
-  test_name = match[1]
+  test_name = match[2]
 
   return {
       'location': log_location,
