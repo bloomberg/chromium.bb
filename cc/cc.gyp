@@ -307,6 +307,8 @@
       'video_layer_impl.h',
       'vsync_time_source.cc',
       'vsync_time_source.h',
+      'worker_pool.cc',
+      'worker_pool.h',
       'yuv_video_draw_quad.cc',
       'yuv_video_draw_quad.h',
     ],

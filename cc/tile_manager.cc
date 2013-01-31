@@ -14,6 +14,7 @@
 #include "cc/raster_worker_pool.h"
 #include "cc/resource_pool.h"
 #include "cc/tile.h"
+#include "third_party/skia/include/core/SkDevice.h"
 
 namespace cc {
 
@@ -121,9 +122,6 @@ TileManager::TileManager(
       manage_tiles_call_count_(0),
       bytes_pending_set_pixels_(0),
       ever_exceeded_memory_budget_(false) {
-  bool worker_pool_is_running = raster_worker_pool_->Start();
-  CHECK(worker_pool_is_running);
-
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
       for (int k = 0; k < NUM_BINS; ++k)
@@ -608,8 +606,8 @@ void TileManager::DispatchOneImageDecodeTask(
       pending_decode_tasks_.find(pixel_ref_id));
   pending_decode_tasks_[pixel_ref_id] = pixel_ref;
 
-  raster_worker_pool_->PostImageDecodeTaskAndReply(
-      pixel_ref,
+  raster_worker_pool_->PostTaskAndReply(
+      base::Bind(&TileManager::RunImageDecodeTask, pixel_ref),
       base::Bind(&TileManager::OnImageDecodeTaskCompleted,
                  base::Unretained(this),
                  tile,
@@ -654,9 +652,11 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
 
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
-      resource_pool_->resource_provider()->mapPixelBuffer(resource_id),
-      tile->content_rect_,
-      tile->contents_scale(),
+      base::Bind(&TileManager::RunRasterTask,
+                 resource_pool_->resource_provider()->mapPixelBuffer(
+                     resource_id),
+                 tile->content_rect_,
+                 tile->contents_scale()),
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
                  tile,
@@ -749,6 +749,34 @@ void TileManager::DidTileBinChange(Tile* tile,
   ++raster_state_count_[mts.raster_state][tree][bin];
 
   mts.tree_bin[tree] = bin;
+}
+
+// static
+void TileManager::RunRasterTask(uint8* buffer,
+                                const gfx::Rect& rect,
+                                float contents_scale,
+                                PicturePileImpl* picture_pile,
+                                RenderingStats* stats) {
+  TRACE_EVENT0("cc", "TileManager::RunRasterTask");
+  DCHECK(picture_pile);
+  DCHECK(buffer);
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
+  bitmap.setPixels(buffer);
+  SkDevice device(bitmap);
+  SkCanvas canvas(&device);
+  picture_pile->Raster(&canvas, rect, contents_scale, stats);
+}
+
+// static
+void TileManager::RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
+                                     RenderingStats* stats) {
+  TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
+  base::TimeTicks decode_begin_time = base::TimeTicks::Now();
+  pixel_ref->Decode();
+  stats->totalDeferredImageDecodeCount++;
+  stats->totalDeferredImageDecodeTime +=
+      base::TimeTicks::Now() - decode_begin_time;
 }
 
 }  // namespace cc

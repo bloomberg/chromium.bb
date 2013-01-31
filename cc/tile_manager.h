@@ -144,6 +144,14 @@ class CC_EXPORT TileManager {
                         WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
+  static void RunRasterTask(uint8* buffer,
+                            const gfx::Rect& rect,
+                            float contents_scale,
+                            PicturePileImpl* picture_pile,
+                            RenderingStats* stats);
+  static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
+                                 RenderingStats* stats);
+
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
