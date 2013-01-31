@@ -38,10 +38,7 @@
 #define DUMMY_API_TOKEN "dummytoken"
 
 #if !defined(GOOGLE_API_KEY)
-// TODO(joi): This is temporary; switch to DUMMY_API_TOKEN once people
-// have had some time to install API keys per
-// http://chromium.org/developers/how-tos/api-keys
-#define GOOGLE_API_KEY "AIzaSyBHDrl33hwRp4rMQY0ziRbj8K9LPA6vUCY"
+#define GOOGLE_API_KEY DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_MAIN)
@@ -73,15 +70,11 @@
 // variables.  If set, they will be used to replace any of the client
 // IDs and secrets above that have not been set (and only those; they
 // will not override already-set values).
-//
-// TODO(joi): This is temporary; make both blank once people have had
-// some time to install API keys per
-// http://chromium.org/developers/how-tos/api-keys
 #if !defined(GOOGLE_DEFAULT_CLIENT_ID)
-#define GOOGLE_DEFAULT_CLIENT_ID "609716072145.apps.googleusercontent.com"
+#define GOOGLE_DEFAULT_CLIENT_ID ""
 #endif
 #if !defined(GOOGLE_DEFAULT_CLIENT_SECRET)
-#define GOOGLE_DEFAULT_CLIENT_SECRET "WF4uG3gJzEH0KLpS7OuFBDux"
+#define GOOGLE_DEFAULT_CLIENT_SECRET ""
 #endif
 
 namespace switches {
