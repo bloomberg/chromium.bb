@@ -11,6 +11,7 @@
 #include "base/sys_byteorder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
@@ -254,49 +255,9 @@ void OpusAudioDecoder::Initialize(
     const scoped_refptr<DemuxerStream>& stream,
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &OpusAudioDecoder::DoInitialize, this,
-        stream, status_cb, statistics_cb));
-    return;
-  }
-  DoInitialize(stream, status_cb, statistics_cb);
-}
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
-void OpusAudioDecoder::Read(const ReadCB& read_cb) {
-  // Complete operation asynchronously on different stack of execution as per
-  // the API contract of AudioDecoder::Read()
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &OpusAudioDecoder::DoRead, this, read_cb));
-}
-
-int OpusAudioDecoder::bits_per_channel() {
-  return bits_per_channel_;
-}
-
-ChannelLayout OpusAudioDecoder::channel_layout() {
-  return channel_layout_;
-}
-
-int OpusAudioDecoder::samples_per_second() {
-  return samples_per_second_;
-}
-
-void OpusAudioDecoder::Reset(const base::Closure& closure) {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &OpusAudioDecoder::DoReset, this, closure));
-}
-
-OpusAudioDecoder::~OpusAudioDecoder() {
-  // TODO(scherkus): should we require Stop() to be called? this might end up
-  // getting called on a random thread due to refcounting.
-  CloseDecoder();
-}
-
-void OpusAudioDecoder::DoInitialize(
-    const scoped_refptr<DemuxerStream>& stream,
-    const PipelineStatusCB& status_cb,
-    const StatisticsCB& statistics_cb) {
   if (demuxer_stream_) {
     // TODO(scherkus): initialization currently happens more than once in
     // PipelineIntegrationTest.BasicPlayback.
@@ -307,38 +268,62 @@ void OpusAudioDecoder::DoInitialize(
   demuxer_stream_ = stream;
 
   if (!ConfigureDecoder()) {
-    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+    initialize_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
   statistics_cb_ = statistics_cb;
-  status_cb.Run(PIPELINE_OK);
+  initialize_cb.Run(PIPELINE_OK);
 }
 
-void OpusAudioDecoder::DoReset(const base::Closure& closure) {
-  opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
-  ResetTimestampState();
-  closure.Run();
-}
-
-void OpusAudioDecoder::DoRead(const ReadCB& read_cb) {
+void OpusAudioDecoder::Read(const ReadCB& read_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
+  read_cb_ = BindToCurrentLoop(read_cb);
 
-  read_cb_ = read_cb;
   ReadFromDemuxerStream();
 }
 
-void OpusAudioDecoder::DoDecodeBuffer(
+int OpusAudioDecoder::bits_per_channel() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return bits_per_channel_;
+}
+
+ChannelLayout OpusAudioDecoder::channel_layout() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return channel_layout_;
+}
+
+int OpusAudioDecoder::samples_per_second() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return samples_per_second_;
+}
+
+void OpusAudioDecoder::Reset(const base::Closure& closure) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  base::Closure reset_cb = BindToCurrentLoop(closure);
+
+  opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
+  ResetTimestampState();
+  reset_cb.Run();
+}
+
+OpusAudioDecoder::~OpusAudioDecoder() {
+  // TODO(scherkus): should we require Stop() to be called? this might end up
+  // getting called on a random thread due to refcounting.
+  CloseDecoder();
+}
+
+void OpusAudioDecoder::ReadFromDemuxerStream() {
+  DCHECK(!read_cb_.is_null());
+  demuxer_stream_->Read(base::Bind(&OpusAudioDecoder::BufferReady, this));
+}
+
+void OpusAudioDecoder::BufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& input) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &OpusAudioDecoder::DoDecodeBuffer, this, status, input));
-    return;
-  }
-
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
   DCHECK_EQ(status != DemuxerStream::kOk, !input) << status;
 
@@ -409,12 +394,6 @@ void OpusAudioDecoder::DoDecodeBuffer(
     // more data in order to fulfill this read.
     ReadFromDemuxerStream();
   }
-}
-
-void OpusAudioDecoder::ReadFromDemuxerStream() {
-  DCHECK(!read_cb_.is_null());
-
-  demuxer_stream_->Read(base::Bind(&OpusAudioDecoder::DoDecodeBuffer, this));
 }
 
 bool OpusAudioDecoder::ConfigureDecoder() {

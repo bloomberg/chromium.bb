@@ -202,7 +202,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       params.audio_renderer_sink() ? params.audio_renderer_sink() :
       new media::NullAudioSink());
   filter_collection_->AddAudioRenderer(new media::AudioRendererImpl(
-      audio_source_provider_, set_decryptor_ready_cb));
+      media_thread_.message_loop_proxy(),
+      audio_source_provider_,
+      set_decryptor_ready_cb));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

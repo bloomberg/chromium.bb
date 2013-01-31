@@ -67,11 +67,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
     kDecodeFinished,
   };
 
-  // Carries out the initialization operation scheduled by Initialize().
-  void DoInitialize(const scoped_refptr<DemuxerStream>& stream,
-                    const PipelineStatusCB& status_cb,
-                    const StatisticsCB& statistics_cb);
-
   // Callback for DecryptorHost::RequestDecryptor().
   void SetDecryptor(Decryptor* decryptor);
 
@@ -81,14 +76,10 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // Callback for Decryptor::InitializeAudioDecoder() during config change.
   void FinishConfigChange(bool success);
 
-  // Carries out the buffer reading operation scheduled by Read().
-  void DoRead(const ReadCB& read_cb);
-
+  // Reads from the demuxer stream with corresponding callback method.
   void ReadFromDemuxerStream();
-
-  // Callback for DemuxerStream::Read().
-  void DoDecryptAndDecodeBuffer(DemuxerStream::Status status,
-                                const scoped_refptr<DecoderBuffer>& buffer);
+  void DecryptAndDecodeBuffer(DemuxerStream::Status status,
+                              const scoped_refptr<DecoderBuffer>& buffer);
 
   void DecodePendingBuffer();
 

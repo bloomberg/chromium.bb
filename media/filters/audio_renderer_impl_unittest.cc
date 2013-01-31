@@ -38,8 +38,10 @@ class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
-      : renderer_(new AudioRendererImpl(new NiceMock<MockAudioRendererSink>(),
-                                        SetDecryptorReadyCB())),
+      : renderer_(new AudioRendererImpl(
+            message_loop_.message_loop_proxy(),
+            new NiceMock<MockAudioRendererSink>(),
+            SetDecryptorReadyCB())),
         demuxer_stream_(new MockDemuxerStream()),
         decoder_(new MockAudioDecoder()),
         audio_config_(kCodecVorbis, kSampleFormatPlanarF32,

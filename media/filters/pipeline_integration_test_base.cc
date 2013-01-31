@@ -225,6 +225,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   if (hashing_enabled_)
     audio_sink_->StartAudioHashForTesting();
   scoped_refptr<AudioRendererImpl> audio_renderer(new AudioRendererImpl(
+      message_loop_.message_loop_proxy(),
       audio_sink_,
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this), decryptor)));

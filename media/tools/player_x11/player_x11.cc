@@ -124,9 +124,10 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       true);
   collection->AddVideoRenderer(g_video_renderer);
 
-  collection->AddAudioRenderer(
-      new media::AudioRendererImpl(new media::NullAudioSink(),
-                                   media::SetDecryptorReadyCB()));
+  collection->AddAudioRenderer(new media::AudioRendererImpl(
+      message_loop,
+      new media::NullAudioSink(),
+      media::SetDecryptorReadyCB()));
 
   // Create the pipeline and start it.
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
