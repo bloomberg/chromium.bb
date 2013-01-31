@@ -159,10 +159,10 @@ Commands.formatCommand = {
     }
   },
   canExecute: function(event, rootsList) {
-    var enabled = (CommandUtil.getCommandRootType(event, rootsList) ==
-                   RootType.REMOVABLE);
-    event.canExecute = enabled;
-    event.command.setHidden(!enabled);
+    var removable =
+        CommandUtil.getCommandRootType(event, rootsList) == RootType.REMOVABLE;
+    event.canExecute = removable && !fileManager.isOnReadonlyDirectory();
+    event.command.setHidden(!removable);
   }
 };
 
@@ -208,8 +208,8 @@ Commands.deleteFileCommand = {
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-                  selection &&
-                  selection.totalCount > 0;
+                       selection &&
+                       selection.totalCount > 0;
   }
 };
 
@@ -381,8 +381,9 @@ Commands.zipSelectionCommand = {
   },
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.isOnDrive() && selection &&
-        selection.totalCount > 0;
+    event.canExecute = !fileManager.isOnReadonlyDirectory() &&
+        !fileManager.isOnDrive() &&
+        selection && selection.totalCount > 0;
   }
 };
 
