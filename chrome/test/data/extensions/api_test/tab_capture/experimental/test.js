@@ -91,11 +91,7 @@ chrome.test.runTests([
                               minWidth: 300
                             }
                         },
-                        audioConstraints: {
-                            mandatory: {
-                              minFrameRate: 60
-                            }
-                        }}, tabMediaRequestCallback);
+                       }, tabMediaRequestCallback);
   },
 
   function onlyVideo() {
