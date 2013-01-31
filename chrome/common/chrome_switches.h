@@ -407,6 +407,7 @@ extern const char kDisableLocalAccounts[];
 extern const char kEnableRequestTabletSite[];
 extern const char kEnableStaticIPConfig[];
 extern const char kFirstBoot[];
+extern const char kForceLoginManagerInTests[];
 extern const char kForceOAuth1[];
 extern const char kHasChromeOSKeyboard[];
 extern const char kHasChromeOSDiamondKey[];

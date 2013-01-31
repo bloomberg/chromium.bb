@@ -1478,6 +1478,10 @@ const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[] = "first-boot";
 
+// Usually in browser tests the usual login manager bringup is skipped so that
+// tests can change how it's brought up. This flag disables that.
+const char kForceLoginManagerInTests[]     = "force-login-manager-in-tests";
+
 // Forces driving authentication through the legacy OAuth1 flow instead of
 // new flow based on OAuth2.
 const char kForceOAuth1[]                  = "force-oauth1";

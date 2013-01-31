@@ -588,8 +588,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
-  if (!parameters().ui_task)
+  if (!parameters().ui_task ||
+      parsed_command_line().HasSwitch(::switches::kForceLoginManagerInTests)) {
     OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
+  }
 
   // These observers must be initialized after the profile because
   // they use the profile to dispatch extension events.
