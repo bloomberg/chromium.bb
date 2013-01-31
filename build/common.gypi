@@ -107,6 +107,9 @@
         # Android build system, value 1).
         'android_build_type%': 0,
 
+        # Sets whether chrome is built for google tv device.
+        'google_tv%': 0,
+
         'conditions': [
           # Set default value of toolkit_views based on OS.
           ['OS=="win" or chromeos==1 or use_aura==1', {
@@ -167,6 +170,7 @@
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_touch_ui%': '<(enable_touch_ui)',
       'android_build_type%': '<(android_build_type)',
+      'google_tv%': '<(google_tv)',
       'enable_app_list%': '<(enable_app_list)',
       'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
@@ -540,7 +544,7 @@
           'enable_plugin_installation%': 1,
         }],
 
-        ['OS=="android" or OS=="ios"', {
+        ['(OS=="android" and google_tv!=1) or OS=="ios"', {
           'enable_plugins%': 0,
         }, {
           'enable_plugins%': 1,
@@ -732,6 +736,7 @@
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
     'android_build_type%': '<(android_build_type)',
+    'google_tv%': '<(google_tv)',
     'enable_app_list%': '<(enable_app_list)',
     'enable_message_center%': '<(enable_message_center)',
     'use_default_render_theme%': '<(use_default_render_theme)',
@@ -1691,6 +1696,9 @@
       }],
       ['chromeos==1', {
         'defines': ['OS_CHROMEOS=1'],
+      }],
+      ['google_tv==1', {
+        'defines': ['GOOGLE_TV=1'],
       }],
       ['use_xi2_mt!=0', {
         'defines': ['USE_XI2_MT=<(use_xi2_mt)'],
