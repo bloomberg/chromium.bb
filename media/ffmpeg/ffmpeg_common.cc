@@ -261,6 +261,31 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
+ChannelLayout OpusChannelCountToChromeChannelLayout(int channels) {
+  switch (channels) {
+    case 1:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_MONO, channels);
+    case 2:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_STEREO, channels);
+    case 3:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_SURROUND,
+                                                channels);
+    case 4:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_QUAD, channels);
+    case 5:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_5POINT0, channels);
+    case 6:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_5POINT1, channels);
+    case 7:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_6POINT1, channels);
+    case 8:
+      return ChannelLayoutToChromeChannelLayout(AV_CH_LAYOUT_7POINT1, channels);
+    default:
+      LOG(ERROR) << "Unsupported Opus channel count: " << channels;
+  }
+  return CHANNEL_LAYOUT_UNSUPPORTED;
+}
+
 void AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
     AudioDecoderConfig* config) {
@@ -271,16 +296,20 @@ void AVCodecContextToAudioDecoderConfig(
   SampleFormat sample_format =
       AVSampleFormatToSampleFormat(codec_context->sample_fmt);
 
-  if (codec == kCodecOpus) {
-    // TODO(tomfinegan): |sample_fmt| in |codec_context| is -1... because
-    // libopusdec.c isn't built into ffmpegsumo...? Maybe it's not *that* big
-    // a deal since libopus will produce either float or S16 samples, and
-    // OpusAudioDecoder is the only provider of Opus support.
-    sample_format = kSampleFormatS16;
-  }
-
   ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
       codec_context->channel_layout, codec_context->channels);
+
+  if (codec == kCodecOpus) {
+    // |channel_layout| and |sample_fmt| in |codec_context| are not set by
+    // FFmpeg. This happens because Opus is not enabled in ffmpegsumo. This is
+    // not that big a deal, because:
+    // 1. OpusAudioDecoder always uses signed 16 bit samples, and...
+    // 2. OpusAudioDecoder outputs audio using the same channel order as FFmpeg.
+    sample_format = kSampleFormatS16;
+    channel_layout =
+        OpusChannelCountToChromeChannelLayout(codec_context->channels);
+  }
+
   config->Initialize(codec,
                      sample_format,
                      channel_layout,

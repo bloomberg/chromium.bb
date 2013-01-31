@@ -42,8 +42,8 @@ static inline bool IsEndOfStream(int decoded_size,
 // http://tools.ietf.org/html/rfc6716
 
 // Opus uses Vorbis channel mapping, and Vorbis channel mapping specifies
-// mappings for up to 8 channels. See section 4.3.9 of the vorbis
-// specification:
+// mappings for up to 8 channels. This information is part of the Vorbis I
+// Specification:
 // http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html
 static const int kMaxVorbisChannels = 8;
 
@@ -65,20 +65,62 @@ static void RemapOpusChannelLayout(const uint8* opus_mapping,
   // Opus uses Vorbis channel layout.
   const int32 num_layouts = kMaxVorbisChannels;
   const int32 num_layout_values = kMaxVorbisChannels;
-  const uint8 kVorbisChannelLayouts[num_layouts][num_layout_values] = {
+
+  // Vorbis channel ordering for streams with >= 2 channels:
+  // 2 Channels
+  //   L, R
+  // 3 Channels
+  //   L, Center, R
+  // 4 Channels
+  //   Front L, Front R, Back L, Back R
+  // 5 Channels
+  //   Front L, Center, Front R, Back L, Back R
+  // 6 Channels (5.1)
+  //   Front L, Center, Front R, Back L, Back R, LFE
+  // 7 channels (6.1)
+  //   Front L, Front Center, Front R, Side L, Side R, Back Center, LFE
+  // 8 Channels (7.1)
+  //   Front L, Center, Front R, Side L, Side R, Back L, Back R, LFE
+  //
+  // Channel ordering information is taken from section 4.3.9 of the Vorbis I
+  // Specification:
+  // http://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-800004.3.9
+
+  // These are the FFmpeg channel layouts expressed using the position of each
+  // channel in the output stream from libopus.
+  const uint8 kFFmpegChannelLayouts[num_layouts][num_layout_values] = {
     { 0 },
+
+    // Stereo: No reorder.
     { 0, 1 },
+
+    // 3 Channels, from Vorbis order to:
+    //  L, R, Center
     { 0, 2, 1 },
+
+    // 4 Channels: No reorder.
     { 0, 1, 2, 3 },
+
+    // 5 Channels, from Vorbis order to:
+    //  Front L, Front R, Center, Back L, Back R
     { 0, 2, 1, 3, 4 },
+
+    // 6 Channels (5.1), from Vorbis order to:
+    //  Front L, Front R, Center, LFE, Back L, Back R
     { 0, 2, 1, 5, 3, 4 },
-    { 0, 2, 1, 6, 5, 3, 4 },
+
+    // 7 Channels (6.1), from Vorbis order to:
+    //  Front L, Front R, Front Center, LFE, Side L, Side R, Back Center
+    { 0, 2, 1, 6, 3, 4, 5 },
+
+    // 8 Channels (7.1), from Vorbis order to:
+    //  Front L, Front R, Center, LFE, Back L, Back R, Side L, Side R
     { 0, 2, 1, 7, 5, 6, 3, 4 },
   };
 
   // Reorder the channels to produce the same ordering as FFmpeg, which is
   // what the pipeline expects.
-  const uint8* vorbis_layout_offset = kVorbisChannelLayouts[num_channels - 1];
+  const uint8* vorbis_layout_offset = kFFmpegChannelLayouts[num_channels - 1];
   for (int channel = 0; channel < num_channels; ++channel)
     channel_layout[channel] = opus_mapping[vorbis_layout_offset[channel]];
 }
