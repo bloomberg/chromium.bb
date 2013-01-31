@@ -8,6 +8,7 @@
 # AddressSanitizer can not provide additional info.
 #    #0 0x7f62d3d34cf0 in ?? ??:0
 #    #1 0x1fec5c261c15ff
+crbug.com/145940 [ Linux ] fast/loader/loadInProgress.html [ Skip ]
 crbug.com/145940 [ Linux ] fast/replaced/border-radius-clip.html [ Skip ]
 crbug.com/145940 [ Linux ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Skip ]
 crbug.com/145940 [ Linux ] plugins/iframe-shims.html [ Skip ]
@@ -25,6 +26,7 @@ crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
 # WRITE of size 1 at 0x7f48e8a05a58 thread T0
 #    #0 0x7f48eb06f7c5 in DocumentOpenInDestroyStream::NPP_DestroyStream
 crbug.com/166932 [ Linux ] plugins/embed-attributes-setting.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/embed-attributes-style.html [ Skip ]
 
 
 # NULL deref in HandleURLRequestInternal, http://crbug.com/142301
