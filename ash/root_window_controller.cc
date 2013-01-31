@@ -487,6 +487,8 @@ void RootWindowController::ShowContextMenu(
   DCHECK(Shell::GetInstance()->delegate());
   scoped_ptr<ui::MenuModel> menu_model(
       Shell::GetInstance()->delegate()->CreateContextMenu(target));
+  if (!menu_model.get())
+    return;
 
   views::MenuModelAdapter menu_model_adapter(menu_model.get());
   views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());

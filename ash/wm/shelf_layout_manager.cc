@@ -247,15 +247,42 @@ void ShelfLayoutManager::LayoutShelf() {
   UpdateHitTestBounds();
 }
 
+ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
+  switch(auto_hide_behavior_) {
+    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      return SHELF_AUTO_HIDE;
+    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      return SHELF_VISIBLE;
+    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+      return SHELF_HIDDEN;
+  }
+  return SHELF_VISIBLE;
+}
+
+ShelfVisibilityState
+ShelfLayoutManager::CalculateShelfVisibilityWhileDragging() {
+  switch(auto_hide_behavior_) {
+    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      return SHELF_AUTO_HIDE;
+    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+      return SHELF_HIDDEN;
+  }
+  return SHELF_VISIBLE;
+}
+
 void ShelfLayoutManager::UpdateVisibilityState() {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (delegate && delegate->IsScreenLocked()) {
     SetState(SHELF_VISIBLE);
   } else if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS) {
-    SetState(SHELF_AUTO_HIDE);
+    // TODO(zelidrag): Verify shelf drag animation still shows on the device
+    // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
+    SetState(CalculateShelfVisibilityWhileDragging());
   } else if (GetRootWindowController(root_window_)->IsImmersiveMode()) {
     // The user choosing immersive mode indicates he or she wants to maximize
     // screen real-estate for content, so always auto-hide the shelf.
+    DCHECK_NE(auto_hide_behavior_, SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
     SetState(SHELF_AUTO_HIDE);
   } else {
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
@@ -265,14 +292,12 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         break;
 
       case WORKSPACE_WINDOW_STATE_MAXIMIZED:
-          SetState(auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
-                   SHELF_AUTO_HIDE : SHELF_VISIBLE);
+        SetState(CalculateShelfVisibility());
         break;
 
       case WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case WORKSPACE_WINDOW_STATE_DEFAULT:
-        SetState(auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
-                 SHELF_AUTO_HIDE : SHELF_VISIBLE);
+        SetState(CalculateShelfVisibility());
         SetWindowOverlapsShelf(window_state ==
                                WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
         break;

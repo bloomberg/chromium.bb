@@ -12,6 +12,7 @@
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -584,6 +585,10 @@ double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::RootWindow* root) {
   DCHECK(launcher_delegate_);
+  // Don't show context menu for exclusive app runtime mode.
+  if (chrome::IsRunningInAppMode())
+    return NULL;
+
   return new LauncherContextMenu(launcher_delegate_, root);
 }
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
@@ -377,11 +378,11 @@ GURL FullscreenController::GetFullscreenExitBubbleURL() const {
 
 FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
     const {
-  // In kiosk mode we always want to be fullscreen and do not want to show
-  // exit instructions for browser mode fullscreen.
-  bool kiosk = false;
-#if !defined(OS_MACOSX)  // Kiosk mode not available on Mac.
-  kiosk = CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+  // In kiosk and exclusive app mode we always want to be fullscreen and do not
+  // want to show exit instructions for browser mode fullscreen.
+  bool app_mode = false;
+#if !defined(OS_MACOSX)  // App mode (kiosk) is not available on Mac yet.
+  app_mode = chrome::IsRunningInAppMode();
 #endif
 
   if (mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY) {
@@ -412,7 +413,7 @@ FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
     } else {
       if (!extension_caused_fullscreen_.is_empty()) {
         return FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
-      } else if (toggled_into_fullscreen_ && !kiosk) {
+      } else if (toggled_into_fullscreen_ && !app_mode) {
         return FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
       } else {
         return FEB_TYPE_NONE;
@@ -506,8 +507,7 @@ void FullscreenController::ToggleFullscreenModeInternal(
 
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) &&
-      window_->IsFullscreen())
+  if (chrome::IsRunningInAppMode() && window_->IsFullscreen())
     return;
 
   if (enter_fullscreen)

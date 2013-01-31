@@ -15,6 +15,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -2279,9 +2280,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen) {
-    bool is_kiosk =
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-    if (!is_kiosk && type != FOR_METRO) {
+    if (!chrome::IsRunningInAppMode() && type != FOR_METRO) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
           GetWidget(), browser_.get(), url, bubble_type));
     }

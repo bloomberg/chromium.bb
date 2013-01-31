@@ -29,6 +29,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -2071,9 +2072,10 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
-  // In kiosk mode, we want to always hide the status bubble.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+  // In kiosk and exclusive app mode, we want to always hide the status bubble.
+  if (chrome::IsRunningInAppMode())
     return NULL;
+
   return window_ ? window_->GetStatusBubble() : NULL;
 }
 

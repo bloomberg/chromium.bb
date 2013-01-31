@@ -20,6 +20,9 @@ enum ShelfAutoHideBehavior {
 
   // Never auto-hide.
   SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+
+  // Always hide.
+  SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
 };
 
 enum ShelfVisibilityState {

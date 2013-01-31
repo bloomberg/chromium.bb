@@ -690,9 +690,13 @@ const char kFeedbackServer[]                = "feedback-server";
 // handled gracefully.
 const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 
+// Forces application mode. This hides certain system UI elements and forces
+// the app to be installed if it hasn't been already.
+const char kForceAppMode[]                  = "force-app-mode";
+
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
-const char kForceFirstRun[]                      = "force-first-run";
+const char kForceFirstRun[]                 = "force-first-run";
 
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
