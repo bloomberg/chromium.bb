@@ -1491,6 +1491,9 @@ def CommandSelLdrTestNacl(env, name, nexe,
 
   command = loader_cmd + sel_ldr_flags + ['--'] + command
 
+  if env.Bit('host_linux'):
+    extra['using_nacl_signal_handler'] = True
+
   if env.ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
@@ -1519,7 +1522,7 @@ TEST_TIME_THRESHOLD = {
     }
 
 # Valgrind handles SIGSEGV in a way our testing tools do not expect.
-UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigabrt',
+UNSUPPORTED_VALGRIND_EXIT_STATUS = ['trusted_sigabrt',
                                     'untrusted_sigill' ,
                                     'untrusted_segfault',
                                     'untrusted_sigsegv_or_equivalent',

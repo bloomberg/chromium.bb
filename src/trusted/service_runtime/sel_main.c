@@ -469,7 +469,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     state.attach_debug_exception_handler_func =
         NaClDebugExceptionHandlerStandaloneAttach;
 #elif NACL_LINUX
-    handle_signals = 1;
+    /* NaCl's signal handler is always enabled on Linux. */
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
       fprintf(stderr, "ERROR setting up Mach exception interception.\n");
@@ -479,7 +479,9 @@ int NaClSelLdrMain(int argc, char **argv) {
 # error Unknown host OS
 #endif
   }
-
+  if (NACL_LINUX) {
+    handle_signals = 1;
+  }
 
   errcode = LOAD_OK;
 
@@ -516,9 +518,6 @@ int NaClSelLdrMain(int argc, char **argv) {
               NaClErrorString(errcode));
     }
   }
-
-  /* Sanity check. */
-  NaClSignalAssertNoHandlers();
 
   if (handle_signals) {
     NaClSignalHandlerInit();

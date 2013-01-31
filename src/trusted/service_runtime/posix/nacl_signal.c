@@ -52,7 +52,9 @@ static int s_Signals[] = {
 # endif
   NACL_THREAD_SUSPEND_SIGNAL,
 #endif
-  SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV
+  SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV,
+  /* Handle SIGABRT in case someone sends it asynchronously using kill(). */
+  SIGABRT
 };
 
 static struct sigaction s_OldActions[NACL_ARRAY_SIZE_UNSAFE(s_Signals)];
@@ -359,9 +361,71 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 }
 
 
+/*
+ * Check that the current process has no signal handlers registered
+ * that we won't override with safe handlers.
+ *
+ * We want to discourage Chrome or libraries from registering signal
+ * handlers themselves, because those signal handlers are often not
+ * safe when triggered from untrusted code.  For background, see:
+ * http://code.google.com/p/nativeclient/issues/detail?id=1607
+ */
+static void AssertNoOtherSignalHandlers(void) {
+  unsigned int index;
+  int signum;
+  char handled_by_nacl[NSIG];
+
+  /* 0 is not a valid signal number. */
+  for (signum = 1; signum < NSIG; signum++) {
+    handled_by_nacl[signum] = 0;
+  }
+  for (index = 0; index < NACL_ARRAY_SIZE(s_Signals); index++) {
+    signum = s_Signals[index];
+    CHECK(signum > 0);
+    CHECK(signum < NSIG);
+    handled_by_nacl[signum] = 1;
+  }
+  for (signum = 1; signum < NSIG; signum++) {
+    struct sigaction sa;
+
+    if (handled_by_nacl[signum])
+      continue;
+
+    if (sigaction(signum, NULL, &sa) != 0) {
+      /*
+       * Don't complain if the kernel does not consider signum to be a
+       * valid signal number, which produces EINVAL.
+       */
+      if (errno != EINVAL) {
+        NaClLog(LOG_FATAL, "NaClSignalHandlerInitPlatform: "
+                "sigaction() call failed for signal %d: errno=%d\n",
+                signum, errno);
+      }
+    } else {
+      if ((sa.sa_flags & SA_SIGINFO) == 0) {
+        if (sa.sa_handler == SIG_DFL || sa.sa_handler == SIG_IGN)
+          continue;
+      } else {
+        /*
+         * It is not strictly legal for sa_sigaction to contain NULL
+         * or SIG_IGN, but Valgrind reports SIG_IGN for signal 64, so
+         * we allow it here.
+         */
+        if (sa.sa_sigaction == NULL ||
+            sa.sa_sigaction == (void (*)(int, siginfo_t *, void *)) SIG_IGN)
+          continue;
+      }
+      NaClLog(LOG_FATAL, "NaClSignalHandlerInitPlatform: "
+              "A signal handler is registered for signal %d\n", signum);
+    }
+  }
+}
+
 void NaClSignalHandlerInitPlatform(void) {
   struct sigaction sa;
   unsigned int a;
+
+  AssertNoOtherSignalHandlers();
 
   memset(&sa, 0, sizeof(sa));
   sigemptyset(&sa.sa_mask);
@@ -399,32 +463,6 @@ void NaClSignalHandlerFiniPlatform(void) {
     if (sigaction(s_Signals[a], &s_OldActions[a], NULL) != 0) {
       NaClLog(LOG_FATAL, "Failed to unregister handler for %d.\n\tERR:%s\n",
                           s_Signals[a], strerror(errno));
-    }
-  }
-}
-
-/*
- * Check that signal handlers are not registered.  We want to
- * discourage Chrome or libraries from registering signal handlers
- * themselves, because those signal handlers are often not safe when
- * triggered from untrusted code.  For background, see:
- * http://code.google.com/p/nativeclient/issues/detail?id=1607
- */
-void NaClSignalAssertNoHandlers(void) {
-  unsigned int index;
-  for (index = 0; index < NACL_ARRAY_SIZE(s_Signals); index++) {
-    int signum = s_Signals[index];
-    struct sigaction sa;
-    if (sigaction(signum, NULL, &sa) != 0) {
-      NaClLog(LOG_FATAL, "NaClSignalAssertNoHandlers: "
-              "sigaction() call failed\n");
-    }
-    if ((sa.sa_flags & SA_SIGINFO) != 0
-        ? sa.sa_sigaction != NULL
-        : (sa.sa_handler != SIG_DFL && sa.sa_handler != SIG_IGN)) {
-      NaClLog(LOG_FATAL, "NaClSignalAssertNoHandlers: "
-              "A signal handler is registered for signal %d.  "
-              "Did Breakpad register this?\n", signum);
     }
   }
 }

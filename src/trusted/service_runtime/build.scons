@@ -965,7 +965,7 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   if env.Bit('coverage_enabled'):
     expected_exit_status = 'naclabort_coverage'
   else:
-    expected_exit_status = 'sigabrt'
+    expected_exit_status = 'trusted_sigabrt'
   node = env.CommandTest(
       'sel_ldr_thread_death_test.out',
       command=[sel_ldr_thread_death_test_exe],
@@ -994,7 +994,7 @@ exe = env.ComponentProgram('nacl_error_log_test',
 if env.Bit('coverage_enabled'):
   expected_exit = 'naclabort_coverage'
 else:
-  expected_exit = 'sigabrt'
+  expected_exit = 'trusted_sigabrt'
 
 node = env.CommandTest(
   'nacl_error_log_test.out',

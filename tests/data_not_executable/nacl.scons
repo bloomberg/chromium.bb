@@ -21,4 +21,9 @@ node = prog_env.CommandSelLdrTestNacl(
     'execute_data.out', nexe, declares_exit_status=True)
 
 prog_env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
-                            'run_execute_data_test')
+                            'run_execute_data_test',
+                            # This test hangs on qemu-arm when the
+                            # fault is caught by NaCl's signal
+                            # handler.
+                            is_broken=(env.Bit('target_arm') and
+                                       env.UsingEmulator()))

@@ -20,7 +20,7 @@ trusted_env = env.get('TRUSTED_ENV')
 if trusted_env is not None and trusted_env.Bit('coverage_enabled'):
   expected_exit = 'naclabort_coverage'
 else:
-  expected_exit = 'sigabrt'
+  expected_exit = 'trusted_sigabrt'
 
 node = env.CommandSelLdrTestNacl('mmap_race_socketpair_test.out',
                                  mmap_race_nexe,

@@ -204,7 +204,7 @@ win64_exit_via_ntdll_patch = [
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
 # SIGSEGV, except for actual x86 segmentation violations.
 status_map = {
-    'sigabrt' : {
+    'trusted_sigabrt' : {
         'linux2': [-6], # SIGABRT
         'darwin': [-6], # SIGABRT
         # On Windows, NaClAbort() exits using the HLT instruction.

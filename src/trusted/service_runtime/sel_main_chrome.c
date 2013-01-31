@@ -220,27 +220,11 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 #endif
   NaClSignalTestCrashOnStartup();
 
-  /*
-   * Check that Chrome did not register any signal handlers, because
-   * these are not always safe.
-   *
-   * This check is disabled for Mac OS X because it currently does not
-   * pass there in Chromium, which registers a handler for at least
-   * SIGILL (signal 4).  Luckily, OS X restores %gs when entering a
-   * signal handler, so there should not be a vulnerability.
-   * TODO(mseaborn): However, we should reinstate the check for Mac to
-   * be on the safe side.
-   */
-  if (!NACL_OSX) {
-    NACL_FI_FATAL("NaClSignalAssertNoHandlers");
-    NaClSignalAssertNoHandlers();
-  }
-
   nap->enable_exception_handling = args->enable_exception_handling;
 
   if (args->enable_exception_handling || args->enable_debug_stub) {
 #if NACL_LINUX
-    NaClSignalHandlerInit();
+    /* NaCl's signal handler is always enabled on Linux. */
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
       NaClLog(LOG_FATAL, "NaClChromeMainStart: "
@@ -253,6 +237,9 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 # error Unknown host OS
 #endif
   }
+#if NACL_LINUX
+  NaClSignalHandlerInit();
+#endif
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(&state);

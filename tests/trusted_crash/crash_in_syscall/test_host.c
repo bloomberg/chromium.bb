@@ -189,7 +189,7 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exc_info) {
     fprintf(stderr, "** intended_exit_status=%i\n", STATUS_ACCESS_VIOLATION);
   } else if (strcmp(g_crash_type, "NACL_TEST_CRASH_LOG_FATAL") == 0 ||
              strcmp(g_crash_type, "NACL_TEST_CRASH_CHECK_FAILURE") == 0) {
-    fprintf(stderr, "** intended_exit_status=sigabrt\n");
+    fprintf(stderr, "** intended_exit_status=trusted_sigabrt\n");
   } else {
     NaClLog(LOG_FATAL, "Unknown crash type: \"%s\"\n", g_crash_type);
   }

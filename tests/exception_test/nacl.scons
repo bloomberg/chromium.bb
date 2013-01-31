@@ -6,8 +6,7 @@
 Import('env')
 
 test_args = {'sel_ldr_flags': ['-e', '-E', 'OUTSIDE_BROWSER=1'],
-             'declares_exit_status': True,
-             'using_nacl_signal_handler': env.Bit('host_linux')}
+             'declares_exit_status': True}
 if env.Bit('target_arm') and env.UsingEmulator():
   test_args['sel_ldr_flags'].extend(['-E', 'UNDER_QEMU_ARM=1'])
 
