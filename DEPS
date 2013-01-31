@@ -326,7 +326,7 @@ deps = {
     "/trunk/deps/third_party/opus@173498",
 
   "src/third_party/accessibility-developer-tools":
-    Var("chromium_git") + "/external/accessibility-developer-tools.git@e2a7557c79da617d0c06d6e96ada803b8b4b3ece",
+    Var("chromium_git") + "/external/accessibility-developer-tools.git@ad5df9a5341d38778658c90e4aa241c4ebe4e8aa",
 
   "src/webkit/media/crypto/ppapi/cdm":
     "/trunk/deps/cdm@173055",

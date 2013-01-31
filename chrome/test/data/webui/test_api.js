@@ -144,33 +144,18 @@ var testing = {};
     accessibilityIssuesAreErrors: false,
 
     /**
-     * Holds any accessibility errors found during the accessibility audit.
-     * @type {Array.<string>}
+     * Holds any accessibility results found during the accessibility audit.
+     * @type {Array.<Object>}
      */
-    a11yErrors_: [],
-
-    /**
-     * Holds any accessibility warnings found during the accessibility audit.
-     * @type {Array.<string>}
-     */
-    a11yWarnings_: [],
+    a11yResults_: [],
 
     /**
      * Gets the list of accessibility errors found during the accessibility
      * audit. Only for use in testing.
-     * @return {Array.<string>}
+     * @return {Array.<Object>}
      */
-    getAccessibilityErrors: function() {
-      return this.a11yErrors_;
-    },
-
-    /**
-     * Gets the list of accessibility warnings found during the accessibility
-     * audit. Only for use in testing.
-     * @return {Array.<string>}
-     */
-    getAccessibilityWarnings: function() {
-      return this.a11yWarnings_;
+    getAccessibilityResults: function() {
+      return this.a11yResults_;
     },
 
     /**
@@ -251,10 +236,9 @@ var testing = {};
       if (!this.runAccessibilityChecks || typeof document === 'undefined')
         return;
 
-      if (!runAccessibilityAudit(this.a11yErrors_, this.a11yWarnings_,
+      if (!runAccessibilityAudit(this.a11yResults_,
                                  this.accessibilityAuditConfig)) {
-        var report = accessibilityAuditReport(this.a11yErrors_,
-                                              this.a11yWarnings_);
+        var report = accessibilityAuditReport(this.a11yResults_);
         if (this.accessibilityIssuesAreErrors)
           throw new Error(report);
         else
@@ -890,111 +874,52 @@ var testing = {};
   /**
    * Run an accessibility audit on the current page state.
    * @type {Function}
-   * @param {Array} a11yErrors
-   * @param {Array} a11yWarnings
+   * @param {Array} a11yResults
    * @param {axs.AuditConfigutarion=} opt_config
    * @return {boolean} Whether there were any errors or warnings
    * @private
    */
-  function runAccessibilityAudit(a11yErrors, a11yWarnings, opt_config) {
+  function runAccessibilityAudit(a11yResults, opt_config) {
     var auditResults = axs.Audit.run(opt_config);
     for (var i = 0; i < auditResults.length; i++) {
       var auditResult = auditResults[i];
       if (auditResult.result == axs.constants.AuditResult.FAIL) {
         var auditRule = auditResult.rule;
         // TODO(aboxhall): more useful error messages (sadly non-trivial)
-        if (auditRule.severity == axs.constants.Severity.Severe)
-          a11yErrors.push(accessibilityErrorMessage(auditRule, auditResult));
-        else
-          a11yWarnings.push(accessibilityErrorMessage(auditRule, auditResult));
+        a11yResults.push(auditResult);
       }
     }
 
     // TODO(aboxhall): have strict (no errors or warnings) vs non-strict
     // (warnings ok)
     // TODO(aboxhall): some kind of info logging for warnings only??
-    return (a11yErrors.length == 0 && a11yWarnings.length == 0);
+    return (a11yResults.length == 0);
   }
 
   /**
-   * Concatenates the accessibility error messages in |a11yErrors| and
+   * Concatenates the accessibility error messages for each result in
+   * |a11yResults| and
    * |a11yWarnings| in to an accessibility report, appends it to the given
    * |message| and returns the resulting message string.
-   * @param {Array.<string>} a11yErrors The list of accessibility error messages
-   * @param {Array.<string>} a11yWarnings The list of accessibility warning
-   *     messages.
+   * @param {Array.<string>} a11yResults The list of accessibility results
    * @return {string} |message| + accessibility report.
    */
-  function accessibilityAuditReport(a11yErrors, a11yWarnings, message) {
-    message = message ? message + '\n' : '';
-    message += '\n*** Begin accessibility audit results ***';
-    message += '\nAn accessibility audit found ';
-
-    if (a11yErrors.length > 0) {
-      message += a11yErrors.length +
-        (a11yErrors.length == 1 ? ' error ' : ' errors ');
-      if (a11yWarnings.length > 0)
-        message += 'and ';
-    }
-    if (a11yWarnings.length > 0) {
-      message += a11yWarnings.length +
-        (a11yWarnings.length == 1 ? ' warning ' : ' warnings ');
-    }
-    message += 'on this page.\n';
-    message += 'For more information, please see ' +
-      'http://chromium.org/developers/accessibility/webui-accessibility-audit';
-
-    for (var i = 0; i < a11yErrors.length; i++)
-      message += '\n\n' + a11yErrors[i];
-
-    for (var i = 0; i < a11yWarnings.length; i++)
-      message += '\n\n' + a11yWarnings[i];
-    message += '\n*** End accessibility audit results ***';
-    return message;
-  }
-
-  /**
-   * Creates an error message for a given accessibility audit rule and
-   * corresponding result.
-   * @param {axs.AuditRule} rule The audit rule which the result is for
-   * @param {Object.<string, (string|Array.<Element>)>} result The result
-   *     object returned from the audit.
-   * @return {string} An error message describing the failure and listing
-   *     up to five elements which failed the audit rule.
-   */
-  function accessibilityErrorMessage(rule, result) {
-    if (rule.severity == axs.constants.Severity.Severe)
-      var message = 'Error: '
-    else
-      var message = 'Warning: '
-    message += rule.name + ' failed on the following ' +
-      (result.elements.length == 1 ? 'element' : 'elements');
-
-    if (result.elements.length == 1)
-      message += ':'
-    else {
-      message += ' (1 - ' + Math.min(5, result.elements.length) +
-                 ' of ' + result.elements.length + '):';
-    }
-
-    var maxElements = Math.min(result.elements.length, 5);
-    for (var i = 0; i < maxElements; i++)
-      message += '\n' + axs.utils.getQuerySelectorText(result.elements[i]);
+  function accessibilityAuditReport(a11yResults, message) {
+    message = message ? message + '\n\n' : '\n';
+    message += axs.Audit.createReport(a11yResults);
     return message;
   }
 
   /**
    * Asserts that the current page state passes the accessibility audit.
-   * @param {Array=} opt_errors Array to fill with errors, if desired.
-   * @param {Array=} opt_warnings Array to fill with warnings, if desired.
+   * @param {Array=} opt_results Array to fill with results, if desired.
    */
-  function assertAccessibilityOk(opt_errors, opt_warnings) {
+  function assertAccessibilityOk(opt_results) {
     helper.registerCall();
-    var a11yErrors = opt_errors || [];
-    var a11yWarnings = opt_warnings || [];
+    var a11yResults = opt_results || [];
     var auditConfig = currentTestCase.fixture.accessibilityAuditConfig;
-    if (!runAccessibilityAudit(a11yErrors, a11yWarnings, auditConfig))
-      throw new Error(accessibilityAuditReport(a11yErrors, a11yWarnings));
+    if (!runAccessibilityAudit(a11yResults, auditConfig))
+      throw new Error(accessibilityAuditReport(a11yResults));
   }
 
   /**

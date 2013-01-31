@@ -41,11 +41,21 @@ WebUIAccessibilityAuditBrowserTest.prototype = {
   isAsync: false,
 
   tearDown: function() {
+    var accessibilityResults = this.getAccessibilityResults();
+    var numAccessibilityErrors = 0;
+    var numAccessibilityWarnings = 0;
+    for (var i = 0; i < accessibilityResults.length; i++) {
+      var result = accessibilityResults[i];
+      if (result.rule.severity == axs.constants.Severity.Warning)
+        numAccessibilityWarnings++;
+      else
+        numAccessibilityErrors++;
+    }
+
     if (this.expectedErrors != null)
-      expectEquals(this.expectedErrors, this.getAccessibilityErrors().length);
+      expectEquals(this.expectedErrors, numAccessibilityErrors);
     if (this.expectedWarnings != null) {
-      expectEquals(this.expectedWarnings,
-                   this.getAccessibilityWarnings().length);
+      expectEquals(this.expectedWarnings, numAccessibilityWarnings);
     }
     testing.Test.prototype.tearDown.call(this);
   }
@@ -139,6 +149,8 @@ function expectAuditWillRun(times) {
     willArgs.push(callFunction(realAudit.run));
   expectedInvocation.will.apply(expectedInvocation, willArgs);
   axs.Audit = audit.proxy();
+  axs.Audit.createReport = realAudit.createReport;
+  axs.Audit.accessibilityErrorMessage = realAudit.accessibilityErrorMessage;
 }
 
 // Test that an audit failure causes a test failure, if both
@@ -337,26 +349,24 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
   this.disableAccessibilityChecks();
 
   addAuditFailures();
-  var accessibilityErrors = [];
-  var accessibilityWarnings = [];
+  var accessibilityResults = [];
   try {
-    assertAccessibilityOk(accessibilityErrors, accessibilityWarnings);
+    assertAccessibilityOk(accessibilityResults);
   } catch (e) {
     // Expected error from assertion
   }
-  expectEquals(2, accessibilityErrors.length);
-  expectEquals(1, accessibilityWarnings.length);
+  expectEquals(3, accessibilityResults.length);
 
-  accessibilityErrors.length = 0;
-  accessibilityWarnings.length = 0;
+  accessibilityResults.length = 0;
 
   this.accessibilityAuditConfig.ignoreSelectors('lowContrastElements', 'P');
   try {
-    assertAccessibilityOk(accessibilityErrors, accessibilityWarnings);
+    assertAccessibilityOk(accessibilityResults);
   } catch (e) {
     // Expected error from assertion
   }
-  expectEquals(2, accessibilityErrors.length);
-  // lowContrastElements should pass as the failing element is ignored.
-  expectEquals(0, accessibilityWarnings.length);
+  expectEquals(2, accessibilityResults.length);
+  for (var i = 0; i < accessibilityResults.length; i++) {
+    expectFalse(accessibilityResults[i].rule.name == 'lowContrastElements');
+  }
 });
