@@ -55,6 +55,9 @@ class SkBitmap;
 ///////////////////////////////////////////////////////////////////////////////
 class UI_EXPORT IconUtil {
  public:
+  // The size of the large icon entries in .ico files on Windows Vista+.
+  static const int kLargeIconSize = 256;
+
   // Given an SkBitmap object, the function converts the bitmap to a Windows
   // icon and returns the corresponding HICON handle. If the function cannot
   // convert the bitmap, NULL is returned.

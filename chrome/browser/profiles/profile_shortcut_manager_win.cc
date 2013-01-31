@@ -26,11 +26,14 @@
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
 
@@ -48,9 +51,85 @@ const char16 kReservedCharacters[] = L"<>:\"/\\|?*\x01\x02\x03\x04\x05\x06\x07"
 // differently than it was when a shortcut was originally created.
 const int kMaxProfileShortcutFileNameLength = 64;
 
-const int kProfileAvatarShortcutBadgeWidth = 28;
-const int kProfileAvatarShortcutBadgeHeight = 28;
+const int kProfileAvatarBadgeSize = 28;
 const int kShortcutIconSize = 48;
+
+// 2x sized profile avatar icons. Mirrors |kDefaultAvatarIconResources| in
+// profile_info_cache.cc.
+const int kProfileAvatarIconResources2x[] = {
+  IDR_PROFILE_AVATAR_2X_0,
+  IDR_PROFILE_AVATAR_2X_1,
+  IDR_PROFILE_AVATAR_2X_2,
+  IDR_PROFILE_AVATAR_2X_3,
+  IDR_PROFILE_AVATAR_2X_4,
+  IDR_PROFILE_AVATAR_2X_5,
+  IDR_PROFILE_AVATAR_2X_6,
+  IDR_PROFILE_AVATAR_2X_7,
+  IDR_PROFILE_AVATAR_2X_8,
+  IDR_PROFILE_AVATAR_2X_9,
+  IDR_PROFILE_AVATAR_2X_10,
+  IDR_PROFILE_AVATAR_2X_11,
+  IDR_PROFILE_AVATAR_2X_12,
+  IDR_PROFILE_AVATAR_2X_13,
+  IDR_PROFILE_AVATAR_2X_14,
+  IDR_PROFILE_AVATAR_2X_15,
+  IDR_PROFILE_AVATAR_2X_16,
+  IDR_PROFILE_AVATAR_2X_17,
+  IDR_PROFILE_AVATAR_2X_18,
+  IDR_PROFILE_AVATAR_2X_19,
+  IDR_PROFILE_AVATAR_2X_20,
+  IDR_PROFILE_AVATAR_2X_21,
+  IDR_PROFILE_AVATAR_2X_22,
+  IDR_PROFILE_AVATAR_2X_23,
+  IDR_PROFILE_AVATAR_2X_24,
+  IDR_PROFILE_AVATAR_2X_25,
+};
+
+// Badges |app_icon_bitmap| with |avatar_bitmap| at the bottom right corner and
+// returns the resulting SkBitmap.
+SkBitmap BadgeIcon(const SkBitmap& app_icon_bitmap,
+                   const SkBitmap& avatar_bitmap,
+                   int scale_factor) {
+  // TODO(rlp): Share this chunk of code with
+  // avatar_menu_button::DrawTaskBarDecoration.
+  SkBitmap source_bitmap = avatar_bitmap;
+  if ((avatar_bitmap.width() == scale_factor * profiles::kAvatarIconWidth) &&
+      (avatar_bitmap.height() == scale_factor * profiles::kAvatarIconHeight)) {
+    // Shave a couple of columns so the bitmap is more square. So when
+    // resized to a square aspect ratio it looks pretty.
+    gfx::Rect frame(scale_factor * profiles::kAvatarIconWidth,
+                    scale_factor * profiles::kAvatarIconHeight);
+    frame.Inset(scale_factor * 2, 0, scale_factor * 2, 0);
+    avatar_bitmap.extractSubset(&source_bitmap, gfx::RectToSkIRect(frame));
+  } else {
+    NOTREACHED();
+  }
+  int avatar_badge_size = kProfileAvatarBadgeSize;
+  if (app_icon_bitmap.width() != kShortcutIconSize) {
+    avatar_badge_size =
+        app_icon_bitmap.width() * kProfileAvatarBadgeSize / kShortcutIconSize;
+  }
+  SkBitmap sk_icon = skia::ImageOperations::Resize(
+      source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, avatar_badge_size,
+      source_bitmap.height() * avatar_badge_size / source_bitmap.width());
+
+  // Overlay the avatar on the icon, anchoring it to the bottom-right of the
+  // icon.
+  scoped_ptr<SkCanvas> offscreen_canvas(
+      skia::CreateBitmapCanvas(app_icon_bitmap.width(),
+                               app_icon_bitmap.height(),
+                               false));
+  DCHECK(offscreen_canvas.get());
+  offscreen_canvas->drawBitmap(app_icon_bitmap, 0, 0);
+  offscreen_canvas->drawBitmap(sk_icon,
+                               app_icon_bitmap.width() - sk_icon.width(),
+                               app_icon_bitmap.height() - sk_icon.height());
+  const SkBitmap& badged_bitmap =
+      offscreen_canvas->getDevice()->accessBitmap(false);
+  SkBitmap badged_bitmap_copy;
+  badged_bitmap.deepCopyTo(&badged_bitmap_copy, badged_bitmap.getConfig());
+  return badged_bitmap_copy;
+}
 
 // Creates a desktop shortcut icon file (.ico) on the disk for a given profile,
 // badging the browser distribution icon with the profile avatar.
@@ -58,53 +137,25 @@ const int kShortcutIconSize = 48;
 // fails. Use index 0 when assigning the resulting file as the icon.
 FilePath CreateChromeDesktopShortcutIconForProfile(
     const FilePath& profile_path,
-    const SkBitmap& avatar_bitmap) {
+    const SkBitmap& avatar_bitmap_1x,
+    const SkBitmap& avatar_bitmap_2x) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<SkBitmap> app_icon_bitmap(GetAppIconForSize(kShortcutIconSize));
   if (!app_icon_bitmap.get())
     return FilePath();
 
-  // TODO(rlp): Share this chunk of code with
-  // avatar_menu_button::DrawTaskBarDecoration.
-  const SkBitmap* source_bitmap = NULL;
-  SkBitmap squarer_bitmap;
-  if ((avatar_bitmap.width() == profiles::kAvatarIconWidth) &&
-      (avatar_bitmap.height() == profiles::kAvatarIconHeight)) {
-    // Shave a couple of columns so the bitmap is more square. So when
-    // resized to a square aspect ratio it looks pretty.
-    int x = 2;
-    avatar_bitmap.extractSubset(&squarer_bitmap, SkIRect::MakeXYWH(x, 0,
-        profiles::kAvatarIconWidth - x * 2, profiles::kAvatarIconHeight));
-    source_bitmap = &squarer_bitmap;
-  } else {
-    source_bitmap = &avatar_bitmap;
-  }
-  SkBitmap sk_icon = skia::ImageOperations::Resize(
-      *source_bitmap,
-      skia::ImageOperations::RESIZE_LANCZOS3,
-      kProfileAvatarShortcutBadgeWidth,
-      kProfileAvatarShortcutBadgeHeight);
+  const SkBitmap badged_bitmap = BadgeIcon(*app_icon_bitmap,
+                                           avatar_bitmap_1x, 1);
 
-  // Overlay the avatar on the icon, anchoring it to the bottom-right of the
-  // icon.
-  scoped_ptr<SkCanvas> offscreen_canvas(
-      skia::CreateBitmapCanvas(app_icon_bitmap->width(),
-                               app_icon_bitmap->height(),
-                               false));
-  DCHECK(offscreen_canvas.get());
-  offscreen_canvas->drawBitmap(*app_icon_bitmap, 0, 0);
-  offscreen_canvas->drawBitmap(
-      sk_icon,
-      app_icon_bitmap->width() - kProfileAvatarShortcutBadgeWidth,
-      app_icon_bitmap->height() - kProfileAvatarShortcutBadgeHeight);
-  const SkBitmap& final_bitmap =
-      offscreen_canvas->getDevice()->accessBitmap(false);
+  SkBitmap large_badged_bitmap;
+  app_icon_bitmap = GetAppIconForSize(IconUtil::kLargeIconSize);
+  if (app_icon_bitmap.get())
+    large_badged_bitmap = BadgeIcon(*app_icon_bitmap, avatar_bitmap_2x, 2);
 
   // Finally, write the .ico file containing this new bitmap.
   const FilePath icon_path =
       profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
-  // TODO(asvitkine): Create icon with a large 256x256 bitmap.
-  if (!IconUtil::CreateIconFileFromSkBitmap(final_bitmap, SkBitmap(),
+  if (!IconUtil::CreateIconFileFromSkBitmap(badged_bitmap, large_badged_bitmap,
                                             icon_path))
     return FilePath();
 
@@ -242,7 +293,8 @@ void CreateOrUpdateDesktopShortcutsForProfile(
     const FilePath& profile_path,
     const string16& old_profile_name,
     const string16& profile_name,
-    const SkBitmap& avatar_image,
+    const SkBitmap& avatar_image_1x,
+    const SkBitmap& avatar_image_2x,
     ProfileShortcutManagerWin::CreateOrUpdateMode create_mode,
     ProfileShortcutManagerWin::NonProfileShortcutAction action) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -281,7 +333,9 @@ void CreateOrUpdateDesktopShortcutsForProfile(
   // non-profile Chrome shortcut.
   if (!profile_name.empty()) {
     const FilePath shortcut_icon =
-        CreateChromeDesktopShortcutIconForProfile(profile_path, avatar_image);
+        CreateChromeDesktopShortcutIconForProfile(profile_path,
+                                                  avatar_image_1x,
+                                                  avatar_image_2x);
     if (!shortcut_icon.empty())
       properties.set_icon(shortcut_icon, 0);
     properties.set_arguments(command_line);
@@ -429,6 +483,19 @@ string16 SanitizeShortcutProfileNameString(const string16& profile_name) {
   return sanitized;
 }
 
+// Returns a copied SkBitmap for the given resource id that can be safely passed
+// to another thread.
+SkBitmap GetImageResourceSkBitmapCopy(int resource_id) {
+  const gfx::Image image =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  DCHECK(!image.IsEmpty());
+
+  const SkBitmap* image_bitmap = image.ToSkBitmap();
+  SkBitmap bitmap_copy;
+  image_bitmap->deepCopyTo(&bitmap_copy, image_bitmap->getConfig());
+  return bitmap_copy;
+}
+
 }  // namespace
 
 namespace profiles {
@@ -470,6 +537,10 @@ ProfileShortcutManager* ProfileShortcutManager::Create(
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
+  DCHECK_EQ(
+      arraysize(kProfileAvatarIconResources2x),
+      profile_manager_->GetProfileInfoCache().GetDefaultAvatarIconCount());
+
   profile_manager_->GetProfileInfoCache().AddObserver(this);
 }
 
@@ -576,27 +647,25 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
   if (!remove_badging)
     new_shortcut_appended_name = cache->GetNameOfProfileAtIndex(profile_index);
 
-  SkBitmap profile_avatar_bitmap_copy;
+  SkBitmap avatar_bitmap_copy_1x;
+  SkBitmap avatar_bitmap_copy_2x;
   if (!remove_badging) {
-    size_t profile_icon_index =
+    const size_t icon_index =
         cache->GetAvatarIconIndexOfProfileAtIndex(profile_index);
-    gfx::Image profile_avatar_image = ResourceBundle::GetSharedInstance().
-        GetNativeImageNamed(
-            cache->GetDefaultAvatarIconResourceIDAtIndex(profile_icon_index));
-
-    DCHECK(!profile_avatar_image.IsEmpty());
-    const SkBitmap* profile_avatar_bitmap = profile_avatar_image.ToSkBitmap();
-    // Make a copy of the SkBitmap to ensure that we can safely use the image
+    const int resource_id_1x =
+        cache->GetDefaultAvatarIconResourceIDAtIndex(icon_index);
+    const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
+    // Make a copy of the SkBitmaps to ensure that we can safely use the image
     // data on the FILE thread.
-    profile_avatar_bitmap->deepCopyTo(&profile_avatar_bitmap_copy,
-                                      profile_avatar_bitmap->getConfig());
+    avatar_bitmap_copy_1x = GetImageResourceSkBitmapCopy(resource_id_1x);
+    avatar_bitmap_copy_2x = GetImageResourceSkBitmapCopy(resource_id_2x);
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateOrUpdateDesktopShortcutsForProfile,
-                 profile_path, old_shortcut_appended_name,
-                 new_shortcut_appended_name, profile_avatar_bitmap_copy,
-                 create_mode, action));
+      base::Bind(&CreateOrUpdateDesktopShortcutsForProfile, profile_path,
+                 old_shortcut_appended_name, new_shortcut_appended_name,
+                 avatar_bitmap_copy_1x, avatar_bitmap_copy_2x, create_mode,
+                 action));
 
   cache->SetShortcutNameOfProfileAtIndex(profile_index,
                                          new_shortcut_appended_name);
