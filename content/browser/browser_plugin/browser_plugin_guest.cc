@@ -495,6 +495,11 @@ void BrowserPluginGuest::OnResizeGuest(
   }
   SetDamageBuffer(params);
   web_contents()->GetView()->SizeContents(params.view_size);
+  if (params.repaint) {
+    web_contents()->GetRenderViewHost()->Send(new ViewMsg_Repaint(
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        params.view_size));
+  }
 }
 
 void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
@@ -678,7 +683,7 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.needs_ack = params.needs_ack;
 
   // HW accelerated case, acknowledge resize only
-  if (!params.needs_ack) {
+  if (!params.needs_ack || !damage_buffer_) {
     relay_params.damage_buffer_sequence_id = 0;
     SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
         embedder_routing_id(),

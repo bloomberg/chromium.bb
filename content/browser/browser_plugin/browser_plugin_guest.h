@@ -99,6 +99,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   bool focused() const { return focused_; }
   bool visible() const { return visible_; }
+  void clear_damage_buffer() { damage_buffer_.reset(); }
 
   void UpdateVisibility();
 

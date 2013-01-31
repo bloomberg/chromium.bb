@@ -95,6 +95,9 @@ void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
+  // If accelerated surface buffers are getting swapped then we're not using
+  // the software path.
+  guest_->clear_damage_buffer();
   guest_->SendMessageToEmbedder(
       new BrowserPluginMsg_BuffersSwapped(
           guest_->embedder_routing_id(),
