@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -44,8 +45,9 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   DCHECK(browser && browser->window() && browser->fullscreen_controller());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* anchor_view = browser->window()->IsFullscreen() ? NULL :
-      browser_view->GetLocationBarView()->zoom_view();
+  bool is_fullscreen = browser->window()->IsFullscreen();
+  views::View* anchor_view = is_fullscreen ?
+      NULL : browser_view->GetLocationBarView()->zoom_view();
 
   // If the bubble is already showing in this window and its |auto_close_| value
   // is equal to |auto_close|, the bubble can be reused and only the label text
@@ -64,10 +66,18 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
                                       web_contents,
                                       auto_close,
                                       browser->fullscreen_controller());
+
+    // If we're fullscreen, there is no anchor view, so parent the bubble to
+    // the content area.
+    if (is_fullscreen) {
+      zoom_bubble_->set_parent_window(
+          web_contents->GetView()->GetTopLevelNativeWindow());
+    }
+
     views::BubbleDelegateView::CreateBubble(zoom_bubble_);
 
     // Adjust for fullscreen after creation as it relies on the content size.
-    if (browser->window()->IsFullscreen())
+    if (is_fullscreen)
       zoom_bubble_->AdjustForFullscreen(browser_view->GetBoundsInScreen());
 
     zoom_bubble_->Show();
