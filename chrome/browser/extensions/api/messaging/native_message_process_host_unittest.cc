@@ -98,7 +98,7 @@ class NativeMessagingTest : public ::testing::Test,
     // Change the user data dir back for other tests.
     ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, user_data_dir_));
     if (native_message_process_host_.get()) {
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
+      BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                                 native_message_process_host_.release());
     }
     message_loop_.RunUntilIdle();
