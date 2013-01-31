@@ -28,7 +28,12 @@
 
 namespace chromeos {
 
+// Maximum amount of time that the power manager will wait for Chrome to
+// say that it's ready for the system to be suspended, in milliseconds.
 const int kSuspendDelayTimeoutMs = 5000;
+
+// Human-readable description of Chrome's suspend delay.
+const char kSuspendDelayDescription[] = "chrome";
 
 // The PowerManagerClient implementation used in production.
 class PowerManagerClientImpl : public PowerManagerClient {
@@ -125,6 +130,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     base::TimeDelta timeout =
         base::TimeDelta::FromMilliseconds(kSuspendDelayTimeoutMs);
     protobuf_request.set_timeout(timeout.ToInternalValue());
+    protobuf_request.set_description(kSuspendDelayDescription);
 
     if (!writer.AppendProtoAsArrayOfBytes(protobuf_request)) {
       LOG(ERROR) << "Error constructing message for "
