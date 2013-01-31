@@ -63,8 +63,8 @@ const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
 
-// Enable the per application grouping version of the launcher.
-const char kAshEnablePerAppLauncher[] = "ash-enable-per-app-launcher";
+// Disable the per application grouping version of the launcher.
+const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";

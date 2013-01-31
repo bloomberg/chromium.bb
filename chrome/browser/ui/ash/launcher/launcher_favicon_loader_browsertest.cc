@@ -4,10 +4,13 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,6 +23,9 @@
 #include "content/public/common/favicon_url.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// TODO(skuhne): Remove this module together with launcher_favicon_loader.*
+// when the old launcher goes away.
 
 namespace {
 
@@ -60,6 +66,11 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
   }
 
   virtual ~LauncherFaviconLoaderBrowsertest() {
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kAshDisablePerAppLauncher);
   }
 
  protected:

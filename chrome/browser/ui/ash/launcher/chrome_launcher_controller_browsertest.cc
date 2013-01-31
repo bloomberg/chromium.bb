@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
@@ -60,6 +61,11 @@ class LauncherPlatformAppBrowserTest
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kAshDisablePerAppLauncher);
+  }
+
   ash::LauncherID CreateAppShortcutLauncherItem(const std::string& name) {
     return controller_->CreateAppShortcutLauncherItem(
         name, controller_->model()->item_count());
@@ -83,6 +89,11 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     model_ =
         ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kAshDisablePerAppLauncher);
   }
 
   const Extension* LoadAndLaunchExtension(

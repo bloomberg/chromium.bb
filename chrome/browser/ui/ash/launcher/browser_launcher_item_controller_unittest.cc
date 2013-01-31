@@ -7,7 +7,9 @@
 #include <map>
 #include <string>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher_model.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -29,6 +31,9 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"
+
+// TODO(skuhne): Remove this module together with the
+// browser_launcher_item_controller.* when the old launcher goes away.
 
 namespace {
 
@@ -131,6 +136,9 @@ class BrowserLauncherItemControllerTest
   }
 
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshDisablePerAppLauncher);
+
     ChromeRenderViewHostTestHarness::SetUp();
 
     activation_client_.reset(

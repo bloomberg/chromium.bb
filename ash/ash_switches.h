@@ -26,6 +26,7 @@ ASH_EXPORT extern const char kAshDebugShortcuts[];
 ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisablePanelFitting[];
+ASH_EXPORT extern const char kAshDisablePerAppLauncher[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
 ASH_EXPORT extern const char kAshDisableLauncherPerDisplay[];
@@ -34,7 +35,6 @@ ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
-ASH_EXPORT extern const char kAshEnablePerAppLauncher[];
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshEnableWorkspaceScrubbing[];
