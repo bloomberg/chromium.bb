@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/stringize_macros.h"
+#include "base/strings/stringize_macros.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 #if !defined(USE_SYSTEM_FFMPEG)

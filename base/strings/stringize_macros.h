@@ -6,8 +6,8 @@
 // symbols (or their output) and manipulating preprocessor symbols
 // that define strings.
 
-#ifndef BASE_STRINGIZE_MACROS_H_
-#define BASE_STRINGIZE_MACROS_H_
+#ifndef BASE_STRINGS_STRINGIZE_MACROS_H_
+#define BASE_STRINGS_STRINGIZE_MACROS_H_
 
 #include "build/build_config.h"
 
@@ -28,29 +28,4 @@
 //   STRINGIZE(B(y)) produces "myobj->FunctionCall(y)"
 #define STRINGIZE(x) STRINGIZE_NO_EXPANSION(x)
 
-// The following are defined only on Windows (for use when interacting
-// with Windows APIs) as wide strings are otherwise deprecated.
-#if defined(OS_WIN)
-
-// Second-level utility macros to let us expand symbols.
-#define LSTRINGIZE_NO_EXPANSION(x) L ## #x
-#define TO_L_STRING_NO_EXPANSION(x) L ## x
-
-// L version of STRINGIZE(). For examples above,
-//   LSTRINGIZE(A) produces L"FOO"
-//   LSTRINGIZE(B(y)) produces L"myobj->FunctionCall(y)"
-#define LSTRINGIZE(x) LSTRINGIZE_NO_EXPANSION(x)
-
-// Adds an L in front of an existing ASCII string constant (after
-// expanding symbols). Does not do any quoting.
-//
-// For example, if:
-//   #define C "foo"
-//
-// Then:
-//   TO_L_STRING(C) produces L"foo"
-#define TO_L_STRING(x) TO_L_STRING_NO_EXPANSION(x)
-
-#endif  // defined(OS_WIN)
-
-#endif  // BASE_STRINGIZE_MACROS_H_
+#endif  // BASE_STRINGS_STRINGIZE_MACROS_H_

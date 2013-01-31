@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
-#include "base/stringize_macros.h"
+#include "base/strings/stringize_macros.h"
 
 namespace {
 

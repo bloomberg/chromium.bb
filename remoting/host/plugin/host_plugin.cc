@@ -11,7 +11,7 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/stringize_macros.h"
+#include "base/strings/stringize_macros.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/plugin_thread_task_runner.h"
 #include "remoting/host/plugin/constants.h"

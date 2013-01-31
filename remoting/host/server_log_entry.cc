@@ -5,7 +5,7 @@
 #include "remoting/host/server_log_entry.h"
 
 #include "base/logging.h"
-#include "base/stringize_macros.h"
+#include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/session.h"

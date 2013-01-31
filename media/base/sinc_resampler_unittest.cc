@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/stringize_macros.h"
+#include "base/strings/stringize_macros.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "media/base/sinc_resampler.h"

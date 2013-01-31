@@ -35,7 +35,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringize_macros.h"
+#include "base/strings/stringize_macros.h"
 
 // This is the default baked-in value for OAuth IDs and secrets.
 static const char kDummyToken[] = "dummytoken";
