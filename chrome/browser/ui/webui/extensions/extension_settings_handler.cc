@@ -301,6 +301,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   source->AddString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
+  source->AddString("extensionSettingsPermissions",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_PERMISSIONS_LINK));
   source->AddString("extensionSettingsActivity",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ACTIVITY_LINK));
   source->AddString("extensionSettingsVisitWebsite",
@@ -394,6 +396,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsOptions",
       base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("extensionSettingsPermissions",
+      base::Bind(&ExtensionSettingsHandler::HandlePermissionsMessage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsShowButton",
       base::Bind(&ExtensionSettingsHandler::HandleShowButtonMessage,
@@ -500,6 +505,14 @@ void ExtensionSettingsHandler::ExtensionUninstallCanceled() {
 
 void ExtensionSettingsHandler::ExtensionWarningsChanged() {
   MaybeUpdateAfterNotification();
+}
+
+void ExtensionSettingsHandler::InstallUIProceed() {
+  // This should never happen. The dialog only has a cancel button.
+  NOTREACHED();
+}
+
+void ExtensionSettingsHandler::InstallUIAbort(bool user_initiated) {
 }
 
 void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
@@ -792,6 +805,18 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
   extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
       process_manager()->OpenOptionsPage(extension,
           chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+}
+
+void ExtensionSettingsHandler::HandlePermissionsMessage(const ListValue* args) {
+  std::string extension_id(UTF16ToUTF8(ExtractStringValue(args)));
+  CHECK(!extension_id.empty());
+  const Extension* extension =
+      extension_service_->GetExtensionById(extension_id, true);
+  if (!extension)
+    return;
+
+  prompt_.reset(new ExtensionInstallPrompt(web_contents()));
+  prompt_->ReviewPermissions(this, extension);
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
