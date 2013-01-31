@@ -85,18 +85,33 @@ namespace protobuf {
   TypeName(const TypeName&);                           \
   void operator=(const TypeName&)
 
-#if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
-  #ifdef LIBPROTOBUF_EXPORTS
-    #define LIBPROTOBUF_EXPORT __declspec(dllexport)
-  #else
-    #define LIBPROTOBUF_EXPORT __declspec(dllimport)
+// The macros defined below are required in order to make protobuf_lite a
+// component on all platforms. See http://crbug.com/172800.
+#if defined(COMPONENT_BUILD) && defined(PROTOBUF_USE_DLLS)
+  #if defined(_MSC_VER)
+    #ifdef LIBPROTOBUF_EXPORTS
+      #define LIBPROTOBUF_EXPORT __declspec(dllexport)
+    #else
+      #define LIBPROTOBUF_EXPORT __declspec(dllimport)
+    #endif
+    #ifdef LIBPROTOC_EXPORTS
+      #define LIBPROTOC_EXPORT   __declspec(dllexport)
+    #else
+      #define LIBPROTOC_EXPORT   __declspec(dllimport)
+    #endif
+  #else  // defined(_MSC_VER)
+    #ifdef LIBPROTOBUF_EXPORTS
+      #define LIBPROTOBUF_EXPORT __attribute__((visibility("default")))
+    #else
+      #define LIBPROTOBUF_EXPORT
+    #endif
+    #ifdef LIBPROTOC_EXPORTS
+      #define LIBPROTOC_EXPORT   __attribute__((visibility("default")))
+    #else
+      #define LIBPROTOC_EXPORT
+    #endif
   #endif
-  #ifdef LIBPROTOC_EXPORTS
-    #define LIBPROTOC_EXPORT   __declspec(dllexport)
-  #else
-    #define LIBPROTOC_EXPORT   __declspec(dllimport)
-  #endif
-#else
+#else  // defined(COMPONENT_BUILD) && defined(PROTOBUF_USE_DLLS)
   #define LIBPROTOBUF_EXPORT
   #define LIBPROTOC_EXPORT
 #endif
