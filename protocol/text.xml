@@ -138,6 +138,8 @@
       <arg name="button" type="uint"/>
       <arg name="index" type="uint"/>
     </request>
+    <request name="commit">
+    </request>
     <event name="commit_string">
       <description summary="commit">
         Notify when text should be inserted into the editor widget. The text

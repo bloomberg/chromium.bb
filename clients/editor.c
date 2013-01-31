@@ -558,6 +558,8 @@ text_entry_update(struct text_entry *entry)
 					entry->text,
 					entry->cursor,
 					entry->anchor);
+
+	text_model_commit(entry->model);
 }
 
 static void

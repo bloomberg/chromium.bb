@@ -140,11 +140,18 @@ input_method_context_invoke_action(void *data,
 {
 }
 
+static void
+input_method_context_commit(void *data,
+			    struct input_method_context *context)
+{
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
 	input_method_context_surrounding_text,
 	input_method_context_reset,
 	input_method_context_content_type,
-	input_method_context_invoke_action
+	input_method_context_invoke_action,
+	input_method_context_commit
 };
 
 static void

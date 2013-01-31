@@ -131,6 +131,7 @@
       <arg name="button" type="uint"/>
       <arg name="index" type="uint"/>
     </event>
+    <event name="commit"/>
   </interface>
 
   <interface name="input_method" version="1">

@@ -45,6 +45,7 @@ struct virtual_keyboard {
 	uint32_t serial;
 	uint32_t content_hint;
 	uint32_t content_purpose;
+	char *surrounding_text;
 	struct window *window;
 	struct widget *widget;
 };
@@ -496,17 +497,9 @@ input_method_context_surrounding_text(void *data,
 				      uint32_t anchor)
 {
 	struct virtual_keyboard *keyboard = data;
-	const struct layout *layout;
 
-	layout = get_current_layout(keyboard);
-
-	fprintf(stderr, "Surrounding text updated: %s\n", text);
-
-	window_schedule_resize(keyboard->window,
-			       layout->columns * key_width,
-			       layout->rows * key_height);
-
-	widget_schedule_redraw(keyboard->widget);
+	free(keyboard->surrounding_text);
+	keyboard->surrounding_text = strdup(text);
 }
 
 static void
@@ -559,11 +552,31 @@ input_method_context_invoke_action(void *data,
 	virtual_keyboard_send_preedit(keyboard, index);
 }
 
+static void
+input_method_context_commit(void *data,
+			    struct input_method_context *context)
+{
+	struct virtual_keyboard *keyboard = data;
+	const struct layout *layout;
+
+	layout = get_current_layout(keyboard);
+
+	if (keyboard->surrounding_text)
+		fprintf(stderr, "Surrounding text updated: %s\n", keyboard->surrounding_text);
+
+	window_schedule_resize(keyboard->window,
+			       layout->columns * key_width,
+			       layout->rows * key_height);
+
+	widget_schedule_redraw(keyboard->widget);
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
 	input_method_context_surrounding_text,
 	input_method_context_reset,
 	input_method_context_content_type,
-	input_method_context_invoke_action
+	input_method_context_invoke_action,
+	input_method_context_commit
 };
 
 static void
