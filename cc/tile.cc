@@ -28,23 +28,4 @@ Tile::~Tile() {
   tile_manager_->UnregisterTile(this);
 }
 
-void Tile::set_priority(WhichTree tree, const TilePriority& priority) {
-  tile_manager_->WillModifyTilePriority(this, tree, priority);
-  priority_[tree] = priority;
-}
-
-ResourceProvider::ResourceId Tile::GetResourceId() const {
-  if (!managed_state_.resource)
-    return 0;
-  if (managed_state_.resource_is_being_initialized)
-    return 0;
-
-  return managed_state_.resource->id();
-}
-
-size_t Tile::bytes_consumed_if_allocated() const {
-  DCHECK(format_ == GL_RGBA);
-  return 4 * tile_size_.width() * tile_size_.height();
-}
-
 }  // namespace cc

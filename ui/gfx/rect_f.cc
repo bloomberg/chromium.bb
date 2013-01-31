@@ -31,18 +31,6 @@ std::string RectF::ToString() const {
                             size().ToString().c_str());
 }
 
-RectF operator+(const RectF& lhs, const Vector2dF& rhs) {
-  RectF result(lhs);
-  result += rhs;
-  return result;
-}
-
-RectF operator-(const RectF& lhs, const Vector2dF& rhs) {
-  RectF result(lhs);
-  result -= rhs;
-  return result;
-}
-
 RectF IntersectRects(const RectF& a, const RectF& b) {
   RectF result = a;
   result.Intersect(b);
@@ -58,12 +46,6 @@ RectF UnionRects(const RectF& a, const RectF& b) {
 RectF SubtractRects(const RectF& a, const RectF& b) {
   RectF result = a;
   result.Subtract(b);
-  return result;
-}
-
-RectF ScaleRect(const RectF& r, float x_scale, float y_scale) {
-  RectF result = r;
-  result.Scale(x_scale, y_scale);
   return result;
 }
 
