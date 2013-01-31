@@ -1,13 +1,5 @@
 {
-  # TODO(binji): pnacl fails with error:
-  # In file included from gtest.cc:133:
-  # pepper_23/include/gtest/internal/src/gtest-internal-inl.h:213:8:
-  #   error: private field 'pretty_' is not used [-Werror,-Wunused-private-field]
-  #
-  # We can fix this by passing -Wno-unused-private-field to clang, but gcc
-  # doesn't support this flag so we'll have to support splitting CXXFLAGS based
-  # on TOOL first.
-  'TOOLS': ['newlib:x86', 'newlib:x64', 'glibc', 'win', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'SEARCH': [
     '.',
     '../../../../testing/gtest/include/gtest',

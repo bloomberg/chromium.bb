@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'ppapi_main',

@@ -42,9 +42,9 @@ endef
 # $4 = VC Flags (unused)
 define COMPILE_RULE
 ifeq ('.c','$(suffix $(1))')
-$(call C_COMPILER_RULE,$(1),$(2) -I$(NACL_SDK_ROOT)/include $(foreach inc,$(3),-I$(inc)))
+$(call C_COMPILER_RULE,$(1),$(2) $(foreach inc,$(INC_PATHS),-I$(inc)) $(3))
 else
-$(call CXX_COMPILER_RULE,$(1),$(2) -I$(NACL_SDK_ROOT)/include $(foreach inc,$(3),-I$(inc)))
+$(call CXX_COMPILER_RULE,$(1),$(2) $(foreach inc,$(INC_PATHS),-I$(inc)) $(3))
 endif
 endef
 

@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['win', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'linux', 'win'],
   'SEARCH' : [
     '.',
     '../../../../ppapi/lib/gl/gles2'
