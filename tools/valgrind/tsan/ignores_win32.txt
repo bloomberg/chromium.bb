@@ -38,3 +38,8 @@ fun:_updatetlocinfoEx_nolock
 # a debug exception by PlatformThread
 # TODO(timurrrr): investigate
 fun_r:*PlatformThread*SetName*
+
+# Recursively ignore Histrogram::Add and friends, see http://crbug.com/62694.
+fun_r:base::Histogram::Add
+fun_r:base::HistogramSamples::Add
+fun_r:base::HistogramBase::AddTime

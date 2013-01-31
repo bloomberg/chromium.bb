@@ -354,68 +354,11 @@
 }
 
 {
-   benign race on Histogram::Add
+   benign race on Histogram::Add - TO BE REMOVED SOON
    ThreadSanitizer:Race
    ...
    fun:base::SampleVector::Accumulate
    fun:base::Histogram::Add
-}
-
-{
-   benign race on Histogram::SnapshotSamples
-   ThreadSanitizer:Race
-   ...
-   fun:base::HistogramSamples::Add
-   fun:base::Histogram::SnapshotSampleVector
-   fun:base::Histogram::SnapshotSamples
-}
-
-{
-  bug_62694 [benign races in Histogram in CookieMonster]
-  ThreadSanitizer:Race
-  ...
-  fun:base::Histogram::*
-  fun:net::CookieMonster::*
-}
-
-{
-  bug_64185a [probably-benign races in Histogram in skia::ImageOperations]
-  ThreadSanitizer:Race
-  ...
-  fun:base::Histogram::*
-  fun:skia::ImageOperations::*
-}
-
-{
-  bug_64185b [probably-benign races in Histogram in skia::ImageOperations]
-  ThreadSanitizer:Race
-  ...
-  fun:base::Histogram::*
-  fun:HistogramSynchronizer::DeserializeHistogramList*
-}
-
-{
-   bug_104776 Benign race to initialize pointer with the same value again.
-   ThreadSanitizer:Race
-   fun:base::StatisticsRecorder::FindHistogram
-   fun:base::*Histogram::FactoryGet
-}
-
-{
-   bug_115987a [benign races in Histogram in SequencedWorkerPool]
-   ThreadSanitizer:Race
-   ...
-   fun:base::Histogram::*
-   fun:base::SequencedWorkerPool::*
-}
-
-# Histogram macros involve string comparison in debug mode.
-{
-   bug_115987b [benign races in Histogram in SequencedWorkerPool]
-   ThreadSanitizer:Race
-   ...
-   fun:std::operator==
-   fun:base::SequencedWorkerPool::*
 }
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.

@@ -35,3 +35,5 @@ NativeMessagingTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
 
+# These tests are flaky and sometimes crash, see http://crbug.com/173369
+SyncFileSystemServiceTest.*
