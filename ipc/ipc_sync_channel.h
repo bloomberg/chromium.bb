@@ -58,8 +58,7 @@ class SyncMessage;
 // is more than this object.  If the message loop goes away while this object
 // is running and it's used to send a message, then it will use the invalid
 // message loop pointer to proxy it to the ipc thread.
-class IPC_EXPORT SyncChannel : public ChannelProxy,
-                               public base::WaitableEventWatcher::Delegate {
+class IPC_EXPORT SyncChannel : public ChannelProxy {
  public:
   enum RestrictDispatchGroup {
     kRestrictDispatchGroup_None = 0,
@@ -115,8 +114,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
   // SyncContext holds the per object data for SyncChannel, so that SyncChannel
   // can be deleted while it's being used in a different thread.  See
   // ChannelProxy::Context for more information.
-  class SyncContext : public Context,
-                      public base::WaitableEventWatcher::Delegate {
+  class SyncContext : public Context {
    public:
     SyncContext(Listener* listener,
                 base::SingleThreadTaskRunner* ipc_task_runner,
@@ -150,6 +148,10 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
     void OnSendTimeout(int message_id);
 
     base::WaitableEvent* shutdown_event() { return shutdown_event_; }
+    base::WaitableEventWatcher::EventCallback
+        shutdown_watcher_callback() const {
+      return shutdown_watcher_callback_;
+    }
 
     ReceivedSyncMsgQueue* received_sync_msgs() {
       return received_sync_msgs_;
@@ -179,8 +181,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
     // Cancels all pending Send calls.
     void CancelPendingSends();
 
-    // WaitableEventWatcher::Delegate implementation.
-    virtual void OnWaitableEventSignaled(base::WaitableEvent* arg) OVERRIDE;
+    void OnWaitableEventSignaled(base::WaitableEvent* arg);
 
     typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
     PendingSyncMessageQueue deserializers_;
@@ -190,12 +191,12 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
 
     base::WaitableEvent* shutdown_event_;
     base::WaitableEventWatcher shutdown_watcher_;
+    base::WaitableEventWatcher::EventCallback shutdown_watcher_callback_;
     int restrict_dispatch_group_;
   };
 
  private:
-  // WaitableEventWatcher::Delegate implementation.
-  virtual void OnWaitableEventSignaled(base::WaitableEvent* arg) OVERRIDE;
+  void OnWaitableEventSignaled(base::WaitableEvent* arg);
 
   SyncContext* sync_context() {
     return reinterpret_cast<SyncContext*>(context());
@@ -217,6 +218,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
 
   // Used to signal events between the IPC and listener threads.
   base::WaitableEventWatcher dispatch_watcher_;
+  base::Callback<void(base::WaitableEvent*)> dispatch_watcher_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncChannel);
 };

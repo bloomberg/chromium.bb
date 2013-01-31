@@ -50,11 +50,11 @@ struct SessionStorageUsageInfo;
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
 
-class BrowsingDataRemover : public content::NotificationObserver,
+class BrowsingDataRemover : public content::NotificationObserver
 #if defined(ENABLE_PLUGINS)
-                            public PepperFlashSettingsManager::Client,
+                            , public PepperFlashSettingsManager::Client
 #endif
-                            public base::WaitableEventWatcher::Delegate {
+                            {
  public:
   // Time period ranges available when doing browsing data removals.
   enum TimePeriod {
@@ -210,10 +210,8 @@ class BrowsingDataRemover : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // WaitableEventWatcher implementation.
   // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
+  void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
 #if defined(ENABLE_PLUGINS)
   // PepperFlashSettingsManager::Client implementation.

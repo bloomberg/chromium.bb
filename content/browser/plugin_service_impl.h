@@ -64,8 +64,7 @@ struct PluginServiceFilterParams {
 };
 
 class CONTENT_EXPORT PluginServiceImpl
-    : NON_EXPORTED_BASE(public PluginService),
-      public base::WaitableEventWatcher::Delegate {
+    : NON_EXPORTED_BASE(public PluginService) {
  public:
   // Returns the PluginServiceImpl singleton.
   static PluginServiceImpl* GetInstance();
@@ -157,9 +156,7 @@ class CONTENT_EXPORT PluginServiceImpl
   PluginServiceImpl();
   virtual ~PluginServiceImpl();
 
-  // base::WaitableEventWatcher::Delegate implementation.
-  virtual void OnWaitableEventSignaled(
-      base::WaitableEvent* waitable_event) OVERRIDE;
+  void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
