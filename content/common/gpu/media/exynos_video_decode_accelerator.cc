@@ -215,18 +215,14 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       decoder_flushing_(false),
       mfc_fd_(-1),
       mfc_input_streamon_(false),
-      mfc_input_buffer_count_(0),
       mfc_input_buffer_queued_count_(0),
       mfc_output_streamon_(false),
-      mfc_output_buffer_count_(0),
       mfc_output_buffer_queued_count_(0),
       mfc_output_buffer_pixelformat_(0),
       gsc_fd_(-1),
       gsc_input_streamon_(false),
-      gsc_input_buffer_count_(0),
       gsc_input_buffer_queued_count_(0),
       gsc_output_streamon_(false),
-      gsc_output_buffer_count_(0),
       gsc_output_buffer_queued_count_(0),
       device_poll_thread_("ExynosDevicePollThread"),
       device_poll_interrupt_fd_(-1),
@@ -436,7 +432,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
   DVLOG(3) << "AssignPictureBuffers(): buffer_count=" << buffers.size();
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (static_cast<int>(buffers.size()) != gsc_output_buffer_count_) {
+  if (buffers.size() != gsc_output_buffer_map_.size()) {
     DLOG(ERROR) << "AssignPictureBuffers(): invalid buffer_count";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
@@ -1093,17 +1089,17 @@ void ExynosVideoDecodeAccelerator::ServiceDeviceTask() {
            << mfc_input_ready_queue_.size() << "] => MFC["
            << mfc_free_input_buffers_.size() << "+"
            << mfc_input_buffer_queued_count_ << "/"
-           << mfc_input_buffer_count_ << "->"
+           << mfc_input_buffer_map_.size() << "->"
            << mfc_free_output_buffers_.size() << "+"
            << mfc_output_buffer_queued_count_ << "/"
-           << mfc_output_buffer_count_ << "] => "
+           << mfc_output_buffer_map_.size() << "] => "
            << mfc_output_gsc_input_queue_.size() << " => GSC["
            << gsc_free_input_buffers_.size() << "+"
            << gsc_input_buffer_queued_count_ << "/"
-           << gsc_input_buffer_count_ << "->"
+           << gsc_input_buffer_map_.size() << "->"
            << gsc_free_output_buffers_.size() << "+"
            << gsc_output_buffer_queued_count_ << "/"
-           << gsc_output_buffer_count_ << "] => VDA["
+           << gsc_output_buffer_map_.size()  << "] => VDA["
            << decoder_frames_at_client_ << "]";
 
   ScheduleDecodeBufferTaskIfNeeded();
@@ -1723,8 +1719,6 @@ bool ExynosVideoDecodeAccelerator::StopDevicePoll() {
   // Reset all our accounting info.
   mfc_input_ready_queue_.clear();
   mfc_free_input_buffers_.clear();
-  DCHECK_EQ(mfc_input_buffer_count_,
-      static_cast<int>(mfc_input_buffer_map_.size()));
   for (size_t i = 0; i < mfc_input_buffer_map_.size(); ++i) {
     mfc_free_input_buffers_.push_back(i);
     mfc_input_buffer_map_[i].at_device = false;
@@ -1733,8 +1727,6 @@ bool ExynosVideoDecodeAccelerator::StopDevicePoll() {
   }
   mfc_input_buffer_queued_count_ = 0;
   mfc_free_output_buffers_.clear();
-  DCHECK_EQ(mfc_output_buffer_count_,
-     static_cast<int>(mfc_output_buffer_map_.size()));
   for (size_t i = 0; i < mfc_output_buffer_map_.size(); ++i) {
     mfc_free_output_buffers_.push_back(i);
     mfc_output_buffer_map_[i].at_device = false;
@@ -1743,8 +1735,6 @@ bool ExynosVideoDecodeAccelerator::StopDevicePoll() {
   mfc_output_buffer_queued_count_ = 0;
   mfc_output_gsc_input_queue_.clear();
   gsc_free_input_buffers_.clear();
-  DCHECK_EQ(gsc_input_buffer_count_,
-      static_cast<int>(gsc_input_buffer_map_.size()));
   for (size_t i = 0; i < gsc_input_buffer_map_.size(); ++i) {
     gsc_free_input_buffers_.push_back(i);
     gsc_input_buffer_map_[i].at_device = false;
@@ -1752,8 +1742,6 @@ bool ExynosVideoDecodeAccelerator::StopDevicePoll() {
   }
   gsc_input_buffer_queued_count_ = 0;
   gsc_free_output_buffers_.clear();
-  DCHECK_EQ(gsc_output_buffer_count_,
-      static_cast<int>(gsc_output_buffer_map_.size()));
   for (size_t i = 0; i < gsc_output_buffer_map_.size(); ++i) {
     // Only mark those free that aren't being held by the VDA.
     if (!gsc_output_buffer_map_[i].at_client) {
@@ -1860,7 +1848,7 @@ void ExynosVideoDecodeAccelerator::NotifyError(Error error) {
 }
 
 void ExynosVideoDecodeAccelerator::SetDecoderState(State state) {
-  DVLOG(3) << "SetDecoderState(): state=%d" << state;
+  DVLOG(3) << "SetDecoderState(): state=" << state;
 
   // We can touch decoder_state_ only if this is the decoder thread or the
   // decoder thread isn't running.
@@ -1879,7 +1867,7 @@ bool ExynosVideoDecodeAccelerator::CreateMfcInputBuffers() {
   // We always run this as we prepare to initialize.
   DCHECK_EQ(decoder_state_, kUninitialized);
   DCHECK(!mfc_input_streamon_);
-  DCHECK_EQ(mfc_input_buffer_count_, 0);
+  DCHECK(mfc_input_buffer_map_.empty());
 
   __u32 pixelformat = 0;
   if (video_profile_ >= media::H264PROFILE_MIN &&
@@ -1906,9 +1894,8 @@ bool ExynosVideoDecodeAccelerator::CreateMfcInputBuffers() {
   reqbufs.type   = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_REQBUFS, &reqbufs);
-  mfc_input_buffer_count_ = reqbufs.count;
-  mfc_input_buffer_map_.resize(mfc_input_buffer_count_);
-  for (int i = 0; i < mfc_input_buffer_count_; ++i) {
+  mfc_input_buffer_map_.resize(reqbufs.count);
+  for (size_t i = 0; i < mfc_input_buffer_map_.size(); ++i) {
     mfc_free_input_buffers_.push_back(i);
 
     // Query for the MEMORY_MMAP pointer.
@@ -1940,7 +1927,7 @@ bool ExynosVideoDecodeAccelerator::CreateMfcOutputBuffers() {
   DVLOG(3) << "CreateMfcOutputBuffers()";
   DCHECK_EQ(decoder_state_, kInitialized);
   DCHECK(!mfc_output_streamon_);
-  DCHECK_EQ(mfc_output_buffer_count_, 0);
+  DCHECK(mfc_output_buffer_map_.empty());
 
   // Number of MFC output buffers we need.
   struct v4l2_control ctrl;
@@ -1959,9 +1946,8 @@ bool ExynosVideoDecodeAccelerator::CreateMfcOutputBuffers() {
   IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_REQBUFS, &reqbufs);
 
   // Fill our free-buffers list, and create DMABUFs from them.
-  mfc_output_buffer_count_ = reqbufs.count;
-  mfc_output_buffer_map_.resize(mfc_output_buffer_count_);
-  for (int i = 0; i < mfc_output_buffer_count_; ++i) {
+  mfc_output_buffer_map_.resize(reqbufs.count);
+  for (size_t i = 0; i < mfc_output_buffer_map_.size(); ++i) {
     mfc_free_output_buffers_.push_back(i);
 
     // Query for the MEMORY_MMAP pointer.
@@ -1997,7 +1983,7 @@ bool ExynosVideoDecodeAccelerator::CreateGscInputBuffers() {
   DVLOG(3) << "CreateGscInputBuffers()";
   DCHECK_EQ(decoder_state_, kInitialized);
   DCHECK(!gsc_input_streamon_);
-  DCHECK_EQ(gsc_input_buffer_count_, 0);
+  DCHECK(gsc_input_buffer_map_.empty());
 
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
@@ -2042,9 +2028,8 @@ bool ExynosVideoDecodeAccelerator::CreateGscInputBuffers() {
   reqbufs.memory = V4L2_MEMORY_USERPTR;
   IOCTL_OR_ERROR_RETURN_FALSE(gsc_fd_, VIDIOC_REQBUFS, &reqbufs);
 
-  gsc_input_buffer_count_ = reqbufs.count;
-  gsc_input_buffer_map_.resize(gsc_input_buffer_count_);
-  for (int i = 0; i < gsc_input_buffer_count_; ++i) {
+  gsc_input_buffer_map_.resize(reqbufs.count);
+  for (size_t i = 0; i < gsc_input_buffer_map_.size(); ++i) {
     gsc_free_input_buffers_.push_back(i);
     gsc_input_buffer_map_[i].mfc_output = -1;
   }
@@ -2056,7 +2041,7 @@ bool ExynosVideoDecodeAccelerator::CreateGscOutputBuffers() {
   DVLOG(3) << "CreateGscOutputBuffers()";
   DCHECK_EQ(decoder_state_, kInitialized);
   DCHECK(!gsc_output_streamon_);
-  DCHECK_EQ(gsc_output_buffer_count_, 0);
+  DCHECK(gsc_output_buffer_map_.empty());
 
   // GSC outputs into the EGLImages we create from the textures we are
   // assigned.  Assume RGBA8888 format.
@@ -2081,15 +2066,14 @@ bool ExynosVideoDecodeAccelerator::CreateGscOutputBuffers() {
 
   // We don't actually fill in the freelist or the map here.  That happens once
   // we have actual usable buffers, after AssignPictureBuffers();
-  gsc_output_buffer_count_ = reqbufs.count;
-  gsc_output_buffer_map_.resize(gsc_output_buffer_count_);
+  gsc_output_buffer_map_.resize(reqbufs.count);
 
   DVLOG(3) << "CreateGscOutputBuffers(): ProvidePictureBuffers(): "
-           << "buffer_count=" << gsc_output_buffer_count_
+           << "buffer_count=" << gsc_output_buffer_map_.size()
            << ", width=" << frame_buffer_size_.width()
            << ", height=" << frame_buffer_size_.height();
   child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &Client::ProvidePictureBuffers, client_, gsc_output_buffer_count_,
+      &Client::ProvidePictureBuffers, client_, gsc_output_buffer_map_.size(),
       gfx::Size(frame_buffer_size_.width(), frame_buffer_size_.height()),
       GL_TEXTURE_2D));
 
@@ -2118,7 +2102,6 @@ void ExynosVideoDecodeAccelerator::DestroyMfcInputBuffers() {
 
   mfc_input_buffer_map_.clear();
   mfc_free_input_buffers_.clear();
-  mfc_input_buffer_count_ = 0;
 }
 
 void ExynosVideoDecodeAccelerator::DestroyMfcOutputBuffers() {
@@ -2145,7 +2128,6 @@ void ExynosVideoDecodeAccelerator::DestroyMfcOutputBuffers() {
 
   mfc_output_buffer_map_.clear();
   mfc_free_output_buffers_.clear();
-  mfc_output_buffer_count_ = 0;
 }
 
 void ExynosVideoDecodeAccelerator::DestroyGscInputBuffers() {
@@ -2163,7 +2145,6 @@ void ExynosVideoDecodeAccelerator::DestroyGscInputBuffers() {
 
   gsc_input_buffer_map_.clear();
   gsc_free_input_buffers_.clear();
-  gsc_input_buffer_count_ = 0;
 }
 
 void ExynosVideoDecodeAccelerator::DestroyGscOutputBuffers() {
@@ -2201,7 +2182,6 @@ void ExynosVideoDecodeAccelerator::DestroyGscOutputBuffers() {
 
   gsc_output_buffer_map_.clear();
   gsc_free_output_buffers_.clear();
-  gsc_output_buffer_count_ = 0;
 }
 
 }  // namespace content

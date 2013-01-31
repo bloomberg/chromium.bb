@@ -151,7 +151,7 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
     ~GscInputRecord();
     bool at_device;        // held by device.
     int mfc_output;        // MFC output buffer index to recycle when this input
-                           // is complete
+                           // is complete.
   };
 
   // Record for GSC output buffers.
@@ -347,8 +347,6 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
 
   // MFC input buffer state.
   bool mfc_input_streamon_;
-  // MFC input buffers, total.
-  int mfc_input_buffer_count_;
   // MFC input buffers enqueued to device.
   int mfc_input_buffer_queued_count_;
   // Input buffers ready to use, as a LIFO since we don't care about ordering.
@@ -358,8 +356,6 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
 
   // MFC output buffer state.
   bool mfc_output_streamon_;
-  // MFC output buffers, total.
-  int mfc_output_buffer_count_;
   // MFC output buffers enqueued to device.
   int mfc_output_buffer_queued_count_;
   // Output buffers ready to use, as a LIFO since we don't care about ordering.
@@ -378,8 +374,6 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
 
   // GSC input buffer state.
   bool gsc_input_streamon_;
-  // GSC input buffers, total.
-  int gsc_input_buffer_count_;
   // GSC input buffers enqueued to device.
   int gsc_input_buffer_queued_count_;
   // Input buffers ready to use, as a LIFO since we don't care about ordering.
@@ -389,8 +383,6 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
 
   // GSC output buffer state.
   bool gsc_output_streamon_;
-  // GSC output buffers, total.
-  int gsc_output_buffer_count_;
   // GSC output buffers enqueued to device.
   int gsc_output_buffer_queued_count_;
   // Output buffers ready to use.  We need a FIFO here.
