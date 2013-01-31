@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="6015796118275082299">År</translation>
+<translation id="1256337885411059545">Det går inte att spela upp video</translation>
+<translation id="4932733599132424254">Datum</translation>
+<translation id="6727102863431372879">Spara</translation>
+<translation id="273860350361291195">Videon kan inte spelas upp.</translation>
+<translation id="2410828433627930127">Videon kan inte spelas upp.</translation>
+<translation id="8987927404178983737">Månad</translation>
+<translation id="2532336938189706096">Webbvy</translation>
+<translation id="7096034533295549981">Videon läses in</translation>
+<translation id="1542044944667958430">Webbsökning</translation>
+<translation id="6527303717912515753">Dela</translation>
+<translation id="2841013758207633010">Tid</translation>
+<translation id="6643016212128521049">Ta bort</translation>
+<translation id="7781164152564914424">Ange månad</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6444070574980481588">Ange datum och tid</translation>
 </translationbundle>

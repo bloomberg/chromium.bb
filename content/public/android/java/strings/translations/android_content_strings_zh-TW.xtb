@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="6015796118275082299">年</translation>
+<translation id="1256337885411059545">無法播放影片</translation>
+<translation id="4932733599132424254">日期</translation>
+<translation id="6727102863431372879">設定</translation>
+<translation id="273860350361291195">很抱歉，這部影片的格式無效，因此無法在此裝置中串流播放。</translation>
+<translation id="2410828433627930127">很抱歉，無法播放這部影片。</translation>
+<translation id="8987927404178983737">月</translation>
+<translation id="2532336938189706096">網頁檢視</translation>
+<translation id="7096034533295549981">正在載入影片</translation>
+<translation id="1542044944667958430">網頁搜尋</translation>
+<translation id="6527303717912515753">分享</translation>
+<translation id="2841013758207633010">時間</translation>
+<translation id="6643016212128521049">清除</translation>
+<translation id="7781164152564914424">設定月份</translation>
+<translation id="6965382102122355670">確定</translation>
+<translation id="6444070574980481588">設定日期和時間</translation>
 </translationbundle>

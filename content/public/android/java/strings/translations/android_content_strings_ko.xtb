@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="6015796118275082299">연도</translation>
+<translation id="1256337885411059545">동영상 재생 안됨</translation>
+<translation id="4932733599132424254">날짜</translation>
+<translation id="6727102863431372879">설정</translation>
+<translation id="273860350361291195">죄송합니다. 이 동영상은 이 기기로 스트리밍할 수 없습니다.</translation>
+<translation id="2410828433627930127">동영상을 재생할 수 없습니다.</translation>
+<translation id="8987927404178983737">월</translation>
+<translation id="2532336938189706096">웹 보기</translation>
+<translation id="7096034533295549981">동영상 로드 중</translation>
+<translation id="1542044944667958430">웹 검색</translation>
+<translation id="6527303717912515753">공유</translation>
+<translation id="2841013758207633010">시간</translation>
+<translation id="6643016212128521049">지우기</translation>
+<translation id="7781164152564914424">월 설정</translation>
+<translation id="6965382102122355670">확인</translation>
+<translation id="6444070574980481588">날짜 및 시간 설정</translation>
 </translationbundle>

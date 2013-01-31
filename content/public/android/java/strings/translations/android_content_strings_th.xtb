@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="6015796118275082299">ปี</translation>
+<translation id="1256337885411059545">ไม่สามารถเล่นวิดีโอ</translation>
+<translation id="4932733599132424254">วันที่</translation>
+<translation id="6727102863431372879">ตั้งค่า</translation>
+<translation id="273860350361291195">ขออภัย ไม่สามารถสตรีมวิดีโอไปยังอุปกรณ์นี้</translation>
+<translation id="2410828433627930127">ขออภัย วิดีโอนี้เล่นไม่ได้</translation>
+<translation id="8987927404178983737">เดือน</translation>
+<translation id="2532336938189706096">มุมมองเว็บ</translation>
+<translation id="7096034533295549981">กำลังโหลดวิดีโอ</translation>
+<translation id="1542044944667958430">ค้นเว็บ</translation>
+<translation id="6527303717912515753">แบ่งปัน</translation>
+<translation id="2841013758207633010">เวลา</translation>
+<translation id="6643016212128521049">ล้าง</translation>
+<translation id="7781164152564914424">ตั้งเดือน</translation>
+<translation id="6965382102122355670">ตกลง</translation>
+<translation id="6444070574980481588">ตั้งวันที่และเวลา</translation>
 </translationbundle>

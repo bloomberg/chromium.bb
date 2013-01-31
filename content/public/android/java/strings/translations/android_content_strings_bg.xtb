@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="6015796118275082299">Година</translation>
+<translation id="1256337885411059545">Видеоклипът не може да се пусне</translation>
+<translation id="4932733599132424254">Дата</translation>
+<translation id="6727102863431372879">Задаване</translation>
+<translation id="273860350361291195">Клипът не е валиден за поточно предаване към у-вото.</translation>
+<translation id="2410828433627930127">Клипът не може да се пусне.</translation>
+<translation id="8987927404178983737">Месец</translation>
+<translation id="2532336938189706096">Изглед в мрежата</translation>
+<translation id="7096034533295549981">Клип: Зарежда се</translation>
+<translation id="1542044944667958430">Търсене в мрежата</translation>
+<translation id="6527303717912515753">Споделяне</translation>
+<translation id="2841013758207633010">Време</translation>
+<translation id="6643016212128521049">Изчистване</translation>
+<translation id="7781164152564914424">Задаване на месеца</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6444070574980481588">Задаване на датата и часа</translation>
 </translationbundle>

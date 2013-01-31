@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1491151370853475546">ページを再読み込み</translation>
+<translation id="7658239707568436148">キャンセル</translation>
+<translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
+<translation id="8413126021676339697">全履歴を表示</translation>
+<translation id="4510973599275542560">再読み込みしない</translation>
+<translation id="9154176715500758432">このページにとどまる</translation>
+<translation id="6512448926095770873">このページを離れる</translation>
+<translation id="5032574515228824816">メッセージ</translation>
+<translation id="6965382102122355670">OK</translation>
 </translationbundle>

@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="6015796118275082299">Vuosi</translation>
+<translation id="1256337885411059545">Videon toistaminen epäonnistui</translation>
+<translation id="4932733599132424254">Päiväys</translation>
+<translation id="6727102863431372879">Aseta</translation>
+<translation id="273860350361291195">Videota ei voi suoratoistaa tällä laitteella.</translation>
+<translation id="2410828433627930127">Tätä videota ei voi toistaa.</translation>
+<translation id="8987927404178983737">Kuukausi</translation>
+<translation id="2532336938189706096">Verkkonäkymä</translation>
+<translation id="7096034533295549981">Videota ladataan</translation>
+<translation id="1542044944667958430">Verkkohaku</translation>
+<translation id="6527303717912515753">Jaa</translation>
+<translation id="2841013758207633010">Aika</translation>
+<translation id="6643016212128521049">Tyhjennä</translation>
+<translation id="7781164152564914424">Aseta kuukausi</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6444070574980481588">Aseta päivämäärä ja aika</translation>
 </translationbundle>

@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="6015796118275082299">Year</translation>
+<translation id="1256337885411059545">Cannot play video</translation>
+<translation id="4932733599132424254">Date</translation>
+<translation id="6727102863431372879">Set</translation>
+<translation id="273860350361291195">Sorry, this video is not valid for streaming to this device.</translation>
+<translation id="2410828433627930127">Sorry, this video cannot be played.</translation>
+<translation id="8987927404178983737">Month</translation>
+<translation id="2532336938189706096">Web View</translation>
+<translation id="7096034533295549981">Loading video</translation>
+<translation id="1542044944667958430">Web search</translation>
+<translation id="6527303717912515753">Share</translation>
+<translation id="2841013758207633010">Time</translation>
+<translation id="6643016212128521049">Clear</translation>
+<translation id="7781164152564914424">Set month</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6444070574980481588">Set date and time</translation>
 </translationbundle>

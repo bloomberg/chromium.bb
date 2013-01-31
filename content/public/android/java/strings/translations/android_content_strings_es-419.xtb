@@ -1,4 +1,20 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="6015796118275082299">Año</translation>
+<translation id="1256337885411059545">No se puede reproducir el video.</translation>
+<translation id="4932733599132424254">Fecha</translation>
+<translation id="6727102863431372879">Configurar</translation>
+<translation id="273860350361291195">Error al transmitir video</translation>
+<translation id="2410828433627930127">El video no se puede reproducir.</translation>
+<translation id="8987927404178983737">Mes</translation>
+<translation id="2532336938189706096">Vista web</translation>
+<translation id="7096034533295549981">Cargando video</translation>
+<translation id="1542044944667958430">Búsqueda en la Web</translation>
+<translation id="6527303717912515753">Compartir</translation>
+<translation id="2841013758207633010">Hora</translation>
+<translation id="6643016212128521049">Borrar</translation>
+<translation id="7781164152564914424">Configurar el mes</translation>
+<translation id="6965382102122355670">Aceptar</translation>
+<translation id="6444070574980481588">Configurar fecha y hora</translation>
 </translationbundle>
