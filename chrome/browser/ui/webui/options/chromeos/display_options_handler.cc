@@ -137,10 +137,14 @@ void DisplayOptionsHandler::OnDisplayRemoved(const gfx::Display& old_display) {
 
 void DisplayOptionsHandler::UpdateDisplaySectionVisibility(
     size_t num_displays) {
+  DisplayManager* display_manager = GetDisplayManager();
+  size_t min_displays_to_show = display_manager->HasInternalDisplay() ? 2 : 1;
+
   chromeos::OutputState output_state =
       ash::Shell::GetInstance()->output_configurator()->output_state();
   base::FundamentalValue show_options(
-      num_displays > 1 || output_state == chromeos::STATE_DUAL_MIRROR);
+      num_displays >= min_displays_to_show ||
+      output_state == chromeos::STATE_DUAL_MIRROR);
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.showDisplayOptions", show_options);
 }

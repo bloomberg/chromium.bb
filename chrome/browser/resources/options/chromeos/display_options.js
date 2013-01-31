@@ -1056,7 +1056,14 @@ cr.define('options', function() {
       if (!this.visible)
         return;
 
-      if (displays.length < 2 && !mirroring) {
+      var hasExternal = false;
+      for (var i = 0; i < displays.length; i++) {
+        if (!displays[i].isInternal) {
+          hasExternal = true;
+          break;
+        }
+      }
+      if (!hasExternal && !mirroring) {
         OptionsPage.showDefaultPage();
         return;
       }
