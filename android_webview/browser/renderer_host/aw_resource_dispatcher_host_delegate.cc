@@ -295,15 +295,6 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response,
     IPC::Sender* sender) {
-  // Check for x-auto-login header.
-  components::auto_login::HeaderData header_data;
-  if (!components::auto_login::ParserHeaderInResponse(
-          request,
-          components::auto_login::ALLOW_ANY_REALM,
-          &header_data)) {
-    return;
-  }
-
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!request_info) {
@@ -312,13 +303,22 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     return;
   }
 
-  scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(
-          request_info->GetChildID(),
-          request_info->GetRouteID());
-  io_client->NewLoginRequest(header_data.realm,
-                             header_data.account,
-                             header_data.args);
+  if (request_info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    // Check for x-auto-login header.
+    components::auto_login::HeaderData header_data;
+    if (components::auto_login::ParserHeaderInResponse(
+            request,
+            components::auto_login::ALLOW_ANY_REALM,
+            &header_data)) {
+      scoped_ptr<AwContentsIoThreadClient> io_client =
+          AwContentsIoThreadClient::FromID(
+              request_info->GetChildID(),
+              request_info->GetRouteID());
+      io_client->NewLoginRequest(header_data.realm,
+                                 header_data.account,
+                                 header_data.args);
+    }
+  }
 }
 
 void AwResourceDispatcherHostDelegate::RemovePendingThrottleOnIoThread(
