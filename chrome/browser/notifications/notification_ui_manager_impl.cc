@@ -50,16 +50,10 @@ NotificationUIManagerImpl::NotificationUIManagerImpl()
     : is_user_active_(true) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-#if defined(OS_MACOSX)
-  InitIdleMonitor();
-#endif
 }
 
 NotificationUIManagerImpl::~NotificationUIManagerImpl() {
   STLDeleteElements(&show_queue_);
-#if defined(OS_MACOSX)
-  StopIdleMonitor();
-#endif
 }
 
 void NotificationUIManagerImpl::Add(const Notification& notification,

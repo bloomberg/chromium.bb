@@ -16,10 +16,8 @@ enum IdleState {
 };
 
 // For MacOSX, InitIdleMonitor needs to be called first to setup the monitor.
-// StopIdleMonitor should be called if it is not needed any more.
 #if defined(OS_MACOSX)
 void InitIdleMonitor();
-void StopIdleMonitor();
 #endif
 
 typedef base::Callback<void(IdleState)> IdleCallback;

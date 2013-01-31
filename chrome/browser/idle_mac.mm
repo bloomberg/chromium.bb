@@ -79,11 +79,6 @@ void InitIdleMonitor() {
     g_screenMonitor = [[MacScreenMonitor alloc] init];
 }
 
-void StopIdleMonitor() {
-  [g_screenMonitor release];
-  g_screenMonitor = nil;
-}
-
 void CalculateIdleTime(IdleTimeCallback notify) {
   CFTimeInterval idle_time = CGEventSourceSecondsSinceLastEventType(
       kCGEventSourceStateCombinedSessionState,

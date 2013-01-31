@@ -34,6 +34,7 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/idle.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -181,6 +182,10 @@ BrowserProcessImpl::BrowserProcessImpl(
       extensions::kExtensionScheme);
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kExtensionResourceScheme);
+
+#if defined(OS_MACOSX)
+  InitIdleMonitor();
+#endif
 
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
 
