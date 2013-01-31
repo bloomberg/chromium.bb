@@ -10,7 +10,7 @@ use warnings;
 use File::Basename;
 
 sub check_is_generated_file($);
-sub parse_copyright($);
+sub start_copyright_parsing();
 
 my $progname = basename($0);
 
@@ -40,9 +40,10 @@ while (@files) {
     my $file_header = '';
     my %copyrights;
     open (F, "<$file") or die "$progname: Unable to access $file\n";
+    my $parse_copyright = start_copyright_parsing();
     while (<F>) {
         $file_header .= $_ unless $. > $generated_file_scan_boundary;
-        my $copyright_match = parse_copyright($_);
+        my $copyright_match = $parse_copyright->($_, $.);
         if ($copyright_match) {
             $copyrights{lc("$copyright_match")} = "$copyright_match";
         }
@@ -81,38 +82,80 @@ sub check_is_generated_file($) {
     return 0;
 }
 
-sub parse_copyright($) {
-    my $line = $_[0];
-    # Remove C / C++ strings to avoid false positives.
-    if (index($line, '"') != -1) {
-        $line =~ s/"[^"\\]*(?:\\.[^"\\]*)*"//g;
-    }
+sub are_within_increasing_progression($$$) {
+    my $delta = $_[0] - $_[1];
+    return $delta >= 0 && $delta <= $_[2];
+}
 
-    my $uc_line = uc($line);
-    # Fast bailout, uses the same patterns as the regexp.
-    return '' if (index($uc_line, 'COPYRIGHT') == -1 &&
-                  index($uc_line, 'COPR.') == -1 &&
-                  index($uc_line, '\x{00a9}') == -1 &&
-                  index($uc_line, '\xc2\xa9') == -1 &&
-                  index($uc_line, '(C)') == -1);
+sub start_copyright_parsing() {
+    my $max_line_numbers_proximity = 3;
+    # Set up the defaults the way that proximity checks will not succeed.
+    my $last_a_item_line_number = -200;
+    my $last_b_item_line_number = -100;
 
-    my $copyright_indicator_regex =
-        '(?:copyright|copr\.|\x{00a9}|\xc2\xa9|\(c\))';
-    my $copyright_disindicator_regex =
-        '\b(?:info(?:rmation)?|notice|and|or)\b';
+    return sub {
+        my $line = $_[0];
+        my $line_number = $_[1];
 
-    my $copyright = '';
-    if ($line =~ m%\W$copyright_indicator_regex(?::\s*|\s+)(\w.*)$%i) {
-        my $match = $1;
-        if ($match !~ m%^\s*$copyright_disindicator_regex%i) {
-            $match =~ s/([,.])?\s*$//;
-            $match =~ s/$copyright_indicator_regex//ig;
-            $match =~ s/^\s+//;
-            $match =~ s/\s{2,}/ /g;
-            $match =~ s/\\@/@/g;
-            $copyright = $match;
+        # Remove C / C++ strings to avoid false positives.
+        if (index($line, '"') != -1) {
+            $line =~ s/"[^"\\]*(?:\\.[^"\\]*)*"//g;
         }
-    }
 
-    return $copyright;
+        my $uc_line = uc($line);
+
+        # Record '(a)' and '(b)' last occurences in C++ comments.
+        my $cpp_comment_idx = index($uc_line, '//');
+        if ($cpp_comment_idx != -1) {
+            if (index($uc_line, '(A)') > $cpp_comment_idx) {
+                $last_a_item_line_number = $line_number;
+            }
+            if (index($uc_line, '(B)') > $cpp_comment_idx) {
+                $last_b_item_line_number = $line_number;
+            }
+        }
+
+        # Fast bailout, uses the same patterns as the regexp.
+        if (index($uc_line, 'COPYRIGHT') == -1 &&
+            index($uc_line, 'COPR.') == -1 &&
+            index($uc_line, '\x{00a9}') == -1 &&
+            index($uc_line, '\xc2\xa9') == -1) {
+
+            my $c_item_index = index($uc_line, '(C)');
+            return '' if ($c_item_index == -1);
+            # Filter out 'c' used as a list item inside C++ comments.
+            # E.g. "// blah-blah (a) blah\n// blah-blah (b) and (c) blah"
+            if ($c_item_index > $cpp_comment_idx &&
+                are_within_increasing_progression(
+                    $line_number,
+                    $last_b_item_line_number,
+                    $max_line_numbers_proximity) &&
+                are_within_increasing_progression(
+                    $last_b_item_line_number,
+                    $last_a_item_line_number,
+                    $max_line_numbers_proximity)) {
+                return '';
+            }
+        }
+
+        my $copyright_indicator_regex =
+            '(?:copyright|copr\.|\x{00a9}|\xc2\xa9|\(c\))';
+        my $copyright_disindicator_regex =
+            '\b(?:info(?:rmation)?|notice|and|or)\b';
+
+        my $copyright = '';
+        if ($line =~ m%\W$copyright_indicator_regex(?::\s*|\s+)(\w.*)$%i) {
+            my $match = $1;
+            if ($match !~ m%^\s*$copyright_disindicator_regex%i) {
+                $match =~ s/([,.])?\s*$//;
+                $match =~ s/$copyright_indicator_regex//ig;
+                $match =~ s/^\s+//;
+                $match =~ s/\s{2,}/ /g;
+                $match =~ s/\\@/@/g;
+                $copyright = $match;
+            }
+        }
+
+        return $copyright;
+    }
 }

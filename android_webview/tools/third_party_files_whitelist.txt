@@ -140,19 +140,13 @@ net/http/md4.cc
 # code is taken from Mozilla, the license for which we already pick up from
 # third_party/npapi/.
 net/http/md4.h
-# Contains '(c)' in comments
-net/proxy/proxy_bypass_rules.h
 # Netscape Communications Corporation; MPL, GPL v2 or LGPL v2 license. This
 # third-party code is taken from Mozilla, the license for which we already pick
 # up from third_party/npapi/.
 net/proxy/proxy_resolver_script.h
-# Contains '(c)' in comments
-net/proxy/proxy_resolver_v8_tracing.cc
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD
 # and (MPL, GPL v2 or LGPL v2) licenses. Not used on Android.
 net/socket/ssl_client_socket_nss.cc
-# Contains '(c)' in comments
-net/url_request/url_fetcher_core.cc
 # TODO(mnaganov): Fix this. See crbug.com/172607
 rlz/win/lib/vista_winnt.h
 # Copyright The Android Open Source Project; ASL v2 license.
@@ -167,12 +161,6 @@ skia/ext/SkFontHost_fontconfig_direct.cpp
 skia/ext/SkFontHost_fontconfig_direct.h
 # Copyright Google Inc; ASL v2 license.
 skia/ext/SkFontHost_fontconfig_impl.h
-# Contains '(c)' in comments
-sync/internal_api/change_reorder_buffer.cc
-# Contains '(c)' in comments
-sync/internal_api/change_reorder_buffer.h
-# Contains '(c)' in comments
-sync/syncable/directory.h
 # Copyright Ero Carrera; BSD license. Tool only.
 tools/symsrc/pefile.py
 # Copyright The Chromium Authors, Sun Microsystems Inc, the V8 project authors;
