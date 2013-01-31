@@ -22,9 +22,13 @@ namespace content {
 class DisambiguationPopupHelperUnittest : public testing::Test {
  public:
   DisambiguationPopupHelperUnittest()
-      : kViewportSize_(640, 480) { }
+      : kScreenSize_(640, 480)
+      , kVisibleContentSize_(640, 480)
+      , kImplScale_(1) { }
  protected:
-  const gfx::Size kViewportSize_;
+  const gfx::Size kScreenSize_;
+  const gfx::Size kVisibleContentSize_;
+  const float kImplScale_;
 };
 
 TEST_F(DisambiguationPopupHelperUnittest, ClipByViewport) {
@@ -34,13 +38,14 @@ TEST_F(DisambiguationPopupHelperUnittest, ClipByViewport) {
 
   gfx::Rect zoom_rect;
   float scale = DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
-      tap_rect, target_rects, kViewportSize_, &zoom_rect);
+      tap_rect, target_rects, kScreenSize_, kVisibleContentSize_, kImplScale_,
+      &zoom_rect);
 
-  EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(zoom_rect));
+  EXPECT_TRUE(gfx::Rect(kVisibleContentSize_).Contains(zoom_rect));
   EXPECT_LE(kDisambiguationPopupMinScale, scale);
 
   gfx::Size scaled_size = ToCeiledSize(ScaleSize(zoom_rect.size(), scale));
-  EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(gfx::Rect(scaled_size)));
+  EXPECT_TRUE(gfx::Rect(kScreenSize_).Contains(gfx::Rect(scaled_size)));
 }
 
 TEST_F(DisambiguationPopupHelperUnittest, MiniTarget) {
@@ -50,14 +55,15 @@ TEST_F(DisambiguationPopupHelperUnittest, MiniTarget) {
 
   gfx::Rect zoom_rect;
   float scale = DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
-      tap_rect, target_rects, kViewportSize_, &zoom_rect);
+      tap_rect, target_rects, kScreenSize_, kVisibleContentSize_, kImplScale_,
+      &zoom_rect);
 
-  EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(zoom_rect));
+  EXPECT_TRUE(gfx::Rect(kVisibleContentSize_).Contains(zoom_rect));
   EXPECT_EQ(kDisambiguationPopupMaxScale, scale);
   EXPECT_TRUE(zoom_rect.Contains(target_rects[0]));
 
   gfx::Size scaled_size = ToCeiledSize(ScaleSize(zoom_rect.size(), scale));
-  EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(gfx::Rect(scaled_size)));
+  EXPECT_TRUE(gfx::Rect(kScreenSize_).Contains(gfx::Rect(scaled_size)));
 }
 
 TEST_F(DisambiguationPopupHelperUnittest, LongLinks) {
@@ -68,14 +74,15 @@ TEST_F(DisambiguationPopupHelperUnittest, LongLinks) {
 
   gfx::Rect zoom_rect;
   float scale = DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
-      tap_rect, target_rects, kViewportSize_, &zoom_rect);
+      tap_rect, target_rects, kScreenSize_, kVisibleContentSize_, kImplScale_,
+      &zoom_rect);
 
-  EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(zoom_rect));
+  EXPECT_TRUE(gfx::Rect(kVisibleContentSize_).Contains(zoom_rect));
   EXPECT_EQ(kDisambiguationPopupMaxScale, scale);
   EXPECT_TRUE(zoom_rect.Contains(tap_rect));
 
   gfx::Size scaled_size = ToCeiledSize(ScaleSize(zoom_rect.size(), scale));
-  EXPECT_TRUE(gfx::Rect(kViewportSize_).Contains(gfx::Rect(scaled_size)));
+  EXPECT_TRUE(gfx::Rect(kScreenSize_).Contains(gfx::Rect(scaled_size)));
 }
 
 }  // namespace content

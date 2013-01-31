@@ -1197,6 +1197,10 @@ class CONTENT_EXPORT RenderViewImpl
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
 
+  // Coordinate conversion -----------------------------------------------------
+
+  gfx::RectF ClientRectToPhysicalWindowRect(const gfx::RectF& rect) const;
+
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.

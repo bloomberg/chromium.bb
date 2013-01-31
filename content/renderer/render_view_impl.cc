@@ -189,6 +189,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
@@ -2309,6 +2310,13 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
   }
+}
+
+gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
+    const gfx::RectF& rect) const {
+  gfx::RectF window_rect = rect;
+  window_rect.Scale(device_scale_factor_ * webview()->pageScaleFactor());
+  return window_rect;
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
@@ -6560,13 +6568,16 @@ bool RenderViewImpl::didTapMultipleTargets(
       event.x - event.data.tap.width / 2, event.y - event.data.tap.height / 2,
       event.data.tap.width, event.data.tap.height);
   gfx::Rect zoom_rect;
-  float scale = DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
-      finger_rect, target_rects, GetSize(), &zoom_rect);
-  if (!scale)
+  float new_total_scale =
+      DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
+          finger_rect, target_rects, GetSize(),
+          gfx::Rect(webview()->mainFrame()->visibleContentRect()).size(),
+          device_scale_factor_ * webview()->pageScaleFactor(), &zoom_rect);
+  if (!new_total_scale)
     return false;
 
-  gfx::Size canvas_size = zoom_rect.size();
-  canvas_size = ToCeiledSize(gfx::ScaleSize(canvas_size, scale));
+  gfx::Size canvas_size = gfx::ToCeiledSize(gfx::ScaleSize(zoom_rect.size(),
+                                                           new_total_scale));
   TransportDIB* transport_dib = NULL;
   {
     scoped_ptr<skia::PlatformCanvas> canvas(
@@ -6575,14 +6586,23 @@ bool RenderViewImpl::didTapMultipleTargets(
     if (!canvas.get())
       return false;
 
-    canvas->scale(scale, scale);
+    // TODO(trchen): Cleanup the device scale factor mess.
+    // device scale will be applied in WebKit
+    // --> zoom_rect doesn't include device scale,
+    //     but WebKit will still draw on zoom_rect * device_scale_factor_
+    canvas->scale(new_total_scale / device_scale_factor_,
+                  new_total_scale / device_scale_factor_);
+    canvas->translate(-zoom_rect.x() * device_scale_factor_,
+                      -zoom_rect.y() * device_scale_factor_);
 
-    canvas->translate(-zoom_rect.x(), -zoom_rect.y());
     webwidget_->paint(webkit_glue::ToWebCanvas(canvas.get()), zoom_rect,
         WebWidget::ForceSoftwareRenderingAndIgnoreGPUResidentContent);
   }
+
+  gfx::Rect physical_window_zoom_rect = gfx::ToEnclosingRect(
+      ClientRectToPhysicalWindowRect(gfx::RectF(zoom_rect)));
   Send(new ViewHostMsg_ShowDisambiguationPopup(routing_id_,
-                                               zoom_rect,
+                                               physical_window_zoom_rect,
                                                canvas_size,
                                                transport_dib->id()));
 

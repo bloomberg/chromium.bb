@@ -25,7 +25,9 @@ class DisambiguationPopupHelper {
   CONTENT_EXPORT static float ComputeZoomAreaAndScaleFactor(
       const gfx::Rect& tap_rect,
       const WebKit::WebVector<WebKit::WebRect>& target_rects,
-      const gfx::Size& viewport_size,
+      const gfx::Size& screen_size,
+      const gfx::Size& visible_content_size,
+      float total_scale,
       gfx::Rect* zoom_rect);
 };
 
