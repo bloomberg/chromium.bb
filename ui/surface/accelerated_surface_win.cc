@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/base/win/shell.h"
 #include "ui/gfx/rect.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/accelerated_surface_transformer_win.h"
@@ -253,7 +254,8 @@ AcceleratedPresenter::AcceleratedPresenter(gfx::PluginWindowHandle window)
       event_(false, false),
       hidden_(true),
       do_present_with_GDI_(DoAllShowPresentWithGDI() ||
-                           DoFirstShowPresentWithGDI()) {
+                           DoFirstShowPresentWithGDI()),
+      is_session_locked_(false) {
 }
 
 // static
@@ -432,6 +434,10 @@ void AcceleratedPresenter::ReleaseSurface() {
       FROM_HERE,
       base::Bind(&AcceleratedPresenter::DoReleaseSurface,
                  this));
+}
+
+void AcceleratedPresenter::SetIsSessionLocked(bool locked) {
+  is_session_locked_ = locked;
 }
 
 void AcceleratedPresenter::Invalidate() {
@@ -752,6 +758,19 @@ gfx::Size AcceleratedPresenter::GetWindowSize() {
 }
 
 bool AcceleratedPresenter::CheckDirect3DWillWork() {
+  // On a composited desktop, when the screen saver or logon screen are
+  // active, D3D presents never make it to the window but GDI presents
+  // do. If the session is locked GDI presents can be avoided since
+  // the window gets a message on unlock and forces a repaint.
+  if (!is_session_locked_ && ui::win::IsAeroGlassEnabled()) {
+    // Failure to open the input desktop is a sign of running with a non-default
+    // desktop.
+    HDESK input_desktop = ::OpenInputDesktop(0, 0, GENERIC_READ);
+    if (!input_desktop)
+      return false;
+    ::CloseDesktop(input_desktop);
+  }
+
   gfx::Size window_size = GetWindowSize();
   if (window_size != last_window_size_ && last_window_size_.GetArea() != 0) {
     last_window_size_ = window_size;
@@ -798,4 +817,8 @@ void AcceleratedSurface::Suspend() {
 
 void AcceleratedSurface::WasHidden() {
   presenter_->WasHidden();
+}
+
+void AcceleratedSurface::SetIsSessionLocked(bool locked) {
+  presenter_->SetIsSessionLocked(locked);
 }

@@ -143,6 +143,7 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_GESTURE, OnGestureEvent)
     MESSAGE_HANDLER(WM_MOVE, OnMoveOrSize)
     MESSAGE_HANDLER(WM_SIZE, OnMoveOrSize)
+    MESSAGE_HANDLER(WM_WTSSESSION_CHANGE, OnSessionChange)
   END_MSG_MAP()
 
   // RenderWidgetHostView implementation.
@@ -334,6 +335,12 @@ class RenderWidgetHostViewWin
                          BOOL& handled);
   LRESULT OnMoveOrSize(UINT message, WPARAM wparam, LPARAM lparam,
                        BOOL& handled);
+
+  // Handle transitioning in and out of screensaver mode.
+  LRESULT OnSessionChange(UINT message,
+                          WPARAM wparam,
+                          LPARAM lparam,
+                          BOOL& handled);
 
   void OnFinalMessage(HWND window);
 

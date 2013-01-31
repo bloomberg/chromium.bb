@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <map>
 #include <stack>
+#include <wtsapi32.h>
+#pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1132,6 +1134,8 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
+  WTSRegisterSessionNotification(m_hWnd, NOTIFY_FOR_THIS_SESSION);
+
   UpdateDesiredTouchMode();
   UpdateIMEState();
 
@@ -1162,6 +1166,8 @@ void RenderWidgetHostViewWin::OnDestroy() {
   }
 
   CleanupCompositorWindow();
+
+  WTSUnRegisterSessionNotification(m_hWnd);
 
   ResetTooltip();
   TrackMouseLeave(false);
@@ -2618,6 +2624,33 @@ void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
   if (render_widget_host_)
     render_widget_host_->ViewDestroyed();
   delete this;
+}
+
+LRESULT RenderWidgetHostViewWin::OnSessionChange(UINT message,
+                                                 WPARAM wparam,
+                                                 LPARAM lparam,
+                                                 BOOL& handled) {
+  handled = FALSE;
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnSessionChange");
+
+  if (!accelerated_surface_.get())
+    return 0;
+
+  switch (wparam) {
+    case WTS_SESSION_LOCK:
+      accelerated_surface_->SetIsSessionLocked(true);
+      break;
+    case WTS_SESSION_UNLOCK:
+      // Force a repaint to update the window contents.
+      if (!is_hidden_)
+        InvalidateRect(NULL, FALSE);
+      accelerated_surface_->SetIsSessionLocked(false);
+      break;
+    default:
+      break;
+  }
+
+  return 0;
 }
 
 void RenderWidgetHostViewWin::TrackMouseLeave(bool track) {

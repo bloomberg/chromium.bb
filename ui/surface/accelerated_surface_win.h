@@ -54,6 +54,9 @@ class SURFACE_EXPORT AcceleratedPresenter
   // Indicates that the presenter has become invisible.
   void WasHidden();
 
+  // Called when the Windows session is locked or unlocked.
+  void SetIsSessionLocked(bool locked);
+
   // Schedule the presenter to release its reference to the shared surface.
   void ReleaseSurface();
 
@@ -143,6 +146,9 @@ class SURFACE_EXPORT AcceleratedPresenter
   // with GDI.
   bool do_present_with_GDI_;
 
+  // Set to true when the Windows session is locked.
+  bool is_session_locked_;
+
   // These are used to detect when the window is resizing. For some reason,
   // presenting with D3D while the window resizes causes those parts not
   // drawn with D3D (e.g. with GDI) to flicker visible / invisible.
@@ -178,6 +184,9 @@ class SURFACE_EXPORT AcceleratedSurface {
 
   // Indicates that the surface has become invisible.
   void WasHidden();
+
+  // Called when the Windows session in locked or unlocked.
+  void SetIsSessionLocked(bool locked);
 
  private:
   const scoped_refptr<AcceleratedPresenter> presenter_;
