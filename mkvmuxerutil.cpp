@@ -517,7 +517,7 @@ mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
     const errno_t e = rand_s(&random_value);
     (void)e;
     const int32 nn  = random_value;
-#elif
+#else
     const int32 nn = rand_r(seed);
 #endif
     const int32 n = 0xFF & (nn >> 4);  // throw away low-order bits
