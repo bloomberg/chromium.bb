@@ -297,10 +297,18 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(kInternalNaClPluginFileName);
       break;
     // PNaCl is currenly installable via the component updater or by being
-    // simply built-in, but only the builtin path is currently enabled.
-    // If PNaCl ends up using the component updater, it will need the version
-    // encoded in the path, and these will need to be split.
+    // simply built-in.  DIR_PNACL_BASE is used as the base directory for
+    // installation via component updater.  DIR_PNACL_COMPONENT will be
+    // the final location of pnacl, which is a subdir of DIR_PNACL_BASE.
     case chrome::DIR_PNACL_BASE:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
+      break;
+    // Where PNaCl files are ultimately located.  The default finds the files
+    // inside the InternalPluginsDirectory / build directory, as if it
+    // was shipped along with chrome.  The value can be overridden
+    // if it is installed via component updater.
     case chrome::DIR_PNACL_COMPONENT:
 #if defined(OS_MACOSX)
       // PNaCl really belongs in the InternalPluginsDirectory but actually

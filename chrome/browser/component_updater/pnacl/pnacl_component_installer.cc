@@ -4,8 +4,6 @@
 
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 
-#include <string.h>
-
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -14,6 +12,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
@@ -26,25 +25,18 @@ using content::BrowserThread;
 
 namespace {
 
-// CRX hash. This corresponds to AppId: emkhcgigkicgidendmffimilfehocheg
-const uint8 sha256_hash[] = {
-  0x4c, 0xa7, 0x26, 0x86, 0xa8, 0x26, 0x83, 0x4d, 0x3c, 0x55,
-  0x8c, 0x8b, 0x54, 0x7e, 0x27, 0x46, 0xa0, 0xf8, 0xd5, 0x0e, 0xea,
-  0x33, 0x46, 0x6e, 0xab, 0x6c, 0xde, 0xba, 0xc0, 0x91, 0xd4, 0x5e };
-
 // One of the Pnacl component files, for checking that expected files exist.
 // TODO(jvoung): perhaps replace this with a list of the expected files in the
 // manifest.json. Use that to check that everything is unpacked.
 // However, that would make startup detection even slower (need to check for
 // more than one file!).
-const FilePath::CharType kPnaclCompilerFileName[] =
-    FILE_PATH_LITERAL("llc");
+const char kPnaclCompilerFileName[] = "llc_nexe";
 
 // Name of the Pnacl component specified in the manifest.
-const char kPnaclManifestName[] = "PNaCl";
+const char kPnaclManifestNamePrefix[] = "PNaCl";
 
-// Name of the Pnacl architecture in the component manifest.
-// NOTE: this is independent of the Omaha query parameter.
+// Returns the name of the Pnacl architecture supported by an install.
+// NOTE: this is independent of the Omaha "arch" query parameter.
 const char* PnaclArch() {
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)
@@ -57,9 +49,6 @@ const char* PnaclArch() {
   return "x86-32";
 #endif
 #elif defined(ARCH_CPU_ARMEL)
-  // Eventually we'll need to distinguish arm32 vs thumb2.
-  // That may need to be based on the actual nexe rather than a static
-  // choice, which would require substantial refactoring.
   return "arm";
 #elif defined(ARCH_CPU_MIPSEL)
   return "mips32";
@@ -67,6 +56,75 @@ const char* PnaclArch() {
 #error "Add support for your architecture to Pnacl Component Installer."
 #endif
 }
+
+// Sanitize characters given by PnaclArch so that they can be used
+// in path names.  This should only be characters in the set: [a-z0-9_].
+// Keep in sync with chrome/browser/nacl_host/pnacl_file_host.
+std::string SanitizeForPath(const std::string& input) {
+  std::string result;
+  ReplaceChars(input, "-", "_", &result);
+  return result;
+}
+
+// Set the component's hash to the arch-specific PNaCl package.
+void SetPnaclHash(CrxComponent* component) {
+#if defined(ARCH_CPU_X86_FAMILY)
+  // Define both x86_32 and x86_64, and choose below.
+  static const uint8 x86_sha256_hash[][32] = {
+    { // This corresponds to AppID (x86-32): aealhdcgieaiikaifafholmmeooeeioj
+      0x04, 0x0b, 0x73, 0x26, 0x84, 0x08, 0x8a, 0x08, 0x50, 0x57,
+      0xeb, 0xcc, 0x4e, 0xe4, 0x48, 0xe9, 0x44, 0x2c, 0xc8, 0xa6, 0xd6,
+      0x96, 0x11, 0xd4, 0x2a, 0xc5, 0x26, 0x64, 0x34, 0x76, 0x3d, 0x14},
+    { // This corresponds to AppID (x86-64): knlfebnofcjjnkpkapbgfphaagefndik
+      0xad, 0xb5, 0x41, 0xde, 0x52, 0x99, 0xda, 0xfa, 0x0f, 0x16,
+      0x5f, 0x70, 0x06, 0x45, 0xd3, 0x8a, 0x32, 0x20, 0x84, 0x57, 0x5c,
+      0x1f, 0xef, 0xb4, 0x42, 0x32, 0xce, 0x4a, 0x3c, 0x2d, 0x7e, 0x3a}
+  };
+
+#if defined(ARCH_CPU_X86_64)
+  component->pk_hash.assign(
+      x86_sha256_hash[1],
+      &x86_sha256_hash[1][sizeof(x86_sha256_hash[1])]);
+#elif defined(OS_WIN)
+  bool x86_64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
+                 base::win::OSInfo::WOW64_ENABLED);
+  if (x86_64) {
+    component->pk_hash.assign(
+        x86_sha256_hash[1],
+        &x86_sha256_hash[1][sizeof(x86_sha256_hash[1])]);
+  } else {
+    component->pk_hash.assign(
+        x86_sha256_hash[0],
+        &x86_sha256_hash[0][sizeof(x86_sha256_hash[0])]);
+  }
+#else
+  component->pk_hash.assign(
+      x86_sha256_hash[0],
+      &x86_sha256_hash[0][sizeof(x86_sha256_hash[0])]);
+#endif
+#elif defined(ARCH_CPU_ARMEL)
+  // This corresponds to AppID: jgobdlakdbanalhiagkdgcnofkbebejj
+  static const uint8 arm_sha256_hash[] = {
+    0x96, 0xe1, 0x3b, 0x0a, 0x31, 0x0d, 0x0b, 0x78, 0x06, 0xa3,
+    0x62, 0xde, 0x5a, 0x14, 0x14, 0x99, 0xd4, 0xd9, 0x01, 0x85, 0xc6,
+    0x9a, 0xd2, 0x51, 0x90, 0xa4, 0xb4, 0x94, 0xbd, 0xb8, 0x8b, 0xe8};
+
+  component->pk_hash.assign(arm_sha256_hash,
+                            &arm_sha256_hash[sizeof(arm_sha256_hash)]);
+#elif defined(ARCH_CPU_MIPSEL)
+  // This is a dummy CRX hash for MIPS, so that it will at least compile.
+  static const uint8 mips32_sha256_hash[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  component->pk_hash.assign(mips32_sha256_hash,
+                            &mips32_sha256_hash[sizeof(mips32_sha256_hash)]);
+#else
+#error "Add support for your architecture to Pnacl Component Installer."
+#endif
+}
+
 
 // If we don't have Pnacl installed, this is the version we claim.
 // TODO(jvoung): Is there a way to trick the configurator to ping the server
@@ -116,7 +174,8 @@ bool GetLatestPnaclDirectory(FilePath* latest_dir, Version* latest_version,
 
 // Read the PNaCl specific manifest.
 base::DictionaryValue* ReadPnaclManifest(const FilePath& unpack_path) {
-  FilePath manifest = unpack_path.Append(FILE_PATH_LITERAL("pnacl.json"));
+  FilePath manifest = unpack_path.Append(
+      FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
   if (!file_util::PathExists(manifest))
     return NULL;
   JSONFileValueSerializer serializer(manifest);
@@ -137,9 +196,12 @@ bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
   // Make sure we have the right manifest file.
   std::string name;
   manifest->GetStringASCII("name", &name);
-  if (name != kPnaclManifestName) {
+  // For the webstore, we've given different names to each of the
+  // architecture specific packages, so only the prefix is the same.
+  if (StartsWithASCII(kPnaclManifestNamePrefix, name, false)) {
     LOG(WARNING) << "'name' field in manifest is invalid ("
-                 << name << " vs " << kPnaclManifestName << ")";
+                 << name << ") -- missing prefix ("
+                 << kPnaclManifestNamePrefix << ")";
     return false;
   }
 
@@ -192,8 +254,11 @@ namespace {
 
 bool PathContainsPnacl(const FilePath& base_path) {
   // Check that at least one of the compiler files exists, for the current ISA.
-  return file_util::PathExists(
-      base_path.AppendASCII(PnaclArch()).Append(kPnaclCompilerFileName));
+  std::string expected_filename("pnacl_public_");
+  std::string arch = PnaclArch();
+  expected_filename = expected_filename + SanitizeForPath(arch) +
+      "_" + kPnaclCompilerFileName;
+  return file_util::PathExists(base_path.AppendASCII(expected_filename));
 }
 
 }  // namespace
@@ -251,13 +316,15 @@ namespace {
 
 // Finally, do the registration with the right version number.
 void FinishPnaclUpdateRegistration(ComponentUpdateService* cus,
-                                   const Version& version) {
+                                   const Version& current_version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Note: the source is the default of BANDAID, even though the
+  // crxes are hosted from CWS.
   CrxComponent pnacl;
   pnacl.name = "pnacl";
-  pnacl.installer = new PnaclComponentInstaller(version);
-  pnacl.version = version;
-  pnacl.pk_hash.assign(sha256_hash, &sha256_hash[sizeof(sha256_hash)]);
+  pnacl.installer = new PnaclComponentInstaller(current_version);
+  pnacl.version = current_version;
+  SetPnaclHash(&pnacl);
   if (cus->RegisterComponent(pnacl) != ComponentUpdateService::kOk) {
     NOTREACHED() << "Pnacl component registration failed.";
   }

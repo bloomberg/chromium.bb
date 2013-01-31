@@ -40,6 +40,11 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/flash_component_installer.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#include "chrome/browser/component_updater/recovery_component_installer.h"
+#include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -60,6 +65,7 @@
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/page_cycler/page_cycler.h"
@@ -403,6 +409,28 @@ void RecordDefaultBrowserUMAStat() {
       ShellIntegration::GetDefaultBrowser();
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
                             ShellIntegration::NUM_DEFAULT_STATES);
+}
+
+void RegisterComponentsForUpdate(const CommandLine& command_line) {
+  ComponentUpdateService* cus = g_browser_process->component_updater();
+  if (!cus)
+    return;
+  // Registration can be before of after cus->Start() so it is ok to post
+  // a task to the UI thread to do registration once you done the necessary
+  // file IO to know you existing component version.
+  RegisterRecoveryComponent(cus, g_browser_process->local_state());
+  RegisterPepperFlashComponent(cus);
+  RegisterSwiftShaderComponent(cus);
+
+  // CRLSetFetcher attempts to load a CRL set from either the local disk or
+  // network.
+  if (!command_line.HasSwitch(switches::kDisableCRLSets))
+    g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+
+  if (command_line.HasSwitch(switches::kEnablePnacl))
+    RegisterPnaclComponent(cus);
+
+  cus->Start();
 }
 
 bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
@@ -1423,6 +1451,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   std::vector<Profile*> last_opened_profiles =
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
+
+  if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
+    RegisterComponentsForUpdate(parsed_command_line());
 
   if (browser_creator_->Start(parsed_command_line(), FilePath(),
                               profile_, last_opened_profiles, &result_code)) {
