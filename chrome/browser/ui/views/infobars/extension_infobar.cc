@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
@@ -80,7 +81,7 @@ ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
       delegate_(delegate),
       browser_(browser),
       menu_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   delegate->set_observer(this);
 
   int height = delegate->height();
@@ -134,17 +135,40 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
       extension_misc::EXTENSION_ICON_BITTY;
   ExtensionResource icon_resource = extension->GetIconResource(
       image_size, ExtensionIconSet::MATCH_EXACTLY);
-  tracker_.LoadImage(extension, icon_resource,
-      gfx::Size(image_size, image_size), ImageLoadingTracker::DONT_CACHE);
+  extensions::ImageLoader* loader =
+      extensions::ImageLoader::Get(extension_host->profile());
+  loader->LoadImageAsync(
+      extension,
+      icon_resource,
+      gfx::Size(image_size, image_size),
+      base::Bind(&ExtensionInfoBar::OnImageLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 int ExtensionInfoBar::ContentMinimumWidth() const {
   return menu_->GetPreferredSize().width() + kMenuHorizontalMargin;
 }
 
-void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
-                                     const std::string& extension_id,
-                                     int index) {
+void ExtensionInfoBar::OnDelegateDeleted() {
+  delegate_ = NULL;
+}
+
+void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
+                                           const gfx::Point& point) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
+  const extensions::Extension* extension = GetDelegate()->extension_host()->
+      extension();
+  if (!extension->ShowConfigureContextMenus())
+    return;
+
+  scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
+      new ExtensionContextMenuModel(extension, browser_);
+  DCHECK_EQ(menu_, source);
+  RunMenuAt(options_menu_contents.get(), menu_, views::MenuItemView::TOPLEFT);
+}
+
+void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image) {
   if (!GetDelegate())
     return;  // The delegate can go away while we asynchronously load images.
 
@@ -165,25 +189,6 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
   menu_->SetVisible(true);
 
   Layout();
-}
-
-void ExtensionInfoBar::OnDelegateDeleted() {
-  delegate_ = NULL;
-}
-
-void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
-                                           const gfx::Point& point) {
-  if (!owned())
-    return;  // We're closing; don't call anything, it might access the owner.
-  const extensions::Extension* extension = GetDelegate()->extension_host()->
-      extension();
-  if (!extension->ShowConfigureContextMenus())
-    return;
-
-  scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
-      new ExtensionContextMenuModel(extension, browser_);
-  DCHECK_EQ(menu_, source);
-  RunMenuAt(options_menu_contents.get(), menu_, views::MenuItemView::TOPLEFT);
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {

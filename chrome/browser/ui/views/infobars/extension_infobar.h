@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
@@ -17,7 +16,6 @@ class MenuButton;
 }
 
 class ExtensionInfoBar : public InfoBarView,
-                         public ImageLoadingTracker::Observer,
                          public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::MenuButtonListener {
  public:
@@ -35,17 +33,14 @@ class ExtensionInfoBar : public InfoBarView,
                                     views::View* child) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
 
-  // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
-
   // ExtensionInfoBarDelegate::DelegateObserver:
   virtual void OnDelegateDeleted() OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
+
+  void OnImageLoaded(const gfx::Image& image);
 
   ExtensionInfoBarDelegate* GetDelegate();
 
@@ -59,8 +54,7 @@ class ExtensionInfoBar : public InfoBarView,
   // The dropdown menu for accessing the contextual extension actions.
   views::MenuButton* menu_;
 
-  // Keeps track of images being loaded on the File thread.
-  ImageLoadingTracker tracker_;
+  base::WeakPtrFactory<ExtensionInfoBar> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoBar);
 };
