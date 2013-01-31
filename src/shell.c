@@ -2846,6 +2846,9 @@ hide_input_panels(struct wl_listener *listener, void *data)
 			     hide_input_panel_listener);
 	struct weston_surface *surface, *next;
 
+	if (!shell->showing_input_panels)
+		return;
+
 	shell->showing_input_panels = false;
 
 	if (!shell->locked)

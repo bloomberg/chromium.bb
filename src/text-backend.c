@@ -40,6 +40,8 @@ struct text_model {
 	struct wl_list input_methods;
 
 	struct wl_surface *surface;
+
+	uint32_t input_panel_visible;
 };
 
 struct text_model_factory {
@@ -183,7 +185,8 @@ text_model_activate(struct wl_client *client,
 
 	input_method_context_create(text_model, input_method, serial);
 
-	wl_signal_emit(&ec->show_input_panel_signal, ec);
+	if (text_model->input_panel_visible)
+		wl_signal_emit(&ec->show_input_panel_signal, ec);
 
 	text_model_send_enter(&text_model->resource, &text_model->surface->resource);
 }
@@ -271,6 +274,32 @@ text_model_commit(struct wl_client *client,
 	}
 }
 
+static void
+text_model_show_input_panel(struct wl_client *client,
+			    struct wl_resource *resource)
+{
+	struct text_model *text_model = resource->data;
+	struct weston_compositor *ec = text_model->ec;
+
+	text_model->input_panel_visible = 1;
+
+	if (!wl_list_empty(&text_model->input_methods))
+		wl_signal_emit(&ec->show_input_panel_signal, ec);
+}
+
+static void
+text_model_hide_input_panel(struct wl_client *client,
+			    struct wl_resource *resource)
+{
+	struct text_model *text_model = resource->data;
+	struct weston_compositor *ec = text_model->ec;
+
+	text_model->input_panel_visible = 0;
+
+	if (!wl_list_empty(&text_model->input_methods))
+		wl_signal_emit(&ec->hide_input_panel_signal, ec);
+}
+
 static const struct text_model_interface text_model_implementation = {
 	text_model_set_surrounding_text,
 	text_model_activate,
@@ -279,7 +308,9 @@ static const struct text_model_interface text_model_implementation = {
 	text_model_set_micro_focus,
 	text_model_set_content_type,
 	text_model_invoke_action,
-	text_model_commit
+	text_model_commit,
+	text_model_show_input_panel,
+	text_model_hide_input_panel
 };
 
 static void text_model_factory_create_text_model(struct wl_client *client,

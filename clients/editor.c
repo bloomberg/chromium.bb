@@ -60,6 +60,7 @@ struct text_entry {
 	} keysym;
 	uint32_t serial;
 	uint32_t content_purpose;
+	uint32_t click_to_show;
 };
 
 struct editor {
@@ -360,7 +361,16 @@ text_model_leave(void *data,
 
 	entry->active = 0;
 
+	text_model_hide_input_panel(text_model);
+
 	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_model_input_panel_state(void *data,
+			     struct text_model *text_model,
+			     uint32_t state)
+{
 }
 
 static const struct text_model_listener text_model_listener = {
@@ -372,7 +382,8 @@ static const struct text_model_listener text_model_listener = {
 	text_model_modifiers_map,
 	text_model_keysym,
 	text_model_enter,
-	text_model_leave
+	text_model_leave,
+	text_model_input_panel_state
 };
 
 static struct text_entry*
@@ -467,6 +478,15 @@ text_entry_activate(struct text_entry *entry,
 		    struct wl_seat *seat)
 {
 	struct wl_surface *surface = window_get_wl_surface(entry->window);
+
+	if (entry->click_to_show && entry->active) {
+		text_model_show_input_panel(entry->model);
+
+		return;
+	}
+
+	if (!entry->click_to_show)
+		text_model_show_input_panel(entry->model);
 
 	entry->serial++;
 
@@ -997,6 +1017,12 @@ int
 main(int argc, char *argv[])
 {
 	struct editor editor;
+	int i;
+	uint32_t click_to_show = 0;
+
+	for (i = 1; i < argc; i++)
+		if (strcmp("--click-to-show", argv[i]) == 0)
+			click_to_show = 1;
 
 	memset(&editor, 0, sizeof editor);
 
@@ -1017,8 +1043,10 @@ main(int argc, char *argv[])
 	editor.widget = frame_create(editor.window, &editor);
 
 	editor.entry = text_entry_create(&editor, "Entry");
+	editor.entry->click_to_show = click_to_show;
 	editor.editor = text_entry_create(&editor, "Numeric");
 	editor.editor->content_purpose = TEXT_MODEL_CONTENT_PURPOSE_NUMBER;
+	editor.editor->click_to_show = click_to_show;
 
 	window_set_title(editor.window, "Text Editor");
 	window_set_key_handler(editor.window, key_handler);

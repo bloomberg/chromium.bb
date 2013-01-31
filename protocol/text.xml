@@ -140,6 +140,16 @@
     </request>
     <request name="commit">
     </request>
+    <request name="show_input_panel">
+      <description summary="show input panels">
+        Requests input panels (virtual keyboard) to show.
+      </description>
+    </request>
+    <request name="hide_input_panel">
+      <description summary="hide input panels">
+        Requests input panels (virtual keyboard) to hide.
+      </description>
+    </request>
     <event name="commit_string">
       <description summary="commit">
         Notify when text should be inserted into the editor widget. The text
@@ -247,6 +257,12 @@
         deactivate request or when the assigned surface lost focus or was
         destroyed.
       </description>
+    </event>
+    <event name="input_panel_state">
+      <description summary="state of the input panel">
+        Notify when the visibility state of the input panel changed.
+      </description>
+      <arg name="state" type="uint"/>
     </event>
   </interface>
 
