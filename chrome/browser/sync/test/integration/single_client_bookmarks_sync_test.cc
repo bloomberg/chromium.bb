@@ -6,14 +6,18 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "ui/base/layout.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
+using bookmarks_helper::Create1xFaviconFromPNGFile;
 using bookmarks_helper::GetBookmarkBarNode;
+using bookmarks_helper::GetBookmarkModel;
 using bookmarks_helper::GetOtherNode;
 using bookmarks_helper::ModelMatchesVerifier;
 using bookmarks_helper::Move;
 using bookmarks_helper::Remove;
+using bookmarks_helper::SetFavicon;
 using bookmarks_helper::SetTitle;
 
 class SingleClientBookmarksSyncTest : public SyncTest {
@@ -159,4 +163,48 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   RestartSyncService(0);
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
+}
+
+// Test that a client doesn't mutate the favicon data in the process
+// of storing the favicon data from sync to the database or in the process
+// of requesting data from the database for sync.
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+                       SetFaviconHiDPIDifferentCodec) {
+  // Set the supported scale factors to 1x and 2x such that
+  // BookmarkModel::GetFavicon() requests both 1x and 2x.
+  // 1x -> for sync, 2x -> for the UI.
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::SetSupportedScaleFactors(supported_scale_factors);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ModelMatchesVerifier(0));
+
+  const GURL page_url("http://www.google.com");
+  const GURL icon_url("http://www.google.com/favicon.ico");
+  const BookmarkNode* bookmark = AddURL(0, L"title", page_url);
+
+  // Simulate receiving a favicon from sync encoded by a different PNG encoder
+  // than the one native to the OS. This tests the PNG data is not decoded to
+  // SkBitmap (or any other image format) then encoded back to PNG on the path
+  // between sync and the database.
+  gfx::Image original_favicon = Create1xFaviconFromPNGFile(
+      "favicon_cocoa_png_codec.png");
+  ASSERT_FALSE(original_favicon.IsEmpty());
+  SetFavicon(0, bookmark, icon_url, original_favicon,
+             bookmarks_helper::FROM_SYNC);
+
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added bookmark"));
+  ASSERT_TRUE(ModelMatchesVerifier(0));
+
+  scoped_refptr<base::RefCountedMemory> original_favicon_bytes =
+      original_favicon.As1xPNGBytes();
+  gfx::Image final_favicon = GetBookmarkModel(0)->GetFavicon(bookmark);
+  scoped_refptr<base::RefCountedMemory> final_favicon_bytes =
+      final_favicon.As1xPNGBytes();
+
+  // Check that the data was not mutated from the original.
+  EXPECT_TRUE(original_favicon_bytes.get());
+  EXPECT_TRUE(original_favicon_bytes->Equals(final_favicon_bytes));
 }

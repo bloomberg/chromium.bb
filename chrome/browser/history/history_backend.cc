@@ -1990,7 +1990,6 @@ void HistoryBackend::MergeFavicon(
 
   // Copy the favicon bitmaps mapped to |page_url| to the favicon at |icon_url|
   // till the limit of |kMaxFaviconBitmapsPerIconURL| is reached.
-  bool migrated_bitmaps = false;
   for (size_t i = 0; i < icon_mappings.size(); ++i) {
     if (favicon_sizes.size() >= kMaxFaviconBitmapsPerIconURL)
       break;
@@ -2010,8 +2009,6 @@ void HistoryBackend::MergeFavicon(
           favicon_sizes.end(), bitmaps_to_copy[j].pixel_size);
       if (it != favicon_sizes.end())
         continue;
-
-      migrated_bitmaps = true;
 
       // Add the favicon bitmap as expired as it is not consistent with the
       // merged in data.
@@ -2033,13 +2030,9 @@ void HistoryBackend::MergeFavicon(
     SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
   }
 
-  // Sync currently does not properly deal with notifications as a result of
-  // replacing a favicon bitmap. For M25, do not send any notifications if a
-  // bitmap was replaced and no bitmaps were added or deleted. This is a
-  // temporary fix for http://crbug.com/169460.
-  if (migrated_bitmaps || !replaced_bitmap)
-    SendFaviconChangedNotificationForPageAndRedirects(page_url);
-
+  // Send notification to the UI as at least a favicon bitmap was added or
+  // replaced.
+  SendFaviconChangedNotificationForPageAndRedirects(page_url);
   ScheduleCommit();
 }
 

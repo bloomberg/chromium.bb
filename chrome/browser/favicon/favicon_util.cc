@@ -14,22 +14,31 @@
 
 namespace {
 
-// Attempts to create a resulting image of DIP size |favicon_size| with
-// image reps of |scale_factors| without resizing or decoding the bitmap
-// data.
-// Returns an empty gfx::Image if the bitmap data must be resized.
-gfx::Image SelectFaviconFramesFromPNGsWithoutResizing(
+// Creates image reps of DIP size |favicon_size| for the subset of
+// |scale_factors| for which the image reps can be created without resizing
+// or decoding the bitmap data.
+std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
     const std::vector<history::FaviconBitmapResult>& png_data,
-    const std::vector<ui::ScaleFactor> scale_factors,
+    const std::vector<ui::ScaleFactor>& scale_factors,
     int favicon_size) {
-  if (png_data.size() != scale_factors.size())
-    return gfx::Image();
+  std::vector<gfx::ImagePNGRep> png_reps;
+  if (png_data.empty())
+    return png_reps;
 
   // A |favicon_size| of 0 indicates that the largest frame is desired.
-  if (favicon_size == 0 && png_data.size() == 1) {
-    scoped_refptr<base::RefCountedMemory> bitmap_data = png_data[0].bitmap_data;
-    return gfx::Image::CreateFrom1xPNGBytes(bitmap_data->front(),
-                                            bitmap_data->size());
+  if (favicon_size == 0 && scale_factors.size() == 1) {
+    int maximum_area = 0;
+    scoped_refptr<base::RefCountedMemory> best_candidate;
+    for (size_t i = 0; i < png_data.size(); ++i) {
+      int area = png_data[i].pixel_size.GetArea();
+      if (area > maximum_area) {
+        maximum_area = area;
+        best_candidate = png_data[i].bitmap_data;
+      }
+    }
+    png_reps.push_back(gfx::ImagePNGRep(best_candidate,
+                                        scale_factors[0]));
+    return png_reps;
   }
 
   // Cache the scale factor for each pixel size as |scale_factors| may contain
@@ -42,24 +51,23 @@ gfx::Image SelectFaviconFramesFromPNGsWithoutResizing(
     desired_pixel_sizes[pixel_size] = scale_factors[i];
   }
 
-  std::vector<gfx::ImagePNGRep> png_reps;
   for (size_t i = 0; i < png_data.size(); ++i) {
     if (!png_data[i].is_valid())
-      return gfx::Image();
+      continue;
 
     const gfx::Size& pixel_size = png_data[i].pixel_size;
     if (pixel_size.width() != pixel_size.height())
-      return gfx::Image();
+      continue;
 
     std::map<int, ui::ScaleFactor>::iterator it = desired_pixel_sizes.find(
         pixel_size.width());
     if (it == desired_pixel_sizes.end())
-      return gfx::Image();
+      continue;
 
     png_reps.push_back(gfx::ImagePNGRep(png_data[i].bitmap_data, it->second));
   }
 
-  return gfx::Image(png_reps);
+  return png_reps;
 }
 
 }  // namespace
@@ -97,17 +105,34 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
       const std::vector<history::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor> scale_factors,
       int favicon_size) {
-  // Attempt to create a result image without resizing the bitmap data or
-  // decoding it. FaviconHandler stores already resized favicons into history
-  // so no additional resizing should be needed in the common case. Skipping
-  // decoding to ImageSkia is useful because the ImageSkia representation may
-  // not be needed and because the decoding is done on the UI thread and the
-  // decoding can be a significant performance hit if a user has many bookmarks.
+  // Create image reps for as many scale factors as possible without resizing
+  // the bitmap data or decoding it. FaviconHandler stores already resized
+  // favicons into history so no additional resizing should be needed in the
+  // common case.
+  // Creating the gfx::Image from |png_data| without resizing or decoding if
+  // possible is important because:
+  // - Sync does a byte-to-byte comparison of gfx::Image::As1xPNGBytes() to
+  //   the data it put into the database in order to determine whether any
+  //   updates should be pushed to sync.
+  // - The decoding occurs on the UI thread and the decoding can be a
+  //   significant performance hit if a user has many bookmarks.
   // TODO(pkotwicz): Move the decoding off the UI thread.
-  gfx::Image without_resizing = SelectFaviconFramesFromPNGsWithoutResizing(
-      png_data, scale_factors, favicon_size);
-  if (!without_resizing.IsEmpty())
-    return without_resizing;
+  std::vector<gfx::ImagePNGRep> png_reps =
+      SelectFaviconFramesFromPNGsWithoutResizing(png_data, scale_factors,
+          favicon_size);
+
+  std::vector<ui::ScaleFactor> scale_factors_to_generate = scale_factors;
+  for (size_t i = 0; i < png_reps.size(); ++i) {
+    std::vector<ui::ScaleFactor>::iterator it = std::find(
+        scale_factors_to_generate.begin(),
+        scale_factors_to_generate.end(),
+        png_reps[i].scale_factor);
+    CHECK(it != scale_factors_to_generate.end());
+    scale_factors_to_generate.erase(it);
+  }
+
+  if (scale_factors_to_generate.empty())
+    return gfx::Image(png_reps);
 
   std::vector<SkBitmap> bitmaps;
   for (size_t i = 0; i < png_data.size(); ++i) {
@@ -126,8 +151,23 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
     return gfx::Image();
 
   gfx::ImageSkia resized_image_skia = SelectFaviconFrames(bitmaps,
-      scale_factors, favicon_size, NULL);
-  return gfx::Image(resized_image_skia);
+      scale_factors_to_generate, favicon_size, NULL);
+
+  if (png_reps.empty())
+    return gfx::Image(resized_image_skia);
+
+  std::vector<gfx::ImageSkiaRep> resized_image_skia_reps =
+      resized_image_skia.image_reps();
+  for (size_t i = 0; i < resized_image_skia_reps.size(); ++i) {
+    scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(
+        resized_image_skia_reps[i].sk_bitmap(), false, &png_bytes->data())) {
+      png_reps.push_back(gfx::ImagePNGRep(png_bytes,
+          resized_image_skia_reps[i].scale_factor()));
+    }
+  }
+
+  return gfx::Image(png_reps);
 }
 
 // static

@@ -1708,8 +1708,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   bitmap_data = new base::RefCountedBytes(data);
   backend_->MergeFavicon(page_url, icon_url1, FAVICON, bitmap_data, kSmallSize);
 
-  // The small favicon bitmap at |icon_url1| should be overwritten and favicon
-  // sizes should remain unchanged. No notification should be sent.
+  // The small favicon bitmap at |icon_url1| should be overwritten.
   icon_mappings.clear();
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(page_url,
       &icon_mappings));
@@ -1720,8 +1719,6 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
   EXPECT_TRUE(BitmapDataEqual('b', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
-
-  EXPECT_EQ(1, num_broadcasted_notifications());
 
   // 3) Merge favicon for the same icon URL, but a pixel size for which there is
   // no favicon bitmap.
@@ -1775,7 +1772,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
 
   // A notification should have been broadcast for each call to SetFavicons()
   // and MergeFavicon().
-  EXPECT_EQ(3, num_broadcasted_notifications());
+  EXPECT_EQ(4, num_broadcasted_notifications());
 }
 
 // Test calling MergeFavicon() when |icon_url| is known to the database but not

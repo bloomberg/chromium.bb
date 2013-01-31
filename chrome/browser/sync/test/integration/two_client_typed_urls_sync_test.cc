@@ -449,7 +449,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
   const BookmarkNode* node = bookmarks_helper::AddURL(
       0, bookmarks_helper::IndexedURLTitle(0), bookmark_url);
   bookmarks_helper::SetFavicon(0, node, bookmark_icon_url,
-      bookmarks_helper::CreateFavicon(SK_ColorWHITE));
+      bookmarks_helper::CreateFavicon(SK_ColorWHITE),
+      bookmarks_helper::FROM_UI);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
