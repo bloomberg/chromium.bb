@@ -89,6 +89,7 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 class MemoryObserver : public MessageLoop::TaskObserver {
  public:
   MemoryObserver() {}
+  virtual ~MemoryObserver() {}
 
   virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {}
 

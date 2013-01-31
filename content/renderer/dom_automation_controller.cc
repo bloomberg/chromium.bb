@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/string_util.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/view_messages.h"
 
 using webkit_glue::CppArgumentList;
@@ -32,6 +33,9 @@ DomAutomationController::DomAutomationController()
                                         base::Unretained(this)));
   BindCallback("getHistogram",
                base::Bind(&DomAutomationController::GetHistogram,
+                          base::Unretained(this)));
+  BindCallback("getBrowserHistogram",
+               base::Bind(&DomAutomationController::GetBrowserHistogram,
                           base::Unretained(this)));
 }
 
@@ -189,6 +193,25 @@ void DomAutomationController::GetHistogram(const CppArgumentList& args,
     histogram->WriteJSON(&output);
   }
   result->Set(output);
+}
+
+void DomAutomationController::GetBrowserHistogram(const CppArgumentList& args,
+                                                  CppVariant* result) {
+  if (args.size() != 1) {
+    result->SetNull();
+    return;
+  }
+
+  if (!sender_) {
+    NOTREACHED();
+    result->SetNull();
+    return;
+  }
+
+  std::string histogram_json;
+  sender_->Send(new ChildProcessHostMsg_GetBrowserHistogram(
+      args[0].ToString(), &histogram_json));
+  result->Set(histogram_json);
 }
 
 }  // namespace content

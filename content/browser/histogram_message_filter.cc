@@ -4,10 +4,14 @@
 
 #include "content/browser/histogram_message_filter.h"
 
+#include "base/command_line.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/process_util.h"
 #include "content/browser/histogram_controller.h"
 #include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -23,6 +27,8 @@ bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(HistogramMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ChildHistogramData,
                         OnChildHistogramData)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_GetBrowserHistogram,
+                        OnGetBrowserHistogram)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -36,4 +42,21 @@ void HistogramMessageFilter::OnChildHistogramData(
   HistogramController::GetInstance()->OnHistogramDataCollected(
       sequence_number, pickled_histograms);
 }
+
+void HistogramMessageFilter::OnGetBrowserHistogram(
+    const std::string& name,
+    std::string* histogram_json) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryMetrics))
+    return;
+  if (name != "Memory.BrowserUsed")
+    return;
+  base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
+  if (!histogram) {
+    *histogram_json = "{}";
+  } else {
+    histogram->WriteJSON(histogram_json);
+  }
 }
+
+}  // namespace content

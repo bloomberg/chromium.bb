@@ -98,6 +98,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#if !defined(OS_IOS)
+#include "webkit/glue/webkit_glue.h"
+#endif
+
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -225,6 +229,24 @@ class BrowserShutdownImpl {
 void ImmediateShutdownAndExitProcess() {
   BrowserShutdownImpl::ImmediateShutdownAndExitProcess();
 }
+
+// For measuring memory usage after each task. Behind a command line flag.
+class BrowserMainLoop::MemoryObserver : public MessageLoop::TaskObserver {
+ public:
+  MemoryObserver() {}
+  virtual ~MemoryObserver() {}
+
+  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {}
+
+  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
+#if !defined(OS_IOS)
+    HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", webkit_glue::MemoryUsageKB());
+#endif
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryObserver);
+};
+
 
 // static
 media::AudioManager* BrowserMainLoop::GetAudioManager() {
@@ -374,6 +396,11 @@ void BrowserMainLoop::MainMessageLoopStart() {
           switches::kMediaPlayerInRenderProcess)));
   DataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
 #endif
+
+  if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {
+    memory_observer_.reset(new MemoryObserver());
+    main_message_loop_->AddTaskObserver(memory_observer_.get());
+  }
 }
 
 void BrowserMainLoop::CreateThreads() {

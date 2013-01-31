@@ -108,6 +108,13 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildHistogramData,
                      int, /* sequence_number */
                      std::vector<std::string> /* histogram_data */)
 
+// Request a histogram from the browser. The browser will send the histogram
+// data only if it has been passed the command line flag
+// switches::kMemoryMetrics.
+IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_GetBrowserHistogram,
+                            std::string, /* histogram_name */
+                            std::string /* histogram_json */)
+
 // Reply to ChildProcessMsg_DumpHandles when handle table dump is complete.
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_DumpHandlesDone)
 

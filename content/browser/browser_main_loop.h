@@ -49,6 +49,7 @@ class DeviceMonitorMac;
 // All functions are to be called only on the UI thread unless otherwise noted.
 class BrowserMainLoop {
  public:
+  class MemoryObserver;
   explicit BrowserMainLoop(const MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
@@ -131,6 +132,7 @@ class BrowserMainLoop {
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;
   scoped_ptr<BrowserProcessSubThread> io_thread_;
+  scoped_ptr<MemoryObserver> memory_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };
