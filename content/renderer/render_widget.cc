@@ -1173,8 +1173,8 @@ void RenderWidget::DoDeferredUpdate() {
 
 void RenderWidget::Composite() {
   DCHECK(is_accelerated_compositing_active_);
-  DCHECK(web_layer_tree_view_);
-  web_layer_tree_view_->composite();
+  if (web_layer_tree_view_)  // TODO(jamesr): Figure out how this can be null.
+    web_layer_tree_view_->composite();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
