@@ -341,7 +341,24 @@ void PanelManager::OnPanelClosed(Panel* panel) {
 
   drag_controller_->OnPanelClosed(panel);
   resize_controller_->OnPanelClosed(panel);
-  panel->collection()->RemovePanel(panel);
+
+  // Note that we need to keep track of panel's collection since it will be
+  // gone once RemovePanel is called.
+  PanelCollection* collection = panel->collection();
+  collection->RemovePanel(panel);
+
+  // If only one panel is left in the stack, move it out of the stack.
+  if (collection->type() == PanelCollection::STACKED) {
+    StackedPanelCollection* stack =
+        static_cast<StackedPanelCollection*>(collection);
+    DCHECK_GE(stack->num_panels(), 1);
+    if (stack->num_panels() == 1) {
+      MovePanelToCollection(stack->top_panel(),
+                            detached_collection(),
+                            PanelCollection::DEFAULT_POSITION);
+      RemoveStack(stack);
+    }
+  }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CLOSED,

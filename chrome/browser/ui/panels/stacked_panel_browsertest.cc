@@ -758,4 +758,26 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 2 stacked panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  gfx::Rect panel1_initial_bounds = gfx::Rect(100, 50, 200, 150);
+  Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
+  gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
+  Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack->num_panels());
+
+  // Close P2. Expect that P1 should become detached.
+  CloseWindowAndWait(panel2);
+  ASSERT_EQ(1, panel_manager->num_panels());
+  ASSERT_EQ(0, panel_manager->num_stacks());
+  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+
+  panel_manager->CloseAll();
+}
+
 #endif
