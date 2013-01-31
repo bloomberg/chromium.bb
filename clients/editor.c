@@ -53,6 +53,10 @@ struct text_entry {
 		PangoAttrList *attr_list;
 		int32_t cursor;
 	} preedit_info;
+	struct {
+		int32_t cursor;
+		int32_t anchor;
+	} pending_commit;
 	struct text_model *model;
 	PangoLayout *layout;
 	struct {
@@ -112,7 +116,8 @@ static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
 				      uint32_t button,
 				      enum wl_pointer_button_state state, void *data);
-static void text_entry_insert_at_cursor(struct text_entry *entry, const char *text);
+static void text_entry_insert_at_cursor(struct text_entry *entry, const char *text,
+					int32_t cursor, int32_t anchor);
 static void text_entry_set_preedit(struct text_entry *entry,
 				   const char *preedit_text,
 				   int preedit_cursor);
@@ -126,18 +131,18 @@ static void
 text_model_commit_string(void *data,
 			 struct text_model *text_model,
 			 uint32_t serial,
-			 const char *text,
-			 uint32_t index)
+			 const char *text)
 {
 	struct text_entry *entry = data;
-
-	if (index > strlen(text))
-		fprintf(stderr, "Invalid cursor index %d\n", index);
 
 	text_entry_reset_preedit(entry);
 
 	text_entry_delete_selected_text(entry);
-	text_entry_insert_at_cursor(entry, text);
+	text_entry_insert_at_cursor(entry, text,
+				    entry->pending_commit.cursor,
+				    entry->pending_commit.anchor);
+
+	memset(&entry->pending_commit, 0, sizeof entry->pending_commit);
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -192,6 +197,19 @@ text_model_delete_surrounding_text(void *data,
 	text_entry_delete_text(entry,
 			       start - entry->text,
 			       end - start);
+}
+
+static void
+text_model_cursor_position(void *data,
+			   struct text_model *text_model,
+			   uint32_t serial,
+			   int32_t index,
+			   int32_t anchor)
+{
+	struct text_entry *entry = data;
+
+	entry->pending_commit.cursor = index;
+	entry->pending_commit.anchor = anchor;
 }
 
 static void
@@ -377,6 +395,7 @@ static const struct text_model_listener text_model_listener = {
 	text_model_commit_string,
 	text_model_preedit_string,
 	text_model_delete_surrounding_text,
+	text_model_cursor_position,
 	text_model_preedit_styling,
 	text_model_preedit_cursor,
 	text_model_modifiers_map,
@@ -583,7 +602,8 @@ text_entry_update(struct text_entry *entry)
 }
 
 static void
-text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
+text_entry_insert_at_cursor(struct text_entry *entry, const char *text,
+			    int32_t cursor, int32_t anchor)
 {
 	char *new_text = malloc(strlen(entry->text) + strlen(text) + 1);
 
@@ -594,8 +614,14 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 
 	free(entry->text);
 	entry->text = new_text;
-	entry->cursor += strlen(text);
-	entry->anchor += strlen(text);
+	if (anchor >= 0)
+		entry->anchor = entry->cursor + strlen(text) + anchor;
+	else
+		entry->anchor = entry->cursor + 1 + anchor;
+	if (cursor >= 0)
+		entry->cursor += strlen(text) + cursor;
+	else
+		entry->cursor += 1 + cursor;
 
 	text_entry_update_layout(entry);
 
@@ -629,7 +655,7 @@ text_entry_commit_and_reset(struct text_entry *entry)
 
 	text_entry_reset_preedit(entry);
 	if (commit) {
-		text_entry_insert_at_cursor(entry, commit);
+		text_entry_insert_at_cursor(entry, commit, 0, 0);
 		free(commit);
 	}
 }
@@ -993,7 +1019,7 @@ key_handler(struct window *window,
 
 			text_entry_commit_and_reset(entry);
 
-			text_entry_insert_at_cursor(entry, text);
+			text_entry_insert_at_cursor(entry, text, 0, 0);
 			break;
 	}
 

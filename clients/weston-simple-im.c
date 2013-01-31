@@ -409,10 +409,12 @@ simple_im_key_handler(struct simple_im *keyboard,
 				input_method_context_preedit_string(keyboard->context,
 								    keyboard->serial,
 								    "", "");
+				input_method_context_cursor_position(keyboard->context,
+								     keyboard->serial,
+								     0, 0);
 				input_method_context_commit_string(keyboard->context,
 								   keyboard->serial,
-								   cs->text,
-								   strlen(cs->text));
+								   cs->text);
 				keyboard->compose_state = state_normal;
 			} else {
 				uint32_t j = 0, idx = 0;
@@ -441,10 +443,12 @@ simple_im_key_handler(struct simple_im *keyboard,
 			input_method_context_preedit_string(keyboard->context,
 							    keyboard->serial,
 							    "", "");
+			input_method_context_cursor_position(keyboard->context,
+							     keyboard->serial,
+							     0, 0);
 			input_method_context_commit_string(keyboard->context,
 							   keyboard->serial,
-							   text,
-							   strlen(text));
+							   text);
 			keyboard->compose_state = state_normal;
 		}
 		return;
@@ -458,10 +462,12 @@ simple_im_key_handler(struct simple_im *keyboard,
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 		return;
 
+	input_method_context_cursor_position(keyboard->context,
+					     keyboard->serial,
+					     0, 0);
 	input_method_context_commit_string(keyboard->context,
 					   keyboard->serial,
-					   text,
-					   strlen(text));
+					   text);
 }
 
 int

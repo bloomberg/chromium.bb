@@ -397,12 +397,11 @@ static void
 input_method_context_commit_string(struct wl_client *client,
 				   struct wl_resource *resource,
 				   uint32_t serial,
-				   const char *text,
-				   uint32_t index)
+				   const char *text)
 {
 	struct input_method_context *context = resource->data;
 
-	text_model_send_commit_string(&context->model->resource, serial, text, index);
+	text_model_send_commit_string(&context->model->resource, serial, text);
 }
 
 static void
@@ -451,6 +450,18 @@ input_method_context_delete_surrounding_text(struct wl_client *client,
 	struct input_method_context *context = resource->data;
 
 	text_model_send_delete_surrounding_text(&context->model->resource, serial, index, length);
+}
+
+static void
+input_method_context_cursor_position(struct wl_client *client,
+				     struct wl_resource *resource,
+				     uint32_t serial,
+				     int32_t index,
+				     int32_t anchor)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_cursor_position(&context->model->resource, serial, index, anchor);
 }
 
 static void
@@ -597,6 +608,7 @@ static const struct input_method_context_interface input_method_context_implemen
 	input_method_context_preedit_styling,
 	input_method_context_preedit_cursor,
 	input_method_context_delete_surrounding_text,
+	input_method_context_cursor_position,
 	input_method_context_modifiers_map,
 	input_method_context_keysym,
 	input_method_context_grab_keyboard,

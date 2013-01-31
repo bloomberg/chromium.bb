@@ -41,7 +41,6 @@
       </description>
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
-      <arg name="index" type="uint"/>
     </request>
     <request name="preedit_string">
       <description summary="pre-edit string">
@@ -69,6 +68,11 @@
       <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
+    </request>
+    <request name="cursor_position">
+      <arg name="serial" type="uint"/>
+      <arg name="index" type="int"/>
+      <arg name="anchor" type="int"/>
     </request>
     <request name="modifiers_map">
       <arg name="map" type="array"/>

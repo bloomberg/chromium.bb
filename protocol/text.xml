@@ -161,7 +161,6 @@
       </description>
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
-      <arg name="index" type="uint"/>
     </event>
     <event name="preedit_string">
       <description summary="pre-edit">
@@ -185,6 +184,15 @@
       <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
+    </event>
+    <event name="cursor_position">
+      <description summary="set cursor to new position">
+        Notify when the cursor or anchor position should be modified. It
+        should take effect after the next commit_string event.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="index" type="int"/>
+      <arg name="anchor" type="int"/>
     </event>
     <enum name="preedit_style">
       <entry name="default" value="1"/>

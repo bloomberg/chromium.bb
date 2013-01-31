@@ -321,10 +321,12 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 					    keyboard->serial,
 					    "",
 					    "");
+	input_method_context_cursor_position(keyboard->context,
+					     keyboard->serial,
+					     0, 0);
 	input_method_context_commit_string(keyboard->context,
 					   keyboard->serial,
-					   keyboard->preedit_string,
-					   strlen(keyboard->preedit_string));
+					   keyboard->preedit_string);
 	free(keyboard->preedit_string);
 	keyboard->preedit_string = strdup("");
 }
