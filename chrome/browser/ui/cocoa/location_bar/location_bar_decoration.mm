@@ -7,6 +7,7 @@
 #include "base/logging.h"
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
+const CGFloat LocationBarDecoration::kTextYInset = 4.0;
 
 bool LocationBarDecoration::IsVisible() const {
   return visible_;
@@ -17,7 +18,8 @@ void LocationBarDecoration::SetVisible(bool visible) {
 }
 
 
-CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width,
+                                                CGFloat text_width) {
   NOTREACHED();
   return kOmittedWidth;
 }
@@ -67,4 +69,8 @@ NSMenu* LocationBarDecoration::GetMenu() {
 
 ButtonDecoration* LocationBarDecoration::AsButtonDecoration() {
   return NULL;
+}
+
+bool LocationBarDecoration::IsSeparator() const {
+  return false;
 }

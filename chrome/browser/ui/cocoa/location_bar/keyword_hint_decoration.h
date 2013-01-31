@@ -25,7 +25,7 @@ class KeywordHintDecoration : public LocationBarDecoration {
 
   // Implement |LocationBarDecoration|.
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) OVERRIDE;
 
  private:
   // Fetch and cache the [tab] image.

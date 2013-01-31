@@ -72,7 +72,8 @@ NSPoint EVBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
                      NSMaxY(image_rect) - kPageInfoBubblePointYOffset);
 }
 
-CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width,
+                                             CGFloat text_width) {
   // Limit with to not take up too much of the available width, but
   // also don't let it shrink too much.
   width = std::max(width * kMaxBubbleFraction, kMinElidedBubbleWidth);

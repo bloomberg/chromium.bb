@@ -35,7 +35,7 @@ bool ButtonDecoration::OnMousePressedWithView(
   return handled;
 }
 
-CGFloat ButtonDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat ButtonDecoration::GetWidthForSpace(CGFloat width, CGFloat text_width) {
   NSImage* image = GetImage();
   if (image) {
     const CGFloat image_width = [image size].width;

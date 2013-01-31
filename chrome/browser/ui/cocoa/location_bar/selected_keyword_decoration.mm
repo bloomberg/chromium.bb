@@ -27,7 +27,8 @@ SelectedKeywordDecoration::SelectedKeywordDecoration(NSFont* font)
 
 SelectedKeywordDecoration::~SelectedKeywordDecoration() {}
 
-CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width,
+                                                    CGFloat text_width) {
   const CGFloat full_width =
       GetWidthForImageAndLabel(search_image_, full_string_);
   if (full_width <= width) {

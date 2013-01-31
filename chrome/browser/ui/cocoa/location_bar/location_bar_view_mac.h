@@ -28,11 +28,14 @@ class ContentSettingDecoration;
 class EVBubbleDecoration;
 class KeywordHintDecoration;
 class LocationBarDecoration;
+class LocationBarViewMacBrowserTest;
 class LocationIconDecoration;
 class PageActionDecoration;
 class PlusDecoration;
 class Profile;
+class SearchTokenDecoration;
 class SelectedKeywordDecoration;
+class SeparatorDecoration;
 class StarDecoration;
 class ToolbarModel;
 class WebIntentsButtonDecoration;
@@ -181,6 +184,8 @@ class LocationBarViewMac : public LocationBar,
   Browser* browser() const { return browser_; }
 
  private:
+  friend LocationBarViewMacBrowserTest;
+
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);
 
@@ -218,6 +223,9 @@ class LocationBarViewMac : public LocationBar,
   // Ensures the plus decoration is visible or hidden, as required.
   void UpdatePlusDecorationVisibility();
 
+  // Gets the current search provider name.
+  string16 GetSearchProviderName() const;
+
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
@@ -235,8 +243,14 @@ class LocationBarViewMac : public LocationBar,
   // A decoration that shows an icon to the left of the address.
   scoped_ptr<LocationIconDecoration> location_icon_decoration_;
 
+  // A decoration that shows the search provider being used.
+  scoped_ptr<SearchTokenDecoration> search_token_decoration_;
+
   // A decoration that shows the keyword-search bubble on the left.
   scoped_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
+
+  // A decoration used to draw a separator between other decorations.
+  scoped_ptr<SeparatorDecoration> separator_decoration_;
 
   // A decoration that shows a lock icon and ev-cert label in a bubble
   // on the left.

@@ -27,7 +27,6 @@ const NSTimeInterval kAnimationIntervalS = 1.0 / 60.0;
 const CGFloat kTextMarginPadding = 4;
 const CGFloat kIconMarginPadding = 2;
 const CGFloat kBorderPadding = 3;
-const CGFloat kBubbleYInset = 4.0;
 
 // During animation, the text opens to full width.
 enum AnimationState {
@@ -161,9 +160,10 @@ bool WebIntentsButtonDecoration::OnMousePressed(NSRect frame) {
 
 // Override to handle the case where there is text to display during the
 // animation. The width is based on the animator's progress.
-CGFloat WebIntentsButtonDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat WebIntentsButtonDecoration::GetWidthForSpace(CGFloat width,
+                                                     CGFloat text_width) {
   if (!animation_)
-    return BubbleDecoration::GetWidthForSpace(width);
+    return BubbleDecoration::GetWidthForSpace(width, text_width);
 
   AnimationState state = [animation_ animationState];
   CGFloat progress = [animation_ progress];
@@ -187,7 +187,7 @@ void WebIntentsButtonDecoration::DrawInFrame(NSRect frame,
     return;
   }
 
-  frame = NSInsetRect(frame, 0.0, kBubbleYInset);
+  frame = NSInsetRect(frame, 0.0, kTextYInset);
   NSDrawThreePartImage(frame,
                        left_image_.get(),
                        center_image_.get(),

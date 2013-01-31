@@ -34,7 +34,7 @@ class EVBubbleDecoration : public BubbleDecoration {
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
   virtual NSPasteboard* GetDragPasteboard() OVERRIDE;
   virtual NSImage* GetDragImage() OVERRIDE;

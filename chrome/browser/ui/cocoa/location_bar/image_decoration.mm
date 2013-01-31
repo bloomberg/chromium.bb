@@ -33,7 +33,7 @@ NSRect ImageDecoration::GetDrawRectInFrame(NSRect frame) {
   return NSInsetRect(frame, x_inset, y_inset);
 }
 
-CGFloat ImageDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat ImageDecoration::GetWidthForSpace(CGFloat width, CGFloat text_width) {
   NSImage* image = GetImage();
   if (image) {
     const CGFloat image_width = [image size].width;

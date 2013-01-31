@@ -30,7 +30,7 @@ class ButtonDecoration : public LocationBarDecoration {
   bool OnMousePressedWithView(NSRect frame, NSView* control_view);
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) OVERRIDE;
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual ButtonDecoration* AsButtonDecoration() OVERRIDE;

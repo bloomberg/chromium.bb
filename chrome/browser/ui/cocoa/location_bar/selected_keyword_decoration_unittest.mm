@@ -40,26 +40,26 @@ TEST_F(SelectedKeywordDecorationTest, UsesPartialKeywordIfNarrow) {
   decoration_.SetKeyword(kKeyword, false);
 
   // Wide width chooses the full string and image.
-  const CGFloat all_width = decoration_.GetWidthForSpace(kWidth);
+  const CGFloat all_width = decoration_.GetWidthForSpace(kWidth, 0);
   EXPECT_TRUE(decoration_.image_);
   EXPECT_NSEQ(kFullString, decoration_.label_);
 
   // If not enough space to include the image, uses exactly the full
   // string.
-  const CGFloat full_width = decoration_.GetWidthForSpace(all_width - 5.0);
+  const CGFloat full_width = decoration_.GetWidthForSpace(all_width - 5.0, 0);
   EXPECT_LT(full_width, all_width);
   EXPECT_FALSE(decoration_.image_);
   EXPECT_NSEQ(kFullString, decoration_.label_);
 
   // Narrow width chooses the partial string.
-  const CGFloat partial_width = decoration_.GetWidthForSpace(kNarrowWidth);
+  const CGFloat partial_width = decoration_.GetWidthForSpace(kNarrowWidth, 0);
   EXPECT_LT(partial_width, full_width);
   EXPECT_FALSE(decoration_.image_);
   EXPECT_NSEQ(kPartialString, decoration_.label_);
 
   // Narrow doesn't choose partial string if there is not one.
   decoration_.partial_string_.reset();
-  decoration_.GetWidthForSpace(kNarrowWidth);
+  decoration_.GetWidthForSpace(kNarrowWidth, 0);
   EXPECT_FALSE(decoration_.image_);
   EXPECT_NSEQ(kFullString, decoration_.label_);
 }

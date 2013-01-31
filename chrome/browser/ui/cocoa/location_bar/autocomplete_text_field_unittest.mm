@@ -30,7 +30,9 @@ namespace {
 
 class MockDecoration : public LocationBarDecoration {
  public:
-  virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) {
+    return 20.0;
+  }
 
   virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
   MOCK_METHOD0(AcceptsMousePress, bool());

@@ -71,6 +71,7 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 // (|DecorationHorizontalPad()| is used between decorations).
 void CalculatePositionsHelper(
     NSRect frame,
+    CGFloat text_width,
     const std::vector<LocationBarDecoration*>& all_decorations,
     NSRectEdge x_edge,
     CGFloat regular_padding,
@@ -102,7 +103,7 @@ void CalculatePositionsHelper(
       // Find out how large the decoration will be in the remaining
       // space.
       const CGFloat used_width =
-          all_decorations[i]->GetWidthForSpace(NSWidth(available));
+          all_decorations[i]->GetWidthForSpace(NSWidth(available), text_width);
 
       if (used_width != LocationBarDecoration::kOmittedWidth) {
         DCHECK_GT(used_width, 0.0);
@@ -127,6 +128,15 @@ void CalculatePositionsHelper(
   *remaining_frame = frame;
 }
 
+// Hide separators at the beginning and end of the decorator list.
+void HideUnneededSeparators(
+    std::vector<LocationBarDecoration*>* decorations) {
+  if (!decorations->empty() && decorations->back()->IsSeparator())
+    decorations->pop_back();
+  if (!decorations->empty() && decorations->front()->IsSeparator())
+    decorations->erase(decorations->begin());
+}
+
 // Helper function for calculating placement of decorations w/in the cell.
 // |frame| is the cell's boundary rectangle, |remaining_frame| will get any
 // space left after decorations are laid out (for text).  |left_decorations| is
@@ -139,6 +149,7 @@ void CalculatePositionsHelper(
 // the index of the first right-hand decoration.
 size_t CalculatePositionsInFrame(
     NSRect frame,
+    CGFloat text_width,
     const std::vector<LocationBarDecoration*>& left_decorations,
     const std::vector<LocationBarDecoration*>& right_decorations,
     CGFloat edge_width,
@@ -149,19 +160,35 @@ size_t CalculatePositionsInFrame(
   decoration_frames->clear();
 
   // Layout |left_decorations| against the LHS.
-  CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
-                           kLeftDecorationXOffset, kLeftDecorationXOffset,
-                           decorations, decoration_frames, &frame);
-  DCHECK_EQ(decorations->size(), decoration_frames->size());
-
-  // Capture the number of visible left-hand decorations.
+  {
+    std::vector<LocationBarDecoration*> result_decorations;
+    std::vector<NSRect> result_frames;
+    NSRect result_frame = NSZeroRect;
+    CalculatePositionsHelper(frame, text_width, left_decorations, NSMinXEdge,
+                             kLeftDecorationXOffset, kLeftDecorationXOffset,
+                             &result_decorations, &result_frames,
+                             &result_frame);
+    HideUnneededSeparators(&result_decorations);
+    CalculatePositionsHelper(frame, text_width, result_decorations, NSMinXEdge,
+                             kLeftDecorationXOffset, kLeftDecorationXOffset,
+                             decorations, decoration_frames, &frame);
+  }
   const size_t left_count = decorations->size();
 
   // Layout |right_decorations| against the RHS.
-  CalculatePositionsHelper(frame, right_decorations, NSMaxXEdge,
-                           RightDecorationXOffset(), edge_width, decorations,
-                           decoration_frames, &frame);
-  DCHECK_EQ(decorations->size(), decoration_frames->size());
+  {
+    std::vector<LocationBarDecoration*> result_decorations;
+    std::vector<NSRect> result_frames;
+    NSRect result_frame = NSZeroRect;
+    CalculatePositionsHelper(frame, text_width, right_decorations, NSMaxXEdge,
+                             RightDecorationXOffset(), edge_width,
+                             &result_decorations, &result_frames,
+                             &result_frame);
+    HideUnneededSeparators(&result_decorations);
+    CalculatePositionsHelper(frame, text_width, result_decorations, NSMaxXEdge,
+                             RightDecorationXOffset(), edge_width,
+                             decorations, decoration_frames, &frame);
+  }
 
   // Reverse the right-hand decorations so that overall everything is
   // sorted left to right.
@@ -182,6 +209,10 @@ size_t CalculatePositionsInFrame(
 }
 
 }  // namespace
+
+@interface AutocompleteTextFieldCell ()
+- (CGFloat)textWidth;
+@end
 
 @implementation AutocompleteTextFieldCell
 
@@ -219,9 +250,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(frame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+  CalculatePositionsInFrame(frame, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &textFrame);
 
   return NSWidth(textFrame);
 }
@@ -236,9 +267,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+  CalculatePositionsInFrame(cellFrame, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &textFrame);
 
   // Find our decoration and return the corresponding frame.
   std::vector<LocationBarDecoration*>::const_iterator iter =
@@ -248,10 +279,7 @@ size_t CalculatePositionsInFrame(
     return decorationFrames[index];
   }
 
-  // Decorations which are not visible should have been filtered out
-  // at the top, but return |NSZeroRect| rather than a 0-width rect
-  // for consistency.
-  NOTREACHED();
+  // The decoration is marked as visible but was either collapsed or hidden.
   return NSZeroRect;
 }
 
@@ -261,9 +289,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame = [super textFrameForFrame:cellFrame];
-  CalculatePositionsInFrame(textFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+  CalculatePositionsInFrame(textFrame, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &textFrame);
 
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
@@ -280,10 +308,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  size_t left_count =
-      CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                                [self edgeWidth], &decorations,
-                                &decorationFrames, &textFrame);
+  size_t left_count = CalculatePositionsInFrame(
+      cellFrame, [self textWidth], leftDecorations_, rightDecorations_,
+      [self edgeWidth], &decorations, &decorationFrames, &textFrame);
 
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
@@ -322,9 +349,9 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect workingFrame;
 
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &workingFrame);
+  CalculatePositionsInFrame(cellFrame, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &workingFrame);
 
   // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
@@ -354,9 +381,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+  CalculatePositionsInFrame(cellFrame, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (NSMouseInRect(location, decorationFrames[i], flipped))
@@ -508,9 +535,9 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   NSRect cellRect = [self clickableFrameForFrame:[view bounds]];
-  CalculatePositionsInFrame(cellRect, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+  CalculatePositionsInFrame(cellRect, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &textFrame);
 
   // Remove previously-registered tracking areas, since we'll update them below.
   for (CrTrackingArea* area in [view trackingAreas]) {
@@ -725,9 +752,9 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            [self edgeWidth], &decorations, &decorationFrames,
-                            &textFrame);
+  CalculatePositionsInFrame(cellFrame, [self textWidth], leftDecorations_,
+                            rightDecorations_, [self edgeWidth], &decorations,
+                            &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     NSString* tooltip = decorations[i]->GetToolTip();
@@ -753,6 +780,10 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
 
 - (BOOL)showsFirstResponder {
   return [super showsFirstResponder] && !hideFocusState_;
+}
+
+- (CGFloat)textWidth {
+  return [[self attributedStringValue] size].width;
 }
 
 @end

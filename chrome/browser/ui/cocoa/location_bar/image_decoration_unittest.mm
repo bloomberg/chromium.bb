@@ -34,7 +34,7 @@ TEST_F(ImageDecorationTest, GetWidthForSpace) {
   const CGFloat kNarrow = 10.0;
 
   // Decoration with no image is omitted.
-  EXPECT_EQ(decoration_.GetWidthForSpace(kWide),
+  EXPECT_EQ(decoration_.GetWidthForSpace(kWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   const NSSize kImageSize = NSMakeSize(20.0, 20.0);
@@ -42,10 +42,10 @@ TEST_F(ImageDecorationTest, GetWidthForSpace) {
 
   // Decoration takes up the space of the image.
   decoration_.SetImage(image);
-  EXPECT_EQ(decoration_.GetWidthForSpace(kWide), kImageSize.width);
+  EXPECT_EQ(decoration_.GetWidthForSpace(kWide, 0), kImageSize.width);
 
   // If the image doesn't fit, decoration is omitted.
-  EXPECT_EQ(decoration_.GetWidthForSpace(kNarrow),
+  EXPECT_EQ(decoration_.GetWidthForSpace(kNarrow, 0),
             LocationBarDecoration::kOmittedWidth);
 }
 

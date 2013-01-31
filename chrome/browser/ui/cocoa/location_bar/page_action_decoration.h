@@ -55,7 +55,7 @@ class PageActionDecoration : public ImageDecoration,
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Overridden from |LocationBarDecoration|
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) OVERRIDE;
   virtual void DrawWithBackgroundInFrame(NSRect background_frame,
                                          NSRect frame,
                                          NSView* control_view) OVERRIDE;

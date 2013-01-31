@@ -35,21 +35,21 @@ TEST_F(EVBubbleDecorationTest, MiddleElide) {
   decoration_.SetFullLabel(kLongString);
 
   // Lots of space, decoration not omitted.
-  EXPECT_NE(decoration_.GetWidthForSpace(kWide),
+  EXPECT_NE(decoration_.GetWidthForSpace(kWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   // If the available space is of the same magnitude as the required
   // space, the decoration doesn't eat it all up.
-  const CGFloat long_width = decoration_.GetWidthForSpace(kWide);
-  EXPECT_NE(decoration_.GetWidthForSpace(long_width + 20.0),
+  const CGFloat long_width = decoration_.GetWidthForSpace(kWide, 0);
+  EXPECT_NE(decoration_.GetWidthForSpace(long_width + 20.0, 0),
             LocationBarDecoration::kOmittedWidth);
-  EXPECT_LT(decoration_.GetWidthForSpace(long_width + 20.0), long_width);
+  EXPECT_LT(decoration_.GetWidthForSpace(long_width + 20.0, 0), long_width);
 
   // If there is very little space, the decoration is still relatively
   // big.
-  EXPECT_NE(decoration_.GetWidthForSpace(kNarrow),
+  EXPECT_NE(decoration_.GetWidthForSpace(kNarrow, 0),
             LocationBarDecoration::kOmittedWidth);
-  EXPECT_GT(decoration_.GetWidthForSpace(kNarrow), kMinimumWidth);
+  EXPECT_GT(decoration_.GetWidthForSpace(kNarrow, 0), kMinimumWidth);
 }
 
 }  // namespace

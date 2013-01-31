@@ -24,7 +24,7 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   // Determines what combination of labels and image will best fit
   // within |width|, makes those current for |BubbleDecoration|, and
   // return the resulting width.
-  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) OVERRIDE;
 
   void SetImage(NSImage* image);
 

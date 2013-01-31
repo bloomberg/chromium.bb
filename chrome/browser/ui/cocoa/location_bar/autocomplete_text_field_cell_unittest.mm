@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/separator_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,10 +39,24 @@ const CGFloat kNarrowWidth(5.0);
 
 class MockDecoration : public LocationBarDecoration {
  public:
-  virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
+  MockDecoration() : LocationBarDecoration(),
+                     should_auto_collapse_(false) {
+  }
+
+  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) {
+    const CGFloat kMyWidth = 20.0;
+    if (should_auto_collapse_ && (width - kMyWidth) < text_width)
+      return kOmittedWidth;
+    return kMyWidth;
+  }
+
+  void set_should_auto_collapse(bool value) { should_auto_collapse_ = value; }
 
   MOCK_METHOD2(DrawInFrame, void(NSRect frame, NSView* control_view));
   MOCK_METHOD0(GetToolTip, NSString*());
+
+ private:
+  bool should_auto_collapse_;
 };
 
 class AutocompleteTextFieldCellTest : public CocoaTest {
@@ -105,7 +120,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   selected_keyword_decoration.SetVisible(true);
   selected_keyword_decoration.SetKeyword(ASCIIToUTF16("Google"), false);
   [cell addLeftDecoration:&selected_keyword_decoration];
-  EXPECT_NE(selected_keyword_decoration.GetWidthForSpace(kVeryWide),
+  EXPECT_NE(selected_keyword_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   // TODO(shess): This really wants a |LocationBarViewMac|, but only a
@@ -115,7 +130,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   location_icon_decoration.SetVisible(true);
   location_icon_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
   [cell addLeftDecoration:&location_icon_decoration];
-  EXPECT_NE(location_icon_decoration.GetWidthForSpace(kVeryWide),
+  EXPECT_NE(location_icon_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   EVBubbleDecoration ev_bubble_decoration(&location_icon_decoration,
@@ -124,20 +139,20 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   ev_bubble_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
   ev_bubble_decoration.SetLabel(@"Application");
   [cell addLeftDecoration:&ev_bubble_decoration];
-  EXPECT_NE(ev_bubble_decoration.GetWidthForSpace(kVeryWide),
+  EXPECT_NE(ev_bubble_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   StarDecoration star_decoration(NULL);
   star_decoration.SetVisible(true);
   [cell addRightDecoration:&star_decoration];
-  EXPECT_NE(star_decoration.GetWidthForSpace(kVeryWide),
+  EXPECT_NE(star_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   KeywordHintDecoration keyword_hint_decoration([view_ font]);
   keyword_hint_decoration.SetVisible(true);
   keyword_hint_decoration.SetKeyword(ASCIIToUTF16("google"), false);
   [cell addRightDecoration:&keyword_hint_decoration];
-  EXPECT_NE(keyword_hint_decoration.GetWidthForSpace(kVeryWide),
+  EXPECT_NE(keyword_hint_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   // Make sure we're actually calling |DrawInFrame()|.
@@ -145,7 +160,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   mock_decoration.SetVisible(true);
   [cell addLeftDecoration:&mock_decoration];
   EXPECT_CALL(mock_decoration, DrawInFrame(_, _));
-  EXPECT_NE(mock_decoration.GetWidthForSpace(kVeryWide),
+  EXPECT_NE(mock_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
   [view_ display];
@@ -297,6 +312,71 @@ TEST_F(AutocompleteTextFieldCellTest, UpdateToolTips) {
   [cell updateToolTipsInRect:bounds ofView:controlView];
 
   EXPECT_OCMOCK_VERIFY(controlView);
+}
+
+TEST_F(AutocompleteTextFieldCellTest, HideUnneededSeparators) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds = [view_ bounds];
+
+  SeparatorDecoration separator;
+  [cell clearDecorations];
+  [cell addRightDecoration:&mock_right_decoration0_];
+  [cell addRightDecoration:&separator];
+  [cell addRightDecoration:&mock_right_decoration1_];
+  separator.SetVisible(true);
+
+  // Verify that a separator between two decorations is visible.
+  mock_right_decoration0_.SetVisible(true);
+  mock_right_decoration1_.SetVisible(true);
+  NSRect rect = [cell frameForDecoration:&separator inFrame:bounds];
+  EXPECT_LT(0, NSWidth(rect));
+
+  // Verify that a separator with no visible decorations on the right is hidden.
+  mock_right_decoration0_.SetVisible(false);
+  mock_right_decoration1_.SetVisible(true);
+  rect = [cell frameForDecoration:&separator inFrame:bounds];
+  EXPECT_EQ(0, NSWidth(rect));
+
+  // Verify that a separator with no visible decorations on the left is hidden.
+  mock_right_decoration0_.SetVisible(true);
+  mock_right_decoration1_.SetVisible(false);
+  rect = [cell frameForDecoration:&separator inFrame:bounds];
+  EXPECT_EQ(0, NSWidth(rect));
+
+  // Verify that a separator with no visible decorations on the either side is
+  // hidden.
+  mock_right_decoration0_.SetVisible(false);
+  mock_right_decoration1_.SetVisible(false);
+  rect = [cell frameForDecoration:&separator inFrame:bounds];
+  EXPECT_EQ(0, NSWidth(rect));
+}
+
+TEST_F(AutocompleteTextFieldCellTest, AutoCollapse) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds = [view_ bounds];
+  // Force the string to overlap decorations.
+  [cell setStringValue:@"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"];
+
+  // Verify that the decoration is visible without auto collapse.
+  mock_right_decoration0_.SetVisible(true);
+  mock_right_decoration0_.set_should_auto_collapse(false);
+  NSRect rect = [cell frameForDecoration:&mock_right_decoration0_
+                                 inFrame:bounds];
+  EXPECT_LT(0, NSWidth(rect));
+
+  // Verify that the decoration is hidden with auto collapse.
+  mock_right_decoration0_.set_should_auto_collapse(true);
+  rect = [cell frameForDecoration:&mock_right_decoration0_
+                          inFrame:bounds];
+  EXPECT_EQ(0, NSWidth(rect));
+
+  // Verify that the decoration is visible with auto collapse and short string.
+  [cell setStringValue:@"WWW"];
+  rect = [cell frameForDecoration:&mock_right_decoration0_
+                          inFrame:bounds];
+  EXPECT_LT(0, NSWidth(rect));
 }
 
 }  // namespace

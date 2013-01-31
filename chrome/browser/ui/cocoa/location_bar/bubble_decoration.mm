@@ -23,13 +23,6 @@ const CGFloat kLeftSideOverdraw = 2.0;
 // Omnibox corner radius is |4.0|, this needs to look tight WRT that.
 const CGFloat kBubbleCornerRadius = 2.0;
 
-// How far to inset the bubble from the top and bottom of the drawing
-// frame.
-// TODO(shess): Would be nicer to have the drawing code factor out the
-// space outside the border, and perhaps the border.  Then this could
-// reflect the single pixel space w/in that.
-const CGFloat kBubbleYInset = 4.0;
-
 // Padding between the icon and label.
 const CGFloat kIconLabelPadding = 4.0;
 
@@ -66,7 +59,7 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
 }
 
 NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
-  NSRect imageRect = NSInsetRect(frame, 0.0, kBubbleYInset);
+  NSRect imageRect = NSInsetRect(frame, 0.0, kTextYInset);
   if (image_) {
     // Center the image vertically.
     const NSSize imageSize = [image_ size];
@@ -77,7 +70,7 @@ NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
   return imageRect;
 }
 
-CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
+CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width, CGFloat text_width) {
   const CGFloat all_width = GetWidthForImageAndLabel(image_, label_);
   if (all_width <= width)
     return all_width;
@@ -90,7 +83,7 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
 }
 
 void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  const NSRect decorationFrame = NSInsetRect(frame, 0.0, kBubbleYInset);
+  const NSRect decorationFrame = NSInsetRect(frame, 0.0, kTextYInset);
 
   // The inset is to put the border down the middle of the pixel.
   NSRect bubbleFrame = NSInsetRect(decorationFrame, 0.5, 0.5);
