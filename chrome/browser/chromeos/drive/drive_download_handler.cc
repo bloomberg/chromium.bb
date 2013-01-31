@@ -81,7 +81,7 @@ DriveDownloadHandler::~DriveDownloadHandler() {
 // static
 DriveDownloadHandler* DriveDownloadHandler::GetForProfile(Profile* profile) {
   DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile);
+      DriveSystemServiceFactory::FindForProfile(profile);
   return system_service ? system_service->download_handler() : NULL;
 }
 
