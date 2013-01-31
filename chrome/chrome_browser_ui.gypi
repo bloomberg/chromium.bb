@@ -1913,8 +1913,6 @@
         'browser/ui/webui/flash_ui.h',
         'browser/ui/webui/gesture_config_ui.cc',
         'browser/ui/webui/gesture_config_ui.h',
-        'browser/ui/webui/gpu_internals_ui.cc',
-        'browser/ui/webui/gpu_internals_ui.h',
         'browser/ui/webui/help/help_handler.cc',
         'browser/ui/webui/help/help_handler.h',
         'browser/ui/webui/help/help_ui.cc',

@@ -7,13 +7,17 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
-class GpuInternalsUI : public content::WebUIController {
+namespace content {
+
+class GpuInternalsUI : public WebUIController {
  public:
-  explicit GpuInternalsUI(content::WebUI* web_ui);
+  explicit GpuInternalsUI(WebUI* web_ui);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuInternalsUI);
 };
+
+}  // namespace content
 
 #endif  // CHROME_BROWSER_UI_WEBUI_GPU_INTERNALS_UI_H_
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 
+#include "content/browser/gpu/gpu_internals_ui.h"
 #include "content/browser/media/webrtc_internals_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -13,8 +14,10 @@ namespace content {
 
 WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       BrowserContext* browser_context, const GURL& url) const {
-  if (url.host() == chrome::kChromeUIWebRTCInternalsHost)
+  if (url.host() == chrome::kChromeUIWebRTCInternalsHost ||
+      url.host() == chrome::kChromeUIGpuHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
+  }
   return WebUI::kNoWebUI;
 }
 
@@ -32,6 +35,8 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     WebUI* web_ui, const GURL& url) const {
   if (url.host() == chrome::kChromeUIWebRTCInternalsHost)
     return new WebRTCInternalsUI(web_ui);
+  if (url.host() == chrome::kChromeUIGpuHost)
+    return new GpuInternalsUI(web_ui);
 
   return NULL;
 }

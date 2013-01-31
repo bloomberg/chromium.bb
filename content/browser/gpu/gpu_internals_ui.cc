@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/gpu_internals_ui.h"
+#include "content/browser/gpu/gpu_internals_ui.h"
 
 #include <string>
 
@@ -26,18 +26,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/common/url_constants.h"
-#include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
+#include "grit/content_resources.h"
 #include "third_party/angle/src/common/version.h"
-#include "ui/base/l10n/l10n_util.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-using content::GpuDataManager;
-using content::GpuFeatureType;
-using content::WebContents;
-using content::WebUIMessageHandler;
-
+namespace content {
 namespace {
 
 struct GpuFeatureInfo {
@@ -48,9 +40,8 @@ struct GpuFeatureInfo {
   bool fallback_to_software;
 };
 
-content::WebUIDataSource* CreateGpuHTMLSource() {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIGpuHost);
+WebUIDataSource* CreateGpuHTMLSource() {
+  WebUIDataSource* source = WebUIDataSource::Create(chrome::kChromeUIGpuHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
@@ -83,7 +74,7 @@ Value* NewStatusValue(const char* name, const char* status) {
 
 #if defined(OS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
-ListValue* DxDiagNodeToList(const content::DxDiagNode& node) {
+ListValue* DxDiagNodeToList(const DxDiagNode& node) {
   ListValue* list = new ListValue();
   for (std::map<std::string, std::string>::const_iterator it =
       node.values.begin();
@@ -92,7 +83,7 @@ ListValue* DxDiagNodeToList(const content::DxDiagNode& node) {
     list->Append(NewDescriptionValuePair(it->first, it->second));
   }
 
-  for (std::map<std::string, content::DxDiagNode>::const_iterator it =
+  for (std::map<std::string, DxDiagNode>::const_iterator it =
       node.children.begin();
       it != node.children.end();
       ++it) {
@@ -103,7 +94,7 @@ ListValue* DxDiagNodeToList(const content::DxDiagNode& node) {
 }
 #endif
 
-std::string GPUDeviceToString(const content::GPUInfo::GPUDevice& gpu) {
+std::string GPUDeviceToString(const GPUInfo::GPUDevice& gpu) {
   std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);
   if (!gpu.vendor_string.empty())
     vendor += " [" + gpu.vendor_string + "]";
@@ -115,7 +106,7 @@ std::string GPUDeviceToString(const content::GPUInfo::GPUDevice& gpu) {
 }
 
 DictionaryValue* GpuInfoAsDictionaryValue() {
-  content::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
+  GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
   ListValue* basic_info = new ListValue();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
@@ -206,7 +197,7 @@ Value* GetFeatureStatus() {
   const GpuFeatureInfo kGpuFeatureInfo[] = {
       {
           "2d_canvas",
-          flags & content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
+          flags & GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
           command_line.HasSwitch(switches::kDisableAccelerated2dCanvas) ||
           !SupportsAccelerated2dCanvas(),
           "Accelerated 2D canvas is unavailable: either disabled at the command"
@@ -215,7 +206,7 @@ Value* GetFeatureStatus() {
       },
       {
           "compositing",
-          flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
+          flags & GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
           "Accelerated compositing has been disabled, either via about:flags or"
           " command line. This adversely affects performance of all hardware"
@@ -224,16 +215,16 @@ Value* GetFeatureStatus() {
       },
       {
           "3d_css",
-          flags & (content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
-                   content::GPU_FEATURE_TYPE_3D_CSS),
+          flags & (GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
+                   GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated layers have been disabled at the command line.",
           false
       },
       {
           "css_animation",
-          flags & (content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
-                   content::GPU_FEATURE_TYPE_3D_CSS),
+          flags & (GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
+                   GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(cc::switches::kDisableThreadedAnimation) ||
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
@@ -242,7 +233,7 @@ Value* GetFeatureStatus() {
       },
       {
           "webgl",
-          flags & content::GPU_FEATURE_TYPE_WEBGL,
+          flags & GPU_FEATURE_TYPE_WEBGL,
 #if defined(OS_ANDROID)
           !command_line.HasSwitch(switches::kEnableExperimentalWebGL),
 #else
@@ -253,7 +244,7 @@ Value* GetFeatureStatus() {
       },
       {
           "multisampling",
-          flags & content::GPU_FEATURE_TYPE_MULTISAMPLING,
+          flags & GPU_FEATURE_TYPE_MULTISAMPLING,
           command_line.HasSwitch(switches::kDisableGLMultisampling),
           "Multisampling has been disabled, either via about:flags or command"
           " line.",
@@ -261,7 +252,7 @@ Value* GetFeatureStatus() {
       },
       {
           "flash_3d",
-          flags & content::GPU_FEATURE_TYPE_FLASH3D,
+          flags & GPU_FEATURE_TYPE_FLASH3D,
           command_line.HasSwitch(switches::kDisableFlash3d),
           "Using 3d in flash has been disabled, either via about:flags or"
           " command line.",
@@ -269,7 +260,7 @@ Value* GetFeatureStatus() {
       },
       {
           "flash_stage3d",
-          flags & content::GPU_FEATURE_TYPE_FLASH_STAGE3D,
+          flags & GPU_FEATURE_TYPE_FLASH_STAGE3D,
           command_line.HasSwitch(switches::kDisableFlashStage3d),
           "Using Stage3d in Flash has been disabled, either via about:flags or"
           " command line.",
@@ -277,7 +268,7 @@ Value* GetFeatureStatus() {
       },
       {
           "texture_sharing",
-          flags & content::GPU_FEATURE_TYPE_TEXTURE_SHARING,
+          flags & GPU_FEATURE_TYPE_TEXTURE_SHARING,
           command_line.HasSwitch(switches::kDisableImageTransportSurface),
           "Sharing textures between processes has been disabled, either via"
           " about:flags or command line.",
@@ -285,7 +276,7 @@ Value* GetFeatureStatus() {
       },
       {
           "video_decode",
-          flags & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE,
+          flags & GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE,
           command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
           "Accelerated video decode has been disabled, either via about:flags"
           " or command line.",
@@ -293,7 +284,7 @@ Value* GetFeatureStatus() {
       },
       {
           "video",
-          flags & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO,
+          flags & GPU_FEATURE_TYPE_ACCELERATED_VIDEO,
           command_line.HasSwitch(switches::kDisableAcceleratedVideo) ||
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
           "Accelerated video presentation has been disabled, either via"
@@ -302,7 +293,7 @@ Value* GetFeatureStatus() {
       },
       {
           "panel_fitting",
-          flags & content::GPU_FEATURE_TYPE_PANEL_FITTING,
+          flags & GPU_FEATURE_TYPE_PANEL_FITTING,
 #if defined(OS_CHROMEOS)
           command_line.HasSwitch(switches::kDisablePanelFitting),
 #else
@@ -314,10 +305,10 @@ Value* GetFeatureStatus() {
       },
       {
           "force_compositing_mode",
-          (flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE) &&
-          !content::IsForceCompositingModeEnabled(),
-          !content::IsForceCompositingModeEnabled() &&
-          !(flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
+          (flags & GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE) &&
+          !IsForceCompositingModeEnabled(),
+          !IsForceCompositingModeEnabled() &&
+          !(flags & GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
           "Force compositing mode is off, either disabled at the command"
           " line or not supported by the current system.",
           false
@@ -358,12 +349,11 @@ Value* GetFeatureStatus() {
         status = "enabled";
         if (kGpuFeatureInfo[i].name == "webgl" &&
             (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
-             (flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
+             (flags & GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
           status += "_readback";
-        bool has_thread = content::IsThreadedCompositingEnabled();
+        bool has_thread = IsThreadedCompositingEnabled();
         if (kGpuFeatureInfo[i].name == "compositing") {
-          bool force_compositing =
-              content::IsForceCompositingModeEnabled();
+          bool force_compositing = IsForceCompositingModeEnabled();
           if (force_compositing)
             status += "_force";
           if (has_thread)
@@ -379,18 +369,18 @@ Value* GetFeatureStatus() {
       feature_status_list->Append(
           NewStatusValue(kGpuFeatureInfo[i].name.c_str(), status.c_str()));
     }
-    content::GpuSwitchingOption gpu_switching_option =
+    GpuSwitchingOption gpu_switching_option =
         GpuDataManager::GetInstance()->GetGpuSwitchingOption();
-    if (gpu_switching_option != content::GPU_SWITCHING_OPTION_UNKNOWN) {
+    if (gpu_switching_option != GPU_SWITCHING_OPTION_UNKNOWN) {
       std::string gpu_switching;
       switch (gpu_switching_option) {
-        case content::GPU_SWITCHING_OPTION_AUTOMATIC:
+        case GPU_SWITCHING_OPTION_AUTOMATIC:
           gpu_switching = "gpu_switching_automatic";
           break;
-        case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
+        case GPU_SWITCHING_OPTION_FORCE_DISCRETE:
           gpu_switching = "gpu_switching_force_discrete";
           break;
-        case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
+        case GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
           gpu_switching = "gpu_switching_force_integrated";
           break;
         default:
@@ -439,7 +429,7 @@ Value* GetFeatureStatus() {
 class GpuMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<GpuMessageHandler>,
-      public content::GpuDataManagerObserver {
+      public GpuDataManagerObserver {
  public:
   GpuMessageHandler();
   virtual ~GpuMessageHandler();
@@ -450,8 +440,7 @@ class GpuMessageHandler
   // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
   virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          OVERRIDE {}
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats) OVERRIDE {}
 
   // Messages
   void OnBrowserBridgeInitialized(const ListValue* list);
@@ -564,7 +553,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 
   DictionaryValue* dict = new DictionaryValue();
 
-  dict->SetString("version", content::GetContentClient()->GetProduct());
+  dict->SetString("version", GetContentClient()->GetProduct());
   dict->SetString("command_line",
       CommandLine::ForCurrentProcess()->GetCommandLineString());
   dict->SetString("operating_system",
@@ -612,12 +601,14 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
+GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new GpuMessageHandler());
 
   // Set up the chrome://gpu/ source.
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, CreateGpuHTMLSource());
+  WebUIDataSource::Add(browser_context, CreateGpuHTMLSource());
 }
+
+}  // namespace content
