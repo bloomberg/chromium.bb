@@ -779,6 +779,41 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
     }
 }
 
+TEST_P(LayerTreeHostImplTest, pageScaleAnimationNoOp)
+{
+    setupScrollAndContentsLayers(gfx::Size(100, 100));
+    m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
+    initializeRendererAndDrawFrame();
+
+    LayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
+    DCHECK(scrollLayer);
+
+    const float minPageScale = 0.5;
+    const float maxPageScale = 4;
+    const base::TimeTicks startTime = base::TimeTicks() + base::TimeDelta::FromSeconds(1);
+    const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+    const base::TimeTicks halfwayThroughAnimation = startTime + duration / 2;
+    const base::TimeTicks endTime = startTime + duration;
+    const gfx::Transform identityScaleTransform;
+
+    // Anchor zoom with unchanged page scale should not change scroll or scale.
+    {
+        m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        scrollLayer->setImplTransform(identityScaleTransform);
+        scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
+
+        m_hostImpl->startPageScaleAnimation(gfx::Vector2d(0, 0), true, 1, startTime, duration);
+        m_hostImpl->animate(halfwayThroughAnimation, base::Time());
+        EXPECT_TRUE(m_didRequestRedraw);
+        m_hostImpl->animate(endTime, base::Time());
+        EXPECT_TRUE(m_didRequestCommit);
+
+        scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
+        expectNone(*scrollInfo, scrollLayer->id());
+    }
+}
+
 TEST_P(LayerTreeHostImplTest, compositorFrameMetadata)
 {
     // This test is specific to the page-scale based pinch zoom.

@@ -87,6 +87,11 @@ void PageScaleAnimation::zoomWithAnchor(const gfx::Vector2dF& anchor, float targ
     // We will interpolate between the two anchors during the animation.
     inferTargetScrollOffsetFromStartAnchor();
     clampTargetScrollOffset();
+
+    if (m_startPageScaleFactor == m_targetPageScaleFactor) {
+        m_targetAnchor = m_startAnchor;
+        return;
+    }
     inferTargetAnchorFromScrollOffsets();
 }
 
