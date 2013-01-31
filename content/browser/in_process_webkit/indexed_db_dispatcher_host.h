@@ -36,12 +36,10 @@ struct IndexedDBHostMsg_ObjectStoreOpenCursor_Params;
 struct IndexedDBHostMsg_ObjectStorePut_Params;
 
 namespace WebKit {
-class WebDOMStringList;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBIndex;
 class WebIDBObjectStore;
-class WebIDBTransaction;
 struct WebIDBMetadata;
 }
 
@@ -69,7 +67,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  void TransactionComplete(int32 ipc_transaction_id);
   void TransactionIdComplete(int64 host_transaction_id);
 
   // A shortcut for accessing our context.
@@ -81,7 +78,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32 Add(WebKit::WebIDBDatabase* idb_database,
             int32 ipc_thread_id,
             const GURL& origin_url);
-  int32 Add(WebKit::WebDOMStringList* domStringList);
 
   void RegisterTransactionId(int64 host_transaction_id, const GURL& origin_url);
 
@@ -115,7 +111,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // Used in nested classes.
   typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
-  typedef std::map<int32, uint64> WebIDBTransactionIPCIDToSizeMap;
 
   typedef std::map<int64, GURL> TransactionIDToURLMap;
   typedef std::map<int64, uint64> WebIDBTransactionIDToSizeMap;
@@ -135,12 +130,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDeleteObjectStore(int32 ipc_database_id,
                              int64 transaction_id,
                              int64 object_store_id);
-    void OnCreateTransactionOld(int32 ipc_thread_id,
-                                int32 ipc_database_id,
-                                int64 transaction_id,
-                                const std::vector<int64>& scope,
-                                int32 mode,
-                                int32* ipc_transaction_id);
     void OnCreateTransaction(
         const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
     void OnOpen(int32 ipc_database_id, int32 ipc_thread_id,
@@ -218,31 +207,11 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     IDMap<WebKit::WebIDBCursor, IDMapOwnPointer> map_;
   };
 
-  class TransactionDispatcherHost {
-   public:
-    explicit TransactionDispatcherHost(IndexedDBDispatcherHost* parent);
-    ~TransactionDispatcherHost();
-
-    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
-    void Send(IPC::Message* message);
-
-    void OnCommit(int32 ipc_transaction_id);
-    void OnAbort(int32 ipc_transaction_id);
-    void OnDestroyed(int32 ipc_transaction_id);
-
-    IndexedDBDispatcherHost* parent_;
-    typedef IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> MapType;
-    MapType map_;
-    WebIDBObjectIDToURLMap old_transaction_url_map_;
-    WebIDBTransactionIPCIDToSizeMap transaction_ipc_size_map_;
-  };
-
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
   // Only access on WebKit thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
   scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
-  scoped_ptr<TransactionDispatcherHost> transaction_dispatcher_host_;
 
   // Used to dispatch messages to the correct view host.
   int ipc_process_id_;

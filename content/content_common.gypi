@@ -282,8 +282,6 @@
     'common/indexed_db/proxy_webidbdatabase_impl.h',
     'common/indexed_db/proxy_webidbfactory_impl.cc',
     'common/indexed_db/proxy_webidbfactory_impl.h',
-    'common/indexed_db/proxy_webidbtransaction_impl.cc',
-    'common/indexed_db/proxy_webidbtransaction_impl.h',
     'common/inter_process_time_ticks_converter.cc',
     'common/inter_process_time_ticks_converter.h',
     'common/intents_messages.h',

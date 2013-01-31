@@ -14,7 +14,6 @@
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
-#include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,7 +30,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseException.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/database/database_util.h"
@@ -47,7 +45,6 @@ using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBMetadata;
 using WebKit::WebIDBObjectStore;
-using WebKit::WebIDBTransaction;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
@@ -70,8 +67,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
           new DatabaseDispatcherHost(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_dispatcher_host_(
           new CursorDispatcherHost(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(transaction_dispatcher_host_(
-          new TransactionDispatcherHost(this))),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }
@@ -100,7 +95,6 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
 
   database_dispatcher_host_.reset();
   cursor_dispatcher_host_.reset();
-  transaction_dispatcher_host_.reset();
 }
 
 void IndexedDBDispatcherHost::OverrideThreadForMessage(
@@ -119,8 +113,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
 
   bool handled =
       database_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
-      cursor_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
-      transaction_dispatcher_host_->OnMessageReceived(message, message_was_ok);
+      cursor_dispatcher_host_->OnMessageReceived(message, message_was_ok);
 
   if (!handled) {
     handled = true;
@@ -283,12 +276,6 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       webkit_base::FilePathToWebString(indexed_db_path));
 }
 
-void IndexedDBDispatcherHost::TransactionComplete(int32 ipc_transaction_id) {
-  Context()->TransactionComplete(
-      transaction_dispatcher_host_->
-        old_transaction_url_map_[ipc_transaction_id]);
-}
-
 void IndexedDBDispatcherHost::TransactionIdComplete(int64 host_transaction_id) {
   Context()->TransactionComplete(
       database_dispatcher_host_->transaction_url_map_[host_transaction_id]);
@@ -353,8 +340,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnDeleteObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
                         OnCreateTransaction)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransactionOld,
-                        OnCreateTransactionOld)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
@@ -426,29 +411,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
 
   database->deleteObjectStore(parent_->HostTransactionId(transaction_id),
                               object_store_id);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransactionOld(
-    int32 ipc_thread_id,
-    int32 ipc_database_id,
-    int64 transaction_id,
-    const std::vector<int64>& object_store_ids,
-    int32 mode,
-    int32* ipc_transaction_id) {
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
-  if (!database)
-      return;
-
-  WebVector<long long> object_stores(object_store_ids);
-
-  int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
-
-  database->createTransaction(
-      host_transaction_id, object_stores, mode);
-  parent_->RegisterTransactionId(host_transaction_id,
-                                 database_url_map_[ipc_database_id]);
-  *ipc_transaction_id = 0;
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
@@ -837,81 +799,6 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(
     int32 ipc_object_id) {
-  parent_->DestroyObject(&map_, ipc_object_id);
-}
-
-//////////////////////////////////////////////////////////////////////
-// IndexedDBDispatcherHost::TransactionDispatcherHost
-//
-
-IndexedDBDispatcherHost::TransactionDispatcherHost::TransactionDispatcherHost(
-    IndexedDBDispatcherHost* parent)
-    : parent_(parent) {
-  map_.set_check_on_null_data(true);
-}
-
-IndexedDBDispatcherHost::
-    TransactionDispatcherHost::~TransactionDispatcherHost() {
-  MapType::iterator it(&map_);
-  while (!it.IsAtEnd()) {
-    it.GetCurrentValue()->abort();
-    it.Advance();
-  }
-}
-
-bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* msg_is_ok) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::TransactionDispatcherHost,
-                           message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionCommit, OnCommit)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionAbort, OnAbort)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionDestroyed, OnDestroyed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::Send(
-    IPC::Message* message) {
-  parent_->Send(message);
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::OnCommit(
-    int32 ipc_transaction_id) {
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &map_, ipc_transaction_id);
-  if (!idb_transaction)
-    return;
-
-  // TODO(dgrogan): Tell the page the transaction aborted because of quota.
-  // http://crbug.com/113118
-  if (parent_->Context()->WouldBeOverQuota(
-      old_transaction_url_map_[ipc_transaction_id],
-      transaction_ipc_size_map_[ipc_transaction_id])) {
-    idb_transaction->abort();
-    return;
-  }
-
-  idb_transaction->commit();
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::OnAbort(
-    int32 ipc_transaction_id) {
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &map_, ipc_transaction_id);
-  if (!idb_transaction)
-    return;
-
-  idb_transaction->abort();
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(
-    int32 ipc_object_id) {
-  // TODO(dgrogan): This doesn't seem to be happening with some version change
-  // transactions. Possibly introduced with integer version support.
-  transaction_ipc_size_map_.erase(ipc_object_id);
-  old_transaction_url_map_.erase(ipc_object_id);
   parent_->DestroyObject(&map_, ipc_object_id);
 }
 

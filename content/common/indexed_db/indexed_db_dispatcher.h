@@ -17,8 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 #include "webkit/glue/worker_task_runner.h"
 
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
@@ -180,10 +178,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int64 object_store_id,
       WebKit::WebIDBCallbacks* callbacks);
 
-  void RegisterWebIDBTransactionCallbacks(
-      WebKit::WebIDBTransactionCallbacks* callbacks,
-      int32 id);
-
   void CursorDestroyed(int32 ipc_cursor_id);
   void DatabaseDestroyed(int32 ipc_database_id);
 
@@ -281,8 +275,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
   IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
-  IDMap<WebKit::WebIDBTransactionCallbacks, IDMapOwnPointer>
-      pending_transaction_callbacks_;
   IDMap<WebKit::WebIDBDatabaseCallbacks, IDMapOwnPointer>
       pending_database_callbacks_;
 

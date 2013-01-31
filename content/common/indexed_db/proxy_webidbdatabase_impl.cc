@@ -9,7 +9,6 @@
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
-#include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
@@ -80,25 +79,6 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
           ipc_database_id_,
           transaction_id,
           object_store_id));
-}
-
-WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::createTransaction(
-    long long transaction_id,
-    const WebVector<long long>& object_store_ids,
-    unsigned short mode) {
-  std::vector<int64> object_stores;
-  object_stores.reserve(object_store_ids.size());
-  for (unsigned int i = 0; i < object_store_ids.size(); ++i)
-      object_stores.push_back(object_store_ids[i]);
-
-  int ipc_transaction_id;
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseCreateTransactionOld(
-      WorkerTaskRunner::Instance()->CurrentWorkerId(),
-      ipc_database_id_, transaction_id, object_stores, mode,
-      &ipc_transaction_id));
-  if (!transaction_id)
-    return NULL;
-  return new RendererWebIDBTransactionImpl();
 }
 
 void RendererWebIDBDatabaseImpl::createTransaction(

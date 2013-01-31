@@ -33,10 +33,6 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual void deleteObjectStore(
       long long transaction_id,
       long long object_store_id);
-  virtual WebKit::WebIDBTransaction* createTransaction(
-      long long transaction_id,
-      const WebKit::WebVector<long long>& scope,
-      unsigned short mode);
   virtual void createTransaction(
       long long transaction_id,
       WebKit::WebIDBDatabaseCallbacks* callbacks,
