@@ -1315,6 +1315,11 @@ indiánnyelv
 testmode: backtranslate
 indiánnyelv
 
+ingyennyelvoktatás
+
+testmode: backtranslate
+ingyennyelvoktatás
+
 ínnyújtó,
 
 testmode: backtranslate

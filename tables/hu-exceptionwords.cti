@@ -200,7 +200,6 @@ partword mikron =	For example mikronnyi word
 partword pergamennyal 1234-15-1235-1245-1-134-15-1345-1246-1-123	For example pergamennyaláb word
 begword ínnyújt 34-1345-1246-346-245-2345	For example ínnyújtó, ínnyújtót words
 begword ínnyujt 34-1345-1246-136-245-2345	For example ínnyújtó, ínnyújtót words
-partword indiánny 24-1345-145-24-4-1345-1246	For example indiánnyelven, indiánnyelv words
 partword kalánnyel 13-1-123-4-1345-1246-15-123	For example főzőkalánnyelet word
 begword filigránny 124-24-123-24-1245-1235-4-1345-1246	For example filigránnyelű word
 partword lennyil 123-15-1345-1246-24-123	For example ellennyilatkozat word
@@ -242,20 +241,16 @@ begword rubinny 1235-136-12-24-1345-1246	For example rubinnyaklánc word
 partword karton =	For example kartonnyi word
 begword lépten =	For example léptennyomon word
 partword agyonny 1-1456-135-1345-1246	For example agyonnyom, agyonnyomja, agyonnyúzott, agyonnyűtt words
-begword börtön =	For example börtönnyelve word
 partword mikrofon =	For example mikrofonnyílás word
-partword szalonnyel 156-1-123-135-1345-1246-15-123	For example szalonnyelv, szalonnyelven words
 partword vagon =	For example vagonnyi word
 partword kamion =	For example kamionnyi word
 partword kabin =	For example kabinnyomás, kabinnyílás words
 partword gallon =	For example tízgallonnyi word
-partword arinnyel 1-1235-24-1345-1246-15-123	For example mandarinnyelv word
 begword bűn =	For example bűnnyomok word
-partword magánnyel 134-1-1245-4-1345-1246-15-123	For example magánnyelvmesterek word
 partword oroszlánnyo 135-1235-135-156-123-4-1345-1246-135	For example oroszlánnyom word
 partword önnyom 12345-1345-1246-135-134	For example önnyomása, önnyomatú words
-partword dizájnny 145-24-126-4-245-1345-1246	For example dizájnnyelv word
 partword nnyilat 1345-1246-24-123-1-2345	For example sablonnyilatkozat word
+partword nnyelv 1345-1246-15-123-1236	For example ingyennyelvoktatás, mandarinnyelv, börtönnyelv, dizájnnyelven words need this exception
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination

@@ -1080,6 +1080,10 @@
           "output": "in-di-án-nyelv"
         }, 
         {
+          "input": "ingyennyelvoktatás", 
+          "output": "in-gyennyelv-ok-ta-tás"
+        }, 
+        {
           "input": "ínnyújtó", 
           "output": "ín-nyúj-tó"
         }, 

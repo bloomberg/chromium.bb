@@ -1059,6 +1059,10 @@
           "output": "indiánnyelv"
         }, 
         {
+          "input": "⠊⠝⠹⠑⠝⠫⠑⠇⠧⠕⠅⠞⠁⠞⠈⠎", 
+          "output": "ingyennyelvoktatás"
+        }, 
+        {
           "input": "⠌⠝⠫⠬⠚⠞⠪⠂", 
           "output": "ínnyújtó,"
         }, 
@@ -4301,6 +4305,10 @@
         {
           "input": "indiánnyelv", 
           "output": "⠊⠝⠙⠊⠈⠝⠫⠑⠇⠧"
+        }, 
+        {
+          "input": "ingyennyelvoktatás", 
+          "output": "⠊⠝⠹⠑⠝⠫⠑⠇⠧⠕⠅⠞⠁⠞⠈⠎"
         }, 
         {
           "input": "ínnyújtó,", 

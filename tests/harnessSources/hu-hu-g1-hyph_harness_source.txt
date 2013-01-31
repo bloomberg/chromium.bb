@@ -805,6 +805,9 @@ testmode: hyphenate
 indiánnyelv
 
 testmode: hyphenate
+ingyennyelvoktatás
+
+testmode: hyphenate
 ínnyújtó
 
 testmode: hyphenate
