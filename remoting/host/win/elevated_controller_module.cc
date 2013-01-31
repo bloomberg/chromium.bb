@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/win/elevated_controller_module.h"
-
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
@@ -13,6 +11,8 @@
 #include "remoting/base/breakpad.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/usage_stats_consent.h"
+
+// MIDL-generated declarations.
 #include "remoting/host/win/elevated_controller.h"
 
 namespace remoting {
@@ -23,10 +23,15 @@ class ElevatedControllerModule
   DECLARE_LIBID(LIBID_ChromotingElevatedControllerLib)
 };
 
-int ElevatedControllerMain() {
+} // namespace remoting
+
+
+remoting::ElevatedControllerModule _AtlModule;
+
+int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
 #ifdef OFFICIAL_BUILD
-  if (IsUsageStatsAllowed()) {
-    InitializeCrashReporting();
+  if (remoting::IsUsageStatsAllowed()) {
+    remoting::InitializeCrashReporting();
   }
 #endif  // OFFICIAL_BUILD
 
@@ -42,10 +47,7 @@ int ElevatedControllerMain() {
   // FilePath, LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
 
-  InitHostLogging();
+  remoting::InitHostLogging();
 
-  ElevatedControllerModule module;
-  return module.WinMain(SW_HIDE);
+  return _AtlModule.WinMain(command);
 }
-
-} // namespace remoting
