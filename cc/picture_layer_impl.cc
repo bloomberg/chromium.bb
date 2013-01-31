@@ -329,42 +329,6 @@ void PictureLayerImpl::UpdatePile(Tile* tile) {
   tile->set_picture_pile(pile_);
 }
 
-gfx::Size PictureLayerImpl::CalculateTileSize(
-    gfx::Size /* current_tile_size */,
-    gfx::Size content_bounds) {
-  if (is_mask_) {
-    int max_size = layerTreeImpl()->MaxTextureSize();
-    return gfx::Size(
-        std::min(max_size, content_bounds.width()),
-        std::min(max_size, content_bounds.height()));
-  }
-
-  gfx::Size default_tile_size = layerTreeImpl()->settings().defaultTileSize;
-  gfx::Size max_untiled_content_size =
-      layerTreeImpl()->settings().maxUntiledLayerSize;
-
-  bool any_dimension_too_large =
-      content_bounds.width() > max_untiled_content_size.width() ||
-      content_bounds.height() > max_untiled_content_size.height();
-
-  bool any_dimension_one_tile =
-      content_bounds.width() <= default_tile_size.width() ||
-      content_bounds.height() <= default_tile_size.height();
-
-  // If long and skinny, tile at the max untiled content size, and clamp
-  // the smaller dimension to the content size, e.g. 1000x12 layer with
-  // 500x500 max untiled size would get 500x12 tiles.  Also do this
-  // if the layer is small.
-  if (any_dimension_one_tile || !any_dimension_too_large) {
-    gfx::Size tile_size(
-        std::min(max_untiled_content_size.width(), content_bounds.width()),
-        std::min(max_untiled_content_size.height(), content_bounds.height()));
-    return tile_size;
-  }
-
-  return default_tile_size;
-}
-
 void PictureLayerImpl::SyncFromActiveLayer() {
   DCHECK(layerTreeImpl()->IsPendingTree());
   if (!drawsContent())
@@ -468,7 +432,9 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   if (recorded.IsEmpty())
     return NULL;
 
-  PictureLayerTiling* tiling = tilings_->AddTiling(contents_scale);
+  PictureLayerTiling* tiling = tilings_->AddTiling(
+      contents_scale,
+      TileSize());
 
   for (Region::Iterator iter(recorded); iter.has_rect(); iter.next())
     tiling->CreateTilesFromLayerRect(iter.rect());
@@ -490,6 +456,17 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   DCHECK_EQ(id(), twin->id());
   twin->SyncTiling(tiling, *pending_layer_invalidation);
   return tiling;
+}
+
+gfx::Size PictureLayerImpl::TileSize() const {
+  if (is_mask_) {
+    int max_size = layerTreeImpl()->MaxTextureSize();
+    return gfx::Size(
+        std::min(max_size, contentBounds().width()),
+        std::min(max_size, contentBounds().height()));
+  }
+
+  return layerTreeImpl()->settings().defaultTileSize;
 }
 
 namespace {

@@ -14,18 +14,20 @@
 namespace cc {
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
-    float contents_scale) {
-  return make_scoped_ptr(new PictureLayerTiling(contents_scale));
+    float contents_scale,
+    gfx::Size tile_size) {
+  return make_scoped_ptr(new PictureLayerTiling(contents_scale, tile_size));
 }
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Clone() const {
   return make_scoped_ptr(new PictureLayerTiling(*this));
 }
 
-PictureLayerTiling::PictureLayerTiling(float contents_scale)
+PictureLayerTiling::PictureLayerTiling(float contents_scale,
+                                       gfx::Size tile_size)
     : client_(NULL),
       contents_scale_(contents_scale),
-      tiling_data_(gfx::Size(), gfx::Size(), true),
+      tiling_data_(tile_size, gfx::Size(), true),
       resolution_(NON_IDEAL_RESOLUTION) {
 }
 
@@ -84,14 +86,6 @@ void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
   if (layer_bounds_.IsEmpty()) {
     tiles_.clear();
     return;
-  }
-
-  gfx::Size tile_size = client_->CalculateTileSize(
-      tiling_data_.max_texture_size(),
-      content_bounds);
-  if (tile_size != tiling_data_.max_texture_size()) {
-    tiling_data_.SetMaxTextureSize(tile_size);
-    tiles_.clear();
   }
 
   // Any tiles outside our new bounds are invalid and should be dropped.
