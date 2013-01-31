@@ -398,7 +398,7 @@ void DriveAPIService::RenameResource(
 
 void DriveAPIService::AddResourceToDirectory(
     const std::string& parent_resource_id,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

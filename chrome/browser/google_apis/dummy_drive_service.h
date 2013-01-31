@@ -57,7 +57,7 @@ class DummyDriveService : public DriveServiceInterface {
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void AddResourceToDirectory(
       const std::string& parent_resource_id,
-      const GURL& edit_url,
+      const std::string& resource_id,
       const EntryActionCallback& callback) OVERRIDE;
   virtual void RemoveResourceFromDirectory(
       const std::string& parent_resource_id,

@@ -60,7 +60,7 @@ class MockDriveService : public DriveServiceInterface {
           const EntryActionCallback& callback));
   MOCK_METHOD3(AddResourceToDirectory,
       void(const std::string& parent_resource_id,
-          const GURL& edit_url,
+          const std::string& resource_id,
           const EntryActionCallback& callback));
   MOCK_METHOD3(RemoveResourceFromDirectory,
       void(const std::string& parent_resource_id,
@@ -132,7 +132,7 @@ class MockDriveService : public DriveServiceInterface {
   // Will call |callback| with HTTP_SUCCESS.
   void AddResourceToDirectoryStub(
       const std::string& parent_resource_id,
-      const GURL& edit_url,
+      const std::string& resource_id,
       const EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.

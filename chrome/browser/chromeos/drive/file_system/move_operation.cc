@@ -303,7 +303,7 @@ void MoveOperation::AddEntryToDirectoryAfterGetEntryInfoPair(
   const FilePath& dir_path = result->second.path;
   drive_scheduler_->AddResourceToDirectory(
       dir_proto->resource_id(),
-      GURL(src_proto->edit_url()),
+      src_proto->resource_id(),
       base::Bind(&MoveOperation::MoveEntryToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,

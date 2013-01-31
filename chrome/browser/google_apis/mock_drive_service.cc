@@ -126,7 +126,7 @@ void MockDriveService::RenameResourceStub(
 
 void MockDriveService::AddResourceToDirectoryStub(
     const std::string& parent_resource_id,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

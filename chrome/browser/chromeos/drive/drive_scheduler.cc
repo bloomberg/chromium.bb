@@ -190,7 +190,7 @@ void DriveScheduler::RenameResource(
 
 void DriveScheduler::AddResourceToDirectory(
     const std::string& parent_resource_id,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -198,7 +198,7 @@ void DriveScheduler::AddResourceToDirectory(
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_ADD_RESOURCE_TO_DIRECTORY));
   new_job->parent_resource_id = parent_resource_id;
-  new_job->edit_url = edit_url;
+  new_job->resource_id = resource_id;
   new_job->entry_action_callback = callback;
 
   QueueJob(new_job.Pass());
@@ -374,7 +374,7 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_ADD_RESOURCE_TO_DIRECTORY: {
       drive_service_->AddResourceToDirectory(
           queue_entry->parent_resource_id,
-          queue_entry->edit_url,
+          queue_entry->resource_id,
           base::Bind(&DriveScheduler::OnEntryActionJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));

@@ -376,7 +376,7 @@ void GDataWapiService::RenameResource(
 
 void GDataWapiService::AddResourceToDirectory(
     const std::string& parent_resource_id,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -387,7 +387,7 @@ void GDataWapiService::AddResourceToDirectory(
                                           url_generator_,
                                           callback,
                                           parent_resource_id,
-                                          edit_url));
+                                          resource_id));
 }
 
 void GDataWapiService::RemoveResourceFromDirectory(

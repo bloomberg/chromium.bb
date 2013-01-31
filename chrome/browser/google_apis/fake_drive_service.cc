@@ -565,7 +565,7 @@ void FakeDriveService::RenameResource(
 
 void FakeDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
-    const GURL& edit_url,
+    const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -576,7 +576,7 @@ void FakeDriveService::AddResourceToDirectory(
     return;
   }
 
-  base::DictionaryValue* entry = FindEntryByEditUrl(edit_url);
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (entry) {
     base::ListValue* links = NULL;
     if (entry->GetList("link", &links)) {
@@ -796,39 +796,6 @@ base::DictionaryValue* FakeDriveService::FindEntryByResourceId(
           entry->GetString("gd$resourceId.$t", &current_resource_id) &&
           resource_id == current_resource_id) {
         return entry;
-      }
-    }
-  }
-
-  return NULL;
-}
-
-base::DictionaryValue* FakeDriveService::FindEntryByEditUrl(
-    const GURL& edit_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::DictionaryValue* resource_list_dict = NULL;
-  base::ListValue* entries = NULL;
-  // Go through entries and return the one that matches |edit_url|.
-  if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
-      resource_list_dict->GetList("entry", &entries)) {
-    for (size_t i = 0; i < entries->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      base::ListValue* links = NULL;
-      if (entries->GetDictionary(i, &entry) &&
-          entry->GetList("link", &links)) {
-        for (size_t j = 0; j < links->GetSize(); ++j) {
-          base::DictionaryValue* link = NULL;
-          std::string rel;
-          std::string href;
-          if (links->GetDictionary(j, &link) &&
-              link->GetString("rel", &rel) &&
-              link->GetString("href", &href) &&
-              rel == "edit" &&
-              GURL(href) == edit_url) {
-            return entry;
-          }
-        }
       }
     }
   }

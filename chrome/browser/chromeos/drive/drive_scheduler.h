@@ -126,7 +126,7 @@ class DriveScheduler
 
   // Adds a AddResourceToDirectory operation to the queue.
   void AddResourceToDirectory(const std::string& parent_resource_id,
-                              const GURL& edit_url,
+                              const std::string& resource_id,
                               const google_apis::EntryActionCallback& callback);
 
   // Adds a RemoveResourceFromDirectory operation to the queue.
@@ -163,12 +163,8 @@ class DriveScheduler
     //   TYPE_GET_RESOURCE_ENTRY
     //   TYPE_DELETE_RESOURCE
     //   TYPE_RENAME_RESOURCE
-    std::string resource_id;
-
-    // URL to use to modify the resource.
-    // Used by:
     //   TYPE_ADD_RESOURCE_TO_DIRECTORY
-    GURL edit_url;
+    std::string resource_id;
 
     // URL to access the contents of the operation's target.
     // Used by:

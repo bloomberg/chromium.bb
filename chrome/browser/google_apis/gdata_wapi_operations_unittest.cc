@@ -791,8 +791,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
           base::Bind(&test_util::CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
           "folder:root",
-          test_server_.GetURL(
-              "/feeds/default/private/full/file:2_file_resource_id"));
+          "file:2_file_resource_id");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -808,7 +807,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
   EXPECT_EQ("<?xml version=\"1.0\"?>\n"
             "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
             " <id>http://127.0.0.1:8040/feeds/default/private/full/"
-            "file:2_file_resource_id</id>\n"
+            "file%3A2_file_resource_id</id>\n"
             "</entry>\n",
             http_request_.content);
 }

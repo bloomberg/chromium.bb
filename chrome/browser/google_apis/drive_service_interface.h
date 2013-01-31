@@ -179,11 +179,11 @@ class DriveServiceInterface {
                               const EntryActionCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
-  // |edit_url| to a collection represented by the |parent_resource_id|.
+  // |resource_id| to a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual void AddResourceToDirectory(const std::string& parent_resource_id,
-                                      const GURL& edit_url,
+                                      const std::string& resource_id,
                                       const EntryActionCallback& callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its

@@ -479,11 +479,11 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const std::string& parent_resource_id,
-    const GURL& edit_url)
+    const std::string& resource_id)
     : EntryActionOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
-      edit_url_(edit_url) {
+      resource_id_(resource_id) {
   DCHECK(!callback.is_null());
 }
 
@@ -506,7 +506,8 @@ bool AddResourceToDirectoryOperation::GetContentData(
   xml_writer.StartElement("entry");
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
-  xml_writer.WriteElement("id", edit_url_.spec());
+  xml_writer.WriteElement(
+      "id", url_generator_.GenerateEditUrlWithoutParams(resource_id_).spec());
 
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();

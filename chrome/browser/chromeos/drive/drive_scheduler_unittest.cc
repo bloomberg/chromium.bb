@@ -244,7 +244,7 @@ TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
 
   scheduler_->AddResourceToDirectory(
       "folder:1_folder_resource_id",
-      GURL("https://file1_link_self/file:2_file_resource_id"),
+      "file:2_file_resource_id",
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
           &error));
