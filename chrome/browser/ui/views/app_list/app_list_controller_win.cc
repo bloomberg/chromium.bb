@@ -98,7 +98,7 @@ void LaunchHostedAppInChromeOnUIThread(const std::string app_id,
   if (!extension)
     return;
 
-  application_launch::OpenApplication(application_launch::LaunchParams(
+  chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
@@ -288,12 +288,12 @@ void AppListControllerDelegateWin::LaunchApp(
   }
 
   if (extension->is_legacy_packaged_app()) {
-    application_launch::OpenApplication(application_launch::LaunchParams(
+    chrome::OpenApplication(chrome::AppLaunchParams(
         profile, extension, extension_misc::LAUNCH_WINDOW, NEW_FOREGROUND_TAB));
     return;
   }
 
-  application_launch::OpenApplication(application_launch::LaunchParams(
+  chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 

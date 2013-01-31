@@ -426,11 +426,11 @@ void OpenFileBrowser(const FilePath& path,
   if (!extension)
     return;
 
-  application_launch::LaunchParams params(profile, extension,
-                                          extension_misc::LAUNCH_WINDOW,
-                                          NEW_FOREGROUND_TAB);
+  chrome::AppLaunchParams params(profile, extension,
+                                 extension_misc::LAUNCH_WINDOW,
+                                 NEW_FOREGROUND_TAB);
   params.override_url = GURL(url);
-  application_launch::OpenApplication(params);
+  chrome::OpenApplication(params);
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
@@ -883,11 +883,11 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
       if (!extension)
         return false;
 
-      application_launch::LaunchParams params(profile, extension,
-                                              extension_misc::LAUNCH_WINDOW,
-                                              NEW_FOREGROUND_TAB);
+      chrome::AppLaunchParams params(profile, extension,
+                                     extension_misc::LAUNCH_WINDOW,
+                                     NEW_FOREGROUND_TAB);
       params.override_url = GetVideoPlayerUrl(url);
-      application_launch::OpenApplication(params);
+      chrome::OpenApplication(params);
       return true;
     }
   }

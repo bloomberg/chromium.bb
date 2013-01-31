@@ -648,11 +648,10 @@ void ExtensionSettingsHandler::HandleLaunchMessage(const ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
   const extensions::Extension* extension =
       extension_service_->GetExtensionById(extension_id, false);
-  application_launch::LaunchParams params(extension_service_->profile(),
-                                          extension,
-                                          extension_misc::LAUNCH_WINDOW,
-                                          NEW_WINDOW);
-  application_launch::OpenApplication(params);
+  chrome::OpenApplication(chrome::AppLaunchParams(extension_service_->profile(),
+                                                  extension,
+                                                  extension_misc::LAUNCH_WINDOW,
+                                                  NEW_WINDOW));
 }
 
 void ExtensionSettingsHandler::HandleRestartMessage(const ListValue* args) {

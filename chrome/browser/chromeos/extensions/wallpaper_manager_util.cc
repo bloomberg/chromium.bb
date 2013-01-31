@@ -32,10 +32,9 @@ void OpenWallpaperManager() {
   if (!extension)
     return;
 
-  application_launch::LaunchParams params(profile, extension,
-                                          extension_misc::LAUNCH_WINDOW,
-                                          NEW_WINDOW);
-  application_launch::OpenApplication(params);
+  chrome::OpenApplication(chrome::AppLaunchParams(profile, extension,
+                                                  extension_misc::LAUNCH_WINDOW,
+                                                  NEW_WINDOW));
 }
 
 }  // namespace wallpaper_manager_util

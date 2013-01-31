@@ -1167,10 +1167,8 @@ void RecordLastRunAppBundlePath() {
                << base::SysNSStringToUTF8(appId) << "'.";
     return;
   }
-  application_launch::LaunchParams params(profile, extension,
-                                          extension_misc::LAUNCH_NONE,
-                                          NEW_WINDOW);
-  application_launch::OpenApplication(params);
+  chrome::OpenApplication(chrome::AppLaunchParams(
+      profile, extension, extension_misc::LAUNCH_NONE, NEW_WINDOW));
 }
 
 // Apple Event handler that receives print event from service

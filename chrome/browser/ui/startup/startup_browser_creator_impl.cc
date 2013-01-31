@@ -440,9 +440,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram();
 
-  WebContents* app_tab = application_launch::OpenApplication(
-      application_launch::LaunchParams(profile, extension,
-          extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
+  WebContents* app_tab = chrome::OpenApplication(chrome::AppLaunchParams(
+      profile, extension, extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
   return (app_tab != NULL);
 }
 
@@ -476,12 +475,11 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
 
     RecordCmdLineAppHistogram();
 
-    application_launch::LaunchParams params(profile, extension,
-                                            launch_container, NEW_WINDOW);
+    chrome::AppLaunchParams params(profile, extension,
+                                   launch_container, NEW_WINDOW);
     params.command_line = &command_line_;
     params.current_directory = cur_dir_;
-    WebContents* tab_in_app_window = application_launch::OpenApplication(
-        params);
+    WebContents* tab_in_app_window = chrome::OpenApplication(params);
 
     if (out_app_contents)
       *out_app_contents = tab_in_app_window;
@@ -514,10 +512,9 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
       gfx::Rect override_bounds;
       ExtractOptionalAppWindowSize(&override_bounds);
 
-      WebContents* app_tab = application_launch::OpenAppShortcutWindow(
-          profile,
-          url,
-          override_bounds);
+      WebContents* app_tab = chrome::OpenAppShortcutWindow(profile,
+                                                           url,
+                                                           override_bounds);
 
       if (out_app_contents)
         *out_app_contents = app_tab;

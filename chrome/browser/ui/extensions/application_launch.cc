@@ -234,12 +234,12 @@ WebContents* OpenApplicationTab(Profile* profile,
 
 }  // namespace
 
-namespace application_launch {
+namespace chrome {
 
-LaunchParams::LaunchParams(Profile* profile,
-                           const extensions::Extension* extension,
-                           extension_misc::LaunchContainer container,
-                           WindowOpenDisposition disposition)
+AppLaunchParams::AppLaunchParams(Profile* profile,
+                                 const extensions::Extension* extension,
+                                 extension_misc::LaunchContainer container,
+                                 WindowOpenDisposition disposition)
     : profile(profile),
       extension(extension),
       container(container),
@@ -247,9 +247,9 @@ LaunchParams::LaunchParams(Profile* profile,
       override_url(),
       command_line(NULL) {}
 
-LaunchParams::LaunchParams(Profile* profile,
-                           const extensions::Extension* extension,
-                           WindowOpenDisposition disposition)
+AppLaunchParams::AppLaunchParams(Profile* profile,
+                                 const extensions::Extension* extension,
+                                 WindowOpenDisposition disposition)
     : profile(profile),
       extension(extension),
       container(extension_misc::LAUNCH_NONE),
@@ -266,9 +266,9 @@ LaunchParams::LaunchParams(Profile* profile,
       extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
 }
 
-LaunchParams::LaunchParams(Profile* profile,
-                           const extensions::Extension* extension,
-                           int event_flags)
+AppLaunchParams::AppLaunchParams(Profile* profile,
+                                 const extensions::Extension* extension,
+                                 int event_flags)
     : profile(profile),
       extension(extension),
       container(extension_misc::LAUNCH_NONE),
@@ -292,7 +292,7 @@ LaunchParams::LaunchParams(Profile* profile,
   }
 }
 
-WebContents* OpenApplication(const LaunchParams& params) {
+WebContents* OpenApplication(const AppLaunchParams& params) {
   Profile* profile = params.profile;
   const extensions::Extension* extension = params.extension;
   extension_misc::LaunchContainer container = params.container;
@@ -360,4 +360,4 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
   return tab;
 }
 
-}  // namespace application_launch
+}  // namespace chrome

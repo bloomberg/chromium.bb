@@ -100,8 +100,8 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    application_launch::OpenApplication(application_launch::LaunchParams(
-            browser()->profile(), extension, container, disposition));
+    chrome::OpenApplication(chrome::AppLaunchParams(
+        browser()->profile(), extension, container, disposition));
     return extension;
   }
 

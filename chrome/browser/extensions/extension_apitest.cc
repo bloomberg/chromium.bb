@@ -235,11 +235,11 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
       ui_test_utils::NavigateToURL(browser(), url);
 
   } else if (launch_platform_app) {
-    application_launch::LaunchParams params(browser()->profile(), extension,
-                                            extension_misc::LAUNCH_NONE,
-                                            NEW_WINDOW);
+    chrome::AppLaunchParams params(browser()->profile(), extension,
+                                   extension_misc::LAUNCH_NONE,
+                                   NEW_WINDOW);
     params.command_line = CommandLine::ForCurrentProcess();
-    application_launch::OpenApplication(params);
+    chrome::OpenApplication(params);
   }
 
   if (!catcher.GetNextResult()) {

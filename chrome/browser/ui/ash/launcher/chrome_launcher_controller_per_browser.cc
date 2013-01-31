@@ -471,10 +471,9 @@ void ChromeLauncherControllerPerBrowser::LaunchApp(const std::string& app_id,
     return;
   }
 
-  application_launch::OpenApplication(application_launch::LaunchParams(
-      GetProfileForNewWindows(),
-      extension,
-      event_flags));
+  chrome::OpenApplication(chrome::AppLaunchParams(GetProfileForNewWindows(),
+                                                  extension,
+                                                  event_flags));
 }
 
 void ChromeLauncherControllerPerBrowser::ActivateApp(const std::string& app_id,

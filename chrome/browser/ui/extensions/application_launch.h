@@ -26,25 +26,26 @@ namespace gfx {
 class Rect;
 }
 
-namespace application_launch {
+namespace chrome {
 
-struct LaunchParams {
-  LaunchParams(Profile* profile,
-               const extensions::Extension* extension,
-               extension_misc::LaunchContainer container,
-               WindowOpenDisposition disposition);
+struct AppLaunchParams {
+  AppLaunchParams(Profile* profile,
+                  const extensions::Extension* extension,
+                  extension_misc::LaunchContainer container,
+                  WindowOpenDisposition disposition);
 
-  // Helper to create LaunchParams using ExtensionPrefs::GetLaunchContainer with
-  // ExtensionPrefs::LAUNCH_REGULAR to check for a user-configured container.
-  LaunchParams(Profile* profile,
-               const extensions::Extension* extension,
-               WindowOpenDisposition disposition);
+  // Helper to create AppLaunchParams using ExtensionPrefs::GetLaunchContainer
+  // with ExtensionPrefs::LAUNCH_REGULAR to check for a user-configured
+  // container.
+  AppLaunchParams(Profile* profile,
+                  const extensions::Extension* extension,
+                  WindowOpenDisposition disposition);
 
-  // Helper to create LaunchParams using event flags that allows user to
+  // Helper to create AppLaunchParams using event flags that allows user to
   // override the user-configured container using modifier keys.
-  LaunchParams(Profile* profile,
-               const extensions::Extension* extension,
-               int event_flags);
+  AppLaunchParams(Profile* profile,
+                  const extensions::Extension* extension,
+                  int event_flags);
 
   // The profile to load the application from.
   Profile* profile;
@@ -71,7 +72,7 @@ struct LaunchParams {
 };
 
 // Open the application in a way specified by |params|.
-content::WebContents* OpenApplication(const LaunchParams& params);
+content::WebContents* OpenApplication(const AppLaunchParams& params);
 
 // Open |url| in an app shortcut window. |override_bounds| param is optional.
 // There are two kinds of app shortcuts: Shortcuts to a URL,
@@ -82,6 +83,6 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
                                             const GURL& url,
                                             const gfx::Rect& override_bounds);
 
-}  // namespace application_launch
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
