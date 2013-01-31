@@ -11,7 +11,6 @@ ADDRESS_HOME_CITY | ecomms_town | Town / City: |
 ADDRESS_HOME_STATE | ecomms_county | County: | 
 ADDRESS_HOME_ZIP | ecomms_postcode | Postcode: | 
 ADDRESS_HOME_COUNTRY | ecomms_country | Country: | 224
-UNKNOWN_TYPE | delivery_address | Address Details Address1: Address2: Town / City: County: | 1
 UNKNOWN_TYPE | del_title | Title: | 
 NAME_FIRST | del_first_name | First Name: | 
 NAME_LAST | del_last_name | Last Name: | 

@@ -10,7 +10,6 @@ ADDRESS_HOME_COUNTRY | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlace
 PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textPhoneNumberDaytime | Phone Number: | 
 EMAIL_ADDRESS | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$txtEmailAddress | Purchaser's Email: | 
 EMAIL_ADDRESS | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$txtEmailAddressConfirm | Confirm Email: | 
-UNKNOWN_TYPE | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$chkEmailOptIn | Confirm Email: | on
 NAME_FIRST | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textFirstName | First Name: | 
 NAME_LAST | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textLastName | Last Name: | 
 ADDRESS_HOME_LINE1 | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textAddressLine1 | Address 1: | 
@@ -20,4 +19,3 @@ ADDRESS_HOME_STATE | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHo
 ADDRESS_HOME_ZIP | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textZip | Zip/Postal: | 
 ADDRESS_HOME_COUNTRY | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$ddlCountry | Country: | US
 PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textPhoneNumberDaytime | Phone Number: | 
-UNKNOWN_TYPE | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$chkSameAsBillingAddress |  | on

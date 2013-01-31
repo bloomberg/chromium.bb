@@ -12,6 +12,3 @@ ADDRESS_HOME_COUNTRY | profileInformation.customerContact.country | Country* | U
 PHONE_HOME_WHOLE_NUMBER | profileInformation.customerContact.primaryPhone | Phone number | 
 COMPANY_NAME | profileInformation.businessName | Company name | 
 UNKNOWN_TYPE | profileInformation.currency | Preferred currency | USD
-UNKNOWN_TYPE | profileInformation.customerContact.loyaltyAccountDesired | Sign me up to get 1 free night anywhere for every 10 nights I stay with Hotels.com. By enrolling, I agree to the full Terms and Conditions of the program. Learn more. | true
-UNKNOWN_TYPE | subscribeNewsletter | Email me exclusive coupons, deals and travel information from hotels.com | true
-UNKNOWN_TYPE | termsConditionsConfirm | I have read and accepted the Terms and Conditions and Privacy Policy for this website* | true

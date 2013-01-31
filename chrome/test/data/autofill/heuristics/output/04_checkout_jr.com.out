@@ -8,9 +8,6 @@ ADDRESS_BILLING_ZIP | billingAddress.postalCode | * |
 ADDRESS_BILLING_COUNTRY | billingAddress.country | * | US
 PHONE_HOME_WHOLE_NUMBER | billingAddress.phoneNumber | * | 
 EMAIL_ADDRESS | customer.emailAddress | * | 
-UNKNOWN_TYPE | customer.optIn | Yes, send me J&R's promotional email newsletter. | on
-UNKNOWN_TYPE | storePickup | Pickup In-Store (Park Row, New York NY) | on
-UNKNOWN_TYPE | shipToBillingAddress | Ship to my billing address | on
 NAME_FIRST | shippingAddress.firstName | * | 
 NAME_LAST | shippingAddress.lastName | * | 
 ADDRESS_HOME_LINE1 | shippingAddress.address1 | * | 
@@ -25,4 +22,3 @@ UNKNOWN_TYPE | customOrderHeader.salespersonNumber | Salesperson Number |
 UNKNOWN_TYPE | customOrderHeader.giftFromName | Gift From | 
 UNKNOWN_TYPE | customOrderHeader.giftMessage | Gift Message | 
 EMAIL_ADDRESS | customOrderHeader.giftEmailAddress | Gift Email | 
-UNKNOWN_TYPE | customOrderHeader.giftHidePrices | Hide prices on the recipient's invoice and products on gift email. | on

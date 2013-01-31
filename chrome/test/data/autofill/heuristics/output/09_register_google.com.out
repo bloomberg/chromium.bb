@@ -2,8 +2,6 @@ NAME_FIRST | FirstName | First name: |
 NAME_LAST | LastName | Last name: | 
 UNKNOWN_TYPE | UsernameSelector |  | header
 EMAIL_ADDRESS | Email |  | 
-UNKNOWN_TYPE | PersistentCookie | Re-enter password: | yes
-UNKNOWN_TYPE | smhck | Re-enter password: | 1
 UNKNOWN_TYPE | selection | Security question: | choosequestion
 UNKNOWN_TYPE | ownquestion | Security question: | 
 UNKNOWN_TYPE | IdentityAnswer | Answer: | 
