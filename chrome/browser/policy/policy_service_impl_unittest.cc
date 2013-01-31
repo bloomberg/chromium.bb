@@ -605,4 +605,40 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   policy_service_->RemoveObserver(POLICY_DOMAIN_EXTENSIONS, &observer);
 }
 
+TEST_F(PolicyServiceTest, RegisterPolicyNamespace) {
+  EXPECT_CALL(provider1_, RegisterPolicyNamespace(_, _)).Times(AnyNumber());
+  EXPECT_CALL(provider1_, UnregisterPolicyNamespace(_, _)).Times(AnyNumber());
+  EXPECT_CALL(provider2_, RegisterPolicyNamespace(_, _)).Times(AnyNumber());
+  EXPECT_CALL(provider2_, UnregisterPolicyNamespace(_, _)).Times(AnyNumber());
+
+  const PolicyNamespace kChromeNS(POLICY_DOMAIN_CHROME, "");
+  const PolicyNamespace kExtensionNS(POLICY_DOMAIN_EXTENSIONS, kExtension);
+
+  EXPECT_CALL(provider0_, RegisterPolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  policy_service_->RegisterPolicyNamespace(kChromeNS);
+  Mock::VerifyAndClearExpectations(&provider0_);
+
+  // A second PolicyService that uses that same provider may register interest
+  // in the same namespace.
+  EXPECT_CALL(provider0_, RegisterPolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  policy_service_->RegisterPolicyNamespace(kChromeNS);
+  Mock::VerifyAndClearExpectations(&provider0_);
+
+  // Register another namespace.
+  EXPECT_CALL(provider0_, RegisterPolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                                  kExtension));
+  policy_service_->RegisterPolicyNamespace(kExtensionNS);
+  Mock::VerifyAndClearExpectations(&provider0_);
+
+  // And remove them.
+  EXPECT_CALL(provider0_, UnregisterPolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  policy_service_->UnregisterPolicyNamespace(kChromeNS);
+  Mock::VerifyAndClearExpectations(&provider0_);
+
+  EXPECT_CALL(provider0_, UnregisterPolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                                                    kExtension));
+  policy_service_->UnregisterPolicyNamespace(kExtensionNS);
+  Mock::VerifyAndClearExpectations(&provider0_);
+}
+
 }  // namespace policy

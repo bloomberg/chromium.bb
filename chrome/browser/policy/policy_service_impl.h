@@ -38,6 +38,8 @@ class PolicyServiceImpl : public PolicyService,
                            PolicyService::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(PolicyDomain domain,
                               PolicyService::Observer* observer) OVERRIDE;
+  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
+  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
   virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
@@ -51,11 +53,12 @@ class PolicyServiceImpl : public PolicyService,
   // Information about policy changes sent to observers.
   class PolicyChangeInfo {
    public:
-    PolicyChangeInfo(const PolicyBundle::PolicyNamespace& policy_namespace,
-                     const PolicyMap& previous, const PolicyMap& current);
+    PolicyChangeInfo(const PolicyNamespace& policy_namespace,
+                     const PolicyMap& previous,
+                     const PolicyMap& current);
     ~PolicyChangeInfo();
 
-    PolicyBundle::PolicyNamespace policy_namespace_;
+    PolicyNamespace policy_namespace_;
     PolicyMap previous_;
     PolicyMap current_;
   };
@@ -65,7 +68,7 @@ class PolicyServiceImpl : public PolicyService,
 
   // Posts a task to notify observers of |ns| that its policies have changed,
   // passing along the |previous| and the |current| policies.
-  void NotifyNamespaceUpdated(const PolicyBundle::PolicyNamespace& ns,
+  void NotifyNamespaceUpdated(const PolicyNamespace& ns,
                               const PolicyMap& previous,
                               const PolicyMap& current);
 

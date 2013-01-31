@@ -37,6 +37,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -388,6 +389,7 @@ class PolicyPrefsTest
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(provider_, RegisterPolicyNamespace(_, _)).Times(AnyNumber());
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 

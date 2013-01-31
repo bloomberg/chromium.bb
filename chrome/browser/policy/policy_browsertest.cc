@@ -114,6 +114,7 @@
 
 using content::BrowserThread;
 using content::URLRequestMockHTTPJob;
+using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -408,6 +409,7 @@ class PolicyTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(provider_, RegisterPolicyNamespace(_, _)).Times(AnyNumber());
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 

@@ -104,4 +104,10 @@ void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ConfigurationPolicyProvider::RegisterPolicyNamespace(
+    const PolicyNamespace& ns) {}
+
+void ConfigurationPolicyProvider::UnregisterPolicyNamespace(
+    const PolicyNamespace& ns) {}
+
 }  // namespace policy

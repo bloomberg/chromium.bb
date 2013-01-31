@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <utility>
 
 #include "base/basictypes.h"
 #include "chrome/browser/policy/policy_service.h"
@@ -19,10 +18,6 @@ class PolicyMap;
 // Maps policy namespaces to PolicyMaps.
 class PolicyBundle {
  public:
-  // Groups a policy domain and a component ID in a single object representing
-  // a policy namespace. Used as the key type in MapType.
-  typedef std::pair<PolicyDomain, std::string> PolicyNamespace;
-
   typedef std::map<PolicyNamespace, PolicyMap*> MapType;
   typedef MapType::const_iterator const_iterator;
 

@@ -15,8 +15,9 @@
 namespace policy {
 
 PolicyServiceImpl::PolicyChangeInfo::PolicyChangeInfo(
-    const PolicyBundle::PolicyNamespace& policy_namespace,
-    const PolicyMap& previous, const PolicyMap& current)
+    const PolicyNamespace& policy_namespace,
+    const PolicyMap& previous,
+    const PolicyMap& current)
     : policy_namespace_(policy_namespace) {
   previous_.CopyFrom(previous);
   current_.CopyFrom(current);
@@ -73,6 +74,16 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
   }
 }
 
+void PolicyServiceImpl::RegisterPolicyNamespace(const PolicyNamespace& ns) {
+  for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
+    (*it)->RegisterPolicyNamespace(ns);
+}
+
+void PolicyServiceImpl::UnregisterPolicyNamespace(const PolicyNamespace& ns) {
+  for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
+    (*it)->UnregisterPolicyNamespace(ns);
+}
+
 const PolicyMap& PolicyServiceImpl::GetPolicies(
     PolicyDomain domain,
     const std::string& component_id) const {
@@ -108,7 +119,7 @@ void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
 }
 
 void PolicyServiceImpl::NotifyNamespaceUpdated(
-    const PolicyBundle::PolicyNamespace& ns,
+    const PolicyNamespace& ns,
     const PolicyMap& previous,
     const PolicyMap& current) {
   // If running a unit test that hasn't setup a MessageLoop, don't send any

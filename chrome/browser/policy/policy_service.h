@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -28,6 +29,10 @@ enum PolicyDomain {
   // Must be the last entry.
   POLICY_DOMAIN_SIZE,
 };
+
+// Groups a policy domain and a component ID in a single object representing
+// a policy namespace.
+typedef std::pair<PolicyDomain, std::string> PolicyNamespace;
 
 // The PolicyService merges policies from all available sources, taking into
 // account their priorities. Policy clients can retrieve policy for their domain
@@ -65,6 +70,16 @@ class PolicyService {
   virtual void AddObserver(PolicyDomain domain, Observer* observer) = 0;
 
   virtual void RemoveObserver(PolicyDomain domain, Observer* observer) = 0;
+
+  // Registers a namespace at the policy service, signaling that there is
+  // interest in receiving policy for that namespace. Registrations can be
+  // stacked; each namespace remains registered until an unregister call is made
+  // for each previous register call.
+  // Registering a new namespace does not automatically trigger a policy reload;
+  // invoke RefreshPolicies() if an immediate reload is intended.
+  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) = 0;
+
+  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) = 0;
 
   virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,

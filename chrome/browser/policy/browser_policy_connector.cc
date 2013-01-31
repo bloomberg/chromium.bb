@@ -503,7 +503,9 @@ scoped_ptr<PolicyService>
       providers.push_back(managed_mode_policy_provider);
   }
 
-  return scoped_ptr<PolicyService>(new PolicyServiceImpl(providers));
+  scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
+  service->RegisterPolicyNamespace(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  return service.Pass();
 }
 
 // static

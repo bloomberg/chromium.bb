@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_service.h"
 
 namespace policy {
 
@@ -62,6 +63,16 @@ class ConfigurationPolicyProvider {
   // Observers must detach themselves before the provider is deleted.
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
+
+  // Notifies the provider that there is interest in loading policy for the
+  // given namespace. The provider can ignore this information or use it
+  // to selectively load the corresponding policy from its sources.
+  // Each namespace may be registered several times; the provider should assume
+  // that there is an interested consumer until an unregister is made for each
+  // previous register.
+  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns);
+
+  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns);
 
  protected:
   // Subclasses must invoke this to update the policies currently served by
