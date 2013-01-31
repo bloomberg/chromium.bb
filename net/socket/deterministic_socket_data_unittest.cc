@@ -31,6 +31,9 @@ class DeterministicSocketDataTest : public PlatformTest {
 
   virtual void TearDown();
 
+  void ReentrantReadCallback(int len, int rv);
+  void ReentrantWriteCallback(const char* data, int len, int rv);
+
  protected:
   void Initialize(MockRead* reads, size_t reads_count, MockWrite* writes,
                   size_t writes_count);
@@ -166,6 +169,22 @@ void DeterministicSocketDataTest::AssertWriteReturns(const char* data,
   ASSERT_EQ(rv, sock_->Write(buf, len, write_callback_.callback()));
 }
 
+void DeterministicSocketDataTest::ReentrantReadCallback(int len, int rv) {
+  scoped_refptr<IOBuffer> read_buf(new IOBuffer(len));
+  EXPECT_EQ(len, sock_->Read(read_buf,  len,
+      base::Bind(&DeterministicSocketDataTest::ReentrantReadCallback,
+                 base::Unretained(this), len)));
+}
+
+void DeterministicSocketDataTest::ReentrantWriteCallback(
+    const char* data, int len, int rv) {
+  scoped_refptr<IOBuffer> write_buf(new IOBuffer(len));
+  memcpy(write_buf->data(), data, len);
+  EXPECT_EQ(len, sock_->Write(write_buf,  len,
+      base::Bind(&DeterministicSocketDataTest::ReentrantWriteCallback,
+                 base::Unretained(this), data, len)));
+}
+
 // ----------- Read
 
 TEST_F(DeterministicSocketDataTest, SingleSyncReadWhileStopped) {
@@ -295,6 +314,23 @@ TEST_F(DeterministicSocketDataTest, MixedReads) {
   AssertSyncReadEquals(kMsg1, kLen1);
 }
 
+TEST_F(DeterministicSocketDataTest, SyncReadFromCompletionCallback) {
+  MockRead reads[] = {
+      MockRead(ASYNC, kMsg1, kLen1, 0),   // Async Read
+      MockRead(SYNCHRONOUS, kMsg2, kLen2, 1),  // Sync Read
+  };
+
+  Initialize(reads, arraysize(reads), NULL, 0);
+
+  data_->StopAfter(2);
+
+  scoped_refptr<IOBuffer> read_buf(new IOBuffer(kLen1));
+  ASSERT_EQ(ERR_IO_PENDING, sock_->Read(read_buf, kLen1,
+      base::Bind(&DeterministicSocketDataTest::ReentrantReadCallback,
+                 base::Unretained(this), kLen2)));
+  data_->Run();
+}
+
 // ----------- Write
 
 TEST_F(DeterministicSocketDataTest, SingleSyncWriteWhileStopped) {
@@ -418,6 +454,24 @@ TEST_F(DeterministicSocketDataTest, MixedWrites) {
   AssertSyncWriteEquals(kMsg1, kLen1);
 }
 
+TEST_F(DeterministicSocketDataTest, SyncWriteFromCompletionCallback) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, kMsg1, kLen1, 0),   // Async Write
+    MockWrite(SYNCHRONOUS, kMsg2, kLen2, 1),  // Sync Write
+  };
+
+  Initialize(NULL, 0, writes, arraysize(writes));
+
+  data_->StopAfter(2);
+
+  scoped_refptr<IOBuffer> write_buf(new IOBuffer(kLen1));
+  memcpy(write_buf->data(), kMsg1, kLen1);
+  ASSERT_EQ(ERR_IO_PENDING, sock_->Write(write_buf, kLen1,
+      base::Bind(&DeterministicSocketDataTest::ReentrantWriteCallback,
+                 base::Unretained(this), kMsg2, kLen2)));
+  data_->Run();
+}
+
 // ----------- Mixed Reads and Writes
 
 TEST_F(DeterministicSocketDataTest, MixedSyncOperations) {
@@ -484,10 +538,12 @@ TEST_F(DeterministicSocketDataTest, InterleavedAsyncOperations) {
   AssertReadReturns(kMsg1, kLen1, ERR_IO_PENDING);
 
   data_->RunFor(1);
+  ASSERT_TRUE(read_callback_.have_result());
   ASSERT_EQ(kLen1, read_callback_.WaitForResult());
   AssertReadBufferEquals(kMsg1, kLen1);
 
   data_->RunFor(1);
+  ASSERT_TRUE(write_callback_.have_result());
   ASSERT_EQ(kLen2, write_callback_.WaitForResult());
 
   data_->StopAfter(1);
@@ -498,9 +554,11 @@ TEST_F(DeterministicSocketDataTest, InterleavedAsyncOperations) {
   AssertWriteReturns(kMsg3, kLen3, ERR_IO_PENDING);
 
   data_->RunFor(1);
+  ASSERT_TRUE(write_callback_.have_result());
   ASSERT_EQ(kLen3, write_callback_.WaitForResult());
 
   data_->RunFor(1);
+  ASSERT_TRUE(read_callback_.have_result());
   ASSERT_EQ(kLen2, read_callback_.WaitForResult());
   AssertReadBufferEquals(kMsg2, kLen2);
 }
@@ -528,6 +586,7 @@ TEST_F(DeterministicSocketDataTest, InterleavedMixedOperations) {
   AssertSyncReadEquals(kMsg1, kLen1);
 
   data_->RunFor(1);
+  ASSERT_TRUE(write_callback_.have_result());
   ASSERT_EQ(kLen2, write_callback_.WaitForResult());
 
   // Issue the read, which will block until the write completes
@@ -538,6 +597,7 @@ TEST_F(DeterministicSocketDataTest, InterleavedMixedOperations) {
   AssertSyncWriteEquals(kMsg3, kLen3);
 
   data_->RunFor(1);
+  ASSERT_TRUE(read_callback_.have_result());
   ASSERT_EQ(kLen2, read_callback_.WaitForResult());
   AssertReadBufferEquals(kMsg2, kLen2);
 }

@@ -451,13 +451,17 @@ DeterministicSocketData::DeterministicSocketData(MockRead* reads,
       current_write_(),
       stopping_sequence_number_(0),
       stopped_(false),
-      print_debug_(false) {
+      print_debug_(false),
+      is_running_(false) {
   VerifyCorrectSequenceNumbers(reads, reads_count, writes, writes_count);
 }
 
 DeterministicSocketData::~DeterministicSocketData() {}
 
 void DeterministicSocketData::Run() {
+  DCHECK(!is_running_);
+  is_running_ = true;
+
   SetStopped(false);
   int counter = 0;
   // Continue to consume data until all data has run out, or the stopped_ flag
@@ -481,6 +485,7 @@ void DeterministicSocketData::Run() {
     MessageLoop::current()->RunUntilIdle();
   }
   SetStopped(false);
+  is_running_ = false;
 }
 
 void DeterministicSocketData::RunFor(int steps) {
@@ -500,7 +505,6 @@ void DeterministicSocketData::StopAfter(int seq) {
 
 MockRead DeterministicSocketData::GetNextRead() {
   current_read_ = StaticSocketDataProvider::PeekRead();
-  EXPECT_LE(sequence_number_, current_read_.sequence_number);
 
   // Synchronous read while stopped is an error
   if (stopped() && current_read_.mode == SYNCHRONOUS) {
@@ -586,14 +590,14 @@ void DeterministicSocketData::Reset() {
 void DeterministicSocketData::InvokeCallbacks() {
   if (socket_ && socket_->write_pending() &&
       (current_write().sequence_number == sequence_number())) {
-    socket_->CompleteWrite();
     NextStep();
+    socket_->CompleteWrite();
     return;
   }
   if (socket_ && socket_->read_pending() &&
       (current_read().sequence_number == sequence_number())) {
-    socket_->CompleteRead();
     NextStep();
+    socket_->CompleteRead();
     return;
   }
 }

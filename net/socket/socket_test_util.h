@@ -508,6 +508,7 @@ class DeterministicSocketData
   bool stopped_;
   base::WeakPtr<DeterministicMockTCPClientSocket> socket_;
   bool print_debug_;
+  bool is_running_;
 };
 
 // Holds an array of SocketDataProvider elements.  As Mock{TCP,SSL}StreamSocket
