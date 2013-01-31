@@ -43,17 +43,11 @@ ZoomController::ZoomController(content::WebContents* web_contents)
 ZoomController::~ZoomController() {}
 
 bool ZoomController::IsAtDefaultZoom() const {
-  if (!web_contents())
-    return true;
-
   return content::ZoomValuesEqual(web_contents()->GetZoomLevel(),
                                   default_zoom_level_.GetValue());
 }
 
 int ZoomController::GetResourceForZoomLevel() const {
-  if (!web_contents())
-    return IDR_ZOOM_MINUS;
-
   DCHECK(!IsAtDefaultZoom());
   double zoom = web_contents()->GetZoomLevel();
   return zoom > default_zoom_level_.GetValue() ? IDR_ZOOM_PLUS : IDR_ZOOM_MINUS;
@@ -75,13 +69,6 @@ void ZoomController::Observe(int type,
 }
 
 void ZoomController::UpdateState(const std::string& host) {
-  // TODO(dbeam): I'm not totally sure why this is happening, and there's been a
-  // bit of effort to understand with no tangible results yet. It's possible
-  // that WebContents is NULL as it's being destroyed or some other random
-  // reason that I haven't found yet. Applying band-aid. http://crbug.com/144879
-  if (!web_contents())
-    return;
-
   // If |host| is empty, all observers should be updated.
   if (!host.empty()) {
     // Use the active navigation entry's URL instead of the WebContents' so

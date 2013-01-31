@@ -399,6 +399,12 @@ BrowserView::~BrowserView() {
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
+
+  // It is possible that we were forced-closed by the native view system and
+  // that tabs remain in the browser. Close any such remaining tabs.
+  while (browser_->tab_strip_model()->count())
+    delete browser_->tab_strip_model()->GetWebContentsAt(0);
+
   // Explicitly set browser_ to NULL.
   browser_.reset();
 }
