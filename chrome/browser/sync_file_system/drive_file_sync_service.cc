@@ -372,6 +372,7 @@ void DriveFileSyncService::ProcessRemoteChange(
   }
 
   if (pending_changes_.empty()) {
+    token->ResetTask(FROM_HERE);
     NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
     callback.Run(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
                  fileapi::FileSystemURL(),
@@ -483,6 +484,17 @@ void DriveFileSyncService::ApplyLocalChange(
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::ApplyLocalChange,
         AsWeakPtr(), local_file_change, local_file_path, url, callback));
+    return;
+  }
+
+  if (!metadata_store_->IsIncrementalSyncOrigin(url.origin()) &&
+      !metadata_store_->IsBatchSyncOrigin(url.origin())) {
+    // We may get called by LocalFileSyncService to sync local changes
+    // for the origins that are disabled.
+    DVLOG(1) << "Got request for stray origin: " << url.origin().spec();
+    token->ResetTask(FROM_HERE);
+    FinalizeLocalSync(token.Pass(), callback,
+                      fileapi::SYNC_STATUS_NOT_INITIALIZED);
     return;
   }
 
@@ -742,6 +754,11 @@ void DriveFileSyncService::UpdateServiceState() {
     case fileapi::SYNC_STATUS_ABORT:
     case fileapi::SYNC_STATUS_FAILED:
       state_ = REMOTE_SERVICE_DISABLED;
+      break;
+
+    // Requested origin is not initialized or has been unregistered.
+    // This shouldn't affect the global service state.
+    case fileapi::SYNC_STATUS_NOT_INITIALIZED:
       break;
 
     // Unexpected status code. They should be explicitly added to one of the
@@ -1677,6 +1694,7 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
       base::Bind(&MarkFetchingChangesCompleted, &is_fetching_changes_));
 
   if (metadata_store_->incremental_sync_origins().empty()) {
+    token->ResetTask(FROM_HERE);
     NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
     return;
   }

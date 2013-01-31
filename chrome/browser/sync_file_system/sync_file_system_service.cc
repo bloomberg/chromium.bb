@@ -129,8 +129,18 @@ SyncEventObserver::SyncServiceState RemoteStateToSyncServiceState(
   return SyncEventObserver::SYNC_SERVICE_DISABLED;
 }
 
-void DidUnregisterOriginForTrackingChanges(fileapi::SyncStatusCode code) {
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, code);
+void DidHandleOriginForExtensionEvent(
+    int type,
+    const GURL& origin,
+    fileapi::SyncStatusCode code) {
+  if (code != fileapi::SYNC_STATUS_OK) {
+    DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type ||
+           chrome::NOTIFICATION_EXTENSION_LOADED == type);
+    const char* event =
+        (chrome::NOTIFICATION_EXTENSION_UNLOADED == type) ? "UNLOAD" : "LOAD";
+    LOG(WARNING) << "Register/Unregistering origin for " << event << " failed:"
+                 << origin.spec();
+  }
 }
 
 }  // namespace
@@ -300,8 +310,9 @@ void SyncFileSystemService::Initialize(
     profile_sync_service->AddObserver(this);
   }
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
 }
 
@@ -542,9 +553,20 @@ void SyncFileSystemService::Observe(
     std::string extension_id =
         content::Details<const extensions::UnloadedExtensionInfo>(
             details)->extension->id();
+    GURL app_origin = extensions::Extension::GetBaseURLFromExtensionId(
+        extension_id);
     remote_file_service_->UnregisterOriginForTrackingChanges(
-        extensions::Extension::GetBaseURLFromExtensionId(extension_id),
-        base::Bind(&DidUnregisterOriginForTrackingChanges));
+        app_origin, base::Bind(&DidHandleOriginForExtensionEvent,
+                               type, app_origin));
+    initialized_app_origins_.erase(app_origin);
+    local_file_service_->SetOriginEnabled(app_origin, false);
+  } else if (chrome::NOTIFICATION_EXTENSION_LOADED == type) {
+    std::string extension_id =
+        content::Details<const extensions::Extension>(
+            details)->id();
+    GURL app_origin = extensions::Extension::GetBaseURLFromExtensionId(
+        extension_id);
+    local_file_service_->SetOriginEnabled(app_origin, true);
   } else {
     NOTREACHED() << "Unknown notification.";
   }

@@ -54,17 +54,24 @@ bool LocalFileSyncService::OriginChangeMap::NextOriginToProcess(GURL* origin) {
   DCHECK(origin);
   if (change_count_map_.empty())
     return false;
-  if (next_ == change_count_map_.end())
-    next_ = change_count_map_.begin();
-  DCHECK_NE(0, next_->second);
-  *origin = next_++->first;
-  return true;
+  Map::iterator begin = next_;
+  do {
+    if (next_ == change_count_map_.end())
+      next_ = change_count_map_.begin();
+    DCHECK_NE(0, next_->second);
+    *origin = next_++->first;
+    if (!ContainsKey(disabled_origins_, *origin))
+      return true;
+  } while (next_ != begin);
+  return false;
 }
 
 int64 LocalFileSyncService::OriginChangeMap::GetTotalChangeCount() const {
   int64 num_changes = 0;
   for (Map::const_iterator iter = change_count_map_.begin();
        iter != change_count_map_.end(); ++iter) {
+    if (ContainsKey(disabled_origins_, iter->first))
+      continue;
     num_changes += iter->second;
   }
   return num_changes;
@@ -81,6 +88,16 @@ void LocalFileSyncService::OriginChangeMap::SetOriginChangeCount(
     if (next_ == found)
       ++next_;
     change_count_map_.erase(found);
+  }
+}
+
+void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
+    const GURL& origin, bool enabled) {
+  if (enabled) {
+    DCHECK(ContainsKey(disabled_origins_, origin));
+    disabled_origins_.erase(origin);
+  } else {
+    disabled_origins_.insert(origin);
   }
 }
 
@@ -130,17 +147,17 @@ void LocalFileSyncService::RegisterURLForWaitingSync(
 void LocalFileSyncService::ProcessLocalChange(
     LocalChangeProcessor* processor,
     const SyncFileCallback& callback) {
-  DCHECK(local_sync_callback_.is_null());
-  local_sync_callback_ = callback;
-
   // Pick an origin to process next.
   GURL origin;
   if (!origin_change_map_.NextOriginToProcess(&origin)) {
     callback.Run(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL());
     return;
   }
+  DCHECK(local_sync_callback_.is_null());
   DCHECK(!origin.is_empty());
   DCHECK(ContainsKey(origin_to_contexts_, origin));
+
+  local_sync_callback_ = callback;
 
   sync_context_->GetFileForLocalSync(
       origin_to_contexts_[origin],
@@ -241,9 +258,10 @@ void LocalFileSyncService::OnChangesAvailableInOrigins(
     const GURL& origin = *iter;
     if (!ContainsKey(origin_to_contexts_, origin)) {
       // This could happen if this is called for apps/origins that haven't
-      // been initialized yet. (Local change tracker could call this for
-      // uninitialized origins while it's reading dirty files from the
-      // database in the initialization phase.)
+      // been initialized yet, or for apps/origins that are disabled.
+      // (Local change tracker could call this for uninitialized origins
+      // while it's reading dirty files from the database in the
+      // initialization phase.)
       pending_origins_with_changes_.insert(origin);
       continue;
     }
@@ -258,6 +276,12 @@ void LocalFileSyncService::OnChangesAvailableInOrigins(
   int64 num_changes = origin_change_map_.GetTotalChangeCount();
   FOR_EACH_OBSERVER(Observer, change_observers_,
                     OnLocalChangeAvailable(num_changes));
+}
+
+void LocalFileSyncService::SetOriginEnabled(const GURL& origin, bool enabled) {
+  if (!ContainsKey(origin_to_contexts_, origin))
+    return;
+  origin_change_map_.SetOriginEnabled(origin, enabled);
 }
 
 void LocalFileSyncService::DidInitializeFileSystemContext(
