@@ -132,12 +132,13 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     // A: Because they're limited to 4mb on OS X.  FFFFFFFUUUUUUUUUUU
     fp = file_util::CreateAndOpenTemporaryShmemFile(&path, options.executable);
 
-    // Deleting the file prevents anyone else from mapping it in
-    // (making it private), and prevents the need for cleanup (once
-    // the last fd is closed, it is truly freed).
-    if (fp)
-      file_util::Delete(path, false);
-
+    // Deleting the file prevents anyone else from mapping it in (making it
+    // private), and prevents the need for cleanup (once the last fd is closed,
+    // it is truly freed).
+    if (fp) {
+      if (unlink(path.value().c_str()))
+        PLOG(WARNING) << "unlink";
+    }
   } else {
     if (!FilePathForMemoryName(*options.name, &path))
       return false;
@@ -159,10 +160,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     const size_t current_size = stat.st_size;
     if (current_size != options.size) {
       if (HANDLE_EINTR(ftruncate(fileno(fp), options.size)) != 0) {
-        file_util::CloseFile(fp);
-        return false;
-      }
-      if (fseeko(fp, options.size, SEEK_SET) != 0) {
         file_util::CloseFile(fp);
         return false;
       }
