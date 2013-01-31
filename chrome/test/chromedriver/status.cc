@@ -19,6 +19,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "stale element reference";
     case kElementNotVisible:
       return "element not visible";
+    case kInvalidElementState:
+      return "invalid element state";
     case kUnknownError:
       return "unknown error";
     case kXPathLookupError:

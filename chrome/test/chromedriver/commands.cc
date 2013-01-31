@@ -12,13 +12,17 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/element_util.h"
+#include "chrome/test/chromedriver/js.h"
+#include "chrome/test/chromedriver/key_converter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/ui_events.h"
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
 #include "third_party/webdriver/atoms.h"
@@ -67,6 +71,63 @@ Status GetMouseButton(const base::DictionaryValue& params,
   }
   *button = static_cast<MouseButton>(button_num);
   return Status(kOk);
+}
+
+Status FlattenStringArray(const ListValue* src, string16* dest) {
+  string16 keys;
+  for (size_t i = 0; i < src->GetSize(); ++i) {
+    string16 keys_list_part;
+    if (!src->GetString(i, &keys_list_part))
+      return Status(kUnknownError, "keys should be a string");
+    for (size_t j = 0; j < keys_list_part.size(); ++j) {
+      if (CBU16_IS_SURROGATE(keys_list_part[j])) {
+        return Status(kUnknownError,
+                      "ChromeDriver only supports characters in the BMP");
+      }
+    }
+    keys.append(keys_list_part);
+  }
+  *dest = keys;
+  return Status(kOk);
+}
+
+Status SendKeysOnSession(
+    Session* session,
+    const string16 keys,
+    bool release_modifiers) {
+  std::list<KeyEvent> events;
+  int sticky_modifiers = 0;
+  Status status = ConvertKeysToKeyEvents(
+      keys, release_modifiers, &sticky_modifiers, &events);
+  if (status.IsError())
+    return status;
+  return session->chrome->DispatchKeyEvents(events);
+}
+
+Status SendKeysToElement(
+    Session* session,
+    const std::string& element_id,
+    const string16 keys) {
+  bool is_displayed = false;
+  Status status = IsElementDisplayed(session, element_id, true, &is_displayed);
+  if (status.IsError())
+    return status;
+  if (!is_displayed)
+    return Status(kElementNotVisible);
+  bool is_enabled = false;
+  status = IsElementEnabled(session, element_id, &is_enabled);
+  if (status.IsError())
+    return status;
+  if (!is_enabled)
+    return Status(kInvalidElementState);
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  scoped_ptr<base::Value> result;
+  status = session->chrome->CallFunction(
+      session->frame, kFocusScript, args, &result);
+  if (status.IsError())
+    return status;
+  return SendKeysOnSession(session, keys, true);
 }
 
 }  // namespace
@@ -362,6 +423,37 @@ Status ExecuteClearElement(
       session->frame,
       webdriver::atoms::asString(webdriver::atoms::CLEAR),
       args, &result);
+}
+
+Status ExecuteSendKeysToElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const base::ListValue* keys_list;
+  if (!params.GetList("value", &keys_list))
+    return Status(kUnknownError, "'value' must be a list");
+
+  bool is_input = false;
+  Status status = IsElementAttributeEqualToIgnoreCase(
+      session, element_id, "tagName", "input", &is_input);
+  if (status.IsError())
+    return status;
+  bool is_file = false;
+  status = IsElementAttributeEqualToIgnoreCase(
+      session, element_id, "type", "file", &is_file);
+  if (status.IsError())
+    return status;
+  if (is_input && is_file) {
+    // TODO(chrisgao): Implement file upload.
+    return Status(kUnknownError, "file upload is not implemented");
+  } else {
+    string16 keys;
+    status = FlattenStringArray(keys_list, &keys);
+    if (status.IsError())
+      return status;
+    return SendKeysToElement(session, element_id, keys);
+  }
 }
 
 Status ExecuteSetTimeout(

@@ -14,6 +14,7 @@ enum StatusCode {
   kUnknownCommand = 9,
   kStaleElementReference = 10,
   kElementNotVisible = 11,
+  kInvalidElementState = 12,
   kUnknownError = 13,
   kXPathLookupError = 19,
   kInvalidSelector = 32,

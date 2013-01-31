@@ -19,9 +19,9 @@ class Value;
 struct Session;
 class Status;
 
-base::DictionaryValue* CreateElement(const std::string& id);
+base::DictionaryValue* CreateElement(const std::string& element_id);
 
-// |id| could be null when no root element is given.
+// |root_element_id| could be null when no root element is given.
 Status FindElement(
     int interval_ms,
     bool only_one,
@@ -29,6 +29,19 @@ Status FindElement(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
+
+Status GetElementAttribute(
+    Session* session,
+    const std::string& element_id,
+    const std::string& attribute_name,
+    scoped_ptr<base::Value>* value);
+
+Status IsElementAttributeEqualToIgnoreCase(
+    Session* session,
+    const std::string& element_id,
+    const std::string& attribute_name,
+    const std::string& attribute_value,
+    bool* is_equal);
 
 // |is_clickable| could be null.
 // If not null, it's set to indicate whether center of the element is clickable.
@@ -40,49 +53,54 @@ Status GetElementClickableLocation(
 
 Status GetElementRegion(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     WebRect* rect);
 
 Status GetElementTagName(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     std::string* name);
 
 Status GetElementSize(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     WebSize* size);
 
 Status IsElementClickable(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     WebPoint* location,
     bool* is_clickable);
 
 Status IsElementDisplayed(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool ignore_opacity,
     bool* is_displayed);
 
+Status IsElementEnabled(
+    Session* session,
+    const std::string& element_id,
+    bool* is_enabled);
+
 Status IsOptionElementSelected(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool* is_selected);
 
 Status IsOptionElementTogglable(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool* is_togglable);
 
 Status SetOptionElementSelected(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool selected);
 
 Status ToggleOptionElement(
     Session* session,
-    const std::string& id);
+    const std::string& element_id);
 
 Status ScrollElementIntoView(
     Session* session,
@@ -91,7 +109,7 @@ Status ScrollElementIntoView(
 
 Status ScrollElementRegionIntoView(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     const WebRect& region,
     bool center,
     WebPoint* location);

@@ -15,37 +15,9 @@ class ListValue;
 class Value;
 }
 
+struct KeyEvent;
+struct MouseEvent;
 class Status;
-
-enum MouseEventType {
-  kPressedMouseEventType = 0,
-  kReleasedMouseEventType,
-  kMovedMouseEventType
-};
-
-enum MouseButton {
-  kLeftMouseButton = 0,
-  kMiddleMouseButton,
-  kRightMouseButton,
-  kNoneMouseButton
-};
-
-struct MouseEvent {
-  MouseEvent(MouseEventType type,
-             MouseButton button,
-             int x,
-             int y,
-             int click_count)
-      : type(type), button(button), x(x), y(y), click_count(click_count) {}
-  ~MouseEvent() {}
-
-  MouseEventType type;
-  MouseButton button;
-  int x;
-  int y;
-  // |click_count| should not be negative.
-  int click_count;
-};
 
 class Chrome {
  public:
@@ -85,6 +57,9 @@ class Chrome {
 
   // Dispatch a sequence of mouse events.
   virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events) = 0;
+
+  // Dispatch a sequence of key events.
+  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) = 0;
 
   // Quits Chrome.
   virtual Status Quit() = 0;

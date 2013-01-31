@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/element_util.h"
 
+#include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -96,9 +97,9 @@ Status CallAtomsJs(
 
 }  // namespace
 
-base::DictionaryValue* CreateElement(const std::string& id) {
+base::DictionaryValue* CreateElement(const std::string& element_id) {
   base::DictionaryValue* element = new base::DictionaryValue();
-  element->SetString(kElementKey, id);
+  element->SetString(kElementKey, element_id);
   return element;
 }
 
@@ -167,6 +168,36 @@ Status FindElement(
   return Status(kUnknownError);
 }
 
+Status GetElementAttribute(
+    Session* session,
+    const std::string& element_id,
+    const std::string& attribute_name,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  args.AppendString(element_id);
+  return CallAtomsJs(session, webdriver::atoms::GET_ATTRIBUTE, args, value);
+}
+
+Status IsElementAttributeEqualToIgnoreCase(
+    Session* session,
+    const std::string& element_id,
+    const std::string& attribute_name,
+    const std::string& attribute_value,
+    bool* is_equal) {
+  scoped_ptr<base::Value> result;
+  Status status = GetElementAttribute(
+      session, element_id, attribute_name, &result);
+  if (status.IsError())
+    return status;
+  std::string actual_value;
+  if (result->GetAsString(&actual_value))
+    *is_equal = LowerCaseEqualsASCII(actual_value, attribute_value.c_str());
+  else
+    *is_equal = false;
+  return status;
+}
+
 Status GetElementClickableLocation(
     Session* session,
     const std::string& element_id,
@@ -177,15 +208,12 @@ Status GetElementClickableLocation(
   if (status.IsError())
     return status;
   if (!is_displayed)
-    return Status(kUnknownError, "element must be displayed");
+    return Status(kElementNotVisible);
 
   WebRect rect;
   status = GetElementRegion(session, element_id, &rect);
   if (status.IsError())
     return status;
-
-  if (rect.width() == 0 || rect.height() == 0)
-    return Status(kElementNotVisible);
 
   status = ScrollElementRegionIntoView(
       session, element_id, rect, true, location);
@@ -200,10 +228,10 @@ Status GetElementClickableLocation(
 
 Status GetElementRegion(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     WebRect* rect) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = session->chrome->CallFunction(
       session->frame, kGetElementRegionScript, args, &result);
@@ -218,10 +246,10 @@ Status GetElementRegion(
 
 Status GetElementTagName(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     std::string* name) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = session->chrome->CallFunction(
       session->frame, "function(elem) { return elem.tagName.toLowerCase(); }",
@@ -235,10 +263,10 @@ Status GetElementTagName(
 
 Status GetElementSize(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     WebSize* size) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
       session, webdriver::atoms::GET_SIZE, args, &result);
@@ -251,11 +279,11 @@ Status GetElementSize(
 
 Status IsElementClickable(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     WebPoint* location,
     bool* is_clickable) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   args.Append(CreateValueFrom(location));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
@@ -278,11 +306,11 @@ Status IsElementClickable(
 
 Status IsElementDisplayed(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool ignore_opacity,
     bool* is_displayed) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   args.AppendBoolean(ignore_opacity);
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
@@ -294,12 +322,28 @@ Status IsElementDisplayed(
   return Status(kOk);
 }
 
+Status IsElementEnabled(
+    Session* session,
+    const std::string& element_id,
+    bool* is_enabled) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+  scoped_ptr<base::Value> result;
+  Status status = CallAtomsJs(
+      session, webdriver::atoms::IS_ENABLED, args, &result);
+  if (status.IsError())
+    return status;
+  if (!result->GetAsBoolean(is_enabled))
+    return Status(kUnknownError, "IS_ENABLED should return a boolean value");
+  return Status(kOk);
+}
+
 Status IsOptionElementSelected(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool* is_selected) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
       session, webdriver::atoms::IS_SELECTED, args, &result);
@@ -312,10 +356,10 @@ Status IsOptionElementSelected(
 
 Status IsOptionElementTogglable(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool* is_togglable) {
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = session->chrome->CallFunction(
       session->frame, kIsOptionElementToggleableScript, args, &result);
@@ -328,11 +372,11 @@ Status IsOptionElementTogglable(
 
 Status SetOptionElementSelected(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     bool selected) {
   // TODO(171034): need to fix throwing error if an alert is triggered.
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   args.AppendBoolean(selected);
   scoped_ptr<base::Value> result;
   return CallAtomsJs(
@@ -341,12 +385,12 @@ Status SetOptionElementSelected(
 
 Status ToggleOptionElement(
     Session* session,
-    const std::string& id) {
+    const std::string& element_id) {
   bool is_selected;
-  Status status = IsOptionElementSelected(session, id, &is_selected);
+  Status status = IsOptionElementSelected(session, element_id, &is_selected);
   if (status.IsError())
     return status;
-  return SetOptionElementSelected(session, id, !is_selected);
+  return SetOptionElementSelected(session, element_id, !is_selected);
 }
 
 Status ScrollElementIntoView(
@@ -363,13 +407,13 @@ Status ScrollElementIntoView(
 
 Status ScrollElementRegionIntoView(
     Session* session,
-    const std::string& id,
+    const std::string& element_id,
     const WebRect& region,
     bool center,
     WebPoint* location) {
   WebPoint region_offset = region.origin;
   base::ListValue args;
-  args.Append(CreateElement(id));
+  args.Append(CreateElement(element_id));
   args.AppendBoolean(center);
   args.Append(CreateValueFrom(&region));
   scoped_ptr<base::Value> result;

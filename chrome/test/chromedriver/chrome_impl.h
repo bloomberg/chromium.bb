@@ -56,6 +56,7 @@ class ChromeImpl : public Chrome {
                                     std::string* out_frame) OVERRIDE;
   virtual Status DispatchMouseEvents(
       const std::list<MouseEvent>& events) OVERRIDE;
+  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
   virtual Status Quit() OVERRIDE;
   virtual Status WaitForPendingNavigations(
       const std::string& frame_id) OVERRIDE;

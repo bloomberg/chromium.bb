@@ -142,6 +142,11 @@ void CommandExecutorImpl::Init() {
       base::Bind(execute_session_command,
                  base::Bind(&ExecuteElementCommand,
                             base::Bind(&ExecuteClearElement))));
+  command_map_.Set(
+      CommandNames::kSendKeysToElement,
+      base::Bind(execute_session_command,
+                 base::Bind(&ExecuteElementCommand,
+                            base::Bind(&ExecuteSendKeysToElement))));
 
   // Non-session commands.
   command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));

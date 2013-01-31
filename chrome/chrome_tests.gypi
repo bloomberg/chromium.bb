@@ -696,6 +696,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
+        '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
         '..',
@@ -737,6 +738,12 @@
         'test/chromedriver/element_util.h',
         'test/chromedriver/frame_tracker.cc',
         'test/chromedriver/frame_tracker.h',
+        'test/chromedriver/key_converter.cc',
+        'test/chromedriver/key_converter.h',
+        'test/chromedriver/keycode_text_conversion.h',
+        'test/chromedriver/keycode_text_conversion_mac.mm',
+        'test/chromedriver/keycode_text_conversion_win.cc',
+        'test/chromedriver/keycode_text_conversion_x.cc',
         'test/chromedriver/navigation_tracker.cc',
         'test/chromedriver/navigation_tracker.h',
         'test/chromedriver/net/net_util.cc',
@@ -758,6 +765,8 @@
         'test/chromedriver/status.cc',
         'test/chromedriver/status.h',
         'test/chromedriver/synchronized_map.h',
+        'test/chromedriver/ui_events.cc',
+        'test/chromedriver/ui_events.h',
         'test/chromedriver/util.cc',
         'test/chromedriver/util.h',
         'test/chromedriver/version.cc',
@@ -769,6 +778,7 @@
           'inputs': [
             'test/chromedriver/embed_js_in_cpp.py',
             'test/chromedriver/js/call_function.js',
+            'test/chromedriver/js/focus.js',
             'test/chromedriver/js/get_element_region.js',
             'test/chromedriver/js/is_option_element_toggleable.js',
           ],
@@ -781,6 +791,7 @@
                       '--directory',
                       '<(INTERMEDIATE_DIR)/chrome/test/chromedriver',
                       'test/chromedriver/js/call_function.js',
+                      'test/chromedriver/js/focus.js',
                       'test/chromedriver/js/get_element_region.js',
                       'test/chromedriver/js/is_option_element_toggleable.js',
           ],
@@ -845,6 +856,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
+        '../ui/ui.gyp:ui',
       ],
       'sources': [
         'test/chromedriver/chrome_finder_unittest.cc',
@@ -885,9 +897,13 @@
         '..,'
       ],
       'sources': [
+        'test/chromedriver/key_converter_unittest.cc',
+        'test/chromedriver/keycode_text_conversion_unittest.cc',
         'test/chromedriver/net/net_util_unittest.cc',
         'test/chromedriver/net/sync_websocket_impl_unittest.cc',
         'test/chromedriver/net/websocket_unittest.cc',
+        'test/chromedriver/test_util.cc',
+        'test/chromedriver/test_util.h',
       ],
     },
     {

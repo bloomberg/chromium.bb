@@ -30,3 +30,12 @@ class WebElement(object):
 
   def Clear(self):
     self._Execute('clearElement')
+
+  def SendKeys(self, *values):
+    typing = []
+    for value in values:
+      if isinstance(value, int):
+        value = str(value)
+      for i in range(len(value)):
+        typing.append(value[i])
+    self._Execute('sendKeysToElement', {'value': typing})

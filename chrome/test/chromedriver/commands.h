@@ -128,6 +128,13 @@ Status ExecuteClearElement(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Send a sequence of key strokes to an element.
+Status ExecuteSendKeysToElement(
+    Session* session,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Configure the amount of time that a particular type of operation can execute
 // for before they are aborted and a timeout error is returned to the client.
 Status ExecuteSetTimeout(

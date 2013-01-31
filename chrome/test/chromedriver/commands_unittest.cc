@@ -69,6 +69,9 @@ class StubChrome : public Chrome {
       const std::list<MouseEvent>& events) OVERRIDE {
     return Status(kOk);
   }
+  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE {
+    return Status(kOk);
+  }
   virtual Status Quit() OVERRIDE {
     return Status(kOk);
   }

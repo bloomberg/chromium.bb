@@ -22,6 +22,7 @@
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/ui_events.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -81,6 +82,21 @@ const char* GetAsString(MouseButton button) {
 bool IsNotPendingNavigation(NavigationTracker* tracker,
                             const std::string& frame_id) {
   return !tracker->IsPendingNavigation(frame_id);
+}
+
+const char* GetAsString(KeyEventType type) {
+  switch (type) {
+    case kKeyDownEventType:
+      return "keyDown";
+    case kKeyUpEventType:
+      return "keyUp";
+    case kRawKeyDownEventType:
+      return "rawKeyDown";
+    case kCharEventType:
+      return "char";
+    default:
+      return "";
+  }
 }
 
 }  // namespace
@@ -209,6 +225,29 @@ Status ChromeImpl::DispatchMouseEvents(const std::list<MouseEvent>& events) {
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("clickCount", it->click_count);
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
+    if (status.IsError())
+      return status;
+  }
+  return Status(kOk);
+}
+
+Status ChromeImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
+  for (std::list<KeyEvent>::const_iterator it = events.begin();
+       it != events.end(); ++it) {
+    base::DictionaryValue params;
+    params.SetString("type", GetAsString(it->type));
+    if (it->modifiers & kNumLockKeyModifierMask) {
+      params.SetBoolean("isKeypad", true);
+      params.SetInteger("modifiers",
+                        it->modifiers & ~kNumLockKeyModifierMask);
+    } else {
+      params.SetInteger("modifiers", it->modifiers);
+    }
+    params.SetString("text", it->modified_text);
+    params.SetString("unmodifiedText", it->unmodified_text);
+    params.SetInteger("nativeVirtualKeyCode", it->key_code);
+    params.SetInteger("windowsVirtualKeyCode", it->key_code);
+    Status status = client_->SendCommand("Input.dispatchKeyEvent", params);
     if (status.IsError())
       return status;
   }
