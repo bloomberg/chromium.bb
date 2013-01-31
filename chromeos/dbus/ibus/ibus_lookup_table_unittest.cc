@@ -17,8 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 TEST(IBusLookupTable, WriteReadTest) {
   const char kSampleText1[] = "Sample Text 1";
@@ -321,5 +319,4 @@ TEST(IBusLookupTable, CopyFromTest) {
   table2.CopyFrom(table1);
   EXPECT_TRUE(table1.IsEqual(table2));
 }
-}  // namespace ibus
 }  // namespace chromeos

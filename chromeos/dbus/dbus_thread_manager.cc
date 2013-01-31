@@ -185,9 +185,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_engine_factory_service_.reset(
         IBusEngineFactoryService::Create(ibus_bus_.get(), client_type));
     ibus_panel_service_.reset(
-        ibus::IBusPanelService::Create(client_type,
-                                       ibus_bus_.get(),
-                                       ibus_input_context_client_.get()));
+        IBusPanelService::Create(client_type,
+                                 ibus_bus_.get(),
+                                 ibus_input_context_client_.get()));
 
     ibus_engine_services_.clear();
   }
@@ -338,7 +338,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_engine_services_.erase(object_path);
   }
 
-  virtual ibus::IBusPanelService* GetIBusPanelService() OVERRIDE {
+  virtual IBusPanelService* GetIBusPanelService() OVERRIDE {
     return ibus_panel_service_.get();
   }
 
@@ -374,7 +374,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<IBusInputContextClient> ibus_input_context_client_;
   scoped_ptr<IBusEngineFactoryService> ibus_engine_factory_service_;
   std::map<dbus::ObjectPath, IBusEngineService*> ibus_engine_services_;
-  scoped_ptr<ibus::IBusPanelService> ibus_panel_service_;
+  scoped_ptr<IBusPanelService> ibus_panel_service_;
 
   std::string ibus_address_;
 

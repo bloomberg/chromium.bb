@@ -214,8 +214,7 @@ void MockDBusThreadManagerWithoutGMock::RemoveIBusEngineService(
     const dbus::ObjectPath& object_path) {
 }
 
-ibus::IBusPanelService*
-    MockDBusThreadManagerWithoutGMock::GetIBusPanelService() {
+IBusPanelService* MockDBusThreadManagerWithoutGMock::GetIBusPanelService() {
   return mock_ibus_panel_service_.get();
 }
 

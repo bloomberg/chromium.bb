@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 TEST(IBusTextTest, WriteReadTest) {
   const char kSampleText[] = "Sample Text";
@@ -99,5 +97,4 @@ TEST(IBusTextTest, PopStringFromIBusTextTest) {
   EXPECT_EQ(kSampleText, result);
 }
 
-}  // namespace ibus
 }  // namespace chromeos

@@ -19,8 +19,6 @@
 #include "dbus/object_proxy.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 class IBusPanelServiceImpl : public IBusPanelService {
  public:
@@ -200,8 +198,8 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
 
     dbus::MessageReader reader(method_call);
-    ibus::IBusLookupTable table;
-    if (!ibus::PopIBusLookupTable(&reader, &table)) {
+    IBusLookupTable table;
+    if (!PopIBusLookupTable(&reader, &table)) {
       LOG(WARNING) << "UpdateLookupTable called with incorrect parameters: "
                    << method_call->ToString();
       return;
@@ -237,7 +235,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
 
     dbus::MessageReader reader(method_call);
     std::string text;
-    if (!ibus::PopStringFromIBusText(&reader, &text)) {
+    if (!PopStringFromIBusText(&reader, &text)) {
       LOG(WARNING) << "UpdateAuxiliaryText called with incorrect parameters: "
                    << method_call->ToString();
       return;
@@ -272,7 +270,7 @@ class IBusPanelServiceImpl : public IBusPanelService {
 
     dbus::MessageReader reader(method_call);
     std::string text;
-    if (!ibus::PopStringFromIBusText(&reader, &text)) {
+    if (!PopStringFromIBusText(&reader, &text)) {
       LOG(WARNING) << "UpdatePreeditText called with incorrect parameters: "
                    << method_call->ToString();
       return;
@@ -313,8 +311,8 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
 
     dbus::MessageReader reader(method_call);
-    ibus::IBusPropertyList properties;
-    if (!ibus::PopIBusPropertyList(&reader, &properties)) {
+    IBusPropertyList properties;
+    if (!PopIBusPropertyList(&reader, &properties)) {
       DLOG(WARNING) << "RegisterProperties called with incorrect parameters:"
                     << method_call->ToString();
       return;
@@ -332,8 +330,8 @@ class IBusPanelServiceImpl : public IBusPanelService {
       return;
 
     dbus::MessageReader reader(method_call);
-    ibus::IBusProperty property;
-    if (!ibus::PopIBusProperty(&reader, &property)) {
+    IBusProperty property;
+    if (!PopIBusProperty(&reader, &property)) {
       DLOG(WARNING) << "RegisterProperties called with incorrect parameters:"
                     << method_call->ToString();
       return;
@@ -460,5 +458,4 @@ IBusPanelService* IBusPanelService::Create(
   }
 }
 
-}  // namespace ibus
 }  // namespace chromeos

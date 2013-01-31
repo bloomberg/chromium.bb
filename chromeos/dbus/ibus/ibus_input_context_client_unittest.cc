@@ -22,7 +22,7 @@ using ::testing::_;
 namespace chromeos {
 
 // TODO(nona): Remove after complete libibus removal.
-using chromeos::ibus::IBusText;
+using chromeos::IBusText;
 
 namespace {
 const char kObjectPath[] = "/org/freedesktop/IBus/InputContext_1010";
@@ -265,7 +265,7 @@ class IBusInputContextClientTest : public testing::Test {
     uint32 cursor_pos = 0;
     uint32 anchor_pos = 0;
 
-    EXPECT_TRUE(ibus::PopStringFromIBusText(&reader, &text));
+    EXPECT_TRUE(PopStringFromIBusText(&reader, &text));
     EXPECT_TRUE(reader.PopUint32(&cursor_pos));
     EXPECT_TRUE(reader.PopUint32(&anchor_pos));
     EXPECT_FALSE(reader.HasMoreData());

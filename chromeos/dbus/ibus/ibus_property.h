@@ -16,7 +16,6 @@ class MessageReader;
 }  // namespace dbus
 
 namespace chromeos {
-namespace ibus {
 
 class IBusProperty;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
@@ -131,7 +130,6 @@ class CHROMEOS_EXPORT IBusProperty {
   DISALLOW_COPY_AND_ASSIGN(IBusProperty);
 };
 
-}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_PROPERTY_H_

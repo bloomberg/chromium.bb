@@ -20,7 +20,7 @@ class CandidateView : public views::View {
  public:
   CandidateView(CandidateWindowView* parent_candidate_window,
                 int index_in_page,
-                ibus::IBusLookupTable::Orientation orientation);
+                IBusLookupTable::Orientation orientation);
   virtual ~CandidateView() {}
   // Initializes the candidate view with the given column widths.
   // A width of 0 means that the column is resizable.
@@ -70,7 +70,7 @@ class CandidateView : public views::View {
   int index_in_page_;
 
   // The orientation of the candidate view.
-  ibus::IBusLookupTable::Orientation orientation_;
+  IBusLookupTable::Orientation orientation_;
 
   // The parent candidate window that contains this view.
   CandidateWindowView* parent_candidate_window_;

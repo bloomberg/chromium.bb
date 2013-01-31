@@ -20,10 +20,7 @@ class Bus;
 
 namespace chromeos {
 
-namespace ibus {
 class IBusComponent;
-}  // namespace ibus
-
 class IBusInputContextClient;
 
 // A class to make the actual DBus calls for IBusConfig service.

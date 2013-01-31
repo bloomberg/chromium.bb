@@ -72,7 +72,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void RemoveIBusEngineService(
       const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual ibus::IBusPanelService* GetIBusPanelService() OVERRIDE;
+  virtual IBusPanelService* GetIBusPanelService() OVERRIDE;
 
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();

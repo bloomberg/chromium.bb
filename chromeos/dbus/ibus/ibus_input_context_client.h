@@ -20,21 +20,18 @@ class Bus;
 
 namespace chromeos {
 
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 class IBusText;
-}  // namespace
 
 class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
-  virtual void CommitText(const ibus::IBusText& text) = 0;
+  virtual void CommitText(const IBusText& text) = 0;
 
   // Called when the engine forward a key event.
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
 
   // Called when the engine update preedit stroing.
-  virtual void UpdatePreeditText(const ibus::IBusText& text,
+  virtual void UpdatePreeditText(const IBusText& text,
                                  uint32 cursor_pos,
                                  bool visible) = 0;
 

@@ -68,12 +68,12 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 }
 
 // Creates shortcut text from the given index and the orientation.
-string16 CreateShortcutText(size_t index, const ibus::IBusLookupTable& table) {
+string16 CreateShortcutText(size_t index, const IBusLookupTable& table) {
   if (index >= table.candidates().size())
     return UTF8ToUTF16("");
   std::string shortcut_text = table.candidates()[index].label;
   if (!shortcut_text.empty() &&
-      table.orientation() != ibus::IBusLookupTable::VERTICAL)
+      table.orientation() != IBusLookupTable::VERTICAL)
     shortcut_text += '.';
   return UTF8ToUTF16(shortcut_text);
 }
@@ -81,13 +81,13 @@ string16 CreateShortcutText(size_t index, const ibus::IBusLookupTable& table) {
 // Creates the shortcut label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateShortcutLabel(
-    ibus::IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation) {
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
   // |wrapped_shortcut_label| is deleted.
   views::Label* shortcut_label = new views::Label;
 
-  if (orientation == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation == IBusLookupTable::VERTICAL) {
     shortcut_label->SetFont(
         shortcut_label->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
   } else {
@@ -107,19 +107,19 @@ views::Label* CreateShortcutLabel(
 // The label text is not set in this function.
 views::View* CreateWrappedShortcutLabel(
     views::Label* shortcut_label,
-    ibus::IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation) {
   // Wrap it with padding.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
   const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
   const gfx::Insets insets =
-      (orientation == ibus::IBusLookupTable::VERTICAL ?
+      (orientation == IBusLookupTable::VERTICAL ?
        kVerticalShortcutLabelInsets :
        kHorizontalShortcutLabelInsets);
   views::View* wrapped_shortcut_label =
       WrapWithPadding(shortcut_label, insets);
 
   // Add decoration based on the orientation.
-  if (orientation == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation == IBusLookupTable::VERTICAL) {
     // Set the background color.
     wrapped_shortcut_label->set_background(
         views::Background::CreateSolidBackground(
@@ -134,12 +134,12 @@ views::View* CreateWrappedShortcutLabel(
 // Creates the candidate label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateCandidateLabel(
-    ibus::IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation) {
   views::Label* candidate_label = NULL;
 
   // Create the candidate label. The label will be added to |this| as a
   // child view, hence it's deleted when |this| is deleted.
-  if (orientation == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation == IBusLookupTable::VERTICAL) {
     candidate_label = new VerticalCandidateLabel;
   } else {
     candidate_label = new views::Label;
@@ -156,7 +156,7 @@ views::Label* CreateCandidateLabel(
 // Creates the annotation label, and return it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateAnnotationLabel(
-    ibus::IBusLookupTable::Orientation orientation) {
+    IBusLookupTable::Orientation orientation) {
   // Create the annotation label.
   views::Label* annotation_label = new views::Label;
 
@@ -171,7 +171,7 @@ views::Label* CreateAnnotationLabel(
 
 // Computes shortcut column size.
 gfx::Size ComputeShortcutColumnSize(
-    const ibus::IBusLookupTable& lookup_table) {
+    const IBusLookupTable& lookup_table) {
   int shortcut_column_width = 0;
   int shortcut_column_height = 0;
   // Create the shortcut label. The label will be owned by
@@ -199,7 +199,7 @@ gfx::Size ComputeShortcutColumnSize(
 // Computes the page index. For instance, if the page size is 9, and the
 // cursor is pointing to 13th candidate, the page index will be 1 (2nd
 // page, as the index is zero-origin). Returns -1 on error.
-int ComputePageIndex(const ibus::IBusLookupTable& lookup_table) {
+int ComputePageIndex(const IBusLookupTable& lookup_table) {
   if (lookup_table.page_size() > 0)
     return lookup_table.cursor_position() / lookup_table.page_size();
   return -1;
@@ -207,7 +207,7 @@ int ComputePageIndex(const ibus::IBusLookupTable& lookup_table) {
 
 // Computes candidate column size.
 gfx::Size ComputeCandidateColumnSize(
-    const ibus::IBusLookupTable& lookup_table) {
+    const IBusLookupTable& lookup_table) {
   int candidate_column_width = 0;
   int candidate_column_height = 0;
   scoped_ptr<views::Label> candidate_label(
@@ -239,7 +239,7 @@ gfx::Size ComputeCandidateColumnSize(
 
 // Computes annotation column size.
 gfx::Size ComputeAnnotationColumnSize(
-    const ibus::IBusLookupTable& lookup_table) {
+    const IBusLookupTable& lookup_table) {
   int annotation_column_width = 0;
   int annotation_column_height = 0;
   scoped_ptr<views::Label> annotation_label(
@@ -318,7 +318,7 @@ class InformationTextArea : public HidableArea {
 CandidateView::CandidateView(
     CandidateWindowView* parent_candidate_window,
     int index_in_page,
-    ibus::IBusLookupTable::Orientation orientation)
+    IBusLookupTable::Orientation orientation)
     : index_in_page_(index_in_page),
       orientation_(orientation),
       parent_candidate_window_(parent_candidate_window),
@@ -349,11 +349,11 @@ void CandidateView::Init(int shortcut_column_width,
   // If orientation is vertical, each column width is fixed.
   // Otherwise the width is resizable.
   const views::GridLayout::SizeType column_type =
-      orientation_ == ibus::IBusLookupTable::VERTICAL ?
+      orientation_ == IBusLookupTable::VERTICAL ?
           views::GridLayout::FIXED : views::GridLayout::USE_PREF;
 
   const int padding_column_width =
-      orientation_ == ibus::IBusLookupTable::VERTICAL ? 4 : 6;
+      orientation_ == IBusLookupTable::VERTICAL ? 4 : 6;
 
   // Set shortcut column type and width.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
@@ -363,7 +363,7 @@ void CandidateView::Init(int shortcut_column_width,
   // Set candidate column type and width.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         1, views::GridLayout::USE_PREF, 0,
-                        orientation_ == ibus::IBusLookupTable::VERTICAL ?
+                        orientation_ == IBusLookupTable::VERTICAL ?
                         candidate_column_width : 0);
   column_set->AddPaddingColumn(0, padding_column_width);
 
@@ -371,7 +371,7 @@ void CandidateView::Init(int shortcut_column_width,
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, column_type, annotation_column_width, 0);
 
-  if (orientation_ == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation_ == IBusLookupTable::VERTICAL) {
     column_set->AddPaddingColumn(0, 1);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                           views::GridLayout::FIXED, kInfolistIndicatorIconWidth,
@@ -406,7 +406,7 @@ void CandidateView::Init(int shortcut_column_width,
                   views::GridLayout::FILL,  // Vertical alignemnt.
                   -1,  // Preferred width, not specified.
                   column_height);  // Preferred height.
-  if (orientation_ == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation_ == IBusLookupTable::VERTICAL) {
     infolist_icon_ = new views::View;
     views::View* infolist_icon_wrapper = new views::View;
     views::GridLayout* infolist_icon_layout =
@@ -519,7 +519,7 @@ bool CandidateView::OnMousePressed(const ui::MouseEvent& event) {
 void CandidateView::UpdateLabelBackgroundColors() {
   SkColor color = background() ?
       background()->get_color() : kDefaultBackgroundColor;
-  if (orientation_ != ibus::IBusLookupTable::VERTICAL)
+  if (orientation_ != IBusLookupTable::VERTICAL)
     shortcut_label_->SetBackgroundColor(color);
   candidate_label_->SetBackgroundColor(color);
   annotation_label_->SetBackgroundColor(color);
@@ -618,7 +618,7 @@ void CandidateWindowView::ShowAuxiliaryText() {
     footer_area_->Hide();
   } else {
     // If candidate_area is shown, shows auxiliary text with orientation.
-    if (lookup_table_.orientation() == ibus::IBusLookupTable::HORIZONTAL) {
+    if (lookup_table_.orientation() == IBusLookupTable::HORIZONTAL) {
       header_area_->Show();
       footer_area_->Hide();
     } else {
@@ -667,13 +667,13 @@ void CandidateWindowView::NotifyIfCandidateWindowOpenedOrClosed() {
 }
 
 bool CandidateWindowView::ShouldUpdateCandidateViews(
-    const ibus::IBusLookupTable& old_table,
-    const ibus::IBusLookupTable& new_table) {
+    const IBusLookupTable& old_table,
+    const IBusLookupTable& new_table) {
   return !old_table.IsEqual(new_table);
 }
 
 void CandidateWindowView::UpdateCandidates(
-    const ibus::IBusLookupTable& new_lookup_table) {
+    const IBusLookupTable& new_lookup_table) {
   const bool should_update = ShouldUpdateCandidateViews(lookup_table_,
                                                         new_lookup_table);
   // Updating the candidate views is expensive. We'll skip this if possible.
@@ -721,7 +721,7 @@ void CandidateWindowView::UpdateCandidates(
       }
       // Set the candidate text.
        if (candidate_index < new_lookup_table.candidates().size()) {
-         const ibus::IBusLookupTable::Entry& entry =
+         const IBusLookupTable::Entry& entry =
              new_lookup_table.candidates()[candidate_index];
          candidate_view->SetCandidateText(UTF8ToUTF16(entry.value));
          candidate_view->SetAnnotationText(UTF8ToUTF16(entry.annotation));
@@ -747,8 +747,8 @@ void CandidateWindowView::UpdateCandidates(
 }
 
 void CandidateWindowView::MaybeInitializeCandidateViews(
-    const ibus::IBusLookupTable& lookup_table) {
-  const ibus::IBusLookupTable::Orientation orientation =
+    const IBusLookupTable& lookup_table) {
+  const IBusLookupTable::Orientation orientation =
       lookup_table.orientation();
   const int page_size = lookup_table.page_size();
   views::View* candidate_area_contents = candidate_area_->contents();
@@ -760,7 +760,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 
   // If orientation is horizontal, don't need to compute width,
   // because each label is left aligned.
-  if (orientation == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation == IBusLookupTable::VERTICAL) {
     shortcut_column_size = ComputeShortcutColumnSize(lookup_table);
     candidate_column_size = ComputeCandidateColumnSize(lookup_table);
     annotation_column_size = ComputeAnnotationColumnSize(lookup_table);
@@ -801,7 +801,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   candidate_area_contents->SetLayoutManager(layout);
   // Initialize the column set.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
-  if (orientation == ibus::IBusLookupTable::VERTICAL) {
+  if (orientation == IBusLookupTable::VERTICAL) {
     column_set->AddColumn(views::GridLayout::FILL,
                           views::GridLayout::FILL,
                           1, views::GridLayout::USE_PREF, 0, 0);
@@ -829,7 +829,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
                                               annotation_column_size.height()));
 
   // Add views to the candidate area.
-  if (orientation == ibus::IBusLookupTable::HORIZONTAL) {
+  if (orientation == IBusLookupTable::HORIZONTAL) {
     layout->StartRow(0, 0);
   }
 
@@ -840,7 +840,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
                         annotation_column_size.width(),
                         kColumnHeight);
     candidate_views_.push_back(candidate_row);
-    if (orientation == ibus::IBusLookupTable::VERTICAL) {
+    if (orientation == IBusLookupTable::VERTICAL) {
       layout->StartRow(0, 0);
     }
     // |candidate_row| will be owned by |candidate_area_contents|.
@@ -848,7 +848,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
                     1,  // Column span.
                     1,  // Row span.
                     // Horizontal alignment.
-                    orientation == ibus::IBusLookupTable::VERTICAL ?
+                    orientation == IBusLookupTable::VERTICAL ?
                     views::GridLayout::FILL : views::GridLayout::CENTER,
                     views::GridLayout::CENTER,  // Vertical alignment.
                     -1,  // Preferred width, not specified.
@@ -975,7 +975,7 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
 int CandidateWindowView::GetHorizontalOffset() {
   // Compute the horizontal offset if the lookup table is vertical.
   if (!candidate_views_.empty() &&
-      lookup_table_.orientation() == ibus::IBusLookupTable::VERTICAL) {
+      lookup_table_.orientation() == IBusLookupTable::VERTICAL) {
     return - candidate_views_[0]->GetCandidateLabelPosition().x();
   }
   return 0;

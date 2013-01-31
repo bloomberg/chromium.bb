@@ -9,8 +9,6 @@
 #include "dbus/message.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 namespace {
 
@@ -248,5 +246,4 @@ IBusComponent::EngineDescription::EngineDescription(
 IBusComponent::EngineDescription::~EngineDescription() {
 }
 
-}  // namespace ibus
 }  // namespace chromeos

@@ -38,7 +38,7 @@ gfx::Rect IBusRectToGfxRect(const ibus::Rect& rect) {
 
 // Returns pointer of IBusPanelService. This function returns NULL if it is not
 // ready.
-ibus::IBusPanelService* GetIBusPanelService() {
+IBusPanelService* GetIBusPanelService() {
   return DBusThreadManager::Get()->GetIBusPanelService();
 }
 }  // namespace
@@ -165,7 +165,7 @@ void CandidateWindowControllerImpl::UpdateAuxiliaryText(
 
 // static
 void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-    const ibus::IBusLookupTable& lookup_table,
+    const IBusLookupTable& lookup_table,
     std::vector<InfolistWindowView::Entry>* infolist_entries,
     size_t* focused_index) {
   DCHECK(focused_index);
@@ -177,7 +177,7 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
       lookup_table.cursor_position() % lookup_table.page_size();
 
   for (size_t i = 0; i < lookup_table.candidates().size(); ++i) {
-    const ibus::IBusLookupTable::Entry& ibus_entry =
+    const IBusLookupTable::Entry& ibus_entry =
         lookup_table.candidates()[i];
     if (ibus_entry.description_title.empty() &&
         ibus_entry.description_body.empty())
@@ -214,7 +214,7 @@ bool CandidateWindowControllerImpl::ShouldUpdateInfolist(
 }
 
 void CandidateWindowControllerImpl::UpdateLookupTable(
-    const ibus::IBusLookupTable& lookup_table,
+    const IBusLookupTable& lookup_table,
     bool visible) {
   // If it's not visible, hide the lookup table and return.
   if (!visible) {

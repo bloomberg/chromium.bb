@@ -16,8 +16,7 @@
 
 namespace chromeos {
 
-// TODO(nona): Remove after complete libibus removal.
-using chromeos::ibus::IBusText;
+using chromeos::IBusText;
 
 namespace {
 
@@ -143,7 +142,7 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
         ibus::input_context::kServiceInterface,
         ibus::input_context::kSetSurroundingTextMethod);
     dbus::MessageWriter writer(&method_call);
-    ibus::AppendStringAsIBusText(text, &writer);
+    AppendStringAsIBusText(text, &writer);
     writer.AppendUint32(start_index);
     writer.AppendUint32(end_index);
     CallNoResponseMethod(&method_call,

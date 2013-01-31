@@ -21,8 +21,6 @@ class ObjectPath;
 namespace chromeos {
 class IBusInputContextClient;
 
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 class IBusLookupTable;
 class IBusProperty;
 class IBusText;
@@ -34,7 +32,7 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
   virtual ~IBusPanelCandidateWindowHandlerInterface() {}
 
   // Called when the IME updates the lookup table.
-  virtual void UpdateLookupTable(const ibus::IBusLookupTable& table,
+  virtual void UpdateLookupTable(const IBusLookupTable& table,
                                  bool visible) = 0;
 
   // Called when the IME hides the lookup table.
@@ -69,10 +67,10 @@ class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
   virtual ~IBusPanelPropertyHandlerInterface() {}
 
   // Called when a new property is registered.
-  virtual void RegisterProperties(const ibus::IBusPropertyList& properties) = 0;
+  virtual void RegisterProperties(const IBusPropertyList& properties) = 0;
 
   // Called when current property is updated.
-  virtual void UpdateProperty(const ibus::IBusProperty& property) = 0;
+  virtual void UpdateProperty(const IBusProperty& property) = 0;
 
  protected:
   IBusPanelPropertyHandlerInterface() {}
@@ -132,7 +130,6 @@ class CHROMEOS_EXPORT IBusPanelService {
   DISALLOW_COPY_AND_ASSIGN(IBusPanelService);
 };
 
-}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_PANEL_SERVICE_H_

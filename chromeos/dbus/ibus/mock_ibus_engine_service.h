@@ -19,16 +19,16 @@ class MockIBusEngineService : public IBusEngineService {
   virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE;
   virtual void UnsetEngine() OVERRIDE;
   virtual void RegisterProperties(
-      const ibus::IBusPropertyList& property_list) OVERRIDE;
-  virtual void UpdatePreedit(const ibus::IBusText& ibus_text,
+      const IBusPropertyList& property_list) OVERRIDE;
+  virtual void UpdatePreedit(const IBusText& ibus_text,
                              uint32 cursor_pos,
                              bool is_visible,
                              IBusEnginePreeditFocusOutMode mode) OVERRIDE;
-  virtual void UpdateAuxiliaryText(const ibus::IBusText& ibus_text,
+  virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) OVERRIDE;
-  virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
+  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
                                  bool is_visible) OVERRIDE;
-  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE;
+  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE;
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE;
   virtual void RequireSurroundingText() OVERRIDE;

@@ -129,10 +129,10 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_DenseCase) {
-  ibus::IBusLookupTable table;
+  IBusLookupTable table;
   table.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ibus::IBusLookupTable::Entry entry;
+    IBusLookupTable::Entry entry;
     entry.value = kSampleCandidate[i];
     entry.description_title = kSampleDescriptionTitle[i];
     entry.description_body = kSampleDescriptionBody[i];
@@ -154,15 +154,15 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_SparseCase) {
-  ibus::IBusLookupTable table;
+  IBusLookupTable table;
   table.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ibus::IBusLookupTable::Entry entry;
+    IBusLookupTable::Entry entry;
     entry.value = kSampleCandidate[i];
     table.mutable_candidates()->push_back(entry);
   }
 
-  std::vector<ibus::IBusLookupTable::Entry>* candidates =
+  std::vector<IBusLookupTable::Entry>* candidates =
       table.mutable_candidates();
   (*candidates)[2].description_title = kSampleDescriptionTitle[2];
   (*candidates)[2].description_body = kSampleDescriptionBody[2];
@@ -185,16 +185,16 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_SparseNoSelectionCase) {
-  ibus::IBusLookupTable table;
+  IBusLookupTable table;
   table.set_page_size(10);
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ibus::IBusLookupTable::Entry entry;
+    IBusLookupTable::Entry entry;
     entry.value = kSampleCandidate[i];
     table.mutable_candidates()->push_back(entry);
   }
 
-  std::vector<ibus::IBusLookupTable::Entry>* candidates =
+  std::vector<IBusLookupTable::Entry>* candidates =
       table.mutable_candidates();
   (*candidates)[2].description_title = kSampleDescriptionTitle[2];
   (*candidates)[2].description_body = kSampleDescriptionBody[2];
@@ -217,11 +217,11 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_NoInfolistCase) {
-  ibus::IBusLookupTable table;
+  IBusLookupTable table;
   table.set_page_size(10);
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ibus::IBusLookupTable::Entry entry;
+    IBusLookupTable::Entry entry;
     entry.value = kSampleCandidate[i];
     table.mutable_candidates()->push_back(entry);
   }

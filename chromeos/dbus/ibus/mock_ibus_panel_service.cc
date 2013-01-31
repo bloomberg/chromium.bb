@@ -13,11 +13,11 @@ MockIBusPanelService::~MockIBusPanelService() {
 }
 
 void MockIBusPanelService::SetUpCandidateWindowHandler(
-    ibus::IBusPanelCandidateWindowHandlerInterface* handler) {
+    IBusPanelCandidateWindowHandlerInterface* handler) {
 }
 
 void MockIBusPanelService::SetUpPropertyHandler(
-    ibus::IBusPanelPropertyHandlerInterface* handler) {
+    IBusPanelPropertyHandlerInterface* handler) {
 }
 
 void MockIBusPanelService::CandidateClicked(uint32 index,

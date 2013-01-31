@@ -58,7 +58,7 @@ class UI_EXPORT InputMethodIBus
 
  protected:
   // Converts |text| into CompositionText.
-  void ExtractCompositionText(const chromeos::ibus::IBusText& text,
+  void ExtractCompositionText(const chromeos::IBusText& text,
                               uint32 cursor_position,
                               CompositionText* out_composition) const;
 
@@ -159,13 +159,13 @@ class UI_EXPORT InputMethodIBus
   bool IsContextReady();
 
   // chromeos::IBusInputContextHandlerInterface overrides:
-  virtual void CommitText(const chromeos::ibus::IBusText& text) OVERRIDE;
+  virtual void CommitText(const chromeos::IBusText& text) OVERRIDE;
   virtual void ForwardKeyEvent(uint32 keyval,
                                uint32 keycode,
                                uint32 status) OVERRIDE;
   virtual void ShowPreeditText() OVERRIDE;
   virtual void HidePreeditText() OVERRIDE;
-  virtual void UpdatePreeditText(const chromeos::ibus::IBusText& text,
+  virtual void UpdatePreeditText(const chromeos::IBusText& text,
                                  uint32 cursor_pos,
                                  bool visible) OVERRIDE;
 

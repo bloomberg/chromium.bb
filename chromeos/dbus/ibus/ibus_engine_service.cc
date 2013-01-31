@@ -144,7 +144,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
 
   // IBusEngineService override.
   virtual void RegisterProperties(
-      const ibus::IBusPropertyList& property_list) OVERRIDE {
+      const IBusPropertyList& property_list) OVERRIDE {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kRegisterPropertiesSignal);
     dbus::MessageWriter writer(&signal);
@@ -153,7 +153,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdatePreedit(const ibus::IBusText& ibus_text,
+  virtual void UpdatePreedit(const IBusText& ibus_text,
                              uint32 cursor_pos,
                              bool is_visible,
                              IBusEnginePreeditFocusOutMode mode) OVERRIDE {
@@ -168,7 +168,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdateAuxiliaryText(const ibus::IBusText& ibus_text,
+  virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) OVERRIDE {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kUpdateAuxiliaryTextSignal);
@@ -179,7 +179,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
+  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
                                  bool is_visible) OVERRIDE {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kUpdateLookupTableSignal);
@@ -190,7 +190,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE {
+  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kUpdatePropertySignal);
     dbus::MessageWriter writer(&signal);
@@ -221,7 +221,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
     dbus::Signal signal(ibus::engine::kServiceInterface,
                         ibus::engine::kCommitTextSignal);
     dbus::MessageWriter writer(&signal);
-    ibus::AppendStringAsIBusText(text, &writer);
+    AppendStringAsIBusText(text, &writer);
     exported_object_->SendSignal(&signal);
   }
 
@@ -286,8 +286,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
     }
     engine_handler_->PropertyActivate(
         property_name,
-        static_cast<IBusEngineHandlerInterface::IBusPropertyState>(
-            property_state));
+        static_cast<ibus::IBusPropertyState>(property_state));
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);
   }
@@ -500,12 +499,12 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
 
   // IBusEngineService override.
   virtual void RegisterProperties(
-      const ibus::IBusPropertyList& property_list) OVERRIDE {
+      const IBusPropertyList& property_list) OVERRIDE {
     // TODO(nona): Implement this.
   }
 
   // IBusEngineService override.
-  virtual void UpdatePreedit(const ibus::IBusText& ibus_text,
+  virtual void UpdatePreedit(const IBusText& ibus_text,
                              uint32 cursor_pos,
                              bool is_visible,
                              IBusEnginePreeditFocusOutMode mode) OVERRIDE {
@@ -513,19 +512,19 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdateAuxiliaryText(const ibus::IBusText& ibus_text,
+  virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) OVERRIDE {
     // TODO(nona): Implement this.
   }
 
   // IBusEngineService override.
-  virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
+  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
                                  bool is_visible) OVERRIDE {
     // TODO(nona): Implement this.
   }
 
   // IBusEngineService override.
-  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE {
+  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE {
     // TODO(nona): Implement this.
   }
 

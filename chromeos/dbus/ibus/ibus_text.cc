@@ -10,8 +10,6 @@
 #include "dbus/message.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 namespace {
 const uint32 kAttributeUnderline = 1;  // Indicates underline attribute.
@@ -214,7 +212,7 @@ bool PopIBusText(dbus::MessageReader* reader, IBusText* ibus_text) {
 bool CHROMEOS_EXPORT PopStringFromIBusText(dbus::MessageReader* reader,
                                            std::string* text) {
   IBusText ibus_text;
-  if(!PopIBusText(reader, &ibus_text))
+  if (!PopIBusText(reader, &ibus_text))
     return false;
   *text = ibus_text.text();
   return true;
@@ -229,5 +227,4 @@ IBusText::IBusText()
 IBusText::~IBusText() {
 }
 
-}  // namespace ibus
 }  // namespace chromeos

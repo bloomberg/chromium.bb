@@ -29,7 +29,7 @@ typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
 // The IBusController implementation.
 class IBusControllerImpl : public IBusControllerBase,
-                           public ibus::IBusPanelPropertyHandlerInterface {
+                           public IBusPanelPropertyHandlerInterface {
  public:
   IBusControllerImpl();
   virtual ~IBusControllerImpl();
@@ -62,10 +62,10 @@ class IBusControllerImpl : public IBusControllerBase,
       const ConfigKeyType& key,
       const InputMethodConfigValue& value) OVERRIDE;
 
-  // ibus::IBusPanelPropertyHandlerInterface overrides:
+  // IBusPanelPropertyHandlerInterface overrides:
   virtual void RegisterProperties(
-      const ibus::IBusPropertyList& properties) OVERRIDE;
-  virtual void UpdateProperty(const ibus::IBusProperty& property) OVERRIDE;
+      const IBusPropertyList& properties) OVERRIDE;
+  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE;
 
   // Checks if |ibus_| and |ibus_config_| connections are alive.
   bool IBusConnectionsAreAlive();

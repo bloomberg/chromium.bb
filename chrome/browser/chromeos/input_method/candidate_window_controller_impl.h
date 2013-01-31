@@ -19,10 +19,8 @@ class Widget;
 }  // namespace views
 
 namespace chromeos {
-// TODO(nona): remove ibus namespace
-namespace ibus {
 class IBusLookupTable;
-}  // namespace ibus
+
 namespace input_method {
 
 class DelayableWidget;
@@ -32,7 +30,7 @@ class DelayableWidget;
 class CandidateWindowControllerImpl
     : public CandidateWindowController,
       public CandidateWindowView::Observer,
-      public ibus::IBusPanelCandidateWindowHandlerInterface,
+      public IBusPanelCandidateWindowHandlerInterface,
       public IBusController::Observer {
  public:
   CandidateWindowControllerImpl();
@@ -62,7 +60,7 @@ class CandidateWindowControllerImpl
   // Converts |lookup_table| to infolist entries. |focused_index| become
   // InfolistWindowView::InvalidFocusIndex if there is no selected entries.
   static void ConvertLookupTableToInfolistEntry(
-      const ibus::IBusLookupTable& lookup_table,
+      const IBusLookupTable& lookup_table,
       std::vector<InfolistWindowView::Entry>* infolist_entries,
       size_t* focused_index);
 
@@ -83,7 +81,7 @@ class CandidateWindowControllerImpl
   // Creates the candidate window view.
   void CreateView();
 
-  // ibus::IBusPanelCandidateWindowHandlerInterface overrides.
+  // IBusPanelCandidateWindowHandlerInterface overrides.
   virtual void HideAuxiliaryText() OVERRIDE;
   virtual void HideLookupTable() OVERRIDE;
   virtual void HidePreeditText() OVERRIDE;
@@ -91,7 +89,7 @@ class CandidateWindowControllerImpl
                                  const ibus::Rect& composition_head) OVERRIDE;
   virtual void UpdateAuxiliaryText(const std::string& utf8_text,
                                    bool visible) OVERRIDE;
-  virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
+  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
                                  bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& utf8_text,
                                  unsigned int cursor, bool visible) OVERRIDE;

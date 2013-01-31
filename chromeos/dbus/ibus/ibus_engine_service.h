@@ -20,13 +20,10 @@ class ObjectPath;
 
 namespace chromeos {
 
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 class IBusLookupTable;
 class IBusProperty;
 class IBusText;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
-}  // namespace
 
 // A interface to handle the engine handler method call.
 class CHROMEOS_EXPORT IBusEngineHandlerInterface {
@@ -39,14 +36,6 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   enum IBusCapability {
     IBUS_CAPABILITY_PREEDIT_TEXT = 1U,
     IBUS_CAPABILITY_FOCUS = 8U,
-  };
-
-  // Following property state value is introduced from
-  // http://ibus.googlecode.com/svn/docs/ibus-1.4/IBusProperty.html#IBusPropState
-  enum IBusPropertyState {
-    IBUS_PROPERTY_STATE_UNCHECKED = 0U,
-    IBUS_PROPERTY_STATE_CHECKED = 1U,
-    IBUS_PROPERTY_STATE_INCONSISTENT = 2U,
   };
 
   virtual ~IBusEngineHandlerInterface() {}
@@ -65,7 +54,7 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
 
   // Called when a property is activated or changed.
   virtual void PropertyActivate(const std::string& property_name,
-                                IBusPropertyState property_state) = 0;
+                                ibus::IBusPropertyState property_state) = 0;
 
   // Called when a property is shown.
   virtual void PropertyShow(const std::string& property_name) = 0;
@@ -132,20 +121,20 @@ class CHROMEOS_EXPORT IBusEngineService {
 
   // Emits RegisterProperties signal.
   virtual void RegisterProperties(
-      const ibus::IBusPropertyList& property_list) = 0;
+      const IBusPropertyList& property_list) = 0;
   // Emits UpdatePreedit signal.
-  virtual void UpdatePreedit(const ibus::IBusText& ibus_text,
+  virtual void UpdatePreedit(const IBusText& ibus_text,
                              uint32 cursor_pos,
                              bool is_visible,
                              IBusEnginePreeditFocusOutMode mode) = 0;
   // Emits UpdateAuxiliaryText signal.
-  virtual void UpdateAuxiliaryText(const ibus::IBusText& ibus_text,
+  virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) = 0;
   // Emits UpdateLookupTable signal.
-  virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
+  virtual void UpdateLookupTable(const IBusLookupTable& lookup_table,
                                  bool is_visible) = 0;
   // Emits UpdateProperty signal.
-  virtual void UpdateProperty(const ibus::IBusProperty& property) = 0;
+  virtual void UpdateProperty(const IBusProperty& property) = 0;
   // Emits ForwardKeyEvent signal.
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
   // Emits RequireSurroundingText signal.

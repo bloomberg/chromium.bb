@@ -15,11 +15,9 @@
 
 namespace chromeos {
 
-namespace ibus {
 class IBusComponent;
 class IBusLookupTable;
 class IBusText;
-}
 
 class IBusEngineService;
 namespace input_method {
@@ -77,8 +75,9 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual void FocusOut() OVERRIDE;
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;
-  virtual void PropertyActivate(const std::string& property_name,
-                                IBusPropertyState property_state) OVERRIDE;
+  virtual void PropertyActivate(
+      const std::string& property_name,
+      ibus::IBusPropertyState property_state) OVERRIDE;
   virtual void PropertyShow(const std::string& property_name) OVERRIDE;
   virtual void PropertyHide(const std::string& property_name) OVERRIDE;
   virtual void SetCapability(IBusCapability capability) OVERRIDE;
@@ -101,7 +100,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   bool IsConnected();
 
   // Converts MenuItem to IBusProperty.
-  bool MenuItemToProperty(const MenuItem& item, ibus::IBusProperty* property);
+  bool MenuItemToProperty(const MenuItem& item, IBusProperty* property);
 
   // Registers the engine component.
   void RegisterComponent();
@@ -144,21 +143,21 @@ class InputMethodEngineIBus : public InputMethodEngine,
   int current_object_path_;
 
   // The current auxialy text and it's visiblity.
-  scoped_ptr<ibus::IBusText> aux_text_;
+  scoped_ptr<IBusText> aux_text_;
   bool aux_text_visible_;
 
   // Pointer to the object recieving events for this IME.
   InputMethodEngine::Observer* observer_;
 
   // The current preedit text, and it's cursor position.
-  scoped_ptr<ibus::IBusText> preedit_text_;
+  scoped_ptr<IBusText> preedit_text_;
   int preedit_cursor_;
 
   // The current engine component.
-  scoped_ptr<ibus::IBusComponent> component_;
+  scoped_ptr<IBusComponent> component_;
 
   // The current lookup table.
-  scoped_ptr<ibus::IBusLookupTable> table_;
+  scoped_ptr<IBusLookupTable> table_;
 
   // Indicates whether the candidate window is visible.
   bool window_visible_;

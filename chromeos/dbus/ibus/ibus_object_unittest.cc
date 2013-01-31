@@ -14,8 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 TEST(IBusObjectTest, WriteReadTest) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
@@ -191,7 +189,7 @@ TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Create IBusProperty.
-  ibus::IBusProperty property;
+  IBusProperty property;
   property.set_key(kSampleKey);
   property.set_type(kSampleType);
   property.set_label(kSampleLabel);
@@ -209,7 +207,7 @@ TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
   // Read string from IBusText.
   dbus::MessageReader reader(response.get());
   IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
-  ibus::IBusProperty result_property;
+  IBusProperty result_property;
   ASSERT_TRUE(ibus_object_reader.Init());
   ASSERT_TRUE(ibus_object_reader.PopIBusProperty(&result_property));
   EXPECT_EQ(kSampleKey, result_property.key());
@@ -220,5 +218,4 @@ TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
   EXPECT_EQ(kSampleChecked, result_property.checked());
 }
 
-}  // namespace ibus
 }  // namespace chromeos

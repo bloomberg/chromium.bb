@@ -15,8 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-namespace ibus {
-
 namespace {
 
 const char kSampleKey[] = "Key";
@@ -118,5 +116,4 @@ TEST(IBusPropertyListTest, WriteReadIBusPropertyTest) {
   }
 }
 
-}  // namespace ibus
 }  // namespace chromeos

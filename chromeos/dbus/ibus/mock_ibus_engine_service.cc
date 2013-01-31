@@ -19,25 +19,25 @@ void MockIBusEngineService::UnsetEngine() {
 }
 
 void MockIBusEngineService::RegisterProperties(
-      const ibus::IBusPropertyList& property_list) {
+      const IBusPropertyList& property_list) {
 }
 
-void MockIBusEngineService::UpdatePreedit(const ibus::IBusText& ibus_text,
+void MockIBusEngineService::UpdatePreedit(const IBusText& ibus_text,
                                           uint32 cursor_pos,
                                           bool is_visible,
                                           IBusEnginePreeditFocusOutMode mode) {
 }
 
-void MockIBusEngineService::UpdateAuxiliaryText(const ibus::IBusText& ibus_text,
+void MockIBusEngineService::UpdateAuxiliaryText(const IBusText& ibus_text,
                                                 bool is_visible) {
 }
 
 void MockIBusEngineService::UpdateLookupTable(
-    const ibus::IBusLookupTable& lookup_table,
+    const IBusLookupTable& lookup_table,
     bool is_visible) {
 }
 
-void MockIBusEngineService::UpdateProperty(const ibus::IBusProperty& property) {
+void MockIBusEngineService::UpdateProperty(const IBusProperty& property) {
 }
 
 void MockIBusEngineService::ForwardKeyEvent(uint32 keyval,

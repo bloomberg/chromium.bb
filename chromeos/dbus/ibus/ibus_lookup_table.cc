@@ -12,8 +12,6 @@
 #include "dbus/message.h"
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 namespace {
 // The default entry number of a page in IBusLookupTable.
@@ -43,7 +41,7 @@ void AppendIBusLookupTable(const IBusLookupTable& table,
   bool have_labels = false;
   for (size_t i = 0; i < candidates.size(); ++i) {
     // Write candidate string as IBusText.
-    ibus::IBusText text;
+    IBusText text;
     text.set_text(candidates[i].value);
     text.set_annotation(candidates[i].annotation);
     text.set_description_title(candidates[i].description_title);
@@ -132,7 +130,7 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
 
   std::vector<IBusLookupTable::Entry>* candidates = table->mutable_candidates();
   while (text_array_reader.HasMoreData()) {
-    ibus::IBusText candidate_text;
+    IBusText candidate_text;
     // The attributes in IBusText are not used in Chrome.
     if (!PopIBusText(&text_array_reader, &candidate_text)) {
       LOG(ERROR) << "Invalid variant structure[IBusLookupTable]: "
@@ -229,5 +227,4 @@ IBusLookupTable::Entry::Entry() {
 IBusLookupTable::Entry::~Entry() {
 }
 
-}  // namespace ibus
 }  // namespace chromeos

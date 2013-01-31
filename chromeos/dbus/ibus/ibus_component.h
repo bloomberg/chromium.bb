@@ -16,8 +16,6 @@ class MessageReader;
 }  // namespace dbus
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 // The IBusComponents is one of IBusObjects and it contains one or more
 // IBusEngineDesc object which describes details of engine information. This
@@ -145,7 +143,6 @@ class CHROMEOS_EXPORT IBusComponent {
   DISALLOW_COPY_AND_ASSIGN(IBusComponent);
 };
 
-}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_COMPONENT_H_

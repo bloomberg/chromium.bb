@@ -24,8 +24,6 @@ class MessageWriter;
 }  // namespace dbus
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 // The data structure of IBusObject is represented as variant in "(sav...)"
 // signature. The IBusObject is constructed with two sections, header and
@@ -124,7 +122,7 @@ class CHROMEOS_EXPORT IBusObjectReader {
 
   // Pops a IBusText.
   // Returns true on success.
-  bool PopIBusText(ibus::IBusText* text);
+  bool PopIBusText(IBusText* text);
 
   // Pops a IBusText and store it's text field into |text|. Use PopIBusText
   // instead in the case of using any attribute entries in IBusText.
@@ -132,10 +130,10 @@ class CHROMEOS_EXPORT IBusObjectReader {
   bool PopStringFromIBusText(std::string* text);
 
   // Pops a IBusProperty.
-  bool PopIBusProperty(ibus::IBusProperty* property);
+  bool PopIBusProperty(IBusProperty* property);
 
   // Pops a IBusPropertyList.
-  bool PopIBusPropertyList(ibus::IBusPropertyList* property_list);
+  bool PopIBusPropertyList(IBusPropertyList* property_list);
 
   // Gets attachment entry corresponding to |key|. Do not free returned value.
   // Returns NULL if there is no entry.
@@ -224,17 +222,17 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   void CloseAll();
 
   // Appends a IBusText.
-  void AppendIBusText(const ibus::IBusText& text);
+  void AppendIBusText(const IBusText& text);
 
   // Appends a string as IBusText without any attributes. Use AppendIBusText
   // instead in the case of using any attribute entries.
   void AppendStringAsIBusText(const std::string& text);
 
   // Appends a IBusProperty.
-  void AppendIBusProperty(const ibus::IBusProperty& property);
+  void AppendIBusProperty(const IBusProperty& property);
 
   // Appends a IBusPropertyList.
-  void AppendIBusPropertyList(const ibus::IBusPropertyList& property_list);
+  void AppendIBusPropertyList(const IBusPropertyList& property_list);
 
  private:
   // Appends IBusObject headers, should be called once.
@@ -251,7 +249,6 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   DISALLOW_COPY_AND_ASSIGN(IBusObjectWriter);
 };
 
-}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_OBJECT_H_

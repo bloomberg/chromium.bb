@@ -636,7 +636,7 @@ void InputMethodIBus::AbandonAllPendingKeyEvents() {
   pending_key_events_.clear();
 }
 
-void InputMethodIBus::CommitText(const chromeos::ibus::IBusText& text) {
+void InputMethodIBus::CommitText(const chromeos::IBusText& text) {
   if (suppress_next_result_ || text.text().empty())
     return;
 
@@ -695,7 +695,7 @@ void InputMethodIBus::ShowPreeditText() {
   composing_text_ = true;
 }
 
-void InputMethodIBus::UpdatePreeditText(const chromeos::ibus::IBusText& text,
+void InputMethodIBus::UpdatePreeditText(const chromeos::IBusText& text,
                                         uint32 cursor_pos,
                                         bool visible) {
   if (suppress_next_result_ || IsTextInputTypeNone())
@@ -831,7 +831,7 @@ void InputMethodIBus::OnDisconnected() {
 }
 
 void InputMethodIBus::ExtractCompositionText(
-    const chromeos::ibus::IBusText& text,
+    const chromeos::IBusText& text,
     uint32 cursor_position,
     CompositionText* out_composition) const {
   out_composition->Clear();
@@ -859,9 +859,9 @@ void InputMethodIBus::ExtractCompositionText(
 
   out_composition->selection = Range(cursor_offset);
 
-  const std::vector<chromeos::ibus::IBusText::UnderlineAttribute>&
+  const std::vector<chromeos::IBusText::UnderlineAttribute>&
       underline_attributes = text.underline_attributes();
-  const std::vector<chromeos::ibus::IBusText::SelectionAttribute>&
+  const std::vector<chromeos::IBusText::SelectionAttribute>&
       selection_attributes = text.selection_attributes();
 
   if (!underline_attributes.empty()) {
@@ -874,10 +874,10 @@ void InputMethodIBus::ExtractCompositionText(
           char16_offsets[start], char16_offsets[end],
           SK_ColorBLACK, false /* thick */);
       if (underline_attributes[i].type ==
-          chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE)
+          chromeos::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE)
         underline.thick = true;
       else if (underline_attributes[i].type ==
-               chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_ERROR)
+               chromeos::IBusText::IBUS_TEXT_UNDERLINE_ERROR)
         underline.color = SK_ColorRED;
       out_composition->underlines.push_back(underline);
     }

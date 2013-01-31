@@ -909,7 +909,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {
   const uint32 kCursorPos = 2UL;
 
   const string16 utf16_string = UTF8ToUTF16(kSampleText);
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
 
   CompositionText composition_text;
@@ -932,10 +932,10 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SingleUnderline) {
   const uint32 kCursorPos = 2UL;
 
   // Set up ibus text with one underline attribute.
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::ibus::IBusText::UnderlineAttribute underline;
-  underline.type = chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_SINGLE;
+  chromeos::IBusText::UnderlineAttribute underline;
+  underline.type = chromeos::IBusText::IBUS_TEXT_UNDERLINE_SINGLE;
   underline.start_index = 1UL;
   underline.end_index = 4UL;
   ibus_text.mutable_underline_attributes()->push_back(underline);
@@ -962,10 +962,10 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_DoubleUnderline) {
   const uint32 kCursorPos = 2UL;
 
   // Set up ibus text with one underline attribute.
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::ibus::IBusText::UnderlineAttribute underline;
-  underline.type = chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE;
+  chromeos::IBusText::UnderlineAttribute underline;
+  underline.type = chromeos::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE;
   underline.start_index = 1UL;
   underline.end_index = 4UL;
   ibus_text.mutable_underline_attributes()->push_back(underline);
@@ -992,10 +992,10 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_ErrorUnderline) {
   const uint32 kCursorPos = 2UL;
 
   // Set up ibus text with one underline attribute.
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::ibus::IBusText::UnderlineAttribute underline;
-  underline.type = chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_ERROR;
+  chromeos::IBusText::UnderlineAttribute underline;
+  underline.type = chromeos::IBusText::IBUS_TEXT_UNDERLINE_ERROR;
   underline.start_index = 1UL;
   underline.end_index = 4UL;
   ibus_text.mutable_underline_attributes()->push_back(underline);
@@ -1021,9 +1021,9 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_Selection) {
   const uint32 kCursorPos = 2UL;
 
   // Set up ibus text with one underline attribute.
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::ibus::IBusText::SelectionAttribute selection;
+  chromeos::IBusText::SelectionAttribute selection;
   selection.start_index = 1UL;
   selection.end_index = 4UL;
   ibus_text.mutable_selection_attributes()->push_back(selection);
@@ -1049,9 +1049,9 @@ TEST_F(InputMethodIBusTest,
   const uint32 kCursorPos = 1UL;
 
   // Set up ibus text with one underline attribute.
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::ibus::IBusText::SelectionAttribute selection;
+  chromeos::IBusText::SelectionAttribute selection;
   selection.start_index = kCursorPos;
   selection.end_index = 4UL;
   ibus_text.mutable_selection_attributes()->push_back(selection);
@@ -1080,9 +1080,9 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SelectionEndWithCursor) {
   const uint32 kCursorPos = 4UL;
 
   // Set up ibus text with one underline attribute.
-  chromeos::ibus::IBusText ibus_text;
+  chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::ibus::IBusText::SelectionAttribute selection;
+  chromeos::IBusText::SelectionAttribute selection;
   selection.start_index = 1UL;
   selection.end_index = kCursorPos;
   ibus_text.mutable_selection_attributes()->push_back(selection);

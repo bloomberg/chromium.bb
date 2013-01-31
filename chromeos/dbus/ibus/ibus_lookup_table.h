@@ -17,8 +17,6 @@ class MessageReader;
 }  // namespace dbus
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 // The IBusLookupTable is one of IBusObjects. IBusLookupTable contains IBusTexts
 // but all of them are used as plain string. The overview of each data
@@ -151,7 +149,6 @@ class CHROMEOS_EXPORT IBusLookupTable {
   DISALLOW_COPY_AND_ASSIGN(IBusLookupTable);
 };
 
-}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_LOOKUP_TABLE_H_

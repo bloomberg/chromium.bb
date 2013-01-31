@@ -53,7 +53,7 @@ class IBusClientImpl : public IBusClient {
 
   // IBusClient override.
   virtual void RegisterComponent(
-      const ibus::IBusComponent& ibus_component,
+      const IBusComponent& ibus_component,
       const RegisterComponentCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     DCHECK(!callback.is_null());
@@ -61,7 +61,7 @@ class IBusClientImpl : public IBusClient {
     dbus::MethodCall method_call(ibus::bus::kServiceInterface,
                                  ibus::bus::kRegisterComponentMethod);
     dbus::MessageWriter writer(&method_call);
-    ibus::AppendIBusComponent(ibus_component, &writer);
+    AppendIBusComponent(ibus_component, &writer);
     proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -193,7 +193,7 @@ class IBusClientDaemonlessImpl : public IBusClient {
   }
 
   virtual void RegisterComponent(
-      const ibus::IBusComponent& ibus_component,
+      const IBusComponent& ibus_component,
       const RegisterComponentCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     // TODO(nona): Implement this.

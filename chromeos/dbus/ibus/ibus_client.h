@@ -19,10 +19,7 @@ class Bus;
 
 namespace chromeos {
 
-namespace ibus {
 class IBusComponent;
-}  // namespace ibus
-
 class IBusInputContextClient;
 
 // A class to make the actual DBus calls for IBusBus service.
@@ -52,7 +49,7 @@ class CHROMEOS_EXPORT IBusClient {
   // Requests the ibus-daemon to register new engine object. If succeeded,
   // |callback| will be called. If failed, |error_callback| is called instead.
   virtual void RegisterComponent(
-      const ibus::IBusComponent& ibus_component,
+      const IBusComponent& ibus_component,
       const RegisterComponentCallback& callback,
       const ErrorCallback& error_callback) = 0;
 

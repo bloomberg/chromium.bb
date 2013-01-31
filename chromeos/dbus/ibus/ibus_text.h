@@ -16,8 +16,6 @@ class MessageReader;
 }  // dbus
 
 namespace chromeos {
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
 
 // The IBusText is one of IBusObjects and it contains IBusAttrList object which
 // contains array of IBusAttribute object. The overview of each data structure
@@ -185,7 +183,6 @@ class CHROMEOS_EXPORT IBusText {
   DISALLOW_COPY_AND_ASSIGN(IBusText);
 };
 
-}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_TEXT_H_

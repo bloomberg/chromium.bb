@@ -82,27 +82,27 @@ bool PropertyKeyIsBlacklisted(const std::string& key) {
 // representation of a property, |ibus_prop|, to our own and push_back the
 // result to |out_prop_list|. This function returns true on success, and
 // returns false if sanity checks for |ibus_prop| fail.
-bool ConvertProperty(const ibus::IBusProperty& ibus_prop,
+bool ConvertProperty(const IBusProperty& ibus_prop,
                      InputMethodPropertyList* out_prop_list) {
   DCHECK(out_prop_list);
   DCHECK(ibus_prop.key().empty());
-  ibus::IBusProperty::IBusPropertyType type = ibus_prop.type();
+  IBusProperty::IBusPropertyType type = ibus_prop.type();
 
   // Sanity checks.
   const bool has_sub_props = !ibus_prop.sub_properties().empty();
-  if (has_sub_props && (type != ibus::IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
+  if (has_sub_props && (type != IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
     DVLOG(1) << "The property has sub properties, "
              << "but the type of the property is not PROP_TYPE_MENU";
     return false;
   }
   if ((!has_sub_props) &&
-      (type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
+      (type == IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
     // This is usually not an error. ibus-daemon sometimes sends empty props.
     DVLOG(1) << "Property list is empty";
     return false;
   }
-  if (type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_SEPARATOR ||
-      type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_MENU) {
+  if (type == IBusProperty::IBUS_PROPERTY_TYPE_SEPARATOR ||
+      type == IBusProperty::IBUS_PROPERTY_TYPE_MENU) {
     // This is not an error, but we don't push an item for these types.
     return true;
   }
@@ -120,7 +120,7 @@ bool ConvertProperty(const ibus::IBusProperty& ibus_prop,
   out_prop_list->push_back(InputMethodProperty(
       ibus_prop.key(),
       label_to_use,
-      (type == ibus::IBusProperty::IBUS_PROPERTY_TYPE_RADIO),
+      (type == IBusProperty::IBUS_PROPERTY_TYPE_RADIO),
       ibus_prop.checked()));
   return true;
 }
@@ -128,7 +128,7 @@ bool ConvertProperty(const ibus::IBusProperty& ibus_prop,
 // Converts |ibus_prop| to |out_prop_list|. Please note that |ibus_prop|
 // may or may not have children. See the comment for FlattenPropertyList
 // for details. Returns true if no error is found.
-bool FlattenProperty(const ibus::IBusProperty& ibus_prop,
+bool FlattenProperty(const IBusProperty& ibus_prop,
                      InputMethodPropertyList* out_prop_list) {
   DCHECK(out_prop_list);
 
@@ -143,7 +143,7 @@ bool FlattenProperty(const ibus::IBusProperty& ibus_prop,
   // Process childrens iteratively (if any). Push all sub properties to the
   // stack.
   if (!ibus_prop.sub_properties().empty()) {
-    const ibus::IBusPropertyList& sub_props = ibus_prop.sub_properties();
+    const IBusPropertyList& sub_props = ibus_prop.sub_properties();
     for (size_t i = 0; i < sub_props.size(); ++i) {
       if (!FlattenProperty(*sub_props[i], out_prop_list))
         return false;
@@ -175,7 +175,7 @@ bool FlattenProperty(const ibus::IBusProperty& ibus_prop,
 // Item-1, Item-2, Item-3-1, Item-3-2, Item-3-3, Item-4
 // (Note: SubMenuRoot does not appear in the output.)
 // ======================================================================
-bool FlattenPropertyList(const ibus::IBusPropertyList& ibus_prop_list,
+bool FlattenPropertyList(const IBusPropertyList& ibus_prop_list,
                          InputMethodPropertyList* out_prop_list) {
   DCHECK(out_prop_list);
 
@@ -304,7 +304,7 @@ bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
   //    basically NOP since ibus-daemon's current IME is already "mozc".
   //    IME properties are not sent to Chrome for the same reason.
   if (id != current_input_method_id_) {
-    const ibus::IBusPropertyList empty_list;
+    const IBusPropertyList empty_list;
     RegisterProperties(empty_list);
   }
 
@@ -411,7 +411,7 @@ bool IBusControllerImpl::SetInputMethodConfigInternal(
 }
 
 void IBusControllerImpl::RegisterProperties(
-    const ibus::IBusPropertyList& ibus_prop_list) {
+    const IBusPropertyList& ibus_prop_list) {
   // Note: |panel| can be NULL. See ChangeInputMethod().
   current_property_list_.clear();
   if (!FlattenPropertyList(ibus_prop_list, &current_property_list_))
@@ -419,7 +419,7 @@ void IBusControllerImpl::RegisterProperties(
   FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
 }
 
-void IBusControllerImpl::UpdateProperty(const ibus::IBusProperty& ibus_prop) {
+void IBusControllerImpl::UpdateProperty(const IBusProperty& ibus_prop) {
   InputMethodPropertyList prop_list;  // our representation.
   if (!FlattenProperty(ibus_prop, &prop_list)) {
     // Don't update the UI on errors.

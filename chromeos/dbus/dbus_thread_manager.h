@@ -40,6 +40,7 @@ class IBusConfigClient;
 class IBusEngineFactoryService;
 class IBusEngineService;
 class IBusInputContextClient;
+class IBusPanelService;
 class ImageBurnerClient;
 class IntrospectableClient;
 class ModemMessagingClient;
@@ -54,11 +55,6 @@ class ShillProfileClient;
 class ShillServiceClient;
 class SpeechSynthesizerClient;
 class UpdateEngineClient;
-
-// TODO(nona): Remove ibus namespace after complete libibus removal.
-namespace ibus {
-class IBusPanelService;
-}  // namespace ibus
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
@@ -135,7 +131,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual IBusEngineService* GetIBusEngineService(
       const dbus::ObjectPath& object_path) = 0;
   virtual IBusInputContextClient* GetIBusInputContextClient() = 0;
-  virtual ibus::IBusPanelService* GetIBusPanelService() = 0;
+  virtual IBusPanelService* GetIBusPanelService() = 0;
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;

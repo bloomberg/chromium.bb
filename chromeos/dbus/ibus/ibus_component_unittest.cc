@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-namespace ibus {
 
 TEST(IBusComponentTest, WriteReadIBusComponentTest) {
   const std::string kName = "Component Name";
@@ -83,5 +82,4 @@ TEST(IBusComponentTest, WriteReadIBusComponentTest) {
   EXPECT_EQ(kEngineLayout2, engine_descriptions[1].layout);
 }
 
-}  // namespace ibus
 }  // namespace chromeos

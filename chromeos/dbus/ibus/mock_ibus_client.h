@@ -20,7 +20,7 @@ class MockIBusClient : public IBusClient {
                               const CreateInputContextCallback& callback,
                               const ErrorCallback& error_callback)>
       CreateInputContextHandler;
-  typedef base::Callback<void(const ibus::IBusComponent& ibus_component,
+  typedef base::Callback<void(const IBusComponent& ibus_component,
                               const RegisterComponentCallback& callback,
                               const ErrorCallback& error_callback)>
       RegisterComponentHandler;
@@ -31,7 +31,7 @@ class MockIBusClient : public IBusClient {
                                   const ErrorCallback& error_callback) OVERRIDE;
 
   // IBusClient override.
-  virtual void RegisterComponent(const ibus::IBusComponent& ibus_component,
+  virtual void RegisterComponent(const IBusComponent& ibus_component,
                                  const RegisterComponentCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE;
 

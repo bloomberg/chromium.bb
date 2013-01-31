@@ -9,16 +9,16 @@
 
 namespace chromeos {
 
-class MockIBusPanelService : public ibus::IBusPanelService {
+class MockIBusPanelService : public IBusPanelService {
  public:
   MockIBusPanelService();
   virtual ~MockIBusPanelService();
 
   // IBusPanelService overrides.
   virtual void SetUpCandidateWindowHandler(
-      ibus::IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE;
+      IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE;
   virtual void SetUpPropertyHandler(
-      ibus::IBusPanelPropertyHandlerInterface* handler) OVERRIDE;
+      IBusPanelPropertyHandlerInterface* handler) OVERRIDE;
   virtual void CandidateClicked(uint32 index,
                                 ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE;
