@@ -200,7 +200,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
-  if (url.host() == chrome::kChromeUIGpuInternalsHost)
+  if (url.host() == chrome::kChromeUIGpuHost)
     return &NewWebUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;

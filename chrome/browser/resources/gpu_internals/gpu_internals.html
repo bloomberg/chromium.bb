@@ -41,28 +41,13 @@ tabbox tabpanels {
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/cr/ui/tabs.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-<script src="chrome://gpu-internals/gpu_internals.js"></script>
-<script src="chrome://gpu-internals/strings.js"></script>
+<script src="chrome://gpu/gpu_internals.js"></script>
+<script src="chrome://gpu/strings.js"></script>
 </head>
 <body>
   <div id="debug-div">
   </div>
-  <!-- Tabs -->
-  <tabbox id="main-tabs">
-    <tabs>
-      <tab>GPU Info</tab>
-      <tab>Profiling</tab>
-    </tabs>
-    <tabpanels>
-      <include src="info_view.html">
-      <tabpanel id="profiling-view-link">
-        <div>
-          Profiling view has moved to <a
-            href="chrome://tracing">chrome://tracing</a>.
-        </div>
-      </tabpanel>
-    </tabpanels>
-  </tabbox>
+  <include src="info_view.html">
   <script src="chrome://resources/js/i18n_template.js"></script>
   <script src="chrome://resources/js/i18n_process.js"></script>
   <script src="chrome://resources/js/jstemplate_compiled.js"></script>

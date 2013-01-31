@@ -6,23 +6,14 @@
 
 #include <string>
 
-#if defined(OS_CHROMEOS)
-#include "ash/ash_switches.h"
-#endif
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "cc/switches.h"
-#include "chrome/browser/crash_upload_list.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/crashes_ui.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/compositor_util.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -31,13 +22,16 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
+#include "content/public/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/angle/src/common/version.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::GpuDataManager;
 using content::GpuFeatureType;
@@ -56,7 +50,7 @@ struct GpuFeatureInfo {
 
 content::WebUIDataSource* CreateGpuHTMLSource() {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIGpuInternalsHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIGpuHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
@@ -310,7 +304,7 @@ Value* GetFeatureStatus() {
           "panel_fitting",
           flags & content::GPU_FEATURE_TYPE_PANEL_FITTING,
 #if defined(OS_CHROMEOS)
-          command_line.HasSwitch(ash::switches::kAshDisablePanelFitting),
+          command_line.HasSwitch(switches::kDisablePanelFitting),
 #else
           true,
 #endif
@@ -445,8 +439,7 @@ Value* GetFeatureStatus() {
 class GpuMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<GpuMessageHandler>,
-      public content::GpuDataManagerObserver,
-      public CrashUploadList::Delegate {
+      public content::GpuDataManagerObserver {
  public:
   GpuMessageHandler();
   virtual ~GpuMessageHandler();
@@ -460,9 +453,6 @@ class GpuMessageHandler
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
           OVERRIDE {}
 
-  // CrashUploadList::Delegate implemenation.
-  virtual void OnCrashListAvailable() OVERRIDE;
-
   // Messages
   void OnBrowserBridgeInitialized(const ListValue* list);
   void OnCallAsync(const ListValue* list);
@@ -470,12 +460,8 @@ class GpuMessageHandler
   // Submessages dispatched from OnCallAsync
   Value* OnRequestClientInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
-  Value* OnRequestCrashList(const ListValue* list);
 
  private:
-  scoped_refptr<CrashUploadList> crash_list_;
-  bool crash_list_available_;
-
   // True if observing the GpuDataManager (re-attaching as observer would
   // DCHECK).
   bool observing_;
@@ -490,21 +476,16 @@ class GpuMessageHandler
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuMessageHandler::GpuMessageHandler()
-    : crash_list_available_(false),
-      observing_(false) {
-  crash_list_ = CrashUploadList::Create(this);
+    : observing_(false) {
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
   GpuDataManager::GetInstance()->RemoveObserver(this);
-  crash_list_->ClearDelegate();
 }
 
 /* BrowserBridge.callAsync prepends a requestID to these messages. */
 void GpuMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  crash_list_->LoadCrashListAsynchronously();
 
   web_ui()->RegisterMessageCallback("browserBridgeInitialized",
       base::Bind(&GpuMessageHandler::OnBrowserBridgeInitialized,
@@ -542,8 +523,6 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
     ret = OnRequestClientInfo(submessageArgs);
   } else if (submessage == "requestLogMessages") {
     ret = OnRequestLogMessages(submessageArgs);
-  } else if (submessage == "requestCrashList") {
-    ret = OnRequestCrashList(submessageArgs);
   } else {  // unrecognized submessage
     NOTREACHED();
     delete submessageArgs;
@@ -585,26 +564,9 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 
   DictionaryValue* dict = new DictionaryValue();
 
-  chrome::VersionInfo version_info;
-
-  if (!version_info.is_valid()) {
-    DLOG(ERROR) << "Unable to create chrome::VersionInfo";
-  } else {
-    // We have everything we need to send the right values.
-    dict->SetString("version", version_info.Version());
-    dict->SetString("cl", version_info.LastChange());
-    dict->SetString("version_mod",
-        chrome::VersionInfo::GetVersionStringModifier());
-    dict->SetString("official",
-        l10n_util::GetStringUTF16(
-            version_info.IsOfficialBuild() ?
-            IDS_ABOUT_VERSION_OFFICIAL :
-            IDS_ABOUT_VERSION_UNOFFICIAL));
-
-    dict->SetString("command_line",
-        CommandLine::ForCurrentProcess()->GetCommandLineString());
-  }
-
+  dict->SetString("version", content::GetContentClient()->GetProduct());
+  dict->SetString("command_line",
+      CommandLine::ForCurrentProcess()->GetCommandLineString());
   dict->SetString("operating_system",
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());
@@ -626,33 +588,6 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   return GpuDataManager::GetInstance()->GetLogMessages();
 }
 
-Value* GpuMessageHandler::OnRequestCrashList(const ListValue*) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!CrashesUI::CrashReportingEnabled()) {
-    // We need to return an empty list instead of NULL.
-    return new ListValue;
-  }
-  if (!crash_list_available_) {
-    // If we are still obtaining crash list, then return null so another
-    // request will be scheduled.
-    return NULL;
-  }
-
-  ListValue* list_value = new ListValue;
-  std::vector<CrashUploadList::CrashInfo> crashes;
-  crash_list_->GetUploadedCrashes(50, &crashes);
-  for (std::vector<CrashUploadList::CrashInfo>::iterator i = crashes.begin();
-       i != crashes.end(); ++i) {
-    DictionaryValue* crash = new DictionaryValue();
-    crash->SetString("id", i->crash_id);
-    crash->SetString("time",
-                     base::TimeFormatFriendlyDateAndTime(i->crash_time));
-    list_value->Append(crash);
-  }
-  return list_value;
-}
-
 void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
   scoped_ptr<base::DictionaryValue> gpu_info_val(
@@ -668,10 +603,6 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
       *(gpu_info_val.get()));
 }
 
-void GpuMessageHandler::OnCrashListAvailable() {
-  crash_list_available_ = true;
-}
-
 }  // namespace
 
 
@@ -685,7 +616,8 @@ GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new GpuMessageHandler());
 
-  // Set up the chrome://gpu-internals/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateGpuHTMLSource());
+  // Set up the chrome://gpu/ source.
+  BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  content::WebUIDataSource::Add(browser_context, CreateGpuHTMLSource());
 }

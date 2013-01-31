@@ -728,6 +728,11 @@ const char kNetworkCountryIso[] = "network-country-iso";
 const char kEnableWebViewSynchronousAPIs[] = "enable-webview-synchronous-apis";
 #endif
 
+#if defined(OS_CHROMEOS)
+// Disables panel fitting (used for mirror mode).
+const char kDisablePanelFitting[]           = "disable-panel-fitting";
+#endif
+
 #if defined(OS_POSIX)
 // Causes the child processes to cleanly exit via calling exit().
 const char kChildCleanExit[]                = "child-clean-exit";

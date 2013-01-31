@@ -228,6 +228,10 @@ extern const char kNetworkCountryIso[];
 extern const char kEnableWebViewSynchronousAPIs[];
 #endif
 
+#if defined(OS_CHROMEOS)
+CONTENT_EXPORT extern const char kDisablePanelFitting[];
+#endif
+
 #if defined(OS_POSIX)
 extern const char kChildCleanExit[];
 #endif

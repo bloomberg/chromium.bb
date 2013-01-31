@@ -257,11 +257,8 @@ var glValueArray = ['GL_ARB_compatibility',
        },
        clientInfo: {
          blacklist_version: '1.10',
-         cl: '80750-dirty',
          command_line: commandLineStr,
-         official: 'Developer Build',
-         version: '12.0.729.0',
-         version_mod: ''
+         version: 'Chrome/12.0.729.0',
        },
        logMessages: []
      },

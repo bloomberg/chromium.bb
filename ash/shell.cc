@@ -110,6 +110,7 @@
 #include "base/message_pump_aurax11.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_feature_type.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -211,7 +212,7 @@ Shell::Shell(ShellDelegate* delegate)
   bool is_panel_fitting_disabled =
       (blacklisted_features & content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisablePanelFitting);
+          ::switches::kDisablePanelFitting);
 
   output_configurator_->Init(
       !is_panel_fitting_disabled,

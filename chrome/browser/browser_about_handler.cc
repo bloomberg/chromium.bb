@@ -29,7 +29,7 @@ const char* const kPaths[] = {
   chrome::kChromeUICreditsHost,
   chrome::kChromeUIDNSHost,
   chrome::kChromeUIFlagsHost,
-  chrome::kChromeUIGpuInternalsHost,
+  chrome::kChromeUIGpuHost,
   chrome::kChromeUIHistoryHost,
   chrome::kChromeUIIPCHost,
   chrome::kChromeUIMediaInternalsHost,
@@ -119,9 +119,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
   // Replace cache with view-http-cache.
   if (host == chrome::kChromeUICacheHost) {
     host = chrome::kChromeUINetworkViewCacheHost;
-  // Replace gpu with gpu-internals.
-  } else if (host == chrome::kChromeUIGpuHost) {
-    host = chrome::kChromeUIGpuInternalsHost;
   // Replace sync with sync-internals (for legacy reasons).
   } else if (host == chrome::kChromeUISyncHost) {
     host = chrome::kChromeUISyncInternalsHost;

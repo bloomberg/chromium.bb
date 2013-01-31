@@ -27,8 +27,6 @@ cr.define('gpu', function() {
                                      this.refresh.bind(this));
       browserBridge.addEventListener('clientInfoChange',
                                      this.refresh.bind(this));
-      browserBridge.addEventListener('crashListChange',
-                                     this.refresh.bind(this));
       this.refresh();
     },
 
@@ -39,10 +37,6 @@ cr.define('gpu', function() {
       // Client info
       if (browserBridge.clientInfo) {
         var clientInfo = browserBridge.clientInfo;
-        var chromeVersion = clientInfo.version +
-            ' (' + clientInfo.official +
-            ' ' + clientInfo.cl +
-            ') ' + clientInfo.version_mod;
         this.setTable_('client-info', [
           {
             description: 'Data exported',
@@ -50,7 +44,7 @@ cr.define('gpu', function() {
           },
           {
             description: 'Chrome version',
-            value: chromeVersion
+            value: clientInfo.version
           },
           {
             description: 'Operating system',
@@ -218,10 +212,6 @@ cr.define('gpu', function() {
         featureStatusList.textContent = '';
         problemsDiv.hidden = true;
       }
-
-      // Crash list
-      jstProcess(new JsEvalContext({values: browserBridge.crashList}),
-                 $('crash-list'));
 
       // Log messages
       jstProcess(new JsEvalContext({values: browserBridge.logMessages}),
