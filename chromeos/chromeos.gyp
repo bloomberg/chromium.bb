@@ -125,6 +125,8 @@
         'display/output_configurator.h',
         'ime/ibus_daemon_controller.cc',
         'ime/ibus_daemon_controller.h',
+        'ime/ibus_bridge.h',
+        'ime/ibus_bridge.cc',
         'network/cros_network_functions.cc',
         'network/cros_network_functions.h',
         'network/device_state.cc',
