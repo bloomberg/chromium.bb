@@ -632,10 +632,10 @@ class AndroidCommands(object):
   def ClearApplicationState(self, package):
     """Closes and clears all state for the given |package|."""
     self.CloseApplication(package)
-    self.RunShellCommand('rm -r /data/data/%s/app_*' % package)
-    self.RunShellCommand('rm -r /data/data/%s/cache/*' % package)
-    self.RunShellCommand('rm -r /data/data/%s/files/*' % package)
-    self.RunShellCommand('rm -r /data/data/%s/shared_prefs/*' % package)
+    self.RunShellCommand('su -c rm -r /data/data/%s/app_*' % package)
+    self.RunShellCommand('su -c rm -r /data/data/%s/cache/*' % package)
+    self.RunShellCommand('su -c rm -r /data/data/%s/files/*' % package)
+    self.RunShellCommand('su -c rm -r /data/data/%s/shared_prefs/*' % package)
 
   def SendKeyEvent(self, keycode):
     """Sends keycode to the device.
