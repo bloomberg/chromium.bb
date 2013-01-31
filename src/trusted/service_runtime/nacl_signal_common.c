@@ -123,6 +123,18 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
 #else
 # error Unsupported architecture
 #endif
+
+  /*
+   * Trusted code could accidentally jump into sandbox address space,
+   * so don't rely on prog_ctr on its own for determining whether a
+   * crash comes from untrusted code.  We don't want to restore
+   * control to an untrusted exception handler if trusted code
+   * crashes.
+   */
+  if (*is_untrusted &&
+      ((*result_thread)->suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
+    *is_untrusted = 0;
+  }
 }
 
 /*

@@ -12,6 +12,9 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
+typedef int (*TYPE_nacl_test_syscall_1)(void);
+
+
 int look_up_crash_type(const char *name) {
 #define MAP_NAME(type) if (strcmp(name, #type) == 0) { return type; }
   MAP_NAME(NACL_TEST_CRASH_MEMORY);
@@ -28,6 +31,11 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Usage: %s <crash-type>\n", argv[0]);
     return 1;
   }
-  NACL_SYSCALL(test_crash)(look_up_crash_type(argv[1]));
+  char *crash_type = argv[1];
+  if (strcmp(crash_type, "NACL_TEST_CRASH_JUMP_TO_ZERO") == 0) {
+    NACL_SYSCALL(test_syscall_1)();
+  } else {
+    NACL_SYSCALL(test_crash)(look_up_crash_type(crash_type));
+  }
   return 1;
 }

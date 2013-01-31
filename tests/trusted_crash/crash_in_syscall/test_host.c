@@ -9,10 +9,13 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -174,7 +177,8 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exc_info) {
   Backtrace(exc_info->ContextRecord);
   printf("Stack backtrace passed sanity checks\n");
 
-  if (strcmp(g_crash_type, "NACL_TEST_CRASH_MEMORY") == 0) {
+  if (strcmp(g_crash_type, "NACL_TEST_CRASH_MEMORY") == 0 ||
+      strcmp(g_crash_type, "NACL_TEST_CRASH_JUMP_TO_ZERO") == 0) {
     /*
      * STATUS_ACCESS_VIOLATION is 0xc0000005 but we deliberately
      * convert this to a signed number since Python's wrapper for
@@ -208,7 +212,8 @@ static void RegisterHandlers(void) {
 static const char exit_message[] = "** intended_exit_status=0\n";
 
 static void SignalHandler(int sig) {
-  if (strcmp(g_crash_type, "NACL_TEST_CRASH_MEMORY") == 0) {
+  if (strcmp(g_crash_type, "NACL_TEST_CRASH_MEMORY") == 0 ||
+      strcmp(g_crash_type, "NACL_TEST_CRASH_JUMP_TO_ZERO") == 0) {
     CHECK(sig == SIGSEGV);
   } else if (strcmp(g_crash_type, "NACL_TEST_CRASH_LOG_FATAL") == 0 ||
              strcmp(g_crash_type, "NACL_TEST_CRASH_CHECK_FAILURE") == 0) {
@@ -233,6 +238,17 @@ static void RegisterHandlers(void) {
 }
 
 #endif
+
+int32_t JumpToZeroCrashSyscall(struct NaClAppThread *natp) {
+  void (*null_func_ptr)(void) = NULL;
+
+  UNREFERENCED_PARAMETER(natp);
+
+  null_func_ptr();
+
+  NaClLog(LOG_FATAL, "JumpToZeroCrashSyscall: Should not reach here\n");
+  return 1;
+}
 
 int main(int argc, char **argv) {
   struct NaClApp app;
@@ -259,6 +275,8 @@ int main(int argc, char **argv) {
   CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
+
+  NaClAddSyscall(NACL_sys_test_syscall_1, JumpToZeroCrashSyscall);
 
   RegisterHandlers();
 
