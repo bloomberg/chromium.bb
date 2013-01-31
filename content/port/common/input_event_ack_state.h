@@ -9,6 +9,7 @@ namespace content {
 
 // Describes the state of the input event ACK coming back to the browser side.
 enum InputEventAckState {
+  INPUT_EVENT_ACK_STATE_UNKNOWN,
   INPUT_EVENT_ACK_STATE_CONSUMED,
   INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
   INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
