@@ -3,5 +3,38 @@
 # sheriffs are not usually WebKit committers; we can create an upstream
 # file if this turns out to not be true.
 
-# Crashing on the WebKit Linux ASAN bot
-crbug.com/155911 [ Linux ] platform/chromium/virtual/softwarecompositing [ Skip ]
+# NULL deref in libflashplayer.so, http://crbug.com/145940
+# ==12527== ERROR: AddressSanitizer: SEGV on unknown address 0x7f628058b38b
+# AddressSanitizer can not provide additional info.
+#    #0 0x7f62d3d34cf0 in ?? ??:0
+#    #1 0x1fec5c261c15ff
+crbug.com/145940 [ Linux ] fast/replaced/border-radius-clip.html [ Skip ]
+crbug.com/145940 [ Linux ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Skip ]
+crbug.com/145940 [ Linux ] plugins/iframe-shims.html [ Skip ]
+
+
+# Use-after-free in NPP_SetWindow, http://crbug.com/144118
+# ==15959== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f6c187f8481
+# READ of size 1 at 0x7f6c187f8481 thread T0
+#    #0 0x7f6c1aec6c7a in NPP_SetWindow
+crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
+
+
+# Use-after-free in NPP_DestroyStream, http://crbug.com/166932
+# ==17332== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f48e8a05a58
+# WRITE of size 1 at 0x7f48e8a05a58 thread T0
+#    #0 0x7f48eb06f7c5 in DocumentOpenInDestroyStream::NPP_DestroyStream
+crbug.com/166932 [ Linux ] plugins/embed-attributes-setting.html [ Skip ]
+
+
+# NULL deref in HandleURLRequestInternal, http://crbug.com/142301
+# ==17931== ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000
+# AddressSanitizer can not provide additional info.
+#    #0 0x2a054b2 in webkit::npapi::WebPluginImpl::HandleURLRequestInternal
+crbug.com/142301 [ Linux ] plugins/get-url-notify-with-url-that-fails-to-load.html [ Skip ]
+
+# Crash in fast/js/string-replacement-outofmemory.html, http://crbug.com/173366
+# ==5971== ERROR: AddressSanitizer: SEGV on unknown address 0x0000bbadbeef
+# AddressSanitizer can not provide additional info.
+#     #0 0x8c2ee4 in WebCore::reportFatalErrorInMainThread
+crbug.com/173366 [ Linux ] fast/js/string-replacement-outofmemory.html [ Skip ]
