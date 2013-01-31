@@ -360,7 +360,6 @@
         'video/capture/screen/screen_capturer_win.cc',
         'video/capture/screen/shared_buffer.cc',
         'video/capture/screen/shared_buffer.h',
-        'video/capture/screen/shared_buffer_factory.h',
         'video/capture/screen/win/desktop.cc',
         'video/capture/screen/win/desktop.h',
         'video/capture/screen/win/scoped_thread_desktop.cc',

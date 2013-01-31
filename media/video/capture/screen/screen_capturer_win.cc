@@ -23,7 +23,6 @@
 #include "media/video/capture/screen/screen_capture_frame.h"
 #include "media/video/capture/screen/screen_capture_frame_queue.h"
 #include "media/video/capture/screen/screen_capturer_helper.h"
-#include "media/video/capture/screen/shared_buffer_factory.h"
 #include "media/video/capture/screen/win/desktop.h"
 #include "media/video/capture/screen/win/scoped_thread_desktop.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -49,7 +48,7 @@ const uint32 kPixelBgraTransparent = 0x00000000;
 class ScreenCaptureFrameWin : public ScreenCaptureFrame {
  public:
   ScreenCaptureFrameWin(HDC desktop_dc, const SkISize& size,
-                SharedBufferFactory* shared_buffer_factory);
+                        ScreenCapturer::Delegate* delegate);
   virtual ~ScreenCaptureFrameWin();
 
   // Returns handle of the device independent bitmap representing this frame
@@ -65,8 +64,8 @@ class ScreenCaptureFrameWin : public ScreenCaptureFrame {
   // GDI.
   base::win::ScopedBitmap bitmap_;
 
-  // Used to allocate shared memory buffers if set.
-  SharedBufferFactory* shared_buffer_factory_;
+  // Used to work with shared memory buffers.
+  ScreenCapturer::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureFrameWin);
 };
@@ -77,7 +76,6 @@ class ScreenCaptureFrameWin : public ScreenCaptureFrame {
 class ScreenCapturerWin : public ScreenCapturer {
  public:
   ScreenCapturerWin();
-  explicit ScreenCapturerWin(SharedBufferFactory* shared_buffer_factory);
   virtual ~ScreenCapturerWin();
 
   // Overridden from ScreenCapturer:
@@ -104,9 +102,6 @@ class ScreenCapturerWin : public ScreenCapturer {
 
   // Capture the current cursor shape.
   void CaptureCursor();
-
-  // Used to allocate shared memory buffers if set.
-  SharedBufferFactory* shared_buffer_factory_;
 
   Delegate* delegate_;
 
@@ -146,14 +141,14 @@ static const int kPixelsPerMeter = 3780;
 ScreenCaptureFrameWin::ScreenCaptureFrameWin(
     HDC desktop_dc,
     const SkISize& size,
-    SharedBufferFactory* shared_buffer_factory)
-    : shared_buffer_factory_(shared_buffer_factory) {
-  // Allocate a shared memory buffer.
+    ScreenCapturer::Delegate* delegate)
+    : delegate_(delegate) {
+  // Try to allocate a shared memory buffer.
   uint32 buffer_size =
     size.width() * size.height() * ScreenCaptureData::kBytesPerPixel;
-  if (shared_buffer_factory_) {
-    scoped_refptr<SharedBuffer> shared_buffer =
-        shared_buffer_factory_->CreateSharedBuffer(buffer_size);
+  scoped_refptr<SharedBuffer> shared_buffer =
+      delegate_->CreateSharedBuffer(buffer_size);
+  if (shared_buffer) {
     CHECK(shared_buffer->ptr() != NULL);
     set_shared_buffer(shared_buffer);
   }
@@ -163,7 +158,7 @@ ScreenCaptureFrameWin::ScreenCaptureFrameWin(
 
 ScreenCaptureFrameWin::~ScreenCaptureFrameWin() {
   if (shared_buffer())
-    shared_buffer_factory_->ReleaseSharedBuffer(shared_buffer());
+    delegate_->ReleaseSharedBuffer(shared_buffer());
 }
 
 HBITMAP ScreenCaptureFrameWin::GetBitmap() {
@@ -206,16 +201,7 @@ void ScreenCaptureFrameWin::AllocateBitmap(HDC desktop_dc,
 }
 
 ScreenCapturerWin::ScreenCapturerWin()
-    : shared_buffer_factory_(NULL),
-      delegate_(NULL),
-      desktop_dc_rect_(SkIRect::MakeEmpty()),
-      composition_func_(NULL) {
-}
-
-ScreenCapturerWin::ScreenCapturerWin(
-    SharedBufferFactory* shared_buffer_factory)
-    : shared_buffer_factory_(shared_buffer_factory),
-      delegate_(NULL),
+    : delegate_(NULL),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
       composition_func_(NULL) {
 }
@@ -380,7 +366,7 @@ void ScreenCapturerWin::CaptureImage() {
     SkISize size = SkISize::Make(desktop_dc_rect_.width(),
                                  desktop_dc_rect_.height());
     scoped_ptr<ScreenCaptureFrameWin> buffer(
-        new ScreenCaptureFrameWin(*desktop_dc_, size, shared_buffer_factory_));
+        new ScreenCaptureFrameWin(*desktop_dc_, size, delegate_));
     queue_.ReplaceCurrentFrame(buffer.PassAs<ScreenCaptureFrame>());
   }
 
@@ -583,17 +569,18 @@ void ScreenCapturerWin::CaptureCursor() {
 
 }  // namespace
 
-// static
-scoped_ptr<ScreenCapturer> ScreenCapturer::Create() {
-  return scoped_ptr<ScreenCapturer>(new ScreenCapturerWin());
+scoped_refptr<SharedBuffer> ScreenCapturer::Delegate::CreateSharedBuffer(
+    uint32 size) {
+  return scoped_refptr<SharedBuffer>();
+}
+
+void ScreenCapturer::Delegate::ReleaseSharedBuffer(
+    scoped_refptr<SharedBuffer> buffer) {
 }
 
 // static
-scoped_ptr<ScreenCapturer> ScreenCapturer::CreateWithFactory(
-    SharedBufferFactory* shared_buffer_factory) {
-  scoped_ptr<ScreenCapturerWin> capturer(
-      new ScreenCapturerWin(shared_buffer_factory));
-  return capturer.PassAs<ScreenCapturer>();
+scoped_ptr<ScreenCapturer> ScreenCapturer::Create() {
+  return scoped_ptr<ScreenCapturer>(new ScreenCapturerWin());
 }
 
 }  // namespace media

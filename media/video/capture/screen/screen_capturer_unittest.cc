@@ -10,26 +10,14 @@
 #endif  // defined(OS_MACOSX)
 #include "media/video/capture/screen/screen_capture_data.h"
 #include "media/video/capture/screen/screen_capturer_mock_objects.h"
-#include "media/video/capture/screen/shared_buffer_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::Return;
 
 namespace media {
-
-class MockSharedBufferFactory : public SharedBufferFactory {
- public:
-  MockSharedBufferFactory() {}
-  virtual ~MockSharedBufferFactory() {}
-
-  MOCK_METHOD1(CreateSharedBuffer, scoped_refptr<SharedBuffer>(uint32));
-  MOCK_METHOD1(ReleaseSharedBuffer, void(scoped_refptr<SharedBuffer>));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharedBufferFactory);
-};
 
 MATCHER(DirtyRegionIsNonEmptyRect, "") {
   const SkRegion& dirty_region = arg->dirty_region();
@@ -46,7 +34,6 @@ class ScreenCapturerTest : public testing::Test {
 
  protected:
   scoped_ptr<ScreenCapturer> capturer_;
-  MockSharedBufferFactory shared_buffer_factory_;
   MockScreenCapturerDelegate delegate_;
 };
 
@@ -74,6 +61,10 @@ TEST_F(ScreenCapturerTest, MAYBE_Capture) {
   EXPECT_CALL(delegate_, OnCursorShapeChangedPtr(_))
       .Times(AnyNumber());
 
+  EXPECT_CALL(delegate_, CreateSharedBuffer(_))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(scoped_refptr<SharedBuffer>()));
+
   capturer_ = ScreenCapturer::Create();
   capturer_->Start(&delegate_);
   capturer_->CaptureFrame();
@@ -88,13 +79,13 @@ TEST_F(ScreenCapturerTest, UseSharedBuffers) {
   EXPECT_CALL(delegate_, OnCursorShapeChangedPtr(_))
       .Times(AnyNumber());
 
-  EXPECT_CALL(shared_buffer_factory_, CreateSharedBuffer(_))
-      .Times(1)
-      .WillOnce(Invoke(this, &ScreenCapturerTest::CreateSharedBuffer));
-  EXPECT_CALL(shared_buffer_factory_, ReleaseSharedBuffer(_))
-      .Times(1);
+  EXPECT_CALL(delegate_, CreateSharedBuffer(_))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(this, &ScreenCapturerTest::CreateSharedBuffer));
+  EXPECT_CALL(delegate_, ReleaseSharedBuffer(_))
+      .Times(AnyNumber());
 
-  capturer_ = ScreenCapturer::CreateWithFactory(&shared_buffer_factory_);
+  capturer_ = ScreenCapturer::Create();
   capturer_->Start(&delegate_);
   capturer_->CaptureFrame();
   capturer_->Stop();

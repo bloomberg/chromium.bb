@@ -7,15 +7,17 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
 #include "media/base/media_export.h"
+#include "media/video/capture/screen/shared_buffer.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace media {
 
 class ScreenCaptureData;
 struct MouseCursorShape;
-class SharedBufferFactory;
+class SharedBuffer;
 
 // Class used to capture video frames asynchronously.
 //
@@ -51,8 +53,16 @@ class MEDIA_EXPORT ScreenCapturer {
  public:
   // Provides callbacks used by the capturer to pass captured video frames and
   // mouse cursor shapes to the processing pipeline.
-  class Delegate {
+  class MEDIA_EXPORT Delegate {
    public:
+    // Creates a shared memory buffer of the given size. Returns NULL if shared
+    // buffers are not supported.
+    virtual scoped_refptr<SharedBuffer> CreateSharedBuffer(uint32 size);
+
+    // Notifies the delegate that the buffer is no longer used and can be
+    // released.
+    virtual void ReleaseSharedBuffer(scoped_refptr<SharedBuffer> buffer);
+
     // Called when a video frame has been captured. |capture_data| describes
     // a captured frame.
     virtual void OnCaptureCompleted(
@@ -71,10 +81,6 @@ class MEDIA_EXPORT ScreenCapturer {
 
   // Creates platform-specific capturer.
   static scoped_ptr<ScreenCapturer> Create();
-
-  // Creates platform-specific capturer that uses shared memory buffers.
-  static scoped_ptr<ScreenCapturer> CreateWithFactory(
-      SharedBufferFactory* shared_buffer_factory);
 
 #if defined(OS_LINUX)
   // Creates platform-specific capturer and instructs it whether it should use

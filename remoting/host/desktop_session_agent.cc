@@ -486,7 +486,7 @@ void DesktopSessionAgent::StopAudioCapturer() {
 void DesktopSessionAgent::StartVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  video_capturer_ = media::ScreenCapturer::CreateWithFactory(this);
+  video_capturer_ = media::ScreenCapturer::Create();
   if (video_capturer_)
     video_capturer_->Start(this);
 }

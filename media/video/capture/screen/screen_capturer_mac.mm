@@ -854,19 +854,21 @@ void ScreenCapturerMac::DisplaysReconfiguredCallback(
 
 }  // namespace
 
+scoped_refptr<SharedBuffer> ScreenCapturer::Delegate::CreateSharedBuffer(
+    uint32 size) {
+  return scoped_refptr<SharedBuffer>();
+}
+
+void ScreenCapturer::Delegate::ReleaseSharedBuffer(
+    scoped_refptr<SharedBuffer> buffer) {
+}
+
 // static
 scoped_ptr<ScreenCapturer> ScreenCapturer::Create() {
   scoped_ptr<ScreenCapturerMac> capturer(new ScreenCapturerMac());
   if (!capturer->Init())
     capturer.reset();
   return capturer.PassAs<ScreenCapturer>();
-}
-
-// static
-scoped_ptr<ScreenCapturer> ScreenCapturer::CreateWithFactory(
-    SharedBufferFactory* shared_buffer_factory) {
-  NOTIMPLEMENTED();
-  return scoped_ptr<ScreenCapturer>();
 }
 
 }  // namespace media

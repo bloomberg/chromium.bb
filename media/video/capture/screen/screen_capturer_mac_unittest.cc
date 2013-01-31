@@ -17,6 +17,7 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::Return;
 
 namespace media {
 
@@ -89,6 +90,10 @@ TEST_F(ScreenCapturerMacTest, Capture) {
       .WillOnce(Invoke(this, &ScreenCapturerMacTest::CaptureDoneCallback2));
   EXPECT_CALL(delegate_, OnCursorShapeChangedPtr(_))
       .Times(AnyNumber());
+
+  EXPECT_CALL(delegate_, CreateSharedBuffer(_))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(scoped_refptr<SharedBuffer>()));
 
   SCOPED_TRACE("");
   capturer_->Start(&delegate_);

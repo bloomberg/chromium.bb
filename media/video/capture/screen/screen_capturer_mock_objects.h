@@ -33,6 +33,8 @@ class MockScreenCapturerDelegate : public ScreenCapturer::Delegate {
 
   void OnCursorShapeChanged(scoped_ptr<MouseCursorShape> cursor_shape) OVERRIDE;
 
+  MOCK_METHOD1(CreateSharedBuffer, scoped_refptr<SharedBuffer>(uint32));
+  MOCK_METHOD1(ReleaseSharedBuffer, void(scoped_refptr<SharedBuffer>));
   MOCK_METHOD1(OnCaptureCompleted, void(scoped_refptr<ScreenCaptureData>));
   MOCK_METHOD1(OnCursorShapeChangedPtr,
                void(MouseCursorShape* cursor_shape));

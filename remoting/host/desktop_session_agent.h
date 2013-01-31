@@ -17,7 +17,6 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "media/video/capture/screen/shared_buffer.h"
-#include "media/video/capture/screen/shared_buffer_factory.h"
 #include "remoting/host/mouse_move_observer.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -49,7 +48,6 @@ class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
       public MouseMoveObserver,
-      public media::SharedBufferFactory,
       public media::ScreenCapturer::Delegate {
  public:
   class Delegate {
@@ -79,13 +77,11 @@ class DesktopSessionAgent
   // MouseMoveObserver implementation.
   virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
 
-  // SharedBufferFactory implementation.
+  // media::ScreenCapturer::Delegate implementation.
   virtual scoped_refptr<media::SharedBuffer> CreateSharedBuffer(
       uint32 size) OVERRIDE;
   virtual void ReleaseSharedBuffer(
       scoped_refptr<media::SharedBuffer> buffer) OVERRIDE;
-
-  // media::ScreenCapturer::Delegate implementation.
   virtual void OnCaptureCompleted(
       scoped_refptr<media::ScreenCaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(
@@ -234,7 +230,7 @@ class DesktopSessionAgent
   // Next shared buffer ID to be used.
   int next_shared_buffer_id_;
 
-  // List of the shared buffers registered via |SharedBufferFactory| interface.
+  // List of the shared buffers.
   typedef std::list<scoped_refptr<media::SharedBuffer> > SharedBuffers;
   SharedBuffers shared_buffers_;
 
