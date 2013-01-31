@@ -218,15 +218,14 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     const bool is_screencast = (source_data->device_info().device.type ==
         content::MEDIA_TAB_VIDEO_CAPTURE);
     source_data->SetVideoSource(
-        CreateLocalVideoSource(source_data->device_info().session_id,
-                               is_screencast,
-                               &native_video_constraints));
+        CreateVideoSource(source_data->device_info().session_id,
+                          is_screencast,
+                          &native_video_constraints));
     source_observer->AddSource(source_data->video_source());
   }
 
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
-  RTCMediaConstraints native_audio_constraints(audio_constraints);
   WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
   description->audioSources(audio_components);
   for (size_t i = 0; i < audio_components.size(); ++i) {
@@ -247,11 +246,6 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
         return;
       }
     }
-
-    // Creates a LocalAudioSource object which holds audio options.
-    source_data->SetLocalAudioSource(
-        CreateLocalAudioSource(&native_audio_constraints));
-    source_observer->AddSource(source_data->local_audio_source());
   }
 
   source_observer->StartObservering();
@@ -282,12 +276,10 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       // audio stream to each PeerConnection separately.  But currently WebRTC
       // is only able to handle a global audio stream sent to ALL peers.
 
-      // TODO(henrika): Refactor and utilize audio constraints. Audio
-      // constraints are passed via LocalAudioSource.
+      // TODO(henrika): refactor and utilize audio constraints.
       if (CreateWebAudioSource(&source)) {
         scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(UTF16ToUTF8(audio_components[i].id()),
-                                  NULL));
+            CreateLocalAudioTrack(UTF16ToUTF8(audio_components[i].id()), NULL));
         native_stream->AddTrack(audio_track);
         audio_track->set_enabled(audio_components[i].isEnabled());
       } else {
@@ -304,9 +296,11 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
           continue;
         }
 
+        // TODO(perkj): Refactor the creation of audio tracks to use a proper
+        // interface for receiving audio input data. Currently NULL is passed
+        // since the |audio_device| is the wrong class and is unused.
         scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(UTF16ToUTF8(source.id()),
-                                  source_data->local_audio_source()));
+            CreateLocalAudioTrack(UTF16ToUTF8(source.id()), NULL));
         native_stream->AddTrack(audio_track);
         audio_track->set_enabled(audio_components[i].isEnabled());
     }
@@ -392,16 +386,8 @@ MediaStreamDependencyFactory::CreateLocalMediaStream(
   return pc_factory_->CreateLocalMediaStream(label).get();
 }
 
-scoped_refptr<webrtc::AudioSourceInterface>
-MediaStreamDependencyFactory::CreateLocalAudioSource(
-    const webrtc::MediaConstraintsInterface* constraints) {
-  scoped_refptr<webrtc::AudioSourceInterface> source =
-      pc_factory_->CreateAudioSource(constraints).get();
-  return source;
-}
-
 scoped_refptr<webrtc::VideoSourceInterface>
-MediaStreamDependencyFactory::CreateLocalVideoSource(
+MediaStreamDependencyFactory::CreateVideoSource(
     int video_session_id,
     bool is_screencast,
     const webrtc::MediaConstraintsInterface* constraints) {
@@ -473,8 +459,8 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
 scoped_refptr<webrtc::LocalAudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& label,
-    webrtc::AudioSourceInterface* source) {
-  return pc_factory_->CreateAudioTrack(label, source).get();
+    webrtc::AudioDeviceModule* audio_device) {
+  return pc_factory_->CreateLocalAudioTrack(label, audio_device).get();
 }
 
 webrtc::SessionDescriptionInterface*

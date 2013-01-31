@@ -91,11 +91,11 @@ class MediaStreamImplTest : public ::testing::Test {
                                                            bool video) {
     ms_impl_->RequestUserMedia(audio, video);
     FakeMediaStreamDispatcherComplete();
-    if (video)
-      ChangeVideoSourceStateToLive();
-    if (audio)
-      ChangeAudioSourceStateToLive();
-
+    if (video) {
+      // TODO(perkj): Only change the video source at the moment since audio
+      // sources are not implemented.
+      ChangeSourceStateToLive();
+    }
     EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
               ms_impl_->request_state());
 
@@ -126,27 +126,15 @@ class MediaStreamImplTest : public ::testing::Test {
                                 ms_dispatcher_->video_array());
   }
 
-  void ChangeVideoSourceStateToLive() {
+  void ChangeSourceStateToLive() {
     if (dependency_factory_->last_video_source() != NULL) {
       dependency_factory_->last_video_source()->SetLive();
     }
   }
 
-  void ChangeAudioSourceStateToLive() {
-    if (dependency_factory_->last_audio_source() != NULL) {
-      dependency_factory_->last_audio_source()->SetLive();
-    }
-  }
-
-  void ChangeVideoSourceStateToEnded() {
+  void ChangeSourceStateToEnded() {
     if (dependency_factory_->last_video_source() != NULL) {
       dependency_factory_->last_video_source()->SetEnded();
-    }
-  }
-
-  void ChangeAudioSourceStateToEnded() {
-    if (dependency_factory_->last_audio_source() != NULL) {
-      dependency_factory_->last_audio_source()->SetEnded();
     }
   }
 
@@ -195,8 +183,7 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
 TEST_F(MediaStreamImplTest, MediaSourceFailToStart) {
   ms_impl_->RequestUserMedia(true, true);
   FakeMediaStreamDispatcherComplete();
-  ChangeVideoSourceStateToEnded();
-  ChangeAudioSourceStateToEnded();
+  ChangeSourceStateToEnded();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
             ms_impl_->request_state());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
@@ -212,7 +199,7 @@ TEST_F(MediaStreamImplTest, MediaStreamImplShutDown) {
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
   ms_impl_.reset();
-  ChangeVideoSourceStateToLive();
+  ChangeSourceStateToLive();
 }
 
 // This test what happens if the WebFrame is closed while the MediaStream is
@@ -222,7 +209,7 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
-  ChangeVideoSourceStateToLive();
+  ChangeSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
 }
@@ -236,7 +223,7 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
-  ChangeVideoSourceStateToLive();
+  ChangeSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
 }

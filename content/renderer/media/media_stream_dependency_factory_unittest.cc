@@ -88,7 +88,6 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 
   void CreateNativeSources(WebKit::WebMediaStreamDescriptor* descriptor) {
     MediaSourceCreatedObserver observer;
-    WebKit::WebMediaConstraints audio_constraints;
     dependency_factory_->CreateNativeMediaSources(
         WebKit::WebMediaConstraints(),
         WebKit::WebMediaConstraints(),
@@ -101,7 +100,6 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     // Change the state of the created source to live. This should trigger
     // MediaSourceCreatedObserver::OnCreateNativeSourcesComplete
     if (dependency_factory_->last_video_source()) {
-      dependency_factory_->last_audio_source()->SetLive();
       dependency_factory_->last_video_source()->SetLive();
     }
     EXPECT_TRUE(observer.result());

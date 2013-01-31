@@ -33,26 +33,13 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
     video_source_ = source;
   }
 
-  void SetLocalAudioSource(webrtc::AudioSourceInterface* source) {
-    local_audio_source_ = source;
-  }
-
   webrtc::VideoSourceInterface* video_source() { return video_source_; }
   media::AudioCapturerSource* audio_source() { return audio_source_; }
-  webrtc::AudioSourceInterface* local_audio_source() {
-    return local_audio_source_;
-  }
 
  private:
   StreamDeviceInfo device_info_;
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
   scoped_refptr<media::AudioCapturerSource> audio_source_;
-
-  // This member holds an instance of webrtc::LocalAudioSource. This is used
-  // as a container for audio options.
-  // TODO(hclam): This should be merged with |audio_source_| such that it
-  // carries audio options.
-  scoped_refptr<webrtc::AudioSourceInterface> local_audio_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamSourceExtraData);
 };
