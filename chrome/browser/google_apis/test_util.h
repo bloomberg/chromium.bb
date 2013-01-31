@@ -56,6 +56,10 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 void CopyResultsFromEntryActionCallback(GDataErrorCode* error_out,
                                         GDataErrorCode error_in);
 
+// Copies the result from EntryActionCallback and quit the message loop.
+void CopyResultFromEntryActionCallbackAndQuit(GDataErrorCode* error_out,
+                                              GDataErrorCode error_in);
+
 // Copies the results from GetDataCallback.
 void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
                                     scoped_ptr<base::Value>* value_out,
