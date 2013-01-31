@@ -199,9 +199,15 @@ class DriveFileSyncClient
                        google_apis::GDataErrorCode error,
                        scoped_ptr<google_apis::ResourceList> feed);
 
-  void DidCreateDirectory(const ResourceIdCallback& callback,
+  void DidCreateDirectory(const std::string& parent_resource_id,
+                          const string16& title,
+                          const ResourceIdCallback& callback,
                           google_apis::GDataErrorCode error,
                           scoped_ptr<google_apis::ResourceEntry> entry);
+  void DidEnsureUniquenessForCreateDirectory(
+      const ResourceIdCallback& callback,
+      google_apis::GDataErrorCode error,
+      const std::string& resource_id);
 
   void SearchFilesInDirectory(const std::string& directory_resource_id,
                               const std::string& search_query,
@@ -259,6 +265,21 @@ class DriveFileSyncClient
 
   void DidDeleteFile(const GDataErrorCallback& callback,
                      google_apis::GDataErrorCode error);
+
+  void EnsureTitleUniqueness(const std::string& parent_resource_id,
+                             const string16& expected_title,
+                             const ResourceIdCallback& callback);
+  void DidListEntriesToEnsureUniqueness(
+      const std::string& parent_resource_id,
+      const string16& expected_title,
+      const ResourceIdCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceList> feed);
+  void DeleteEntries(ScopedVector<google_apis::ResourceEntry> entries,
+                     const GDataErrorCallback& callback);
+  void DidDeleteEntry(ScopedVector<google_apis::ResourceEntry> entries,
+                      const GDataErrorCallback& callback,
+                      google_apis::GDataErrorCode error);
 
   static std::string FormatTitleQuery(const std::string& title);
 

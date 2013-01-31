@@ -415,7 +415,8 @@ class DriveFileSyncServiceTest : public testing::Test {
                 GetResourceList(GURL(), 0, query, false, search_directory, _))
         .WillOnce(InvokeGetResourceListCallback5(
                 google_apis::HTTP_SUCCESS,
-                base::Passed(&result)));
+                base::Passed(&result)))
+        .RetiresOnSaturation();
   }
 
   void SetUpDriveServiceExpectCallsForGetSyncRoot() {
@@ -434,7 +435,8 @@ class DriveFileSyncServiceTest : public testing::Test {
                 GetAccountMetadata(_))
         .WillOnce(InvokeGetAccountMetadataCallback0(
             google_apis::HTTP_SUCCESS,
-            base::Passed(&account_metadata)));
+            base::Passed(&account_metadata)))
+        .RetiresOnSaturation();
   }
 
   void SetUpDriveServiceExpectCallsForDownloadFile(
@@ -447,11 +449,13 @@ class DriveFileSyncServiceTest : public testing::Test {
                 GetResourceEntry(file_resource_id, _))
         .WillOnce(InvokeGetResourceEntryCallback1(
             google_apis::HTTP_SUCCESS,
-            base::Passed(&file_entry)));
+            base::Passed(&file_entry)))
+        .RetiresOnSaturation();
 
     EXPECT_CALL(*mock_drive_service(),
                 DownloadFile(_, _, GURL("https://file_content_url"), _, _))
-        .WillOnce(InvokeDidDownloadFile());
+        .WillOnce(InvokeDidDownloadFile())
+        .RetiresOnSaturation();
   }
 
   void SetUpDriveServiceExpectCallsForAddNewDirectory(
@@ -466,7 +470,8 @@ class DriveFileSyncServiceTest : public testing::Test {
                 AddNewDirectory(parent_directory, directory_name, _))
         .WillOnce(InvokeGetResourceEntryCallback2(
             google_apis::HTTP_SUCCESS,
-            base::Passed(&origin_directory_created)));
+            base::Passed(&origin_directory_created)))
+        .RetiresOnSaturation();
   }
 
   // End of mock setup helpers -----------------------------------------------
@@ -569,8 +574,10 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .Times(AnyNumber());
 
-  InSequence sequence;
-
+  SetUpDriveServiceExpectCallsForGetResourceList(
+      "sync_file_system/origin_directory_found.json",
+      FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
+      kSyncRootResourceId);
   SetUpDriveServiceExpectCallsForGetResourceList(
       "sync_file_system/origin_directory_not_found.json",
       FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 
+#include <algorithm>
+#include <functional>
 #include <sstream>
 
 #include "base/string_util.h"
@@ -48,18 +50,49 @@ bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
   return should_not_have_parent;
 }
 
+struct TitleAndParentQuery
+    : std::unary_function<const google_apis::ResourceEntry*, bool> {
+  TitleAndParentQuery(const string16& title,
+                      const GURL& parent_link)
+      : title(title),
+        parent_link(parent_link) {
+  }
+
+  bool operator()(const google_apis::ResourceEntry* entry) const {
+    return entry->title() == title &&
+        HasParentLinkTo(entry->links(), parent_link);
+  }
+
+  const string16& title;
+  const GURL& parent_link;
+};
+
+void FilterEntriesByTitleAndParent(
+    ScopedVector<google_apis::ResourceEntry>* entries,
+    const string16& title,
+    const GURL& parent_link) {
+  typedef ScopedVector<google_apis::ResourceEntry>::iterator iterator;
+  iterator itr = std::partition(entries->begin(), entries->end(),
+                                TitleAndParentQuery(title, parent_link));
+  entries->erase(itr, entries->end());
+}
+
 google_apis::ResourceEntry* GetDocumentByTitleAndParent(
     const ScopedVector<google_apis::ResourceEntry>& entries,
-    const GURL& parent_link,
-    const string16& title) {
+    const string16& title,
+    const GURL& parent_link) {
   typedef ScopedVector<google_apis::ResourceEntry>::const_iterator iterator;
-  for (iterator itr = entries.begin(); itr != entries.end(); ++itr) {
-    if ((*itr)->title() == title &&
-        HasParentLinkTo((*itr)->links(), parent_link)) {
-      return *itr;
-    }
-  }
+  iterator found = std::find_if(entries.begin(), entries.end(),
+                                TitleAndParentQuery(title, parent_link));
+  if (found != entries.end())
+    return *found;
   return NULL;
+}
+
+void ResourceIdAdapter(const std::string& resource_id,
+                       const DriveFileSyncClient::ResourceIdCallback& callback,
+                       google_apis::GDataErrorCode error) {
+  callback.Run(error, resource_id);
 }
 
 }  // namespace
@@ -162,18 +195,19 @@ void DriveFileSyncClient::DidGetDirectory(
   GURL parent_link;
   if (!parent_resource_id.empty())
     parent_link = ResourceIdToResourceLink(parent_resource_id);
+  string16 title(ASCIIToUTF16(directory_name));
   google_apis::ResourceEntry* entry = GetDocumentByTitleAndParent(
-      feed->entries(), parent_link, ASCIIToUTF16(directory_name));
+      feed->entries(), title, parent_link);
   if (!entry) {
     // If the |parent_resource_id| is empty, create a directory under the root
     // directory. So here we use the result of GetRootResourceId() for such a
     // case.
+    std::string resource_id = parent_resource_id.empty() ?
+        drive_service_->GetRootResourceId() : parent_resource_id;
     drive_service_->AddNewDirectory(
-        parent_resource_id.empty() ?
-            drive_service_->GetRootResourceId() : parent_resource_id,
-        directory_name,
-        base::Bind(&DriveFileSyncClient::DidCreateDirectory,
-                   AsWeakPtr(), callback));
+        resource_id, directory_name,
+        base::Bind(&DriveFileSyncClient::DidCreateDirectory, AsWeakPtr(),
+                   parent_resource_id, title, callback));
     return;
   }
 
@@ -185,6 +219,8 @@ void DriveFileSyncClient::DidGetDirectory(
 }
 
 void DriveFileSyncClient::DidCreateDirectory(
+    const std::string& parent_resource_id,
+    const string16& title,
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -197,11 +233,26 @@ void DriveFileSyncClient::DidCreateDirectory(
   }
   error = google_apis::HTTP_CREATED;
 
-  // TODO(tzik): Confirm if there's no confliction. If another client tried
-  // to create the directory, we might make duplicated directories.
-  // http://crbug.com/172820
   DCHECK(entry);
-  callback.Run(error, entry->resource_id());
+  // Check if any other client creates a directory with same title.
+  EnsureTitleUniqueness(
+      parent_resource_id, title,
+      base::Bind(&DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory,
+                 AsWeakPtr(), callback));
+}
+
+void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
+    const ResourceIdCallback& callback,
+    google_apis::GDataErrorCode error,
+    const std::string& resource_id) {
+  // If error == HTTP_FOUND: the directory is successfully created without
+  //   conflict.
+  // If error == HTTP_SUCCESS: the directory is created with conflict, but
+  //   the conflict was resolved.
+  //
+  if (error == google_apis::HTTP_FOUND)
+    error = google_apis::HTTP_CREATED;
+  callback.Run(error, resource_id);
 }
 
 void DriveFileSyncClient::GetLargestChangeStamp(
@@ -612,6 +663,104 @@ void DriveFileSyncClient::DidDeleteFile(
     google_apis::GDataErrorCode error) {
   DCHECK(CalledOnValidThread());
   callback.Run(error);
+}
+
+void DriveFileSyncClient::EnsureTitleUniqueness(
+    const std::string& parent_resource_id,
+    const string16& expected_title,
+    const ResourceIdCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  SearchFilesInDirectory(
+      parent_resource_id,
+      FormatTitleQuery(UTF16ToUTF8(expected_title)),
+      base::Bind(&DriveFileSyncClient::DidListEntriesToEnsureUniqueness,
+                 AsWeakPtr(), parent_resource_id, expected_title, callback));
+}
+
+void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
+    const std::string& parent_resource_id,
+    const string16& expected_title,
+    const ResourceIdCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceList> feed) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error, std::string());
+    return;
+  }
+
+  // This filtering is needed only on WAPI. Once we move to Drive API we can
+  // drop this.
+  GURL parent_link;
+  if (!parent_resource_id.empty())
+    parent_link = ResourceIdToResourceLink(parent_resource_id);
+  ScopedVector<google_apis::ResourceEntry> entries;
+  entries.swap(*feed->mutable_entries());
+  FilterEntriesByTitleAndParent(&entries, expected_title, parent_link);
+
+  if (entries.empty()) {
+    callback.Run(google_apis::HTTP_NOT_FOUND, std::string());
+    return;
+  }
+
+  if (entries.size() >= 2) {
+    for (size_t i = 0; i < entries.size() - 1; ++i) {
+      // TODO(tzik): Replace published_time with creation time after we move to
+      // Drive API.
+      if (entries[i]->published_time() < entries.back()->published_time())
+        std::swap(entries[i], entries.back());
+    }
+
+    scoped_ptr<google_apis::ResourceEntry> earliest_entry(entries.back());
+    entries.back() = NULL;
+    entries.get().pop_back();
+
+    DeleteEntries(entries.Pass(),
+                  base::Bind(&ResourceIdAdapter,
+                             earliest_entry->resource_id(), callback));
+    return;
+  }
+
+  DCHECK_EQ(1u, entries.size());
+  scoped_ptr<google_apis::ResourceEntry> entry(entries.front());
+  entries.weak_clear();
+  callback.Run(google_apis::HTTP_FOUND, entry->resource_id());
+}
+
+void DriveFileSyncClient::DeleteEntries(
+    ScopedVector<google_apis::ResourceEntry> entries,
+    const GDataErrorCallback& callback) {
+  DCHECK(CalledOnValidThread());
+
+  if (entries.empty()) {
+    callback.Run(google_apis::HTTP_SUCCESS);
+    return;
+  }
+
+  scoped_ptr<google_apis::ResourceEntry> entry(entries.back());
+  entries.back() = NULL;
+  entries.get().pop_back();
+
+  drive_service_->DeleteResource(
+      entry->resource_id(),
+      base::Bind(&DriveFileSyncClient::DidDeleteEntry, AsWeakPtr(),
+                 base::Passed(&entries), callback));
+}
+
+void DriveFileSyncClient::DidDeleteEntry(
+    ScopedVector<google_apis::ResourceEntry> entries,
+    const GDataErrorCallback& callback,
+    google_apis::GDataErrorCode error) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS &&
+      error != google_apis::HTTP_NOT_FOUND) {
+    callback.Run(error);
+    return;
+  }
+
+  DeleteEntries(entries.Pass(), callback);
 }
 
 }  // namespace sync_file_system
