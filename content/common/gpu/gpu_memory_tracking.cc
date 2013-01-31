@@ -24,14 +24,14 @@ GpuMemoryTrackingGroup::~GpuMemoryTrackingGroup() {
 }
 
 void GpuMemoryTrackingGroup::TrackMemoryAllocatedChange(
-    size_t old_size,
-    size_t new_size,
+    uint64 old_size,
+    uint64 new_size,
     gpu::gles2::MemoryTracker::Pool tracking_pool) {
   memory_manager_->TrackMemoryAllocatedChange(
       this, old_size, new_size, tracking_pool);
 }
 
-bool GpuMemoryTrackingGroup::EnsureGPUMemoryAvailable(size_t size_needed) {
+bool GpuMemoryTrackingGroup::EnsureGPUMemoryAvailable(uint64 size_needed) {
   return memory_manager_->EnsureGPUMemoryAvailable(size_needed);
 }
 

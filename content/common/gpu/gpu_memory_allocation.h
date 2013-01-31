@@ -30,11 +30,11 @@ struct GpuMemoryAllocationForRenderer {
   };
 
   // Limits when this renderer is visible.
-  size_t bytes_limit_when_visible;
+  uint64 bytes_limit_when_visible;
   PriorityCutoff priority_cutoff_when_visible;
 
   // Limits when this renderer is not visible.
-  size_t bytes_limit_when_not_visible;
+  uint64 bytes_limit_when_not_visible;
   PriorityCutoff priority_cutoff_when_not_visible;
   bool have_backbuffer_when_not_visible;
 
@@ -51,7 +51,7 @@ struct GpuMemoryAllocationForRenderer {
         enforce_but_do_not_keep_as_policy(false) {
   }
 
-  GpuMemoryAllocationForRenderer(size_t bytes_limit_when_visible)
+  GpuMemoryAllocationForRenderer(uint64 bytes_limit_when_visible)
       : bytes_limit_when_visible(bytes_limit_when_visible),
         priority_cutoff_when_visible(kPriorityCutoffAllowEverything),
         bytes_limit_when_not_visible(0),
@@ -105,7 +105,7 @@ struct GpuMemoryAllocation {
   GpuMemoryAllocation() {
   }
 
-  GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
+  GpuMemoryAllocation(uint64 gpu_resource_size_in_bytes,
                       BufferAllocation buffer_allocation)
       : renderer_allocation(gpu_resource_size_in_bytes),
         browser_allocation(buffer_allocation == kHasFrontbuffer) {
@@ -121,14 +121,14 @@ struct GpuMemoryAllocation {
 // more ideally split memory allocations across clients.
 struct GpuManagedMemoryStats {
   // Bytes required for correct rendering.
-  size_t bytes_required;
+  uint64 bytes_required;
 
   // Bytes that are not strictly required for correctness, but, if allocated,
   // will provide good performance.
-  size_t bytes_nice_to_have;
+  uint64 bytes_nice_to_have;
 
   // The number of bytes currently allocated.
-  size_t bytes_allocated;
+  uint64 bytes_allocated;
 
   // Whether or not a backbuffer is currently requested (the memory usage
   // of the buffer is known by the GPU process).
@@ -141,9 +141,9 @@ struct GpuManagedMemoryStats {
         backbuffer_requested(false) {
   }
 
-  GpuManagedMemoryStats(size_t bytes_required,
-                        size_t bytes_nice_to_have,
-                        size_t bytes_allocated,
+  GpuManagedMemoryStats(uint64 bytes_required,
+                        uint64 bytes_nice_to_have,
+                        uint64 bytes_allocated,
                         bool backbuffer_requested)
       : bytes_required(bytes_required),
         bytes_nice_to_have(bytes_nice_to_have),

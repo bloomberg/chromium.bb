@@ -92,7 +92,7 @@ class GpuCommandBufferStub
   virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE;
   virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) OVERRIDE;
-  virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
+  virtual bool GetTotalGpuMemory(uint64* bytes) OVERRIDE;
 
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();

@@ -38,7 +38,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   };
 
   GpuMemoryManager(GpuChannelManager* channel_manager,
-                   size_t max_surfaces_with_frontbuffer_soft_limit);
+                   uint64 max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();
 
   // Schedule a Manage() call. If immediate is true, we PostTask without delay.
@@ -102,15 +102,15 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   void Manage();
   void SetClientsHibernatedState() const;
-  size_t GetVisibleClientAllocation() const;
-  size_t GetCurrentNonvisibleAvailableGpuMemory() const;
+  uint64 GetVisibleClientAllocation() const;
+  uint64 GetCurrentNonvisibleAvailableGpuMemory() const;
   void AssignSurfacesAllocationsNonuniform();
   void AssignSurfacesAllocationsUniform();
   void AssignNonSurfacesAllocations();
 
   // Math helper function to compute the maximum value of cap such that
   // sum_i min(bytes[i], cap) <= bytes_sum_limit
-  static size_t ComputeCap(std::vector<size_t> bytes, size_t bytes_sum_limit);
+  static uint64 ComputeCap(std::vector<uint64> bytes, uint64 bytes_sum_limit);
 
   // Compute the allocation for clients when visible and not visible.
   void ComputeVisibleSurfacesAllocationsNonuniform();
@@ -120,12 +120,12 @@ class CONTENT_EXPORT GpuMemoryManager :
   // bytes above client_state's required level. Allow at most
   // bytes_above_minimum_cap bytes above client_state's minimum level. Allow
   // at most bytes_overall_cap bytes total.
-  size_t ComputeClientAllocationWhenVisible(
+  uint64 ComputeClientAllocationWhenVisible(
       GpuMemoryManagerClientState* client_state,
-      size_t bytes_above_required_cap,
-      size_t bytes_above_minimum_cap,
-      size_t bytes_overall_cap);
-  size_t ComputeClientAllocationWhenNonvisible(
+      uint64 bytes_above_required_cap,
+      uint64 bytes_above_minimum_cap,
+      uint64 bytes_overall_cap);
+  uint64 ComputeClientAllocationWhenNonvisible(
       GpuMemoryManagerClientState* client_state);
 
   // Update the amount of GPU memory we think we have in the system, based
@@ -135,28 +135,28 @@ class CONTENT_EXPORT GpuMemoryManager :
   void UpdateNonvisibleAvailableGpuMemory();
 
   // The amount of video memory which is available for allocation.
-  size_t GetAvailableGpuMemory() const;
+  uint64 GetAvailableGpuMemory() const;
 
   // Minimum value of available GPU memory, no matter how little the GPU
   // reports. This is the default value.
-  size_t GetDefaultAvailableGpuMemory() const;
+  uint64 GetDefaultAvailableGpuMemory() const;
 
   // Maximum cap on total GPU memory, no matter how much the GPU reports.
-  size_t GetMaximumTotalGpuMemory() const;
+  uint64 GetMaximumTotalGpuMemory() const;
 
   // The maximum and minimum amount of memory that a tab may be assigned.
-  size_t GetMaximumClientAllocation() const;
-  size_t GetMinimumClientAllocation() const;
+  uint64 GetMaximumClientAllocation() const;
+  uint64 GetMinimumClientAllocation() const;
 
   // Get a reasonable memory limit from a viewport's surface area.
-  static size_t CalcAvailableFromViewportArea(int viewport_area);
-  static size_t CalcAvailableFromGpuTotal(size_t total_gpu_memory);
+  static uint64 CalcAvailableFromViewportArea(int viewport_area);
+  static uint64 CalcAvailableFromGpuTotal(uint64 total_gpu_memory);
 
   // Send memory usage stats to the browser process.
   void SendUmaStatsToBrowser();
 
   // Get the current number of bytes allocated.
-  size_t GetCurrentUsage() const {
+  uint64 GetCurrentUsage() const {
     return bytes_allocated_managed_current_ +
         bytes_allocated_unmanaged_current_;
   }
@@ -164,11 +164,11 @@ class CONTENT_EXPORT GpuMemoryManager :
   // GpuMemoryTrackingGroup interface
   void TrackMemoryAllocatedChange(
       GpuMemoryTrackingGroup* tracking_group,
-      size_t old_size,
-      size_t new_size,
+      uint64 old_size,
+      uint64 new_size,
       gpu::gles2::MemoryTracker::Pool tracking_pool);
   void OnDestroyTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
-  bool EnsureGPUMemoryAvailable(size_t size_needed);
+  bool EnsureGPUMemoryAvailable(uint64 size_needed);
 
   // GpuMemoryManagerClientState interface
   void SetClientStateVisible(
@@ -186,21 +186,21 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Interfaces for testing
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
-  void TestingSetAvailableGpuMemory(size_t bytes) {
+  void TestingSetAvailableGpuMemory(uint64 bytes) {
     bytes_available_gpu_memory_ = bytes;
     bytes_available_gpu_memory_overridden_ = true;
   }
 
-  void TestingSetMinimumClientAllocation(size_t bytes) {
+  void TestingSetMinimumClientAllocation(uint64 bytes) {
     bytes_minimum_per_client_ = bytes;
     bytes_minimum_per_client_overridden_ = true;
   }
 
-  void TestingSetUnmanagedLimitStep(size_t bytes) {
+  void TestingSetUnmanagedLimitStep(uint64 bytes) {
     bytes_unmanaged_limit_step_ = bytes;
   }
 
-  void TestingSetNonvisibleAvailableGpuMemory(size_t bytes) {
+  void TestingSetNonvisibleAvailableGpuMemory(uint64 bytes) {
     bytes_nonvisible_available_gpu_memory_ = bytes;
   }
 
@@ -224,34 +224,34 @@ class CONTENT_EXPORT GpuMemoryManager :
   base::CancelableClosure delayed_manage_callback_;
   bool manage_immediate_scheduled_;
 
-  size_t max_surfaces_with_frontbuffer_soft_limit_;
+  uint64 max_surfaces_with_frontbuffer_soft_limit_;
 
   // The maximum amount of memory that may be allocated for GPU resources
-  size_t bytes_available_gpu_memory_;
+  uint64 bytes_available_gpu_memory_;
   bool bytes_available_gpu_memory_overridden_;
 
   // The minimum allocation that may be given to a single renderer.
-  size_t bytes_minimum_per_client_;
+  uint64 bytes_minimum_per_client_;
   bool bytes_minimum_per_client_overridden_;
 
   // The maximum amount of memory that can be allocated for GPU resources
   // in nonvisible renderers.
-  size_t bytes_nonvisible_available_gpu_memory_;
+  uint64 bytes_nonvisible_available_gpu_memory_;
 
   // The current total memory usage, and historical maximum memory usage
-  size_t bytes_allocated_managed_current_;
-  size_t bytes_allocated_managed_visible_;
-  size_t bytes_allocated_managed_nonvisible_;
-  size_t bytes_allocated_unmanaged_current_;
-  size_t bytes_allocated_historical_max_;
+  uint64 bytes_allocated_managed_current_;
+  uint64 bytes_allocated_managed_visible_;
+  uint64 bytes_allocated_managed_nonvisible_;
+  uint64 bytes_allocated_unmanaged_current_;
+  uint64 bytes_allocated_historical_max_;
 
   // If bytes_allocated_unmanaged_current_ leaves the interval [low_, high_),
   // then ScheduleManage to take the change into account.
-  size_t bytes_allocated_unmanaged_high_;
-  size_t bytes_allocated_unmanaged_low_;
+  uint64 bytes_allocated_unmanaged_high_;
+  uint64 bytes_allocated_unmanaged_low_;
 
   // Update bytes_allocated_unmanaged_low/high_ in intervals of step_.
-  size_t bytes_unmanaged_limit_step_;
+  uint64 bytes_unmanaged_limit_step_;
 
   // The number of browser windows that exist. If we ever receive a
   // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory

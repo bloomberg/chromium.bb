@@ -842,7 +842,7 @@ void GpuCommandBufferStub::SetPreemptByFlag(
     scheduler_->SetPreemptByFlag(preemption_flag_);
 }
 
-bool GpuCommandBufferStub::GetTotalGpuMemory(size_t* bytes) {
+bool GpuCommandBufferStub::GetTotalGpuMemory(uint64* bytes) {
   *bytes = total_gpu_memory_;
   return !!total_gpu_memory_;
 }

@@ -20,14 +20,14 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
  public:
   ~GpuMemoryTrackingGroup();
   void TrackMemoryAllocatedChange(
-      size_t old_size,
-      size_t new_size,
+      uint64 old_size,
+      uint64 new_size,
       gpu::gles2::MemoryTracker::Pool tracking_pool);
-  bool EnsureGPUMemoryAvailable(size_t size_needed);
+  bool EnsureGPUMemoryAvailable(uint64 size_needed);
   base::ProcessId GetPid() const {
     return pid_;
   }
-  size_t GetSize() const {
+  uint64 GetSize() const {
     return size_;
   }
   gpu::gles2::MemoryTracker* GetMemoryTracker() const {
@@ -42,7 +42,7 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
                          GpuMemoryManager* memory_manager);
 
   base::ProcessId pid_;
-  size_t size_;
+  uint64 size_;
 
   // Set and used only during the Manage function, to determine which
   // non-surface clients should be hibernated.
