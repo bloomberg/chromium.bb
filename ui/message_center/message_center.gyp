@@ -34,6 +34,9 @@
         'message_center_constants.cc',
         'message_center_constants.h',
         'message_center_export.h',
+        'message_center_tray.cc',
+        'message_center_tray.h',
+        'message_center_tray_delegate.h',
         'message_center_switches.cc',
         'message_center_switches.h',
         'message_popup_bubble.cc',
@@ -67,6 +70,7 @@
         'message_center',
       ],
       'sources': [
+        'message_center_tray_unittest.cc',
         'notification_list_unittest.cc',
       ],
     },

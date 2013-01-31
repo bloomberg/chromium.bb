@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_tray_delegate.h"
 
 class Notification;
 class Profile;
@@ -52,6 +53,7 @@ class MessageCenterNotificationManager
                                int button_index) OVERRIDE;
 
  private:
+  scoped_ptr<message_center::MessageCenterTrayDelegate> tray_;
   message_center::MessageCenter* message_center_;  // Weak, global.
 
 // This class keeps a set of original Notification objects and corresponding

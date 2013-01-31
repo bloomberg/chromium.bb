@@ -14,8 +14,6 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/notifications/notification_types.h"
 
-template <typename T> struct DefaultSingletonTraits;
-
 namespace base {
 class DictionaryValue;
 }

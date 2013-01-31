@@ -1310,6 +1310,7 @@
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/immersive_mode_controller_browsertest.cc',
         'browser/ui/views/location_bar/star_view_browsertest.cc',
+        'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/toolbar_view_browsertest.cc',
@@ -1639,6 +1640,7 @@
             'app/chrome_version.rc.version',
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_browsertest.cc',
+            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -1736,6 +1738,7 @@
         ['enable_message_center==0 or use_ash==1', {
           'sources!': [
             'browser/notifications/message_center_notifications_browsertest.cc',
+            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
           ],
         }],
       ],  # conditions

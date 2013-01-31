@@ -17,11 +17,18 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
+#include "ui/message_center/message_center_tray.h"
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center)
   : message_center_(message_center) {
   message_center_->SetDelegate(this);
+
+#if !defined(OS_CHROMEOS)
+  // On Windows, the notification manager owns the tray icon and views.  Other
+  // platforms have global ownership and Create will return NULL.
+  tray_.reset(message_center::CreateMessageCenterTray());
+#endif
 }
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {

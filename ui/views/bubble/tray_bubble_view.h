@@ -32,11 +32,16 @@ class TrayBubbleContentMask;
 
 class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
  public:
+  // AnchorType differentiates between bubbles that are anchored on a tray
+  // element (ANCHOR_TYPE_TRAY) and display an arrow, or that are floating on
+  // the screen away from the tray (ANCHOR_TYPE_BUBBLE).
   enum AnchorType {
     ANCHOR_TYPE_TRAY,
-    ANCHOR_TYPE_BUBBLE
+    ANCHOR_TYPE_BUBBLE,
   };
 
+  // AnchorAlignment determines to which side of the anchor the bubble will
+  // align itself.
   enum AnchorAlignment {
     ANCHOR_ALIGNMENT_BOTTOM,
     ANCHOR_ALIGNMENT_LEFT,
@@ -97,6 +102,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     int arrow_offset;
     bool hide_arrow;  // hides arrow, but may still use "arrow geometry"
     views::BubbleBorder::Shadow shadow;
+    views::BubbleBorder::BubbleAlignment arrow_alignment;
   };
 
   // Constructs and returns a TrayBubbleView. init_params may be modified.

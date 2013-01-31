@@ -48,7 +48,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
         owner_(owner),
         anchor_(anchor),
         tray_arrow_offset_(params.arrow_offset) {
-    set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+    set_alignment(params.arrow_alignment);
     set_background_color(params.arrow_color);
     set_paint_arrow(!params.hide_arrow);
   }
@@ -60,7 +60,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
   // it has no arrow.
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const OVERRIDE {
-    if (arrow_location() != NONE) {
+    if (has_arrow(arrow_location())) {
       return views::BubbleBorder::GetBounds(position_relative_to,
                                             contents_size);
     }
@@ -235,7 +235,8 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       arrow_location(views::BubbleBorder::NONE),
       arrow_offset(kArrowDefaultOffset),
       hide_arrow(false),
-      shadow(views::BubbleBorder::BIG_SHADOW) {
+      shadow(views::BubbleBorder::BIG_SHADOW),
+      arrow_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {
 }
 
 // static
@@ -295,7 +296,7 @@ TrayBubbleView::~TrayBubbleView() {
 
 void TrayBubbleView::InitializeAndShowBubble() {
   // Must occur after call to BubbleDelegateView::CreateBubble().
-  SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+  SetAlignment(params_.arrow_alignment);
   bubble_border_->UpdateArrowOffset();
 
   if (get_use_acceleration_when_possible())
