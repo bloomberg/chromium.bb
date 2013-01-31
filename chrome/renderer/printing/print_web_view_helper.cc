@@ -520,6 +520,8 @@ class PrepareFrameAndViewForPrint : public WebKit::WebViewClient,
   virtual void CallOnReady();
 
  private:
+  void ResizeForPrinting();
+  void RestoreSize();
   void CopySelection(const webkit_glue::WebPreferences& preferences);
 
   base::WeakPtrFactory<PrepareFrameAndViewForPrint> weak_ptr_factory_;
@@ -570,7 +572,7 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
   FinishPrinting();
 }
 
-void PrepareFrameAndViewForPrint::StartPrinting() {
+void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   // Layout page according to printer page size. Since WebKit shrinks the
   // size of the page automatically (from 125% to 200%) we trick it to
   // think the page is 125% larger so the size of the page is correct for
@@ -592,6 +594,12 @@ void PrepareFrameAndViewForPrint::StartPrinting() {
   prev_view_size_ = web_view->size();
 
   web_view->resize(print_layout_size);
+}
+
+
+void PrepareFrameAndViewForPrint::StartPrinting() {
+  ResizeForPrinting();
+  WebKit::WebView* web_view = frame_->view();
   web_view->settings()->setShouldPrintBackgrounds(should_print_backgrounds_);
   // TODO(vitalybuka): Update call after
   // https://bugs.webkit.org/show_bug.cgi?id=107718 is fixed.
@@ -612,11 +620,10 @@ void PrepareFrameAndViewForPrint::CopySelectionIfNeeded(
 
 void PrepareFrameAndViewForPrint::CopySelection(
     const webkit_glue::WebPreferences& preferences) {
-  std::string html = frame_->selectionAsMarkup().utf8();
+  ResizeForPrinting();
   std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(html);
-  GURL url(url_str);
-
+  url_str.append(frame_->selectionAsMarkup().utf8());
+  RestoreSize();
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
@@ -633,7 +640,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
-  frame_->loadRequest(WebKit::WebURLRequest(url));
+  frame_->loadRequest(WebKit::WebURLRequest(GURL(url_str)));
 }
 
 void PrepareFrameAndViewForPrint::didStopLoading() {
@@ -654,17 +661,26 @@ gfx::Size PrepareFrameAndViewForPrint::GetPrintCanvasSize() const {
                    web_print_params_.printContentArea.height);
 }
 
+void PrepareFrameAndViewForPrint::RestoreSize() {
+  if (frame_) {
+    WebKit::WebView* web_view = frame_->view();
+    web_view->resize(prev_view_size_);
+    if (WebKit::WebFrame* web_frame = web_view->mainFrame())
+      web_frame->setScrollOffset(prev_scroll_offset_);
+  }
+}
+
 void PrepareFrameAndViewForPrint::FinishPrinting() {
   if (frame_) {
     if (is_printing_started_)
       frame_->printEnd();
     WebKit::WebView* web_view = frame_->view();
-    web_view->resize(prev_view_size_);
-    if (WebKit::WebFrame* web_frame = web_view->mainFrame())
-      web_frame->setScrollOffset(prev_scroll_offset_);
-    web_view->settings()->setShouldPrintBackgrounds(false);
-    if (should_close_web_view_)
+    if (should_close_web_view_) {
       web_view->close();
+    } else {
+      web_view->settings()->setShouldPrintBackgrounds(false);
+      RestoreSize();
+    }
   }
   frame_ = NULL;
   on_ready_.Reset();
