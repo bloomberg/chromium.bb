@@ -20,6 +20,9 @@ const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 const char kDisableGpuDriverBugWorkarounds[] =
     "disable-gpu-driver-bug-workarounds";
 
+// Turn off user-defined name hashing in shaders.
+const char kDisableShaderNameHashing[]      = "disable-shader-name-hashing";
+
 // Turn on Logging GPU commands.
 const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
 
@@ -30,9 +33,6 @@ const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 // gl_switches.cc. It's defined here again to avoid dependencies between
 // dlls.
 const char kEnableGPUServiceLoggingGPU[]    = "enable-gpu-service-logging";
-
-// Turn on user-defined name hashing in shaders.
-const char kEnableShaderNameHashing[]       = "enable-shader-name-hashing";
 
 // Turn off gpu program caching
 const char kDisableGpuProgramCache[]        = "disable-gpu-program-cache";
@@ -58,6 +58,7 @@ const char* kGpuSwitches[] = {
   kDisableGLErrorLimit,
   kDisableGLSLTranslator,
   kDisableGpuDriverBugWorkarounds,
+  kDisableShaderNameHashing,
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,
   kEnableGPUServiceLoggingGPU,
