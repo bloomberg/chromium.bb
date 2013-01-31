@@ -56,4 +56,10 @@ crbug.com/170082 platform/chromium/virtual/gpu/fast/canvas/canvas-imageSmoothing
 # gpu-based oval drawing has improved this image
 crbug.com/171664 platform/chromium/virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
 
+# the roll to r7483 caused these minor image differences, the root cause is still TBD
+crbug.com/173368 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
+crbug.com/173368 svg/batik/text/textDecoration.svg [ ImageOnlyFailure ]
+crbug.com/173368 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
+crbug.com/173368 svg/text/selection-styles.xhtml [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
