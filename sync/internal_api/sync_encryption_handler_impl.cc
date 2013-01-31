@@ -49,8 +49,8 @@ enum NigoriMigrationResult {
   FAILED_TO_SET_NONDEFAULT_KEYSTORE,
   FAILED_TO_EXTRACT_DECRYPTOR,
   FAILED_TO_EXTRACT_KEYBAG,
-  MIGRATION_SUCCESS_KEYSTORE_DEFAULT,
   MIGRATION_SUCCESS_KEYSTORE_NONDEFAULT,
+  MIGRATION_SUCCESS_KEYSTORE_DEFAULT,
   MIGRATION_SUCCESS_FROZEN_IMPLICIT,
   MIGRATION_SUCCESS_CUSTOM,
   MIGRATION_RESULT_SIZE,
@@ -1422,11 +1422,11 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     case KEYSTORE_PASSPHRASE:
       if (old_keystore_keys_.size() > 0) {
         UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                  MIGRATION_SUCCESS_KEYSTORE_DEFAULT,
+                                  MIGRATION_SUCCESS_KEYSTORE_NONDEFAULT,
                                   MIGRATION_RESULT_SIZE);
       } else {
         UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                  MIGRATION_SUCCESS_KEYSTORE_NONDEFAULT,
+                                  MIGRATION_SUCCESS_KEYSTORE_DEFAULT,
                                   MIGRATION_RESULT_SIZE);
       }
       break;
