@@ -945,9 +945,10 @@ void URLRequest::NotifyReadCompleted(int bytes_read) {
 
   // Notify NetworkChangeNotifier that we just received network data.
   // This is to identify cases where the NetworkChangeNotifier thinks we
-  // are off-line but we are still receiving network data (crbug.com/124069).
+  // are off-line but we are still receiving network data (crbug.com/124069),
+  // and to get rough network connection measurements.
   if (bytes_read > 0 && !was_cached())
-    NetworkChangeNotifier::NotifyDataReceived(url());
+    NetworkChangeNotifier::NotifyDataReceived(*this, bytes_read);
 
   if (delegate_)
     delegate_->OnReadCompleted(this, bytes_read);

@@ -17,6 +17,7 @@ namespace net {
 struct DnsConfig;
 class HistogramWatcher;
 class NetworkChangeNotifierFactory;
+class URLRequest;
 
 #if defined(OS_LINUX)
 namespace internal {
@@ -216,9 +217,10 @@ class NET_EXPORT NetworkChangeNotifier {
   static const char* ConnectionTypeToString(ConnectionType type);
 
   // Let the NetworkChangeNotifier know we received some data.
-  // This is used strictly for producing histogram data about the accuracy of
-  // the NetworkChangenotifier's online detection.
-  static void NotifyDataReceived(const GURL& source);
+  // This is used for producing histogram data about the accuracy of
+  // the NetworkChangenotifier's online detection and rough network
+  // connection measurements.
+  static void NotifyDataReceived(const URLRequest& request, int bytes_read);
 
   // Register the Observer callbacks for producing histogram data.  This
   // should be called from the network thread to avoid race conditions.
