@@ -114,7 +114,7 @@ UNFILED WIN7 INTEL : conformance_misc_delayed_drawing = FAIL
 UNFILED WIN7 INTEL : conformance_textures_texture_clear = FAIL
 UNFILED WIN7 INTEL : conformance_glsl_samplers_glsl_function_texture2dlod = FAIL
 
-UNFILED WIN7 INTEL : conformance_attribs_gl_disabled_vertex_attrib = FAIL
+// UNFILED WIN7 INTEL : conformance_attribs_gl_disabled_vertex_attrib = FAIL
 UNFILED WIN7 INTEL : conformance_extensions_oes_texture_float_with_image_data = FAIL
 UNFILED WIN7 INTEL : conformance_glsl_samplers_glsl_function_texture2dproj = FLAKY
 
@@ -137,9 +137,9 @@ UNFILED MAC INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
 UNFILED MAC INTEL : conformance_rendering_line_loop_tri_fan = FAIL
 
-UNFILED MAC AMD : conformance_attribs_gl_vertex_attrib = FAIL
-UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
-UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
+// UNFILED MAC AMD : conformance_attribs_gl_vertex_attrib = FAIL
+// UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
+// UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
 UNFILED MAC AMD : conformance_misc_type_conversion_test = FAIL
 UNFILED MAC AMD : conformance_renderbuffers_framebuffer_object_attachment = FAIL
 UNFILED MAC AMD : conformance_textures_copy_tex_image_and_sub_image_2d = FAIL
@@ -190,3 +190,10 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 //  Temprory entries: they should be removed once the bugs are fixed.
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+173456 MAC WIN LINUX : conformance_attribs_gl_enable_vertex_attrib = TIMEOUT
+173456 MAC WIN LINUX : conformance_attribs_gl_disabled_vertex_attrib = TIMEOUT
+173456 MAC WIN LINUX : conformance_attribs_gl_vertex_attrib_zero_issues = TIMEOUT
+173456 MAC WIN LINUX : conformance_attribs_gl_vertex_attrib = TIMEOUT
+173456 MAC WIN LINUX : conformance_attribs_gl_vertexattribpointer_offsets = TIMEOUT
+173456 MAC WIN LINUX : conformance_attribs_gl_vertexattribpointer = TIMEOUT
