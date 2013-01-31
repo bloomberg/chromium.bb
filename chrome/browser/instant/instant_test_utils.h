@@ -20,7 +20,7 @@
 
 class InstantTestModelObserver : public InstantModelObserver {
  public:
-  InstantTestModelObserver(const InstantModel* model,
+  InstantTestModelObserver(InstantModel* model,
                            chrome::search::Mode::Type desired_mode_type);
   ~InstantTestModelObserver();
 
@@ -30,7 +30,7 @@ class InstantTestModelObserver : public InstantModelObserver {
   virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
 
  private:
-  const InstantModel* const model_;
+  InstantModel* const model_;
   const chrome::search::Mode::Type desired_mode_type_;
   base::RunLoop run_loop_;
 

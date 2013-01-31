@@ -137,7 +137,9 @@ class InstantController {
     return last_transition_type_;
   }
 
-  const InstantModel* model() const { return &model_; }
+  // Non-const for Add/RemoveObserver only.  Other model changes should only
+  // happen through the InstantController interface.
+  InstantModel* model() { return &model_; }
 
   // Invoked by the page when it has suggested text.
   void SetSuggestions(const content::WebContents* contents,

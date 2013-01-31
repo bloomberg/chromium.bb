@@ -38,8 +38,8 @@ class InstantModel {
   content::WebContents* GetPreviewContents() const;
 
   // Add and remove observers.
-  void AddObserver(InstantModelObserver* observer) const;
-  void RemoveObserver(InstantModelObserver* observer) const;
+  void AddObserver(InstantModelObserver* observer);
+  void RemoveObserver(InstantModelObserver* observer);
 
  private:
   chrome::search::Mode mode_;
@@ -56,7 +56,7 @@ class InstantModel {
   InstantController* const controller_;
 
   // Observers.
-  mutable ObserverList<InstantModelObserver> observers_;
+  ObserverList<InstantModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantModel);
 };

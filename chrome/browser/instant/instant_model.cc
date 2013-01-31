@@ -55,10 +55,10 @@ content::WebContents* InstantModel::GetPreviewContents() const {
   return preview_contents_;
 }
 
-void InstantModel::AddObserver(InstantModelObserver* observer) const {
+void InstantModel::AddObserver(InstantModelObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void InstantModel::RemoveObserver(InstantModelObserver* observer) const {
+void InstantModel::RemoveObserver(InstantModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }

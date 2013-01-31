@@ -31,7 +31,7 @@ std::string WrapScript(const std::string& script) {
 // InstantTestModelObserver --------------------------------------------------
 
 InstantTestModelObserver::InstantTestModelObserver(
-    const InstantModel* model,
+    InstantModel* model,
     chrome::search::Mode::Type desired_mode_type)
     : model_(model),
       desired_mode_type_(desired_mode_type) {
