@@ -118,6 +118,12 @@ MATCHER(CallbackIsNull, "") {
 }  // namespace
 
 TEST_F(FileIconSourceTest, FileIconSource_Parse) {
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported(
+      supported_scale_factors);
+
   for (unsigned i = 0; i < arraysize(kBasicExpectations); i++) {
     scoped_ptr<TestFileIconSource> source(CreateFileIconSource());
     content::URLDataSource::GotDataCallback callback;

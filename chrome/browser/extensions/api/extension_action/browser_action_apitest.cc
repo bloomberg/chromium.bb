@@ -35,10 +35,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined (OS_MACOSX)
-#include "ui/gfx/image/image_unittest_util.h"
-#endif
-
 using content::WebContents;
 
 namespace extensions {
@@ -137,7 +133,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 #if defined (OS_MACOSX)
   // We need this on mac so we don't loose 2x representations from browser icon
   // in transformations gfx::ImageSkia -> NSImage -> gfx::ImageSkia.
-  gfx::test::SetSupportedScaleFactorsTo1xAnd2x();
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::SetSupportedScaleFactors(supported_scale_factors);
 #endif
 
   // We should not be creating icons asynchronously, so we don't need an

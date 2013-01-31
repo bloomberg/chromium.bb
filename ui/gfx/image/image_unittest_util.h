@@ -25,7 +25,7 @@ typedef GdkPixbuf* PlatformImage;
 typedef gfx::ImageSkia PlatformImage;
 #endif
 
-void SetSupportedScaleFactorsTo1xAnd2x();
+std::vector<ui::ScaleFactor> Get1xAnd2xScaleFactors();
 
 // Create a bitmap of |width|x|height|.
 const SkBitmap CreateBitmap(int width, int height);

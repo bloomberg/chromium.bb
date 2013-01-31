@@ -48,11 +48,11 @@ bool ColorsClose(SkColor color1, SkColor color2) {
 
 }  // namespace
 
-void SetSupportedScaleFactorsTo1xAnd2x() {
-  std::vector<ui::ScaleFactor> supported_scale_factors;
-  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::test::SetSupportedScaleFactors(supported_scale_factors);
+std::vector<ui::ScaleFactor> Get1xAnd2xScaleFactors() {
+  std::vector<ui::ScaleFactor> scale_factors;
+  scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  return scale_factors;
 }
 
 const SkBitmap CreateBitmap(int width, int height) {

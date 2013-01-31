@@ -23,13 +23,10 @@ TEST(LayoutTest, GetScaleFactorScale) {
 }
 
 TEST(LayoutTest, GetScaleFactorFromScalePartlySupported) {
-  std::vector<ScaleFactor> original_supported_factors =
-      GetSupportedScaleFactors();
-
   std::vector<ScaleFactor> supported_factors;
   supported_factors.push_back(SCALE_FACTOR_100P);
   supported_factors.push_back(SCALE_FACTOR_180P);
-  test::SetSupportedScaleFactors(supported_factors);
+  test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(0.1f));
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(0.9f));
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(1.0f));
@@ -38,19 +35,14 @@ TEST(LayoutTest, GetScaleFactorFromScalePartlySupported) {
   EXPECT_EQ(SCALE_FACTOR_180P, GetScaleFactorFromScale(1.8f));
   EXPECT_EQ(SCALE_FACTOR_180P, GetScaleFactorFromScale(2.0f));
   EXPECT_EQ(SCALE_FACTOR_180P, GetScaleFactorFromScale(999.0f));
-
-  test::SetSupportedScaleFactors(original_supported_factors);
 }
 
 TEST(LayoutTest, GetScaleFactorFromScaleAllSupported) {
-  std::vector<ScaleFactor> original_supported_factors =
-      GetSupportedScaleFactors();
-
   std::vector<ScaleFactor> supported_factors;
   for (int factor = SCALE_FACTOR_100P; factor < NUM_SCALE_FACTORS; ++factor) {
     supported_factors.push_back(static_cast<ScaleFactor>(factor));
   }
-  test::SetSupportedScaleFactors(supported_factors);
+  test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(0.1f));
   EXPECT_EQ(SCALE_FACTOR_100P, GetScaleFactorFromScale(0.9f));
@@ -67,8 +59,6 @@ TEST(LayoutTest, GetScaleFactorFromScaleAllSupported) {
   EXPECT_EQ(SCALE_FACTOR_200P, GetScaleFactorFromScale(2.0f));
   EXPECT_EQ(SCALE_FACTOR_200P, GetScaleFactorFromScale(2.1f));
   EXPECT_EQ(SCALE_FACTOR_200P, GetScaleFactorFromScale(999.0f));
-
-  test::SetSupportedScaleFactors(original_supported_factors);
 }
 
 TEST(LayoutTest, GetMaxScaleFactor) {
@@ -78,13 +68,11 @@ TEST(LayoutTest, GetMaxScaleFactor) {
   // we always have 200P.
   EXPECT_EQ(SCALE_FACTOR_200P, GetMaxScaleFactor());
 #else
-  std::vector<ScaleFactor> original_supported_factors =
-      GetSupportedScaleFactors();
   {
     ScaleFactor scale_factors[] = { SCALE_FACTOR_100P };
     std::vector<ScaleFactor> supported_factors(
         scale_factors, scale_factors + arraysize(scale_factors));
-    test::SetSupportedScaleFactors(supported_factors);
+    test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
     EXPECT_EQ(SCALE_FACTOR_100P, GetMaxScaleFactor());
   }
 
@@ -93,7 +81,7 @@ TEST(LayoutTest, GetMaxScaleFactor) {
                                     SCALE_FACTOR_140P };
     std::vector<ScaleFactor> supported_factors(
         scale_factors, scale_factors + arraysize(scale_factors));
-    test::SetSupportedScaleFactors(supported_factors);
+    test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
     EXPECT_EQ(SCALE_FACTOR_140P, GetMaxScaleFactor());
   }
 
@@ -104,10 +92,9 @@ TEST(LayoutTest, GetMaxScaleFactor) {
                                     SCALE_FACTOR_100P };
     std::vector<ScaleFactor> supported_factors(
         scale_factors, scale_factors + arraysize(scale_factors));
-    test::SetSupportedScaleFactors(supported_factors);
+    test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
     EXPECT_EQ(SCALE_FACTOR_200P, GetMaxScaleFactor());
   }
-  test::SetSupportedScaleFactors(original_supported_factors);
 #endif
 }
 

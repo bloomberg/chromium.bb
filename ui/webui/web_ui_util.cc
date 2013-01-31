@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "grit/app_locale_settings.h"
@@ -24,20 +25,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
-
-namespace {
-
-struct ScaleFactorMap {
-  const char* name;
-  ui::ScaleFactor scale_factor;
-};
-
-const ScaleFactorMap kScaleFactorMap[] = {
-  { "1x", ui::SCALE_FACTOR_100P },
-  { "2x", ui::SCALE_FACTOR_200P },
-};
-
-}  // namespace
 
 namespace webui {
 
@@ -91,13 +78,26 @@ WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
 bool ParseScaleFactor(const base::StringPiece& identifier,
                       ui::ScaleFactor* scale_factor) {
   *scale_factor = ui::SCALE_FACTOR_100P;
-  for (size_t i = 0; i < arraysize(kScaleFactorMap); i++) {
-    if (identifier == kScaleFactorMap[i].name) {
-      *scale_factor = kScaleFactorMap[i].scale_factor;
-      return true;
-    }
+  if (identifier.empty()) {
+    LOG(ERROR) << "Invalid scale factor format: " << identifier;
+    return false;
   }
-  return false;
+
+  if (*identifier.rbegin() != 'x') {
+    LOG(ERROR) << "Invalid scale factor format: " << identifier;
+    return false;
+  }
+
+  double scale = 0;
+  std::string stripped;
+  identifier.substr(0, identifier.length() - 1).CopyToString(&stripped);
+  if (!base::StringToDouble(stripped, &scale)) {
+    LOG(ERROR) << "Invalid scale factor format: " << identifier;
+    return false;
+  }
+
+  *scale_factor = ui::GetScaleFactorFromScale(static_cast<float>(scale));
+  return true;
 }
 
 void ParsePathAndScale(const GURL& url,

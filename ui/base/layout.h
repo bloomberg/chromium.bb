@@ -70,8 +70,25 @@ UI_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
 
 namespace test {
 
+// Changes the value of GetSupportedScaleFactors() to |scale_factors|.
+// Use ScopedSetSupportedScaleFactors for unit tests as not to affect the
+// state of other tests.
 UI_EXPORT void SetSupportedScaleFactors(
     const std::vector<ScaleFactor>& scale_factors);
+
+// Class which changes the value of GetSupportedScaleFactors() to
+// |new_scale_factors| for the duration of its lifetime.
+class UI_EXPORT ScopedSetSupportedScaleFactors {
+ public:
+  explicit ScopedSetSupportedScaleFactors(
+      const std::vector<ui::ScaleFactor>& new_scale_factors);
+  ~ScopedSetSupportedScaleFactors();
+
+ private:
+  const std::vector<ui::ScaleFactor> original_scale_factors_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetSupportedScaleFactors);
+};
 
 }  // namespace test
 

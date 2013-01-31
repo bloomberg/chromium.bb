@@ -8,26 +8,48 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(WebUIUtilTest, ParsePathAndScale) {
-  GURL url("http://some/random/username@email/and/more");
+  std::vector<ui::ScaleFactor> supported_scale_factors;
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_140P);
+  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported(
+      supported_scale_factors);
+
   std::string path;
   ui::ScaleFactor factor;
 
+  GURL url("http://some/random/username@email/and/more");
   webui::ParsePathAndScale(url, &path, &factor);
   EXPECT_EQ("random/username@email/and/more", path);
   EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
 
-  GURL url2("http://some/random/username@email/and/more@2x");
+  GURL url2("http://some/random/username/and/more");
   webui::ParsePathAndScale(url2, &path, &factor);
+  EXPECT_EQ("random/username/and/more", path);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
+
+  GURL url3("http://some/random/username/and/more@2ax");
+  webui::ParsePathAndScale(url3, &path, &factor);
+  EXPECT_EQ("random/username/and/more@2ax", path);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
+
+  GURL url4("http://some/random/username/and/more@x");
+  webui::ParsePathAndScale(url4, &path, &factor);
+  EXPECT_EQ("random/username/and/more@x", path);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
+
+  GURL url5("http://some/random/username@email/and/more@2x");
+  webui::ParsePathAndScale(url5, &path, &factor);
   EXPECT_EQ("random/username@email/and/more", path);
   EXPECT_EQ(ui::SCALE_FACTOR_200P, factor);
 
-  GURL url3("http://some/random/username/and/more@2x");
-  webui::ParsePathAndScale(url3, &path, &factor);
+  GURL url6("http://some/random/username/and/more@1.4x");
+  webui::ParsePathAndScale(url6, &path, &factor);
   EXPECT_EQ("random/username/and/more", path);
-  EXPECT_EQ(ui::SCALE_FACTOR_200P, factor);
+  EXPECT_EQ(ui::SCALE_FACTOR_140P, factor);
 
-  GURL url4("http://some/random/username/and/more");
-  webui::ParsePathAndScale(url4, &path, &factor);
+  GURL url7("http://some/random/username/and/more@1.3x");
+  webui::ParsePathAndScale(url7, &path, &factor);
   EXPECT_EQ("random/username/and/more", path);
-  EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
+  EXPECT_EQ(ui::SCALE_FACTOR_140P, factor);
 }

@@ -36,10 +36,10 @@ UI_EXPORT std::string GetBitmapDataUrlFromResource(int resource_id);
 UI_EXPORT WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
                                                         int start_index);
 
-// Given a scale factor such as "1x" or "2x", sets |scale_factor| to the
-// ScaleFactor enum value for this scale factor. If the scale factor could not
-// be determined correctly from the string, then |scale_factor| is set to
-// SCALE_FACTOR_NONE, and false is returned.
+// Given a scale factor such as "1x", "2x" or "1.99x", sets |scale_factor| to
+// the closest ScaleFactor enum value for this scale factor. If string can not
+// be parsed, then |scale_factor| is set to SCALE_FACTOR_100P, and false is
+// returned.
 UI_EXPORT bool ParseScaleFactor(const base::StringPiece&identifier,
                                 ui::ScaleFactor* scale_factor);
 

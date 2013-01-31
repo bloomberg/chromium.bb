@@ -74,17 +74,16 @@ void BitmapImageRep(int width, int height,
 
 class ImageMacTest : public testing::Test {
  public:
-  ImageMacTest() {
+  ImageMacTest()
+      : supported_scale_factors_(gfx::test::Get1xAnd2xScaleFactors()) {
   }
 
   ~ImageMacTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
-    gfx::test::SetSupportedScaleFactorsTo1xAnd2x();
-  }
-
  private:
+  ui::test::ScopedSetSupportedScaleFactors supported_scale_factors_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageMacTest);
 };
 

@@ -203,6 +203,16 @@ void SetSupportedScaleFactors(
             ScaleFactorComparator);
 }
 
+ScopedSetSupportedScaleFactors::ScopedSetSupportedScaleFactors(
+    const std::vector<ui::ScaleFactor>& new_scale_factors)
+    : original_scale_factors_(GetSupportedScaleFactors()) {
+  SetSupportedScaleFactors(new_scale_factors);
+}
+
+ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
+  SetSupportedScaleFactors(original_scale_factors_);
+}
+
 }  // namespace test
 
 #if !defined(OS_MACOSX)
