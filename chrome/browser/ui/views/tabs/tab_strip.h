@@ -256,7 +256,10 @@ class TabStrip : public views::View,
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
   struct DropInfo {
-    DropInfo(int index, bool drop_before, bool paint_down);
+    DropInfo(int index,
+             bool drop_before,
+             bool paint_down,
+             views::Widget* context);
     ~DropInfo();
 
     // Index of the tab to drop on. If drop_before is true, the drop should
