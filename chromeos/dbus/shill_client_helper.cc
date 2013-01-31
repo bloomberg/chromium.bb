@@ -28,6 +28,9 @@ ShillClientHelper::ShillClientHelper(dbus::Bus* bus,
 }
 
 ShillClientHelper::~ShillClientHelper() {
+  LOG_IF(ERROR, observer_list_.size() != 0u)
+      << "ShillClientHelper destroyed with active observers: "
+      << observer_list_.size();
 }
 
 void ShillClientHelper::AddPropertyChangedObserver(

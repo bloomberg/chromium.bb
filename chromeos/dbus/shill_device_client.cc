@@ -24,8 +24,20 @@ namespace {
 class ShillDeviceClientImpl : public ShillDeviceClient {
  public:
   explicit ShillDeviceClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        helpers_deleter_(&helpers_) {
+      : bus_(bus) {
+  }
+
+  ~ShillDeviceClientImpl() {
+    for (HelperMap::iterator iter = helpers_.begin();
+         iter != helpers_.end(); ++iter) {
+      // This *should* never happen, yet we're getting crash reports that
+      // seem to imply that it does happen sometimes.  Adding CHECKs here
+      // so we can determine more accurately where the problem lies.
+      // See: http://crbug.com/170541
+      CHECK(iter->second) << "NULL Helper found in helper list.";
+      delete iter->second;
+    }
+    helpers_.clear();
   }
 
   ///////////////////////////////////////
@@ -197,13 +209,16 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
   // Returns the corresponding ShillClientHelper for the profile.
   ShillClientHelper* GetHelper(const dbus::ObjectPath& device_path) {
     HelperMap::iterator it = helpers_.find(device_path.value());
-    if (it != helpers_.end())
+    if (it != helpers_.end()) {
+      CHECK(it->second) << "Found a NULL helper in the list.";
       return it->second;
+    }
 
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(flimflam::kFlimflamServiceName, device_path);
     ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
+    CHECK(helper) << "Unable to create Shill client helper.";
     helper->MonitorPropertyChanged(flimflam::kFlimflamDeviceInterface);
     helpers_.insert(HelperMap::value_type(device_path.value(), helper));
     return helper;
@@ -211,7 +226,6 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
 
   dbus::Bus* bus_;
   HelperMap helpers_;
-  STLValueDeleter<HelperMap> helpers_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillDeviceClientImpl);
 };

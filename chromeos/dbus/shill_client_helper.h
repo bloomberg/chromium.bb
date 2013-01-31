@@ -178,7 +178,8 @@ class ShillClientHelper {
   BlockingMethodCaller blocking_method_caller_;
   dbus::ObjectProxy* proxy_;
   PropertyChangedHandler property_changed_handler_;
-  ObserverList<ShillPropertyChangedObserver> observer_list_;
+  ObserverList<ShillPropertyChangedObserver, true /* check_empty */>
+      observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
