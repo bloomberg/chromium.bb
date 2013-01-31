@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -216,8 +217,12 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
                 getInstrumentation(), mContentViewCore));
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    http://crbug.com/173274
+    */
+    @DisabledTest
     public void testHistoryUrlNavigation() throws Throwable {
         TestWebServer webServer = null;
         try {
