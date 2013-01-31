@@ -12,6 +12,7 @@
     ],
     'isolate_dependency_untracked': [
       'data/file_util_unittest/',
+      'perfs/test',
     ],
   },
   'conditions': [
