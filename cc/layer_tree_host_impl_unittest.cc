@@ -1413,6 +1413,76 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
     }
 }
 
+TEST_P(LayerTreeHostImplTest, scrollWithoutBubbling)
+{
+    // Scroll a child layer beyond its maximum scroll range and make sure the
+    // the scroll doesn't bubble up to the parent layer.
+    gfx::Size surfaceSize(10, 10);
+    scoped_ptr<LayerImpl> root = createScrollableLayer(1, surfaceSize);
+
+    scoped_ptr<LayerImpl> grandChild = createScrollableLayer(3, surfaceSize);
+    grandChild->setScrollOffset(gfx::Vector2d(0, 2));
+
+    scoped_ptr<LayerImpl> child = createScrollableLayer(2, surfaceSize);
+    child->setScrollOffset(gfx::Vector2d(0, 3));
+    child->addChild(grandChild.Pass());
+
+    root->addChild(child.Pass());
+    m_hostImpl->activeTree()->SetRootLayer(root.Pass());
+    m_hostImpl->activeTree()->DidBecomeActive();
+    m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
+    initializeRendererAndDrawFrame();
+    {
+        gfx::Vector2d scrollDelta(0, -10);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::NonBubblingGesture), InputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+        m_hostImpl->scrollEnd();
+
+        scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+
+        // The grand child should have scrolled up to its limit.
+        LayerImpl* child = m_hostImpl->rootLayer()->children()[0];
+        LayerImpl* grandChild = child->children()[0];
+        expectContains(*scrollInfo.get(), grandChild->id(), gfx::Vector2d(0, -2));
+
+        // The child should not have scrolled.
+        expectNone(*scrollInfo.get(), child->id());
+
+        // The next time we scroll we should only scroll the parent.
+        scrollDelta = gfx::Vector2d(0, -3);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::NonBubblingGesture), InputHandlerClient::ScrollStarted);
+        EXPECT_EQ(m_hostImpl->currentlyScrollingLayer(), grandChild);
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+        EXPECT_EQ(m_hostImpl->currentlyScrollingLayer(), child);
+        m_hostImpl->scrollEnd();
+
+        scrollInfo = m_hostImpl->processScrollDeltas();
+
+        // The child should have scrolled up to its limit.
+        expectContains(*scrollInfo.get(), child->id(), gfx::Vector2d(0, -3));
+
+        // The grand child should not have scrolled.
+        expectContains(*scrollInfo.get(), grandChild->id(), gfx::Vector2d(0, -2));
+
+        // After scrolling the parent, another scroll on the opposite direction
+        // should still scroll the child.
+        scrollDelta = gfx::Vector2d(0, 7);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::NonBubblingGesture), InputHandlerClient::ScrollStarted);
+        EXPECT_EQ(m_hostImpl->currentlyScrollingLayer(), grandChild);
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
+        EXPECT_EQ(m_hostImpl->currentlyScrollingLayer(), grandChild);
+        m_hostImpl->scrollEnd();
+
+        scrollInfo = m_hostImpl->processScrollDeltas();
+
+        // The grand child should have scrolled.
+        expectContains(*scrollInfo.get(), grandChild->id(), gfx::Vector2d(0, 5));
+
+        // The child should not have scrolled.
+        expectContains(*scrollInfo.get(), child->id(), gfx::Vector2d(0, -3));
+    }
+}
+
 TEST_P(LayerTreeHostImplTest, scrollEventBubbling)
 {
     // When we try to scroll a non-scrollable child layer, the scroll delta

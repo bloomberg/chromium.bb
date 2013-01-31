@@ -133,6 +133,8 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::create(const LayerTreeSettings&
 LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
     : m_client(client)
     , m_proxy(proxy)
+    , m_didLockScrollingLayer(false)
+    , m_shouldBubbleScrolls(false)
     , m_scrollDeltaIsInViewportSpace(false)
     , m_settings(settings)
     , m_debugState(settings.initialDebugState)
@@ -1182,6 +1184,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
 
     if (potentiallyScrollingLayerImpl) {
         m_activeTree->set_currently_scrolling_layer(potentiallyScrollingLayerImpl);
+        m_shouldBubbleScrolls = (type != NonBubblingGesture);
         // Gesture events need to be transformed from viewport coordinates to local layer coordinates
         // so that the scrolling contents exactly follow the user's finger. In contrast, wheel
         // events are already in local layer coordinates so we can just apply them directly.
@@ -1278,9 +1281,18 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
 
         // If the layer wasn't able to move, try the next one in the hierarchy.
         float moveThresholdSquared = 0.1f * 0.1f;
-        if (appliedDelta.LengthSquared() < moveThresholdSquared)
-            continue;
+        if (appliedDelta.LengthSquared() < moveThresholdSquared) {
+            if (m_shouldBubbleScrolls || !m_didLockScrollingLayer)
+                continue;
+            else
+                break;
+        }
         didScroll = true;
+        m_didLockScrollingLayer = true;
+        if (!m_shouldBubbleScrolls) {
+            m_activeTree->set_currently_scrolling_layer(layerImpl);
+            break;
+        }
 
         // If the applied delta is within 45 degrees of the input delta, bail out to make it easier
         // to scroll just one layer in one direction without affecting any of its parents.
@@ -1310,6 +1322,7 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
 void LayerTreeHostImpl::clearCurrentlyScrollingLayer()
 {
     m_activeTree->ClearCurrentlyScrollingLayer();
+    m_didLockScrollingLayer = false;
 }
 
 void LayerTreeHostImpl::scrollEnd()

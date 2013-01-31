@@ -28,7 +28,7 @@ namespace cc {
 class CC_EXPORT InputHandlerClient {
 public:
     enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
-    enum ScrollInputType { Gesture, Wheel };
+    enum ScrollInputType { Gesture, Wheel, NonBubblingGesture };
 
     // Selects a layer to be scrolled at a given point in viewport (logical
     // pixel) coordinates. Returns ScrollStarted if the layer at the coordinates

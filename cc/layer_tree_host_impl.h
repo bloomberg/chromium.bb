@@ -320,6 +320,8 @@ private:
     // by the next sync from the main thread.
     scoped_ptr<LayerTreeImpl> m_recycleTree;
 
+    bool m_didLockScrollingLayer;
+    bool m_shouldBubbleScrolls;
     bool m_scrollDeltaIsInViewportSpace;
     LayerTreeSettings m_settings;
     LayerTreeDebugState m_debugState;
