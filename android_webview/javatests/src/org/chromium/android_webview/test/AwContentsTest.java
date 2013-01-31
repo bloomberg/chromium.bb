@@ -210,12 +210,8 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     private static final long TEST_TIMEOUT = 20000L;
     private static final int CHECK_INTERVAL = 100;
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * BUG 6094807
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testGetFavicon() throws Throwable {
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
