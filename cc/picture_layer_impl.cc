@@ -27,8 +27,6 @@ namespace cc {
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
     : LayerImpl(treeImpl, id),
       pile_(PicturePileImpl::Create()),
-      last_source_frame_number_(0),
-      last_impl_frame_time_(0),
       last_content_scale_(0),
       ideal_contents_scale_(0),
       is_mask_(false) {
@@ -67,10 +65,6 @@ void PictureLayerImpl::pushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SetIsMask(is_mask_);
   layer_impl->TransferTilingSet(tilings_.Pass());
   layer_impl->pile_ = pile_;
-  // Sync over the last source frame number so the active tree does not respond
-  // to the source frame number changing in its tree.
-  layer_impl->last_source_frame_number_ = last_source_frame_number_;
-  layer_impl->last_impl_frame_time_ = last_impl_frame_time_;
   pile_ = PicturePileImpl::Create();
   pile_->set_slow_down_raster_scale_factor(
       layerTreeImpl()->debug_state().slowDownRasterScaleFactor);
@@ -206,32 +200,11 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
 
 void PictureLayerImpl::updateTilePriorities() {
   int current_source_frame_number = layerTreeImpl()->source_frame_number();
-  bool first_update_in_new_source_frame =
-      current_source_frame_number != last_source_frame_number_;
-
   double current_frame_time =
       (layerTreeImpl()->CurrentFrameTime() - base::TimeTicks()).InSecondsF();
-  bool first_update_in_new_impl_frame =
-      current_frame_time != last_impl_frame_time_;
-
-  // In pending tree, this is always called. We update priorities:
-  // - Immediately after a commit (first_update_in_new_source_frame).
-  // - On animation ticks after the first frame in the tree
-  //   (first_update_in_new_impl_frame).
-  // In active tree, this is only called during draw. We update priorities:
-  // - On draw if properties were not already computed by the pending tree
-  //   and activated for the frame (first_update_in_new_impl_frame).
-  if (!first_update_in_new_impl_frame && !first_update_in_new_source_frame)
-    return;
 
   gfx::Transform current_screen_space_transform =
       screenSpaceTransform();
-  double time_delta = 0;
-  if (last_impl_frame_time_ != 0 && last_bounds_ == bounds() &&
-      last_content_bounds_ == contentBounds() &&
-      last_content_scale_ == contentsScaleX()) {
-    time_delta = current_frame_time - last_impl_frame_time_;
-  }
 
   gfx::Rect viewport_in_content_space;
   gfx::Transform screenToLayer(gfx::Transform::kSkipInitialization);
@@ -246,15 +219,18 @@ void PictureLayerImpl::updateTilePriorities() {
       tree,
       layerTreeImpl()->device_viewport_size(),
       viewport_in_content_space,
+      last_bounds_,
+      bounds(),
+      last_content_bounds_,
+      contentBounds(),
       last_content_scale_,
       contentsScaleX(),
       last_screen_space_transform_,
       current_screen_space_transform,
-      time_delta);
+      current_source_frame_number,
+      current_frame_time);
 
-  last_source_frame_number_ = current_source_frame_number;
   last_screen_space_transform_ = current_screen_space_transform;
-  last_impl_frame_time_ = current_frame_time;
   last_bounds_ = bounds();
   last_content_bounds_ = contentBounds();
   last_content_scale_ = contentsScaleX();

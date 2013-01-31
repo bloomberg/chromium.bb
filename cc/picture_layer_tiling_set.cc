@@ -259,26 +259,36 @@ void PictureLayerTilingSet::UpdateTilePriorities(
     WhichTree tree,
     const gfx::Size& device_viewport,
     const gfx::Rect viewport_in_content_space,
-    float layer_content_scale_x,
-    float layer_content_scale_y,
+    gfx::Size last_layer_bounds,
+    gfx::Size current_layer_bounds,
+    gfx::Size last_layer_content_bounds,
+    gfx::Size current_layer_content_bounds,
+    float last_layer_contents_scale,
+    float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
-    double time_delta) {
+    int current_source_frame_number,
+    double current_frame_time) {
   gfx::RectF viewport_in_layer_space = gfx::ScaleRect(
     viewport_in_content_space,
-    1.f / layer_content_scale_x,
-    1.f / layer_content_scale_y);
+    1.f / current_layer_contents_scale,
+    1.f / current_layer_contents_scale);
 
   for (size_t i = 0; i < tilings_.size(); ++i) {
     tilings_[i]->UpdateTilePriorities(
         tree,
         device_viewport,
         viewport_in_layer_space,
-        layer_content_scale_x,
-        layer_content_scale_y,
+        last_layer_bounds,
+        current_layer_bounds,
+        last_layer_content_bounds,
+        current_layer_content_bounds,
+        last_layer_contents_scale,
+        current_layer_contents_scale,
         last_screen_transform,
         current_screen_transform,
-        time_delta);
+        current_source_frame_number,
+        current_frame_time);
   }
 }
 

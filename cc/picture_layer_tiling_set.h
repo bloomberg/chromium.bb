@@ -53,11 +53,16 @@ class CC_EXPORT PictureLayerTilingSet {
       WhichTree tree,
       const gfx::Size& device_viewport,
       gfx::Rect viewport_in_content_space,
-      float layer_content_scale_x,
-      float layer_content_scale_y,
+      gfx::Size last_layer_bounds,
+      gfx::Size current_layer_bounds,
+      gfx::Size last_layer_content_bounds,
+      gfx::Size current_layer_content_bounds,
+      float last_layer_contents_scale,
+      float current_layer_contents_scale,
       const gfx::Transform& last_screen_transform,
       const gfx::Transform& current_screen_transform,
-      double time_delta);
+      int current_source_frame_number,
+      double current_frame_time);
 
   void DidBecomeActive();
 

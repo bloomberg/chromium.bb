@@ -79,9 +79,7 @@ protected:
   scoped_refptr<PicturePileImpl> pile_;
   Region invalidation_;
 
-  int last_source_frame_number_;
   gfx::Transform last_screen_space_transform_;
-  double last_impl_frame_time_;
   gfx::Size last_bounds_;
   gfx::Size last_content_bounds_;
   float last_content_scale_;

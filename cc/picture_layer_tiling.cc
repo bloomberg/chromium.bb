@@ -27,7 +27,9 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
     : client_(NULL),
       contents_scale_(contents_scale),
       tiling_data_(tile_size, gfx::Size(), true),
-      resolution_(NON_IDEAL_RESOLUTION) {
+      resolution_(NON_IDEAL_RESOLUTION),
+      last_source_frame_number_(0),
+      last_impl_frame_time_(0) {
 }
 
 PictureLayerTiling::~PictureLayerTiling() {
@@ -323,14 +325,43 @@ void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     const gfx::Size& device_viewport,
     const gfx::RectF viewport_in_layer_space,
+    gfx::Size last_layer_bounds,
+    gfx::Size current_layer_bounds,
+    gfx::Size last_layer_content_bounds,
+    gfx::Size current_layer_content_bounds,
     float last_layer_contents_scale,
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
-    double time_delta) {
+    int current_source_frame_number,
+    double current_frame_time) {
   gfx::Rect content_rect = ContentRect();
   if (content_rect.IsEmpty())
     return;
+
+  bool first_update_in_new_source_frame =
+      current_source_frame_number != last_source_frame_number_;
+
+  bool first_update_in_new_impl_frame =
+      current_frame_time != last_impl_frame_time_;
+
+  // In pending tree, this is always called. We update priorities:
+  // - Immediately after a commit (first_update_in_new_source_frame).
+  // - On animation ticks after the first frame in the tree
+  //   (first_update_in_new_impl_frame).
+  // In active tree, this is only called during draw. We update priorities:
+  // - On draw if properties were not already computed by the pending tree
+  //   and activated for the frame (first_update_in_new_impl_frame).
+  if (!first_update_in_new_impl_frame && !first_update_in_new_source_frame)
+    return;
+
+  double time_delta = 0;
+  if (last_impl_frame_time_ != 0 &&
+      last_layer_bounds == current_layer_bounds &&
+      last_layer_content_bounds == current_layer_content_bounds &&
+      last_layer_contents_scale == current_layer_contents_scale) {
+    time_delta = current_frame_time - last_impl_frame_time_;
+  }
 
   gfx::Rect viewport_in_content_space =
       gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,
@@ -444,6 +475,9 @@ void PictureLayerTiling::UpdateTilePriorities(
       tile->set_priority(tree, priority);
     }
   }
+
+  last_source_frame_number_ = current_source_frame_number;
+  last_impl_frame_time_ = current_frame_time;
 }
 
 void PictureLayerTiling::DidBecomeActive() {
