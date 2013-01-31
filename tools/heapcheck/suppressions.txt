@@ -1793,12 +1793,6 @@
    fun:ManagedUserServiceTest_ExtensionManagementPolicyProvider_Test::TestBody
 }
 {
-   bug_171571
-   Heapcheck:Leak
-   ...
-   fun:GeolocationPermissionContextTests_PermissionForFileScheme_Test::TestBody
-}
-{
    bug_171571_a
    Heapcheck:Leak
    fun:std::basic_string::_Rep::_S_create
