@@ -27,6 +27,7 @@ class StackedTabStripLayout;
 class Tab;
 class TabDragController;
 class TabStripController;
+class TabStripObserver;
 
 namespace ui {
 class ListSelectionModel;
@@ -58,6 +59,10 @@ class TabStrip : public views::View,
 
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
+
+  // Add and remove observers to changes within this TabStrip.
+  void AddObserver(TabStripObserver* observer);
+  void RemoveObserver(TabStripObserver* observer);
 
   // Sets the layout type. If |adjust_layout| is true the layout type changes
   // based on whether the user uses a mouse or touch device with the tabstrip.
@@ -594,6 +599,10 @@ class TabStrip : public views::View,
 
   // True if tabs are painted as rectangular light-bars.
   bool immersive_style_;
+
+  // Our observers.
+  typedef ObserverList<TabStripObserver> TabStripObservers;
+  TabStripObservers observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

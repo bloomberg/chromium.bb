@@ -1745,6 +1745,8 @@
         'browser/ui/views/tabs/tab_strip.cc',
         'browser/ui/views/tabs/tab_strip.h',
         'browser/ui/views/tabs/tab_strip_controller.h',
+        'browser/ui/views/tabs/tab_strip_observer.cc',
+        'browser/ui/views/tabs/tab_strip_observer.h',
         'browser/ui/views/tabs/tab_strip_types.h',
         'browser/ui/views/task_manager_view.cc',
         'browser/ui/views/theme_background.cc',

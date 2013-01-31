@@ -8,8 +8,64 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class TestTabStripObserver : public TabStripObserver {
+ public:
+  explicit TestTabStripObserver(TabStrip* tab_strip)
+      : tab_strip_(tab_strip),
+        last_tab_added_(-1),
+        last_tab_removed_(-1),
+        last_tab_moved_from_(-1),
+        last_tab_moved_to_(-1),
+        tabstrip_deleted_(false) {
+    tab_strip_->AddObserver(this);
+  }
+
+  virtual ~TestTabStripObserver() {
+    if (tab_strip_)
+      tab_strip_->RemoveObserver(this);
+  }
+
+  int last_tab_added() const { return last_tab_added_; }
+  int last_tab_removed() const { return last_tab_removed_; }
+  int last_tab_moved_from() const { return last_tab_moved_from_; }
+  int last_tab_moved_to() const { return last_tab_moved_to_; }
+  bool tabstrip_deleted() const { return tabstrip_deleted_; }
+
+ private:
+  // TabStripObserver overrides.
+  virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index) OVERRIDE {
+    last_tab_added_ = index;
+  }
+
+  virtual void TabStripMovedTab(TabStrip* tab_strip,
+                                int from_index,
+                                int to_index) OVERRIDE {
+    last_tab_moved_from_ = from_index;
+    last_tab_moved_to_ = to_index;
+  }
+
+  virtual void TabStripRemovedTabAt(TabStrip* tab_strip, int index) OVERRIDE {
+    last_tab_removed_ = index;
+  }
+
+  virtual void TabStripDeleted(TabStrip* tab_strip) OVERRIDE {
+    tabstrip_deleted_ = true;
+    tab_strip_ = NULL;
+  }
+
+  TabStrip* tab_strip_;
+  int last_tab_added_;
+  int last_tab_removed_;
+  int last_tab_moved_from_;
+  int last_tab_moved_to_;
+  bool tabstrip_deleted_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
+};
 
 class TabStripTest : public testing::Test {
  public:
@@ -51,19 +107,47 @@ TEST_F(TabStripTest, CreateTabForDragging) {
 }
 
 TEST_F(TabStripTest, AddTabAt) {
+  TestTabStripObserver observer(tab_strip_);
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   ASSERT_EQ(1, tab_strip_->tab_count());
+  EXPECT_EQ(0, observer.last_tab_added());
   Tab* tab = tab_strip_->tab_at(0);
   EXPECT_FALSE(tab == NULL);
 }
 
+// Confirms that TabStripObserver::TabStripDeleted() is sent.
+TEST_F(TabStripTest, TabStripDeleted) {
+  FakeBaseTabStripController* controller = new FakeBaseTabStripController;
+  TabStrip* tab_strip = new TabStrip(controller);
+  controller->set_tab_strip(tab_strip);
+  TestTabStripObserver observer(tab_strip);
+  delete tab_strip;
+  EXPECT_TRUE(observer.tabstrip_deleted());
+}
+
+TEST_F(TabStripTest, MoveTab) {
+  TestTabStripObserver observer(tab_strip_);
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  tab_strip_->AddTabAt(2, TabRendererData(), false);
+  ASSERT_EQ(3, tab_strip_->tab_count());
+  EXPECT_EQ(2, observer.last_tab_added());
+  Tab* tab = tab_strip_->tab_at(0);
+  tab_strip_->MoveTab(0, 1, TabRendererData());
+  EXPECT_EQ(0, observer.last_tab_moved_from());
+  EXPECT_EQ(1, observer.last_tab_moved_to());
+  EXPECT_EQ(tab, tab_strip_->tab_at(1));
+}
+
 // Verifies child views are deleted after an animation completes.
 TEST_F(TabStripTest, RemoveTab) {
+  TestTabStripObserver observer(tab_strip_);
   controller_->AddTab(0);
   controller_->AddTab(1);
   const int child_view_count = tab_strip_->child_count();
   EXPECT_EQ(2, tab_strip_->tab_count());
   controller_->RemoveTab(0);
+  EXPECT_EQ(0, observer.last_tab_removed());
   // When removing a tab the tabcount should immediately decrement.
   EXPECT_EQ(1, tab_strip_->tab_count());
   // But the number of views should remain the same (it's animatining closed).
@@ -77,6 +161,7 @@ TEST_F(TabStripTest, RemoveTab) {
   // Remove the last tab to make sure things are cleaned up correctly when
   // the TabStrip is destroyed and an animation is ongoing.
   controller_->RemoveTab(0);
+  EXPECT_EQ(0, observer.last_tab_removed());
 }
 
 TEST_F(TabStripTest, ImmersiveMode) {

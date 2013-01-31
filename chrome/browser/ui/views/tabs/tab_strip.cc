@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -608,6 +609,9 @@ TabStrip::TabStrip(TabStripController* controller)
 }
 
 TabStrip::~TabStrip() {
+  FOR_EACH_OBSERVER(TabStripObserver, observers_,
+                    TabStripDeleted(this));
+
   // The animations may reference the tabs. Shut down the animation before we
   // delete the tabs.
   StopAnimating(false);
@@ -622,6 +626,14 @@ TabStrip::~TabStrip() {
   // The children (tabs) may callback to us from their destructor. Delete them
   // so that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
+}
+
+void TabStrip::AddObserver(TabStripObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TabStrip::RemoveObserver(TabStripObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void TabStrip::SetLayoutType(TabStripLayoutType layout_type,
@@ -700,6 +712,9 @@ void TabStrip::AddTabAt(int model_index,
     DoLayout();
 
   SwapLayoutIfNecessary();
+
+  FOR_EACH_OBSERVER(TabStripObserver, observers_,
+                    TabStripAddedTabAt(this, model_index));
 }
 
 void TabStrip::MoveTab(int from_model_index,
@@ -724,6 +739,9 @@ void TabStrip::MoveTab(int from_model_index,
     newtab_button_->SetVisible(false);
   }
   SwapLayoutIfNecessary();
+
+  FOR_EACH_OBSERVER(TabStripObserver, observers_,
+                    TabStripMovedTab(this, from_model_index, to_model_index));
 }
 
 void TabStrip::RemoveTabAt(int model_index) {
@@ -743,6 +761,9 @@ void TabStrip::RemoveTabAt(int model_index) {
     StartRemoveTabAnimation(model_index);
   }
   SwapLayoutIfNecessary();
+
+  FOR_EACH_OBSERVER(TabStripObserver, observers_,
+                    TabStripRemovedTabAt(this, model_index));
 }
 
 void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
