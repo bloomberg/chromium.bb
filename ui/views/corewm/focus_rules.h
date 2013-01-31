@@ -49,18 +49,16 @@ class VIEWS_EXPORT FocusRules {
   virtual aura::Window* GetActivatableWindow(aura::Window* window) const = 0;
   virtual aura::Window* GetFocusableWindow(aura::Window* window) const = 0;
 
-  // Returns the next window to focus or activate in the event that |ignore| is
-  // no longer focus- or activatable. This function is called when something is
-  // happening to |ignore| that means it can no longer have focus or activation,
-  // including but not limited to:
+  // Returns the next window to activate in the event that |ignore| is no longer
+  // activatable. This function is called when something is happening to
+  // |ignore| that means it can no longer have focus or activation, including
+  // but not limited to:
   // - it or its parent hierarchy is being hidden, or removed from the
   //   RootWindow.
   // - it is being destroyed.
   // - it is being explicitly deactivated.
   // |ignore| cannot be NULL.
   virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* ignore) const = 0;
-  virtual aura::Window* GetNextFocusableWindow(
       aura::Window* ignore) const = 0;
 };
 

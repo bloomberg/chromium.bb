@@ -36,8 +36,6 @@ class VIEWS_EXPORT BaseFocusRules : public FocusRules {
   virtual aura::Window* GetFocusableWindow(aura::Window* window) const OVERRIDE;
   virtual aura::Window* GetNextActivatableWindow(
       aura::Window* ignore) const OVERRIDE;
-  virtual aura::Window* GetNextFocusableWindow(
-      aura::Window* ignore) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseFocusRules);

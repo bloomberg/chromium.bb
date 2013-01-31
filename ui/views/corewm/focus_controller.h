@@ -9,7 +9,6 @@
 #include "base/scoped_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/views_export.h"
 
@@ -36,8 +35,7 @@ class FocusRules;
 class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
                                      public aura::client::FocusClient,
                                      public ui::EventHandler,
-                                     public aura::WindowObserver,
-                                     public aura::EnvObserver {
+                                     public aura::WindowObserver {
  public:
   // |rules| cannot be NULL.
   explicit FocusController(FocusRules* rules);
@@ -81,11 +79,10 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
-
-  // Overridden from aura::EnvObserver:
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
+  virtual void OnWindowHierarchyChanging(
+      const HierarchyChangeParams& params) OVERRIDE;
+  virtual void OnWindowHierarchyChanged(
+      const HierarchyChangeParams& params) OVERRIDE;
 
   // Internal implementations that set the focused/active windows, fire events
   // etc. These functions must be called with valid focusable/activatable
@@ -94,9 +91,10 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   void SetActiveWindow(aura::Window* window);
 
   // Called when a window's disposition changed such that it and its hierarchy
-  // are no longer focusable/activatable. The system must determine what window
-  // to focus next based on rules.
-  void WindowLostFocusFromDispositionChange(aura::Window* window);
+  // are no longer focusable/activatable. |next| is a valid window that is used
+  // as a starting point for finding a window to focus next based on rules.
+  void WindowLostFocusFromDispositionChange(aura::Window* window,
+                                            aura::Window* next);
 
   // Called when an attempt is made to focus or activate a window via an input
   // event targeted at that window. Rules determine the best focusable window
