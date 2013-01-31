@@ -86,6 +86,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
       content::WebUI* webui,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnDialogCloseFromWebUI(
+      const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(content::WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
@@ -139,6 +141,13 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   // Whether beforeunload event has been fired and we have finished processing
   // beforeunload event.
   bool before_unload_fired_;
+
+  // Whether the dialog is closed from WebUI in response to a "DialogClose"
+  // message.
+  bool closed_via_webui_;
+
+  // A json string returned to WebUI from a "DialogClosed" message.
+  std::string dialog_close_retval_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };

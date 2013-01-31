@@ -49,7 +49,8 @@ WebDialogView::WebDialogView(
       delegate_(delegate),
       web_view_(new views::WebView(context)),
       is_attempting_close_dialog_(false),
-      before_unload_fired_(false) {
+      before_unload_fired_(false),
+      closed_via_webui_(false) {
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
   set_contents_view(web_view_);
@@ -225,6 +226,13 @@ void WebDialogView::OnDialogClosed(const std::string& json_retval) {
   }
 }
 
+void WebDialogView::OnDialogCloseFromWebUI(const std::string& json_retval) {
+  closed_via_webui_ = true;
+  dialog_close_retval_ = json_retval;
+  if (GetWidget())
+    GetWidget()->Close();
+}
+
 void WebDialogView::OnCloseContents(WebContents* source,
                                     bool* out_close_dialog) {
   if (delegate_)
@@ -275,7 +283,7 @@ void WebDialogView::CloseContents(WebContents* source) {
   bool close_dialog = false;
   OnCloseContents(source, &close_dialog);
   if (close_dialog)
-    OnDialogClosed(std::string());
+    OnDialogClosed(closed_via_webui_ ? dialog_close_retval_ : std::string());
 }
 
 content::WebContents* WebDialogView::OpenURLFromTab(

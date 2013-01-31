@@ -110,7 +110,7 @@ void WebDialogUI::OnDialogClosed(const ListValue* args) {
     if (args && !args->empty() && !args->GetString(0, &json_retval))
       NOTREACHED() << "Could not read JSON argument";
 
-    delegate->OnDialogClosed(json_retval);
+    delegate->OnDialogCloseFromWebUI(json_retval);
   }
 }
 

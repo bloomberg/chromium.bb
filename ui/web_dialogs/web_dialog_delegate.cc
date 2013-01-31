@@ -14,6 +14,11 @@ void WebDialogDelegate::GetMinimumDialogSize(gfx::Size* size) const {
   GetDialogSize(size);
 }
 
+void WebDialogDelegate::OnDialogCloseFromWebUI(
+    const std::string& json_retval) {
+  OnDialogClosed(json_retval);
+}
+
 bool WebDialogDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return false;
