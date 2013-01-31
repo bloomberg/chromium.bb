@@ -43,7 +43,7 @@ MEDIA_EXPORT extern const char kEnableWebAudioInput[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 
-MEDIA_EXPORT extern const char kEnableEncryptedMedia[];
+MEDIA_EXPORT extern const char kDisableEncryptedMedia[];
 
 MEDIA_EXPORT extern const char kEnableOpusPlayback[];
 

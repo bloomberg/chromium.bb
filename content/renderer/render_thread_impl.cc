@@ -671,7 +671,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableFullScreen));
 
   WebKit::WebRuntimeFeatures::enableEncryptedMedia(
-      command_line.HasSwitch(switches::kEnableEncryptedMedia));
+      !command_line.HasSwitch(switches::kDisableEncryptedMedia));
 
 #if defined(OS_ANDROID)
   WebRuntimeFeatures::enableWebAudio(
