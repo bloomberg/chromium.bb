@@ -22,6 +22,12 @@ var gDataStatusCallback = function(status) {};
 /** @private */
 var gDataCallback = function(data) {};
 
+/** @private */
+var gDtmfSender = null;
+
+/** @private */
+var gDtmfOnToneChange = function(tone) {};
+
 /**
  * Sets the transform to apply just before setting the local description and
  * sending to the peer.
@@ -71,6 +77,25 @@ function sendDataOnChannel(data) {
   if (gDataChannel == null)
     throw failTest('Trying to send data, but there is no DataChannel.');
   gDataChannel.send(data);
+}
+
+/**
+ * Sets the callback function that will receive DTMF sender ontonechange events.
+ * @param{function} ontonechange The function that will receive a string with
+ *     the tone that has just begun playout.
+ */
+function setOnToneChange(ontonechange) {
+  gDtmfOnToneChange = ontonechange;
+}
+
+/**
+ * Inserts DTMF tones on an active DTMF sender.
+ * @param{string} data The string that will be sent to the remote peer.
+ */
+function insertDtmf(tones, duration, interToneGap) {
+  if (gDtmfSender == null)
+    throw failTest('Trying to send DTMF, but there is no DTMF sender.');
+  gDtmfSender.insertDTMF(tones, duration, interToneGap);
 }
 
 // Public interface towards the other javascript files, such as
@@ -146,6 +171,18 @@ function closeDataChannel(peerConnection) {
     throw failTest('Closing DataChannel, but none exists.');
   debug('DataChannel with label ' + gDataChannel.label + ' is beeing closed.');
   gDataChannel.close();
+}
+
+function createDtmfSender(peerConnection) {
+  if (gDtmfSender != null)
+    throw failTest('Creating DTMF sender, but we already have one.');
+
+  var localStream = getLocalStream();
+  if (localStream == null)
+    throw failTest('Creating DTMF sender but local stream is null.');
+  local_audio_track = localStream.getAudioTracks()[0];
+  gDtmfSender = peerConnection.createDTMFSender(local_audio_track);
+  gDtmfSender.ontonechange = gDtmfOnToneChange;
 }
 
 // Internals.

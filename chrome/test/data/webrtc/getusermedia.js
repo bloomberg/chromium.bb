@@ -101,7 +101,7 @@ function addLocalStreamToPeerConnection(peerConnection) {
 
 /**
  * Removes the local stream from the peer connection.
- * @param{RTCPeerConnection} peerConnection
+ * @param{rtcpeerconnection} peerconnection
  */
 function removeLocalStreamFromPeerConnection(peerConnection) {
   if (gLocalStream == null)
@@ -113,6 +113,13 @@ function removeLocalStreamFromPeerConnection(peerConnection) {
     throw failTest('Could not remove stream: ' + exception);
   }
   debug('Removed local stream.');
+}
+
+/**
+ * Returns the current local stream - |gLocalStream|.
+ */
+function getLocalStream() {
+  return gLocalStream;
 }
 
 // Internals.

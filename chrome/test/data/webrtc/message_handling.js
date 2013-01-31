@@ -62,6 +62,12 @@ var gAutoAddLocalToPeerConnectionStreamWhenCalled = true;
 var gDataChannel = null;
 
 /**
+ * The DTMF sender.
+ * @private
+ */
+var gDtmfSender = null;
+
+/**
  * We need a STUN server for some API calls.
  * @private
  */
@@ -281,6 +287,32 @@ function closeDataChannelOnPeerConnection() {
 
   closeDataChannel(gPeerConnection);
   returnToTest('ok-datachannel-close');
+}
+
+/**
+ * Creates a DTMF sender on the current PeerConnection.
+ * Returns ok-dtmfsender-created on success.
+ */
+function createDtmfSenderOnPeerConnection() {
+  if (gPeerConnection == null)
+    throw failTest('Tried to create DTMF sender, ' +
+        'but have no peer connection.');
+
+  createDtmfSender(gPeerConnection);
+  returnToTest('ok-dtmfsender-created');
+}
+
+/**
+ * Send DTMF tones on the gDtmfSender.
+ * Returns ok-dtmf-sent on success.
+ */
+function insertDtmfOnSender(tones, duration, interToneGap) {
+  if (gDtmfSender == null)
+    throw failTest('Tried to insert DTMF tones, ' +
+        'but have no DTMF sender.');
+
+  insertDtmf(tones, duration, interToneGap);
+  returnToTest('ok-dtmf-sent');
 }
 
 // Public interface to signaling implementations, such as JSEP.

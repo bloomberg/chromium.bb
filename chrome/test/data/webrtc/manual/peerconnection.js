@@ -95,6 +95,18 @@ function sendDataFromHere() {
   sendDataOnChannel(data);
 }
 
+function createDtmfSenderFromHere() {
+  ensureHasPeerConnection_();
+  createDtmfSenderOnPeerConnection();
+}
+
+function insertDtmfFromHere() {
+  var tones = $('dtmf-tones').value;
+  var duration = $('dtmf-tones-duration').value;
+  var gap = $('dtmf-tones-gap').value;
+  insertDtmfOnSender(tones, duration, gap);
+}
+
 function forceOpusChanged() {
   var forceOpus = $('force-opus').checked;
   if (forceOpus) {
@@ -153,6 +165,7 @@ window.onload = function() {
   updateGetUserMediaConstraints();
   doNotAutoAddLocalStreamWhenCalled();
   hookupDataChannelCallbacks_();
+  hookupDtmfSenderCallback_();
 };
 
 /**
@@ -274,6 +287,15 @@ function hookupDataChannelCallbacks_() {
     debug('Received ' + data_message.data);
     $('data-channel-receive').value =
       data_message.data + '\n' + $('data-channel-receive').value;
+  });
+}
+
+/** @private */
+function hookupDtmfSenderCallback_() {
+  setOnToneChange(function(tone) {
+    debug('Sent DTMF tone: ' + tone.tone);
+    $('dtmf-tones-sent').value =
+      tone.tone + '\n' + $('dtmf-tones-sent').value;
   });
 }
 

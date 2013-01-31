@@ -69,6 +69,18 @@
       status:
       <input type="text" id="data-channel-status" size="10" value="not created"
           disabled="true" /><br/>
+      Remote Stream:
+      <button onclick="toggleRemoteVideoFromHere();">Toggle Video</button>
+      <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button><br/>
+      DTMF Sender:
+      <button onclick="createDtmfSenderFromHere();">Create</button>
+      tones:
+      <input type="text" id="dtmf-tones" size="10" value="123,abc" />
+      duration(ms):
+      <input type="text" id="dtmf-tones-duration" size="10" value="100" />
+      gap(ms):
+      <input type="text" id="dtmf-tones-gap" size="10" value="50" />
+      <button onclick="insertDtmfFromHere();">Send</button><br/>   
       Options:
       <input type="checkbox" id="force-opus" onclick="forceOpusChanged();"/>
           Force Opus in Outgoing SDP<br/>
@@ -82,6 +94,9 @@
           </video><br/>
       <h2>Received on data channel</h2>
       <textarea id="data-channel-receive" rows="7" cols="40" disabled="true">
+          </textarea>
+      <h2>Sent DTMF tones</h2>      
+      <textarea id="dtmf-tones-sent" rows="7" cols="40" disabled="true">
           </textarea>
 
       <h2>Debug</h2>
