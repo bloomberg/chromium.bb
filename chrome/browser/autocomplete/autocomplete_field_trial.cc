@@ -29,7 +29,7 @@ static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 static const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 static const char kHQPReplaceHUPScoringFieldTrialName[] =
-    "OmniboxHQPReplaceHUPRearrangeNumComponents";
+    "OmniboxHQPReplaceHUPHostFix";
 static const char kHQPOnlyCountMatchesAtWordBoundariesFieldTrialName[] =
     "OmniboxHQPOnlyCountMatchesAtWordBoundaries";
 
@@ -79,12 +79,12 @@ const base::FieldTrial::Probability
 
 // For the field trial that removes searching/scoring URLs from
 // HistoryURL provider and adds a HistoryURL-provider-like scoring
-// mode to HistoryQuick provider, put 0% ( = 0/100 ) of the users in
+// mode to HistoryQuick provider, put 25% ( = 25/100 ) of the users in
 // the experiment group.
 const base::FieldTrial::Probability
     kHQPReplaceHUPScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHQPReplaceHUPScoringFieldTrialExperimentFraction = 0;
+    kHQPReplaceHUPScoringFieldTrialExperimentFraction = 25;
 
 // For the field trial that ignores all mid-term matches in HistoryQuick
 // provider, put 0% ( = 0/100 ) of the users in the experiment group.
