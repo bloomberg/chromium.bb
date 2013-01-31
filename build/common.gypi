@@ -618,6 +618,10 @@
           # incorrect results when passed to pkg-config
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/arm-sysroot',
         }], # OS=="linux" and target_arch=="arm" and chromeos==0
+
+        ['target_arch=="mipsel"', {
+          'sysroot': '<!(cd <(DEPTH) && pwd -P)/native_client/toolchain/linux_mips-trusted/sysroot',
+        }],
       ],
 
       # Set this to 1 to use the Google-internal file containing
@@ -1036,6 +1040,16 @@
           }, {
             'gcc_version%': 0,
           }],
+          ['target_arch=="mipsel"', {
+            'werror%': '',
+            'disable_nacl%': 1,
+            'linux_use_gold_binary%': 0,
+            'linux_use_gold_flags%': 0,
+            'nacl_untrusted_build%': 0,
+            'linux_use_tcmalloc%': 0,
+            'linux_breakpad%': 0,
+            'sysroot%': '<(sysroot)',
+          }],
           # All Chrome builds have breakpad symbols, but only process the
           # symbols from official builds.
           ['(branding=="Chrome" and buildtype=="Official")', {
@@ -1301,8 +1315,9 @@
         'use_cups%': 0,
       }],
 
-      # Native Client glibc toolchain is enabled by default except on arm.
-      ['target_arch=="arm"', {
+      # Native Client glibc toolchain is enabled
+      # by default except on arm and mips.
+      ['target_arch=="arm" or target_arch=="mipsel"', {
         'disable_glibc%': 1,
       }, {
         'disable_glibc%': 0,
@@ -3943,6 +3958,16 @@
         ['CC.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which gcc))'],
         ['CXX.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which g++))'],
         ['LINK.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which g++))'],
+      ],
+    }],
+    ['target_arch=="mipsel"', {
+      'make_global_settings': [
+        ['CC', '<(sysroot)/../bin/mipsel-linux-gnu-gcc'],
+        ['CXX', '<(sysroot)/../bin/mipsel-linux-gnu-g++'],
+        ['LINK', '$(CXX)'],
+        ['CC.host', '<!(which gcc)'],
+        ['CXX.host', '<!(which g++)'],
+        ['LINK.host', '<!(which g++)'],
       ],
     }],
   ],
