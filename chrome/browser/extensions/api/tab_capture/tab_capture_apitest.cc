@@ -22,10 +22,18 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, TabCapture) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
-  ASSERT_TRUE(RunExtensionTest("tab_capture/experimental")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
+                                  "api_tests.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, EndToEnd) {
+  extensions::FeatureSwitch::ScopedOverride tab_capture(
+      extensions::FeatureSwitch::tab_capture(), true);
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
+                                  "end_to_end.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, TabCapturePermissionsTestFlagOn) {
