@@ -14,9 +14,9 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "cc/switches.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/compositor_util.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -106,7 +106,7 @@ std::string GPUDeviceToString(const GPUInfo::GPUDevice& gpu) {
 }
 
 DictionaryValue* GpuInfoAsDictionaryValue() {
-  GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
+  GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   ListValue* basic_info = new ListValue();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
@@ -178,7 +178,7 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
 // Determine if accelerated-2d-canvas is supported, which depends on whether
 // lose_context could happen and whether skia is the backend.
 bool SupportsAccelerated2dCanvas() {
-  if (GpuDataManager::GetInstance()->GetGPUInfo().can_lose_context)
+  if (GpuDataManagerImpl::GetInstance()->GetGPUInfo().can_lose_context)
     return false;
 #if defined(USE_SKIA)
   return true;
@@ -189,9 +189,10 @@ bool SupportsAccelerated2dCanvas() {
 
 Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool gpu_access_blocked = !GpuDataManager::GetInstance()->GpuAccessAllowed();
+  bool gpu_access_blocked =
+      !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed();
 
-  uint32 flags = GpuDataManager::GetInstance()->GetBlacklistedFeatures();
+  uint32 flags = GpuDataManagerImpl::GetInstance()->GetBlacklistedFeatures();
   DictionaryValue* status = new DictionaryValue();
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
@@ -336,7 +337,8 @@ Value* GetFeatureStatus() {
           else
             status += "_off";
         }
-      } else if (GpuDataManager::GetInstance()->ShouldUseSoftwareRendering()) {
+      } else if (GpuDataManagerImpl::GetInstance()->
+            ShouldUseSoftwareRendering()) {
         status = "unavailable_software";
       } else if (kGpuFeatureInfo[i].blocked ||
                  gpu_access_blocked) {
@@ -370,7 +372,7 @@ Value* GetFeatureStatus() {
           NewStatusValue(kGpuFeatureInfo[i].name.c_str(), status.c_str()));
     }
     GpuSwitchingOption gpu_switching_option =
-        GpuDataManager::GetInstance()->GetGpuSwitchingOption();
+        GpuDataManagerImpl::GetInstance()->GetGpuSwitchingOption();
     if (gpu_switching_option != GPU_SWITCHING_OPTION_UNKNOWN) {
       std::string gpu_switching;
       switch (gpu_switching_option) {
@@ -395,7 +397,7 @@ Value* GetFeatureStatus() {
   // Build the problems list.
   {
     ListValue* problem_list =
-        GpuDataManager::GetInstance()->GetBlacklistReasons();
+        GpuDataManagerImpl::GetInstance()->GetBlacklistReasons();
 
     if (gpu_access_blocked) {
       DictionaryValue* problem = new DictionaryValue();
@@ -469,7 +471,7 @@ GpuMessageHandler::GpuMessageHandler()
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
-  GpuDataManager::GetInstance()->RemoveObserver(this);
+  GpuDataManagerImpl::GetInstance()->RemoveObserver(this);
 }
 
 /* BrowserBridge.callAsync prepends a requestID to these messages. */
@@ -536,12 +538,12 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
 
   // Watch for changes in GPUInfo
   if (!observing_)
-    GpuDataManager::GetInstance()->AddObserver(this);
+    GpuDataManagerImpl::GetInstance()->AddObserver(this);
   observing_ = true;
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.
-  GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 
   // Run callback immediately in case the info is ready and no update in the
   // future.
@@ -566,7 +568,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
   dict->SetString("graphics_backend", "Core Graphics");
 #endif
   dict->SetString("blacklist_version",
-      GpuDataManager::GetInstance()->GetBlacklistVersion());
+      GpuDataManagerImpl::GetInstance()->GetBlacklistVersion());
 
   return dict;
 }
@@ -574,7 +576,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return GpuDataManager::GetInstance()->GetLogMessages();
+  return GpuDataManagerImpl::GetInstance()->GetLogMessages();
 }
 
 void GpuMessageHandler::OnGpuInfoUpdate() {

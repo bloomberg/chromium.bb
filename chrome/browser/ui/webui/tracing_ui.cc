@@ -21,8 +21,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/trace_controller.h"
 #include "content/public/browser/trace_subscriber.h"
@@ -43,7 +41,6 @@
 #endif
 
 using content::BrowserThread;
-using content::GpuDataManager;
 using content::TraceController;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -227,8 +224,6 @@ void TracingMessageHandler::OnTracingControllerInitialized(
           CommandLine::ForCurrentProcess()->GetCommandLineString());
     }
 
-    dict->SetString("blacklist_version",
-        GpuDataManager::GetInstance()->GetBlacklistVersion());
     web_ui()->CallJavascriptFunction("tracingController.onClientInfoUpdate",
                                      *dict);
   }

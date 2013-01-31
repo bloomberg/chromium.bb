@@ -37,17 +37,7 @@ class GpuDataManager {
   virtual void InitializeForTesting(const std::string& gpu_blacklist_json,
                                     const content::GPUInfo& gpu_info) = 0;
 
-  virtual std::string GetBlacklistVersion() const = 0;
-
   virtual GpuFeatureType GetBlacklistedFeatures() const = 0;
-
-  virtual GpuSwitchingOption GetGpuSwitchingOption() const = 0;
-
-  // Returns the reasons for the latest run of blacklisting decisions.
-  // For the structure of returned value, see documentation for
-  // GpuBlacklist::GetBlacklistedReasons().
-  // Caller is responsible to release the returned value.
-  virtual base::ListValue* GetBlacklistReasons() const = 0;
 
   virtual GPUInfo GetGPUInfo() const = 0;
 
@@ -78,13 +68,6 @@ class GpuDataManager {
   // Register a path to the SwiftShader software renderer.
   virtual void RegisterSwiftShaderPath(const FilePath& path) = 0;
 
-  virtual void AddLogMessage(
-      int level, const std::string& header, const std::string& message) = 0;
-
-  // Returns a new copy of the ListValue.  Caller is responsible to release
-  // the returned value.
-  virtual base::ListValue* GetLogMessages() const = 0;
-
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) = 0;
@@ -97,8 +80,6 @@ class GpuDataManager {
   // Allows a given domain previously blocked from accessing 3D APIs
   // to access them again.
   virtual void UnblockDomainFrom3DAPIs(const GURL& url) = 0;
-  // Disables domain blocking for 3D APIs. For use only in tests.
-  virtual void DisableDomainBlockingFor3DAPIsForTesting() = 0;
 
   // Disable the gpu process watchdog thread.
   virtual void DisableGpuWatchdog() = 0;
