@@ -1876,7 +1876,8 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
     return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
-  if (is_loading_)
+  // Do not show loading cursor when the cursor is currently hidden.
+  if (is_loading_ && cursor != ui::kCursorNone)
     cursor = ui::kCursorPointer;
 
   aura::client::CursorClient* cursor_client =
