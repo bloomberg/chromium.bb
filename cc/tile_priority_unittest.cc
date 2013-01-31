@@ -10,7 +10,6 @@ namespace cc {
 namespace {
 
 TEST(TilePriorityTest, TimeForBoundsToIntersectWithScroll) {
-  const float inf = std::numeric_limits<float>::infinity();
   gfx::Rect target(0, 0, 800, 600);
   gfx::Rect current(100, 100, 100, 100);
   EXPECT_EQ(0, TilePriority::TimeForBoundsToIntersect(
@@ -21,16 +20,15 @@ TEST(TilePriorityTest, TimeForBoundsToIntersectWithScroll) {
       gfx::Rect(400, 400, 100, 100), current, 1, target));
 
   current = gfx::Rect(-300, -300, 100, 100);
-  EXPECT_EQ(inf, TilePriority::TimeForBoundsToIntersect(
+  EXPECT_EQ(1000, TilePriority::TimeForBoundsToIntersect(
       gfx::Rect(0, 0, 100, 100), current, 1, target));
-  EXPECT_EQ(inf, TilePriority::TimeForBoundsToIntersect(
+  EXPECT_EQ(1000, TilePriority::TimeForBoundsToIntersect(
       gfx::Rect(-200, -200, 100, 100), current, 1, target));
   EXPECT_EQ(2, TilePriority::TimeForBoundsToIntersect(
       gfx::Rect(-400, -400, 100, 100), current, 1, target));
 }
 
 TEST(TilePriorityTest, TimeForBoundsToIntersectWithScale) {
-  const float inf = std::numeric_limits<float>::infinity();
   gfx::Rect target(0, 0, 800, 600);
   gfx::Rect current(100, 100, 100, 100);
   EXPECT_EQ(0, TilePriority::TimeForBoundsToIntersect(
@@ -41,7 +39,7 @@ TEST(TilePriorityTest, TimeForBoundsToIntersectWithScale) {
       gfx::Rect(400, 400, 400, 400), current, 1, target));
 
   current = gfx::Rect(-300, -300, 100, 100);
-  EXPECT_EQ(inf, TilePriority::TimeForBoundsToIntersect(
+  EXPECT_EQ(1000, TilePriority::TimeForBoundsToIntersect(
       gfx::Rect(-400, -400, 300, 300), current, 1, target));
   EXPECT_EQ(8, TilePriority::TimeForBoundsToIntersect(
       gfx::Rect(-275, -275, 50, 50), current, 1, target));

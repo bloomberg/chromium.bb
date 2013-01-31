@@ -117,22 +117,13 @@ class CC_EXPORT TileManager {
   void RegisterTile(Tile* tile);
   void UnregisterTile(Tile* tile);
   void WillModifyTilePriority(
-      Tile* tile, WhichTree tree, const TilePriority& new_priority) {
-    // TODO(nduca): Do something smarter if reprioritization turns out to be
-    // costly.
-    ScheduleManageTiles();
-  }
+      Tile* tile, WhichTree tree, const TilePriority& new_priority);
 
  private:
   void SortTiles();
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);
-  void ScheduleManageTiles() {
-    if (manage_tiles_pending_)
-      return;
-    client_->ScheduleManageTiles();
-    manage_tiles_pending_ = true;
-  }
+  void ScheduleManageTiles();
   void DispatchMoreTasks();
   void GatherPixelRefsForTile(Tile* tile);
   void DispatchImageDecodeTasksForTile(Tile* tile);

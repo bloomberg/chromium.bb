@@ -4,7 +4,6 @@
 
 #include "cc/picture_layer_tiling.h"
 
-#include "base/debug/trace_event.h"
 #include "cc/math_util.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
@@ -329,7 +328,6 @@ void PictureLayerTiling::UpdateTilePriorities(
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
     double time_delta) {
-  TRACE_EVENT0("cc", "PictureLayerTiling::UpdateTilePriorities");
   gfx::Rect content_rect = ContentRect();
   if (content_rect.IsEmpty())
     return;
@@ -396,12 +394,12 @@ void PictureLayerTiling::UpdateTilePriorities(
           last_scale,
           last_scale) + last_offset;
 
-      float distance_to_visible_in_pixels =
-          TilePriority::manhattanDistance(current_screen_rect, view_rect);
-
       float time_to_visible_in_seconds =
           TilePriority::TimeForBoundsToIntersect(
               last_screen_rect, current_screen_rect, time_delta, view_rect);
+      float distance_to_visible_in_pixels =
+          TilePriority::manhattanDistance(current_screen_rect, view_rect);
+
       TilePriority priority(
           resolution_,
           time_to_visible_in_seconds,
@@ -433,12 +431,11 @@ void PictureLayerTiling::UpdateTilePriorities(
       gfx::RectF last_screen_rect  = MathUtil::mapClippedRect(
           last_screen_transform, last_layer_content_rect);
 
-      float distance_to_visible_in_pixels =
-          TilePriority::manhattanDistance(current_screen_rect, view_rect);
-
       float time_to_visible_in_seconds =
           TilePriority::TimeForBoundsToIntersect(
               last_screen_rect, current_screen_rect, time_delta, view_rect);
+      float distance_to_visible_in_pixels =
+          TilePriority::manhattanDistance(current_screen_rect, view_rect);
 
       TilePriority priority(
           resolution_,

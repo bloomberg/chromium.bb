@@ -69,15 +69,8 @@ inline bool operator!=(const RectF& lhs, const RectF& rhs) {
   return !(lhs == rhs);
 }
 
-inline RectF operator+(const RectF& lhs, const Vector2dF& rhs) {
-  return RectF(lhs.x() + rhs.x(), lhs.y() + rhs.y(),
-      lhs.width(), lhs.height());
-}
-
-inline RectF operator-(const RectF& lhs, const Vector2dF& rhs) {
-  return RectF(lhs.x() - rhs.x(), lhs.y() - rhs.y(),
-      lhs.width(), lhs.height());
-}
+UI_EXPORT RectF operator+(const RectF& lhs, const Vector2dF& rhs);
+UI_EXPORT RectF operator-(const RectF& lhs, const Vector2dF& rhs);
 
 inline RectF operator+(const Vector2dF& lhs, const RectF& rhs) {
   return rhs + lhs;
@@ -86,11 +79,7 @@ inline RectF operator+(const Vector2dF& lhs, const RectF& rhs) {
 UI_EXPORT RectF IntersectRects(const RectF& a, const RectF& b);
 UI_EXPORT RectF UnionRects(const RectF& a, const RectF& b);
 UI_EXPORT RectF SubtractRects(const RectF& a, const RectF& b);
-
-inline RectF ScaleRect(const RectF& r, float x_scale, float y_scale) {
-  return RectF(r.x() * x_scale, r.y() * y_scale,
-       r.width() * x_scale, r.height() * y_scale);
-}
+UI_EXPORT RectF ScaleRect(const RectF& r, float x_scale, float y_scale);
 
 inline RectF ScaleRect(const RectF& r, float scale) {
   return ScaleRect(r, scale, scale);
