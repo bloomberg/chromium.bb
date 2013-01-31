@@ -323,6 +323,9 @@ button.  There are now a bunch of empty lines added in between.</p>
 <h3><a name="bugfix-removeMarkersUponEditing">bugfix/removeMarkersUponEditing</a> (Edward Christie)</h3>
 <p>TODO</p>
 
+<h3><a name="bugfix-removeApostropheMarker">bugfix/removeApostropheMarker</a> (Tianyin Zhang; D38435539)</h3>
+<p>Open <a href="repros/removeApostropheMarker.html">this link</a> in test_shell and type the word "shouldn't" in the DIV[contenteditable]. Then backspace to remove the character 't', and then hit 'space'. Note that the red squiggly is displayed under "shouldn'".  Now hit 'backspace', 't' and then 'space'.  Note that the red squiggly does not go away. This bug happens when AsynchronousSpellCheckEnabled is off. </p>
+
 <h3><a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a> (Shezan Baig; D32861389)</h3>
 <p>This bug is somewhat hard to reproduce, the window size needs to be just
 about right.</p>
