@@ -136,10 +136,12 @@ FilePath MediaGalleryPrefInfo::AbsolutePath() const {
   return base_path.Append(path);
 }
 
+MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}
+
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
   AddDefaultGalleriesIfFreshProfile();
-  InitFromPrefs();
+  InitFromPrefs(false /*no notification*/);
 }
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
@@ -171,28 +173,46 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
   }
 }
 
-void MediaGalleriesPreferences::InitFromPrefs() {
+void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {
   known_galleries_.clear();
   device_map_.clear();
 
   PrefService* prefs = profile_->GetPrefs();
   const ListValue* list = prefs->GetList(
       prefs::kMediaGalleriesRememberedGalleries);
-  if (!list)
-    return;
+  if (list) {
+    for (ListValue::const_iterator it = list->begin();
+         it != list->end(); ++it) {
+      const DictionaryValue* dict = NULL;
+      if (!(*it)->GetAsDictionary(&dict))
+        continue;
 
-  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
-    const DictionaryValue* dict = NULL;
-    if (!(*it)->GetAsDictionary(&dict))
-      continue;
+      MediaGalleryPrefInfo gallery_info;
+      if (!PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info))
+        continue;
 
-    MediaGalleryPrefInfo gallery_info;
-    if (!PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info))
-      continue;
-
-    known_galleries_[gallery_info.pref_id] = gallery_info;
-    device_map_[gallery_info.device_id].insert(gallery_info.pref_id);
+      known_galleries_[gallery_info.pref_id] = gallery_info;
+      device_map_[gallery_info.device_id].insert(gallery_info.pref_id);
+    }
   }
+  if (notify_observers)
+    NotifyChangeObservers();
+}
+
+void MediaGalleriesPreferences::NotifyChangeObservers() {
+  FOR_EACH_OBSERVER(GalleryChangeObserver,
+                    gallery_change_observers_,
+                    OnGalleryChanged(this));
+}
+
+void MediaGalleriesPreferences::AddGalleryChangeObserver(
+    GalleryChangeObserver* observer) {
+  gallery_change_observers_.AddObserver(observer);
+}
+
+void MediaGalleriesPreferences::RemoveGalleryChangeObserver(
+    GalleryChangeObserver* observer) {
+  gallery_change_observers_.RemoveObserver(observer);
 }
 
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
@@ -281,7 +301,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
           }
           if (update_gallery_name)
             dict->SetString(kMediaGalleriesDisplayNameKey, display_name);
-          InitFromPrefs();
+          InitFromPrefs(true /* notify observers */);
           break;
         }
       }
@@ -304,7 +324,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
   ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
   ListValue* list = update.Get();
   list->Append(CreateGalleryPrefInfoDictionary(gallery_info));
-  InitFromPrefs();
+  InitFromPrefs(true /* notify observers */);
 
   return gallery_info.pref_id;
 }
@@ -342,7 +362,7 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
       } else {
         list->Erase(iter, NULL);
       }
-      InitFromPrefs();
+      InitFromPrefs(true /* notify observers */);
       return;
     }
   }

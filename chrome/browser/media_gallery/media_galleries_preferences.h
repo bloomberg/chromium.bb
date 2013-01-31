@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
@@ -75,8 +76,19 @@ typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 // user profile.
 class MediaGalleriesPreferences : public ProfileKeyedService {
  public:
+  class GalleryChangeObserver {
+    public:
+     virtual void OnGalleryChanged(MediaGalleriesPreferences* pref) {}
+
+    protected:
+     virtual ~GalleryChangeObserver();
+  };
+
   explicit MediaGalleriesPreferences(Profile* profile);
   virtual ~MediaGalleriesPreferences();
+
+  void AddGalleryChangeObserver(GalleryChangeObserver* observer);
+  void RemoveGalleryChangeObserver(GalleryChangeObserver* observer);
 
   // Lookup a media gallery and fill in information about it and return true.
   // If the media gallery does not already exist, fill in as much of the
@@ -90,12 +102,14 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
       const std::string& device_id) const;
 
   // Teaches the registry about a new gallery.
+  // Returns the gallery's pref id.
   MediaGalleryPrefId AddGallery(const std::string& device_id,
                                 const string16& display_name,
                                 const FilePath& relative_path,
                                 bool user_added);
 
   // Teach the registry about a user added registry simply from the path.
+  // Returns the gallery's pref id.
   MediaGalleryPrefId AddGalleryByPath(const FilePath& path);
 
   // Removes the gallery identified by |id| from the store.
@@ -130,7 +144,13 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   void AddDefaultGalleriesIfFreshProfile();
 
   // Builds |known_galleries_| from the persistent store.
-  void InitFromPrefs();
+  // Notifies GalleryChangeObservers if |notify_observers| is true.
+  void InitFromPrefs(bool notify_observers);
+
+  // Notifies |gallery_change_observers_| about changes in |known_galleries_|.
+  void NotifyChangeObservers();
+
+  extensions::ExtensionPrefs* GetExtensionPrefs() const;
 
   // The profile that owns |this|.
   Profile* profile_;
@@ -142,7 +162,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // All pref ids in |device_map_| are also in |known_galleries_|.
   DeviceIdPrefIdsMap device_map_;
 
-  extensions::ExtensionPrefs* GetExtensionPrefs() const;
+  ObserverList<GalleryChangeObserver> gallery_change_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferences);
 };
