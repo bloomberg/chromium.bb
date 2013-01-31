@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace captive_portal {
@@ -78,6 +79,8 @@ class CaptivePortalDetectorTest : public testing::Test,
     EXPECT_FALSE(FetchingURL());
     EXPECT_EQ(1, client.num_results_received());
     EXPECT_EQ(expected_results.result, client.captive_portal_results().result);
+    EXPECT_EQ(expected_results.response_code,
+              client.captive_portal_results().response_code);
     EXPECT_EQ(expected_results.retry_after_delta,
               client.captive_portal_results().retry_after_delta);
   }
@@ -114,25 +117,31 @@ class CaptivePortalDetectorTest : public testing::Test,
 TEST_F(CaptivePortalDetectorTest, CaptivePortalResultCodes) {
   CaptivePortalDetector::Results results;
   results.result = RESULT_INTERNET_CONNECTED;
+  results.response_code = 204;
 
   RunTest(results, net::OK, 204, NULL);
 
   // The server may return an HTTP error when it's acting up.
   results.result = RESULT_NO_RESPONSE;
+  results.response_code = 500;
   RunTest(results, net::OK, 500, NULL);
 
   // Generic network error case.
   results.result = RESULT_NO_RESPONSE;
-  RunTest(results, net::ERR_TIMED_OUT, -1, NULL);
+  results.response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
+  RunTest(results, net::ERR_TIMED_OUT, net::URLFetcher::RESPONSE_CODE_INVALID,
+          NULL);
 
   // In the general captive portal case, the portal will return a page with a
   // 200 status.
   results.result = RESULT_BEHIND_CAPTIVE_PORTAL;
+  results.response_code = 200;
   RunTest(results, net::OK, 200, NULL);
 
   // Some captive portals return 511 instead, to advertise their captive
   // portal-ness.
   results.result = RESULT_BEHIND_CAPTIVE_PORTAL;
+  results.response_code = 511;
   RunTest(results, net::OK, 511, NULL);
 }
 
@@ -144,10 +153,12 @@ TEST_F(CaptivePortalDetectorTest, CaptivePortalRetryAfterSeconds) {
   // Check that Retry-After headers work both on the first request to return a
   // result and on subsequent requests.
   results.result = RESULT_NO_RESPONSE;
+  results.response_code = 503;
   results.retry_after_delta = base::TimeDelta::FromSeconds(101);
   RunTest(results, net::OK, 503, retry_after);
 
   results.result = RESULT_INTERNET_CONNECTED;
+  results.response_code = 204;
   results.retry_after_delta = base::TimeDelta();
   RunTest(results, net::OK, 204, NULL);
 }
@@ -170,6 +181,7 @@ TEST_F(CaptivePortalDetectorTest, CaptivePortalRetryAfterDate) {
   SetTime(start_time);
 
   results.result = RESULT_NO_RESPONSE;
+  results.response_code = 503;
   results.retry_after_delta = retry_after_time - start_time;
   RunTest(results, net::OK, 503, retry_after);
 }
@@ -180,6 +192,7 @@ TEST_F(CaptivePortalDetectorTest, CaptivePortalRetryAfterInvalid) {
   CaptivePortalDetector::Results results;
 
   results.result = RESULT_NO_RESPONSE;
+  results.response_code = 503;
   RunTest(results, net::OK, 503, retry_after);
 }
 
@@ -187,6 +200,7 @@ TEST_F(CaptivePortalDetectorTest, Cancel) {
   RunCancelTest();
   CaptivePortalDetector::Results results;
   results.result = RESULT_INTERNET_CONNECTED;
+  results.response_code = 204;
   RunTest(results, net::OK, 204, NULL);
 }
 

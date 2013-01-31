@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -176,9 +177,9 @@ class SigninScreenHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   virtual void UpdateState(NetworkStateInformer::State state,
-                           const std::string& network_name,
-                           const std::string& reason,
-                           ConnectionType last_network_type) OVERRIDE;
+                           const std::string& service_path,
+                           ConnectionType connection_type,
+                           const std::string& reason) OVERRIDE;
 
  private:
   enum UIState {
@@ -197,9 +198,9 @@ class SigninScreenHandler
   void UpdateUIState(UIState ui_state, DictionaryValue* params);
 
   void UpdateStateInternal(NetworkStateInformer::State state,
-                           const std::string network_name,
+                           const std::string service_path,
+                           ConnectionType connection_type,
                            const std::string reason,
-                           ConnectionType last_network_type,
                            bool force_update);
   void ReloadGaiaScreen();
   void ScheduleGaiaFrameReload();
@@ -275,7 +276,6 @@ class SigninScreenHandler
   void HandleAccountPickerReady(const base::ListValue* args);
   void HandleWallpaperReady(const base::ListValue* args);
   void HandleLoginWebuiReady(const base::ListValue* args);
-  void HandleLoginRequestNetworkState(const base::ListValue* args);
   void HandleDemoWebuiReady(const base::ListValue* args);
   void HandleSignOutUser(const base::ListValue* args);
   void HandleUserImagesLoaded(const base::ListValue* args);
@@ -312,13 +312,6 @@ class SigninScreenHandler
   // (i)   log in is restricted to some user list,
   // (ii)  all users in the restricted list are present.
   bool AllWhitelistedUsersPresent();
-
-  // Sends network state to a WebUI |callback|.
-  void SendState(const std::string& callback,
-                 NetworkStateInformer::State state,
-                 const std::string& network_name,
-                 const std::string& reason,
-                 ConnectionType last_network_type);
 
   // Cancels password changed flow - switches back to login screen.
   // Called as a callback after cookies are cleared.

@@ -10,8 +10,11 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
+#include "net/http/http_status_code.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using captive_portal::CaptivePortalDetector;
@@ -31,22 +34,30 @@ const int kMinTimeBetweenAttemptsSec = 3;
 // Timeout for a portal check.
 const int kRequestTimeoutSec = 10;
 
-std::string CaptivePortalStateString(
-    NetworkPortalDetector::CaptivePortalState state) {
-  switch (state) {
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATE_UNKNOWN:
+// Delay before portal detection caused by changes in proxy settings.
+const int kProxyChangeDelayMs = 500;
+
+std::string CaptivePortalStatusString(
+    NetworkPortalDetector::CaptivePortalStatus status) {
+  switch (status) {
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
       return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_UNKNOWN);
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATE_OFFLINE:
+          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNKNOWN);
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
       return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_OFFLINE);
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATE_ONLINE:
-      return l10n_util::GetStringUTF8(IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_ONLINE);
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATE_PORTAL:
-      return l10n_util::GetStringUTF8(IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_PORTAL);
+          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_OFFLINE);
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_ONLINE);
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PORTAL);
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
   }
   return l10n_util::GetStringUTF8(
-      IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_UNRECOGNIZED);
+      IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNRECOGNIZED);
 }
 
 NetworkPortalDetector* g_network_portal_detector = NULL;
@@ -63,6 +74,16 @@ NetworkPortalDetector::NetworkPortalDetector(
           base::TimeDelta::FromSeconds(kMinTimeBetweenAttemptsSec)),
       request_timeout_(base::TimeDelta::FromSeconds(kRequestTimeoutSec)) {
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTH_SUPPLIED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTH_CANCELLED,
+                 content::NotificationService::AllSources());
 }
 
 NetworkPortalDetector::~NetworkPortalDetector() {
@@ -114,11 +135,11 @@ NetworkPortalDetector::GetCaptivePortalState(const Network* network) {
   DCHECK(CalledOnValidThread());
 
   if (!network)
-    return CAPTIVE_PORTAL_STATE_UNKNOWN;
+    return CaptivePortalState();
   CaptivePortalStateMap::const_iterator it =
-      captive_portal_state_map_.find(network->service_path());
-  if (it == captive_portal_state_map_.end())
-    return CAPTIVE_PORTAL_STATE_UNKNOWN;
+      portal_state_map_.find(network->service_path());
+  if (it == portal_state_map_.end())
+    return CaptivePortalState();
   return it->second;
 }
 
@@ -164,8 +185,8 @@ void NetworkPortalDetector::OnNetworkManagerChanged(NetworkLibrary* cros) {
     // portal state is unknown (e.g. for freshly created networks),
     // offline or if network connection state was changed.
     CaptivePortalState state = GetCaptivePortalState(active_network);
-    if (state == CAPTIVE_PORTAL_STATE_UNKNOWN ||
-        state == CAPTIVE_PORTAL_STATE_OFFLINE ||
+    if (state.status == CAPTIVE_PORTAL_STATUS_UNKNOWN ||
+        state.status == CAPTIVE_PORTAL_STATUS_OFFLINE ||
         (!network_changed && connection_state_changed)) {
       DetectCaptivePortal(base::TimeDelta());
     }
@@ -280,21 +301,44 @@ void NetworkPortalDetector::OnPortalDetectionCompleted(
   if (!active_network)
     return;
 
+  CaptivePortalState state;
+  state.response_code = results.response_code;
   switch (results.result) {
     case captive_portal::RESULT_NO_RESPONSE:
-      if (attempt_count_ >= kMaxRequestAttempts)
-        SetCaptivePortalState(active_network, CAPTIVE_PORTAL_STATE_OFFLINE);
-      else
+      if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+        state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
+        SetCaptivePortalState(active_network, state);
+      } else if (attempt_count_ >= kMaxRequestAttempts) {
+        state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
+        SetCaptivePortalState(active_network, state);
+      } else {
         DetectCaptivePortal(results.retry_after_delta);
+      }
       break;
     case captive_portal::RESULT_INTERNET_CONNECTED:
-      SetCaptivePortalState(active_network, CAPTIVE_PORTAL_STATE_ONLINE);
+      state.status = CAPTIVE_PORTAL_STATUS_ONLINE;
+      SetCaptivePortalState(active_network, state);
       break;
     case captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL:
-      SetCaptivePortalState(active_network, CAPTIVE_PORTAL_STATE_PORTAL);
+      state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
+      SetCaptivePortalState(active_network, state);
       break;
     default:
       break;
+  }
+}
+void NetworkPortalDetector::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED ||
+      type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
+      type == chrome::NOTIFICATION_AUTH_CANCELLED) {
+    if (!IsCheckingForPortal() && !IsPortalCheckPending()) {
+      attempt_count_ = 0;
+      DetectCaptivePortal(
+          base::TimeDelta::FromMilliseconds(kProxyChangeDelayMs));
+    }
   }
 }
 
@@ -306,24 +350,28 @@ bool NetworkPortalDetector::IsCheckingForPortal() const {
   return state_ == STATE_CHECKING_FOR_PORTAL;
 }
 
-void NetworkPortalDetector::SetCaptivePortalState(const Network* network,
-                                                  CaptivePortalState state) {
+void NetworkPortalDetector::SetCaptivePortalState(
+    const Network* network,
+    const CaptivePortalState& state) {
   DCHECK(network);
 
   CaptivePortalStateMap::const_iterator it =
-      captive_portal_state_map_.find(network->service_path());
-  if (it == captive_portal_state_map_.end() ||
-      it->second != state) {
+      portal_state_map_.find(network->service_path());
+  if (it == portal_state_map_.end() ||
+      it->second.status != state.status ||
+      it->second.response_code != state.response_code) {
     VLOG(1) << "Updating Chrome Captive Portal state: "
             << "network=" << network->unique_id() << ", "
-            << "state=" << CaptivePortalStateString(state);
-    captive_portal_state_map_[network->service_path()] = state;
+            << "status=" << CaptivePortalStatusString(state.status) << ", "
+            << "response_code=" << state.response_code;
+    portal_state_map_[network->service_path()] = state;
     NotifyPortalStateChanged(network, state);
   }
 }
 
-void NetworkPortalDetector::NotifyPortalStateChanged(const Network* network,
-                                                     CaptivePortalState state) {
+void NetworkPortalDetector::NotifyPortalStateChanged(
+    const Network* network,
+    const CaptivePortalState& state) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPortalStateChanged(network, state));
 }
 

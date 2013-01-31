@@ -17,6 +17,8 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -26,6 +28,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -132,14 +135,54 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
                      command_line->HasSwitch(switches::kEnableManagedUsers));
 }
 
-bool IsProxyError(const std::string& reason) {
-  return reason == ErrorScreenActor::kErrorReasonProxyAuthCancelled ||
+bool IsProxyError(NetworkStateInformer::State state,
+                  const std::string& reason) {
+  return state == NetworkStateInformer::PROXY_AUTH_REQUIRED ||
+      reason == ErrorScreenActor::kErrorReasonProxyAuthCancelled ||
       reason == ErrorScreenActor::kErrorReasonProxyConnectionFailed;
 }
 
 bool IsSigninScreen(const OobeUI::Screen screen) {
   return screen == OobeUI::SCREEN_GAIA_SIGNIN ||
       screen == OobeUI::SCREEN_ACCOUNT_PICKER;
+}
+
+// Returns a pointer to a Network instance by service path or NULL if
+// network can not be found.
+Network* FindNetworkByPath(const std::string& service_path) {
+  CrosLibrary* cros = CrosLibrary::Get();
+  if (!cros)
+    return NULL;
+  NetworkLibrary* network_library = cros->GetNetworkLibrary();
+  if (!network_library)
+    return NULL;
+  return network_library->FindNetworkByPath(service_path);
+}
+
+// Returns network name by service path.
+std::string GetNetworkName(const std::string& service_path) {
+  Network* network = FindNetworkByPath(service_path);
+  if (!network)
+    return "";
+  return network->name();
+}
+
+// Returns network unique id by service path.
+std::string GetNetworkUniqueId(const std::string& service_path) {
+  Network* network = FindNetworkByPath(service_path);
+  if (!network)
+    return "";
+  return network->unique_id();
+}
+
+// Returns captive portal state for a network by its service path.
+NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
+    const std::string& service_path) {
+  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  Network* network = FindNetworkByPath(service_path);
+  if (!detector || !network)
+    return NetworkPortalDetector::CaptivePortalState();
+  return detector->GetCaptivePortalState(network);
 }
 
 }  // namespace
@@ -363,10 +406,10 @@ void SigninScreenHandler::OnNetworkReady() {
 }
 
 void SigninScreenHandler::UpdateState(NetworkStateInformer::State state,
-                                      const std::string& network_name,
-                                      const std::string& reason,
-                                      ConnectionType last_network_type) {
-  UpdateStateInternal(state, network_name, reason, last_network_type, false);
+                                      const std::string& service_path,
+                                      ConnectionType connection_type,
+                                      const std::string& reason) {
+  UpdateStateInternal(state, service_path, connection_type, reason, false);
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
@@ -391,17 +434,18 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
 // TODO (ygorshenin@): split this method into small parts.
 void SigninScreenHandler::UpdateStateInternal(
     NetworkStateInformer::State state,
-    const std::string network_name,
+    const std::string service_path,
+    ConnectionType connection_type,
     const std::string reason,
-    ConnectionType last_network_type,
     bool force_update) {
+  std::string network_id = GetNetworkUniqueId(service_path);
   // TODO (ygorshenin@): switch log level to INFO once signin screen
   // will be tested well.
   LOG(WARNING) << "SigninScreenHandler::UpdateStateInternal(): "
                << "state=" << state << ", "
-               << "network_name=" << network_name << ", "
+               << "network_id=" << network_id << ", "
+               << "connection_type=" << connection_type << ", "
                << "reason=" << reason << ", "
-               << "last_network_type=" << last_network_type << ", "
                << "force_update=" << force_update;
   update_state_closure_.Cancel();
   if (state == NetworkStateInformer::OFFLINE && is_first_update_state_call_) {
@@ -410,7 +454,7 @@ void SigninScreenHandler::UpdateStateInternal(
         base::Bind(
             &SigninScreenHandler::UpdateStateInternal,
             weak_factory_.GetWeakPtr(),
-            state, network_name, reason, last_network_type, force_update));
+            state, service_path, connection_type, reason, force_update));
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         update_state_closure_.callback(),
@@ -426,7 +470,7 @@ void SigninScreenHandler::UpdateStateInternal(
       connecting_closure_.Reset(
           base::Bind(&SigninScreenHandler::UpdateStateInternal,
                      weak_factory_.GetWeakPtr(),
-                     state, network_name, reason, last_network_type, true));
+                     state, service_path, connection_type, reason, true));
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           connecting_closure_.callback(),
@@ -439,7 +483,7 @@ void SigninScreenHandler::UpdateStateInternal(
   bool is_online = (state == NetworkStateInformer::ONLINE);
   bool is_under_captive_portal =
       (state == NetworkStateInformer::CAPTIVE_PORTAL);
-  bool is_proxy_error = IsProxyError(reason);
+  bool is_proxy_error = IsProxyError(state, reason);
   bool is_timeout = (reason == ErrorScreenActor::kErrorReasonLoadingTimeout);
   bool is_gaia_signin =
       (IsSigninScreen(GetCurrentScreen()) || IsSigninScreenHiddenByError()) &&
@@ -484,7 +528,7 @@ void SigninScreenHandler::UpdateStateInternal(
 
   if (!is_online && is_gaia_signin && !offline_login_active_) {
     LOG(WARNING) << "Show offline message: state=" << state << ", "
-                 << "network_name=" << network_name << ", "
+                 << "network_id=" << network_id << ", "
                  << "reason=" << reason << ", "
                  << "is_under_captive_portal=" << is_under_captive_portal;
     if (is_under_captive_portal && !is_proxy_error) {
@@ -509,10 +553,14 @@ void SigninScreenHandler::UpdateStateInternal(
     }
 
     if (is_under_captive_portal) {
-      if (is_proxy_error)
+      if (is_proxy_error) {
         error_screen_actor_->ShowProxyError();
-      else
+      } else {
+        std::string network_name = GetNetworkName(service_path);
         error_screen_actor_->ShowCaptivePortalError(network_name);
+      }
+    } else if (is_proxy_error) {
+      error_screen_actor_->ShowProxyError();
     } else {
       error_screen_actor_->ShowOfflineError();
     }
@@ -529,7 +577,7 @@ void SigninScreenHandler::UpdateStateInternal(
 
     if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
       DictionaryValue params;
-      params.SetInteger("lastNetworkType", static_cast<int>(last_network_type));
+      params.SetInteger("lastNetworkType", static_cast<int>(connection_type));
       error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
     }
   } else {
@@ -537,7 +585,8 @@ void SigninScreenHandler::UpdateStateInternal(
 
     if (IsSigninScreenHiddenByError()) {
       LOG(WARNING) << "Hide offline message. state=" << state << ", "
-                   << "network_name=" << network_name << ", reason=" << reason;
+                   << "network_id=" << network_id << ", "
+                   << "reason=" << reason;
       error_screen_actor_->Hide();
 
       // Forces a reload for Gaia screen on hiding error message.
@@ -637,9 +686,6 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("loginWebuiReady",
       base::Bind(&SigninScreenHandler::HandleLoginWebuiReady,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginRequestNetworkState",
-      base::Bind(&SigninScreenHandler::HandleLoginRequestNetworkState,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("demoWebuiReady",
       base::Bind(&SigninScreenHandler::HandleDemoWebuiReady,
@@ -847,12 +893,13 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_ || !delegate_)
     return;
 
+  std::string active_network =
+      network_state_informer_->active_network_service_path();
   // TODO (ygorshenin@): |proxy_dialog_was_displayed_| is used to fix
   // 169068. Must be removed on M26 when 171668 will be fixed.
   if (gaia_silent_load_ &&
       (!network_state_informer_->is_online() ||
-       gaia_silent_load_network_ !=
-          network_state_informer_->active_network_id() ||
+       gaia_silent_load_network_ != active_network ||
        proxy_dialog_was_displayed_)) {
     // Network has changed. Force Gaia reload.
     gaia_silent_load_ = false;
@@ -878,9 +925,9 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   }
 
   UpdateState(network_state_informer_->state(),
-              network_state_informer_->network_name(),
-              ErrorScreenActor::kErrorReasonUpdate,
-              network_state_informer_->last_network_type());
+              network_state_informer_->last_network_service_path(),
+              network_state_informer_->last_network_type(),
+              ErrorScreenActor::kErrorReasonUpdate);
 }
 
 void SigninScreenHandler::LoadAuthExtension(
@@ -1243,21 +1290,6 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
   }
 }
 
-void SigninScreenHandler::HandleLoginRequestNetworkState(
-    const base::ListValue* args) {
-  std::string callback;
-  std::string reason;
-  if (!args->GetString(0, &callback) || !args->GetString(1, &reason)) {
-    NOTREACHED();
-    return;
-  }
-  SendState(callback,
-            network_state_informer_->state(),
-            network_state_informer_->network_name(),
-            reason,
-            network_state_informer_->last_network_type());
-}
-
 void SigninScreenHandler::HandleDemoWebuiReady(const base::ListValue* args) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_DEMO_WEBUI_LOADED,
@@ -1370,9 +1402,9 @@ void SigninScreenHandler::HandleUnlockOnLoginSuccess(
 void SigninScreenHandler::HandleLoginScreenUpdate(
     const base::ListValue* args) {
   UpdateStateInternal(network_state_informer_->state(),
-                      network_state_informer_->network_name(),
-                      ErrorScreenActor::kErrorReasonUpdate,
+                      network_state_informer_->last_network_service_path(),
                       network_state_informer_->last_network_type(),
+                      ErrorScreenActor::kErrorReasonUpdate,
                       false);
 }
 
@@ -1391,9 +1423,9 @@ void SigninScreenHandler::HandleShowGaiaFrameError(
     // TODO (ygorshenin): this case should be handled as a generic
     // network connectivity issue that leads to timeout.
     UpdateStateInternal(NetworkStateInformer::CAPTIVE_PORTAL,
-                        network_state_informer_->network_name(),
-                        reason,
+                        network_state_informer_->last_network_service_path(),
                         network_state_informer_->last_network_type(),
+                        reason,
                         false);
 
     // Schedules a reload of the Gaia frame if there is no pending auth ui.
@@ -1405,9 +1437,9 @@ void SigninScreenHandler::HandleShowGaiaFrameError(
 void SigninScreenHandler::HandleShowLoadingTimeoutError(
     const base::ListValue* args) {
   UpdateStateInternal(network_state_informer_->state(),
-                      network_state_informer_->network_name(),
-                      ErrorScreenActor::kErrorReasonLoadingTimeout,
+                      network_state_informer_->last_network_service_path(),
                       network_state_informer_->last_network_type(),
+                      ErrorScreenActor::kErrorReasonLoadingTimeout,
                       false);
 }
 
@@ -1518,7 +1550,8 @@ void SigninScreenHandler::MaybePreloadAuthExtension() {
       !dns_clear_task_running_ &&
       network_state_informer_->is_online()) {
     gaia_silent_load_ = true;
-    gaia_silent_load_network_ = network_state_informer_->active_network_id();
+    gaia_silent_load_network_ =
+        network_state_informer_->active_network_service_path();
     LoadAuthExtension(true, true, false);
   }
 }
@@ -1546,19 +1579,6 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
     }
   }
   return true;
-}
-
-void SigninScreenHandler::SendState(const std::string& callback,
-                                    NetworkStateInformer::State state,
-                                    const std::string& network_name,
-                                    const std::string& reason,
-                                    ConnectionType last_network_type) {
-  base::FundamentalValue state_value(state);
-  base::StringValue network_value(network_name);
-  base::StringValue reason_value(reason);
-  base::FundamentalValue last_network_value(last_network_type);
-  web_ui()->CallJavascriptFunction(callback,
-      state_value, network_value, reason_value, last_network_value);
 }
 
 void SigninScreenHandler::CancelPasswordChangedFlowInternal() {

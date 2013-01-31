@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/cancelable_callback.h"
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,7 +19,10 @@
 #include "base/time.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -31,20 +36,32 @@ namespace chromeos {
 class NetworkPortalDetector
     : public base::NonThreadSafe,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public chromeos::NetworkLibrary::NetworkObserver {
+      public chromeos::NetworkLibrary::NetworkObserver,
+      public content::NotificationObserver {
  public:
-  enum CaptivePortalState {
-    CAPTIVE_PORTAL_STATE_UNKNOWN  = 0,
-    CAPTIVE_PORTAL_STATE_OFFLINE  = 1,
-    CAPTIVE_PORTAL_STATE_ONLINE   = 2,
-    CAPTIVE_PORTAL_STATE_PORTAL   = 3,
+  enum CaptivePortalStatus {
+    CAPTIVE_PORTAL_STATUS_UNKNOWN  = 0,
+    CAPTIVE_PORTAL_STATUS_OFFLINE  = 1,
+    CAPTIVE_PORTAL_STATUS_ONLINE   = 2,
+    CAPTIVE_PORTAL_STATUS_PORTAL   = 3,
+    CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED = 4
+  };
+
+  struct CaptivePortalState {
+    CaptivePortalState()
+        : status(CAPTIVE_PORTAL_STATUS_UNKNOWN),
+          response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {
+    }
+
+    CaptivePortalStatus status;
+    int response_code;
   };
 
   class Observer {
    public:
     // Called when portal state is changed for |network|.
     virtual void OnPortalStateChanged(const Network* network,
-                                      CaptivePortalState state) = 0;
+                                      const CaptivePortalState& state) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -58,6 +75,7 @@ class NetworkPortalDetector
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns Captive Portal state for a given |network|.
   CaptivePortalState GetCaptivePortalState(const chromeos::Network* network);
 
   // NetworkLibrary::NetworkManagerObserver implementation:
@@ -110,6 +128,11 @@ class NetworkPortalDetector
   void OnPortalDetectionCompleted(
       const captive_portal::CaptivePortalDetector::Results& results);
 
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Returns true if we're waiting for portal check.
   bool IsPortalCheckPending() const;
 
@@ -118,11 +141,11 @@ class NetworkPortalDetector
 
   // Stores captive portal state for a |network|.
   void SetCaptivePortalState(const Network* network,
-                             CaptivePortalState state);
+                             const CaptivePortalState& results);
 
   // Notifies observers that portal state is changed for a |network|.
   void NotifyPortalStateChanged(const Network* network,
-                                CaptivePortalState state);
+                                const CaptivePortalState& state);
 
   // Returns the current TimeTicks.
   base::TimeTicks GetCurrentTimeTicks() const;
@@ -169,7 +192,7 @@ class NetworkPortalDetector
   ConnectionState active_connection_state_;
 
   State state_;
-  CaptivePortalStateMap captive_portal_state_map_;
+  CaptivePortalStateMap portal_state_map_;
   ObserverList<Observer> observers_;
 
   base::CancelableClosure detection_task_;
@@ -201,6 +224,8 @@ class NetworkPortalDetector
 
   // Test time ticks used by unit tests.
   base::TimeTicks time_ticks_for_testing_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetector);
 };

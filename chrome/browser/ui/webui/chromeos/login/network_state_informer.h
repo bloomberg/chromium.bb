@@ -44,6 +44,7 @@ class NetworkStateInformer
     ONLINE,
     CAPTIVE_PORTAL,
     CONNECTING,
+    PROXY_AUTH_REQUIRED,
     UNKNOWN
   };
 
@@ -53,9 +54,9 @@ class NetworkStateInformer
     virtual ~NetworkStateInformerObserver() {}
 
     virtual void UpdateState(State state,
-                             const std::string& network_name,
-                             const std::string& reason,
-                             ConnectionType last_network_type) = 0;
+                             const std::string& service_path,
+                             ConnectionType connection_type,
+                             const std::string& reason) = 0;
   };
 
   NetworkStateInformer();
@@ -76,7 +77,7 @@ class NetworkStateInformer
   // NetworkPortalDetector::Observer implementation:
   virtual void OnPortalStateChanged(
       const Network* network,
-      NetworkPortalDetector::CaptivePortalState state) OVERRIDE;
+      const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -86,15 +87,17 @@ class NetworkStateInformer
   // CaptivePortalWindowProxyDelegate implementation:
   virtual void OnPortalDetected() OVERRIDE;
 
-  // Returns active network's ID. It can be used to uniquely
+  // Returns active network's service path. It can be used to uniquely
   // identify the network.
-  std::string active_network_id() {
-    return last_online_network_id_;
+  std::string active_network_service_path() {
+    return last_online_service_path_;
   }
 
   bool is_online() { return state_ == ONLINE; }
   State state() const { return state_; }
-  std::string network_name() const { return network_name_; }
+  std::string last_network_service_path() const {
+    return last_network_service_path_;
+  }
   ConnectionType last_network_type() const { return last_network_type_; }
 
  private:
@@ -126,17 +129,17 @@ class NetworkStateInformer
   State GetNetworkState(const Network* network);
   bool IsRestrictedPool(const Network* network);
   bool IsProxyConfigured(const Network* network);
+  bool ProxyAuthRequired(const Network* network);
 
   content::NotificationRegistrar registrar_;
   State state_;
   NetworkStateInformerDelegate* delegate_;
   ObserverList<NetworkStateInformerObserver> observers_;
+  std::string last_online_service_path_;
+  std::string last_connected_service_path_;
+  std::string last_network_service_path_;
   ConnectionType last_network_type_;
-  std::string network_name_;
   base::CancelableClosure check_state_;
-  std::string last_online_network_id_;
-  std::string last_connected_network_id_;
-  std::string last_network_id_;
 
   // Caches proxy state for active networks.
   ProxyStateMap proxy_state_map_;

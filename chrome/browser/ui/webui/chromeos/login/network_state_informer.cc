@@ -72,18 +72,19 @@ void NetworkStateInformer::RemoveObserver(
 void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
   const Network* active_network = cros->active_network();
   State new_state = OFFLINE;
-  std::string new_network_id;
+  std::string new_network_service_path;
   if (active_network) {
     new_state = GetNetworkState(active_network);
-    new_network_id = active_network->unique_id();
+    new_network_service_path = active_network->service_path();
   }
   if ((state_ != ONLINE && (new_state == ONLINE || new_state == CONNECTING)) ||
       (state_ == ONLINE && (new_state == ONLINE || new_state == CONNECTING) &&
-       new_network_id != last_online_network_id_) ||
-      (new_state == CAPTIVE_PORTAL && new_network_id == last_network_id_)) {
-    last_network_id_ = new_network_id;
+       new_network_service_path != last_online_service_path_) ||
+      (new_state == CAPTIVE_PORTAL &&
+       new_network_service_path == last_network_service_path_)) {
+    last_network_service_path_ = new_network_service_path;
     if (new_state == ONLINE)
-      last_online_network_id_ = new_network_id;
+      last_online_service_path_ = new_network_service_path;
     // Transitions {OFFLINE, PORTAL} -> ONLINE and connections to
     // different network are processed without delay.
     // Transitions {OFFLINE, ONLINE} -> PORTAL in the same network are
@@ -103,7 +104,7 @@ void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
 
 void NetworkStateInformer::OnPortalStateChanged(
     const Network* network,
-    NetworkPortalDetector::CaptivePortalState state) {
+    const NetworkPortalDetector::CaptivePortalState& state) {
   if (CrosLibrary::Get()) {
     NetworkLibrary* network_library =
         CrosLibrary::Get()->GetNetworkLibrary();
@@ -130,22 +131,20 @@ void NetworkStateInformer::OnPortalDetected() {
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
   State new_state = OFFLINE;
-  std::string new_network_id;
-  network_name_.clear();
 
   const Network* active_network = cros->active_network();
   if (active_network) {
     new_state = GetNetworkState(active_network);
-    new_network_id = active_network->unique_id();
-    network_name_ = active_network->name();
+    last_network_service_path_ = active_network->service_path();
     last_network_type_ = active_network->type();
   }
 
   bool updated = (new_state != state_) ||
-      (new_state != OFFLINE && new_network_id != last_connected_network_id_);
+      (new_state != OFFLINE &&
+       last_network_service_path_ != last_connected_service_path_);
   state_ = new_state;
   if (state_ != OFFLINE)
-    last_connected_network_id_ = new_network_id;
+    last_connected_service_path_ = last_network_service_path_;
 
   if (updated && state_ == ONLINE && delegate_)
     delegate_->OnNetworkReady();
@@ -163,7 +162,10 @@ void NetworkStateInformer::UpdateStateAndNotify() {
 
 void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
   FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
-      UpdateState(state_, network_name_, reason, last_network_type_));
+      UpdateState(state_,
+                  last_network_service_path_,
+                  last_network_type_,
+                  reason));
 }
 
 NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
@@ -175,7 +177,9 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     // detector results.
     // For a non-proxied networks to prevent shill's false positives we
     // also rely on a Chrome's Captive Portal detector results.
-    if (IsRestrictedPool(network))
+    if (IsProxyConfigured(network) && ProxyAuthRequired(network))
+      return PROXY_AUTH_REQUIRED;
+    else if (IsRestrictedPool(network))
       return CAPTIVE_PORTAL;
     else
       return ONLINE;
@@ -192,7 +196,8 @@ bool NetworkStateInformer::IsRestrictedPool(const Network* network) {
   if (NetworkPortalDetector::IsEnabled()) {
     NetworkPortalDetector::CaptivePortalState state =
         NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
-    return (state == NetworkPortalDetector::CAPTIVE_PORTAL_STATE_PORTAL);
+    NetworkPortalDetector::CaptivePortalStatus status = state.status;
+    return (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
   } else {
     return network->restricted_pool();
   }
@@ -212,6 +217,19 @@ bool NetworkStateInformer::IsProxyConfigured(const Network* network) {
   proxy_state_map_[network->unique_id()] =
       ProxyState(network->proxy_config(), configured);
   return configured;
+}
+
+bool NetworkStateInformer::ProxyAuthRequired(const Network* network) {
+  DCHECK(network);
+  if (NetworkPortalDetector::IsEnabled()) {
+    NetworkPortalDetector::CaptivePortalState state =
+        NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
+    NetworkPortalDetector::CaptivePortalStatus status = state.status;
+    return (status ==
+            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
+  } else {
+    return false;
+  }
 }
 
 }  // namespace chromeos

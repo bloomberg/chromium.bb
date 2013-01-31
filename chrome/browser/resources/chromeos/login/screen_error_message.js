@@ -68,11 +68,16 @@ cr.define('login', function() {
       $('proxy-message-text').innerHTML = localStrings.getStringF(
           'proxyMessageText',
           '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
+          '</a>',
+          '<a id="proxy-error-fix-proxy" class="signin-link" href="#">',
           '</a>');
       $(RELOAD_PAGE_ID).onclick = function() {
         var gaiaScreen = $(SCREEN_GAIA_SIGNIN);
         // Schedules a immediate retry.
         gaiaScreen.doReload();
+      };
+      $('proxy-error-fix-proxy').onclick = function() {
+        chrome.send('openProxySettings');
       };
 
       $('error-guest-signin').innerHTML = localStrings.getStringF(
