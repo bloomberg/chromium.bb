@@ -76,7 +76,10 @@
     },
     'bookmarks': {
       'filepath': 'chrome/browser/bookmarks/' \
-                  '|chrome/browser/ui/bookmarks/'
+                  '|chrome/browser/ui/bookmarks/' \
+                  '|chrome/browser/ui/cocoa/bookmarks/' \
+                  '|chrome/browser/ui/gtk/bookmarks/' \
+                  '|chrome/browser/ui/views/bookmarks/'
     },
     'browser': {
       'filepath': 'chrome/browser/',
