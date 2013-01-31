@@ -38,6 +38,7 @@
 
 using chrome::MediaFileSystemInfo;
 using chrome::MediaFileSystemRegistry;
+using chrome::MediaFileSystemsCallback;
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 
@@ -87,17 +88,20 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   }
 
   switch (interactive) {
-    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES:
-      ShowDialog();
+    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES: {
+      // The MediaFileSystemRegistry only updates preferences for extensions
+      // that it knows are in use. Since this may be the first call to
+      // chrome.getMediaFileSystems for this extension, call
+      // GetMediaFileSystemsForExtension() here solely so that
+      // MediaFileSystemRegistry will send preference changes.
+      GetMediaFileSystemsForExtension(base::Bind(
+          &MediaGalleriesGetMediaFileSystemsFunction::AlwaysShowDialog, this));
       return true;
+    }
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
-      MediaFileSystemRegistry* registry =
-          g_browser_process->media_file_system_registry();
-      registry->GetMediaFileSystemsForExtension(
-          render_view_host(), GetExtension(), base::Bind(
-              &MediaGalleriesGetMediaFileSystemsFunction::
-                  ShowDialogIfNoGalleries,
-              this));
+      GetMediaFileSystemsForExtension(base::Bind(
+          &MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries,
+          this));
       return true;
     }
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
@@ -110,6 +114,11 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   return false;
 }
 
+void MediaGalleriesGetMediaFileSystemsFunction::AlwaysShowDialog(
+    const std::vector<MediaFileSystemInfo>& /*filesystems*/) {
+  ShowDialog();
+}
+
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries(
     const std::vector<MediaFileSystemInfo>& filesystems) {
   if (filesystems.empty())
@@ -119,11 +128,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries(
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
-  MediaFileSystemRegistry* registry =
-      g_browser_process->media_file_system_registry();
-  registry->GetMediaFileSystemsForExtension(
-      render_view_host(), GetExtension(), base::Bind(
-          &MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries, this));
+  GetMediaFileSystemsForExtension(base::Bind(
+      &MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries, this));
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
@@ -219,6 +225,14 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   base::Closure cb = base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries, this);
   new chrome::MediaGalleriesDialogController(contents, *GetExtension(), cb);
+}
+
+void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
+    const chrome::MediaFileSystemsCallback& cb) {
+  MediaFileSystemRegistry* registry =
+      g_browser_process->media_file_system_registry();
+  registry->GetMediaFileSystemsForExtension(
+      render_view_host(), GetExtension(), cb);
 }
 
 // MediaGalleriesAssembleMediaFileFunction -------------------------------------
