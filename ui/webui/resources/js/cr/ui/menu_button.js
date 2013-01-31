@@ -9,21 +9,15 @@ cr.define('cr.ui', function() {
   /** @const */
   var positionPopupAroundElement = cr.ui.positionPopupAroundElement;
 
-  /**
-   * Timeout for hiding the menu for the HideType.DELAYED hide mode in ms.
-   * @type {number}
-   */
-  var DEFAULT_HIDE_DELAY_MS = 120;
-
-  /**
-   * Enum for type of hide. Delayed is used when called by clicking on a
-   * checkable menu item.
-   * @enum {number}
-   */
-  var HideType = {
-    INSTANT: 0,
-    DELAYED: 1
-  };
+   /**
+    * Enum for type of hide. Delayed is used when called by clicking on a
+    * checkable menu item.
+    * @enum {number}
+    */
+   var HideType = {
+     INSTANT: 0,
+     DELAYED: 1
+   };
 
   /**
    * Creates a new menu button element.
@@ -134,10 +128,9 @@ cr.define('cr.ui', function() {
           }
           break;
         case 'activate':
-          if (e.target instanceof cr.ui.MenuItem && e.target.checkable)
-            this.hideMenu(HideType.DELAYED);
-          else
-            this.hideMenu();
+          var hideDelayed = e.target instanceof cr.ui.MenuItem &&
+              e.target.checkable;
+          this.hideMenu(hideDelayed ? HideType.DELAYED : HideType.INSTANT);
           break;
         case 'resize':
           this.hideMenu();
@@ -179,27 +172,19 @@ cr.define('cr.ui', function() {
     /**
      * Hides the menu. If your menu can go out of scope, make sure to call this
      * first.
-     * @param {HideType=} opt_hideType Type of hide - instant or delayed,
-     *     default: INSTANT.
+     * @param {HideType=} opt_hideType Type of hide.
+     *     default: HideType.INSTANT.
      */
     hideMenu: function(opt_hideType) {
-      opt_hideType = opt_hideType || HideType.INSTANT;
-
       if (!this.isMenuShown())
         return;
 
-      switch (opt_hideType) {
-        case HideType.INSTANT:
-          this.removeAttribute('menu-shown');
-          this.menu.hidden = true;
-          break;
-        case HideType.DELAYED:
-          setTimeout(function() {
-            this.removeAttribute('menu-shown');
-            this.menu.hidden = true;
-          }.bind(this), DEFAULT_HIDE_DELAY_MS);
-          break;
-      }
+      this.removeAttribute('menu-shown');
+      if (opt_hideType == HideType.DELAYED)
+        this.menu.classList.add('hide-delayed');
+      else
+        this.menu.classList.remove('hide-delayed');
+      this.menu.hidden = true;
 
       this.showingEvents_.removeAll();
       this.focus();
@@ -292,6 +277,7 @@ cr.define('cr.ui', function() {
 
   // Export
   return {
-    MenuButton: MenuButton
+    MenuButton: MenuButton,
+    HideType: HideType
   };
 });

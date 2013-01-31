@@ -352,6 +352,7 @@ Commands.togglePinnedCommand = {
     }
 
     chrome.fileBrowserPrivate.pinDriveFile([entry.toURL()], pin, callback);
+    event.command.checked = pin;
   },
   canExecute: function(event, fileManager) {
     var entry = CommandUtil.getSingleEntry(event, fileManager);

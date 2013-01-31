@@ -288,6 +288,11 @@ menu.chrome-menu[hidden] {
   visibility: hidden;
 }
 
+menu.chrome-menu.hide-delayed[hidden] {
+  -webkit-transition-delay: 120ms;
+  -webkit-transition-property: opacity, visibility;
+}
+
 menu.chrome-menu > :not(hr) {
   background-position: 6px center;
   background-repeat: no-repeat;

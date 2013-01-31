@@ -37,6 +37,7 @@ cr.define('cr.ui', function() {
     showMenu: function(e, menu) {
       this.menu_ = menu;
       menu.updateCommands(e.currentTarget);
+      menu.classList.remove('hide-delayed');
       menu.hidden = false;
       menu.contextElement = e.currentTarget;
 
@@ -62,12 +63,18 @@ cr.define('cr.ui', function() {
 
     /**
      * Hide the currently shown menu.
+     * @param {HideType=} opt_hideType Type of hide.
+     *     default: cr.ui.HideType.INSTANT.
      */
-    hideMenu: function() {
+    hideMenu: function(opt_hideType) {
       var menu = this.menu;
       if (!menu)
         return;
 
+      if (opt_hideType == cr.ui.HideType.DELAYED)
+        menu.classList.add('hide-delayed');
+      else
+        menu.classList.remove('hide-delayed');
       menu.hidden = true;
       var originalContextElement = menu.contextElement;
       menu.contextElement = null;
@@ -167,6 +174,12 @@ cr.define('cr.ui', function() {
           break;
 
         case 'activate':
+          var hideDelayed = e.target instanceof cr.ui.MenuItem &&
+              e.target.checkable;
+          this.hideMenu(hideDelayed ? cr.ui.HideType.DELAYED :
+                                      cr.ui.HideType.INSTANT);
+          break;
+
         case 'blur':
         case 'resize':
           this.hideMenu();
@@ -257,6 +270,6 @@ cr.define('cr.ui', function() {
 
   // Export
   return {
-    contextMenuHandler: contextMenuHandler
+    contextMenuHandler: contextMenuHandler,
   };
 });
