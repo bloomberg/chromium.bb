@@ -576,7 +576,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   // Calling SetWindowLongPtrA here makes the window proc ASCII, which is
   // required by at least the Shockwave Director plug-in.
   SetWindowLongPtrA(
-      windowed_handle_, GWL_WNDPROC, reinterpret_cast<LONG>(DefWindowProcA));
+      windowed_handle_, GWLP_WNDPROC, reinterpret_cast<LONG>(DefWindowProcA));
 
   return true;
 }
