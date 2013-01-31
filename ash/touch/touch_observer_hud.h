@@ -36,6 +36,10 @@ class TouchObserverHUD : public ui::EventHandler,
   // cycles between a fixed number of display modes.
   void ChangeToNextMode();
 
+  // Removes all existing touch points from the screen (only if the HUD is
+  // visible).
+  void Clear();
+
  private:
   void UpdateTouchPointLabel(int index);
 

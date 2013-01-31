@@ -479,6 +479,12 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_WIFI:
       Shell::GetInstance()->system_tray_delegate()->ToggleWifi();
       return true;
+    case TOUCH_HUD_CLEAR:
+      if (Shell::GetInstance()->touch_observer_hud()) {
+        Shell::GetInstance()->touch_observer_hud()->Clear();
+        return true;
+      }
+      return false;
     case TOUCH_HUD_MODE_CHANGE:
       if (Shell::GetInstance()->touch_observer_hud()) {
         Shell::GetInstance()->touch_observer_hud()->ChangeToNextMode();

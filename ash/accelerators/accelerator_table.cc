@@ -88,6 +88,8 @@ const AcceleratorData kAcceleratorData[] = {
     TOGGLE_SPOKEN_FEEDBACK },
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOUCH_HUD_MODE_CHANGE },
+  { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
+    TOUCH_HUD_CLEAR },
 
   // When you change the shortcuts for NEW_INCOGNITO_WINDOW, NEW_WINDOW, or
   // NEW_TAB, you also need to modify
@@ -216,6 +218,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   TOGGLE_CAPS_LOCK,
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
+  TOUCH_HUD_CLEAR,
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,

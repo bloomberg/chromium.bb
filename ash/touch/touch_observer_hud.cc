@@ -87,6 +87,16 @@ class TouchHudCanvas : public views::View {
     SchedulePaint();
   }
 
+  void Clear() {
+    path_index_ = 0;
+    color_index_ = 0;
+    for (size_t i = 0; i < arraysize(paths_); ++i) {
+      paths_[i].reset();
+    }
+
+    SchedulePaint();
+  }
+
  private:
   // Overridden from views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -184,6 +194,11 @@ void TouchObserverHUD::ChangeToNextMode() {
     label_container_->SetVisible(false);
     widget_->Show();
   }
+}
+
+void TouchObserverHUD::Clear() {
+  if (widget_->IsVisible())
+    canvas_->Clear();
 }
 
 void TouchObserverHUD::UpdateTouchPointLabel(int index) {
