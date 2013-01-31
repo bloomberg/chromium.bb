@@ -36,7 +36,13 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   EXPECT_EQ(1, panel_manager->num_panels());
   EXPECT_TRUE(detached_collection->HasPanel(panel));
 
-  EXPECT_EQ(bounds, panel->GetBounds());
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+  // Ignore checking y position since the detached panel will be placed near
+  // the top if the stacking mode is enabled.
+  if (!PanelManager::IsPanelStackingEnabled())
+    EXPECT_EQ(bounds.y(), panel->GetBounds().y());
+  EXPECT_EQ(bounds.width(), panel->GetBounds().width());
+  EXPECT_EQ(bounds.height(), panel->GetBounds().height());
   EXPECT_FALSE(panel->IsAlwaysOnTop());
 
   EXPECT_TRUE(panel_testing->IsButtonVisible(panel::CLOSE_BUTTON));

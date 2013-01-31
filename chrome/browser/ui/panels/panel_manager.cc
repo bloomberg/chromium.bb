@@ -46,6 +46,12 @@ const double kPanelMaxHeightFactor = 0.5;
 // when only one value is provided.
 const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
 
+// When the stacking mode is enabled, the detached panel will be positioned
+// near the top of the working area such that the subsequent panel could be
+// stacked to the bottom of the detached panel. This value is experimental
+// and subjective.
+const int kDetachedPanelStartingYPositionOnStackingEnabled = 20;
+
 // The following comparers are used by std::list<>::sort to determine which
 // stack or panel we want to seacrh first for adding new panel.
 bool ComparePanelsByPosition(Panel* panel1, Panel* panel2) {
@@ -233,7 +239,10 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
     bounds.set_origin(
         docked_collection_->GetDefaultPositionForPanel(bounds.size()));
   } else {
-    bounds.set_origin(requested_bounds.origin());
+    bounds.set_x(requested_bounds.x());
+    bounds.set_y(IsPanelStackingEnabled() ?
+        display_area_.y() + kDetachedPanelStartingYPositionOnStackingEnabled :
+        requested_bounds.y());
     bounds.AdjustToFit(display_settings_provider_->GetDisplayArea());
   }
 
