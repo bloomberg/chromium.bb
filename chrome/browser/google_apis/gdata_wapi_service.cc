@@ -18,8 +18,8 @@
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/url_util.h"
 
 using content::BrowserThread;
 

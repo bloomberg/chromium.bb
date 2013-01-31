@@ -8,9 +8,9 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/url_util.h"
 
 namespace {
 
@@ -82,12 +82,11 @@ GURL GetEscrowUrl() {
 
 GURL GetSignInUrl() {
   GURL url(GaiaUrls::GetInstance()->service_login_url());
-  url = chrome_common_net::AppendQueryParameter(url, "service", "sierra");
-  url = chrome_common_net::AppendQueryParameter(url, "btmpl", "popup");
-  url = chrome_common_net::AppendQueryParameter(
-      url,
-      "continue",
-      GetSignInContinueUrl().spec());
+  url = net::AppendQueryParameter(url, "service", "sierra");
+  url = net::AppendQueryParameter(url, "btmpl", "popup");
+  url = net::AppendQueryParameter(url,
+                                  "continue",
+                                  GetSignInContinueUrl().spec());
   return url;
 }
 

@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_util.h"
+#include "net/base/url_util.h"
 
 namespace extension_urls {
 
@@ -38,8 +38,8 @@ GURL GetWebstoreIntentQueryURL(const std::string& action,
 
   GURL url(std::string(kGalleryBrowsePrefix) + "/");
   url = url.Resolve(kIntentsCategoryPath);
-  url = chrome_common_net::AppendQueryParameter(url, "_wi", action);
-  url = chrome_common_net::AppendQueryParameter(url, "_mt", type);
+  url = net::AppendQueryParameter(url, "_wi", action);
+  url = net::AppendQueryParameter(url, "_mt", type);
 
   return url;
 }

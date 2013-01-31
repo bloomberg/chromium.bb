@@ -18,7 +18,6 @@
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

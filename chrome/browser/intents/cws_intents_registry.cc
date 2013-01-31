@@ -14,10 +14,10 @@
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/net/url_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace {
@@ -225,16 +225,11 @@ void CWSIntentsRegistry::GetIntentServices(const string16& action,
 GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
                                        const string16& type) {
   GURL request(kCWSIntentServiceURL);
-  request = chrome_common_net::AppendQueryParameter(request, "intent",
-                                                    UTF16ToUTF8(action));
-  request = chrome_common_net::AppendQueryParameter(request, "mime_types",
-                                                    UTF16ToUTF8(type));
-  request = chrome_common_net::AppendQueryParameter(request, "start_index",
-                                                    "0");
-  request = chrome_common_net::AppendQueryParameter(request, "num_results",
-                                                    kMaxSuggestions);
-  request = chrome_common_net::AppendQueryParameter(request, "key",
-                                                    google_apis::GetAPIKey());
+  request = net::AppendQueryParameter(request, "intent", UTF16ToUTF8(action));
+  request = net::AppendQueryParameter(request, "mime_types", UTF16ToUTF8(type));
+  request = net::AppendQueryParameter(request, "start_index", "0");
+  request = net::AppendQueryParameter(request, "num_results", kMaxSuggestions);
+  request = net::AppendQueryParameter(request, "key", google_apis::GetAPIKey());
 
   return request;
 }

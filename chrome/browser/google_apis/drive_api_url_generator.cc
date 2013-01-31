@@ -6,7 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "chrome/common/net/url_util.h"
+#include "net/base/url_util.h"
 
 namespace google_apis {
 
@@ -49,7 +49,7 @@ GURL DriveApiUrlGenerator::GetChangelistUrl(
       base_url_.Resolve(kDriveV2ChangelistUrl) :
       override_url;
   return start_changestamp ?
-      chrome_common_net::AppendOrReplaceQueryParameter(
+      net::AppendOrReplaceQueryParameter(
           url, "startChangeId", base::Int64ToString(start_changestamp)) :
       url;
 }
@@ -63,8 +63,7 @@ GURL DriveApiUrlGenerator::GetFilelistUrl(
       override_url;
   return search_string.empty() ?
       url :
-      chrome_common_net::AppendOrReplaceQueryParameter(
-          url, "q", search_string);
+      net::AppendOrReplaceQueryParameter(url, "q", search_string);
 }
 
 GURL DriveApiUrlGenerator::GetFileUrl(const std::string& file_id) const {

@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/net/url_util.h"
+#include "net/base/url_util.h"
 
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_common_net {
+namespace net {
+namespace {
 
 TEST(UrlUtilTest, AppendQueryParameter) {
   // Appending a name-value pair to a URL without a query component.
@@ -80,7 +81,7 @@ TEST(UrlUtilTest, AppendOrReplaceQueryParameter) {
           "name", "new").spec());
 }
 
-TEST(BrowserUrlUtilTest, GetValueForKeyInQuery) {
+TEST(UrlUtilTest, GetValueForKeyInQuery) {
   GURL url("http://example.com/path?name=value&boolParam&"
            "url=http://test.com/q?n1%3Dv1%26n2");
   std::string value;
@@ -99,4 +100,5 @@ TEST(BrowserUrlUtilTest, GetValueForKeyInQuery) {
   EXPECT_EQ("http://test.com/q?n1=v1&n2", value);
 }
 
-}  // namespace chrome_common_net.
+}  // namespace
+}  // namespace net

@@ -21,10 +21,10 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/command_line.h"
@@ -184,7 +184,7 @@ base::Value* DeepCopyAndResolveStrings(
 void AppendQueryParameter(GURL* url,
                           const std::string& param,
                           const std::string& value) {
-  *url = chrome_common_net::AppendQueryParameter(*url, param, value);
+  *url = net::AppendQueryParameter(*url, param, value);
 }
 
 }  // namespace

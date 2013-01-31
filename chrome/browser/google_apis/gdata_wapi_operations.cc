@@ -10,9 +10,9 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
+#include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
@@ -566,7 +566,7 @@ InitiateUploadOperation::InitiateUploadOperation(
                             params.drive_file_path),
       callback_(callback),
       params_(params),
-      initiate_upload_url_(chrome_common_net::AppendOrReplaceQueryParameter(
+      initiate_upload_url_(net::AppendOrReplaceQueryParameter(
           params.upload_location,
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {

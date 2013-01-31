@@ -1546,7 +1546,6 @@
         'common/metrics/metrics_util_unittest.cc',
         'common/metrics/variations/variations_util_unittest.cc',
         'common/multi_process_lock_unittest.cc',
-        'common/net/url_util_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
         'common/pref_names_util_unittest.cc',
         'common/service_process_util_unittest.cc',

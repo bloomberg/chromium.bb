@@ -43,7 +43,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,6 +58,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/url_util.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -136,7 +136,7 @@ void ClearPendingEmailOnIOThread(content::ResourceContext* context) {
 // "service" is also checked to make sure its "chromiumsync".
 SyncPromoUI::Source GetSigninSource(const GURL& url, GURL* continue_url) {
   std::string value;
-  chrome_common_net::GetValueForKeyInQuery(url, "service", &value);
+  net::GetValueForKeyInQuery(url, "service", &value);
   bool possibly_an_explicit_signin = value == "chromiumsync";
 
   // Find the final continue URL for this sign in.  In some cases, Gaia can

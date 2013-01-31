@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
-#include "chrome/common/net/url_util.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"

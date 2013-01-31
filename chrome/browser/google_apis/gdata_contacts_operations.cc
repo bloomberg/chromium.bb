@@ -5,8 +5,8 @@
 #include "chrome/browser/google_apis/gdata_contacts_operations.h"
 
 #include "chrome/browser/google_apis/time_util.h"
-#include "chrome/common/net/url_util.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/url_util.h"
 
 namespace google_apis {
 
@@ -73,13 +73,12 @@ GURL GetContactsOperation::GetURL() const {
   GURL url(kGetContactsURL);
 
   if (!group_id_.empty()) {
-    url = chrome_common_net::AppendQueryParameter(
-              url, kGetContactsGroupParam, group_id_);
+    url = net::AppendQueryParameter(url, kGetContactsGroupParam, group_id_);
   }
   if (!min_update_time_.is_null()) {
     std::string time_rfc3339 = util::FormatTimeAsString(min_update_time_);
-    url = chrome_common_net::AppendQueryParameter(
-              url, kGetContactsUpdatedMinParam, time_rfc3339);
+    url = net::AppendQueryParameter(
+        url, kGetContactsUpdatedMinParam, time_rfc3339);
   }
   return url;
 }

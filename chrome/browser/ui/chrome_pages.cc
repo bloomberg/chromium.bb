@@ -21,11 +21,11 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
-#include "chrome/common/net/url_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/url_util.h"
 
 using content::UserMetricsAction;
 
@@ -226,11 +226,9 @@ void ShowGaiaSignin(Browser* browser,
                     const std::string& service,
                     const GURL& continue_url) {
   GURL url(GaiaUrls::GetInstance()->service_login_url());
-  url = chrome_common_net::AppendQueryParameter(url, "service", service);
+  url = net::AppendQueryParameter(url, "service", service);
   if (continue_url.is_valid())
-    url = chrome_common_net::AppendQueryParameter(url,
-                                                  "continue",
-                                                  continue_url.spec());
+    url = net::AppendQueryParameter(url, "continue", continue_url.spec());
   NavigateToSingletonTab(browser, url);
 }
 

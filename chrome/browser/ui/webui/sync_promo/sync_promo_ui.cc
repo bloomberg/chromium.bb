@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/net/url_util.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -36,6 +35,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
@@ -267,7 +267,7 @@ GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
   const char* key_name = UseWebBasedSigninFlow() ? kSyncPromoQueryKeyContinue :
       kSyncPromoQueryKeyNextPage;
   std::string value;
-  if (chrome_common_net::GetValueForKeyInQuery(url, key_name, &value)) {
+  if (net::GetValueForKeyInQuery(url, key_name, &value)) {
     return GURL(value);
   }
   return GURL();
@@ -276,8 +276,7 @@ GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
 // static
 SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
   std::string value;
-  if (chrome_common_net::GetValueForKeyInQuery(
-          url, kSyncPromoQueryKeySource, &value)) {
+  if (net::GetValueForKeyInQuery(url, kSyncPromoQueryKeySource, &value)) {
     int source = 0;
     if (base::StringToInt(value, &source) && source >= SOURCE_START_PAGE &&
         source < SOURCE_UNKNOWN) {
@@ -290,8 +289,7 @@ SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
 // static
 bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
   std::string value;
-  if (chrome_common_net::GetValueForKeyInQuery(
-          url, kSyncPromoQueryKeyAutoClose, &value)) {
+  if (net::GetValueForKeyInQuery(url, kSyncPromoQueryKeyAutoClose, &value)) {
     int source = 0;
     base::StringToInt(value, &source);
     return (source == 1);
