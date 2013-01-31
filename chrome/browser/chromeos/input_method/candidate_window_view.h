@@ -7,7 +7,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "ui/views/view.h"
 

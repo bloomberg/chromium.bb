@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
 #include "chrome/browser/chromeos/input_method/hidable_area.h"
-#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"

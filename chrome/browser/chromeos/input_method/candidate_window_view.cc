@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/input_method/candidate_view.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
 #include "chrome/browser/chromeos/input_method/hidable_area.h"
-#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"

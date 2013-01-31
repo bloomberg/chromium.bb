@@ -318,8 +318,6 @@
         'browser/chromeos/input_method/input_method_engine_ibus.h',
         'browser/chromeos/input_method/ibus_keymap.cc',
         'browser/chromeos/input_method/ibus_keymap.h',
-        'browser/chromeos/input_method/ibus_ui_controller.cc',
-        'browser/chromeos/input_method/ibus_ui_controller.h',
         'browser/chromeos/input_method/input_method_config.cc',
         'browser/chromeos/input_method/input_method_config.h',
         'browser/chromeos/input_method/input_method_configuration.cc',

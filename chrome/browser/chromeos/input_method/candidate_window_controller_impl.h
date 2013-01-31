@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
+#include "chromeos/dbus/ibus/ibus_panel_service.h"
 
 namespace views {
 class Widget;
@@ -28,10 +29,11 @@ class DelayableWidget;
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
-class CandidateWindowControllerImpl : public CandidateWindowController,
-                                      public CandidateWindowView::Observer,
-                                      public IBusUiController::Observer,
-                                      public IBusController::Observer {
+class CandidateWindowControllerImpl
+    : public CandidateWindowController,
+      public CandidateWindowView::Observer,
+      public ibus::IBusPanelCandidateWindowHandlerInterface,
+      public IBusController::Observer {
  public:
   CandidateWindowControllerImpl();
   virtual ~CandidateWindowControllerImpl();
@@ -81,19 +83,18 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   // Creates the candidate window view.
   void CreateView();
 
-  // IBusUiController::Observer overrides.
-  virtual void OnHideAuxiliaryText() OVERRIDE;
-  virtual void OnHideLookupTable() OVERRIDE;
-  virtual void OnHidePreeditText() OVERRIDE;
-  virtual void OnSetCursorLocation(const ibus::Rect& cursor_position,
-                                   const ibus::Rect& composition_head) OVERRIDE;
-  virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
-                                     bool visible) OVERRIDE;
-  virtual void OnUpdateLookupTable(
-      const ibus::IBusLookupTable& lookup_table,
-      bool visible) OVERRIDE;
-  virtual void OnUpdatePreeditText(const std::string& utf8_text,
-                                   unsigned int cursor, bool visible) OVERRIDE;
+  // ibus::IBusPanelCandidateWindowHandlerInterface overrides.
+  virtual void HideAuxiliaryText() OVERRIDE;
+  virtual void HideLookupTable() OVERRIDE;
+  virtual void HidePreeditText() OVERRIDE;
+  virtual void SetCursorLocation(const ibus::Rect& cursor_position,
+                                 const ibus::Rect& composition_head) OVERRIDE;
+  virtual void UpdateAuxiliaryText(const std::string& utf8_text,
+                                   bool visible) OVERRIDE;
+  virtual void UpdateLookupTable(const ibus::IBusLookupTable& lookup_table,
+                                 bool visible) OVERRIDE;
+  virtual void UpdatePreeditText(const std::string& utf8_text,
+                                 unsigned int cursor, bool visible) OVERRIDE;
 
   // IBusController::Observer override
   virtual void PropertyChanged() OVERRIDE;
@@ -103,9 +104,6 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   // Updates infolist bounds, if current bounds is up-to-date, this function
   // does nothing.
   void UpdateInfolistBounds();
-
-  // The controller is used for communicating with the IBus daemon.
-  scoped_ptr<IBusUiController> ibus_ui_controller_;
 
   // The candidate window view.
   CandidateWindowView* candidate_window_;

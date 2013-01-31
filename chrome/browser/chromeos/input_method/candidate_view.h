@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_VIEW_H_
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
