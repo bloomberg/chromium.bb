@@ -679,6 +679,20 @@
    fun:net::::LoadScriptData
 }
 {
+   bug_67378_c
+   Heapcheck:Leak
+   fun:net::::ASCIILiteralToV8String
+   fun:net::ProxyResolverV8::Context::InitV8
+   fun:net::ProxyResolverV8::SetPacScript
+}
+{
+   bug_67378_d
+   Heapcheck:Leak
+   fun:net::::ScriptDataToV8String
+   fun:net::ProxyResolverV8::Context::InitV8
+   fun:net::ProxyResolverV8::SetPacScript
+}
+{
    bug_68304
    Heapcheck:Leak
    ...
