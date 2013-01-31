@@ -335,48 +335,6 @@ std::string WebKitTestRunner::makeURLErrorDescription(
       domain.c_str(), code, error.unreachableURL.spec().data());
 }
 
-// WebTestRunner  -------------------------------------------------------------
-
-bool WebKitTestRunner::shouldDumpEditingCallbacks() const {
-  return dump_editing_callbacks_;
-}
-
-bool WebKitTestRunner::shouldDumpFrameLoadCallbacks() const {
-  return test_is_running_ && dump_frame_load_callbacks_;
-}
-
-bool WebKitTestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const {
-  return test_is_running_ && dump_user_gesture_in_frame_load_callbacks_;
-}
-
-bool WebKitTestRunner::stopProvisionalFrameLoads() const {
-  return stop_provisional_frame_loads_;
-}
-
-bool WebKitTestRunner::shouldDumpTitleChanges() const {
-  return dump_title_changes_;
-}
-
-bool WebKitTestRunner::shouldDumpResourceLoadCallbacks() const {
-  return test_is_running_ && dump_resource_load_callbacks_;
-}
-
-bool WebKitTestRunner::shouldDumpResourceRequestCallbacks() const {
-  return test_is_running_ && dump_resource_request_callbacks_;
-}
-
-bool WebKitTestRunner::shouldDumpResourceResponseMIMETypes() const {
-  return test_is_running_ && dump_resource_response_mime_types_;
-}
-
-bool WebKitTestRunner::shouldDumpCreateView() const {
-  return dump_create_view_;
-}
-
-bool WebKitTestRunner::canOpenWindows() const {
-  return can_open_windows_;
-}
-
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {

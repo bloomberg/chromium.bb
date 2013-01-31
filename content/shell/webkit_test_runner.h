@@ -11,7 +11,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
-#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
 #include "v8/include/v8.h"
 
 class SkCanvas;
@@ -28,8 +27,7 @@ namespace content {
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
-                         public WebTestRunner::WebTestDelegate,
-                         public WebTestRunner::WebTestRunner {
+                         public WebTestRunner::WebTestDelegate {
  public:
   explicit WebKitTestRunner(RenderView* render_view);
   virtual ~WebKitTestRunner();
@@ -68,18 +66,6 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setCurrentWebIntentRequest(const WebKit::WebIntentRequest&);
   virtual WebKit::WebIntentRequest* currentWebIntentRequest();
   virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
-
-  // WebTestRunner implementation.
-  virtual bool shouldDumpEditingCallbacks() const;
-  virtual bool shouldDumpFrameLoadCallbacks() const;
-  virtual bool shouldDumpUserGestureInFrameLoadCallbacks() const;
-  virtual bool stopProvisionalFrameLoads() const;
-  virtual bool shouldDumpTitleChanges() const;
-  virtual bool shouldDumpResourceLoadCallbacks() const;
-  virtual bool shouldDumpResourceRequestCallbacks() const;
-  virtual bool shouldDumpResourceResponseMIMETypes() const;
-  virtual bool shouldDumpCreateView() const;
-  virtual bool canOpenWindows() const;
 
   void Reset();
   void Display();
