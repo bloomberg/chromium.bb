@@ -761,7 +761,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // handled by the WebKit touch events gesture manager.
         if (canHandle(event)) {
             handled |= mGestureDetector.onTouchEvent(event);
-            if (event.getAction() == MotionEvent.ACTION_DOWN) mCurrentDownEvent = event;
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                mCurrentDownEvent = MotionEvent.obtain(event);
+            }
         }
 
         handled |= mZoomManager.processTouchEvent(event);
