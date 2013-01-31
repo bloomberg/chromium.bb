@@ -593,7 +593,7 @@ If you know the serial port name, you can open it for read and write using the <
 </p>
 
 <pre>
-chrome.usb.open(portName, options, openCallback)
+chrome.serial.open(portName, options, openCallback)
 </pre>
 
 <table border="0">
@@ -607,7 +607,7 @@ chrome.usb.open(portName, options, openCallback)
   </tr>
   <tr>
     <td>options&nbsp;(object)</td>
-    <td>Parameter object with one single value: <code>bitrage</code>, an integer specifying the desired bitrate used to communicate with the serial port.</td>
+    <td>Parameter object with one single value: <code>bitrate</code>, an integer specifying the desired bitrate used to communicate with the serial port.</td>
   </tr>
   <tr>
     <td>openCallback</td>
