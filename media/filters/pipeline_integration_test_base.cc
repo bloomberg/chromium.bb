@@ -13,6 +13,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/opus_audio_decoder.h"
+#include "media/filters/vpx_video_decoder.h"
 
 using ::testing::AnyNumber;
 using ::testing::AtMost;
@@ -202,9 +203,12 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       message_loop_.message_loop_proxy());
   scoped_refptr<VideoDecoder> video_decoder = new FFmpegVideoDecoder(
       message_loop_.message_loop_proxy());
+  scoped_refptr<VpxVideoDecoder> vpx_decoder = new VpxVideoDecoder(
+      message_loop_.message_loop_proxy());
   collection->GetAudioDecoders()->push_back(audio_decoder);
   collection->GetAudioDecoders()->push_back(opus_decoder);
   collection->GetVideoDecoders()->push_back(video_decoder);
+  collection->GetVideoDecoders()->push_back(vpx_decoder);
 
   // Disable frame dropping if hashing is enabled.
   renderer_ = new VideoRendererBase(
