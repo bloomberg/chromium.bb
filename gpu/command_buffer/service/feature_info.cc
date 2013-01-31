@@ -92,6 +92,7 @@ FeatureInfo::Workarounds::Workarounds()
       set_texture_filter_before_generating_mipmap(false),
       use_current_program_after_successful_link(false),
       restore_scissor_on_fbo_change(false),
+      flush_on_context_switch(false),
       max_texture_size(0),
       max_cube_map_texture_size(0) {
 }
@@ -601,6 +602,7 @@ void FeatureInfo::AddFeatures() {
 
     if (is_qualcomm) {
       workarounds_.restore_scissor_on_fbo_change = true;
+      workarounds_.flush_on_context_switch = true;
     }
 
 #if defined(OS_MACOSX)

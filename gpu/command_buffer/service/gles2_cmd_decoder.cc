@@ -2737,6 +2737,9 @@ bool GLES2DecoderImpl::MakeCurrent() {
     framebuffer_manager()->IncFramebufferStateChangeCount();
   }
 
+  if (workarounds().flush_on_context_switch)
+    glFlush();
+
   return true;
 }
 
