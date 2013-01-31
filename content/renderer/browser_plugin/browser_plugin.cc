@@ -183,50 +183,50 @@ bool BrowserPlugin::GetAutoSizeAttribute() const {
 }
 
 int BrowserPlugin::GetMaxHeightAttribute() const {
-  int maxHeight;
+  int max_height;
   base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMaxHeight),
-                    &maxHeight);
-  return maxHeight;
+                    &max_height);
+  return max_height;
 }
 
 int BrowserPlugin::GetMaxWidthAttribute() const {
-  int maxWidth;
+  int max_width;
   base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMaxWidth),
-                    &maxWidth);
-  return maxWidth;
+                    &max_width);
+  return max_width;
 }
 
 int BrowserPlugin::GetMinHeightAttribute() const {
-  int minHeight;
+  int min_height;
   base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMinHeight),
-                    &minHeight);
-  return minHeight;
+                    &min_height);
+  return min_height;
 }
 
 int BrowserPlugin::GetMinWidthAttribute() const {
-  int minWidth;
+  int min_width;
   base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMinWidth),
-                    &minWidth);
-  return minWidth;
+                    &min_width);
+  return min_width;
 }
 
 int BrowserPlugin::GetAdjustedMaxHeight() const {
-  int maxHeight = GetMaxHeightAttribute();
-  return (maxHeight == 0) ? height() : maxHeight;
+  int max_height = GetMaxHeightAttribute();
+  return max_height ? max_height : height();
 }
 
 int BrowserPlugin::GetAdjustedMaxWidth() const {
-  int maxWidth = GetMaxWidthAttribute();
-  return (maxWidth == 0) ? width() : maxWidth;
+  int max_width = GetMaxWidthAttribute();
+  return max_width ? max_width : width();
 }
 
 int BrowserPlugin::GetAdjustedMinHeight() const {
-  // For autosize, minHeight should not be bigger than maxHeight.
+  // For autosize, minheight should not be bigger than maxheight.
   return std::min(GetMinHeightAttribute(), GetAdjustedMaxHeight());
 }
 
 int BrowserPlugin::GetAdjustedMinWidth() const {
-  // For autosize, minWidth should not be bigger than maxWidth.
+  // For autosize, minwidth should not be bigger than maxwidth.
   return std::min(GetMinWidthAttribute(), GetAdjustedMaxWidth());
 }
 
