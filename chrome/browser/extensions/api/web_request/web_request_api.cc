@@ -1061,7 +1061,7 @@ void ExtensionWebRequestEventRouter::ClearPendingCallbacks(
 }
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(
-    void* profile,
+    void* profile_id,
     net::URLRequest* request,
     const std::vector<const EventListener*>& listeners,
     const ListValue& args) {
@@ -1080,7 +1080,8 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
       dict->Remove(keys::kResponseHeadersKey, NULL);
 
     extensions::EventRouter::DispatchEvent(
-        (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,
+        (*it)->ipc_sender.get(), profile_id,
+        (*it)->extension_id, (*it)->sub_event_name,
         args_filtered.Pass(), GURL(),
         extensions::EventRouter::USER_GESTURE_UNKNOWN,
         extensions::EventFilteringInfo());

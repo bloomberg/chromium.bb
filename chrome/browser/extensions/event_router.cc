@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -86,13 +87,58 @@ struct EventRouter::ListenerProcess {
 };
 
 // static
+void EventRouter::LogExtensionEventMessage(void* profile_id,
+                                           const std::string& extension_id,
+                                           const std::string& event_name,
+                                           scoped_ptr<ListValue> event_args) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&LogExtensionEventMessage,
+                                       profile_id,
+                                       extension_id,
+                                       event_name,
+                                       Passed(event_args.Pass())));
+  } else {
+    Profile* profile = reinterpret_cast<Profile*>(profile_id);
+    if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+      return;
+
+    // An ExtensionService might not be running during unit tests, or an
+    // extension might have been unloaded by the time we get to logging it.  In
+    // those cases log a warning.
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(profile)->extension_service();
+    if (!extension_service) {
+      LOG(WARNING) << "ExtensionService does not seem to be available "
+                   << "(this may be normal for unit tests)";
+    } else {
+      const Extension* extension =
+          extension_service->extensions()->GetByID(extension_id);
+      if (!extension) {
+        LOG(WARNING) << "Extension " << extension_id << " not found!";
+      } else {
+        extensions::ActivityLog::GetInstance(profile)->LogEventAction(
+            extension, event_name, event_args.get(), "");
+      }
+    }
+  }
+}
+
+// static
 void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
+                                           void* profile_id,
                                            const std::string& extension_id,
                                            const std::string& event_name,
                                            ListValue* event_args,
                                            const GURL& event_url,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
+  if (ActivityLog::IsLogEnabled()) {
+    LogExtensionEventMessage(profile_id, extension_id, event_name,
+                             scoped_ptr<ListValue>(event_args->DeepCopy()));
+  }
+
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, event_args);
@@ -109,19 +155,21 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
 
 // static
 void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
+                                void* profile_id,
                                 const std::string& extension_id,
                                 const std::string& event_name,
                                 scoped_ptr<ListValue> event_args,
                                 const GURL& event_url,
                                 UserGestureState user_gesture,
                                 const EventFilteringInfo& info) {
-  DispatchExtensionMessage(ipc_sender, extension_id, event_name,
+  DispatchExtensionMessage(ipc_sender, profile_id, extension_id, event_name,
                            event_args.get(), event_url, user_gesture, info);
 }
 
 EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
     : profile_(profile),
       listeners_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      activity_log_(ActivityLog::GetInstance(profile)),
       dispatch_chrome_updated_event_(false) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
@@ -190,6 +238,19 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
 
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
+
+  const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetExtensionById(listener->extension_id,
+                                            ExtensionService::INCLUDE_ENABLED);
+  if (extension) {
+    scoped_ptr<ListValue> args(new ListValue());
+    if (listener->filter)
+      args->Append(listener->filter->DeepCopy());
+    activity_log_->LogAPIAction(extension,
+                                event_name + ".addListener",
+                                args.get(),
+                                "");
+  }
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
@@ -206,6 +267,17 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
 
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->RemoveEventListener(event_name);
+
+  const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetExtensionById(listener->extension_id,
+                                            ExtensionService::INCLUDE_ENABLED);
+  if (extension) {
+    scoped_ptr<ListValue> args(new ListValue());
+    activity_log_->LogAPIAction(extension,
+                                event_name + ".removeListener",
+                                args.get(),
+                                "");
+  }
 }
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
@@ -426,7 +498,7 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
                                       event->event_args.get());
   }
 
-  DispatchExtensionMessage(process, extension_id,
+  DispatchExtensionMessage(process, listener_profile, extension_id,
                            event->event_name, event->event_args.get(),
                            event->event_url, event->user_gesture,
                            event->filter_info);

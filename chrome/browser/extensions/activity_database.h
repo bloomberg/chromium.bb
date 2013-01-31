@@ -72,4 +72,3 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
 
 }  // namespace extensions
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
-

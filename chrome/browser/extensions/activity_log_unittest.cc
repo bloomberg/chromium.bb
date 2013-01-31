@@ -37,6 +37,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
             &command_line, FilePath(), false);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityUI);
+    ActivityLog::RecomputeLoggingIsEnabled();
     db_thread_.Start();
   }
 
@@ -61,8 +62,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(ActivityLogTest, Enabled) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  ASSERT_TRUE(activity_log->IsLoggingEnabled());
+  ASSERT_TRUE(ActivityLog::IsLogEnabled());
 }
 
 TEST_F(ActivityLogTest, ConstructAndLog) {
@@ -79,7 +79,7 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
   for (int i = 0; i < 30; i++) {
     // Run this a bunch of times and hope that if something goes wrong with
     // threading, 30 times is enough to cause it to fail.
-    ASSERT_TRUE(activity_log->IsLoggingEnabled());
+    ASSERT_TRUE(ActivityLog::IsLogEnabled());
     activity_log->LogAPIAction(extension,
                                std::string("tabs.testMethod"),
                                args.get(),
@@ -95,9 +95,10 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
       std::string(APIAction::kTableName);
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
   ASSERT_TRUE(statement.Step());
-  ASSERT_EQ("UNKNOWN_ACTION", statement.ColumnString(2));
-  ASSERT_EQ("TABS", statement.ColumnString(3));
-  ASSERT_EQ("tabs.testMethod()", statement.ColumnString(4));
+  ASSERT_EQ("CALL", statement.ColumnString(2));
+  ASSERT_EQ("UNKNOWN_VERB", statement.ColumnString(3));
+  ASSERT_EQ("TABS", statement.ColumnString(4));
+  ASSERT_EQ("tabs.testMethod()", statement.ColumnString(5));
 }
 
 }  // namespace extensions

@@ -52,6 +52,7 @@ TEST(ActivityDatabaseTest, RecordAction) {
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
+      APIAction::CALL,
       APIAction::READ,
       APIAction::BOOKMARK,
       "brewster",
@@ -69,9 +70,10 @@ TEST(ActivityDatabaseTest, RecordAction) {
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
   ASSERT_TRUE(statement.Step());
   ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ("READ", statement.ColumnString(2));
-  ASSERT_EQ("BOOKMARK", statement.ColumnString(3));
-  ASSERT_EQ("brewster", statement.ColumnString(4));
+  ASSERT_EQ("CALL", statement.ColumnString(2));
+  ASSERT_EQ("READ", statement.ColumnString(3));
+  ASSERT_EQ("BOOKMARK", statement.ColumnString(4));
+  ASSERT_EQ("brewster", statement.ColumnString(5));
 }
 
 // Check that nothing explodes if the DB isn't initialized.
@@ -87,6 +89,7 @@ TEST(ActivityDatabaseTest, InitFailure) {
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
+      APIAction::CALL,
       APIAction::READ,
       APIAction::BOOKMARK,
       "brewster",

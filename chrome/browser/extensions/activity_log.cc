@@ -41,9 +41,44 @@ std::string MakeCallSignature(const std::string& name, const ListValue* args) {
   return call_signature;
 }
 
+// Computes whether the activity log is enabled in this browser (controlled by
+// command-line flags) and caches the value (which is assumed never to change).
+class LogIsEnabled {
+ public:
+  LogIsEnabled() {
+    ComputeIsEnabled();
+  }
+
+  void ComputeIsEnabled() {
+    enabled_ = CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kEnableExtensionActivityLogging) ||
+        CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kEnableExtensionActivityUI);
+  }
+
+  static LogIsEnabled* GetInstance() {
+    return Singleton<LogIsEnabled>::get();
+  }
+
+  bool enabled() { return enabled_; }
+
+ private:
+  bool enabled_;
+};
+
 }  // namespace
 
 namespace extensions {
+
+// static
+bool ActivityLog::IsLogEnabled() {
+  return LogIsEnabled::GetInstance()->enabled();
+}
+
+// static
+void ActivityLog::RecomputeLoggingIsEnabled() {
+  return LogIsEnabled::GetInstance()->ComputeIsEnabled();
+}
 
 // This handles errors from the database.
 class KillActivityDatabaseErrorDelegate : public sql::ErrorDelegate {
@@ -110,7 +145,7 @@ ActivityLog::ActivityLog(Profile* profile) {
   // available, things will still get sent to the UI even if nothing
   // is being written to the database.
   db_ = new ActivityDatabase();
-  if (!IsLoggingEnabled()) return;
+  if (!IsLogEnabled()) return;
   FilePath base_dir = profile->GetPath();
   FilePath database_name = base_dir.Append(
       chrome::kExtensionActivityLogFilename);
@@ -129,13 +164,9 @@ ActivityLog* ActivityLog::GetInstance(Profile* profile) {
   return ActivityLogFactory::GetForProfile(profile);
 }
 
-bool ActivityLog::IsLoggingEnabled() {
-  return (log_activity_to_stdout_ || log_activity_to_ui_);
-}
-
 void ActivityLog::AddObserver(const Extension* extension,
                               ActivityLog::Observer* observer) {
-  if (!IsLoggingEnabled()) return;
+  if (!IsLogEnabled()) return;
   if (observers_.count(extension) == 0) {
     observers_[extension] = new ObserverListThreadSafe<Observer>;
   }
@@ -153,7 +184,7 @@ void ActivityLog::LogAPIAction(const Extension* extension,
                                const std::string& name,
                                const ListValue* args,
                                const std::string& extra) {
-  if (!IsLoggingEnabled()) return;
+  if (!IsLogEnabled()) return;
   std::string verb, manager;
   bool matches = RE2::FullMatch(name, "(.*?)\\.(.*)", &manager, &verb);
   if (matches) {
@@ -161,8 +192,9 @@ void ActivityLog::LogAPIAction(const Extension* extension,
     scoped_refptr<APIAction> action = new APIAction(
         extension->id(),
         base::Time::Now(),
-        APIAction::StringAsActionType(verb),
-        APIAction::StringAsTargetType(manager),
+        APIAction::CALL,
+        APIAction::StringAsVerb(verb),
+        APIAction::StringAsTarget(manager),
         call_signature,
         extra);
     ScheduleAndForget(&ActivityDatabase::RecordAction, action);
@@ -175,10 +207,44 @@ void ActivityLog::LogAPIAction(const Extension* extension,
                            ActivityLog::ACTIVITY_EXTENSION_API_CALL,
                            call_signature);
     }
+    if (log_activity_to_stdout_) {
+      LOG(INFO) << action->PrettyPrintForDebug();
+    }
+  } else {
+    LOG(ERROR) << "Unknown API call! " << name;
+  }
+}
+
+void ActivityLog::LogEventAction(const Extension* extension,
+                                 const std::string& name,
+                                 const ListValue* args,
+                                 const std::string& extra) {
+  std::string verb, manager;
+  bool matches = RE2::FullMatch(name, "(.*?)\\.(.*)", &manager, &verb);
+  if (matches) {
+    std::string call_signature = MakeCallSignature(name, args);
+    scoped_refptr<APIAction> action = new APIAction(
+        extension->id(),
+        base::Time::Now(),
+        APIAction::EVENT_CALLBACK,
+        APIAction::StringAsVerb(verb),
+        APIAction::StringAsTarget(manager),
+        call_signature,
+        extra);
+    ScheduleAndForget(&ActivityDatabase::RecordAction, action);
+
+    // Display the action.
+    ObserverMap::const_iterator iter = observers_.find(extension);
+    if (iter != observers_.end()) {
+      iter->second->Notify(&Observer::OnExtensionActivity,
+                           extension,
+                           ActivityLog::ACTIVITY_EVENT_DISPATCH,
+                           call_signature);
+    }
     if (log_activity_to_stdout_)
       LOG(INFO) << action->PrettyPrintForDebug();
   } else {
-    LOG(ERROR) << "Unknown API call! " << name;
+    LOG(ERROR) << "Unknown event type! " << name;
   }
 }
 
@@ -187,7 +253,7 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                                    const ListValue* args,
                                    const char* reason,
                                    const std::string& extra) {
-  if (!IsLoggingEnabled()) return;
+  if (!IsLogEnabled()) return;
   std::string blocked_call = MakeCallSignature(blocked_name, args);
   scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),
                                                           base::Time::Now(),
@@ -213,7 +279,7 @@ void ActivityLog::LogUrlAction(const Extension* extension,
                                const string16& url_title,
                                const std::string& technical_message,
                                const std::string& extra) {
-  if (!IsLoggingEnabled()) return;
+  if (!IsLogEnabled()) return;
   scoped_refptr<UrlAction> action = new UrlAction(
     extension->id(),
     base::Time::Now(),
@@ -241,7 +307,7 @@ void ActivityLog::OnScriptsExecuted(
     const ExecutingScriptsMap& extension_ids,
     int32 on_page_id,
     const GURL& on_url) {
-  if (!IsLoggingEnabled()) return;
+  if (!IsLogEnabled()) return;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   const ExtensionService* extension_service =
@@ -289,6 +355,8 @@ const char* ActivityLog::ActivityToString(Activity activity) {
       return "api_block";
     case ActivityLog::ACTIVITY_CONTENT_SCRIPT:
       return "content_script";
+    case ActivityLog::ACTIVITY_EVENT_DISPATCH:
+      return "event_dispatch";
     default:
       NOTREACHED();
       return "";
@@ -296,4 +364,3 @@ const char* ActivityLog::ActivityToString(Activity activity) {
 }
 
 }  // namespace extensions
-

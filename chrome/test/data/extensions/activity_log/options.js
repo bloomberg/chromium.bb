@@ -119,6 +119,41 @@ function doContentScriptXHR() {
   window.open('http://www.google.cn');
 }
 
+// Modifies the headers sent and received in an HTTP request using the
+// webRequest API.
+function doWebRequestModifications() {
+  // Install a webRequest handler that will add an HTTP header to the outgoing
+  // request for the main page.
+  function doModifyHeaders(details) {
+    var headers = details.requestHeaders;
+    if (headers === undefined) {
+      headers = [];
+    }
+    headers.push({'name': 'X-Test-Activity-Log-Send',
+                  'value': 'Present'});
+    return {'requestHeaders': headers};
+  }
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+      doModifyHeaders,
+      {'urls': ['http://*/*'], 'types': ['main_frame']},
+      ['blocking', 'requestHeaders']);
+
+  // Open a tab, then close it when it has finished loading--this should give
+  // the webRequest handler a chance to run.
+  chrome.tabs.onUpdated.addListener(
+    function closeTab(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === "complete" &&
+          tab.url.match(/google\.co\.uk/g)) {
+        chrome.webRequest.onBeforeSendHeaders.removeListener(doModifyHeaders);
+        chrome.tabs.onUpdated.removeListener(closeTab);
+        chrome.tabs.remove(tabId);
+        setCompleted('doWebRequestModifications');
+      }
+    }
+  );
+  window.open('http://www.google.co.uk');
+}
+
 // REGISTER YOUR TESTS HERE
 // Attach the tests to buttons.
 function setupEvents() {
@@ -128,6 +163,7 @@ function setupEvents() {
   $('inject_blob').addEventListener('click', injectScriptBlob);
   $('background_xhr').addEventListener('click', doBackgroundXHR);
   $('cs_xhr').addEventListener('click', doContentScriptXHR);
+  $('webrequest').addEventListener('click', doWebRequestModifications);
 
   completed = 0;
   total = document.getElementsByTagName('button').length;

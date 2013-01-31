@@ -36,7 +36,8 @@ class ActivityLog : public ProfileKeyedService,
   enum Activity {
     ACTIVITY_EXTENSION_API_CALL,   // Extension API invocation is called.
     ACTIVITY_EXTENSION_API_BLOCK,  // Extension API invocation is blocked.
-    ACTIVITY_CONTENT_SCRIPT        // Content script is executing.
+    ACTIVITY_CONTENT_SCRIPT,       // Content script is executing.
+    ACTIVITY_EVENT_DISPATCH,       // Event sent to listener in extension.
   };
 
   // Observers can listen for activity events.
@@ -54,7 +55,12 @@ class ActivityLog : public ProfileKeyedService,
 
   // Currently, we only want to record actions if the user has opted in to the
   // ActivityLog feature.
-  bool IsLoggingEnabled();
+  static bool IsLogEnabled();
+
+  // Recompute whether logging should be enabled (the value of IsLogEnabled is
+  // normally cached).  WARNING: This may not be thread-safe, and is only
+  // really intended for use by unit tests.
+  static void RecomputeLoggingIsEnabled();
 
   // Add/remove observer.
   void AddObserver(const Extension* extension, Observer* observer);
@@ -67,14 +73,21 @@ class ActivityLog : public ProfileKeyedService,
   // Log a successful API call made by an extension.
   // This will create an APIAction for storage in the database.
   void LogAPIAction(const Extension* extension,
-                    const std::string& name,    // e.g., chrome.tabs.get
+                    const std::string& name,    // e.g., tabs.get
                     const ListValue* args,      // the argument values e.g. 46
                     const std::string& extra);  // any extra logging info
+
+  // Log an event notification delivered to an extension.
+  // This will create an APIAction for storage in the database.
+  void LogEventAction(const Extension* extension,
+                      const std::string& name,    // e.g., tabs.onUpdate
+                      const ListValue* args,      // arguments to the callback
+                      const std::string& extra);  // any extra logging info
 
   // Log a blocked API call made by an extension.
   // This will create a BlockedAction for storage in the database.
   void LogBlockedAction(const Extension* extension,
-                        const std::string& blocked_call,  // eg chrome.tabs.get
+                        const std::string& blocked_call,  // e.g., tabs.get
                         const ListValue* args,            // argument values
                         const char* reason,               // why it's blocked
                         const std::string& extra);        // extra logging info
@@ -84,7 +97,7 @@ class ActivityLog : public ProfileKeyedService,
   // The technical message might be the list of content scripts that have been
   // injected, or the DOM API call; it's what's shown under "More".
   void LogUrlAction(const Extension* extension,
-                    const UrlAction::UrlActionType verb,  // eg XHR
+                    const UrlAction::UrlActionType verb,  // e.g., XHR
                     const GURL& url,                      // target URL
                     const string16& url_title,            // title of the URL,
                                                           // can be empty string
@@ -186,4 +199,3 @@ class ActivityLogFactory : public ProfileKeyedServiceFactory {
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
-

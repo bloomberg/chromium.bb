@@ -33,6 +33,8 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
                              IDS_EXTENSION_ACTIVITY_API_BLOCK);
   source->AddLocalizedString("extensionActivityContentScript",
                              IDS_EXTENSION_ACTIVITY_CONTENT_SCRIPT);
+  source->AddLocalizedString("extensionActivityEventDispatch",
+                             IDS_EXTENSION_ACTIVITY_EVENT_DISPATCH);
   source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
 

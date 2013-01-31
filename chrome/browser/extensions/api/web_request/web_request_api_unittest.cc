@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/capturing_net_log.h"
@@ -172,10 +173,12 @@ class ExtensionWebRequestTest : public testing::Test {
   ExtensionWebRequestTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO, &message_loop_),
+        profile_manager_(TestingBrowserProcess::GetGlobal()),
         event_router_(new EventRouterForwarder) {}
 
  protected:
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(profile_manager_.SetUp());
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
         &enable_referrers_, NULL, NULL, profile_.GetTestingPrefService());
     network_delegate_.reset(
@@ -199,6 +202,7 @@ class ExtensionWebRequestTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
+  TestingProfileManager profile_manager_;
   net::TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
@@ -757,10 +761,12 @@ class ExtensionWebRequestHeaderModificationTest :
   ExtensionWebRequestHeaderModificationTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO, &message_loop_),
+        profile_manager_(TestingBrowserProcess::GetGlobal()),
         event_router_(new EventRouterForwarder) {}
 
  protected:
   virtual void SetUp() {
+    ASSERT_TRUE(profile_manager_.SetUp());
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
         &enable_referrers_, NULL, NULL, profile_.GetTestingPrefService());
     network_delegate_.reset(
@@ -780,6 +786,7 @@ class ExtensionWebRequestHeaderModificationTest :
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
+  TestingProfileManager profile_manager_;
   net::TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;

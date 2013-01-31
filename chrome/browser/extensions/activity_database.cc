@@ -56,8 +56,7 @@ void ActivityDatabase::Init(const FilePath& db_name) {
     return LogInitFailure();
 
   // Create the APIAction database.
-  if (InitializeTable(APIAction::kTableName, APIAction::kTableStructure)
-      != sql::INIT_OK)
+  if (!APIAction::InitializeTable(&db_))
     return LogInitFailure();
 
   // Create the BlockedAction database.
@@ -121,4 +120,3 @@ void ActivityDatabase::KillDatabase() {
 }
 
 }  // namespace extensions
-

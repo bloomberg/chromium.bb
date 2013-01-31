@@ -31,6 +31,7 @@ class RenderProcessHost;
 }
 
 namespace extensions {
+class ActivityLog;
 class Extension;
 class ExtensionHost;
 class ExtensionPrefs;
@@ -62,6 +63,7 @@ class EventRouter : public content::NotificationObserver,
   // Sends an event via ipc_sender to the given extension. Can be called on any
   // thread.
   static void DispatchEvent(IPC::Sender* ipc_sender,
+                            void* profile_id,
                             const std::string& extension_id,
                             const std::string& event_name,
                             scoped_ptr<base::ListValue> event_args,
@@ -149,9 +151,17 @@ class EventRouter : public content::NotificationObserver,
   typedef std::pair<const content::BrowserContext*, std::string>
       EventDispatchIdentifier;
 
+  // Records an event notification in the extension activity log.  Can be
+  // called from any thread.
+  static void LogExtensionEventMessage(void* profile_id,
+                                       const std::string& extension_id,
+                                       const std::string& event_name,
+                                       scoped_ptr<ListValue> event_args);
+
   // TODO(gdk): Document this.
   static void DispatchExtensionMessage(
       IPC::Sender* ipc_sender,
+      void* profile_id,
       const std::string& extension_id,
       const std::string& event_name,
       base::ListValue* event_args,
@@ -225,6 +235,8 @@ class EventRouter : public content::NotificationObserver,
 
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
+
+  ActivityLog* activity_log_;
 
   // True if we should dispatch the event signalling that Chrome was updated
   // upon loading an extension.
