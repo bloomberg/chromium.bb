@@ -24,6 +24,7 @@
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
+struct IndexedDBDatabaseMetadata;
 
 namespace WebKit {
 class WebFrame;
@@ -55,6 +56,9 @@ class CONTENT_EXPORT IndexedDBDispatcher
 
   // webkit_glue::WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
+
+  static WebKit::WebIDBMetadata ConvertMetadata(
+      const IndexedDBDatabaseMetadata& idb_metadata);
 
   void OnMessageReceived(const IPC::Message& msg);
   static bool Send(IPC::Message* msg);
@@ -198,9 +202,13 @@ class CONTENT_EXPORT IndexedDBDispatcher
   }
 
   // IDBCallback message handlers.
+  void OnSuccessIDBDatabaseOld(int32 ipc_thread_id,
+                               int32 ipc_response_id,
+                               int32 ipc_object_id);
   void OnSuccessIDBDatabase(int32 ipc_thread_id,
                             int32 ipc_response_id,
-                            int32 ipc_object_id);
+                            int32 ipc_object_id,
+                            const IndexedDBDatabaseMetadata& idb_metadata);
   void OnSuccessIndexedDBKey(int32 ipc_thread_id,
                              int32 ipc_response_id,
                              const IndexedDBKey& key);
@@ -236,11 +244,15 @@ class CONTENT_EXPORT IndexedDBDispatcher
                const string16& message);
   void OnIntBlocked(int32 ipc_thread_id, int32 ipc_response_id,
                     int64 existing_version);
+  void OnUpgradeNeededOld(int32 ipc_thread_id,
+                          int32 ipc_response_id,
+                          int32 ipc_database_id,
+                          int64 old_version);
   void OnUpgradeNeeded(int32 ipc_thread_id,
                        int32 ipc_response_id,
-                       int32 ipc_transaction_id,
                        int32 ipc_database_id,
-                       int64 old_version);
+                       int64 old_version,
+                       const IndexedDBDatabaseMetadata& metdata);
   void OnAbortOld(int32 ipc_thread_id,
                   int32 ipc_transaction_id,
                   int code,

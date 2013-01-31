@@ -59,6 +59,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   IndexedDBDispatcherHost(int ipc_process_id,
                           IndexedDBContextImpl* indexed_db_context);
 
+  static IndexedDBDatabaseMetadata ConvertMetadata(
+      const WebKit::WebIDBMetadata& metadata);
+
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OverrideThreadForMessage(const IPC::Message& message,

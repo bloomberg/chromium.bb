@@ -60,10 +60,17 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
       const GURL& origin_url);
 
   virtual void onSuccess(WebKit::WebIDBDatabase* idb_object);
+  virtual void onSuccess(
+      WebKit::WebIDBDatabase* idb_object,
+      const WebKit::WebIDBMetadata& metadata);
   virtual void onUpgradeNeeded(
       long long old_version,
       WebKit::WebIDBTransaction* transaction,
       WebKit::WebIDBDatabase* database);
+  virtual void onUpgradeNeeded(
+      long long old_version,
+      WebKit::WebIDBDatabase* database,
+      const WebKit::WebIDBMetadata&);
 
  private:
   int64 host_transaction_id_;

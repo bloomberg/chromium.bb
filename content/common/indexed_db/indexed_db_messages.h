@@ -334,6 +334,33 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCount_Params)
   IPC_STRUCT_MEMBER(int, ipc_transaction_id)
 IPC_STRUCT_END()
 
+// metadata payload for WebIDBMetadata
+IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
+  IPC_STRUCT_MEMBER(int64, id)
+  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
+  IPC_STRUCT_MEMBER(bool, unique)
+  IPC_STRUCT_MEMBER(bool, multiEntry)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBObjectStoreMetadata)
+  IPC_STRUCT_MEMBER(int64, id)
+  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
+  IPC_STRUCT_MEMBER(bool, autoIncrement)
+  IPC_STRUCT_MEMBER(int64, max_index_id)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBIndexMetadata>, indexes)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
+  IPC_STRUCT_MEMBER(int64, id)
+  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(string16, version)
+  IPC_STRUCT_MEMBER(int64, int_version)
+  IPC_STRUCT_MEMBER(int64, max_object_store_id)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
+IPC_STRUCT_END()
+
 // Indexed DB messages sent from the browser to the renderer.
 
 // The thread_id needs to be the first parameter in these messages.  In the IO
@@ -353,10 +380,15 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvance,
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                      IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
 
-IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIDBDatabase,
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIDBDatabaseOld,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
                      int32 /* ipc_database_id */)
+IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksSuccessIDBDatabase,
+                     int32 /* ipc_thread_id */,
+                     int32 /* ipc_response_id */,
+                     int32 /* ipc_database_id */,
+                     IndexedDBDatabaseMetadata)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
@@ -394,12 +426,17 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksIntBlocked,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
                      int64 /* existing_version */)
+IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksUpgradeNeededOld,
+                     int32, /* ipc_thread_id */
+                     int32, /* ipc_response_id */
+                     int32, /* ipc_database_id */
+                     int64) /* old_version */
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksUpgradeNeeded,
                      int32, /* ipc_thread_id */
                      int32, /* ipc_response_id */
-                     int32, /* ipc_transaction_id */
                      int32, /* ipc_database_id */
-                     int64) /* old_version */
+                     int64, /* old_version */
+                     IndexedDBDatabaseMetadata) /* metadata */
 
 // IDBTransactionCallback message handlers.
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_TransactionCallbacksAbort,
@@ -483,33 +520,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
 // WebIDBFactory::deleteDatabase() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
                      IndexedDBHostMsg_FactoryDeleteDatabase_Params)
-
-// WebIDBDatabase::metadata() payload
-IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
-  IPC_STRUCT_MEMBER(int64, id)
-  IPC_STRUCT_MEMBER(string16, name)
-  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
-  IPC_STRUCT_MEMBER(bool, unique)
-  IPC_STRUCT_MEMBER(bool, multiEntry)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(IndexedDBObjectStoreMetadata)
-  IPC_STRUCT_MEMBER(int64, id)
-  IPC_STRUCT_MEMBER(string16, name)
-  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
-  IPC_STRUCT_MEMBER(bool, autoIncrement)
-  IPC_STRUCT_MEMBER(int64, max_index_id)
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBIndexMetadata>, indexes)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
-  IPC_STRUCT_MEMBER(int64, id)
-  IPC_STRUCT_MEMBER(string16, name)
-  IPC_STRUCT_MEMBER(string16, version)
-  IPC_STRUCT_MEMBER(int64, int_version)
-  IPC_STRUCT_MEMBER(int64, max_object_store_id)
-  IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
-IPC_STRUCT_END()
 
 // WebIDBDatabase::metadata() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseMetadata,
