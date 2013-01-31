@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
@@ -38,9 +37,6 @@ MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
 class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  public:
   MediaTransferProtocolManagerImpl() : weak_ptr_factory_(this) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
-      return;
-
     dbus::Bus* bus = NULL;
 #if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager* dbus_thread_manager =

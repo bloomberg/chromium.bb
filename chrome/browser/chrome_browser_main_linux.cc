@@ -109,11 +109,11 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
 ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainPartsPosix(parameters),
-      did_pre_profile_init_(false) {
+      initialized_media_transfer_protocol_manager_(false) {
 }
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
-  if (did_pre_profile_init_)
+  if (initialized_media_transfer_protocol_manager_)
     device::MediaTransferProtocolManager::Shutdown();
 }
 
@@ -138,16 +138,19 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   removable_device_notifications_linux_->Init();
 #endif
 
-  device::MediaTransferProtocolManager::Initialize();
-
-  did_pre_profile_init_ = true;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    device::MediaTransferProtocolManager::Initialize();
+    initialized_media_transfer_protocol_manager_ = true;
+  }
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
-  media_transfer_protocol_device_observer_.reset(
-      new chrome::MediaTransferProtocolDeviceObserverLinux());
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    media_transfer_protocol_device_observer_.reset(
+        new chrome::MediaTransferProtocolDeviceObserverLinux());
+  }
 
   ChromeBrowserMainPartsPosix::PostProfileInit();
 }

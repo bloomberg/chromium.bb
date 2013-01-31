@@ -39,7 +39,7 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 #endif
   scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
       media_transfer_protocol_device_observer_;
-  bool did_pre_profile_init_;
+  bool initialized_media_transfer_protocol_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);
 };
