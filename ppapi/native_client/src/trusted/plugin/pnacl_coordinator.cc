@@ -866,6 +866,10 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
     }
     translate_thread_->AbortSubprocesses();
+  } else {
+    // Compare download completion pct (100% now), to compile completion pct.
+    HistogramRatio("NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded",
+                   pexe_bytes_compiled_, pexe_size_);
   }
 }
 
@@ -891,7 +895,7 @@ void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
   // If we don't know the expected total yet, ask.
   pexe_bytes_compiled_ += bytes_compiled;
   if (expected_pexe_size_ == -1) {
-    int64_t amount_downloaded; // dummy variable.
+    int64_t amount_downloaded;  // dummy variable.
     streaming_downloader_->GetDownloadProgress(&amount_downloaded,
                                                &expected_pexe_size_);
   }

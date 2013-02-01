@@ -49,6 +49,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SuccessfulLoadUMA, {
     histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.CompileTime", 1);
     histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.CompileKBPerSec", 1);
     histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LinkTime", 1);
+    histograms.ExpectTotalCount(
+        "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded", 1);
     histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.TotalUncachedTime", 1);
     histograms.ExpectTotalCount(
         "NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec", 1);
