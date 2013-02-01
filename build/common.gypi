@@ -2402,15 +2402,22 @@
   'conditions': [
     ['os_posix==1', {
       'target_defaults': {
-        'cflags': [
-          # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc
-          # supports it.
-          '-fstack-protector',
-          '--param=ssp-buffer-size=4',
-        ],
         'ldflags': [
           '-Wl,-z,now',
           '-Wl,-z,relro',
+        ],
+      },
+    }],
+    ['os_posix==1 and chromeos==0', {
+      # Chrome OS enables -fstack-protector-strong via its build wrapper,
+      # and we want to avoid overriding this, so stack-protector is only
+      # enabled when not building on Chrome OS.
+      # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc
+      # supports it.
+      'target_defaults': {
+        'cflags': [
+          '-fstack-protector',
+          '--param=ssp-buffer-size=4',
         ],
       },
     }],
