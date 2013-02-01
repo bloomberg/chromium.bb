@@ -534,11 +534,13 @@ TEST(SkBitmapOperationsTest, RotateImage) {
   src.allocPixels();
 
   SkCanvas canvas(src);
+  src.eraseARGB(0, 0, 0, 0);
   SkRegion region;
 
   region.setRect(0, 0, src_w / 2, src_h / 2);
   canvas.setClipRegion(region);
-  canvas.drawColor(SK_ColorRED, SkXfermode::kSrc_Mode);
+  // This region is a semi-transparent red to test non-opaque pixels.
+  canvas.drawColor(0x1FFF0000, SkXfermode::kSrc_Mode);
   region.setRect(src_w / 2, 0, src_w, src_h / 2);
   canvas.setClipRegion(region);
   canvas.drawColor(SK_ColorBLUE, SkXfermode::kSrc_Mode);
