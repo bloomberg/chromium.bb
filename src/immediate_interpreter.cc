@@ -922,7 +922,8 @@ bool ImmediateInterpreter::TwoFingersGesturing(
       tapping_finger_min_separation_.val_;
   float dist_sq = xdist * xdist + ydist * ydist;
   // Make sure distance between fingers isn't too small
-  if (dist_sq < kMin2fDistThreshSq)
+  if ((dist_sq < kMin2fDistThreshSq) &&
+      !(finger1.flags & GESTURES_FINGER_MERGE))
     return false;
 
   // Next, if fingers are vertically aligned and one is in the bottom zone,
@@ -1828,6 +1829,8 @@ void ImmediateInterpreter::FillResultGesture(
       const FingerState* prev =
           PrevState(0)->GetFingerState(current->tracking_id);
       if (!prev || !current)
+        return;
+      if (current->flags & GESTURES_FINGER_MERGE)
         return;
       if (PressureChangingSignificantly(hwstate.timestamp, *current)) {
         prev_result_high_pressure_change_ = true;

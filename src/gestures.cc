@@ -12,6 +12,7 @@
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/box_filter_interpreter.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
+#include "gestures/include/finger_merge_filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/fling_stop_filter_interpreter.h"
 #include "gestures/include/iir_filter_interpreter.h"
@@ -442,6 +443,7 @@ void GestureInterpreter::InitializeTouchpad(void) {
                                               tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_TOUCHPAD);
+  temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
   temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());
   temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp,

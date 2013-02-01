@@ -11,6 +11,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/box_filter_interpreter.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter.o \
 	$(OBJDIR)/filter_interpreter.o \
+	$(OBJDIR)/finger_merge_filter_interpreter.o \
 	$(OBJDIR)/finger_metrics.o \
 	$(OBJDIR)/fling_stop_filter_interpreter.o \
 	$(OBJDIR)/gestures.o \
