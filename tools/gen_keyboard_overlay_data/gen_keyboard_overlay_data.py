@@ -154,11 +154,13 @@ INPUT_METHOD_ID_TO_OVERLAY_ID = {
   'zinnia-japanese': 'ja',
 }
 
-COPYRIGHT_HEADER_TEMPLATE=(
-"""// Copyright (c) %s The Chromium Authors. All rights reserved.
+# The file was first generated in 2012 and we have a policy of not updating
+# copyright dates.
+COPYRIGHT_HEADER=\
+"""// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-""")
+"""
 
 # A snippet for grd file
 GRD_SNIPPET_TEMPLATE="""  <message name="%s" desc="%s">
@@ -404,11 +406,6 @@ def FetchHotkeyData(client):
   return result
 
 
-def GenerateCopyrightHeader():
-  """Generates the copyright header for JavaScript code."""
-  return COPYRIGHT_HEADER_TEMPLATE % datetime.date.today().year
-
-
 def UniqueBehaviors(hotkey_data):
   """Retrieves a sorted list of unique behaviors from |hotkey_data|."""
   return sorted(set((behavior, description) for (behavior, _, description)
@@ -427,7 +424,7 @@ def GetPath(path_from_src):
 def OutputFile(outpath, snippet):
   """Output the snippet into the specified path."""
   out = file(outpath, 'w')
-  out.write(GenerateCopyrightHeader() + '\n')
+  out.write(COPYRIGHT_HEADER + '\n')
   out.write(snippet)
   print 'Output ' + os.path.normpath(outpath)
 

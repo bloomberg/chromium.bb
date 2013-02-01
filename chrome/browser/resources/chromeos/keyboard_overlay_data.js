@@ -15841,7 +15841,7 @@ var keyboardOverlayData = {
     'maximize<>SHIFT': 'keyboardOverlayFullScreen',
     'n<>CTRL': 'keyboardOverlayNewWindow',
     'n<>CTRL<>SHIFT': 'keyboardOverlayNewIncognitoWindow',
-    'o<>CTRL': 'keyboardOverlayOpenDialog',
+    'o<>CTRL': 'keyboardOverlayOpen',
     'o<>CTRL<>SHIFT': 'keyboardOverlayBookmarkManager',
     'p<>CTRL': 'keyboardOverlayPrint',
     'power': 'keyboardOverlayLockScreenOrPowerOff',

@@ -2773,8 +2773,8 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
     Bookmark current page
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (open the Bookmark Manager).">
-    Bookmark Manager
+  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (open the bookmark manager).">
+    Bookmark manager
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_CENTER_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (center the window).">
     Center window
@@ -2807,7 +2807,7 @@ Battery full
     Delete word
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_DEVELOPER_TOOLS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Developer Tools
+    Developer tools
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_LEFT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the left).">
     Dock window left
@@ -2816,7 +2816,7 @@ Battery full
     Dock window right
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_DOM_INSPECTOR" desc="The text in the keyboard overlay to explain the shortcut.">
-    DOM Inspector
+    DOM inspector
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_DOWNLOADS" desc="The text in the keyboard overlay to explain the shortcut.">
     Downloads
@@ -2879,7 +2879,7 @@ Battery full
     Input Unicode characters
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
-    JavaScript Console
+    JavaScript console
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (lock the screen).">
     Lock screen
@@ -2920,17 +2920,17 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_NEXT_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the end of the next word).">
     Next word
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_OPEN" desc="The text in the keyboard overlay to explain the shortcut (open a file).">
+    Open
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
     Open address in new tab
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN_DIALOG" desc="The text in the keyboard overlay to explain the shortcut (open a dialog to select file).">
-    Open dialog
-  </message>
   <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
-    Page Down
+    Page down
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut.">
-    Page Up
+    Page up
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PASTE" desc="The text in the keyboard overlay to explain the shortcut.">
     Paste
@@ -2962,7 +2962,7 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
     Reset zoom
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut (save page as a file).">
     Save
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SCREENSHOT_REGION" desc="The text in the keyboard overlay to explain the shortcut (take a screenshot of the selected region).">
@@ -2993,7 +2993,7 @@ Battery full
     Take screenshot
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
-    Task Manager
+    Task manager
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
     Toggle bookmark bar
